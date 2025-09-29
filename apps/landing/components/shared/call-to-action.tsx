@@ -1,0 +1,137 @@
+"use client";
+import Image from "next/image";
+import { Righteous } from "next/font/google";
+import { CTAButton } from "./cta-button";
+import { useEffect } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { MotionPathPlugin } from "gsap/MotionPathPlugin";
+
+const righteous = Righteous({ weight: ["400"], subsets: ["latin"] });
+
+export const CallToAction = () => {
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+    gsap.registerPlugin(MotionPathPlugin);
+    gsap.set(".mascot", { scale: 0.7 });
+    const tlmove = gsap.timeline({ repeat: -1 });
+    tlmove.to(".mascot", {
+      motionPath: {
+        path: "#mascotPath",
+        align: "#mascotPath",
+        alignOrigin: [0.5, 0.5],
+        curviness: 1.5,
+        autoRotate: true,
+      },
+      duration: 20,
+      ease: "power1.inOut",
+    });
+  }, []);
+  return (
+    <div className="min-h-[60dvh] md:h-[120vh] w-full bg-darkest bg-[url('/imgs/hexa-pattern.svg')] bg-no-repeat bg-cover bg-bottom relative overflow-clip rounded-br-3xl rounded-bl-3xl border-b-2 border-b-[#3D316F] z-[2]">
+      <svg
+        className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+        width="75%"
+        height="95%"
+        viewBox="0 0 1306 437"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          id="mascotPath"
+          d="M148.515 33.0541C232.219 24.969 290.091 19.9179 374.041 15.0004C447.019 10.7255 522.109 18.8925 594.616 10.0502C677.603 -0.0702162 761.295 1.60569 844.747 1.60569C876.229 1.60569 907.707 2.00652 939.093 4.80877C965.853 7.19805 992.249 14.4453 1019.17 14.7092C1054.07 15.0513 1092.05 11.6995 1126.47 18.7858C1155.01 24.6622 1183.57 40.9669 1209.9 53.4373C1227.65 61.8462 1242.96 73.5946 1256.93 88.38C1280.71 113.563 1286.61 139.913 1294.93 171.66C1304.26 207.294 1307.23 244.756 1300.75 281.293C1289.84 342.778 1228.94 389.854 1176.99 417.132C1121.51 446.272 1053.28 434.592 996.166 415.967C947.949 400.245 900.957 373.866 858.579 346.228C826.277 325.161 799.841 299.229 792.333 260.327C785.659 225.739 801.869 190.808 828.441 168.748C845.813 154.326 863.545 141.829 886.242 137.882C907.076 134.259 916.361 138.673 934.725 148.365C949.206 156.008 953.62 169.596 959.621 183.599C963.546 192.756 970.851 197.925 971.415 208.641C971.938 218.585 974.035 228.096 974.035 238.488C974.035 253.626 957.801 264.377 947.828 274.158C939.994 281.842 927.059 287.946 920.457 296.434C916.155 301.965 913.987 306.958 907.935 310.848C823.012 365.442 694.834 353.187 603.934 331.814C538.197 316.357 478.506 292.417 416.117 267.752C396.697 260.074 374.386 257.293 355.696 249.116C335.263 240.177 317.217 225.725 297.895 215.047C271.95 200.709 236.968 186.03 219.274 160.886C211.517 149.863 207.839 144.066 223.205 136.717C236.097 130.552 249.564 124.329 263.243 120.12C304.365 107.467 352.648 114.296 395.006 114.296C413.701 114.296 432.319 111.675 451.06 111.675C501.75 111.675 553.014 115.982 603.352 121.576C621.317 123.572 632.55 123.016 650.379 120.848C711.153 113.456 773.932 118.235 833.682 130.894C839.764 132.182 856.604 140.572 863.966 137.3C868.944 135.087 873.158 133.4 878.525 132.058C894.462 128.074 915.319 127.399 931.813 127.399C961.257 127.399 992.332 115.206 1021.35 126.089C1036.25 131.674 1071 129.12 1071 152.296C1071 166.201 1074.53 180.859 1057.75 185.055C1041.6 189.093 1024.85 187.013 1009.41 190.442C954.069 202.741 889.132 196.709 832.518 195.392C795.565 194.533 758.817 190.296 721.866 190.296C666.494 190.296 611.343 190.054 556.034 187.675C455.29 183.342 355.237 174.572 254.216 174.572C197.677 174.572 138.155 153.668 88.2387 128.71C48.1525 108.667 1.75562 98.9439 1.75562 44.9928C1.75562 11.5823 34.2896 1.54146 62.0317 9.46779C78.3453 14.1288 91.7727 25.1769 109.204 27.6671C115.944 28.6299 123.361 27.8127 130.17 27.8127C139.541 27.8127 141 30.5492 148.515 33.0541Z"
+        />
+      </svg>
+      <div className="w-[40%] h-2/5 absolute">
+        <Image
+          className="mascot"
+          src="/imgs/mascot.png"
+          fill
+          alt="mascot"
+          style={{
+            objectFit: "contain",
+          }}
+        />
+      </div>
+      <div className="flex justify-center">
+        <div className="anim w-4/5 md:w-3/5 h-fit flex flex-col items-center justify-center px-4 py-10 z-10">
+          <div
+            className={`flex flex-col justify-end text-center bg-conic-[at_top_right] from-transparent via-indigo-100 to-white text-transparent bg-clip-text text-[20px] sm:text-[40px] sm:w-3/5 leading-tight my-4 + ${righteous.className}`}
+          >
+            <div>Embark on your journey to success with us</div>
+            <p className="text-sm">
+              Out of the box thinking, from out of this world solutions
+            </p>
+          </div>
+          <CTAButton pricing={false} />
+        </div>
+      </div>
+      <div className="w-[90%] h-4/5 absolute bottom-0">
+        <Image
+          src="/imgs/footer/mountainrange.png"
+          fill
+          alt="mountain range"
+          style={{
+            objectFit: "contain",
+            objectPosition: "left bottom",
+          }}
+        />
+      </div>
+      <div className="w-full h-4/5 absolute bottom-0">
+        <Image
+          src="/imgs/footer/leftside.png"
+          fill
+          alt="left-side"
+          style={{
+            objectFit: "contain",
+            objectPosition: "left bottom",
+          }}
+        />
+      </div>
+      <div className="w-full h-3/5 absolute bottom-0">
+        <Image
+          src="/imgs/footer/leftbottomside.svg"
+          fill
+          alt="left-bottom-side"
+          style={{
+            objectFit: "contain",
+            objectPosition: "left bottom",
+          }}
+        />
+      </div>
+      <div className="w-4/5 h-4/5 absolute right-0 bottom-0">
+        <Image
+          src="/imgs/footer/rightside.png"
+          fill
+          alt="right-side"
+          style={{
+            objectFit: "contain",
+            objectPosition: "right bottom",
+          }}
+        />
+      </div>
+      <div className="w-4/5 h-3/5 absolute bottom-0">
+        <Image
+          src="/imgs/footer/bottomy.svg"
+          fill
+          alt="bottom-ground"
+          style={{
+            objectFit: "contain",
+            objectPosition: "left bottom",
+          }}
+        />
+      </div>
+      <div className="w-4/5 h-3/5 absolute bottom-0 right-0">
+        <Image
+          src="/imgs/footer/bottom.svg"
+          fill
+          alt="bottom-side"
+          style={{
+            objectFit: "contain",
+            objectPosition: "right bottom",
+          }}
+        />
+      </div>
+    </div>
+  );
+};

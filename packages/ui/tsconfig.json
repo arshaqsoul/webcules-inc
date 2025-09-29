@@ -1,10 +1,11 @@
 {
-  "extends": "@workspace/typescript-config/react-library.json",
+  "extends": "@webcules/typescript-config/react-library.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@workspace/ui/*": ["./src/*"]
-    }
+      "@webcules/ui/*": ["./src/*"]
+    },
+    "jsx": "react-jsx"
   },
   "include": ["."],
   "exclude": ["node_modules", "dist"]
