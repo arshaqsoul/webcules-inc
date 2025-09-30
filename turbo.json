@@ -5,7 +5,11 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**", "build/**"]
+    },
+    "generate:types": {
+      "dependsOn": ["^generate:types"],
+      "outputs": ["generated-types/**"]
     },
     "lint": {
       "dependsOn": ["^lint"]
@@ -17,5 +21,6 @@
       "cache": false,
       "persistent": true
     }
-  }
+  },
+  "globalEnv": ["PAYLOAD_SECRET", "DATABASE_URI", "NEXT_PUBLIC_PAYLOAD_URL"]
 }

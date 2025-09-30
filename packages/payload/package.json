@@ -1,0 +1,80 @@
+{
+  "name": "@webcules/payload",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "clean": "rm -rf node_modules .pnpm-lock.yaml",
+    "format": "prettier --check . --ignore-path ../../.gitignore --ignore-path ./.prettierignore",
+    "generate:types": "PAYLOAD_CONFIG_PATH=src/payload.config.ts payload generate:types",
+    "lint": "eslint .",
+    "reinstall": "pnpm clean && pnpm i",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "exports": {
+    "./*": "./src/*.ts",
+    "./access/*": "./src/access/*.ts",
+    "./blocks/*": [
+      "./src/blocks/*.tsx",
+      "./src/blocks/*.ts"
+    ],
+    "./collections/*": "./src/collections/*.ts",
+    "./components/*": "./src/components/*.tsx",
+    "./endpoints/*": "./src/endpoints/*.ts",
+    "./header/*": "./src/Header/*.tsx",
+    "./footer/*": "./src/Footer/*.tsx",
+    "./fields/*": [
+      "./src/fields/*"
+    ],
+    "./fields/slug/SlugComponent": "./src/fields/slug/SlugComponent",
+    "./heros/*": "./src/heros/*.tsx",
+    "./hooks/*": "./src/hooks/*.ts",
+    "./plugins/*": "./src/plugins/*.ts",
+    "./providers/*": [
+      "./src/providers/*.tsx"
+    ],
+    "./search/*": "./src/search/*.tsx",
+    "./utilities/*": "./src/utilities/*.ts",
+    "./payload-types": "./src/payload-types.ts",
+    "./payload-config": "./src/payload.config.ts"
+  },
+  "dependencies": {
+    "@payloadcms/admin-bar": "3.57.0",
+    "@payloadcms/db-postgres": "3.57.0",
+    "@payloadcms/live-preview-react": "3.57.0",
+    "@payloadcms/plugin-form-builder": "3.57.0",
+    "@payloadcms/plugin-nested-docs": "3.57.0",
+    "@payloadcms/plugin-redirects": "3.57.0",
+    "@payloadcms/plugin-search": "3.57.0",
+    "@payloadcms/plugin-seo": "3.57.0",
+    "@payloadcms/richtext-lexical": "3.57.0",
+    "@payloadcms/ui": "3.57.0",
+    "@webcules/ui": "workspace:*",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.544.0",
+    "next": "^15.5.4",
+    "payload": "3.57.0",
+    "prism-react-renderer": "^2.3.1",
+    "react": "^19.1.1",
+    "react-hook-form": "7.45.4",
+    "sharp": "0.34.2"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.15",
+    "@webcules/eslint-config": "workspace:^",
+    "@webcules/typescript-config": "workspace:*",
+    "dotenv": "16.4.7"
+  },
+  "watch": {
+    "generate:types": {
+      "patterns": [
+        "src"
+      ],
+      "extensions": "ts,tsx",
+      "quiet": false
+    }
+  }
+}
