@@ -1,30 +1,37 @@
 "use client";
-import React, { JSX, useState } from "react";
+import { useState, ReactNode } from "react";
 import {
   motion,
   AnimatePresence,
   useScroll,
   useMotionValueEvent,
-} from "motion/react";
+} from "framer-motion";
 import { cn } from "@webcules/ui/lib/utils";
+import { IconMenu, IconX } from "@tabler/icons-react";
 
 export const FloatingNav = ({
   navItems,
   className,
+  customButton,
+  mobileCustomButton,
+  fontClassName,
 }: {
   navItems: {
     name: string;
     link: string;
-    icon?: JSX.Element;
+    icon?: ReactNode;
   }[];
   className?: string;
+  fontClassName?: string;
+  customButton?: ReactNode;
+  mobileCustomButton?: ReactNode;
 }) => {
   const { scrollYProgress } = useScroll();
 
   const [visible, setVisible] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useMotionValueEvent(scrollYProgress, "change", (current) => {
-    // Check if current is not undefined and is a number
     if (typeof current === "number") {
       let direction = current! - scrollYProgress.getPrevious()!;
 
@@ -55,11 +62,52 @@ export const FloatingNav = ({
           duration: 0.2,
         }}
         className={cn(
-          "flex max-w-fit  fixed top-10 inset-x-0 mx-auto border border-transparent dark:border-white/[0.2] rounded-full dark:bg-black bg-white shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.08)] z-[5000] pr-2 pl-8 py-2  items-center justify-center space-x-4",
+          `flex max-w-fit fixed top-5 inset-x-0 mx-auto border border-transparent dark:border-white/[0.2] dark:bg-black bg-white shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.08)] z-[5000] pr-2 pl-8 py-1 items-center justify-center space-x-4 ${menuOpen ? "rounded-tr-3xl rounded-tl-3xl" : "rounded-full"} ${fontClassName}`,
           className
         )}
       >
-        {navItems.map((navItem: any, idx: number) => (
+        <div className="sm:hidden">
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="text-neutral-600 dark:text-neutral-50"
+          >
+            {menuOpen ? (
+              <IconX className="h-6 w-6" />
+            ) : (
+              <IconMenu className="h-6 w-6" />
+            )}
+          </button>
+        </div>
+        {menuOpen && (
+          <motion.div
+            initial={{
+              y: -50,
+            }}
+            animate={{
+              y: 0,
+            }}
+            transition={{
+              duration: 0.2,
+            }}
+            className="sm:hidden absolute rounded-bl-3xl rounded-br-3xl top-12 -left-4 right-0 bg-white dark:bg-black p-4"
+          >
+            {navItems.map((navItem, idx) => (
+              <a
+                key={`mobile-link=${idx}`}
+                href={navItem.link}
+                className="block py-2 px-4 text-neutral-600 dark:text-neutral-50 dark:hover:text-neutral-300 hover:text-black"
+              >
+                <span>{navItem.name}</span>
+              </a>
+            ))}
+            {mobileCustomButton && (
+              <div className="flex flex-grow justify-center py-2">
+                {mobileCustomButton}
+              </div>
+            )}
+          </motion.div>
+        )}
+        {navItems.map((navItem, idx) => (
           <a
             key={`link=${idx}`}
             href={navItem.link}
@@ -71,10 +119,7 @@ export const FloatingNav = ({
             <span className="hidden sm:block text-sm">{navItem.name}</span>
           </a>
         ))}
-        <button className="border text-sm font-medium relative border-neutral-200 dark:border-white/[0.2] text-black dark:text-white px-4 py-2 rounded-full">
-          <span>Login</span>
-          <span className="absolute inset-x-0 w-1/2 mx-auto -bottom-px bg-gradient-to-r from-transparent via-blue-500 to-transparent  h-px" />
-        </button>
+        {customButton}
       </motion.div>
     </AnimatePresence>
   );
