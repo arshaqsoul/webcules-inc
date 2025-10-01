@@ -10,7 +10,6 @@ import { WebculesFloatingNav } from "@/components/shared/webcules-floating-navba
 import { WebculesNav } from "@/components/shared/webcules-nav";
 import { Footer } from "@/components/shared/footer";
 import { Providers } from "@webcules/payload/providers/index";
-import { InitTheme } from "@webcules/payload/providers/Theme/InitTheme/index";
 import { mergeOpenGraph } from "@webcules/payload/utilities/mergeOpenGraph";
 import { draftMode } from "next/headers";
 
@@ -31,7 +30,6 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        {/* <InitTheme /> */}
         <link href="/favicon.ico" rel="icon" sizes="32x32" />
         <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
       </head>

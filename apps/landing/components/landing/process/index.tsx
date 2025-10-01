@@ -15,7 +15,7 @@ export default function Process() {
   useEffect(() => {
     const anims = document.querySelectorAll(".anim");
     const tasks = document.querySelectorAll(".task");
-    anims.forEach((slin, index) => {
+    anims.forEach((slin) => {
       const slinElement = slin as HTMLElement;
       gsap.fromTo(
         slinElement,

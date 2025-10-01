@@ -29,12 +29,12 @@
     "sharp": "0.34.2"
   },
   "devDependencies": {
-    "@types/node": "^20.19.9",
+    "@types/node": "22.5.4",
     "@types/react": "19.1.8",
     "@types/react-dom": "19.1.6",
     "@webcules/eslint-config": "workspace:^",
     "@webcules/typescript-config": "workspace:*",
-    "typescript": "^5.9.2"
+    "typescript": "5.8.3"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

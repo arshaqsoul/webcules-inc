@@ -22,5 +22,11 @@
       "persistent": true
     }
   },
-  "globalEnv": ["PAYLOAD_SECRET", "DATABASE_URI", "NEXT_PUBLIC_PAYLOAD_URL"]
+  "globalEnv": [
+    "PAYLOAD_SECRET",
+    "DATABASE_URI",
+    "NEXT_PUBLIC_PAYLOAD_URL",
+    "PREVIEW_SECRET",
+    "VERCEL_PROJECT_PRODUCTION_URL"
+  ]
 }

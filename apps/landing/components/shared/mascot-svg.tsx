@@ -30,7 +30,6 @@ const mascotPathVariants = {
 };
 export const MascotSVG = ({
   size = "small",
-  className,
 }: {
   size?: "small" | "medium" | "large";
   className?: string;

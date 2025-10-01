@@ -12,7 +12,7 @@ gsap.registerPlugin(ScrollTrigger);
 export default function Work() {
   useEffect(() => {
     const anims = document.querySelectorAll(".anim");
-    anims.forEach((slin, index) => {
+    anims.forEach((slin) => {
       const slinElement = slin as HTMLElement;
       gsap.fromTo(
         slinElement,

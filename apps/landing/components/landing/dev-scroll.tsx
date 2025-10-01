@@ -1,13 +1,12 @@
 "use client";
 import Image from "next/image";
-import { Righteous, Inter } from "next/font/google";
+import { Righteous } from "next/font/google";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLayoutEffect } from "react";
 import React from "react";
 
 const righteous = Righteous({ weight: ["400"], subsets: ["latin"] });
-const inter = Inter({ subsets: ["latin"] });
 gsap.registerPlugin(ScrollTrigger);
 
 export default function DevScroll() {
