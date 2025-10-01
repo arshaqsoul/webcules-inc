@@ -24,12 +24,16 @@ export const BentoGrid = ({
 };
 gsap.registerPlugin(ScrollTrigger);
 export const BentoGridItem = ({
+  fontClassName,
+  descriptionClassName,
   className,
   title,
   description,
   header,
   icon,
 }: {
+  fontClassName?: string;
+  descriptionClassName?: string;
   className?: string;
   title?: string | React.ReactNode;
   description?: string | React.ReactNode;
@@ -72,11 +76,13 @@ export const BentoGridItem = ({
     >
       {header}
       <div
-        className={`group-hover/bento:translate-x-2 transition duration-200 p-2 bg-conic-[at_top_right] from-transparent via-indigo-100 to-white text-transparent bg-clip-text`}
+        className={`group-hover/bento:translate-x-2 transition duration-200 p-2 bg-conic-[at_top_right] from-transparent via-indigo-100 to-white text-transparent bg-clip-text + ${fontClassName}`}
       >
         {icon}
         <div className="my-2 text-[20px] sm:text-2xl">{title}</div>
-        <div className={`text-sm text-gray-400`}>{description}</div>
+        <div className={`text-sm text-gray-400 + ${descriptionClassName}`}>
+          {description}
+        </div>
       </div>
     </div>
   );

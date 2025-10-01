@@ -5,6 +5,10 @@ import {
 } from "@webcules/ui/components/ui/bento-grid";
 import { Book, AppWindow, Bot, Forklift, Camera } from "lucide-react";
 import Image from "next/image";
+import { Righteous, Inter } from "next/font/google";
+
+const righteous = Righteous({ weight: ["400"], subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"] });
 
 export function OurWorkBento() {
   return (
@@ -17,6 +21,8 @@ export function OurWorkBento() {
           header={item.header}
           icon={item.icon}
           className={i === 3 || i === 6 ? "md:col-span-2" : ""}
+          fontClassName={righteous.className}
+          descriptionClassName={inter.className}
         />
       ))}
     </BentoGrid>
