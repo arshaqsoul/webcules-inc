@@ -57,7 +57,7 @@ export default function Work() {
             </span>
           </div>
           <div
-            className={`anim flex flex-col mx-auto justify-end text-center bg-conic-[at_top_right] from-transparent via-indigo-100 to-white text-transparent bg-clip-text text-[20px] sm:text-[40px] sm:w-3/5 leading-tight my-4 ${righteous.className}`}
+            className={`anim flex flex-col mx-auto justify-end text-center bg-radial from-indigo-100 to-white text-transparent bg-clip-text text-[20px] sm:text-[40px] sm:w-3/5 leading-tight my-4 ${righteous.className}`}
           >
             <div>Its time to upgrade to the latest and greatest in tech</div>
           </div>

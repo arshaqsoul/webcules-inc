@@ -53,7 +53,7 @@ export default function DashboardMock() {
           Step 2
         </span>
         <div
-          className={`anim flex flex-col justify-end text-center bg-conic-[at_top_right] from-transparent via-indigo-100 to-white text-transparent bg-clip-text text-[20px] sm:text-[40px] sm:w-3/5 leading-tight my-4 + ${righteous.className}`}
+          className={`anim flex flex-col justify-end text-center bg-radial from-indigo-100 to-white text-transparent bg-clip-text text-[20px] sm:text-[40px] sm:w-3/5 leading-tight my-4 + ${righteous.className}`}
         >
           <div>Build first iteration in weeks</div>
           <p className="text-sm">
@@ -79,7 +79,7 @@ export default function DashboardMock() {
               Step 3
             </span>
             <div
-              className={`flex flex-col justify-end text-center bg-conic-[at_top_right] from-transparent via-indigo-100 to-white text-transparent bg-clip-text text-[20px] sm:text-[40px] sm:w-3/5 leading-tight my-4 + ${righteous.className}`}
+              className={`flex flex-col justify-end text-center bg-radial from-indigo-100 to-white text-transparent bg-clip-text text-[20px] sm:text-[40px] sm:w-3/5 leading-tight my-4 + ${righteous.className}`}
             >
               <div>
                 Continuous feedback loop and iterations. Release every 2 weeks

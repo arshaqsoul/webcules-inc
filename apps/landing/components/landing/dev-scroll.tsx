@@ -30,7 +30,7 @@ export default function DevScroll() {
           About Us
         </span>
         <div
-          className={`flex flex-col justify-end text-center bg-conic-[from_180deg_at_top_right] from-white via-indigo-100 to-transparent text-transparent bg-clip-text text-[20px] sm:text-[40px] sm:w-3/5 leading-tight my-4 + ${righteous.className}`}
+          className={`flex flex-col justify-end text-center bg-radial from-indigo-100 to-white text-transparent bg-clip-text text-[20px] sm:text-[40px] sm:w-3/5 leading-tight my-4 + ${righteous.className}`}
         >
           <div>We strive to provide the best</div>
         </div>

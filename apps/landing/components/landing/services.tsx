@@ -45,7 +45,7 @@ export default function Services() {
           Our Services
         </span>
         <div
-          className={`anim flex flex-col justify-end bg-conic-[at_top_right] from-transparent via-indigo-100 to-white text-transparent bg-clip-text text-[20px] sm:text-[40px] sm:w-3/5 leading-tight my-4 + ${righteous.className}`}
+          className={`anim flex flex-col justify-end bg-radial from-indigo-100 to-white text-transparent bg-clip-text text-[20px] sm:text-[40px] sm:w-3/5 leading-tight my-4 + ${righteous.className}`}
         >
           <div>
             We create constantly evolving products that are game changing

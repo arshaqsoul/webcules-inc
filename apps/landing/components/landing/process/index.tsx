@@ -85,7 +85,7 @@ export default function Process() {
                 Our Process
               </span>
               <div
-                className={`anim flex flex-col justify-end text-center bg-conic-[at_top_right] from-transparent via-indigo-100 to-white text-transparent bg-clip-text text-[20px] sm:text-[40px] sm:w-3/5 leading-tight my-4 + ${righteous.className}`}
+                className={`anim flex flex-col justify-end text-center bg-radial from-indigo-100 to-white text-transparent bg-clip-text text-[20px] sm:text-[40px] sm:w-3/5 leading-tight my-4 + ${righteous.className}`}
               >
                 <div>Prompt us and we do the rest</div>
               </div>
@@ -97,7 +97,7 @@ export default function Process() {
                 Step 1
               </span>
               <div
-                className={`anim flex flex-col justify-end bg-conic-[at_top_right] from-transparent via-indigo-100 to-white text-transparent bg-clip-text text-[20px] sm:text-[40px] sm:w-3/5 leading-tight my-4 + ${righteous.className}`}
+                className={`anim flex flex-col justify-end bg-radial from-indigo-100 to-white text-transparent bg-clip-text text-[20px] sm:text-[40px] sm:w-3/5 leading-tight my-4 + ${righteous.className}`}
               >
                 <div>Brainstorm the Product</div>
                 <p className="text-sm">
@@ -119,7 +119,7 @@ export default function Process() {
                   <div className="h-fit w-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-cyan-400/70 via-transparent to-indigo-700/30 flex flex-col items-center justify-center overflow-hidden rounded-2xl border-[0.5px] border-gray-700">
                     <div className="w-full relative p-4">
                       <div
-                        className={`bg-conic-[at_top_right] from-transparent via-indigo-100 to-white text-transparent bg-clip-text text-[20px] sm:text-[30px] leading-tight my-4 + ${righteous.className}`}
+                        className={`bg-radial from-indigo-100 to-white text-transparent bg-clip-text text-[20px] sm:text-[30px] leading-tight my-4 + ${righteous.className}`}
                       >
                         <div>List Products</div>
                         <span className="whitespace-nowrap rounded-3xl bg-black px-1.5 py-0.5 text-sm font-normal text-gray-50 border-gray-50 border">
@@ -143,7 +143,7 @@ export default function Process() {
                   <div className="h-fit w-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-cyan-400/70 via-transparent to-indigo-700/30 flex flex-col items-center justify-center overflow-hidden rounded-2xl border-[0.5px] border-gray-700">
                     <div className="w-full relative p-4">
                       <div
-                        className={`bg-conic-[at_top_right] from-transparent via-indigo-100 to-white text-transparent bg-clip-text text-[20px] sm:text-[30px] leading-tight my-4 + ${righteous.className}`}
+                        className={`bg-radial from-indigo-100 to-white text-transparent bg-clip-text text-[20px] sm:text-[30px] leading-tight my-4 + ${righteous.className}`}
                       >
                         <div>Sales Overview</div>
                         <span className="whitespace-nowrap rounded-3xl bg-black px-1.5 py-0.5 text-sm font-normal text-gray-50 border-gray-50 border">
@@ -167,7 +167,7 @@ export default function Process() {
                   <div className="h-fit w-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-cyan-400/70 via-transparent to-indigo-700/30 flex flex-col items-center justify-center overflow-hidden rounded-2xl border-[0.5px] border-gray-700">
                     <div className="w-full relative p-4">
                       <div
-                        className={`bg-conic-[at_top_right] from-transparent via-indigo-100 to-white text-transparent bg-clip-text text-[20px] sm:text-[30px] leading-tight my-4 + ${righteous.className}`}
+                        className={`bg-radial from-indigo-100 to-white text-transparent bg-clip-text text-[20px] sm:text-[30px] leading-tight my-4 + ${righteous.className}`}
                       >
                         <div>Click Analytics</div>
                         <span className="whitespace-nowrap rounded-3xl bg-black px-1.5 py-0.5 text-sm font-normal text-gray-50 border-gray-50 border">

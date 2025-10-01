@@ -19,7 +19,7 @@ export const CardSparkles = (props: CardSparklesProps) => {
   return (
     <div
       key={id}
-      className="work bg-conic-[from_180deg_at_top_right] from-black via-black to-indigo-700/30 overflow-hidden rounded-3xl border-[0.5px] border-gray-700"
+      className="work bg-radial from-black via-black to-indigo-700/30 overflow-hidden rounded-3xl border-[0.5px] border-gray-700"
     >
       <div className="w-full h-fit relative p-4">
         {/* Gradients */}
@@ -38,7 +38,7 @@ export const CardSparkles = (props: CardSparklesProps) => {
           id={id}
         />
         <div
-          className={`row-span-1 bg-conic-[from_180deg_at_top_right] from-white via-indigo-100 to-transparent text-transparent bg-clip-text text-[20px] sm:text-[30px] leading-tight my-4 + ${righteous.className}`}
+          className={`row-span-1 bg-radial from-indigo-100 to-white text-transparent bg-clip-text text-[20px] sm:text-[30px] leading-tight my-4 + ${righteous.className}`}
         >
           <div className="w-full h-[10rem] relative">
             <Image
