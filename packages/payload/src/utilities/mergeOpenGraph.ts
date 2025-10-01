@@ -7,7 +7,7 @@ const defaultOpenGraph: Metadata["openGraph"] = {
     "Discover comprehensive digital solutions at Webcules. We specialize in custom software development, data engineering, and UI/UX design. Our expert team delivers innovative and scalable solutions tailored to your business needs. Turn your digital vision into reality with Webcules. Contact us today to elevate your business with cutting-edge technology.",
   images: [
     {
-      url: `${getServerSideURL()}/website-template-OG.webp`,
+      url: `${getServerSideURL()}/opengraph-image.png`,
     },
   ],
   siteName: "Webcules",
