@@ -23,14 +23,6 @@ const dirname = path.dirname(filename);
 
 export default buildConfig({
   admin: {
-    components: {
-      // The `BeforeLogin` component renders a message that you see while logging into your admin panel.
-      // Feel free to delete this at any time. Simply remove the line below.
-      beforeLogin: ["@webcules/payload/components/BeforeLogin"],
-      // The `BeforeDashboard` component renders the 'welcome' block that you see after logging into your admin panel.
-      // Feel free to delete this at any time. Simply remove the line below.
-      beforeDashboard: ["@webcules/payload/components/BeforeDashboard"],
-    },
     importMap: {
       baseDir: dirname,
     },
@@ -58,6 +50,9 @@ export default buildConfig({
       ],
     },
   },
+  folders: {
+    slug: "folders",
+  },
   // This config helps us configure global or default features that the other editors can inherit
   editor: defaultLexical,
   db: postgresAdapter({
@@ -70,10 +65,7 @@ export default buildConfig({
   collections: [Pages, Posts, Media, Categories, Users],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
-  plugins: [
-    ...plugins,
-    // storage-adapter-placeholder
-  ],
+  plugins: [...plugins],
   secret: process.env.PAYLOAD_SECRET || "secret",
   sharp,
   typescript: {

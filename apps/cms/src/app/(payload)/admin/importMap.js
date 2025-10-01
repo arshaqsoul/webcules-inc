@@ -17,12 +17,13 @@ import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 }
 import { SlugComponent as SlugComponent_7ee9895833601a1107935806c6a344e9 } from '@webcules/payload/fields/slug/SlugComponent'
 import { HorizontalRuleFeatureClient as HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { BlocksFeatureClient as BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { FolderTableCell as FolderTableCell_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
+import { FolderField as FolderField_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
 import { LinkToDoc as LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { ReindexButton as ReindexButton_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
+import { FolderTypeField as FolderTypeField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
 import { RowLabel as RowLabel_a0014f3eee07a99cbee31bbb155209e3 } from '@webcules/payload/Header/RowLabel'
 import { RowLabel as RowLabel_220c223260b52b45647e9f763294268b } from '@webcules/payload/Footer/RowLabel'
-import { default as default_7a2e67ae5aaabf6de7dcc37eda1c5644 } from '@webcules/payload/components/BeforeDashboard'
-import { default as default_8575a524819b744833b4550202e4a02b } from '@webcules/payload/components/BeforeLogin'
 
 export const importMap = {
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
@@ -44,10 +45,11 @@ export const importMap = {
   "@webcules/payload/fields/slug/SlugComponent#SlugComponent": SlugComponent_7ee9895833601a1107935806c6a344e9,
   "@payloadcms/richtext-lexical/client#HorizontalRuleFeatureClient": HorizontalRuleFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#BlocksFeatureClient": BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "@payloadcms/ui/rsc#FolderTableCell": FolderTableCell_ab83ff7e88da8d3530831f296ec4756a,
+  "@payloadcms/ui/rsc#FolderField": FolderField_ab83ff7e88da8d3530831f296ec4756a,
   "@payloadcms/plugin-search/client#LinkToDoc": LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634,
   "@payloadcms/plugin-search/client#ReindexButton": ReindexButton_aead06e4cbf6b2620c5c51c9ab283634,
+  "@payloadcms/ui#FolderTypeField": FolderTypeField_3817bf644402e67bfe6577f60ef982de,
   "@webcules/payload/Header/RowLabel#RowLabel": RowLabel_a0014f3eee07a99cbee31bbb155209e3,
-  "@webcules/payload/Footer/RowLabel#RowLabel": RowLabel_220c223260b52b45647e9f763294268b,
-  "@webcules/payload/components/BeforeDashboard#default": default_7a2e67ae5aaabf6de7dcc37eda1c5644,
-  "@webcules/payload/components/BeforeLogin#default": default_8575a524819b744833b4550202e4a02b
+  "@webcules/payload/Footer/RowLabel#RowLabel": RowLabel_220c223260b52b45647e9f763294268b
 }

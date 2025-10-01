@@ -10,12 +10,15 @@ import path from "path";
 import { anyone } from "@webcules/payload/access/anyone";
 import { authenticated } from "@webcules/payload/access/authenticated";
 import { fileURLToPath } from "url";
+import { generateBlurhash } from "../hooks/generateBlurHash";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 
 export const Media: CollectionConfig = {
   slug: "media",
+  admin: {},
+  folders: true,
   access: {
     create: authenticated,
     delete: authenticated,
@@ -40,6 +43,15 @@ export const Media: CollectionConfig = {
           ];
         },
       }),
+    },
+    {
+      name: "blurhash",
+      type: "text",
+      admin: {
+        readOnly: true,
+        disableListColumn: true,
+        disableListFilter: true,
+      },
     },
   ],
   upload: {
@@ -80,5 +92,8 @@ export const Media: CollectionConfig = {
         crop: "center",
       },
     ],
+  },
+  hooks: {
+    beforeValidate: [generateBlurhash],
   },
 };
