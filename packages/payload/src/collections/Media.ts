@@ -10,7 +10,7 @@ import path from "path";
 import { anyone } from "@webcules/payload/access/anyone";
 import { authenticated } from "@webcules/payload/access/authenticated";
 import { fileURLToPath } from "url";
-import { generateBlurhash } from "../hooks/generateBlurHash";
+import { generateBlurhash } from "@webcules/payload/hooks/generateBlurhash";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
