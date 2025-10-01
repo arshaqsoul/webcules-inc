@@ -4,7 +4,9 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@webcules/ui/*": ["../../packages/ui/src/*"]
+      "@webcules/ui/*": ["../../packages/ui/src/*"],
+      "@webcules/payload/*": ["../../packages/payload/src/*"],
+      "react": ["./node_modules/@types/react"]
     },
     "plugins": [
       {

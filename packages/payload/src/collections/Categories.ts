@@ -2,7 +2,7 @@ import type { CollectionConfig } from "payload";
 
 import { anyone } from "@webcules/payload/access/anyone";
 import { authenticated } from "@webcules/payload/access/authenticated";
-import { slugField } from "@webcules/payload/fields/slug/index.js";
+import { slugField } from "@webcules/payload/fields/slug/index";
 
 export const Categories: CollectionConfig = {
   slug: "categories",

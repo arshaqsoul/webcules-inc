@@ -1,28 +1,63 @@
 import type { Metadata } from "next";
+
+import { cn } from "@webcules/ui/lib/utils";
+import { GeistMono } from "geist/font/mono";
+import { GeistSans } from "geist/font/sans";
+import React from "react";
+
+import { AdminBar } from "@webcules/payload/components/AdminBar/index";
 import { WebculesFloatingNav } from "@/components/shared/webcules-floating-navbar";
 import { WebculesNav } from "@/components/shared/webcules-nav";
 import { Footer } from "@/components/shared/footer";
+import { Providers } from "@webcules/payload/providers/index";
+import { InitTheme } from "@webcules/payload/providers/Theme/InitTheme/index";
+import { mergeOpenGraph } from "@webcules/payload/utilities/mergeOpenGraph";
+import { draftMode } from "next/headers";
 
-export const metadata: Metadata = {
-  title: {
-    default: "Webcules | Custom Software Dev, Design & Data Engineering",
-    template: "%s - Webcules",
-  },
-  description:
-    "Discover comprehensive digital solutions at Webcules. We specialize in custom software development, data engineering, and UI/UX design. Our expert team delivers innovative and scalable solutions tailored to your business needs. Turn your digital vision into reality with Webcules. Contact us today to elevate your business with cutting-edge technology.",
-};
+import "@webcules/ui/globals.css";
+import { getServerSideURL } from "@webcules/payload/utilities/getURL";
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
+  const { isEnabled } = await draftMode();
+
   return (
-    <>
-      <WebculesFloatingNav />
-      <WebculesNav />
-      {children}
-      <Footer />
-    </>
+    <html
+      className={cn(GeistSans.variable, GeistMono.variable)}
+      lang="en"
+      suppressHydrationWarning
+    >
+      <head>
+        {/* <InitTheme /> */}
+        <link href="/favicon.ico" rel="icon" sizes="32x32" />
+        <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
+      </head>
+      <body>
+        <Providers>
+          <AdminBar
+            adminBarProps={{
+              preview: isEnabled,
+            }}
+          />
+
+          <WebculesFloatingNav />
+          <WebculesNav />
+          {children}
+          <Footer />
+        </Providers>
+      </body>
+    </html>
   );
 }
+
+export const metadata: Metadata = {
+  metadataBase: new URL(getServerSideURL()),
+  openGraph: mergeOpenGraph(),
+  twitter: {
+    card: "summary_large_image",
+    creator: "@arshaq",
+  },
+};
