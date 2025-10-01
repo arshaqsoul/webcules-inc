@@ -1,22 +1,21 @@
 [phases.setup]
-nixPkgs = ['nodejs-20', 'pnpm_9']  # Enforce Node 20 and pnpm 9 (adjust if you need pnpm 10)
+nixPkgs = ['nodejs_20', 'nodePackages.pnpm'] 
 
 [phases.install]
-cmds = ['pnpm install --frozen-lockfile']  # Installs dependencies, respecting pnpm-lock.yaml
+cmds = ['corepack enable pnpm', 'pnpm install --frozen-lockfile']
 
 [phases.build]
 cmds = [
-  'pnpm run generate:types',  # Generate Payload types first (if needed for build)
-  'pnpm run build'  # Runs your "next build" script
+  'pnpm run generate:types',  # Generate Payload types (if required)
+  'pnpm run build'  # Your Next.js build
 ]
 
 [phases.start]
-cmd = 'pnpm run start'  # Runs "next start"
+cmd = 'pnpm run start' 
 
 [staticAssets]
-# For Next.js, Nixpacks auto-detects .next/ as the output dir, but you can force it
 sourceDirectory = '.next'
 
 [vars]
 NODE_ENV = 'production'
-NODE_OPTIONS = '--no-deprecation'  # Handles your cross-env flag directly
+NODE_OPTIONS = '--no-deprecation'
