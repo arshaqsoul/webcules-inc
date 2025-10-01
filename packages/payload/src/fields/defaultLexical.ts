@@ -9,7 +9,7 @@ import {
   type LinkFields,
 } from "@payloadcms/richtext-lexical";
 
-export const defaultLexical = lexicalEditor({
+export const defaultLexical: ReturnType<typeof lexicalEditor> = lexicalEditor({
   features: [
     ParagraphFeature(),
     UnderlineFeature(),
