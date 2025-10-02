@@ -670,5 +670,6 @@ export const home: (
       title: "Payload Website Template",
     },
     title: "Home",
+    application: "webcules",
   };
 };

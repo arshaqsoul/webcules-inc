@@ -23,6 +23,11 @@ export async function generateStaticParams() {
     select: {
       slug: true,
     },
+    where: {
+      application: {
+        equals: "webcules",
+      },
+    },
   });
 
   const params = pages.docs
@@ -95,9 +100,18 @@ const queryPageBySlug = cache(async ({ slug }: { slug: string }) => {
     pagination: false,
     overrideAccess: draft,
     where: {
-      slug: {
-        equals: slug,
-      },
+      and: [
+        {
+          slug: {
+            equals: slug,
+          },
+        },
+        {
+          application: {
+            equals: "webcules",
+          },
+        },
+      ],
     },
   });
 

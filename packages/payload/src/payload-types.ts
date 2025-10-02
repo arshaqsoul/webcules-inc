@@ -72,6 +72,8 @@ export interface Config {
     media: Media;
     categories: Category;
     users: User;
+    backgroundMedia: BackgroundMedia;
+    backgroundCollections: BackgroundCollection;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -84,7 +86,7 @@ export interface Config {
   };
   collectionsJoins: {
     folders: {
-      documentsAndFolders: 'folders' | 'media';
+      documentsAndFolders: 'folders' | 'media' | 'backgroundMedia';
     };
   };
   collectionsSelect: {
@@ -93,6 +95,8 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    backgroundMedia: BackgroundMediaSelect<false> | BackgroundMediaSelect<true>;
+    backgroundCollections: BackgroundCollectionsSelect<false> | BackgroundCollectionsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -207,6 +211,7 @@ export interface Page {
     description?: string | null;
   };
   publishedAt?: string | null;
+  application: 'webcules' | 'webcules-backgrounds';
   slug?: string | null;
   slugLock?: boolean | null;
   updatedAt: string;
@@ -254,6 +259,7 @@ export interface Post {
         name?: string | null;
       }[]
     | null;
+  application: 'webcules' | 'webcules-backgrounds';
   slug?: string | null;
   slugLock?: boolean | null;
   updatedAt: string;
@@ -372,13 +378,103 @@ export interface FolderInterface {
           relationTo?: 'media';
           value: number | Media;
         }
+      | {
+          relationTo?: 'backgroundMedia';
+          value: number | BackgroundMedia;
+        }
     )[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
-  folderType?: 'media'[] | null;
+  folderType?: ('media' | 'backgroundMedia')[] | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * Highly secure, high-resolution 4K background images. Public read access is DISABLED. Files are served via a secure custom API endpoint.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "backgroundMedia".
+ */
+export interface BackgroundMedia {
+  id: number;
+  alt?: string | null;
+  /**
+   * Mark this specific 4K file to be included in the global "Trending Images" feed.
+   */
+  isTrending?: boolean | null;
+  /**
+   * Mark this specific 4K file to be included in the global "Trending Images" feed.
+   */
+  isPremium?: boolean | null;
+  /**
+   * Price for purchasing a single image from this collection.
+   */
+  singleImagePrice: number;
+  /**
+   * Users who have purchased THIS specific collection without a subscription. Only visible to admins.
+   */
+  purchasers?: (number | User)[] | null;
+  folder?: (number | null) | FolderInterface;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    small?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users".
+ */
+export interface User {
+  id: number;
+  name?: string | null;
+  role: 'admin' | 'member';
+  /**
+   * Set this to true after a user successfully purchases a collection.
+   */
+  isPaid?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -400,31 +496,6 @@ export interface Category {
     | null;
   updatedAt: string;
   createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
- */
-export interface User {
-  id: number;
-  name?: string | null;
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -769,6 +840,47 @@ export interface Form {
   createdAt: string;
 }
 /**
+ * A container for a set of secure AI-generated background images. It links to public previews (media) and secure high-res files (backgroundMedia).
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "backgroundCollections".
+ */
+export interface BackgroundCollection {
+  id: number;
+  title: string;
+  description?: string | null;
+  /**
+   * The original prompt used to generate the collection images. Only visible to paid users via API.
+   */
+  midjourneyPrompt?: string | null;
+  collectionPrice: number;
+  /**
+   * Users who have purchased THIS specific collection without a subscription. Only visible to admins.
+   */
+  purchasers?: (number | User)[] | null;
+  /**
+   * Select all low-res previews and corresponding 4K secure files for this collection.
+   */
+  backgrounds: {
+    /**
+     * Select the file uploaded to the public "media" collection to use as the low-resolution thumbnail/preview.
+     */
+    lowResPreview: (number | Media)[];
+    /**
+     * Select the corresponding 4K high-resolution file uploaded to the secure "backgroundMedia" collection.
+     */
+    highResFile: (number | BackgroundMedia)[];
+  };
+  status?: ('draft' | 'published') | null;
+  publishedAt?: string | null;
+  isTrending?: boolean | null;
+  slug?: string | null;
+  slugLock?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
@@ -962,6 +1074,14 @@ export interface PayloadLockedDocument {
         value: number | User;
       } | null)
     | ({
+        relationTo: 'backgroundMedia';
+        value: number | BackgroundMedia;
+      } | null)
+    | ({
+        relationTo: 'backgroundCollections';
+        value: number | BackgroundCollection;
+      } | null)
+    | ({
         relationTo: 'redirects';
         value: number | Redirect;
       } | null)
@@ -1072,6 +1192,7 @@ export interface PagesSelect<T extends boolean = true> {
         description?: T;
       };
   publishedAt?: T;
+  application?: T;
   slug?: T;
   slugLock?: T;
   updatedAt?: T;
@@ -1187,6 +1308,7 @@ export interface PostsSelect<T extends boolean = true> {
         id?: T;
         name?: T;
       };
+  application?: T;
   slug?: T;
   slugLock?: T;
   updatedAt?: T;
@@ -1314,6 +1436,8 @@ export interface CategoriesSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  role?: T;
+  isPaid?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -1330,6 +1454,78 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "backgroundMedia_select".
+ */
+export interface BackgroundMediaSelect<T extends boolean = true> {
+  alt?: T;
+  isTrending?: T;
+  isPremium?: T;
+  singleImagePrice?: T;
+  purchasers?: T;
+  folder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        small?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "backgroundCollections_select".
+ */
+export interface BackgroundCollectionsSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  midjourneyPrompt?: T;
+  collectionPrice?: T;
+  purchasers?: T;
+  backgrounds?:
+    | T
+    | {
+        lowResPreview?: T;
+        highResFile?: T;
+      };
+  status?: T;
+  publishedAt?: T;
+  isTrending?: T;
+  slug?: T;
+  slugLock?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1718,6 +1914,10 @@ export interface TaskSchedulePublish {
       | ({
           relationTo: 'posts';
           value: number | Post;
+        } | null)
+      | ({
+          relationTo: 'backgroundCollections';
+          value: number | BackgroundCollection;
         } | null);
     global?: string | null;
     user?: (number | null) | User;

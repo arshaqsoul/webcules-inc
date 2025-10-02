@@ -219,6 +219,25 @@ export const Posts: CollectionConfig<"posts"> = {
         },
       ],
     },
+    {
+      name: "application",
+      type: "select",
+      required: true,
+      defaultValue: "webcules",
+      options: [
+        {
+          label: "Webcules",
+          value: "webcules",
+        },
+        {
+          label: "Webcules Backgrounds",
+          value: "webcules-backgrounds",
+        },
+      ],
+      admin: {
+        position: "sidebar",
+      },
+    },
     ...slugField(),
   ],
   hooks: {

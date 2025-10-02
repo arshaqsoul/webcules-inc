@@ -26,6 +26,11 @@ export async function generateStaticParams() {
     select: {
       slug: true,
     },
+    where: {
+      application: {
+        equals: "webcules",
+      },
+    },
   });
 
   const params = posts.docs.map(({ slug }) => {
@@ -102,9 +107,18 @@ const queryPostBySlug = cache(async ({ slug }: { slug: string }) => {
     overrideAccess: draft,
     pagination: false,
     where: {
-      slug: {
-        equals: slug,
-      },
+      and: [
+        {
+          slug: {
+            equals: slug,
+          },
+        },
+        {
+          application: {
+            equals: "webcules",
+          },
+        },
+      ],
     },
   });
 

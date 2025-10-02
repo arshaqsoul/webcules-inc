@@ -120,6 +120,25 @@ export const Pages: CollectionConfig<"pages"> = {
         position: "sidebar",
       },
     },
+    {
+      name: "application",
+      type: "select",
+      required: true,
+      defaultValue: "webcules",
+      options: [
+        {
+          label: "Webcules",
+          value: "webcules",
+        },
+        {
+          label: "Webcules Backgrounds",
+          value: "webcules-backgrounds",
+        },
+      ],
+      admin: {
+        position: "sidebar",
+      },
+    },
     ...slugField(),
   ],
   hooks: {

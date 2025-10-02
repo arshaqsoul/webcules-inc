@@ -31,6 +31,11 @@ export default async function Page({ params: paramsPromise }: Args) {
     limit: 12,
     page: sanitizedPageNumber,
     overrideAccess: false,
+    where: {
+      application: {
+        equals: "webcules",
+      },
+    },
   });
 
   return (
@@ -76,6 +81,11 @@ export async function generateStaticParams() {
   const { totalDocs } = await payload.count({
     collection: "posts",
     overrideAccess: false,
+    where: {
+      application: {
+        equals: "webcules",
+      },
+    },
   });
 
   const totalPages = Math.ceil(totalDocs / 10);

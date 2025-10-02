@@ -313,5 +313,6 @@ export const post1: (
     },
     relatedPosts: [], // this is populated by the seed script
     title: "Digital Horizons: A Glimpse into Tomorrow",
+    application: "webcules",
   };
 };
