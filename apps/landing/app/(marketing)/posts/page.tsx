@@ -25,6 +25,11 @@ export default async function Page() {
       categories: true,
       meta: true,
     },
+    where: {
+      application: {
+        equals: "webcules",
+      },
+    },
   });
 
   return (

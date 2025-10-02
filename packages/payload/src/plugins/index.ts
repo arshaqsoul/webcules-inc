@@ -100,9 +100,12 @@ export const plugins: Plugin[] = [
     },
   }),
   s3Storage({
-    enabled: !process.env.NEXT_PUBLIC_SERVER_URL?.includes("localhost"),
+    /* enabled: !process.env.NEXT_PUBLIC_SERVER_URL?.includes("localhost"), */
     collections: {
       media: {
+        disableLocalStorage: true,
+      },
+      backgroundMedia: {
         disableLocalStorage: true,
       },
     },

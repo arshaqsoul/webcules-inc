@@ -52,5 +52,6 @@ export const contact: (
       },
     ],
     title: "Contact",
+    application: "webcules",
   };
 };

@@ -17,6 +17,8 @@ import { defaultLexical } from "@webcules/payload/fields/defaultLexical";
 import { getServerSideURL } from "@webcules/payload/utilities/getURL";
 import { fileURLToPath } from "url";
 import { migrations } from "./migrations";
+import { BackgroundMedia } from "@webcules/payload/collections/webcules-backgrounds/BackgroundMedia";
+import { BackgroundCollections } from "@webcules/payload/collections/webcules-backgrounds/BackgroundCollections";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -62,7 +64,15 @@ export default buildConfig({
     migrationDir: path.resolve(dirname, "migrations"),
     prodMigrations: migrations,
   }),
-  collections: [Pages, Posts, Media, Categories, Users],
+  collections: [
+    Pages,
+    Posts,
+    Media,
+    Categories,
+    Users,
+    BackgroundMedia,
+    BackgroundCollections,
+  ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
   plugins: [...plugins],
