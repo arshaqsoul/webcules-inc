@@ -41,10 +41,12 @@ export const Footer = () => {
                   }}
                 />
               </div>
-              <p className="text-white text-xl">Webcules</p>
+              <p className="text-white text-xl">
+                <a href="https://webcules.com">Webcules</a>
+              </p>
             </div>
             <div>
-              <p>© 2024 Webcules Inc.</p>
+              <p>© 2025 Webcules Inc.</p>
               <p>All rights reserved.</p>
             </div>
             <p className="underline">

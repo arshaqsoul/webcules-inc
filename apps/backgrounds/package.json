@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
     "@mdx-js/loader": "^3.1.1",
     "@next/mdx": "^15.5.4",
     "@payloadcms/next": "3.57.0",
@@ -25,8 +26,10 @@
     "payload": "3.57.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-hook-form": "7.45.4",
     "react-lottie-player": "^2.1.0",
-    "sharp": "0.34.2"
+    "sharp": "0.34.2",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/node": "22.5.4",
