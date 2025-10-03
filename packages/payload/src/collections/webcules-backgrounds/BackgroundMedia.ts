@@ -2,6 +2,7 @@ import type { CollectionConfig } from "payload";
 import { authenticated } from "@webcules/payload/access/authenticated";
 import { authenticatedAndPaid } from "@webcules/payload/access/authenticatedAndPaid";
 import { generateBlurhash } from "@webcules/payload/hooks/generateBlurhash";
+import { anyone } from "@webcules/payload/access/anyone";
 
 export const BackgroundMedia: CollectionConfig = {
   slug: "backgroundMedia",
@@ -13,7 +14,7 @@ export const BackgroundMedia: CollectionConfig = {
       "Highly secure, high-resolution 4K background images. Public read access is DISABLED. Files are served via a secure custom API endpoint.",
   },
   access: {
-    read: authenticatedAndPaid,
+    read: anyone,
     create: authenticated,
     update: authenticated,
     delete: authenticated,

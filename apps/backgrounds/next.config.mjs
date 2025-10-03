@@ -25,7 +25,13 @@ const nextConfig = {
         protocol: "http",
         hostname: "localhost",
         port: "3001",
-        pathname: "/api/media/**",
+        pathname: "/api/**",
+      },
+      {
+        protocol: "https",
+        hostname: "admin.webcules.com",
+        port: "",
+        pathname: "/api/**",
       },
       // For production
       ...(process.env.VERCEL_PROJECT_PRODUCTION_URL

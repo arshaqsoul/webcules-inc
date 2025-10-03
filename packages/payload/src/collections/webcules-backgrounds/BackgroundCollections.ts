@@ -1,32 +1,8 @@
-import type { CollectionAfterChangeHook, CollectionConfig } from "payload";
+import type { CollectionConfig } from "payload";
 import { authenticated } from "@webcules/payload/access/authenticated";
 import { authenticatedOrPublished } from "@webcules/payload/access/authenticatedOrPublished";
 import { slugField } from "@webcules/payload/fields/slug";
 import { populatePublishedAt } from "@webcules/payload/hooks/populatePublishedAt";
-import { revalidatePath } from "next/cache";
-
-const revalidateCollection: CollectionAfterChangeHook = async ({
-  doc,
-  req,
-}) => {
-  // Check if the change resulted in a published document
-  if (doc._status === "published") {
-    // 1. Revalidate the main collections index page ("/")
-    revalidatePath("/");
-
-    // 2. Revalidate the specific collection page (e.g., if you have /collection/:id)
-    // This assumes your collection page uses the ID or Slug.
-    if (doc.id) {
-      revalidatePath(`/collection/${doc.id}`); // Adjust path as needed
-    }
-
-    req.payload.logger.info(
-      `Revalidated Next.js paths: /, /collection/${doc.id}`
-    );
-  }
-
-  return doc;
-};
 
 export const BackgroundCollections: CollectionConfig = {
   slug: "backgroundCollections",
@@ -167,7 +143,6 @@ export const BackgroundCollections: CollectionConfig = {
 
   hooks: {
     beforeChange: [populatePublishedAt],
-    afterChange: [revalidateCollection],
   },
 
   versions: {
