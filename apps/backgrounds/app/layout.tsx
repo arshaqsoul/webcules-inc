@@ -49,12 +49,17 @@ export default async function RootLayout({
 }
 
 export const metadata: Metadata = {
-  metadataBase: new URL(getServerSideURL()),
+  metadataBase: new URL(`${process.env.NEXT_PUBLIC_APP_URL}`),
   openGraph: mergeOpenGraph({
     title:
       "Webcules Backgrounds | High-Quality Midjourney Design Backdrops for Creatives",
     description:
       "Explore Webcules Backgrounds, your source for high-quality design backdrops. Enhance your projects with a variety of stunning backgrounds, from ethereal fluid art to modern textures and beyond. Whether you're designing websites, presentations, or digital art, find the perfect backdrop to elevate your creativity. Discover the convenience of ready-to-use backgrounds and streamline your design process. Join today and access a wealth of inspiring visuals at background.webcules.com.",
+    images: [
+      {
+        url: `${process.env.NEXT_PUBLIC_APP_URL}/opengraph-image.png`,
+      },
+    ],
   }),
   twitter: {
     card: "summary_large_image",

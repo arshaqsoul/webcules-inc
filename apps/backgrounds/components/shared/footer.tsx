@@ -13,6 +13,7 @@ export const Footer = () => {
       link: "/updates",
     },
     { name: "FAQs", link: "/faq" },
+    { name: "About Us", link: "/about" },
     {
       name: "Sign In",
       link: "/signin",
