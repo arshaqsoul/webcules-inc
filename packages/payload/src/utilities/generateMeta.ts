@@ -32,7 +32,7 @@ export const generateMeta = async (args: {
   const ogImage = getImageURL(doc?.meta?.image);
 
   const title = doc?.meta?.title
-    ? doc?.meta?.title + " | Webcules Website Template"
+    ? doc?.meta?.title
     : "Webcules Website Template";
 
   return {

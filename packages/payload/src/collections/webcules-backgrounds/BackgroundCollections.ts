@@ -3,6 +3,13 @@ import { authenticated } from "@webcules/payload/access/authenticated";
 import { authenticatedOrPublished } from "@webcules/payload/access/authenticatedOrPublished";
 import { slugField } from "@webcules/payload/fields/slug";
 import { populatePublishedAt } from "@webcules/payload/hooks/populatePublishedAt";
+import {
+  MetaDescriptionField,
+  MetaImageField,
+  MetaTitleField,
+  OverviewField,
+  PreviewField,
+} from "@payloadcms/plugin-seo/fields";
 
 export const BackgroundCollections: CollectionConfig = {
   slug: "backgroundCollections",
@@ -74,43 +81,6 @@ export const BackgroundCollections: CollectionConfig = {
       },
     },
     {
-      name: "backgrounds",
-      type: "group",
-      label: "Background Images in Collection",
-      admin: {
-        description:
-          "Select all low-res previews and corresponding 4K secure files for this collection.",
-      },
-      fields: [
-        {
-          name: "lowResPreview",
-          type: "relationship",
-          relationTo: "media",
-          label: "Public Low-Res Preview (Media)",
-          required: true,
-          hasMany: true,
-          minRows: 1,
-          maxRows: 3,
-          admin: {
-            description:
-              'Select the file uploaded to the public "media" collection to use as the low-resolution thumbnail/preview.',
-          },
-        },
-        {
-          name: "highResFile",
-          type: "relationship",
-          relationTo: "backgroundMedia",
-          label: "4K Secure File (BackgroundMedia)",
-          hasMany: true,
-          required: true,
-          admin: {
-            description:
-              'Select the corresponding 4K high-resolution file uploaded to the secure "backgroundMedia" collection.',
-          },
-        },
-      ],
-    },
-    {
       name: "status",
       type: "select",
       options: [
@@ -137,6 +107,80 @@ export const BackgroundCollections: CollectionConfig = {
       admin: {
         position: "sidebar",
       },
+    },
+    {
+      type: "tabs",
+      tabs: [
+        {
+          fields: [
+            {
+              name: "backgrounds",
+              type: "group",
+              label: "Background Images in Collection",
+              admin: {
+                description:
+                  "Select all low-res previews and corresponding 4K secure files for this collection.",
+              },
+              fields: [
+                {
+                  name: "lowResPreview",
+                  type: "relationship",
+                  relationTo: "media",
+                  label: "Public Low-Res Preview (Media)",
+                  required: true,
+                  hasMany: true,
+                  minRows: 1,
+                  maxRows: 3,
+                  admin: {
+                    description:
+                      'Select the file uploaded to the public "media" collection to use as the low-resolution thumbnail/preview.',
+                  },
+                },
+                {
+                  name: "highResFile",
+                  type: "relationship",
+                  relationTo: "backgroundMedia",
+                  label: "4K Secure File (BackgroundMedia)",
+                  hasMany: true,
+                  required: true,
+                  admin: {
+                    description:
+                      'Select the corresponding 4K high-resolution file uploaded to the secure "backgroundMedia" collection.',
+                  },
+                },
+              ],
+            },
+          ],
+          label: "Background",
+        },
+        {
+          name: "meta",
+          label: "SEO",
+          fields: [
+            OverviewField({
+              titlePath: "meta.title",
+              descriptionPath: "meta.description",
+              imagePath: "meta.image",
+            }),
+            MetaTitleField({
+              hasGenerateFn: true,
+            }),
+            MetaImageField({
+              relationTo: "media",
+            }),
+
+            MetaDescriptionField({}),
+            PreviewField({
+              // if the `generateUrl` function is configured
+              hasGenerateFn: true,
+
+              // field paths to match the target field for data
+              titlePath: "meta.title",
+              descriptionPath: "meta.description",
+            }),
+          ],
+        },
+      ],
     },
     ...slugField(),
   ],

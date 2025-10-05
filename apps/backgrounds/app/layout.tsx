@@ -10,7 +10,6 @@ import { mergeOpenGraph } from "@webcules/payload/utilities/mergeOpenGraph";
 import { draftMode } from "next/headers";
 
 import "@webcules/ui/globals.css";
-import { getServerSideURL } from "@webcules/payload/utilities/getURL";
 import { CTASection } from "@/components/shared/cta-section";
 import { Righteous } from "next/font/google";
 
@@ -64,5 +63,9 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     creator: "@arshaq",
+    title:
+      "Webcules Backgrounds | Unique AI-Generated Backdrops for Creative Projects",
+    description:
+      "Transform your next design with stunning AI backgrounds. Webcules offers exclusive collections for designers, marketers, and creators. Browse, buy, and inspire with originality.",
   },
 };

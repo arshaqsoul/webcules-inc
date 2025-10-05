@@ -2,6 +2,32 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import CollectionGrid from "./collections-grid";
 import { fetchCollections } from "@/lib/actions/collection-actions";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Browse Collections | Webcules Backgrounds",
+  description:
+    "Explore curated collections of unique, high-quality AI-generated backgrounds at Webcules. Discover fluid gradients, textured art, modern visuals, and more. Find the perfect backdrop for designers, developers, marketers, and creatives—all in one place.",
+  openGraph: {
+    title: "Browse Collections | Webcules Backgrounds",
+    description:
+      "Find inspiring, AI-powered design collections at Webcules. Elevate your next project with unique backgrounds crafted for creative professionals.",
+    url: `${process.env.NEXT_PUBLIC_APP_URL}/collection`,
+    images: [
+      {
+        url: `${process.env.NEXT_PUBLIC_APP_URL}/opengraph-collection.png`,
+        alt: "Webcules Collections - Background previews",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Browse Collections | Webcules Backgrounds",
+    description:
+      "Explore all Webcules background collections—original, AI-generated design sets for creative projects.",
+    images: [`${process.env.NEXT_PUBLIC_APP_URL}/opengraph-collection.png`],
+  },
+};
 
 export default async function CollectionsPage() {
   const collections = await fetchCollections({ limit: 20 });

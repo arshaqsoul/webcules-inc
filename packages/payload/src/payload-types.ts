@@ -858,6 +858,9 @@ export interface BackgroundCollection {
    * Users who have purchased THIS specific collection without a subscription. Only visible to admins.
    */
   purchasers?: (number | User)[] | null;
+  status?: ('draft' | 'published') | null;
+  publishedAt?: string | null;
+  isTrending?: boolean | null;
   /**
    * Select all low-res previews and corresponding 4K secure files for this collection.
    */
@@ -871,9 +874,14 @@ export interface BackgroundCollection {
      */
     highResFile: (number | BackgroundMedia)[];
   };
-  status?: ('draft' | 'published') | null;
-  publishedAt?: string | null;
-  isTrending?: boolean | null;
+  meta?: {
+    title?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+    description?: string | null;
+  };
   slug?: string | null;
   slugLock?: boolean | null;
   updatedAt: string;
@@ -1512,15 +1520,22 @@ export interface BackgroundCollectionsSelect<T extends boolean = true> {
   midjourneyPrompt?: T;
   collectionPrice?: T;
   purchasers?: T;
+  status?: T;
+  publishedAt?: T;
+  isTrending?: T;
   backgrounds?:
     | T
     | {
         lowResPreview?: T;
         highResFile?: T;
       };
-  status?: T;
-  publishedAt?: T;
-  isTrending?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        image?: T;
+        description?: T;
+      };
   slug?: T;
   slugLock?: T;
   updatedAt?: T;

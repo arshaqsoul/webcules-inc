@@ -1,6 +1,5 @@
 import type { CollectionConfig } from "payload";
 import { authenticated } from "@webcules/payload/access/authenticated";
-import { authenticatedAndPaid } from "@webcules/payload/access/authenticatedAndPaid";
 import { generateBlurhash } from "@webcules/payload/hooks/generateBlurhash";
 import { anyone } from "@webcules/payload/access/anyone";
 
@@ -92,5 +91,13 @@ export const BackgroundMedia: CollectionConfig = {
   },
   hooks: {
     beforeValidate: [generateBlurhash],
+    afterRead: [
+      ({ doc, req }) => {
+        if (!req.user || !req.user.isPaid) {
+          doc.url = doc.thumbnailURL;
+        }
+        return doc;
+      },
+    ],
   },
 };

@@ -4,6 +4,19 @@ import CollectionGrid from "../collections-grid";
 import { Button } from "@webcules/ui/components/button";
 import { fetchCollectionId } from "@/lib/actions/collection-actions";
 import { BackgroundMedia } from "@webcules/payload/payload-types";
+import { Metadata } from "next";
+import { generateMeta } from "@webcules/payload/utilities/generateMeta";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id: collectionId } = await params;
+  const collection = await fetchCollectionId(collectionId);
+
+  return generateMeta({ doc: collection });
+}
 
 export default async function CollectionPage({
   params,
