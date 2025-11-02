@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import CollectionGrid from "../collections-grid";
-import { Button } from "@webcules/ui/components/button";
 import { fetchCollectionId } from "@/lib/actions/collection-actions";
 import { BackgroundMedia } from "@webcules/payload/payload-types";
 import { Metadata } from "next";
 import { generateMeta } from "@webcules/payload/utilities/generateMeta";
+import { CTAButton } from "@/components/shared/cta-button";
 
 export async function generateMetadata({
   params,
@@ -42,15 +42,11 @@ export default async function CollectionPage({
               <ArrowLeft />
               Back
             </Link>
-            <Button className="p-[3px] relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full" />
-              <div
-                className={`px-4 py-2 text-sm rounded-full relative group transition duration-200 bg-black text-white hover:text-white/50 hover:bg-transparent'
-        }`}
-              >
-                Buy whole collection for ${collection.collectionPrice ?? "0"}
-              </div>
-            </Button>
+            <CTAButton
+              type="backgroundCollection"
+              price={collection.collectionPrice}
+              item={collection}
+            />
           </div>
           <h1 className="text-2xl md:text-5xl text-white">
             Collection/{collection.title}

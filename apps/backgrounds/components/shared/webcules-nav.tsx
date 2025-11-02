@@ -32,5 +32,5 @@ export default async function WebculesNav() {
           },
         ]),
   ];
-  return <Navbar navItems={navItems} />;
+  return <Navbar navItems={navItems} authStatus={authStatus} />;
 }

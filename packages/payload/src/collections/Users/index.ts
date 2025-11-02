@@ -55,6 +55,39 @@ export const Users: CollectionConfig = {
         update: isAdminFieldLevel,
       },
     },
+    {
+      name: "stripeCustomerID",
+      label: "Stripe Customer ID",
+      type: "text",
+      access: {
+        update: isAdminFieldLevel,
+        read: isAdminFieldLevel,
+      },
+      admin: {
+        position: "sidebar",
+        readOnly: true,
+        description: "Stripe Customer ID for this user.",
+      },
+    },
+    {
+      name: "subscriptionStatus",
+      label: "Stripe Subscription Status",
+      type: "select",
+      options: [
+        { label: "Active", value: "active" },
+        { label: "Canceled", value: "canceled" },
+        { label: "None", value: "none" },
+      ],
+      defaultValue: "none",
+      access: {
+        update: isAdminFieldLevel,
+      },
+      admin: {
+        position: "sidebar",
+        readOnly: true,
+        description: "Current status of the All Access Subscription.",
+      },
+    },
   ],
   timestamps: true,
 };

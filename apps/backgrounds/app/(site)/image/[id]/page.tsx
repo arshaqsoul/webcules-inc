@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Button } from "@webcules/ui/components/button";
 import { fetchCollectionImageId } from "@/lib/actions/bg-image-actions";
 import { Media } from "@webcules/payload/components/Media";
+import { CTAButton } from "@/components/shared/cta-button";
 
 export default async function ImagePage({
   params,
@@ -93,12 +94,12 @@ export default async function ImagePage({
             </div>
             {isPremium ? (
               <div className="flex flex-col w-full sm:flex-row gap-4 text-white">
-                <Button className="rounded-full bg-white/20 w-full sm:flex-1 hover:border hover:border-black">
-                  Buy now ${displayPrice}
-                </Button>
-                <Button className="rounded-full bg-gradient-to-r w-full sm:flex-1 from-indigo-500 to-purple-500 hover:border hover:border-indigo-400">
-                  Unlock with all access
-                </Button>
+                <CTAButton
+                  type="backgroundImage"
+                  price={displayPrice}
+                  item={imageDoc}
+                />
+                <CTAButton type="subscription" />
               </div>
             ) : (
               <Button
