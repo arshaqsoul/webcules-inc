@@ -19,6 +19,7 @@ import { fileURLToPath } from "url";
 import { migrations } from "./migrations";
 import { BackgroundMedia } from "@webcules/payload/collections/webcules-backgrounds/BackgroundMedia";
 import { BackgroundCollections } from "@webcules/payload/collections/webcules-backgrounds/BackgroundCollections";
+import { Purchases } from "./collections/webcules-backgrounds/Purchases";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -72,6 +73,7 @@ export default buildConfig({
     Users,
     BackgroundMedia,
     BackgroundCollections,
+    Purchases,
   ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],

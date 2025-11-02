@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import React from "react";
 
 import { AdminBar } from "@webcules/payload/components/AdminBar/index";
-import { WebculesFloatingNav } from "@/components/shared/webcules-floating-navbar";
+import WebculesFloatingNav from "@/components/shared/webcules-floating-navbar";
 import WebculesNav from "@/components/shared/webcules-nav";
 import { Footer } from "@/components/shared/footer";
 import { Providers } from "@webcules/payload/providers/index";

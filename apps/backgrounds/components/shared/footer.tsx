@@ -60,7 +60,7 @@ export const Footer = () => {
                 +1 639 998 6044
               </a>
             </p>
-            <CTAButton />
+            <CTAButton type="subscription" className="w-fit" />
           </div>
           <div className="flex flex-col text-slate-400 gap-y-2">
             <p className="text-white font-bold text-xl">Company</p>

@@ -74,6 +74,7 @@ export interface Config {
     users: User;
     backgroundMedia: BackgroundMedia;
     backgroundCollections: BackgroundCollection;
+    purchases: Purchase;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -97,6 +98,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     backgroundMedia: BackgroundMediaSelect<false> | BackgroundMediaSelect<true>;
     backgroundCollections: BackgroundCollectionsSelect<false> | BackgroundCollectionsSelect<true>;
+    purchases: PurchasesSelect<false> | PurchasesSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -411,10 +413,6 @@ export interface BackgroundMedia {
    * Price for purchasing a single image from this collection.
    */
   singleImagePrice: number;
-  /**
-   * Users who have purchased THIS specific collection without a subscription. Only visible to admins.
-   */
-  purchasers?: (number | User)[] | null;
   folder?: (number | null) | FolderInterface;
   updatedAt: string;
   createdAt: string;
@@ -448,36 +446,6 @@ export interface BackgroundMedia {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
- */
-export interface User {
-  id: number;
-  name?: string | null;
-  role: 'admin' | 'member';
-  /**
-   * Set this to true after a user successfully purchases a collection.
-   */
-  isPaid?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "categories".
  */
 export interface Category {
@@ -496,6 +464,44 @@ export interface Category {
     | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users".
+ */
+export interface User {
+  id: number;
+  name?: string | null;
+  role: 'admin' | 'member';
+  /**
+   * Set this to true after a user successfully purchases a collection.
+   */
+  isPaid?: boolean | null;
+  /**
+   * Stripe Customer ID for this user.
+   */
+  stripeCustomerID?: string | null;
+  /**
+   * Current status of the All Access Subscription.
+   */
+  subscriptionStatus?: ('active' | 'canceled' | 'none') | null;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -854,10 +860,6 @@ export interface BackgroundCollection {
    */
   midjourneyPrompt?: string | null;
   collectionPrice: number;
-  /**
-   * Users who have purchased THIS specific collection without a subscription. Only visible to admins.
-   */
-  purchasers?: (number | User)[] | null;
   status?: ('draft' | 'published') | null;
   publishedAt?: string | null;
   isTrending?: boolean | null;
@@ -887,6 +889,33 @@ export interface BackgroundCollection {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * A record of every one-time purchase (single images or whole collections). Subscriptions are tracked on the Users collection.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "purchases".
+ */
+export interface Purchase {
+  id: number;
+  user: number | User;
+  itemType: 'media' | 'collection';
+  item?:
+    | ({
+        relationTo: 'backgroundCollections';
+        value: number | BackgroundCollection;
+      } | null)
+    | ({
+        relationTo: 'backgroundMedia';
+        value: number | BackgroundMedia;
+      } | null);
+  price: number;
+  /**
+   * The unique ID from Stripe for this transaction.
+   */
+  transactionID: string;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1088,6 +1117,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'backgroundCollections';
         value: number | BackgroundCollection;
+      } | null)
+    | ({
+        relationTo: 'purchases';
+        value: number | Purchase;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1446,6 +1479,8 @@ export interface UsersSelect<T extends boolean = true> {
   name?: T;
   role?: T;
   isPaid?: T;
+  stripeCustomerID?: T;
+  subscriptionStatus?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -1472,7 +1507,6 @@ export interface BackgroundMediaSelect<T extends boolean = true> {
   isTrending?: T;
   isPremium?: T;
   singleImagePrice?: T;
-  purchasers?: T;
   folder?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1519,7 +1553,6 @@ export interface BackgroundCollectionsSelect<T extends boolean = true> {
   description?: T;
   midjourneyPrompt?: T;
   collectionPrice?: T;
-  purchasers?: T;
   status?: T;
   publishedAt?: T;
   isTrending?: T;
@@ -1541,6 +1574,19 @@ export interface BackgroundCollectionsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "purchases_select".
+ */
+export interface PurchasesSelect<T extends boolean = true> {
+  user?: T;
+  itemType?: T;
+  item?: T;
+  price?: T;
+  transactionID?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

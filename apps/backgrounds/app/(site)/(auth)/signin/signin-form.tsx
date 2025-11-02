@@ -16,7 +16,7 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-export default function SignInForm() {
+export default function SignInForm({ returnUrl }: { returnUrl?: string }) {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | undefined>(undefined);
   const {
@@ -38,7 +38,7 @@ export default function SignInForm() {
     if (!result.success) {
       setServerError(result.message);
     } else {
-      router.push("/dashboard");
+      router.push(returnUrl || "/dashboard");
     }
   };
 

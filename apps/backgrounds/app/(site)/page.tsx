@@ -3,7 +3,7 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Style_Script } from "next/font/google";
 import { fetchCollections } from "@/lib/actions/collection-actions";
-import CollectionGrid from "./(site)/collection/collections-grid";
+import CollectionGrid from "./collection/collections-grid";
 
 const styleScript = Style_Script({ weight: "400", subsets: ["latin"] });
 

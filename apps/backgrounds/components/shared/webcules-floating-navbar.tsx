@@ -2,10 +2,13 @@ import { FloatingNav } from "@webcules/ui/components/ui/floating-navbar";
 import { CTAButton } from "./cta-button";
 import { Righteous } from "next/font/google";
 import { Newspaper, User } from "lucide-react";
+import { checkUserAuth } from "@/lib/actions/auth-actions";
 
 const righteous = Righteous({ weight: ["400"], subsets: ["latin"] });
 
-export const WebculesFloatingNav = () => {
+export default async function WebculesFloatingNav() {
+  const authStatus = await checkUserAuth();
+
   const navItems = [
     { name: "Collections", link: "/collection", icon: undefined },
     {
@@ -24,8 +27,12 @@ export const WebculesFloatingNav = () => {
   return (
     <FloatingNav
       navItems={navItems}
-      customButton={<CTAButton />}
+      customButton={
+        authStatus.user?.subscriptionStatus != "active" && (
+          <CTAButton type="subscription" className="w-fit" />
+        )
+      }
       fontClassName={righteous.className}
     />
   );
-};
+}

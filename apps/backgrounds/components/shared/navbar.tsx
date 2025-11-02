@@ -7,12 +7,14 @@ import { CTAButton } from "./cta-button";
 import Logo from "./logo";
 import { Righteous } from "next/font/google";
 import Link from "next/link";
+import { User } from "@webcules/payload/payload-types";
 
 const righteous = Righteous({ weight: ["400"], subsets: ["latin"] });
 
 export const Navbar = ({
   navItems,
   className,
+  authStatus,
 }: {
   navItems: {
     name: string;
@@ -20,6 +22,14 @@ export const Navbar = ({
     icon?: ReactNode;
   }[];
   className?: string;
+  authStatus: {
+    isAuthenticated: boolean;
+    user:
+      | (User & {
+          collection: "users";
+        })
+      | null;
+  };
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -65,7 +75,9 @@ export const Navbar = ({
           ))}
         </div>
         <div className="hidden sm:flex justify-center rounded-full absolute top-10 right-4 lg:right-48">
-          <CTAButton />
+          {authStatus.user?.subscriptionStatus != "active" && (
+            <CTAButton type="subscription" className="w-fit" />
+          )}
         </div>
         {menuOpen && (
           <motion.div
@@ -91,7 +103,9 @@ export const Navbar = ({
               </Link>
             ))}
             <div className="flex flex-grow justify-center py-2">
-              <CTAButton />
+              {authStatus.user?.subscriptionStatus != "active" && (
+                <CTAButton type="subscription" className="w-fit" />
+              )}
             </div>
           </motion.div>
         )}

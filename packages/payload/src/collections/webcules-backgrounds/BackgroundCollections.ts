@@ -64,23 +64,6 @@ export const BackgroundCollections: CollectionConfig = {
       required: true,
     },
     {
-      name: "purchasers",
-      label: "Individual Purchasers",
-      type: "relationship",
-      relationTo: "users",
-      hasMany: true,
-      access: {
-        read: ({ req }) => req.user?.role === "admin",
-        create: ({ req }) => req.user?.role === "admin",
-        update: ({ req }) => req.user?.role === "admin",
-      },
-      admin: {
-        description:
-          "Users who have purchased THIS specific collection without a subscription. Only visible to admins.",
-        readOnly: true,
-      },
-    },
-    {
       name: "status",
       type: "select",
       options: [
