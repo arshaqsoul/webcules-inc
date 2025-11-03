@@ -6,7 +6,7 @@ import {
 } from "@webcules/payload/payload-types";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {});
+const stripe = new Stripe(`${process.env.STRIPE_SECRET_KEY}`);
 
 const SUBSCRIPTION_PRICE_ID = process.env.STRIPE_SUBSCRIPTION_PRICE_ID;
 
