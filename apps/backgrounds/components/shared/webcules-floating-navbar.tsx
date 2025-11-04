@@ -28,7 +28,7 @@ export default async function WebculesFloatingNav() {
     <FloatingNav
       navItems={navItems}
       customButton={
-        authStatus.user?.subscriptionStatus != "active" && (
+        !authStatus.user?.isPaid && (
           <CTAButton type="subscription" className="w-fit" />
         )
       }

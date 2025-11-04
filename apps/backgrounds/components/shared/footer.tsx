@@ -2,10 +2,12 @@ import Image from "next/image";
 import { Righteous } from "next/font/google";
 import Link from "next/link";
 import { CTAButton } from "./cta-button";
+import { checkUserAuth } from "@/lib/actions/auth-actions";
 
 const righteous = Righteous({ weight: ["400"], subsets: ["latin"] });
 
-export const Footer = () => {
+export const Footer = async () => {
+  const authStatus = await checkUserAuth();
   const navItems = [
     { name: "Collections", link: "/collection" },
     {
@@ -60,7 +62,9 @@ export const Footer = () => {
                 +1 639 998 6044
               </a>
             </p>
-            <CTAButton type="subscription" className="w-fit" />
+            {!authStatus.user?.isPaid && (
+              <CTAButton type="subscription" className="w-fit" />
+            )}
           </div>
           <div className="flex flex-col text-slate-400 gap-y-2">
             <p className="text-white font-bold text-xl">Company</p>
