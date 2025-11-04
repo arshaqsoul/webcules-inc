@@ -7,6 +7,7 @@ import { Media } from "@webcules/payload/components/Media";
 import { CTAButton } from "@/components/shared/cta-button";
 import { DownloadButton } from "@/components/shared/download-button";
 import { checkUserAuth } from "@/lib/actions/auth-actions";
+import { BackgroundMedia } from "@webcules/payload/payload-types";
 
 export default async function ImagePage({
   params,
@@ -27,12 +28,12 @@ export default async function ImagePage({
 
     // User can download if they have active subscription or purchased this image
     canDownloadImage =
-      (userPurchases.isPaid && userPurchases.subscriptionStatus === "active") ||
+      userPurchases.isPaid ||
       userPurchases.purchases.some(
         (purchase) =>
           purchase.itemType === "media" &&
           purchase.item?.relationTo === "backgroundMedia" &&
-          purchase.item?.value === parseInt(imageId)
+          (purchase.item?.value as BackgroundMedia)?.id === parseInt(imageId)
       );
   }
 
@@ -132,7 +133,7 @@ export default async function ImagePage({
             ) : (
               isPremium && (
                 <div className="flex flex-col w-full sm:flex-row gap-4 text-white">
-                  {authStatus.user?.subscriptionStatus != "active" && (
+                  {!authStatus.user?.isPaid && (
                     <>
                       <CTAButton
                         type="backgroundImage"

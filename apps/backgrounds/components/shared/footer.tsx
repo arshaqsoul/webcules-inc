@@ -62,7 +62,7 @@ export const Footer = async () => {
                 +1 639 998 6044
               </a>
             </p>
-            {authStatus.user?.subscriptionStatus != "active" && (
+            {!authStatus.user?.isPaid && (
               <CTAButton type="subscription" className="w-fit" />
             )}
           </div>

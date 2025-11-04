@@ -10,6 +10,42 @@ const stripe = new Stripe(`${process.env.STRIPE_SECRET_KEY}`);
 
 const SUBSCRIPTION_PRICE_ID = process.env.STRIPE_SUBSCRIPTION_PRICE_ID;
 
+export async function cancelSubscription(
+  user: User
+): Promise<{ success: boolean; error: string | null }> {
+  if (!user.stripeCustomerID) {
+    return { success: false, error: "No Stripe customer ID found" };
+  }
+
+  try {
+    const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY!);
+
+    // Find active subscriptions for this customer
+    const subscriptions = await stripe.subscriptions.list({
+      customer: user.stripeCustomerID,
+      status: "active",
+      limit: 1,
+    });
+
+    if (subscriptions.data.length === 0) {
+      return { success: false, error: "No active subscription found" };
+    }
+
+    // Cancel subscription at period end so user keeps access until billing period ends
+    const subscription = subscriptions.data[0];
+    await stripe.subscriptions.update(subscription.id, {
+      cancel_at_period_end: true,
+    });
+
+    console.log(`Subscription ${subscription.id} set to cancel at period end for customer ${user.stripeCustomerID}`);
+
+    return { success: true, error: null };
+  } catch (error) {
+    console.error("Error canceling subscription:", error);
+    return { success: false, error: "Failed to cancel subscription" };
+  }
+}
+
 export async function createStripeCheckoutSession(
   type: "backgroundCollection" | "backgroundImage" | "subscription",
   item: BackgroundCollection | BackgroundMedia | undefined,

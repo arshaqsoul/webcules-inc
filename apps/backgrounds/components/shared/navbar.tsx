@@ -75,7 +75,7 @@ export const Navbar = ({
           ))}
         </div>
         <div className="hidden sm:flex justify-center rounded-full absolute top-10 right-4 lg:right-48">
-          {authStatus.user?.subscriptionStatus != "active" && (
+          {!authStatus.user?.isPaid && (
             <CTAButton type="subscription" className="w-fit" />
           )}
         </div>
@@ -103,7 +103,7 @@ export const Navbar = ({
               </Link>
             ))}
             <div className="flex flex-grow justify-center py-2">
-              {authStatus.user?.subscriptionStatus != "active" && (
+              {!authStatus.user?.isPaid && (
                 <CTAButton type="subscription" className="w-fit" />
               )}
             </div>

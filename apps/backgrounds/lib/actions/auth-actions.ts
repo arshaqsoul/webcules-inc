@@ -67,7 +67,7 @@ export async function checkUserExistsAction(email: string) {
   }
 }
 
-export async function registerUserAction(email: string, password: string) {
+export async function registerUserAction(email: string, password: string, name: string) {
   try {
     const payload = await getPayload({ config });
     const newUser = await payload.create({
@@ -75,6 +75,7 @@ export async function registerUserAction(email: string, password: string) {
       data: {
         email,
         password,
+        name,
         role: "member",
       },
     });

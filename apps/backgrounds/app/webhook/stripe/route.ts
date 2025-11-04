@@ -201,8 +201,44 @@ export async function POST(req: NextRequest) {
         break;
       }
 
+      case "customer.subscription.updated": {
+        // Handle subscription updates (including scheduled cancellations)
+        const subscription = event.data.object as Stripe.Subscription;
+
+        // Find user by Stripe customer ID
+        const users = await payload.find({
+          collection: "users",
+          where: {
+            stripeCustomerID: { equals: subscription.customer as string },
+          },
+        });
+
+        if (users.totalDocs > 0) {
+          const user = users.docs[0];
+          if (user) {
+            // If subscription is scheduled for cancellation, mark as incomplete
+            const newStatus = subscription.cancel_at_period_end
+              ? "incomplete"
+              : mapSubscriptionStatus(subscription.status);
+
+            await payload.update({
+              collection: "users",
+              id: user.id,
+              data: {
+                subscriptionStatus: newStatus,
+              },
+            });
+
+            console.log(
+              `Updated user ${user.id} subscription status to ${newStatus}, isPaid: ${subscription.cancel_at_period_end ? false : true}`
+            );
+          }
+        }
+        break;
+      }
+
       case "customer.subscription.deleted": {
-        // Handle subscription cancellations
+        // Handle subscription cancellations (when actually deleted)
         const subscription = event.data.object as Stripe.Subscription;
 
         // Find user by Stripe customer ID
@@ -221,7 +257,7 @@ export async function POST(req: NextRequest) {
               id: user.id,
               data: {
                 subscriptionStatus: "canceled",
-                isPaid: false, // Remove all-access when subscription is canceled
+                isPaid: false, // Remove all-access when subscription is finally canceled
               },
             });
 

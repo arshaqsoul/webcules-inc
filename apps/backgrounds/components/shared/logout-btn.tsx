@@ -16,7 +16,11 @@ export default function LogoutButton() {
   };
 
   return (
-    <Button className="cursor-pointer" onClick={handleLogout}>
+    <Button
+      variant={"secondary"}
+      className="cursor-pointer rounded-3xl px-4 py-2"
+      onClick={handleLogout}
+    >
       <LogOut className="mr-1 h-4 w-4" />
       <span>Log Out</span>
     </Button>

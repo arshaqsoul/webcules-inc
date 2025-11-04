@@ -3,7 +3,10 @@ import { ArrowLeft } from "lucide-react";
 import CollectionGrid from "../collections-grid";
 import { fetchCollectionId } from "@/lib/actions/collection-actions";
 import { getUserPurchases } from "@/lib/actions/purchase-actions";
-import { BackgroundMedia } from "@webcules/payload/payload-types";
+import {
+  BackgroundCollection,
+  BackgroundMedia,
+} from "@webcules/payload/payload-types";
 import { Metadata } from "next";
 import { generateMeta } from "@webcules/payload/utilities/generateMeta";
 import { CTAButton } from "@/components/shared/cta-button";
@@ -42,14 +45,16 @@ export default async function CollectionPage({
   if (authStatus.user?.id) {
     userPurchases = await getUserPurchases(authStatus.user.id.toString());
 
-    // User can download if they have active subscription or purchased this collection
+    // User can download if they have active subscription OR purchased this collection
+    // Purchased items remain accessible even after subscription ends
     canDownloadCollection =
-      (userPurchases.isPaid && userPurchases.subscriptionStatus === "active") ||
+      userPurchases.isPaid ||
       userPurchases.purchases.some(
         (purchase) =>
           purchase.itemType === "collection" &&
           purchase.item?.relationTo === "backgroundCollections" &&
-          purchase.item?.value === parseInt(collectionId)
+          (purchase.item?.value as BackgroundCollection)?.id ===
+            parseInt(collectionId)
       );
   }
   return (
@@ -72,7 +77,7 @@ export default async function CollectionPage({
                 itemId={collectionId}
               />
             ) : (
-              authStatus.user?.subscriptionStatus != "active" && (
+              !authStatus.user?.isPaid && (
                 <CTAButton
                   type="backgroundCollection"
                   price={collection.collectionPrice}
