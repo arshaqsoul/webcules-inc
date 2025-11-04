@@ -4,6 +4,7 @@ import { login, logout } from "@payloadcms/next/auth";
 import { getPayload } from "payload";
 import config from "@webcules/payload/payload-config";
 import { headers as getHeaders } from "next/headers";
+import { revalidatePath } from "next/cache";
 
 export async function loginAction(email: string, password: string) {
   try {
@@ -13,6 +14,8 @@ export async function loginAction(email: string, password: string) {
       email,
       password,
     });
+
+    revalidatePath("/");
     return { success: true, user: result.user };
   } catch (error) {
     return {

@@ -1,10 +1,12 @@
 import Link from "next/link";
-import { ArrowLeft, Download, Lock, Image as Photo } from "lucide-react";
+import { ArrowLeft, Lock, Image as Photo } from "lucide-react";
 import Image from "next/image";
-import { Button } from "@webcules/ui/components/button";
 import { fetchCollectionImageId } from "@/lib/actions/bg-image-actions";
+import { getUserPurchases } from "@/lib/actions/purchase-actions";
 import { Media } from "@webcules/payload/components/Media";
 import { CTAButton } from "@/components/shared/cta-button";
+import { DownloadButton } from "@/components/shared/download-button";
+import { checkUserAuth } from "@/lib/actions/auth-actions";
 
 export default async function ImagePage({
   params,
@@ -12,14 +14,34 @@ export default async function ImagePage({
   params: Promise<{ id: string }>;
 }) {
   const { id: imageId } = await params;
+  const authStatus = await checkUserAuth();
   const imageDoc = await fetchCollectionImageId(imageId);
   const isPremium = (imageDoc.singleImagePrice ?? 0) > 0;
+
+  // Check user's purchases and access
+  let userPurchases = null;
+  let canDownloadImage = false;
+
+  if (authStatus.user?.id) {
+    userPurchases = await getUserPurchases(authStatus.user.id.toString());
+
+    // User can download if they have active subscription or purchased this image
+    canDownloadImage =
+      (userPurchases.isPaid && userPurchases.subscriptionStatus === "active") ||
+      userPurchases.purchases.some(
+        (purchase) =>
+          purchase.itemType === "media" &&
+          purchase.item?.relationTo === "backgroundMedia" &&
+          purchase.item?.value === parseInt(imageId)
+      );
+  }
 
   const fileSizeMB = ((imageDoc.filesize ?? 0) / 1024 / 1024).toFixed(1);
   const imageResolution = `${imageDoc.width}x${imageDoc.height}`;
   const fileType = imageDoc.mimeType?.split("/")[1]?.toUpperCase() || "N/A";
   const displayPrice =
     imageDoc.singleImagePrice?.toFixed(2) || "(just kidding, its free)";
+  const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000";
   return (
     <div className="overflow-x-hidden relative flex flex-col items-center justify-between">
       <div className="lg:max-w-[85rem] h-fit lg:px-16 w-full flex flex-col px-4 py-20 mt-20">
@@ -71,12 +93,18 @@ export default async function ImagePage({
                   </div>
                   Prompt
                 </div>
-                <div className="blur-[8px] w-2/3 ">
-                  <p className="truncate">
-                    this is the midjourney prompt, that will unlock once
-                    subscribed, this was hard to get. So many tries
-                  </p>
-                </div>
+                {canDownloadImage ? (
+                  <div className="w-2/3">
+                    <p>{imageDoc.relatedCollection.midjourneyPrompt}</p>
+                  </div>
+                ) : (
+                  <div className="blur-[8px] w-2/3 ">
+                    <p className="truncate">
+                      this is the midjourney prompt, that will unlock once
+                      subscribed, this was hard to get. So many tries
+                    </p>
+                  </div>
+                )}
               </div>
               <div className="flex flex-row items justify-between w-full text-gray-400 gap-4 py-2">
                 <div className="flex flex-row gap-2">File type</div>
@@ -92,28 +120,30 @@ export default async function ImagePage({
                 </div>
               </div>
             </div>
-            {isPremium ? (
-              <div className="flex flex-col w-full sm:flex-row gap-4 text-white">
-                <CTAButton
-                  type="backgroundImage"
-                  price={displayPrice}
-                  item={imageDoc}
-                />
-                <CTAButton type="subscription" />
-              </div>
+            {canDownloadImage ? (
+              <DownloadButton
+                type="single"
+                downloadUrl={baseUrl + imageDoc.url || ""}
+                filename={imageDoc.filename || `image_${imageId}.jpg`}
+                fileSize={`${fileSizeMB} MB`}
+                userId={authStatus.user?.id?.toString() || ""}
+                itemId={imageId}
+              />
             ) : (
-              <Button
-                className="rounded-lg text-white bg-white/20 w-full hover:border hover:border-black px-4 py-8"
-                size={"lg"}
-              >
-                <div className="flex flex-row w-full items-center justify-between">
-                  <div className="text-left">
-                    <p>Download</p>
-                    <p className="text-gray-400">{fileSizeMB} MB</p>
-                  </div>
-                  <Download />
+              isPremium && (
+                <div className="flex flex-col w-full sm:flex-row gap-4 text-white">
+                  {authStatus.user?.subscriptionStatus != "active" && (
+                    <>
+                      <CTAButton
+                        type="backgroundImage"
+                        price={displayPrice}
+                        item={imageDoc}
+                      />
+                      <CTAButton type="subscription" />
+                    </>
+                  )}
                 </div>
-              </Button>
+              )
             )}
           </div>
         </div>

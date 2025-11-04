@@ -77,6 +77,7 @@ export const Users: CollectionConfig = {
         { label: "Active", value: "active" },
         { label: "Canceled", value: "canceled" },
         { label: "None", value: "none" },
+        { label: "Incomplete", value: "incomplete" },
       ],
       defaultValue: "none",
       access: {

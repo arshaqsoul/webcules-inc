@@ -22,6 +22,7 @@
     "@webcules/payload": "workspace:*",
     "@webcules/ui": "workspace:*",
     "framer-motion": "^12.23.22",
+    "jszip": "^3.10.1",
     "lucide-react": "^0.475.0",
     "next": "^15.4.5",
     "next-sitemap": "^4.2.3",
@@ -35,6 +36,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@types/jszip": "^3.4.1",
     "@types/node": "22.5.4",
     "@types/react": "19.1.8",
     "@types/react-dom": "19.1.6",

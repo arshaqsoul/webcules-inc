@@ -75,6 +75,7 @@ export interface Config {
     backgroundMedia: BackgroundMedia;
     backgroundCollections: BackgroundCollection;
     purchases: Purchase;
+    'download-history': DownloadHistory;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -99,6 +100,7 @@ export interface Config {
     backgroundMedia: BackgroundMediaSelect<false> | BackgroundMediaSelect<true>;
     backgroundCollections: BackgroundCollectionsSelect<false> | BackgroundCollectionsSelect<true>;
     purchases: PurchasesSelect<false> | PurchasesSelect<true>;
+    'download-history': DownloadHistorySelect<false> | DownloadHistorySelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -484,7 +486,7 @@ export interface User {
   /**
    * Current status of the All Access Subscription.
    */
-  subscriptionStatus?: ('active' | 'canceled' | 'none') | null;
+  subscriptionStatus?: ('active' | 'canceled' | 'none' | 'incomplete') | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -918,6 +920,28 @@ export interface Purchase {
   createdAt: string;
 }
 /**
+ * Track all content access by users. Prevents duplicate downloads and maintains user's accessed content library.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "download-history".
+ */
+export interface DownloadHistory {
+  id: number;
+  user: number | User;
+  itemType: 'media' | 'collection';
+  item:
+    | {
+        relationTo: 'backgroundCollections';
+        value: number | BackgroundCollection;
+      }
+    | {
+        relationTo: 'backgroundMedia';
+        value: number | BackgroundMedia;
+      };
+  accessMethod: 'subscription' | 'purchase';
+  downloadedAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
@@ -1121,6 +1145,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'purchases';
         value: number | Purchase;
+      } | null)
+    | ({
+        relationTo: 'download-history';
+        value: number | DownloadHistory;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1587,6 +1615,17 @@ export interface PurchasesSelect<T extends boolean = true> {
   transactionID?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "download-history_select".
+ */
+export interface DownloadHistorySelect<T extends boolean = true> {
+  user?: T;
+  itemType?: T;
+  item?: T;
+  accessMethod?: T;
+  downloadedAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
