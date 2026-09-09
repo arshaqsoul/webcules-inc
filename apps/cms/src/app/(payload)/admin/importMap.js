@@ -24,7 +24,6 @@ import { ReindexButton as ReindexButton_aead06e4cbf6b2620c5c51c9ab283634 } from 
 import { FolderTypeField as FolderTypeField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
 import { RowLabel as RowLabel_a0014f3eee07a99cbee31bbb155209e3 } from '@webcules/payload/Header/RowLabel'
 import { RowLabel as RowLabel_220c223260b52b45647e9f763294268b } from '@webcules/payload/Footer/RowLabel'
-import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
 
 export const importMap = {
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
@@ -52,6 +51,5 @@ export const importMap = {
   "@payloadcms/plugin-search/client#ReindexButton": ReindexButton_aead06e4cbf6b2620c5c51c9ab283634,
   "@payloadcms/ui#FolderTypeField": FolderTypeField_3817bf644402e67bfe6577f60ef982de,
   "@webcules/payload/Header/RowLabel#RowLabel": RowLabel_a0014f3eee07a99cbee31bbb155209e3,
-  "@webcules/payload/Footer/RowLabel#RowLabel": RowLabel_220c223260b52b45647e9f763294268b,
-  "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24
+  "@webcules/payload/Footer/RowLabel#RowLabel": RowLabel_220c223260b52b45647e9f763294268b
 }

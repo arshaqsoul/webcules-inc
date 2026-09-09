@@ -12,6 +12,8 @@ const nextConfig = {
   pageExtensions: ["ts", "tsx", "js", "jsx", "md", "mdx"],
   transpilePackages: ["@webcules/ui"],
   images: {
+    // Next.js image optimization requires sharp, which is not available on Cloudflare Workers
+    unoptimized: true,
     qualities: [50, 100],
     remotePatterns: [
       // Your Next.js app images
@@ -30,6 +32,12 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "admin.webcules.com",
+        port: "",
+        pathname: "/api/**",
+      },
+      {
+        protocol: "https",
+        hostname: "cms.webcules.com",
         port: "",
         pathname: "/api/**",
       },

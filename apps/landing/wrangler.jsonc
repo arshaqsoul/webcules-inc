@@ -1,0 +1,52 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "webcules-landing",
+  "compatibility_date": "2025-08-15",
+  "compatibility_flags": [
+    // Enable Node.js API
+    // see https://developers.cloudflare.com/workers/configuration/compatibility-flags/#nodejs-compatibility-flag
+    "nodejs_compat",
+    // Allow to fetch URLs in your app
+    // see https://developers.cloudflare.com/workers/configuration/compatibility-flags/#global-fetch-strictly-public
+    "global_fetch_strictly_public"
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "D1",
+      "database_name": "webcules-cms",
+      "database_id": "36b39eea-99a5-45b9-87d2-9f2cb1ba6a03",
+      "remote": true
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "R2",
+      "bucket_name": "background-webcules"
+    }
+  ],
+  "routes": [
+    // Zone routes (not custom domains): the apex/www already have proxied DNS
+    // records that are externally managed, and Workers routes take precedence
+    // over the origin without touching DNS.
+    {
+      "pattern": "webcules.com/*",
+      "zone_name": "webcules.com"
+    },
+    {
+      "pattern": "www.webcules.com/*",
+      "zone_name": "webcules.com"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "NEXT_PUBLIC_SERVER_URL": "https://cms.webcules.com",
+    "NEXT_PUBLIC_BASE_URL": "https://webcules.com"
+  }
+}

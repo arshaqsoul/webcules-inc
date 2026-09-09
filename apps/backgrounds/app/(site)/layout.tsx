@@ -69,3 +69,7 @@ export const metadata: Metadata = {
       "Transform your next design with stunning AI backgrounds. Webcules offers exclusive collections for designers, marketers, and creators. Browse, buy, and inspire with originality.",
   },
 };
+
+// All site content is CMS-driven; render per request on Cloudflare Workers
+// (no build-time database access, always-fresh content).
+export const dynamic = "force-dynamic";

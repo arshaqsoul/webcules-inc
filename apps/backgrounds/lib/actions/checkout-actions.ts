@@ -6,7 +6,10 @@ import {
 } from "@webcules/payload/payload-types";
 import Stripe from "stripe";
 
-const stripe = new Stripe(`${process.env.STRIPE_SECRET_KEY}`);
+// Use the fetch HTTP client - Node's http client does not work on Cloudflare Workers
+const stripe = new Stripe(`${process.env.STRIPE_SECRET_KEY}`, {
+  httpClient: Stripe.createFetchHttpClient(),
+});
 
 const SUBSCRIPTION_PRICE_ID = process.env.STRIPE_SUBSCRIPTION_PRICE_ID;
 
@@ -18,7 +21,10 @@ export async function cancelSubscription(
   }
 
   try {
-    const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY!);
+    const StripeMod = (await import("stripe")).default;
+    const stripe = new StripeMod(process.env.STRIPE_SECRET_KEY!, {
+      httpClient: StripeMod.createFetchHttpClient(),
+    });
 
     // Find active subscriptions for this customer
     const subscriptions = await stripe.subscriptions.list({
@@ -33,6 +39,9 @@ export async function cancelSubscription(
 
     // Cancel subscription at period end so user keeps access until billing period ends
     const subscription = subscriptions.data[0];
+    if (!subscription) {
+      return { success: false, error: "No active subscription found" };
+    }
     await stripe.subscriptions.update(subscription.id, {
       cancel_at_period_end: true,
     });

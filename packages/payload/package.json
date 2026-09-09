@@ -42,35 +42,35 @@
     "./payload-config": "./src/payload.config.ts"
   },
   "dependencies": {
-    "@payloadcms/admin-bar": "3.57.0",
-    "@payloadcms/db-postgres": "3.57.0",
-    "@payloadcms/live-preview-react": "3.57.0",
-    "@payloadcms/plugin-form-builder": "3.57.0",
-    "@payloadcms/plugin-nested-docs": "3.57.0",
-    "@payloadcms/plugin-redirects": "3.57.0",
-    "@payloadcms/plugin-search": "3.57.0",
-    "@payloadcms/plugin-seo": "3.57.0",
-    "@payloadcms/richtext-lexical": "3.57.0",
-    "@payloadcms/storage-s3": "3.57.0",
-    "@payloadcms/ui": "3.57.0",
+    "@payloadcms/admin-bar": "3.58.0",
+    "@payloadcms/live-preview-react": "3.58.0",
+    "@payloadcms/plugin-form-builder": "3.58.0",
+    "@payloadcms/plugin-nested-docs": "3.58.0",
+    "@payloadcms/plugin-redirects": "3.58.0",
+    "@payloadcms/plugin-search": "3.58.0",
+    "@payloadcms/plugin-seo": "3.58.0",
+    "@payloadcms/richtext-lexical": "3.58.0",
+    "@payloadcms/ui": "3.58.0",
     "@webcules/ui": "workspace:*",
     "clsx": "^2.1.1",
     "lucide-react": "^0.544.0",
-    "next": "^15.5.4",
-    "payload": "3.57.0",
-    "plaiceholder": "^3.0.0",
+    "next": "^15.5.25",
+    "payload": "3.58.0",
     "prism-react-renderer": "^2.3.1",
     "react": "^19.1.0",
     "react-dom": "19.1.0",
     "react-hook-form": "7.45.4",
-    "sharp": "0.34.2"
+    "@payloadcms/db-d1-sqlite": "3.58.0",
+    "@payloadcms/storage-r2": "3.58.0",
+    "@opennextjs/cloudflare": "^1.20.6"
   },
   "devDependencies": {
     "@types/react": "19.1.8",
     "@types/react-dom": "19.1.6",
     "@webcules/eslint-config": "workspace:^",
     "@webcules/typescript-config": "workspace:*",
-    "dotenv": "16.4.7"
+    "dotenv": "16.4.7",
+    "wrangler": "^4.125.0"
   },
   "watch": {
     "generate:types": {

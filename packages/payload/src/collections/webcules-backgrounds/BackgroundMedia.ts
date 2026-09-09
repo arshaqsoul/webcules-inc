@@ -1,6 +1,5 @@
 import type { CollectionConfig } from "payload";
 import { authenticated } from "@webcules/payload/access/authenticated";
-import { generateBlurhash } from "@webcules/payload/hooks/generateBlurhash";
 import { anyone } from "@webcules/payload/access/anyone";
 import { authenticatedAndPaid } from "@webcules/payload/access/authenticatedAndPaid";
 
@@ -59,22 +58,13 @@ export const BackgroundMedia: CollectionConfig = {
     },
   ],
   upload: {
-    disableLocalStorage: true,
-    adminThumbnail: "thumbnail",
-    focalPoint: true,
-    imageSizes: [
-      {
-        name: "thumbnail",
-        width: 300,
-      },
-      {
-        name: "small",
-        width: 600,
-      },
-    ],
+    // Image resizing/cropping requires sharp, which is unavailable on Cloudflare
+    // Workers. Files are stored in R2 (see payload.config.ts storage plugin) and
+    // served through the CMS at their original resolution.
+    crop: false,
+    focalPoint: false,
   },
   hooks: {
-    beforeValidate: [generateBlurhash],
     afterRead: [
       ({ doc, req }) => {
         if (!authenticatedAndPaid) {

@@ -52,10 +52,16 @@ export default async function RootLayout({
 }
 
 export const metadata: Metadata = {
-  metadataBase: new URL(getServerSideURL()),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_BASE_URL || getServerSideURL(),
+  ),
   openGraph: mergeOpenGraph(),
   twitter: {
     card: "summary_large_image",
     creator: "@arshaq",
   },
 };
+
+// All marketing content is CMS-driven; render per request on Cloudflare Workers
+// (no build-time database access, always-fresh content).
+export const dynamic = "force-dynamic";

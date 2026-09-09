@@ -23,10 +23,15 @@ coverage
 
 # Build Outputs
 .next/
+.open-next/
 out/
 build
 dist
 
+# Cloudflare
+.wrangler/
+.dev.vars
+workers.dev-pages
 
 # Debug
 npm-debug.log*

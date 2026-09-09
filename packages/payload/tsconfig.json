@@ -3,15 +3,28 @@
   "compilerOptions": {
     "baseUrl": ".",
     "jsx": "preserve",
-    "lib": ["dom", "dom.iterable", "ES2022"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "ES2022"
+    ],
     "paths": {
-      "@webcules/payload/*": ["./src/*"]
+      "@webcules/payload/*": [
+        "./src/*"
+      ]
     },
     "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json",
     "moduleResolution": "bundler",
     "esModuleInterop": true,
     "module": "esnext"
   },
-  "include": ["."],
-  "exclude": ["node_modules", "src/payload.types.ts", ".next"]
+  "include": [
+    "."
+  ],
+  "exclude": [
+    ".next",
+    "node_modules",
+    "src/migrations",
+    "src/payload.types.ts"
+  ]
 }

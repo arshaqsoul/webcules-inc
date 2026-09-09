@@ -3,7 +3,10 @@ import Stripe from "stripe";
 import { getPayload } from "payload";
 import config from "@webcules/payload/payload.config";
 
-const stripe = new Stripe(`${process.env.STRIPE_SECRET_KEY!}`);
+// Use the fetch HTTP client - Node's http client does not work on Cloudflare Workers
+const stripe = new Stripe(`${process.env.STRIPE_SECRET_KEY!}`, {
+  httpClient: Stripe.createFetchHttpClient(),
+});
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
@@ -33,7 +36,8 @@ export async function POST(req: NextRequest) {
     let event: Stripe.Event;
 
     try {
-      event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
+      // constructEventAsync uses Web Crypto - supported on Cloudflare Workers
+      event = await stripe.webhooks.constructEventAsync(body, sig, endpointSecret);
     } catch (err) {
       console.error("Webhook signature verification failed:", err);
       return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
