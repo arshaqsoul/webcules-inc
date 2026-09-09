@@ -1,10 +1,9 @@
 "use client";
 import Image from "next/image";
-import { useEffect, useRef } from "react";
 import { Righteous } from "next/font/google";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useLayoutEffect } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import React from "react";
 
 const righteous = Righteous({ weight: ["400"], subsets: ["latin"] });
@@ -83,8 +82,8 @@ export default function DevScroll() {
         <div className="flex flex-row gap-1 sm:gap-1 list-none h-fit">
           <div className="w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] hidden sm:block relative">
             <Image
-              src={"/imgs/grid/molecule_one.webp"}
-              alt="Abstract 3D render of a molecule structure"
+              src={"/imgs/grid/molecule_one.png"}
+              alt="molecule_one"
               fill
               style={{
                 objectPosition: "top",
@@ -94,8 +93,8 @@ export default function DevScroll() {
           </div>
           <div className="w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] relative">
             <Image
-              src={"/imgs/grid/pyramid.webp"}
-              alt="Abstract 3D pyramid render"
+              src={"/imgs/grid/travel_app.png"}
+              alt="travel_app"
               fill
               style={{
                 objectPosition: "top",
@@ -104,12 +103,119 @@ export default function DevScroll() {
             />
           </div>
           <div className="sticky-img w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] relative">
-            {/* Pinned product video */}
+            {/* <Image src={'/imgs/grid/pyramid.png'} alt="travel_app" fill style={{
+              objectPosition: "top",
+              objectFit: "contain"
+            }}/> */}
+          </div>
+          <div className="w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] hidden sm:block relative">
+            <Image
+              src={"/imgs/grid/robot.png"}
+              alt="robot"
+              fill
+              style={{
+                objectPosition: "top",
+                objectFit: "contain",
+              }}
+            />
           </div>
           <div className="w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] relative">
             <Image
-              src={"/imgs/grid/robot.webp"}
-              alt="3D robot render"
+              src={"/imgs/grid/molecule_two.png"}
+              alt="molecule_two"
+              fill
+              style={{
+                objectPosition: "top",
+                objectFit: "contain",
+              }}
+            />
+          </div>
+        </div>
+        <div className="flex flex-row gap-1 sm:gap-1 list-none h-fit">
+          <div className="w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] hidden sm:block relative">
+            <Image
+              src={"/imgs/grid/nano.png"}
+              alt="nano"
+              fill
+              style={{
+                objectPosition: "top",
+                objectFit: "contain",
+              }}
+            />
+          </div>
+          <div className="w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] relative">
+            <Image
+              src={"/imgs/grid/location_app.png"}
+              alt="location_app"
+              fill
+              style={{
+                objectPosition: "top",
+                objectFit: "contain",
+              }}
+            />
+          </div>
+          <div className="w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] relative">
+            {/* <Image src={'/imgs/grid/pyramid.png'} alt="travel_app" fill style={{
+              objectPosition: "top",
+              objectFit: "contain"
+            }}/> */}
+          </div>
+          <div className="w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] hidden sm:block relative">
+            <Image
+              src={"/imgs/grid/meditation_app.png"}
+              alt="meditation_app"
+              fill
+              style={{
+                objectPosition: "top",
+                objectFit: "contain",
+              }}
+            />
+          </div>
+          <div className="w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] relative">
+            <Image
+              src={"/imgs/grid/molecule_three.png"}
+              alt="molecule_three"
+              fill
+              style={{
+                objectPosition: "top",
+                objectFit: "contain",
+              }}
+            />
+          </div>
+        </div>
+        <div className="flex flex-row gap-1 sm:gap-1 list-none h-fit">
+          <div className="w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] hidden sm:block relative">
+            <Image
+              src={"/imgs/grid/pyramid.png"}
+              alt="pyramid"
+              fill
+              style={{
+                objectPosition: "top",
+                objectFit: "contain",
+              }}
+            />
+          </div>
+          <div className="w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] relative">
+            <Image
+              src={"/imgs/grid/food_app.png"}
+              alt="food_app"
+              fill
+              style={{
+                objectPosition: "top",
+                objectFit: "contain",
+              }}
+            />
+          </div>
+          <div className="w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] relative">
+            {/* <Image src={'/imgs/grid/pyramid.png'} alt="travel_app" fill style={{
+              objectPosition: "top",
+              objectFit: "contain"
+            }}/> */}
+          </div>
+          <div className="w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] hidden sm:block relative">
+            <Image
+              src={"/imgs/grid/money_ex_app.png"}
+              alt="money_ex_app"
               fill
               style={{
                 objectPosition: "top",
@@ -119,8 +225,8 @@ export default function DevScroll() {
           </div>
           <div className="bottom-end w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] relative">
             <Image
-              src={"/imgs/grid/molecule_two.webp"}
-              alt="Abstract 3D render of a molecule structure"
+              src={"/imgs/grid/robot_two.png"}
+              alt="robot_two"
               fill
               style={{
                 objectPosition: "top",
