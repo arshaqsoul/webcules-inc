@@ -73,8 +73,8 @@ export default function DashboardMock() {
             objectFit: "contain",
           }}
         />
-        <div className="step-three absolute z-20 h-fit sm:min-h-screen w-[80%] sm:w-full flex justify-center items-center top-[20%] sm:top-0 opacity-0">
-          <div className="w-3/5 sm:w-4/5 flex flex-col justify-center items-center overflow-hidden rounded-3xl px-4 pt-10 bg-darkest/80 backdrop-blur-sm border-[0.5px] border-white/10">
+        <div className="step-three absolute h-fit sm:min-h-screen w-[80%] sm:w-full flex justify-center items-center top-[20%] sm:top-0 opacity-0">
+          <div className="w-3/5 sm:w-4/5 flex flex-col justify-center items-center overflow-hidden rounded-3xl px-4 pt-10">
             <span className="whitespace-nowrap rounded-3xl bg-black px-2.5 py-1.5 text-sm text-gray-50 border-gray-500 border">
               Step 3
             </span>

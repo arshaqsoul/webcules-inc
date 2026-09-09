@@ -134,16 +134,14 @@ export default function PriceTable() {
   return (
     <div id="pricing" className="price w-full flex justify-center min-h-screen">
       <div className="lg:max-w-[85rem] w-full flex flex-col relative">
-        <div className="w-full h-1/2 sm:h-[120vh]">
+        <div className="w-full">
           <Image
-            src={"imgs/rocket.webp"}
+            src="/imgs/rocket.webp"
             alt="rocket release"
-            className="rocket-img"
-            fill
-            style={{
-              objectPosition: "top",
-              objectFit: "contain",
-            }}
+            width={1228}
+            height={1154}
+            className="rocket-img w-full h-auto"
+            style={{ objectPosition: "top" }}
           />
         </div>
         <div
