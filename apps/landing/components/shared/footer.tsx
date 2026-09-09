@@ -22,18 +22,9 @@ export const Footer = () => {
     { name: "Deploy", link: "/#services" },
   ];
   const navLegal = [
-    {
-      name: "Privacy Policy",
-      link: "https://backgrounds.webcules.com/privacy-policy",
-    },
-    {
-      name: "Terms and Conditions",
-      link: "https://backgrounds.webcules.com/terms",
-    },
-    {
-      name: "Refund Policy",
-      link: "https://backgrounds.webcules.com/refund-policy",
-    },
+    { name: "Privacy Policy", link: "/privacy-policy" },
+    { name: "Terms & Conditions", link: "/terms" },
+    { name: "Refund Policy", link: "/refund-policy" },
   ];
   const navUsecases = [
     { name: "E-commerce", link: "/#services" },
