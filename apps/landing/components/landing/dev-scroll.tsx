@@ -82,7 +82,7 @@ export default function DevScroll() {
         <div className="flex flex-row gap-1 sm:gap-1 list-none h-fit">
           <div className="w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] hidden sm:block relative">
             <Image
-              src={"/imgs/grid/molecule_one.png"}
+              src={"/imgs/grid/molecule_one.webp"}
               alt="molecule_one"
               fill
               style={{
@@ -93,7 +93,7 @@ export default function DevScroll() {
           </div>
           <div className="w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] relative">
             <Image
-              src={"/imgs/grid/travel_app.png"}
+              src={"/imgs/grid/travel_app.webp"}
               alt="travel_app"
               fill
               style={{
@@ -103,14 +103,14 @@ export default function DevScroll() {
             />
           </div>
           <div className="sticky-img w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] relative">
-            {/* <Image src={'/imgs/grid/pyramid.png'} alt="travel_app" fill style={{
+            {/* <Image src={'/imgs/grid/pyramid.webp'} alt="travel_app" fill style={{
               objectPosition: "top",
               objectFit: "contain"
             }}/> */}
           </div>
           <div className="w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] hidden sm:block relative">
             <Image
-              src={"/imgs/grid/robot.png"}
+              src={"/imgs/grid/robot.webp"}
               alt="robot"
               fill
               style={{
@@ -121,7 +121,7 @@ export default function DevScroll() {
           </div>
           <div className="w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] relative">
             <Image
-              src={"/imgs/grid/molecule_two.png"}
+              src={"/imgs/grid/molecule_two.webp"}
               alt="molecule_two"
               fill
               style={{
@@ -134,7 +134,7 @@ export default function DevScroll() {
         <div className="flex flex-row gap-1 sm:gap-1 list-none h-fit">
           <div className="w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] hidden sm:block relative">
             <Image
-              src={"/imgs/grid/nano.png"}
+              src={"/imgs/grid/nano.webp"}
               alt="nano"
               fill
               style={{
@@ -145,7 +145,7 @@ export default function DevScroll() {
           </div>
           <div className="w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] relative">
             <Image
-              src={"/imgs/grid/location_app.png"}
+              src={"/imgs/grid/location_app.webp"}
               alt="location_app"
               fill
               style={{
@@ -155,14 +155,14 @@ export default function DevScroll() {
             />
           </div>
           <div className="w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] relative">
-            {/* <Image src={'/imgs/grid/pyramid.png'} alt="travel_app" fill style={{
+            {/* <Image src={'/imgs/grid/pyramid.webp'} alt="travel_app" fill style={{
               objectPosition: "top",
               objectFit: "contain"
             }}/> */}
           </div>
           <div className="w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] hidden sm:block relative">
             <Image
-              src={"/imgs/grid/meditation_app.png"}
+              src={"/imgs/grid/meditation_app.webp"}
               alt="meditation_app"
               fill
               style={{
@@ -173,7 +173,7 @@ export default function DevScroll() {
           </div>
           <div className="w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] relative">
             <Image
-              src={"/imgs/grid/molecule_three.png"}
+              src={"/imgs/grid/molecule_three.webp"}
               alt="molecule_three"
               fill
               style={{
@@ -186,7 +186,7 @@ export default function DevScroll() {
         <div className="flex flex-row gap-1 sm:gap-1 list-none h-fit">
           <div className="w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] hidden sm:block relative">
             <Image
-              src={"/imgs/grid/pyramid.png"}
+              src={"/imgs/grid/pyramid.webp"}
               alt="pyramid"
               fill
               style={{
@@ -197,7 +197,7 @@ export default function DevScroll() {
           </div>
           <div className="w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] relative">
             <Image
-              src={"/imgs/grid/food_app.png"}
+              src={"/imgs/grid/food_app.webp"}
               alt="food_app"
               fill
               style={{
@@ -207,14 +207,14 @@ export default function DevScroll() {
             />
           </div>
           <div className="w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] relative">
-            {/* <Image src={'/imgs/grid/pyramid.png'} alt="travel_app" fill style={{
+            {/* <Image src={'/imgs/grid/pyramid.webp'} alt="travel_app" fill style={{
               objectPosition: "top",
               objectFit: "contain"
             }}/> */}
           </div>
           <div className="w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] hidden sm:block relative">
             <Image
-              src={"/imgs/grid/money_ex_app.png"}
+              src={"/imgs/grid/money_ex_app.webp"}
               alt="money_ex_app"
               fill
               style={{
@@ -225,7 +225,7 @@ export default function DevScroll() {
           </div>
           <div className="bottom-end w-36 lg:w-96 md:w-64 sm:w-56 h-80 sm:h-[28em] md:h-[36em] lg:h-[50em] relative">
             <Image
-              src={"/imgs/grid/robot_two.png"}
+              src={"/imgs/grid/robot_two.webp"}
               alt="robot_two"
               fill
               style={{

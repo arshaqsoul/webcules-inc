@@ -64,7 +64,7 @@ export default function DashboardMock() {
       </div>
       <div className="dash-container h-screen w-[200%] sm:w-full relative flex items-center justify-center">
         <Image
-          src={"imgs/dashboard-border.svg"}
+          src={"imgs/dashboard-border.webp"}
           alt="our process border"
           className="dash-img"
           fill

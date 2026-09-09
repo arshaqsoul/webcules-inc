@@ -12,7 +12,7 @@ const righteous = Righteous({ weight: ["400"], subsets: ["latin"] });
 export default function LandingPage() {
   return (
     <>
-      <Hero />;
+      <Hero />
       <div className="relative border-y border-white/10 bg-white/[0.04] py-10 [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
         <InfiniteMovingText
           text="Empathize User Customer Focused Inspired Design Data First"

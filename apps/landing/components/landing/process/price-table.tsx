@@ -136,7 +136,7 @@ export default function PriceTable() {
       <div className="lg:max-w-[85rem] w-full flex flex-col relative">
         <div className="w-full h-1/2 sm:h-[120vh]">
           <Image
-            src={"imgs/rocket.svg"}
+            src={"imgs/rocket.webp"}
             alt="rocket release"
             className="rocket-img"
             fill

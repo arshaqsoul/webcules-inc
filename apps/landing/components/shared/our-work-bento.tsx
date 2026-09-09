@@ -46,34 +46,34 @@ const items = [
   {
     title: "Back in the day website development",
     description: "Explore the birth of groundbreaking ideas and inventions.",
-    header: <Skeleton src={"/imgs/work/construction_site.png"} />,
+    header: <Skeleton src={"/imgs/work/construction_site.webp"} />,
     icon: <AppWindow className="h-4 w-4 text-neutral-500" />,
   },
   {
     title: "Co prompting AI app",
     description:
       "Dive into the transformative power of technology. From isolated chat threads with AI to group AI chats for research and development with colleagues",
-    header: <Skeleton src={"/imgs/work/coprompt.png"} />,
+    header: <Skeleton src={"/imgs/work/coprompt.webp"} />,
     icon: <Bot className="h-4 w-4 text-neutral-500" />,
   },
   {
     title: "Lazyfor portfolio site",
     description: "So much to show but stuck with launching the portfolio.",
-    header: <Skeleton src={"/imgs/work/portfolio_site.png"} />,
+    header: <Skeleton src={"/imgs/work/portfolio_site.webp"} />,
     icon: <Camera className="h-4 w-4 text-neutral-500" />,
   },
   {
     title: "Tuition platform",
     description:
       "An application to manage your individual tuition class schedules, students and payments",
-    header: <Skeleton src={"/imgs/work/tution_course_mgt.png"} />,
+    header: <Skeleton src={"/imgs/work/tution_course_mgt.webp"} />,
     icon: <Book className="h-4 w-4 text-neutral-500" />,
   },
   {
     title: "JesminPrints Warehouse Management System",
     description:
       "A custom built WMS for JesminPrint to handle the collection and baling of waste paper for exports",
-    header: <Skeleton src={"/imgs/work/warehouse_mgt.png"} />,
+    header: <Skeleton src={"/imgs/work/warehouse_mgt.webp"} />,
     icon: <Forklift className="h-4 w-4 text-neutral-500" />,
   },
 ];

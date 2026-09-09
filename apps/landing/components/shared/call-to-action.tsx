@@ -45,7 +45,7 @@ export const CallToAction = () => {
       <div className="w-[40%] h-2/5 absolute">
         <Image
           className="mascot"
-          src="/imgs/mascot.png"
+          src="/imgs/mascot.webp"
           fill
           alt="mascot"
           style={{

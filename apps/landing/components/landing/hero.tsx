@@ -39,7 +39,7 @@ export default function Hero() {
           }}
         />
         <Image
-          src={"/imgs/planets.png"}
+          src={"/imgs/planets.webp"}
           alt="Webcules background space galaxy"
           className="-z-10"
           fill
