@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { GeistSans } from "geist/font/sans";
 import { Righteous } from "next/font/google";
 import Link from "next/link";
 import { CTAButton } from "./cta-button";
@@ -10,7 +11,7 @@ export const Footer = () => {
     { name: "Home", link: "/" },
     { name: "Services", link: "/#services" },
     { name: "Pricing", link: "/#pricing" },
-    { name: "Blog", link: "/blog" },
+    { name: "Blog", link: "/posts" },
     { name: "Contact", link: "/contact" },
   ];
   const navServices = [
@@ -21,9 +22,18 @@ export const Footer = () => {
     { name: "Deploy", link: "/#services" },
   ];
   const navLegal = [
-    { name: "Privacy Policy", link: "/#services" },
-    { name: "Terms and Conditions", link: "/#services" },
-    { name: "Refund Policy", link: "/#services" },
+    {
+      name: "Privacy Policy",
+      link: "https://backgrounds.webcules.com/privacy-policy",
+    },
+    {
+      name: "Terms and Conditions",
+      link: "https://backgrounds.webcules.com/terms",
+    },
+    {
+      name: "Refund Policy",
+      link: "https://backgrounds.webcules.com/refund-policy",
+    },
   ];
   const navUsecases = [
     { name: "E-commerce", link: "/#services" },
@@ -38,7 +48,7 @@ export const Footer = () => {
     <div className="relative flex flex-col items-center justify-between bg-darkest -mt-16 z-[1]">
       <div className="lg:max-w-[85rem] h-fit w-full relative overflow-hidden rounded-3xl px-4 py-20 flex justify-center">
         <div
-          className={`grid grid-cols-2 sm:grid-cols-6 gap-y-8 gap-x-2 my-20 + ${righteous.className}`}
+          className={`grid grid-cols-2 sm:grid-cols-6 gap-y-8 gap-x-2 my-20 ${GeistSans.className}`}
         >
           <div className="flex flex-col text-slate-400 gap-y-2">
             <div className="flex flex-row items-center gap-x-2">
@@ -52,10 +62,10 @@ export const Footer = () => {
                   }}
                 />
               </div>
-              <p className="text-white text-xl">Webcules</p>
+              <p className={`text-white text-xl + ${righteous.className}`}>Webcules</p>
             </div>
             <div>
-              <p>© 2024 Webcules Inc.</p>
+              <p>© {new Date().getFullYear()} Webcules Inc.</p>
               <p>All rights reserved.</p>
             </div>
             <p className="underline">

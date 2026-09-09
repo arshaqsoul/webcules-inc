@@ -2,6 +2,7 @@
 @source "../../../apps/**/*.{ts,tsx}";
 @source "../../../components/**/*.{ts,tsx}";
 @source "../**/*.{ts,tsx}";
+@source "../../../../packages/payload/src/**/*.{ts,tsx}";
 
 @import "tw-animate-css";
 
@@ -148,5 +149,36 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Dark semantic tokens for permanently-dark marketing sites */
+.theme-dark {
+  --card: oklch(0.23 0.04 277);
+  --card-foreground: oklch(0.98 0 0);
+  --popover: oklch(0.23 0.04 277);
+  --muted: oklch(0.28 0.04 277);
+  --muted-foreground: oklch(0.72 0.02 277);
+  --border: oklch(0.38 0.04 277);
+  --input: oklch(0.38 0.04 277);
+}
+
+/* Rich-text highlights: keep <mark> readable on the dark theme */
+mark {
+  background: rgba(129, 140, 248, 0.35);
+  color: inherit;
+  padding: 0.1em 0.25em;
+  border-radius: 0.25em;
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

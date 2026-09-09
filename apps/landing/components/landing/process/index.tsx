@@ -186,7 +186,7 @@ export default function Process() {
           </div>
         </div>
         <div className="relative">
-          <div className="sticky min-h-screen top-0 flex justify-center items-center">
+          <div className="sticky min-h-screen top-0 z-20 flex justify-center items-center">
             <DashboardMock />
           </div>
           <div className="min-h-screen flex justify-center items-center">

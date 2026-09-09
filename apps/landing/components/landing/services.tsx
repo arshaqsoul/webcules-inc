@@ -8,29 +8,31 @@ export default function Services() {
   const services = [
     {
       id: 1,
-      title: "From simple websites to complex web products 10x faster",
-      subTitle: "Using vibrant gradients colors, 3d, dynamic typography",
-      img: "/imgs/web-skeleton.svg",
+      title: "Web products, shipped fast",
+      subTitle:
+        "Marketing sites to full SaaS platforms — designed, built and deployed in weeks, not months.",
+      img: "/imgs/web-skeleton.webp",
     },
     {
       id: 2,
-      title: "Data from source to destination all the way",
+      title: "Data engineering, end to end",
       subTitle:
-        "From cleansing to transformation and loading or vice versa, get the best out of you data",
-      img: "/imgs/datapipe.svg",
+        "Pipelines, cleansing, transformation and loading — reliable data, delivered where it needs to be.",
+      img: "/imgs/datapipe.webp",
     },
     {
       id: 3,
-      title: "UX/UI-ing sketches to design prototypes",
-      subTitle: "We are figma-ians, powered by image gen AI",
-      img: "/imgs/design-skeleton.svg",
+      title: "Design that ships",
+      subTitle:
+        "From rough sketches to Figma prototypes to production-ready interfaces.",
+      img: "/imgs/design-skeleton.webp",
     },
     {
       id: 4,
-      title: "Streamlined deployments ",
+      title: "Deployment without downtime",
       subTitle:
-        "From our devices to the world, choose from paas, cloud or self hosting",
-      img: "/imgs/web-skeleton.svg",
+        "PaaS, cloud or self-hosted — launched with CI/CD, monitoring and zero-downtime releases.",
+      img: "/imgs/web-skeleton.webp",
     },
   ];
   return (

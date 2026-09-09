@@ -68,7 +68,7 @@ export const CallToAction = () => {
       </div>
       <div className="w-[90%] h-4/5 absolute bottom-0">
         <Image
-          src="/imgs/footer/mountainrange.png"
+          src="/imgs/footer/mountainrange.webp"
           fill
           alt="mountain range"
           style={{
@@ -79,7 +79,7 @@ export const CallToAction = () => {
       </div>
       <div className="w-full h-4/5 absolute bottom-0">
         <Image
-          src="/imgs/footer/leftside.png"
+          src="/imgs/footer/leftside.webp"
           fill
           alt="left-side"
           style={{
@@ -90,7 +90,7 @@ export const CallToAction = () => {
       </div>
       <div className="w-full h-3/5 absolute bottom-0">
         <Image
-          src="/imgs/footer/leftbottomside.svg"
+          src="/imgs/footer/leftbottomside.webp"
           fill
           alt="left-bottom-side"
           style={{
@@ -101,7 +101,7 @@ export const CallToAction = () => {
       </div>
       <div className="w-4/5 h-4/5 absolute right-0 bottom-0">
         <Image
-          src="/imgs/footer/rightside.png"
+          src="/imgs/footer/rightside.webp"
           fill
           alt="right-side"
           style={{
@@ -112,7 +112,7 @@ export const CallToAction = () => {
       </div>
       <div className="w-4/5 h-3/5 absolute bottom-0">
         <Image
-          src="/imgs/footer/bottomy.svg"
+          src="/imgs/footer/bottomy.webp"
           fill
           alt="bottom-ground"
           style={{
@@ -123,7 +123,7 @@ export const CallToAction = () => {
       </div>
       <div className="w-4/5 h-3/5 absolute bottom-0 right-0">
         <Image
-          src="/imgs/footer/bottom.svg"
+          src="/imgs/footer/bottom.webp"
           fill
           alt="bottom-side"
           style={{

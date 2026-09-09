@@ -59,7 +59,11 @@ export default function Work() {
           <div
             className={`anim flex flex-col mx-auto justify-end text-center bg-radial from-indigo-100 to-white text-transparent bg-clip-text text-[20px] sm:text-[40px] sm:w-3/5 leading-tight my-4 ${righteous.className}`}
           >
-            <div>Its time to upgrade to the latest and greatest in tech</div>
+            <div>Work that speaks for itself</div>
+            <p className="mt-4 text-sm sm:text-base font-sans text-slate-400">
+              A selection of products we have designed, built and shipped for
+              our clients.
+            </p>
           </div>
           <OurWorkBento />
         </div>

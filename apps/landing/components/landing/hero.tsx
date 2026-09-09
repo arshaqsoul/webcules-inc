@@ -28,10 +28,12 @@ export default function Hero() {
     <div className="p-2 overflow-x-hidden flex items-center justify-between">
       <div className="flex items-center justify-center h-[97vh] w-full relative overflow-hidden rounded-3xl">
         <Image
-          src={"/imgs/galaxy.png"}
-          alt="Webcules background space galaxy"
+          src={"/imgs/galaxy.webp"}
+          alt="Stylized deep space background"
           className="-z-10"
           fill
+          priority
+          sizes="100vw"
           style={{
             objectFit: "cover",
           }}
@@ -59,10 +61,10 @@ export default function Hero() {
               for <br className="block sm:hidden" /> anything
             </div>
             <TypewriterEffectSmooth words={words} />
-            <div className="sm:hidden">
+            <div className="sm:hidden [filter:drop-shadow(0_0_45px_rgba(129,140,248,0.55))]">
               <MascotSVG size="medium" />
             </div>
-            <div className="hidden sm:block">
+            <div className="hidden sm:block [filter:drop-shadow(0_0_70px_rgba(129,140,248,0.5))]">
               <MascotSVG size="large" />
             </div>
             <hr className="mb-4 text-white" />
@@ -72,9 +74,11 @@ export default function Hero() {
               <div className="rounded-full bg-white text-black p-1 px-4">
                 Data first
               </div>
-              <div className="uppercase text-gray-500">Tech enthusiats</div>
-              <div className="lowercase">
-                we are the human touch to AI and anything trending
+              <div className="uppercase tracking-wider text-gray-400">
+                Tech enthusiasts
+              </div>
+              <div className="text-gray-300">
+                The human touch behind AI-powered web, design and data.
               </div>
             </div>
           </div>

@@ -148,8 +148,8 @@ export default function PriceTable() {
         </div>
         <div
           className={`mt-80 sm:mt-0 grid grid-cols-1 sm:grid-cols-4 gap-y-2 gap-x-2 sm:gap-x-4 rounded-tl-3xl rounded-tr-3xl px-4 pt-4 pb-40 mb-4 z-10 bg-darkest 
-          bg-[radial-gradient(at_100%_0%,rgb(217,70,239)0,transparent_46%),radial-gradient(at_0%_0%,rgb(99,102,241)0,transparent_46%),radial-gradient(at_50%_0%,rgb(56,189,248)0,transparent_45%)]
-        md:bg-[radial-gradient(at_90%_0%,rgb(217,70,239)0,transparent_26%),radial-gradient(at_10%_0%,rgb(99,102,241)0,transparent_26%),radial-gradient(at_50%_0%,rgb(56,189,248)0,transparent_35%)] 
+          bg-[radial-gradient(at_100%_0%,rgb(217,70,239,0.28)0,transparent_40%),radial-gradient(at_0%_0%,rgb(99,102,241,0.28)0,transparent_40%),radial-gradient(at_50%_0%,rgb(56,189,248,0.22)0,transparent_38%)]
+        md:bg-[radial-gradient(at_90%_0%,rgb(217,70,239,0.3)0,transparent_24%),radial-gradient(at_10%_0%,rgb(99,102,241,0.3)0,transparent_24%),radial-gradient(at_50%_0%,rgb(56,189,248,0.25)0,transparent_32%)] 
           + ${righteous.className}`}
         >
           <div className="h-fit sm:col-span-4 flex flex-col justify-center items-center overflow-hidden rounded-3xl px-4 py-10 z-10">
@@ -181,9 +181,9 @@ export default function PriceTable() {
           <div className="sm:hidden h-fit rounded-2xl border-[0.5px] border-gray-700 p-4 flex flex-col gap-y-2">
             <p className="text-lg sm:text-2xl text-bold text-gray-400">Atom</p>
             <div className="text-[5vw] sm:text-5xl text-white">
-              $1250{" "}
+              $1,250{" "}
               <span className="text-md sm:text-2xl text-bold text-gray-400">
-                /bi weekly
+                /2-week sprint
               </span>
             </div>
             <CTAButton pricing={true} />
@@ -194,9 +194,9 @@ export default function PriceTable() {
               Molecule
             </p>
             <div className="text-[5vw] sm:text-5xl text-white">
-              $2400{" "}
+              $2,400{" "}
               <span className="text-md sm:text-2xl text-bold text-gray-400">
-                /bi weekly
+                /2-week sprint
               </span>
             </div>
             <CTAButton pricing={true} />
@@ -236,9 +236,9 @@ export default function PriceTable() {
                         Atom
                       </p>
                       <div className="text-[5vw] sm:text-5xl text-white">
-                        $1250{" "}
+                        $1,250{" "}
                         <span className="text-md sm:text-2xl text-bold text-gray-400">
-                          /bi weekly
+                          /2-week sprint
                         </span>
                       </div>
                       <CTAButton pricing={true} />
@@ -250,9 +250,9 @@ export default function PriceTable() {
                         Molecule
                       </p>
                       <div className="text-[5vw] sm:text-5xl text-white">
-                        $2400{" "}
+                        $2,400{" "}
                         <span className="text-md sm:text-2xl text-bold text-gray-400">
-                          /bi weekly
+                          /2-week sprint
                         </span>
                       </div>
                       <CTAButton pricing={true} />
