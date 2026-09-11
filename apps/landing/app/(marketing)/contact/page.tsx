@@ -92,7 +92,32 @@ export default function ContactPage() {
           ))}
         </div>
 
-        <p className="mt-12 text-center text-sm text-slate-500">
+        <div className="mt-12">
+          <Link
+            href="https://arshaq.webcules.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mx-auto flex max-w-xl items-center gap-x-4 rounded-3xl border-[0.5px] border-gray-700 bg-black/40 p-6 text-left transition-colors hover:border-indigo-500/50"
+          >
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 text-base font-semibold text-white">
+              A
+            </div>
+            <div className="flex-1">
+              <p className="text-sm text-white">
+                Who you&apos;ll be working with — Arshaq Hisham
+              </p>
+              <p className="mt-0.5 text-xs leading-relaxed text-slate-400">
+                Product judgment with real engineering depth: platforms, search and
+                applied AI. Full profile, projects and experience →
+              </p>
+            </div>
+            <span aria-hidden className="text-sm text-slate-400">
+              →
+            </span>
+          </Link>
+        </div>
+
+        <p className="mt-8 text-center text-sm text-slate-500">
           Based in Saskatoon, Canada — working with clients worldwide.
         </p>
       </div>

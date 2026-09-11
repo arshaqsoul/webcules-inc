@@ -1,11 +1,24 @@
 "use client";
 import { cn } from "@webcules/ui/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { ArrowUpRight, ChevronDown, Menu, X } from "lucide-react";
 import { JSX, useState } from "react";
 import { CTAButton } from "./cta-button";
 import Logo from "./logo";
 import Link from "next/link";
+
+const apps = [
+  {
+    name: "Backgrounds",
+    link: "https://backgrounds.webcules.com",
+    description: "High-quality AI-crafted design backdrops for creatives.",
+  },
+  {
+    name: "tru",
+    link: "https://tru.webcules.com",
+    description: "Workflow automation on the edge — pay per run, no subscription.",
+  },
+];
 
 export const WebculesNav = () => {
   const navItems = [
@@ -68,6 +81,38 @@ const Navbar = ({
               <span className="hidden sm:block text-sm">{navItem.name}</span>
             </Link>
           ))}
+          <div className="group relative flex items-center">
+            <button
+              type="button"
+              className={cn(
+                "flex items-center gap-x-1 text-sm text-neutral-600 group-hover:text-neutral-500 dark:text-neutral-50 dark:group-hover:text-neutral-300"
+              )}
+            >
+              Apps
+              <ChevronDown className="h-3.5 w-3.5 transition-transform duration-200 group-hover:rotate-180" />
+            </button>
+            <div className="invisible absolute left-1/2 top-full z-30 w-72 -translate-x-1/2 translate-y-1 pt-3 opacity-0 transition-all duration-200 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100">
+              <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white p-2 shadow-[0px_16px_40px_-8px_rgba(0,0,0,0.25)] dark:border-white/10 dark:bg-black">
+                {apps.map((app) => (
+                  <a
+                    key={app.name}
+                    href={app.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block rounded-xl p-3 transition-colors hover:bg-neutral-100 dark:hover:bg-white/5"
+                  >
+                    <span className="flex items-center gap-x-1.5 text-sm font-medium text-neutral-800 dark:text-neutral-50">
+                      {app.name}
+                      <ArrowUpRight className="h-3.5 w-3.5 text-neutral-400" />
+                    </span>
+                    <span className="mt-0.5 block text-xs leading-relaxed text-neutral-500 dark:text-neutral-400">
+                      {app.description}
+                    </span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
         <div className="hidden sm:flex justify-center rounded-full absolute top-10 right-4 lg:right-48">
           <CTAButton pricing={false} />
@@ -93,6 +138,24 @@ const Navbar = ({
               >
                 <span>{navItem.name}</span>
               </Link>
+            ))}
+            <p className="mt-2 px-4 pt-2 text-xs uppercase tracking-wider text-neutral-400">
+              Apps
+            </p>
+            {apps.map((app, idx) => (
+              <a
+                key={`mobile-app=${idx}`}
+                href={app.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block py-2 px-4 text-neutral-300 dark:text-neutral-50 hover:text-white"
+              >
+                <span className="flex items-center gap-x-1.5 text-sm">
+                  {app.name}
+                  <ArrowUpRight className="h-3.5 w-3.5 text-neutral-500" />
+                </span>
+                <span className="block text-xs text-neutral-500">{app.description}</span>
+              </a>
             ))}
             <div className="flex flex-grow justify-center py-2">
               <CTAButton pricing={true} />
