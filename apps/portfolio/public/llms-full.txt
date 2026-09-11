@@ -17,8 +17,9 @@ Tuesday.
 - LinkedIn: https://www.linkedin.com/in/arshaqhisham/
 - GitHub: https://github.com/arshaqsoul
 - Location: Saskatoon, Saskatchewan, Canada
-- Education: MSc Advanced Software Engineering, University of Westminster (UK); BSc
-  Business Information Technology, Staffordshire University (2015)
+- Education: MSc Advanced Software Engineering, University of Westminster (UK),
+  completed 2018 — batch topper; BSc Business Information Technology, Staffordshire
+  University (2015)
 
 ## Where he fits in a workplace
 
@@ -41,6 +42,8 @@ systems); AI × Healthcare product (clinical informatics); Technical Product Own
 ## Career timeline
 
 - **2015** — BSc Business Information Technology, Staffordshire University.
+- **2018** — MSc Advanced Software Engineering, University of Westminster (UK),
+  completed 2018 — batch topper.
 - **2016–2018 — KPMG** (Trainee Business Analyst → Business Analyst → Associate
   Consultant). ERP and business process re-engineering consulting across seven sectors
   (government, utilities, banking & finance, insurance, manufacturing, retail/FMCG,

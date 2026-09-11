@@ -46,7 +46,7 @@ const PATCHES = {
   'Arshaq Hisham': [
     [
       /^- Education:.*$/m,
-      '- Education: MSc Advanced Software Engineering, University of Westminster (UK). BSc Business Information Technology, Staffordshire University, 2015.',
+      '- Education: MSc Advanced Software Engineering, University of Westminster (UK), completed 2018 — batch topper. BSc Business Information Technology, Staffordshire University, 2015.',
     ],
   ],
   'Villvay Systems': [

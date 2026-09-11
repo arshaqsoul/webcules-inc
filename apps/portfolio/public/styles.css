@@ -164,6 +164,13 @@ h3 { font-size: 1.12rem; font-weight: 650; }
 .btn-ghost { border-color: var(--border-strong); color: var(--text); background: var(--surface); }
 .btn-ghost:hover { border-color: var(--indigo); color: var(--indigo-600); }
 .btn-sm { padding: 8px 16px; font-size: 0.88rem; }
+/* Landing-style CTA: white pill with a gradient ring — dark text stays crisp */
+.btn-ring {
+  background: linear-gradient(#fff, #fff) padding-box, var(--grad) border-box;
+  border: 2px solid transparent;
+  color: var(--text);
+}
+.btn-ring:hover { color: var(--indigo-600); }
 
 /* ---------- hero: deep-indigo space panel ---------- */
 .hero { padding: 8px 10px 0; }
@@ -197,7 +204,14 @@ h3 { font-size: 1.12rem; font-weight: 650; }
 }
 .hero-inner {
   position: relative;
-  padding: clamp(64px, 10vw, 120px) clamp(24px, 6vw, 84px);
+  /* same column as .wrap below so hero content lines up with section content */
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: clamp(64px, 10vw, 120px) 24px;
+}
+@media (max-width: 1120px) {
+  /* panel is inset 10px from the viewport; pull content back out to line up */
+  .hero-inner { margin-inline: -10px; }
 }
 .hero .eyebrow { color: #a5b4fc; }
 .hero h1 { color: #fff; }

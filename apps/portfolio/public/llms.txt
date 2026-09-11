@@ -18,6 +18,6 @@ This site is his public portfolio, intended for recruiters, hiring managers and 
 - LinkedIn: https://www.linkedin.com/in/arshaqhisham/
 - GitHub: https://github.com/arshaqsoul
 - Current role: Product Owner, Villvay Systems (multi-tenant B2B search for Wurth companies)
-- Education: MSc Advanced Software Engineering, University of Westminster (UK); BSc Business Information Technology, Staffordshire University (2015)
+- Education: MSc Advanced Software Engineering, University of Westminster (UK), completed 2018 — batch topper; BSc Business Information Technology, Staffordshire University (2015)
 - Roles he lands in: Product Owner / PM (platforms, search & AI); AI Engineer (multi-agent systems); AI × Healthcare product (clinical informatics); Technical Product Owner (search & data platforms)
 - Site built and operated by [Webcules](https://webcules.com)
