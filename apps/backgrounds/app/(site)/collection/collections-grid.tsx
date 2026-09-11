@@ -34,12 +34,15 @@ export default async function CollectionGrid({
             : undefined
           : undefined;
         // The cover image is the first low-res preview for a collection.
-        // For individual media, the cover is the media document itself.
+        // For individual media, use the doc's paired low-res preview so grids
+        // never download full-res originals; fall back to the doc itself.
         const coverImageResource = isCollection
           ? lowResPreview && typeof lowResPreview === "object"
             ? lowResPreview[0] // First low-res preview in the array
             : "/placeholder.jpg"
-          : doc; // The BackgroundMedia document is the resource itself
+          : typeof doc.preview === "object" && doc.preview
+            ? doc.preview
+            : doc; // The BackgroundMedia document is the resource itself
 
         const isPremium = isCollection
           ? (doc.collectionPrice ?? 0) > 0

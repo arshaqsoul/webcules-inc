@@ -344,6 +344,10 @@ export interface BackgroundMedia {
   id: number;
   alt?: string | null;
   /**
+   * Public low-res preview (media collection) used as this image's thumbnail in grids. The full-res file is only loaded on the image detail page.
+   */
+  preview?: (number | null) | Media;
+  /**
    * Mark this specific 4K file to be included in the global "Trending Images" feed.
    */
   isTrending?: boolean | null;
@@ -790,7 +794,7 @@ export interface BackgroundCollection {
    */
   backgrounds: {
     /**
-     * Select the file uploaded to the public "media" collection to use as the low-resolution thumbnail/preview.
+     * Select the files uploaded to the public "media" collection to use as the low-resolution thumbnail/preview (up to 3 covers). Per-image thumbnails come from each BackgroundMedia doc's own preview field.
      */
     lowResPreview: (number | Media)[];
     /**
@@ -1376,6 +1380,7 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface BackgroundMediaSelect<T extends boolean = true> {
   alt?: T;
+  preview?: T;
   isTrending?: T;
   isPremium?: T;
   singleImagePrice?: T;

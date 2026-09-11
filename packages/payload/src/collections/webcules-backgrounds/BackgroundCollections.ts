@@ -116,7 +116,7 @@ export const BackgroundCollections: CollectionConfig = {
                   maxRows: 3,
                   admin: {
                     description:
-                      'Select the file uploaded to the public "media" collection to use as the low-resolution thumbnail/preview.',
+                      'Select the files uploaded to the public "media" collection to use as the low-resolution thumbnail/preview (up to 3 covers). Per-image thumbnails come from each BackgroundMedia doc\'s own preview field.',
                   },
                 },
                 {

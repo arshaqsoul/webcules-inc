@@ -1,6 +1,7 @@
 import * as migration_20260909_020733_initial_sqlite_schema from './20260909_020733_initial_sqlite_schema';
 import * as migration_20260909_023850_add_storage_prefix_columns from './20260909_023850_add_storage_prefix_columns';
 import * as migration_20260909_024127_drop_prefix_columns from './20260909_024127_drop_prefix_columns';
+import * as migration_20260911_020749_add_background_media_preview from './20260911_020749_add_background_media_preview';
 
 export const migrations = [
   {
@@ -16,6 +17,11 @@ export const migrations = [
   {
     up: migration_20260909_024127_drop_prefix_columns.up,
     down: migration_20260909_024127_drop_prefix_columns.down,
-    name: '20260909_024127_drop_prefix_columns'
+    name: '20260909_024127_drop_prefix_columns',
+  },
+  {
+    up: migration_20260911_020749_add_background_media_preview.up,
+    down: migration_20260911_020749_add_background_media_preview.down,
+    name: '20260911_020749_add_background_media_preview'
   },
 ];

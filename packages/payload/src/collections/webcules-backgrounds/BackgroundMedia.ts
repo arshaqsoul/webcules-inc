@@ -24,6 +24,16 @@ export const BackgroundMedia: CollectionConfig = {
       type: "text",
     },
     {
+      name: "preview",
+      type: "relationship",
+      relationTo: "media",
+      admin: {
+        position: "sidebar",
+        description:
+          "Public low-res preview (media collection) used as this image's thumbnail in grids. The full-res file is only loaded on the image detail page.",
+      },
+    },
+    {
       name: "isTrending",
       label: "Mark as Trending Image",
       type: "checkbox",

@@ -41,7 +41,9 @@ export async function fetchCollectionId(
     const doc = await payload.findByID({
       collection: "backgroundCollections",
       id: id,
-      depth: 1,
+      // Depth 2 so each high-res file's low-res `preview` is populated for
+      // the grid thumbnails (file -> preview).
+      depth: 2,
     });
 
     if (!doc || doc._status !== "published") {
