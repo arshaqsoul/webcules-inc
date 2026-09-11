@@ -73,6 +73,23 @@ export const Footer = () => {
           </div>
           <div></div>
           <div className="flex flex-col text-slate-400 gap-y-2">
+            <p className="text-white font-bold text-xl">Apps</p>
+            <a
+              href="https://backgrounds.webcules.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Backgrounds — AI-crafted design backdrops
+            </a>
+            <a
+              href="https://tru.webcules.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              tru — workflow automation, pay per run
+            </a>
+          </div>
+          <div className="flex flex-col text-slate-400 gap-y-2">
             <p className="text-white font-bold text-xl">Company</p>
             {navItems.map((item, index) => (
               <Link key={"n-" + index} href={item.link}>

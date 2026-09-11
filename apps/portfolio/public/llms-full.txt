@@ -234,4 +234,10 @@ ML models (ELSER is a managed model), fine-tuning/RLHF.
 - Interactive knowledge graph: https://arshaq.webcules.com/graph
 - Machine-readable graph data: https://arshaq.webcules.com/graph-data.json
 
+## Related Webcules products
+
+- Webcules (https://webcules.com) — the studio behind this site: AI-powered web, design and data.
+- Backgrounds (https://backgrounds.webcules.com) — high-quality AI-crafted design backdrops for creatives.
+- tru (https://tru.webcules.com) — workflow automation platform running on Cloudflare's edge; pay per run, no subscription.
+
 Site operated with [Webcules](https://webcules.com) — web, design and data.

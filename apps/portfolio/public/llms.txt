@@ -11,6 +11,12 @@ This site is his public portfolio, intended for recruiters, hiring managers and 
 - [Graph data (JSON)](https://arshaq.webcules.com/graph-data.json): machine-readable graph — `{generated, notes: [{id, title, folder, color, text}], links: [[noteIndexA, noteIndexB], ...]}`. The note texts are the same public-safe knowledge-base notes the graph renders.
 - [Full text version](https://arshaq.webcules.com/llms-full.txt): the complete portfolio content as plain markdown, for LLM ingestion without rendering HTML.
 
+## Related
+
+- [Webcules](https://webcules.com): the studio behind this site — AI-powered web, design and data.
+- [Backgrounds](https://backgrounds.webcules.com): Webcules' collection of high-quality AI-crafted design backdrops for creatives.
+- [tru](https://tru.webcules.com): Webcules' workflow automation platform — runs on Cloudflare's edge, pay per run, no subscription.
+
 ## Quick facts
 
 - Location: Saskatoon, Saskatchewan, Canada
