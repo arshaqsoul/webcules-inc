@@ -9,6 +9,7 @@ All three apps run as **Cloudflare Workers** in production on the Webcules accou
 | `apps/cms` | `webcules-cms` | https://cms.webcules.com | Admin UI + REST/GraphQL API + media serving |
 | `apps/landing` | `webcules-landing` | https://webcules.com, https://www.webcules.com | Zone routes (apex DNS is externally managed) |
 | `apps/backgrounds` | `webcules-backgrounds` | https://backgrounds.webcules.com | Custom domain |
+| `apps/portfolio` | `arshaq-portfolio` | https://arshaq.webcules.com | Static assets worker (no build step, no bindings) — personal portfolio |
 
 ## Shared resources
 

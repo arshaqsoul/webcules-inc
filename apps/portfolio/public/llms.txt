@@ -1,0 +1,23 @@
+# Arshaq Hisham — Product × Engineering Portfolio
+
+> Arshaq Hisham is a product and engineering professional based in Saskatoon, SK, Canada, with a decade of experience building systems where software meets high-stakes domains: ERP and process re-engineering consulting at KPMG (2016–2018), four years owning business analysis for the COSMIC electronic health record at Cambio Software Engineering (2019–2022, HL7/FHIR/openEHR/SNOMED CT/GDPR), and Product Owner of a multi-tenant B2B e-commerce search platform for Wurth industrial suppliers at Villvay Systems (Dec 2022–present). His work pairs product judgment with real engineering depth: roadmaps and ROI reviews alongside Elasticsearch DSL, tRPC and Airflow DAGs. Recent focus: hands-on LLM agent engineering — a multi-agent AI App Generator (Mastra + E2B sandboxes + Vercel AI SDK v5) and a production solo-built travel booking platform, ELUX Travels (eluxtravels.uk, ~46k lines of TypeScript, live).
+
+This site is his public portfolio, intended for recruiters, hiring managers and future colleagues who want to understand who he is, what he has shipped, and where he fits in a workplace. All metrics shown on the site are verified from the actual codebases. A private job-search knowledge base (target companies, applications, resume recipes) is intentionally excluded from this public site.
+
+## Pages
+
+- [Home](https://arshaq.webcules.com/): portfolio overview — intro, "where I fit in a workplace", career timeline, detailed experience (KPMG, Cambio, Villvay), flagship projects, skills and industry domains, contact.
+- [Knowledge graph](https://arshaq.webcules.com/graph): interactive force-directed graph of 37 linked notes (roles, projects, skills, domains, technologies). Click any node to read it; supports search and category filters; notes are deep-linkable via URL hash.
+- [Graph data (JSON)](https://arshaq.webcules.com/graph-data.json): machine-readable graph — `{generated, notes: [{id, title, folder, color, text}], links: [[noteIndexA, noteIndexB], ...]}`. The note texts are the same public-safe knowledge-base notes the graph renders.
+- [Full text version](https://arshaq.webcules.com/llms-full.txt): the complete portfolio content as plain markdown, for LLM ingestion without rendering HTML.
+
+## Quick facts
+
+- Location: Saskatoon, Saskatchewan, Canada
+- Email: arshaqhishamsl@gmail.com
+- LinkedIn: https://www.linkedin.com/in/arshaqhisham/
+- GitHub: https://github.com/arshaqsoul
+- Current role: Product Owner, Villvay Systems (multi-tenant B2B search for Wurth companies)
+- Education: MSc Advanced Software Engineering, University of Westminster (UK); BSc Business Information Technology, Staffordshire University (2015)
+- Roles he lands in: Product Owner / PM (platforms, search & AI); AI Engineer (multi-agent systems); AI × Healthcare product (clinical informatics); Technical Product Owner (search & data platforms)
+- Site built and operated by [Webcules](https://webcules.com)

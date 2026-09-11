@@ -1,0 +1,6 @@
+# robots.txt — arshaq.webcules.com
+# Humans welcome, AI agents welcome too — this portfolio is meant to be read.
+User-agent: *
+Allow: /
+
+Sitemap: https://arshaq.webcules.com/sitemap.xml

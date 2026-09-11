@@ -1,0 +1,14 @@
+{
+  "name": "portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "preview": "wrangler deploy --dry-run",
+    "graph": "node scripts/generate-graph.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.125.0"
+  }
+}
