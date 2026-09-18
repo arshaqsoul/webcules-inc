@@ -1,0 +1,128 @@
+{
+  "$comment": "Registry of reusable ComfyUI workflows (API format). Add new workflows by dropping <name>.json here and adding an entry below. Every {{var}} gets substituted by site-forge before queueing; defaults below are applied first, then --set / manifest job vars.",
+  "workflows": {
+    "qwen-image": {
+      "title": "Qwen-Image 2512 — flagship text→image",
+      "produces": "image",
+      "models": ["qwen_image_2512_fp8_e4m3fn.safetensors", "qwen_2.5_vl_7b_fp8_scaled.safetensors", "qwen_image_vae.safetensors"],
+      "use_for": "Hero art, brand imagery, and anything that needs READABLE TEXT inside the image (posters, signage, product mockups, UI screens). Best quality on this machine. ~30-60s per image after first load.",
+      "defaults": {
+        "width": 1328,
+        "height": 1328,
+        "steps": 20,
+        "cfg": 4,
+        "shift": 3.1,
+        "negative": "low resolution, low quality, deformed hands, extra fingers, oversaturated, blurry text, distorted letters, watermark"
+      },
+      "var_docs": {
+        "prompt": "required — full positive prompt",
+        "width/height": "multiples of 16; 1328² default, use 1664x928 for wide heroes",
+        "shift": "3.1 default; raise to ~4 for more detail, lower for softer"
+      }
+    },
+    "z-image-turbo": {
+      "title": "Z-Image Turbo — fast photoreal",
+      "produces": "image",
+      "models": ["z_image_turbo_bf16.safetensors", "qwen_3_4b_fp8_mixed.safetensors", "ae.safetensors"],
+      "use_for": "Photorealistic textures, background plates, product shots, quick iterations. 8 steps, ~5-10s per image. Negative prompt is ignored (zeroed conditioning).",
+      "defaults": {
+        "width": 1024,
+        "height": 1024,
+        "steps": 8,
+        "shift": 3,
+        "negative": ""
+      },
+      "var_docs": {
+        "prompt": "required — full positive prompt",
+        "width/height": "1024² default; supports arbitrary aspect ratios well"
+      }
+    },
+    "flux-schnell": {
+      "title": "FLUX.1 schnell — 4-step rapid ideation",
+      "produces": "image",
+      "models": ["flux1-schnell-fp8.safetensors"],
+      "use_for": "Fastest exploration (4 steps, ~5s). Great for moodboards, layout sketches, iterating on art direction before committing to Qwen. Negative prompt ignored.",
+      "defaults": {
+        "width": 1024,
+        "height": 1024,
+        "steps": 4,
+        "negative": ""
+      },
+      "var_docs": {
+        "prompt": "required — full positive prompt",
+        "width/height": "multiples of 16"
+      }
+    },
+    "sdxl": {
+      "title": "SDXL base 1.0 — LoRA ecosystem workhorse",
+      "produces": "image",
+      "models": ["sd_xl_base_1.0.safetensors"],
+      "use_for": "When you need a specific style LoRA later (huge ecosystem). Baseline quality below Qwen/Z-Image — keep for compatibility.",
+      "defaults": {
+        "width": 1024,
+        "height": 1024,
+        "steps": 25,
+        "cfg": 8,
+        "negative": "blurry, low quality, deformed"
+      },
+      "var_docs": {
+        "prompt": "required — full positive prompt"
+      }
+    },
+    "qwen-image-edit": {
+      "title": "Qwen-Image-Edit 2511 — instruction-based editing",
+      "produces": "image",
+      "models": ["qwen_image_edit_2511_fp8mixed.safetensors", "qwen_2.5_vl_7b_fp8_scaled.safetensors", "qwen_image_vae.safetensors"],
+      "use_for": "Iterate on a generated asset with natural-language instructions ('make the sky dusk', 'replace the sign text with AURORA', 'add subtle fog'). Preserves the rest of the image. Requires --image (auto-uploaded).",
+      "defaults": {
+        "steps": 25,
+        "cfg": 3,
+        "shift": 3.1,
+        "negative": ""
+      },
+      "var_docs": {
+        "prompt": "required — edit instruction",
+        "image": "required — path to source image (relative to project or absolute)"
+      }
+    },
+    "ltxv-video": {
+      "title": "LTX-Video 13B 0.9.8 distilled — fast text→video",
+      "produces": "video",
+      "models": ["ltxv-13b-0.9.8-distilled-fp8.safetensors", "t5xxl_fp8_e4m3fn_scaled.safetensors"],
+      "use_for": "Quick video drafts and background loops (abstract motion, gradients, particles, texture flyovers). ~20-60s per clip. Prompt with motion verbs; keep it simple.",
+      "defaults": {
+        "width": 768,
+        "height": 512,
+        "length": 97,
+        "fps": 24,
+        "steps": 8,
+        "negative": "low quality, worst quality, deformed, distorted, motion smear, jittery motion"
+      },
+      "var_docs": {
+        "prompt": "required — describe scene + camera motion",
+        "length": "frames; 97 ≈ 4s @ 24fps (keep 4n+1 for LTXV)"
+      }
+    },
+    "wan22-ti2v": {
+      "title": "Wan 2.2 TI2V 5B — image→video (hero loops)",
+      "produces": "video",
+      "models": ["wan2.2_ti2v_5B_fp16.safetensors", "umt5_xxl_fp8_e4m3fn_scaled.safetensors", "wan2.2_vae.safetensors"],
+      "use_for": "Animate a generated hero image into a cinematic clip (the $10k-site pattern: Qwen image → Wan animation). Slower but highest quality. Draft at 832x480x65, final at 1280x704x121.",
+      "defaults": {
+        "width": 1280,
+        "height": 704,
+        "length": 121,
+        "fps": 24,
+        "steps": 20,
+        "cfg": 5,
+        "shift": 8,
+        "negative": "色调艳丽，过曝，静态，细节模糊不清，字幕，风格，作品，画作，画面，静止，整体发灰，最差质量，低质量，JPEG压缩残留，丑陋的，残缺的，多余的手指，画得不好的手部，画得不好的脸部，畸形的，毁容的，形态畸形的肢体，手指融合，静止不动的画面，杂乱的背景，三条腿，背景人很多，倒着走"
+      },
+      "var_docs": {
+        "prompt": "required — describe the motion to add to the image",
+        "image": "required — path to source image (auto-uploaded)",
+        "length": "frames; 121 ≈ 5s @ 24fps (keep 4n+1)"
+      }
+    }
+  }
+}

@@ -1,0 +1,38 @@
+---
+import { site } from "../data/site";
+import Reveal from "./react/Reveal";
+---
+<section id="showcase" class="relative border-t border-line py-28 md:py-36">
+  <div class="mx-auto grid max-w-7xl gap-16 px-6 md:grid-cols-2 lg:px-10">
+    <!-- pinned left column -->
+    <div class="md:sticky md:top-28 md:self-start">
+      <p class="eyebrow">The tour</p>
+      <h2 class="mt-4 font-display text-[clamp(2.2rem,5vw,4rem)] leading-[1.02] font-semibold tracking-[-0.03em]">
+        Three moves that sell it.
+      </h2>
+      <p class="mt-5 max-w-md leading-relaxed text-muted">
+        Scroll — the left stays, the right walks you through. Swap these panels for real product
+        surface or generated art stills.
+      </p>
+      <!-- generated still, if present -->
+      <div class="mt-10 aspect-[4/3] overflow-hidden rounded-2xl border border-line bg-gradient-to-br from-ink-3 via-ink-2 to-ink">
+        <div class="mesh flex size-full items-center justify-center">
+          <span class="eyebrow">public/assets/showcase.png</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- scrolling right column -->
+    <div class="flex flex-col gap-6">
+      {site.showcase.map((s, i) => (
+        <Reveal client:visible delay={i * 0.05}>
+          <article class="group rounded-2xl border border-line bg-ink-2/40 p-10 transition-colors duration-500 hover:border-violet/40">
+            <span class="font-display text-sm text-acid">{s.index}</span>
+            <h3 class="mt-6 font-display text-3xl font-semibold tracking-tight">{s.title}</h3>
+            <p class="mt-4 leading-relaxed text-muted">{s.desc}</p>
+          </article>
+        </Reveal>
+      ))}
+    </div>
+  </div>
+</section>

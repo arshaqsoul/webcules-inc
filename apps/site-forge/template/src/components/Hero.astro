@@ -1,0 +1,88 @@
+---
+import fs from "node:fs";
+import { site } from "../data/site";
+import Reveal from "./react/Reveal";
+import Magnetic from "./react/Magnetic";
+
+// generated assets win: hero.mp4 (Wan loop) > hero.png (Qwen/Z-Image) > pure mesh
+const hasVideo = fs.existsSync("public/assets/hero.mp4");
+const hasImage = !hasVideo && fs.existsSync("public/assets/hero.png");
+---
+<section class="mesh relative flex min-h-[100svh] flex-col justify-center overflow-hidden pt-16">
+  {hasVideo && (
+    <video
+      class="absolute inset-0 h-full w-full object-cover opacity-60"
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="metadata"
+      aria-hidden="true"
+    >
+      <source src="/assets/hero.mp4" type="video/mp4" />
+    </video>
+  )}
+  {hasImage && (
+    <img
+      src="/assets/hero.png"
+      alt=""
+      class="absolute inset-0 h-full w-full object-cover opacity-55"
+      loading="eager"
+      aria-hidden="true"
+    />
+  )}
+  <!-- readability veil over media -->
+  {(hasVideo || hasImage) && (
+    <div class="absolute inset-0 bg-gradient-to-b from-ink/70 via-ink/35 to-ink" aria-hidden="true"></div>
+  )}
+
+  <div class="relative z-10 mx-auto w-full max-w-7xl px-6 py-24 lg:px-10">
+    <Reveal client:load y={16}>
+      <p class="eyebrow flex items-center gap-2.5">
+        <span class="animate-pulse-dot inline-block size-1.5 rounded-full bg-acid"></span>
+        {site.hero.eyebrow}
+      </p>
+    </Reveal>
+
+    <Reveal client:load delay={0.1}>
+      <h1 class="mt-7 max-w-5xl font-display text-[clamp(3.4rem,10.5vw,9rem)] leading-[0.92] font-semibold tracking-[-0.035em]">
+        {site.hero.titleA}
+        <br />
+        <span class="text-gradient italic">{site.hero.titleAccent}</span> {site.hero.titleB}
+      </h1>
+    </Reveal>
+
+    <Reveal client:load delay={0.22}>
+      <p class="mt-8 max-w-xl text-lg leading-relaxed text-muted">
+        {site.hero.sub}
+      </p>
+    </Reveal>
+
+    <Reveal client:load delay={0.34}>
+      <div class="mt-12 flex flex-wrap items-center gap-4">
+        <Magnetic client:load>
+          <a
+            href={site.cta.href}
+            class="inline-flex items-center gap-2 rounded-full bg-acid px-7 py-3.5 text-[15px] font-semibold text-ink transition-transform duration-300 hover:scale-[1.03] active:scale-[0.98]"
+          >
+            {site.cta.label}
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M1 7h11M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
+        </Magnetic>
+        <a
+          href="#showcase"
+          class="rounded-full border border-line px-7 py-3.5 text-[15px] text-muted transition-colors duration-300 hover:border-fg/30 hover:text-fg"
+        >
+          See it in motion
+        </a>
+      </div>
+    </Reveal>
+  </div>
+
+  <!-- scroll cue -->
+  <div class="absolute bottom-8 left-1/2 z-10 -translate-x-1/2" aria-hidden="true">
+    <div class="h-10 w-px animate-pulse bg-gradient-to-b from-transparent via-fg/60 to-transparent"></div>
+  </div>
+</section>

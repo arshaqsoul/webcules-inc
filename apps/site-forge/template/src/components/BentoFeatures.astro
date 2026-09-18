@@ -1,0 +1,23 @@
+---
+import { site } from "../data/site";
+import Reveal from "./react/Reveal";
+import Section from "./Section.astro";
+---
+<Section id="features" eyebrow="Why it feels different" title="The details doing the heavy lifting.">
+  <div class="grid grid-cols-1 gap-4 md:grid-cols-6">
+    {site.features.map((f, i) => (
+      <Reveal client:visible delay={i * 0.08} class={f.span}>
+        <article class="group relative h-full overflow-hidden rounded-2xl border border-line bg-ink-2/60 p-8 transition-colors duration-500 hover:border-acid/35 hover:bg-ink-2">
+          <div
+            class="pointer-events-none absolute -right-16 -top-16 size-44 rounded-full bg-acid/10 blur-3xl opacity-0 transition-opacity duration-700 group-hover:opacity-100"
+            aria-hidden="true"
+          >
+          </div>
+          <span class="eyebrow">{f.tag}</span>
+          <h3 class="mt-5 font-display text-2xl font-semibold tracking-tight">{f.title}</h3>
+          <p class="mt-3 leading-relaxed text-muted">{f.desc}</p>
+        </article>
+      </Reveal>
+    ))}
+  </div>
+</Section>

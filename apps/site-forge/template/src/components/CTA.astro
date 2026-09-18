@@ -1,0 +1,29 @@
+---
+import { site } from "../data/site";
+import Reveal from "./react/Reveal";
+import Magnetic from "./react/Magnetic";
+---
+<section id="cta" class="mesh relative overflow-hidden border-t border-line py-32 md:py-44">
+  <div class="relative z-10 mx-auto max-w-7xl px-6 text-center lg:px-10">
+    <Reveal client:visible>
+      <h2 class="mx-auto max-w-4xl font-display text-[clamp(2.8rem,8vw,7rem)] leading-[0.95] font-semibold tracking-[-0.035em]">
+        Your turn to be <span class="text-gradient italic">unreasonable.</span>
+      </h2>
+    </Reveal>
+    <Reveal client:visible delay={0.12}>
+      <p class="mx-auto mt-8 max-w-lg text-lg text-muted">{site.tagline}</p>
+    </Reveal>
+    <Reveal client:visible delay={0.22}>
+      <div class="mt-12">
+        <Magnetic client:visible strength={0.45}>
+          <a
+            href={site.cta.href}
+            class="inline-flex items-center gap-2 rounded-full bg-acid px-9 py-4 text-base font-semibold text-ink transition-transform duration-300 hover:scale-[1.04] active:scale-[0.98]"
+          >
+            {site.cta.label}
+          </a>
+        </Magnetic>
+      </div>
+    </Reveal>
+  </div>
+</section>

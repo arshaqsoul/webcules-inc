@@ -1,0 +1,15 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { site } from "../data/site";
+---
+<Layout title={`404 — ${site.name}`} description="Page not found.">
+  <section class="mesh flex min-h-[100svh] flex-col items-center justify-center px-6 text-center">
+    <p class="eyebrow">Lost the thread</p>
+    <h1 class="mt-6 font-display text-[clamp(5rem,18vw,14rem)] leading-none font-semibold tracking-[-0.04em]">
+      404
+    </h1>
+    <a href="/" class="mt-10 rounded-full border border-line px-7 py-3 text-sm text-muted transition-colors hover:border-fg/30 hover:text-fg">
+      Back home
+    </a>
+  </section>
+</Layout>

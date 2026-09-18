@@ -1,0 +1,11 @@
+{
+  // Cloudflare Workers static-assets deploy — `npx wrangler deploy` after `pnpm build`
+  "name": "{{FORGE_NAME}}",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./dist",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}

@@ -1,0 +1,17 @@
+---
+import { site } from "../data/site";
+import Counter from "./react/Counter";
+import Reveal from "./react/Reveal";
+---
+<section id="stats" class="border-t border-line bg-ink-2/40 py-24">
+  <div class="mx-auto grid max-w-7xl grid-cols-2 gap-x-6 gap-y-14 px-6 lg:grid-cols-4 lg:px-10">
+    {site.stats.map((stat, i) => (
+      <Reveal client:visible delay={i * 0.08} blur={false}>
+        <div class="font-display text-[clamp(2.8rem,5.5vw,4.6rem)] leading-none font-semibold tracking-[-0.03em]">
+          <Counter client:visible value={stat.value} suffix={stat.suffix} class="tabular-nums" />
+        </div>
+        <p class="mt-4 max-w-[16rem] text-sm leading-relaxed text-muted">{stat.label}</p>
+      </Reveal>
+    ))}
+  </div>
+</section>

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: {{FORGE_URL}}/sitemap-index.xml

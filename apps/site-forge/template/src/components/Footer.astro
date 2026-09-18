@@ -1,0 +1,21 @@
+---
+import { site } from "../data/site";
+---
+<footer class="relative overflow-hidden border-t border-line">
+  <div class="mx-auto max-w-7xl px-6 py-20 lg:px-10">
+    <div class="flex flex-col items-start justify-between gap-10 md:flex-row md:items-end">
+      <h2 class="font-display text-[clamp(3rem,9vw,7rem)] leading-[0.9] font-semibold tracking-[-0.03em] text-fg/90">
+        {site.name}
+      </h2>
+      <div class="flex gap-10 text-sm text-muted">
+        {site.nav.map((item) => (
+          <a href={item.href} class="transition-colors hover:text-fg">{item.label}</a>
+        ))}
+      </div>
+    </div>
+    <div class="mt-14 flex items-center justify-between border-t border-line pt-6 text-xs text-muted/70">
+      <span>© {{FORGE_YEAR}} {site.name}. All rights reserved.</span>
+      <span>Forged locally · deployed globally</span>
+    </div>
+  </div>
+</footer>

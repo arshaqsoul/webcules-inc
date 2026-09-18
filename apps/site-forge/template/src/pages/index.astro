@@ -1,0 +1,18 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Hero from "../components/Hero.astro";
+import LogoMarquee from "../components/LogoMarquee.astro";
+import BentoFeatures from "../components/BentoFeatures.astro";
+import StickyShowcase from "../components/StickyShowcase.astro";
+import Stats from "../components/Stats.astro";
+import CTA from "../components/CTA.astro";
+import { site } from "../data/site";
+---
+<Layout title={`${site.name} — ${site.hero.titleA} ${site.hero.titleAccent} ${site.hero.titleB}`} description={site.description}>
+  <Hero />
+  <LogoMarquee />
+  <BentoFeatures />
+  <StickyShowcase />
+  <Stats />
+  <CTA />
+</Layout>

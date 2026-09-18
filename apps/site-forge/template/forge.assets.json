@@ -1,0 +1,40 @@
+{
+  "jobs": [
+    {
+      "name": "hero-image",
+      "workflow": "z-image-turbo",
+      "enabled": false,
+      "out": "hero.png",
+      "vars": {
+        "prompt": "REPLACE — describe the hero art direction from research/design-brief.md (subject, palette, lighting, camera)",
+        "width": 1664,
+        "height": 928
+      }
+    },
+    {
+      "name": "hero-loop",
+      "workflow": "wan22-ti2v",
+      "enabled": false,
+      "out": "hero.mp4",
+      "vars": {
+        "image": "public/assets/hero.png",
+        "prompt": "REPLACE — slow cinematic camera drift, subtle ambient motion, seamless loop feel",
+        "width": 1280,
+        "height": 704,
+        "length": 121
+      }
+    },
+    {
+      "name": "og-image",
+      "workflow": "qwen-image",
+      "enabled": false,
+      "out": "og.png",
+      "vars": {
+        "prompt": "REPLACE — social share card, bold typographic poster that says {{FORGE_TITLE}}",
+        "width": 1328,
+        "height": 1328
+      }
+    }
+  ],
+  "history": []
+}

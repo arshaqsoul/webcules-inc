@@ -1,0 +1,13 @@
+---
+import { site } from "../data/site";
+import Marquee from "./react/Marquee";
+---
+<section class="border-y border-line bg-ink-2/50 py-10" aria-label="Trusted by">
+  <Marquee client:visible speed={38}>
+    {site.logos.map((logo) => (
+      <span class="mx-10 font-display text-xl font-semibold tracking-tight text-fg/35 transition-colors duration-300 hover:text-fg/70">
+        {logo}
+      </span>
+    ))}
+  </Marquee>
+</section>

@@ -1,0 +1,6 @@
+verifyDepsBeforeRun: false
+onlyBuiltDependencies:
+  - sharp
+  - esbuild
+  - "@tailwindcss/oxide"
+  - workerd
