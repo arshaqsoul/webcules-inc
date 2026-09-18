@@ -1,0 +1,74 @@
+# Webcules go-to-market playbook
+
+Saskatoon first. Solo operator, AI-powered pipeline, evidence-led outreach. This is the manual; `/forge-redesign` and `/forge-outreach` execute it, the dashboard tracks it.
+
+## Positioning (one sentence)
+
+> Webcules gets Saskatoon businesses a $10k-quality website for a fraction of agency cost — and makes them readable by the AI assistants their future customers are already asking.
+
+The differentiator is **proof over promises**: every pitch ships with (1) a finished redesign on a live preview link, (2) an independent expert audit of their current site, (3) an honest price. Agencies sell mockups and discovery calls; we hand over the product.
+
+## Who to target (week 1 list: 10 businesses)
+
+Great prospect = real revenue + weak site + owner-reachable:
+
+1. **Pick categories where the site drives bookings**: restaurants/cafés, dentists & physio, salons/barbers, roofing/renos, auto shops, gyms/studios, law/accounting, photographers, trades (electricians, HVAC), real-estate agents.
+2. **Find them**: Google Maps → search "<category> saskatoon" → open the top 20 listings → visit each website from the listing. Weak-site signals: not mobile-friendly, ©2019–2023 footer, Wix/GoDaddy/Weebly template smell, no hours/prices, menu as PDF, missing meta titles ("Home"), Facebook page listed as the website.
+3. **Prioritize**: Google review count ≥ 30 (healthy business, slow site = losing bookings they already earned) and a visible phone number (owner picks up).
+4. **Avoid (for now)**: chains/franchises (decision is corporate), brand-new businesses (no revenue pain yet), perfect sites (nothing to show), medical with strict compliance needs.
+
+Log every prospect in the dashboard as a **lead** — even the ones you don't redesign this week. The list compounds.
+
+## The engine (per prospect)
+
+```
+/forge-redesign <url>      → before capture + expert audit + rebuild + quote + gtm.json
+   (review gate: you approve before anything deploys)
+   → after approval: forge deploy → preview URL on *.workers.dev
+/forge-outreach <project>  → email.md + whatsapp.md + followups.md + audit-report.pdf (attachable 2-page scorecard)
+dashboard /forge → Scan → import the lead + project
+   → send the email (and WhatsApp if a mobile number exists) → log it
+   → day 3 follow-up · day 7 last nudge → win / park / lost
+```
+
+Capacity reality: one redesign ≈ 3–6 h of supervised pipeline (research + ComfyUI + build). Do **2–3 per week**, don't batch 10 mediocre ones. One flawless preview converts better than five rushed ones.
+
+## The outreach rules
+
+- **Email first, WhatsApp same day if a mobile number is public.** WhatsApp reply rates are higher; email carries the full story.
+- Send from **arshaq@webcules.com** (create it in Zoho — a person, not a brand); keep **business@webcules.com** for invoices and Stripe receipts. Never mix: one address does all outreach, forever.
+- **Deliverability checklist (once, then forget):** SPF + DKIM + DMARC set in Zoho admin for webcules.com → verify at mail-tester.com (aim 9+/10) and send yourself a test at a personal Gmail to confirm it lands in the inbox. Warm a fresh mailbox 1–2 weeks of normal email before cold sends. Max 5–10 cold emails/day, plain personal formatting (no HTML template, no attachments, 1–2 links max). Replies are the reputation signal — personalized beats everything.
+- The email: their specific problem (from the audit) → your story in 2 sentences → 3 expert findings → the preview link → price in the open vs market range → one-word CTA ("Reply 'go'").
+- **Follow-ups close the deals**: day 3 (one finding's cost), day 7 (honest last nudge — previews come down after two weeks). Stop there. Two touches that add value, never spam.
+- **The audit PDF is the proof**: `/forge-outreach` produces a 2-page client-facing scorecard (`audit-report.pdf`) — grades, findings with fixes, price vs market. Attach it to WhatsApp and replies freely; on the first cold email prefer links only (attachments nudge spam filters) — attach the PDF once they've replied or on WhatsApp.
+- When they reply ANYTHING positively: offer a 10-minute call or a walkthrough of the preview. Speed wins — reply same hour.
+
+## The close & launch checklist (after "go")
+
+1. Payment: Stripe checkout link (dashboard → lead → Payments) or e-Transfer; record it either way. Upfront in full, or installments (max 6 months, same total — e.g. $799 → 6 × $133).
+2. Domain: get registrar login (or guide them to point NS/A/CNAME records — they stay the owner, always). Checklist: unlock, update records, TTL 300, verify propagation, keep email/MX untouched.
+3. Switch: `forge deploy` to production, attach custom domain in Cloudflare, set redirects from old paths, re-run the AI-readiness checks on the live domain.
+4. Say thank you: short email with before/after screenshots (they will forward it — that's referral fuel) + invoice receipt.
+5. Ask for the review/referral after 2 weeks, once they've felt the difference.
+6. Start the $10/mo maintenance subscription (Stripe subscription or tracked e-Transfer).
+
+## Objection handling (the honest answers)
+
+| They say | You say |
+|---|---|
+| "Why so cheap? What's the catch?" | "No agency overhead — I'm one developer in Saskatoon with an AI-powered pipeline I built myself. The site you saw is the quality; the price is what it costs me to produce it." |
+| "I already have a website." | "You do — and it's costing you every mobile visitor and every AI search. The preview link shows what customers see instead. Takes nothing to look." |
+| "My nephew/friend can do it." | "Great — keep them for content updates. This is the difference between a weekend site and one engineered to convert and to be found by AI assistants. It's already built; you can compare side by side." |
+| "$799 is still a lot." | "Then split it — $133 a month for six months, same total. One missed booking costs more than a payment, and the studio alternative starts at $2,500 for the same 5 pages." |
+| "Let me think about it." | "Of course. The preview stays live for two weeks — want me to walk you through the three biggest fixes in 5 minutes this week?" |
+| "Who owns it?" | "You do. Domain in your name, code in a repo you control, no lock-in. If you leave, everything goes with you." |
+
+## Numbers that make this a business
+
+- 10 prospects/week logged → 2–3 redesigned → ~30–40% reply on personalized+proof outreach → 2–4 closed/month.
+- 3 closes/month at $799 avg (upfront or 6 × $133) + growing $10/mo base: **~$2,400/mo one-time + MRR compounding $30/mo every month you keep going.** Twelve months in, maintenance alone ≈ $360+/mo for a few hours of edits.
+- The moment maintenance MRR feels like a salary, raise one-time prices $100–200 per tier — demand is proving the anchor.
+
+## Later (do not do yet)
+
+More cities (Regina, Prince Albert — same playbook, swap the local proof), productized "AI-readiness audit" as a free lead magnet, a public Webcules portfolio page of before/afters, referral fee for local accountants/consultants. First: ten Saskatoon prospects, three redesigns, one paying client.

@@ -17,6 +17,8 @@ prompt ──▶ UI research ──▶ asset generation ──▶ Astro site ─
 ```
 /forge premium coffee roaster, dark editorial, cinematic motion      # new site from a brief
 /forge-revamp https://acme.com                                       # redesign an existing site ($10k)
+/forge-redesign https://acme-roofing.ca                              # redesign + expert audit + quote + gtm.json (go-to-market)
+/forge-outreach acme-roofing                                         # generate the email/WhatsApp pitch from gtm.json
 ```
 
 `/forge` runs PLAYBOOK phases 0–4 end-to-end and stops at the local preview for your approval before publishing/deploying. `/forge-revamp` analyses an existing URL first (before-screenshots + critique into `research/before/` + `revamp-analysis.md`), then runs the same pipeline and shows a before/after comparison at the review gate.

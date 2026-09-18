@@ -42,7 +42,9 @@ export async function cmdNew(args: Args) {
 
   const title = flagStr(args, "title") ?? rawName.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const desc = flagStr(args, "desc") ?? `${title} — designed and generated with site-forge.`;
-  const url = flagStr(args, "url") ?? `https://${name}.workers.dev`;
+  // workers.dev URLs are <name>.<account-subdomain>.workers.dev — this machine's Cloudflare account is "webculesco"
+  const subdomain = process.env.WORKERS_SUBDOMAIN ?? "webculesco";
+  const url = flagStr(args, "url") ?? `https://${name}.${subdomain}.workers.dev`;
 
   applyTokens(target, { FORGE_NAME: name, FORGE_TITLE: title, FORGE_DESC: desc, FORGE_URL: url, FORGE_YEAR: String(new Date().getFullYear()) });
 

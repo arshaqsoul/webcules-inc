@@ -40,3 +40,7 @@ npm-debug.log*
 .DS_Store
 *.pem
 packages/*/public
+# Dashboard local state
+*.log
+apps/dashboard/data/*.db
+.next-dev/

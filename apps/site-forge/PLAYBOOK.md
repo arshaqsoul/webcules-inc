@@ -30,6 +30,26 @@ When the prompt is an existing site's URL instead of a fresh brief:
 
 Never touch, proxy, or deploy over the original site — the revamp is a standalone project in `webcules/<name>/`.
 
+**Content parity — nothing gets dropped (revamp standing rule):**
+
+- WebFetch **every** source page (each service, about, FAQs, colour/product pages, quote) before writing copy. Inventory the substance in `revamp-analysis.md` and map every item to a destination: home section, dedicated service page (`services/[slug]`), or FAQ accordion. Service FAQs belong on their service pages, not buried in one home accordion.
+- WebFetch's markdown strips iframes — to inventory embedded videos, grep the **raw HTML** for `youtube_url|youtu\.be|vimeo\.com`, verify each ID via YouTube oEmbed, and surface real embeds as click-to-load facades (nothing from YouTube loads until play). Same for forms: note how the original captures leads.
+- **Honesty standard (non-negotiable):** every claim traces to the source site. Never invent facts, years, warranty terms, response-time promises, review counts, or people. Real photos may be relit/restyled to the theme (image-edit model) but identity is preserved — never generate fake staff or customers. Reviews are real, quoted with attribution. If the source doesn't say it, the site doesn't say it.
+- **People get carried over (standing rule, user-mandated after go2guysinc):** if the source shows owners/staff/team photos, they MUST appear in the redesign's About page. Extract them from the raw HTML when possible — but check the rendered DOM too: source sites often ship broken placeholders (go2guysinc's team cards were literally `Image-empty-state.jpg` over Facebook embeds) — in that case crop the portraits from the rendered-page screenshot into `public/assets/brand/`. Never generate fake staff, and don't ship an About without faces if the original had them.
+- **Map embed is mandatory (standing rule, user-mandated after go2guysinc):** every redesign ships a map on the contact page — carry over the source's embed if it has one (mirror its provider), and add one even if it doesn't. Reliable recipe: OSM `export/embed.html?bbox=<lon,lat,lon,lat>&layer=mapnik&marker=<lat>,<lon>` — geocode the NAP address with Nominatim (`nominatim.openstreetmap.org/search?q=…&format=json`, send a UA header) so coordinates are sourced, never guessed; Google's keyless `output=embed` iframe is a fallback but rendered blank under headless verification. `loading="lazy"`, card styling, and link it from LocalBusiness JSON-LD via `hasMap`. NAP + map is local-SEO/AI-readiness table stakes.
+
+### Redesign mode (go-to-market) — `/forge-redesign` + `/forge-outreach`
+
+Revamp mode **plus the sales layer** — this is the Webcules client-acquisition engine (see `docs/GTM-PLAYBOOK.md` and `docs/PRICING.md`):
+
+1. Same intake as revamp mode, plus capture the **AI surface**: view-source for schema.org markup, meta/OG tags, semantic HTML, machine-readable hours/services/NAP.
+2. **Design-expert audit** → `research/expert-review.md`. Review the "before" through three lenses in order — senior UI/UX designer, conversion strategist, **AI-readiness auditor** (can ChatGPT / AI Overviews / voice parse this business?). 5–8 findings, each: evidence → business cost → fix in the redesign; graded scorecard (A–F per lens); client-friendly summary. The audit is written to be **shown to the client** — specific and honest, that's the sales asset.
+3. **Quote** from the PRICING.md model; every CRITICAL/MAJOR finding must map to a visible change in the build (the AI-readiness fixes — LocalBusiness JSON-LD, semantic HTML, meta/OG, llms.txt — are implemented for real, not claimed).
+4. Review gate shows **before/after + findings→fixes table + price**.
+5. After approval: `forge deploy` (the `*.workers.dev` URL is the client-facing sales preview), then write **`research/gtm.json`** (business, grades, top findings, quote with market comparison, previewUrl) — `/forge-outreach` generates the email/WhatsApp pitch from it and the dashboard imports it.
+
+Never touch the client's domain — it switches only after they've paid and asked.
+
 ## Phase 1 — UI research (references)
 
 ```bash
@@ -90,10 +110,14 @@ The scaffold (`webcules/<name>/`) is Astro 5 + React islands + Tailwind 4, Cloud
 - [ ] Typography: display font with real character, `clamp()` scale, tight tracking, ≥9rem hero
 - [ ] One accent color used with discipline + one secondary; nothing default-blue
 - [ ] Motion: choreographed reveals (one easing!), at least one signature moment (video hero, sticky story, or magnetic CTA)
-- [ ] Generated art everywhere a stock photo would've been
+- [ ] Generated art everywhere a stock photo would've been — **except photographic hero slots**: user preference (go2guysinc review) is the client's own real photography first, then a quality free photo (Unsplash/Pexels); AI-generated images read "off" at hero scale and get rejected. AI art stays for abstract/decorative/OG-card work.
 - [ ] Mobile flawless (type scale, touch targets, no horizontal scroll)
 - [ ] `prefers-reduced-motion` respected; semantic HTML; real meta/OG tags
 - [ ] No template smell: if a section could be on any site, rewrite or delete it
+- [ ] **Forms actually deliver** — mailto-only loses every webmail lead. Wire to an email relay (e.g. FormSubmit AJAX: no backend, honeypot for bots, mailto fallback if the relay is unreachable) and confirm the one-time inbox activation with the owner
+- [ ] **Share meta is scrape-proof** — `og:image` as an **absolute** URL (relative = no preview on Facebook/WhatsApp/X), `og:url`/canonical on the **real deploy domain** (never the scaffold default), plus `og:site_name`, `og:locale`, `og:image:width/height/alt`, `twitter:card/title/description/image`; per-page share images
+- [ ] **Revamps: source content parity** — every content item from the original site is mapped somewhere (section, service page, FAQ, video embed); nothing dropped, nothing invented
+- [ ] **Map embed on the contact page** — carried over from the source or added fresh (standing rule above), plus `hasMap` in the LocalBusiness JSON-LD
 
 ## Phase 4 — Local review (gate before deploy)
 
@@ -103,6 +127,7 @@ forge preview --project <name>       # http://localhost:4321
 
 - Open it in a browser (desktop + mobile viewport). Screenshot hero, features, CTA.
 - Fix, rebuild, re-look. Only then show the user the local URL + screenshots.
+- Also verify the invisible stuff in the **built HTML**: `curl` a page and check OG/Twitter tags are present and absolute, and (revamps) every service page exists. Submit the live form once after deploy — that both tests it end-to-end and triggers the relay's one-time inbox activation. Check link-preview caches: Facebook Sharing Debugger "Scrape Again", WhatsApp needs a `?v=2`-style cache-buster.
 - **Deploy only after the user approves** (they may want copy/asset changes first).
 
 ## Phase 5 — Publish (private repo)
@@ -136,3 +161,9 @@ forge deploy --project <name>        # pnpm build + wrangler deploy
 | workflow var error | `forge workflows` → pass `--set key=value`; defaults live in `workflows/manifest.json` |
 | refero/recent fetch 0 images | recent.design falls back to the plain feed automatically; refero/motionsites are partly JS-rendered — browse & screenshot manually into `research/refs/` |
 | push rejected | repo exists remotely → `git remote set-url origin <url>` then `git push -u origin main` |
+| full-page screenshot repeats the hero | source site scroll-jacks with fixed/sticky layers that re-pin under Chromium's `captureBeyondViewport` — `tab.screenshot({ fullPage: true })` renders the hero once per tile no matter what CSS you inject. **Working recipe (verified on go2guysinc.com):** (1) scroll through the page in fast steps to trigger lazyload/scrollspy; (2) inject CSS: `background-attachment:scroll`, `animation/transition:none`, `.uk-sticky/[class*="sticky"]{position:static}`, parallax `transform:none`; (3) take **viewport** screenshots at scrollY = i·viewportH (loop `while (y < H)` with `yy = min(y, H-VH)` — a `for` with `y = min(...)` never terminates); (4) stitch with `scripts/fullpage-stitch.py` on ComfyUI's venv (`C:/Users/arsha/Documents/projects/ComfyUI/.venv/Scripts/python.exe` — has Pillow; sharp is NOT installed in the workspace). Same recipe for mobile. Bare `fullPage:true` is fine on plain static pages, wrong on YOOtheme/Elementor/parallax ones — default to the recipe for client "before" captures. |
+| no preview when sharing (FB/WhatsApp/X) | `og:image` was relative or `og:url`/canonical on the scaffold-default domain → absolute URLs + `astro.config.mjs` `site:` set to the real deploy domain, full tag set; then Scrape Again / `?v=2` cache-buster |
+| quote form "works" but no leads | mailto-only forms open nothing for webmail users → wire an email relay (FormSubmit AJAX), test a real submission, confirm the one-time inbox activation email |
+| hero video looks wobbly / AI-generated | Wan 2.2 drafts can read wobbly on architectural stills — a bad video is worse than a good still. Ship the still with a slow CSS Ken Burns zoom (`animate-kenburns`, 28s alternate) and mark the video job `enabled:false` with the reason (user rejected exactly this on go2guysinc). Retry video only when you can judge the final at full res. |
+| wrangler deploy: "Pages _worker.js directory as an asset" | the Astro cloudflare adapter emits `_worker.js` even for fully static sites → add `.assetsignore` (in `public/`, so rebuilds keep it) containing `_worker.js` and `_routes.json` for pure-static deploys |
+| `astro preview` fails with cloudflare adapter | unsupported by design — serve `dist/` with a tiny static server (see `mexroofing/static-preview.mjs`) and review that |
