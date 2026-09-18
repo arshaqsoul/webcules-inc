@@ -1,0 +1,86 @@
+{
+  "$comment": "Reusable ComfyUI workflows (API format, {{var}} templated) for the Webcules marketing system. Same convention as site-forge: defaults below are applied first, then per-run vars. Graphs are shared with site-forge where proven; vertical variants target 9:16 social specs.",
+  "workflows": {
+    "z-image-turbo": {
+      "title": "Z-Image Turbo — fast photoreal (square/wide)",
+      "produces": "image",
+      "models": ["z_image_turbo_bf16.safetensors", "qwen_3_4b_fp8_mixed.safetensors", "ae.safetensors"],
+      "use_for": "Photoreal background plates, product-style shots, lifestyle imagery for feed posts. 8 steps, ~5–10s.",
+      "defaults": { "width": 1024, "height": 1024, "steps": 8, "shift": 3, "negative": "", "prefix": "zimage" },
+      "var_docs": { "prompt": "required — palette, subject, lighting, camera, mood" }
+    },
+    "z-image-vertical": {
+      "title": "Z-Image Turbo — 9:16 vertical (reels/stories/status)",
+      "produces": "image",
+      "models": ["z_image_turbo_bf16.safetensors", "qwen_3_4b_fp8_mixed.safetensors", "ae.safetensors"],
+      "use_for": "Vertical backgrounds for Instagram reels, TikTok, stories and WhatsApp status (1088×1920).",
+      "defaults": { "width": 1088, "height": 1920, "steps": 8, "shift": 3, "negative": "", "prefix": "zimage_v" },
+      "var_docs": { "prompt": "required — vertical composition: subject centered, headroom top, clean bottom third for text" }
+    },
+    "flux-schnell": {
+      "title": "FLUX.1 schnell — 4-step rapid art direction",
+      "produces": "image",
+      "models": ["flux1-schnell-fp8.safetensors"],
+      "use_for": "Fastest exploration of campaign look & feel before spending on finals. 4 steps, ~5s.",
+      "defaults": { "width": 1024, "height": 1024, "steps": 4, "negative": "", "prefix": "flux" },
+      "var_docs": { "prompt": "required — full positive prompt" }
+    },
+    "flux-vertical": {
+      "title": "FLUX.1 schnell — 9:16 vertical drafts",
+      "produces": "image",
+      "models": ["flux1-schnell-fp8.safetensors"],
+      "use_for": "Quick vertical concepts for reels/TikTok/status at 1088×1920 before committing to Z-Image finals.",
+      "defaults": { "width": 1088, "height": 1920, "steps": 4, "negative": "", "prefix": "flux_v" },
+      "var_docs": { "prompt": "required — vertical composition notes" }
+    },
+    "qwen-image": {
+      "title": "Qwen-Image 2512 — flagship (text renders IN the image)",
+      "produces": "image",
+      "models": ["qwen_image_2512_fp8_e4m3fn.safetensors", "qwen_2.5_vl_7b_fp8_scaled.safetensors", "qwen_image_vae.safetensors"],
+      "use_for": "Hero creatives, mockups, posters — anything that benefits from readable text baked into the artwork (device mockups with screens, signage, 3D type). ~30–60s.",
+      "defaults": {
+        "width": 1328, "height": 1328, "steps": 20, "cfg": 4, "shift": 3.1, "prefix": "qwen",
+        "negative": "low resolution, low quality, deformed hands, extra fingers, oversaturated, blurry text, distorted letters, watermark"
+      },
+      "var_docs": { "prompt": "required — include exact text in quotes for in-image typography" }
+    },
+    "ltxv-video": {
+      "title": "LTX-Video 13B distilled — fast text→video",
+      "produces": "video",
+      "models": ["ltxv-13b-0.9.8-distilled-fp8.safetensors", "t5xxl_fp8_e4m3fn_scaled.safetensors"],
+      "use_for": "Quick video drafts: abstract loops, gradients, particles, texture motion for feed video backgrounds. ~20–60s.",
+      "defaults": { "width": 768, "height": 512, "length": 97, "fps": 24, "steps": 8, "prefix": "ltxv", "negative": "low quality, worst quality, deformed, distorted, motion smear, jittery motion" },
+      "var_docs": { "prompt": "required — scene + camera motion verbs", "length": "frames; keep 4n+1 (97 ≈ 4s @ 24fps)" }
+    },
+    "ltxv-vertical": {
+      "title": "LTX-Video 13B distilled — 9:16 vertical",
+      "produces": "video",
+      "models": ["ltxv-13b-0.9.8-distilled-fp8.safetensors", "t5xxl_fp8_e4m3fn_scaled.safetensors"],
+      "use_for": "Vertical ambient loops for reels/TikTok/status at 576×1024 — draft motion behind text overlays. ~30–90s.",
+      "defaults": { "width": 576, "height": 1024, "length": 97, "fps": 24, "steps": 8, "prefix": "ltxv_v", "negative": "low quality, worst quality, deformed, distorted, motion smear, jittery motion" },
+      "var_docs": { "prompt": "required — vertical scene + camera motion", "length": "frames; keep 4n+1" }
+    },
+    "wan22-ti2v": {
+      "title": "Wan 2.2 TI2V 5B — image→video (landscape)",
+      "produces": "video",
+      "models": ["wan2.2_ti2v_5B_fp16.safetensors", "umt5_xxl_fp8_e4m3fn_scaled.safetensors", "wan2.2_vae.safetensors"],
+      "use_for": "Animate a finished creative into a cinematic clip (Facebook video, landscape reels). Draft 832×480×65 → final 1280×704×121.",
+      "defaults": {
+        "width": 832, "height": 480, "length": 65, "fps": 24, "steps": 20, "cfg": 5, "shift": 8, "prefix": "wan22",
+        "negative": "色调艳丽，过曝，静态，细节模糊不清，字幕，风格，作品，画作，画面，静止，整体发灰，最差质量，低质量，JPEG压缩残留，丑陋的，残缺的，多余的手指，画得不好的手部，画得不好的脸部，畸形的，毁容的，形态畸形的肢体，手指融合，静止不动的画面，杂乱的背景，三条腿，背景人很多，倒着走"
+      },
+      "var_docs": { "prompt": "required — the motion to add", "image": "required — source image (auto-uploaded)", "length": "keep 4n+1" }
+    },
+    "wan22-ti2v-vertical": {
+      "title": "Wan 2.2 TI2V 5B — image→video 9:16 (REELS/TikTok)",
+      "produces": "video",
+      "models": ["wan2.2_ti2v_5B_fp16.safetensors", "umt5_xxl_fp8_e4m3fn_scaled.safetensors", "wan2.2_vae.safetensors"],
+      "use_for": "The reel pipeline: compose a 1080×1920 still (bg + copy), animate at 704×1280 — text bakes into the motion, no ffmpeg needed. Draft 480×832×65, final 704×1280×121.",
+      "defaults": {
+        "width": 480, "height": 832, "length": 65, "fps": 24, "steps": 20, "cfg": 5, "shift": 8, "prefix": "wan22_v",
+        "negative": "色调艳丽，过曝，静态，细节模糊不清，字幕，风格，作品，画作，画面，静止，整体发灰，最差质量，低质量，JPEG压缩残留，丑陋的，残缺的，多余的手指，画得不好的手部，画得不好的脸部，畸形的，毁容的，形态畸形的肢体，手指融合，静止不动的画面，杂乱的背景，三条腿，背景人很多，倒着走"
+      },
+      "var_docs": { "prompt": "required — subtle camera + element motion (keep text areas stable)", "image": "required — composed vertical creative (auto-uploaded)", "length": "keep 4n+1; 121 ≈ 5s @ 24fps" }
+    }
+  }
+}

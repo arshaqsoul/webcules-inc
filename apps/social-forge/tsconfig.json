@@ -1,0 +1,15 @@
+{
+  "extends": "@webcules/typescript-config/base.json",
+  "include": [".astro/types.d.ts", "src/**/*"],
+  "exclude": ["dist"],
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "strictNullChecks": true,
+    "types": ["node"]
+  }
+}
