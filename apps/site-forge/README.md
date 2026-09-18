@@ -42,7 +42,7 @@ pnpm --filter @webcules/site-forge forge deploy --project my-site
 |---|---|
 | `src/cli.ts` | Command dispatch (zero deps, Node 22+ runs the TS directly) |
 | `src/comfy.ts` | ComfyUI API client — queue/poll/download/upload + graph var interpolation |
-| `src/research.ts` | Reference puller (motionsites.ai, refero.design, recent.design) + design-brief skeleton |
+| `src/research.ts` | Reference puller — filtered search across 6 sources (awwwards `?text=`, minimal.gallery tags, recent.design categories, darkmodedesign, motionsites, refero) + design-brief skeleton |
 | `src/scaffold.ts` | Project scaffolder — copies `template/` into `webcules/<name>` with tokens applied |
 | `src/assets.ts` | `generate` / `edit` — runs workflow jobs from `forge.assets.json` manifests |
 | `src/preview.ts` `src/publish.ts` | Dev server, build, Cloudflare deploy, private-repo publish |

@@ -23,10 +23,22 @@ Write the brief into the project's `research/design-brief.md` as you go (Phase 1
 
 ```bash
 forge new <name> --title "..." --desc "..."          # scaffold first — research lives in the project
-forge research "<style query>" --project <name>      # pulls refs from motionsites.ai, refero.design, recent.design
+forge research "<style query>" --project <name>      # filtered pull from all six sources
 ```
 
-- The fetcher works on static HTML; if a source is JS-rendered it will say so — then **browse it yourself** (WebFetch / image search) and save 5–10 screenshots into `research/refs/` manually. Minimum 8 references before building.
+The fetcher uses each source's real filter (verified working, server-side):
+
+| Source | Filter used |
+|---|---|
+| awwwards.com | `?text=<full query>` full-text search |
+| minimal.gallery | `/tag/<word>/` — tag auto-derived from the query against the site's real tag vocabulary |
+| recent.design | `?category=<word>` — auto-derived, falls back to the plain feed on a miss |
+| darkmodedesign.com | homepage list (its `?s=` search is client-side only) |
+| motionsites.ai | homepage (gallery is JS-rendered) |
+| refero.design | recorded as a browse-link (`/search?q=` is client-side rendered) |
+
+- Tag/category words are picked by intersecting the query with each site's vocabulary (stopwords like "landing", "dark", "modern" never count). Force one with `--tag <word>`.
+- If a source still returns nothing (JS-rendered, offline), **browse it yourself** (WebFetch / image search) and save screenshots into `research/refs/` manually. Minimum 8 references before building.
 - Fill every section of `research/design-brief.md`: layout patterns, typography, color, motion vocabulary, what to steal, what to avoid, chosen direction.
 - **Steal patterns, not pixels.** References define structure and energy; the build must feel bespoke.
 
@@ -111,5 +123,5 @@ forge deploy --project <name>        # pnpm build + wrangler deploy
 | ComfyUI unreachable | start `ComfyUI\start_comfyui_server.bat`; `COMFY_URL` if non-default port |
 | OOM / crawl during video | close other VRAM hogs; lower width/height/length; video is heavy by design |
 | workflow var error | `forge workflows` → pass `--set key=value`; defaults live in `workflows/manifest.json` |
-| refero/recent fetch 0 images | JS-rendered — browse & screenshot manually into `research/refs/` |
+| refero/recent fetch 0 images | recent.design falls back to the plain feed automatically; refero/motionsites are partly JS-rendered — browse & screenshot manually into `research/refs/` |
 | push rejected | repo exists remotely → `git remote set-url origin <url>` then `git push -u origin main` |
