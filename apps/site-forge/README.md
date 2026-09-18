@@ -12,13 +12,14 @@ prompt ──▶ UI research ──▶ asset generation ──▶ Astro site ─
 
 ## Quickstart
 
-**The whole pipeline in one command** — a ZCode slash command is installed at `~/.zcode/commands/forge.md`:
+**The whole pipeline in one command** — ZCode slash commands are installed at `~/.zcode/commands/`:
 
 ```
-/forge premium coffee roaster, dark editorial, cinematic motion
+/forge premium coffee roaster, dark editorial, cinematic motion      # new site from a brief
+/forge-revamp https://acme.com                                       # redesign an existing site ($10k)
 ```
 
-It runs PLAYBOOK phases 0–4 end-to-end and stops at the local preview for your approval before publishing/deploying.
+`/forge` runs PLAYBOOK phases 0–4 end-to-end and stops at the local preview for your approval before publishing/deploying. `/forge-revamp` analyses an existing URL first (before-screenshots + critique into `research/before/` + `revamp-analysis.md`), then runs the same pipeline and shows a before/after comparison at the review gate.
 
 Manual, per-phase:
 

@@ -19,6 +19,17 @@ Turn the user's prompt into a creative brief before touching anything:
 
 Write the brief into the project's `research/design-brief.md` as you go (Phase 1 creates the skeleton).
 
+### Revamp mode (from an existing URL) — `/forge-revamp`
+
+When the prompt is an existing site's URL instead of a fresh brief:
+
+1. **Capture the before** — scaffold first (name derived from the domain: `acme.com` → `acme`), then screenshot the original at desktop (1440×900) and mobile (390×844) into `research/before/` (plus 2–3 key subpages if useful) and WebFetch its pages for content: offering, headings, nav, CTAs, contact, footer. Download the logo if usable.
+2. **Write `research/revamp-analysis.md`** — business & audience, content inventory worth preserving, a concrete visual critique of the "before" (type, layout, color, motion, hierarchy), and the redesign direction.
+3. **Run phases 1–4 as normal**, driven by that analysis: research query = industry + desired vibe; reuse the original logo only if genuinely good, else typographic wordmark; **preserve the business substance but rewrite all copy** to the $10k standard.
+4. **Review gate shows before/after** — same viewport sizes as the "before" shots, side by side, plus what changed and why.
+
+Never touch, proxy, or deploy over the original site — the revamp is a standalone project in `webcules/<name>/`.
+
 ## Phase 1 — UI research (references)
 
 ```bash
