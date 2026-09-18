@@ -3,7 +3,7 @@
 import { ChevronRight, Globe, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { OutreachPanel } from "@/components/app/outreach-panel";
@@ -17,8 +17,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { setStage } from "@/app/actions";
 import type { Stage } from "@/db/schema";
 import type { Finding } from "@/lib/forge";
+import { draftEmail, draftWhatsApp } from "@/lib/outreach";
 import { STAGES, nextStage } from "@/lib/pipeline";
-import { fmtDate } from "@/lib/utils";
+import { fmtDate, waNumber } from "@/lib/utils";
 
 export type LeadView = {
   id: string;
@@ -89,6 +90,32 @@ export function LeadDetail({
   const [, startTransition] = useTransition();
   const next = nextStage(stage);
 
+  // pitch drafts for the one-click send buttons (same generators as the Outreach tab)
+  const ctx = useMemo(
+    () => ({
+      business: lead.business,
+      contactName: lead.contactName,
+      industry: lead.industry,
+      siteUrl: lead.siteUrl,
+      previewUrl: project?.previewUrl ?? null,
+      grade: project?.grade ?? null,
+      findings: project?.findings ?? null,
+      quote: {
+        oneTime: project?.quoteOneTime ?? 799,
+        maintenanceMonthly: project?.quoteMaintenance ?? 10,
+        marketLow: project?.marketLow ?? 2500,
+        marketHigh: project?.marketHigh ?? 4500,
+      },
+    }),
+    [lead, project],
+  );
+  const emailDraft = useMemo(() => draftEmail(ctx), [ctx]);
+  const waDraft = useMemo(() => draftWhatsApp(ctx), [ctx]);
+  const emailHref = lead.email
+    ? `mailto:${lead.email}?subject=${encodeURIComponent(emailDraft.subject)}&body=${encodeURIComponent(emailDraft.body)}`
+    : null;
+  const waHref = waNumber(lead.phone) ? `https://wa.me/${waNumber(lead.phone)}?text=${encodeURIComponent(waDraft)}` : null;
+
   function move(s: Stage) {
     setLeadStage(s);
     startTransition(async () => {
@@ -114,12 +141,33 @@ export function LeadDetail({
             <h1 className="text-2xl font-semibold tracking-tight">{lead.business}</h1>
             <StageBadge stage={stage} />
           </div>
-          {next && (
-            <Button variant={next === "lost" ? "outline" : "default"} size="sm" onClick={() => move(next)}>
-              Advance to {STAGES.find((s) => s.id === next)?.label}
-              <ChevronRight />
-            </Button>
-          )}
+          <div className="flex flex-wrap items-center gap-2">
+            {emailHref ? (
+              <Button variant="outline" size="sm" onClick={() => window.open(emailHref)} title={lead.email}>
+                <Mail /> Email pitch
+              </Button>
+            ) : (
+              <span className="text-xs text-muted-foreground">no email on file</span>
+            )}
+            {waHref ? (
+              <Button
+                size="sm"
+                className="bg-emerald-600 text-white hover:bg-emerald-700"
+                onClick={() => window.open(waHref)}
+                title={lead.phone}
+              >
+                <MessageCircle /> WhatsApp pitch
+              </Button>
+            ) : (
+              <span className="text-xs text-muted-foreground">no mobile on file</span>
+            )}
+            {next && (
+              <Button variant={next === "lost" ? "outline" : "default"} size="sm" onClick={() => move(next)}>
+                Advance to {STAGES.find((s) => s.id === next)?.label}
+                <ChevronRight />
+              </Button>
+            )}
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
           {lead.industry && (

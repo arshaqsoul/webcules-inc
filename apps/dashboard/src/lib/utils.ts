@@ -25,3 +25,12 @@ export function daysSince(d: Date | number | null | undefined) {
   const date = typeof d === "number" ? new Date(d * 1000) : d;
   return Math.floor((Date.now() - date.getTime()) / 86400000);
 }
+
+/** Normalize a phone number for wa.me deep links — digits only; 10-digit numbers get the Canada +1 prefix. */
+export function waNumber(phone: string | null | undefined): string | null {
+  if (!phone) return null;
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length === 10) return `1${digits}`;
+  if (digits.length >= 11) return digits;
+  return null;
+}
