@@ -6,7 +6,14 @@
     "build": "turbo build",
     "dev": "turbo dev",
     "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "forge:new": "node tools/forge/new.mjs",
+    "forge:analyze": "node tools/forge/analyze.mjs",
+    "webcules-forge-w-analyse": "node tools/forge/webcules-forge-w-analyse.mjs",
+    "forge:record": "node tools/forge/record.mjs",
+    "forge:approve": "node tools/forge/approve.mjs",
+    "forge:list": "node tools/forge/list.mjs",
+    "forge:deploy": "node tools/forge/deploy.mjs"
   },
   "devDependencies": {
     "@webcules/eslint-config": "workspace:*",

@@ -60,6 +60,7 @@ export const WebculesNav = () => {
     { name: "Home", link: "/" },
     { name: "Services", link: "/#services" },
     { name: "Pricing", link: "/#pricing" },
+    { name: "Components", link: "/components" },
     { name: "Blog", link: "/posts" },
     { name: "Contact", link: "/contact" },
   ];

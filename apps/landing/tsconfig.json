@@ -3,9 +3,15 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"],
-      "@webcules/ui/*": ["../../packages/ui/src/*"],
-      "@webcules/payload/*": ["../../packages/payload/src/*"]
+      "@/*": [
+        "./*"
+      ],
+      "@webcules/ui/*": [
+        "../../packages/ui/src/*"
+      ],
+      "@webcules/payload/*": [
+        "../../packages/payload/src/*"
+      ]
     },
     "plugins": [
       {
@@ -14,11 +20,14 @@
     ]
   },
   "include": [
-    "next-env.d.ts",
-    "next.config.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "next-env.d.ts",
+    "next.config.ts",
+    ".next-dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }

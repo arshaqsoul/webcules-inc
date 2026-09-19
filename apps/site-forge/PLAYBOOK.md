@@ -119,6 +119,62 @@ The scaffold (`webcules/<name>/`) is Astro 5 + React islands + Tailwind 4, Cloud
 - [ ] **Revamps: source content parity** — every content item from the original site is mapped somewhere (section, service page, FAQ, video embed); nothing dropped, nothing invented
 - [ ] **Map embed on the contact page** — carried over from the source or added fresh (standing rule above), plus `hasMap` in the LocalBusiness JSON-LD
 
+## Phase 3b — Immersive scroll experiences ("ultra" tier)
+
+For briefs like "rebuild this recording" or any award-tier scroll-driven site, the default
+sections/islands are not enough. This is the pattern that ships them (built & verified on
+`webcules/reverie` — a portal-flythrough clone of a reference recording).
+
+**Reference-recording intake (replaces Phase 1 when the design is fully specified by a video):**
+
+- No ffmpeg in PATH — use ComfyUI's venv: `pip install imageio-ffmpeg` once, then
+  `ComfyUI\.venv\Lib\site-packages\imageio_ffmpeg\binaries\ffmpeg-win-x86_64-*.exe -i rec.mp4 -vf fps=8 frames/f_%03d.png`.
+- Extract at 8fps, save the key frames into `research/refs/`, then crop-and-3-6x-upscale small UI
+  regions (nav, cards, captions) with Pillow so the copy becomes readable. Tiny text is where
+  clones go wrong.
+- Record every occluded/ambiguous element in the brief with your reconstruction flagged
+  (e.g. brand cut off by recorder chrome → pick a thematically-correct stand-in). Recorder
+  overlays (back-arrow circles, cursors) are NOT site UI — don't rebuild them.
+
+**Architecture — fixed stage + scrub, never scroll-jacked pinning:**
+
+- `.stage { position: fixed; inset: 0; overflow: hidden }` holds every scene as absolutely
+  stacked layers (background plates → content); a plain `.track { height: 560vh }` div supplies
+  scroll length. GSAP ScrollTrigger: `trigger: track, start: "top top", end: "bottom bottom",
+  scrub: 0.8`. One timeline, positions in absolute seconds (they become fractions of the track).
+- Animate **only** `transform` and `opacity`. Ken Burns / shimmer / star-spin live on *inner*
+  elements so their CSS animations compose with GSAP transforms on wrappers.
+- **The portal move** (zoom-through): measure the hole's center on the generated plate
+  (a grid-overlay screenshot beats pixel heuristics) → `transform-origin: <x>% <y>%`, scale the
+  plate 1 → ~4.4 with `power2.in` (accelerating camera), and crossfade to the destination plate
+  (which sits behind at `scale 1.25 → 1.02`) around progress 0.5–0.7. The destination plate is
+  also scene 2's background, so the world never jumps.
+- Ambient life: animate the winning still with `wan22-ti2v` (subtle motion verbs, "no camera
+  movement"), `<video autoplay muted loop playsinline>` over the still. If the video wobbles,
+  ship the still + Ken Burns (same rule as the main playbook).
+
+**Gotchas that cost real debugging time (all hit on reverie):**
+
+- *Cue/anchor landing:* scroll targets are `(trackH − viewportH) × f`, **not** `trackH × f` — the
+  scrub's progress 1 is "track bottom at viewport bottom". Landing on the raw fraction leaves a
+  staggered reveal half-finished at rest.
+- *CSS animations beat GSAP inline styles:* if a keyframe animates `opacity`, a scrubbed
+  `autoAlpha: 0` on the same element silently loses. CSS owns transform there, GSAP owns opacity
+  — never both on one property.
+- *Hidden-scene FOUC:* scenes revealed mid-timeline start `opacity:0; visibility:hidden` via a
+  `html.js` CSS rule; on init `gsap.set(children, { autoAlpha: 0 })` then
+  `gsap.set(container, { autoAlpha: 1 })` — otherwise the container rule keeps children
+  `visibility: inherit` = hidden forever (GSAP tweens the children in vain).
+- *Fixed stage + anchors:* `#section` links can't reach a fixed stage — intercept anchors and
+  `scrollTo` fractions of the scrub range; in reduced-motion mode, fall through to native anchors
+  (the static fallback has real sections).
+- *Reduced motion:* media-query collapse — stage becomes static flow, scenes get their own
+  `background` plates, GSAP timeline is never created. The page must read as a normal site.
+- *Mobile:* fixed stages need explicit small-screen layouts per scene (hero stacks; a
+  wider-than-viewport card row becomes a 2×2 grid with softened tilts); verify
+  `document.scrollWidth <= innerWidth`.
+- The Astro dev toolbar floats bottom-center in dev screenshots — don't mistake it for site UI.
+
 ## Phase 4 — Local review (gate before deploy)
 
 ```bash

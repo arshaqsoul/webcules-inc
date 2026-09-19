@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Copy, Mail, MessageCircle, Phone, Send } from "lucide-react";
+import { Check, Copy, Mail, MessageCircle, Phone, Reply, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { logOutreach, markOutreach } from "@/app/actions";
-import { draftEmail, draftFollowup, draftWhatsApp } from "@/lib/outreach";
+import { draftEmail, draftFollowup, draftReply, draftWhatsApp } from "@/lib/outreach";
 import { fmtDate } from "@/lib/utils";
 
 const CHANNEL_ICON = { email: Mail, whatsapp: MessageCircle, call: Phone, meeting: Phone, note: Send } as const;
@@ -22,7 +22,7 @@ const CHANNEL_ICON = { email: Mail, whatsapp: MessageCircle, call: Phone, meetin
 export function OutreachPanel({ lead, project, touches }: { lead: LeadView; project: ProjectView | null; touches: TouchView[] }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [tab, setTab] = useState<"email" | "whatsapp" | "f3" | "f7">("email");
+  const [tab, setTab] = useState<"email" | "reply" | "whatsapp" | "f3" | "f7">("email");
   const [copied, setCopied] = useState(false);
 
   const ctx = useMemo(
@@ -45,8 +45,10 @@ export function OutreachPanel({ lead, project, touches }: { lead: LeadView; proj
   );
 
   const email = useMemo(() => draftEmail(ctx), [ctx]);
+  const reply = useMemo(() => draftReply(ctx), [ctx]);
   const drafts = {
-    email: { title: email.subject, body: email.body, label: "Email pitch" },
+    email: { title: email.subject, body: email.body, label: "Cold email (no links)" },
+    reply: { title: reply.subject, body: reply.body, label: "Reply pack (image + link)" },
     whatsapp: { title: "WhatsApp hook", body: draftWhatsApp(ctx), label: "WhatsApp hook" },
     f3: { title: "Day-3 follow-up", body: draftFollowup(ctx, 3), label: "Day-3 follow-up" },
     f7: { title: "Day-7 last nudge", body: draftFollowup(ctx, 7), label: "Day-7 last nudge" },
@@ -54,7 +56,7 @@ export function OutreachPanel({ lead, project, touches }: { lead: LeadView; proj
   const current = drafts[tab];
 
   async function copy() {
-    await navigator.clipboard.writeText(tab === "email" ? `Subject: ${current.title}\n\n${current.body}` : current.body);
+    await navigator.clipboard.writeText(tab === "email" || tab === "reply" ? `Subject: ${current.title}\n\n${current.body}` : current.body);
     setCopied(true);
     toast.success("Copied to clipboard");
     setTimeout(() => setCopied(false), 1500);
@@ -65,7 +67,7 @@ export function OutreachPanel({ lead, project, touches }: { lead: LeadView; proj
       await logOutreach({
         leadId: lead.id,
         channel: tab === "whatsapp" ? "whatsapp" : "email",
-        kind: tab === "f3" || tab === "f7" ? "followup" : "pitch",
+        kind: tab === "f3" || tab === "f7" ? "followup" : tab === "reply" ? "reply" : "pitch",
         subject: current.title,
         body: current.body,
         status: "sent",
@@ -81,24 +83,30 @@ export function OutreachPanel({ lead, project, touches }: { lead: LeadView; proj
         <CardHeader>
           <CardTitle>Pitch drafts</CardTitle>
           <CardDescription>
-            Generated from the expert audit + quote. Prefer <code className="rounded bg-secondary px-1 py-0.5 text-xs">/forge-outreach {project?.slug ?? "<slug>"}</code> for
-            the long-form version, then paste here.
+            The cold email carries <strong>zero links and zero images</strong> (workers.dev links are spam-blocked; a fresh domain can't afford HTML weight). After
+            they reply, send the <strong>Reply pack</strong>: before/after image attached + the live preview link — safe in an engaged thread. WhatsApp carries
+            the link immediately.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           <div className="flex flex-wrap gap-2">
             {(Object.keys(drafts) as (keyof typeof drafts)[]).map((k) => (
               <Button key={k} size="sm" variant={tab === k ? "default" : "outline"} onClick={() => setTab(k)}>
-                {k === "email" ? <Mail /> : k === "whatsapp" ? <MessageCircle /> : <Send />}
+                {k === "email" ? <Mail /> : k === "whatsapp" ? <MessageCircle /> : k === "reply" ? <Reply /> : <Send />}
                 {drafts[k].label}
               </Button>
             ))}
           </div>
 
-          {tab === "email" && (
+          {(tab === "email" || tab === "reply") && (
             <div className="rounded-md border bg-secondary/50 px-3 py-2 text-sm">
               <span className="text-muted-foreground">Subject: </span>
-              <span className="font-medium">{email.subject}</span>
+              <span className="font-medium">{current.title}</span>
+            </div>
+          )}
+          {tab === "reply" && (
+            <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+              Attach <code>research/outreach/before-after.jpg</code> (generate with before_after.py) when you send this — it's the image the cold email promised.
             </div>
           )}
           <Textarea readOnly value={current.body} className="min-h-72 font-mono text-xs leading-5" />
@@ -140,33 +148,53 @@ export function OutreachPanel({ lead, project, touches }: { lead: LeadView; proj
             {touches.map((t) => {
               const Icon = CHANNEL_ICON[t.channel as keyof typeof CHANNEL_ICON] ?? Send;
               return (
-                <div key={t.id} className="rounded-lg border p-2.5">
-                  <div className="flex items-center gap-2">
-                    <Icon className="size-3.5 text-muted-foreground" />
-                    <span className="text-xs font-medium">{t.channel}</span>
-                    <Badge variant={t.status === "replied" ? "success" : t.status === "sent" ? "info" : "muted"}>{t.status}</Badge>
-                    <span className="ml-auto text-[11px] text-muted-foreground">{fmtDate(t.createdAt)}</span>
+              <div key={t.id} className="rounded-lg border p-2.5">
+                <div className="flex items-center gap-2">
+                  <Icon className="size-3.5 text-muted-foreground" />
+                  <span className="text-xs font-medium">{t.channel}</span>
+                  <Badge variant={t.status === "replied" ? "success" : t.status === "sent" ? "info" : t.status === "bounced" ? "destructive" : "muted"}>
+                    {t.status}
+                  </Badge>
+                  <span className="ml-auto text-[11px] text-muted-foreground">{fmtDate(t.createdAt)}</span>
+                </div>
+                {(t.subject || t.body) && (
+                  <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{t.subject || t.body}</p>
+                )}
+                {t.status === "sent" && (
+                  <div className="mt-1 flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-xs"
+                    disabled={pending}
+                    onClick={() =>
+                      startTransition(async () => {
+                        await markOutreach(t.id, "replied");
+                        toast.success("Nice — stage moved to Negotiating");
+                        router.refresh();
+                      })
+                    }
+                  >
+                    They replied
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-xs text-destructive"
+                    disabled={pending}
+                    title="Email bounced — stop sending to this address"
+                    onClick={() =>
+                      startTransition(async () => {
+                        await markOutreach(t.id, "bounced");
+                        toast.warning("Marked bounced — switch this lead to WhatsApp or find a new address");
+                        router.refresh();
+                      })
+                    }
+                  >
+                    Bounced
+                  </Button>
                   </div>
-                  {(t.subject || t.body) && (
-                    <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{t.subject || t.body}</p>
-                  )}
-                  {t.status === "sent" && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="mt-1 h-6 px-2 text-xs"
-                      disabled={pending}
-                      onClick={() =>
-                        startTransition(async () => {
-                          await markOutreach(t.id, "replied");
-                          toast.success("Nice — stage moved to Negotiating");
-                          router.refresh();
-                        })
-                      }
-                    >
-                      They replied
-                    </Button>
-                  )}
+                )}
                 </div>
               );
             })}

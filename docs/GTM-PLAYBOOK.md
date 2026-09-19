@@ -25,10 +25,12 @@ Log every prospect in the dashboard as a **lead** — even the ones you don't re
 /forge-redesign <url>      → before capture + expert audit + rebuild + quote + gtm.json
    (review gate: you approve before anything deploys)
    → after approval: forge deploy → preview URL on *.workers.dev
-/forge-outreach <project>  → email.md + whatsapp.md + followups.md + audit-report.pdf (attachable 2-page scorecard)
+/forge-outreach <project>  → email.md (no links) + reply.md (image+link payload)
+                            + before-after.jpg + whatsapp.md + followups.md
 dashboard /forge → Scan → import the lead + project
-   → send the email (and WhatsApp if a mobile number exists) → log it
-   → day 3 follow-up · day 7 last nudge → win / park / lost
+   → send the no-link email + WhatsApp (carries the link) → log both
+   → they reply → send the reply pack (before-after.jpg + preview link)
+   → day 3 follow-up (still no links) · day 7 last nudge → win / park / lost
 ```
 
 Capacity reality: one redesign ≈ 3–6 h of supervised pipeline (research + ComfyUI + build). Do **2–3 per week**, don't batch 10 mediocre ones. One flawless preview converts better than five rushed ones.
@@ -38,6 +40,33 @@ Capacity reality: one redesign ≈ 3–6 h of supervised pipeline (research + Co
 - **Email first, WhatsApp same day if a mobile number is public.** WhatsApp reply rates are higher; email carries the full story.
 - Send from **arshaq@webcules.com** (create it in Zoho — a person, not a brand); keep **business@webcules.com** for invoices and Stripe receipts. Never mix: one address does all outreach, forever.
 - **Deliverability checklist (once, then forget):** SPF + DKIM + DMARC set in Zoho admin for webcules.com → verify at mail-tester.com (aim 9+/10) and send yourself a test at a personal Gmail to confirm it lands in the inbox. Warm a fresh mailbox 1–2 weeks of normal email before cold sends. Max 5–10 cold emails/day, plain personal formatting (no HTML template, no attachments, 1–2 links max). Replies are the reputation signal — personalized beats everything.
+
+## Deliverability — the anti-spam law (learned the hard way)
+
+The channel decides what a message can carry. Treat this as law, not advice:
+
+| Channel | Can carry | Must never carry |
+|---|---|---|
+| **Cold email (first touch)** | plain text, story, findings, price, permission-ask CTA | **any link** (workers.dev is hard-blocked by Microsoft; unknown domains discounted by Gmail), **any image** (HTML weight a fresh domain can't afford), **any attachment** (incl. the audit PDF) |
+| **Email reply (they engaged)** | before/after image attached, live preview link, audit PDF, checkout link | — (engaged threads are trusted; this is where the payload goes) |
+| **WhatsApp (first touch ok)** | preview link, before/after image, audit PDF | — (WhatsApp doesn't spam-filter links) |
+
+The flow that falls out of this:
+
+1. **Cold email** = zero links. Ends with: *"I have before/after screenshots of your homepage ready — want me to send them over? Reply 'yes'."* The CTA earns the reply; the reply IS the deliverability win (engagement is the strongest reputation signal).
+2. **They reply** → send the **reply pack**: `before-after.jpg` attached + the live preview link + fixes + price recap. Generate the image with `apps/site-forge/scripts/before_after.py` (or the dashboard's Reply-pack tab).
+3. **WhatsApp same day** (if a number exists): the hook text + the live link immediately — WhatsApp is the link-carrying channel on day one.
+
+Other tripwires already handled — keep them handled:
+
+- **Bounces:** a bounced cold email is a reputation hit. The moment one bounces, open the dashboard → Outreach → mark it **Bounced** → stop emailing that address; switch to WhatsApp or find another contact. Never resend to a bounced address.
+- **mailto length:** the cold email stays under ~1,500 characters so the one-click "Email pitch" button doesn't get truncated by Gmail-as-default-handler.
+- **Warm-up discipline:** create arshaq@webcules.com at least 1–2 weeks before the first cold send (normal email traffic both directions). Don't cold-send from a mailbox created yesterday.
+- **Volume:** ≤10 cold/day, and our real pace is 2–3/week — stay there.
+- **No trackers, no URL shorteners, no HTML templates** — the drafts are already plain text; don't "upgrade" them.
+- **Send window:** Tue–Thu, 8–11 a.m. Saskatoon time is the safe default.
+- **Preview hosting (the permanent fix):** links in emails will always be second-class until previews live on a real domain. When convenient, add `webcules.com` to Cloudflare and attach a custom domain like `preview.webcules.com` (routes to the same workers) — then every preview link reads `mexroofing.preview.webcules.com` instead of `*.workers.dev`, and even links become inbox-safe. 30-minute job in the Cloudflare dashboard.
+- **Stripe checkout redirect:** after a client pays, the "success" redirect currently points at localhost (dead page for them — payment still completes). Point it at a public thank-you page on webcules.com once one exists.
 - The email: their specific problem (from the audit) → your story in 2 sentences → 3 expert findings → the preview link → price in the open vs market range → one-word CTA ("Reply 'go'").
 - **Follow-ups close the deals**: day 3 (one finding's cost), day 7 (honest last nudge — previews come down after two weeks). Stop there. Two touches that add value, never spam.
 - **The audit PDF is the proof**: `/forge-outreach` produces a 2-page client-facing scorecard (`audit-report.pdf`) — grades, findings with fixes, price vs market. Attach it to WhatsApp and replies freely; on the first cold email prefer links only (attachments nudge spam filters) — attach the PDF once they've replied or on WhatsApp.

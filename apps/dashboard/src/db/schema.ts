@@ -108,7 +108,7 @@ export const outreach = sqliteTable(
     kind: text("kind").$type<"pitch" | "followup" | "reply" | "note">().notNull().default("note"),
     subject: text("subject").default(""),
     body: text("body").default(""),
-    status: text("status").$type<"draft" | "sent" | "replied" | "ignored">().notNull().default("sent"),
+    status: text("status").$type<"draft" | "sent" | "replied" | "ignored" | "bounced">().notNull().default("sent"),
     sentAt: integer("sent_at", { mode: "timestamp" }),
     createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
   },

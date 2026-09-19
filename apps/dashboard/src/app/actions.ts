@@ -189,7 +189,7 @@ export async function logOutreach(input: OutreachInput) {
   revalidatePath("/", "layout");
 }
 
-export async function markOutreach(OutreachId: string, status: "sent" | "replied" | "ignored") {
+export async function markOutreach(OutreachId: string, status: "sent" | "replied" | "ignored" | "bounced") {
   await requireUser();
   await db
     .update(outreach)

@@ -1,0 +1,20 @@
+{
+  "components": [
+    {
+      "name": "wildcode-field",
+      "title": "WildcodeField",
+      "tagline": "A living wordmark grown through your lettering",
+      "description": "A living wordmark: flowers, vines and critters grow through your lettering on an interactive canvas. Pointer-reactive, reduced-motion aware.",
+      "tags": [
+        "canvas",
+        "animation",
+        "client"
+      ],
+      "premium": false,
+      "phase": "approved",
+      "docsMode": "custom",
+      "preview": "/components/wildcode-field.webp",
+      "phrase": "Start today"
+    }
+  ]
+}
