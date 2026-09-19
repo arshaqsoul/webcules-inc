@@ -17,6 +17,8 @@ export type GtmManifest = {
   url: string;
   industry: string;
   city: string;
+  /** captured during intake — feeds the one-click send buttons */
+  contact?: { contactName?: string; phone?: string; email?: string; address?: string };
   grade: { uiux: string; conversion: string; ai: string };
   topFindings: Finding[];
   quote: {

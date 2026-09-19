@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import { EditLeadDialog } from "@/components/app/edit-lead-dialog";
 import { OutreachPanel } from "@/components/app/outreach-panel";
 import { PaymentsPanel } from "@/components/app/payments-panel";
 import { ProjectPanel } from "@/components/app/project-panel";
@@ -172,6 +173,7 @@ export function LeadDetail({
                 <ChevronRight />
               </Button>
             )}
+            <EditLeadDialog lead={lead} />
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
