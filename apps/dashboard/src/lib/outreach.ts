@@ -15,10 +15,6 @@ export type OutreachContext = {
 const n = (x?: string | null) => (x && x.trim() ? x.trim() : "");
 const owner = (c: OutreachContext) => n(c.contactName) || "there";
 
-function severityLabel(s: string) {
-  return s === "critical" ? "Critical" : s === "major" ? "Important" : "Worth fixing";
-}
-
 /**
  * The FIRST cold email — deliberately zero links and zero images:
  *.workers.dev links are spam-blocked (Microsoft blocks the whole suffix), inline
@@ -29,26 +25,26 @@ export function draftEmail(c: OutreachContext): { subject: string; body: string 
   const top = (c.findings ?? []).filter((f) => f.severity !== "minor").slice(0, 3);
   const findingsBlock = top.length
     ? top
-        .map((f) => `• ${severityLabel(f.severity)}: ${f.title} — ${f.cost}`)
+        .map((f) => `• ${f.title.length > 84 ? f.title.slice(0, 81) + "..." : f.title}`)
         .join("\n")
-    : "• The site is hard to read on phones and invisible to AI search — both fixable.";
+    : "• hard to read on phones • invisible to AI search";
 
   const plan = installmentFor(c.quote.oneTime);
   const subject = `I rebuilt ${c.business}'s website — have a look, ${owner(c)}`;
 
   const body = `Hi ${owner(c)},
 
-I'm Arshaq — a solo developer here in Saskatoon. I came across ${c.business}'s website and saw a great ${n(c.industry) || "local"} business hiding behind a site that undersells it. So I rebuilt it — the full site, no catch.
+I'm Arshaq — a solo developer here in Saskatoon. ${c.business}'s website undersells a great ${n(c.industry) || "local"} business, so I rebuilt it. No catch.
 
-Before rebuilding, I ran a professional audit of the current one. Three things stood out:
+Three things stood out when I audited the current site:
 
 ${findingsBlock}
 
-One more angle most owners haven't heard yet: customers now ask ChatGPT and Google's AI for "best ${n(c.industry) || "business"} in Saskatoon". Your current site is ${/^[AB]/.test(c.grade?.ai ?? "") ? "only partially" : "hardly"} readable by those systems — the rebuild fixes that.
+Also: customers now ask ChatGPT and Google's AI for "best ${n(c.industry) || "business"} in Saskatoon" — your current site is ${/^[AB]/.test(c.grade?.ai ?? "") ? "only partially" : "hardly"} readable by those. The rebuild fixes that.
 
-The price, in the open: $${c.quote.oneTime} CAD (or $${plan.monthly} CAD/month × ${plan.months}) — Saskatoon studios typically quote $${c.quote.marketLow}–$${c.quote.marketHigh} for the same work. After that, $${c.quote.maintenanceMonthly}/month for hosting, updates and small edits, cancel anytime.
+The price, in the open: $${c.quote.oneTime} CAD (or $${plan.monthly}/month × ${plan.months}) — Saskatoon studios quote $${c.quote.marketLow}–$${c.quote.marketHigh} for this. After that: $${c.quote.maintenanceMonthly}/month for hosting and edits, cancel anytime.
 
-I have before/after screenshots of your homepage ready — want me to send them over? Just reply "yes", or a "1" on WhatsApp works too.
+I have before/after screenshots of your homepage ready — want me to send them over? Reply "yes" and I'll email them, or a "1" on WhatsApp works too.
 
 Arshaq
 Webcules · Saskatoon

@@ -143,7 +143,12 @@ export function LeadDetail({
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {emailHref ? (
-              <Button variant="outline" size="sm" onClick={() => window.open(emailHref)} title={lead.email}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.open(emailHref)}
+                title={`${lead.email} — opens your default mail app (set Zoho Mail as the Windows mailto handler and this opens Zoho compose with everything prefilled)`}
+              >
                 <Mail /> Email pitch
               </Button>
             ) : (
