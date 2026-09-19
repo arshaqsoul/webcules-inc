@@ -34,3 +34,10 @@ export function waNumber(phone: string | null | undefined): string | null {
   if (digits.length >= 11) return digits;
   return null;
 }
+
+/** Native WhatsApp deep link — opens the desktop app to the chat with the message prefilled (no browser interstitial). */
+export function whatsappDeepLink(phone: string | null | undefined, text: string): string | null {
+  const num = waNumber(phone);
+  if (!num) return null;
+  return `whatsapp://send?phone=${num}&text=${encodeURIComponent(text)}`;
+}

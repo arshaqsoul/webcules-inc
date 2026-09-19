@@ -19,7 +19,7 @@ import type { Stage } from "@/db/schema";
 import type { Finding } from "@/lib/forge";
 import { draftEmail, draftWhatsApp } from "@/lib/outreach";
 import { STAGES, nextStage } from "@/lib/pipeline";
-import { fmtDate, waNumber } from "@/lib/utils";
+import { fmtDate, whatsappDeepLink } from "@/lib/utils";
 
 export type LeadView = {
   id: string;
@@ -114,7 +114,7 @@ export function LeadDetail({
   const emailHref = lead.email
     ? `mailto:${lead.email}?subject=${encodeURIComponent(emailDraft.subject)}&body=${encodeURIComponent(emailDraft.body)}`
     : null;
-  const waHref = waNumber(lead.phone) ? `https://wa.me/${waNumber(lead.phone)}?text=${encodeURIComponent(waDraft)}` : null;
+  const waHref = whatsappDeepLink(lead.phone, waDraft);
 
   function move(s: Stage) {
     setLeadStage(s);
@@ -159,7 +159,7 @@ export function LeadDetail({
                 size="sm"
                 className="bg-emerald-600 text-white hover:bg-emerald-700"
                 onClick={() => window.open(waHref)}
-                title={lead.phone}
+                title={`${lead.phone} — opens WhatsApp desktop with the message typed (first time: allow the "open WhatsApp" prompt)`}
               >
                 <MessageCircle /> WhatsApp pitch
               </Button>
