@@ -6,6 +6,8 @@ import { downloadTo, fetchWithTimeout, flagStr, log, resolveProject, UA, type Ar
  * Reference-gallery sources for the UI research phase. Each source filters differently —
  * these strategies were verified live (Sept 2026):
  *  - awwwards:      ?text=<full query>   server-side full-text search ✅
+ *  - uiuxshowcase:  ?s=<one word>       server-rendered WP search, AND-matched → vocab tag
+ *                       or first query word only (full multi-word query → no results)
  *  - minimal.gallery: /tag/<word>/       server-rendered tag pages ✅ (real vocab below)
  *  - recent.design: ?category=<word>     server-filtered ✅ (bogus → empty page → fallback)
  *  - darkmodedesign: ?s= is client-side only (returns identical HTML) — homepage list
@@ -46,6 +48,14 @@ const RECENT_CATEGORIES = [
   "news", "dashboard", "studio", "app",
 ];
 
+const UIUX_CATEGORIES = [
+  "agency", "animation", "artificial-intelligence", "books-blogs", "branding", "coding", "design-archives",
+  "design-films", "design-systems", "ecommerce-ads", "email-inspiration", "figma", "framer", "icons",
+  "illustrations", "jobs-freelancing", "landing-page", "learning", "logo-inspiration", "marketing",
+  "mindfulness", "mobile-app", "mockups", "portfolio", "productivity", "photography", "tutorials",
+  "typography", "ui-design", "ui-research", "industrial-design",
+];
+
 const SOURCES: Source[] = [
   {
     key: "awwwards",
@@ -56,6 +66,27 @@ const SOURCES: Source[] = [
     prefer: /awwwards\.com\/awards\/media\/cache\/[^/]+\/submissions\//i,
     upgrade: (u) => u.replace("thumb_440_330", "thumb_880_660"),
     dedupeKey: (u) => u.split("/").pop() ?? u,
+  },
+  {
+    key: "uiux",
+    label: "uiuxshowcase.com",
+    kind: "tag",
+    home: "https://uiuxshowcase.com/",
+    // ?s= is a real server-rendered WordPress search, but it ANDs every word — a full
+    // multi-word query returns "No results found". Search ONE word: the vocab tag if the
+    // query has one, else the query's first meaningful token (any word is searchable).
+    urlFor: (q, tag) => {
+      const word =
+        tag ?? q.toLowerCase().split(/[^a-z0-9]+/).find((t) => t && !STOPWORDS.has(t)) ?? q;
+      return `https://uiuxshowcase.com/?s=${enc(word)}`;
+    },
+    // showcase entries live at /uploads/YYYY/MM/Capitalized-Name(-scaled|-WxH).webp;
+    // UI chrome (menu/search/bookmark/category icons) is lowercase — avoided below
+    prefer: /\/wp-content\/uploads\/\d{4}\/\d{2}\/[A-Z][^/]*\.(?:webp|jpe?g|png)/,
+    avoid: /icon|bookmark|search-|best-of|uiuxshowcase\.com_/i,
+    upgrade: (u) => u.replace(/-\d{3,4}x\d{3,4}(\.(?:webp|jpe?g|png))$/i, "-scaled$1"),
+    dedupeKey: (u) => u.replace(/-scaled(\.\w+)$/i, "$1").replace(/-\d+x\d+(\.\w+)$/i, "$1"),
+    vocab: UIUX_CATEGORIES,
   },
   {
     key: "minimal",
