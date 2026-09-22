@@ -11,7 +11,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@webcules/ui/component
 
 import { CodeBlock } from "./code-block";
 
-const REGISTRY_PATH = "/r/wildcode-field.json";
 
 const PREREQS: { name: string; why: string; install: string | null }[] = [
   { name: "React 19", why: "client component, ref-as-prop API", install: null },
@@ -22,12 +21,12 @@ const PREREQS: { name: string; why: string; install: string | null }[] = [
 
 type RegistryFile = { path: string; type: string; content: string };
 
-function useRegistry(siteUrl: string) {
+function useRegistry(siteUrl: string, name: string) {
   const [files, setFiles] = useState<RegistryFile[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     let alive = true;
-    fetch(`${siteUrl}${REGISTRY_PATH}`)
+    fetch(`${siteUrl}/r/${name}.json`)
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((json) => { if (alive) setFiles(json.files as RegistryFile[]); })
       .catch((e) => { if (alive) setError(String(e)); });
@@ -56,9 +55,9 @@ function CopyAllButton({ files }: { files: RegistryFile[] }) {
   );
 }
 
-export function InstallTabs({ siteUrl }: { siteUrl: string }) {
-  const { files, error } = useRegistry(siteUrl);
-  const cliCmd = `npx shadcn@latest add "${siteUrl}${REGISTRY_PATH}"`;
+export function InstallTabs({ siteUrl, name = "wildcode-field" }: { siteUrl: string; name?: string }) {
+  const { files, error } = useRegistry(siteUrl, name);
+  const cliCmd = `npx shadcn@latest add "${siteUrl}/r/${name}.json"`;
 
   return (
     <Tabs defaultValue="cli" className="w-full">
@@ -74,8 +73,7 @@ export function InstallTabs({ siteUrl }: { siteUrl: string }) {
       <TabsContent value="cli">
         <div className="space-y-4">
           <p className="text-sm text-white/60">
-            Requires shadcn CLI. Run this from your project root — it writes the
-            component, the engine and its types, then you import and go.
+            Requires the shadcn CLI. Run this from your project root — it writes the component source, then you import and go.
           </p>
           <CodeBlock code={cliCmd} title="bash" />
           <p className="text-xs text-white/40">

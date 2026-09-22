@@ -14,7 +14,51 @@ const GENERATED_DOCS: Record<
   string,
   { usage: string; playground: boolean; sections: { title: string; items: string[] }[] }
 > = {
-  // populated by forge:approve when specs declare docs sections
+  "neural-pathways": {
+    usage: `import { NeuralPathways } from "@webcules/ui/components/neural-pathways";
+
+export function Hero() {
+  return (
+    <section className="relative h-screen overflow-hidden">
+      <NeuralPathways className="absolute inset-0" />
+      <div className="relative z-10 flex h-full flex-col items-center justify-center text-white">
+        <h1>Websites that stop the scroll.</h1>
+      </div>
+    </section>
+  );
+}`,
+    playground: false,
+    sections: [
+      {
+        title: "Highlights",
+        items: [
+          "Dual-waist light-stream lens: duotone filament wings whip inward and pinch through a glowing core",
+          "Procedural fog banks (WebGL FBM) lit by the wing colors — SVG turbulence fallback when WebGL is unavailable",
+          "Pure SVG geometry + CSS motion: zero runtime dependencies, deterministic rendering",
+          "Three palettes built in (neural / aurora / synapse) and 25+ props covering every visual knob",
+        ],
+      },
+      {
+        title: "Key props",
+        items: [
+          "primary / secondary — the two wing colors; crossTint blends them near the lens",
+          "waveAmp / waveFreq — the traveling whip-wave on each filament",
+          "pulseLines — bright pulses racing along the strands (off = solid lines)",
+          "cloudPosition / cloudDensity / cloudTint — where, how much, and what color the fog is",
+          "particleDensity / particleSize / starDensity — the sparks and dust",
+          "focalX / focalY / lensGap — where and how tight the lens pinches",
+        ],
+      },
+      {
+        title: "Behavior & accessibility",
+        items: [
+          "Decorative (aria-hidden) — sit your content on top of it",
+          "prefers-reduced-motion: renders one settled static frame",
+          "Pauses on hidden tabs; fog needs WebGL, everything else is SVG + CSS",
+        ],
+      },
+    ],
+  },
 };
 
 type Params = { slug: string };

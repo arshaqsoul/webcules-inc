@@ -52,17 +52,55 @@ export default function ComponentsOverviewPage() {
         </section>
       ) : null}
 
+      {approved.filter((c) => c !== featured).length ? (
+        <section className="mt-12">
+          <h2 className="mb-4 text-lg font-medium">All components</h2>
+          <div className="grid gap-6 sm:grid-cols-2">
+            {approved
+              .filter((c) => c !== featured)
+              .map((c) => (
+                <Link
+                  key={c.name}
+                  href={`/components/${c.name}`}
+                  className="group block overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition-colors hover:border-white/25"
+                >
+                  {c.preview ? (
+                    <div className="overflow-hidden">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={c.preview}
+                        alt={`${c.title} preview`}
+                        className="w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.02]"
+                      />
+                    </div>
+                  ) : null}
+                  <div className="p-5">
+                    <h3 className="font-medium text-white group-hover:text-violet-300">
+                      {c.title}
+                    </h3>
+                    <p className="mt-1.5 text-sm leading-relaxed text-white/55">
+                      {c.description}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+          </div>
+        </section>
+      ) : null}
+
       <section className="mt-12">
-        <h2 className="mb-4 text-lg font-medium">Use it anywhere</h2>
+        <h2 className="mb-4 text-lg font-medium">Use it in your project</h2>
         <p className="mb-4 text-sm leading-relaxed text-white/60">
-          The components live in <code className="font-mono text-white/80">@webcules/ui</code> —
-          available in every Webcules app. Any page (including this one) can
-          render them directly:
+          Every component is plain React + Tailwind — no package to install.
+          Grab it with the CLI (or copy the source from its docs page), drop it
+          into your project, and import it like any local component:
         </p>
         <pre className="overflow-x-auto rounded-xl border border-white/10 bg-[#0d0d17] p-4 font-mono text-[13px] text-emerald-100/90">
-          <code>{`import { WildcodeField } from "@webcules/ui/components/wildcode-field";
+          <code>{`npx shadcn@latest add "https://webcules.com/r/neural-pathways.json"
 
-<WildcodeField phrase="Start today" className="my-8" />`}</code>
+import NeuralPathways from "@/components/ui/neural-pathways";
+
+<NeuralPathways className="absolute inset-0" />`}</code>
         </pre>
       </section>
     </div>

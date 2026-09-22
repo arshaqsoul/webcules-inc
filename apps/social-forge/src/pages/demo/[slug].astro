@@ -1,0 +1,39 @@
+---
+import "../../styles/global.css";
+import DemoLoader from "../../demos/loader";
+import { demos } from "../../demos/registry";
+
+const { slug } = Astro.params;
+const entry = slug ? demos[slug] : undefined;
+if (!entry) return new Response(`no demo "${slug}" — add one in src/demos/ and run: social sync`, { status: 404 });
+
+const q = Astro.url.searchParams;
+---
+
+<!doctype html>
+<html lang="en" style="margin:0;background:#04060d;">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>demo · {entry.meta.slug}</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: #04060d;
+      }
+    </style>
+  </head>
+  <body>
+    <DemoLoader
+      client:only="react"
+      slug={slug}
+      variant={q.get("variant") ?? ""}
+      layout={q.get("layout") ?? "wide"}
+      hook={q.get("hook") ?? ""}
+      panel={q.has("panel")}
+    />
+  </body>
+</html>

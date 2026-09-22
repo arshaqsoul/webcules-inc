@@ -28,5 +28,20 @@ export const LIBRARY: LibraryEntry[] = [
     "docsMode": "custom",
     "preview": "/components/wildcode-field.webp",
     "phrase": "Start today"
+  },
+  {
+    "name": "neural-pathways",
+    "title": "NeuralPathways",
+    "tagline": "Dual-waist light-stream lens with living fog",
+    "description": "Two duotone wings of light filaments whip inward and pinch through a glowing lens, over procedural scene-lit fog. Pure SVG geometry + CSS motion + one WebGL fog pass \u2014 zero dependencies, reduced-motion aware.",
+    "tags": [
+      "svg",
+      "animation",
+      "background"
+    ],
+    "premium": false,
+    "phase": "approved",
+    "docsMode": "custom",
+    "preview": "/components/neural-pathways.webp"
   }
 ];

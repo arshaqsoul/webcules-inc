@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* components live outside the app dir — scan the ui package explicitly */
+@source "../../../packages/ui/src";
+
 @theme {
   --color-forge-bg: #0b0b12;
   --color-forge-panel: #12121c;

@@ -1,22 +1,15 @@
 import type { APIRoute } from "astro";
-import { h, json } from "../../engine/api.ts";
-import { Comfy } from "../../engine/comfy.ts";
-import { publisherStatuses } from "../../engine/publishers.ts";
-import { listProjects } from "../../engine/projects.ts";
 
-export const GET: APIRoute = h(async () => {
-  let comfy: any = null;
+export const GET: APIRoute = async () => {
+  let comfy: unknown = { online: false };
   try {
-    const stats = await new Comfy().systemStats();
-    comfy = {
-      online: true,
-      version: stats.system?.comfyui_version,
-      device: stats.devices?.[0]?.name,
-      vramFreeGb: +(stats.devices?.[0]?.vram_free / 1024 ** 3).toFixed(1),
-      vramTotalGb: +(stats.devices?.[0]?.vram_total / 1024 ** 3).toFixed(1),
-    };
-  } catch (e: any) {
-    comfy = { online: false, error: e.message };
-  }
-  return json({ ok: true, comfy, publishers: publisherStatuses(), projects: listProjects().length });
-});
+    const r = await fetch(`${process.env.COMFY_URL ?? "http://127.0.0.1:8188"}/system_stats`, { signal: AbortSignal.timeout(4000) });
+    if (r.ok) {
+      const stats = await r.json();
+      comfy = { online: true, version: stats.system?.comfyui_version, device: stats.devices?.[0]?.name };
+    }
+  } catch {}
+  return new Response(JSON.stringify({ ok: true, comfy, gallery: "social-forge v2" }), {
+    headers: { "content-type": "application/json" },
+  });
+};

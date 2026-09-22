@@ -3,13 +3,12 @@
   "name": "wildcode-field",
   "type": "registry:component",
   "title": "WildcodeField",
-  "description": "A living wordmark: flowers, vines and critters grow through your lettering on an interactive canvas.",
+  "description": "A living wordmark grown through your lettering",
   "homepage": "https://webcules.com/components/wildcode-field",
   "keywords": [
     "canvas",
     "animation",
-    "wordmark",
-    "flowers"
+    "client"
   ],
   "author": "Webcules",
   "dependencies": [],

@@ -64,6 +64,7 @@ The fetcher uses each source's real filter (verified working, server-side):
 | awwwards.com | `?text=<full query>` full-text search |
 | minimal.gallery | `/tag/<word>/` — tag auto-derived from the query against the site's real tag vocabulary |
 | recent.design | `?category=<word>` — auto-derived, falls back to the plain feed on a miss |
+| uiuxshowcase.com | `?s=<full query>` server-rendered WordPress search (showcase thumbnails only — icons filtered) |
 | darkmodedesign.com | homepage list (its `?s=` search is client-side only) |
 | motionsites.ai | homepage (gallery is JS-rendered) |
 | refero.design | recorded as a browse-link (`/search?q=` is client-side rendered) |

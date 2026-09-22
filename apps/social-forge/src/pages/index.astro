@@ -1,7 +1,45 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import App from "../components/App.tsx";
+import { demos } from "../demos/registry";
+const entries = Object.values(demos);
 ---
-<Layout title="social-forge — Webcules marketing system">
-  <App client:load />
-</Layout>
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>social-forge — demo gallery</title>
+    <style>
+      body {
+        margin: 0;
+        background: #0b0b12;
+        color: #e8e8f0;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <main style="max-width:720px;padding:48px 24px;">
+      <h1 style="font-size:28px;margin:0 0 4px;">social-forge <span style="color:#6c5ce7">demo gallery</span></h1>
+      <p style="color:#8a8aa0;margin:0 0 28px;">
+        Real components from <code>@webcules/ui</code>, served so <code>social render</code> can record them.
+      </p>
+      {entries.length === 0 && <p style="color:#8a8aa0">No demos yet — run <code>social sync</code> after adding one.</p>}
+      <ul style="list-style:none;padding:0;display:grid;gap:12px;">
+        {entries.map((d) => (
+          <li style="border:1px solid #23233a;border-radius:12px;padding:16px 20px;">
+            <a href={`/demo/${d.meta.slug}`} style="color:#00cec9;font-weight:600;text-decoration:none;font-size:17px;">
+              {d.meta.title}
+            </a>
+            <div style="color:#8a8aa0;font-size:14px;margin-top:4px;">
+              {d.meta.description} — component: <code>{d.meta.component}</code>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </main>
+  </body>
+</html>

@@ -4,10 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@webcules/ui/lib/utils";
+import { LIBRARY } from "@/components/library/manifest.gen";
 
 const ITEMS: { name: string; href: string; exact?: boolean }[] = [
   { name: "Overview", href: "/components", exact: true },
-  { name: "WildcodeField", href: "/components/wildcode-field" },
+  ...LIBRARY.filter((c) => c.phase === "approved").map((c) => ({
+    name: c.title,
+    href: `/components/${c.name}`,
+  })),
 ];
 
 export function ComponentsSidebar() {

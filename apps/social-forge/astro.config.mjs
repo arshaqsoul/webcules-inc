@@ -3,13 +3,16 @@ import react from '@astrojs/react';
 import node from '@astrojs/node';
 import tailwindcss from '@tailwindcss/vite';
 
-// Local-first engine app: dev server exposes the UI + API routes that drive
-// ComfyUI / git / the projects file tree. (Cloudflare deploys the static UI
-// later; engine routes are local-only by design.)
+// Demo gallery server: serves /demo/<slug> pages rendering the real components from
+// @webcules/ui, so `social render` can record them. Engine routes are local-only by design.
 export default defineConfig({
   output: 'server',
   adapter: node({ mode: 'standalone' }),
   integrations: [react()],
-  vite: { plugins: [tailwindcss()] },
+  devToolbar: { enabled: false }, // must never appear in recorded renders
+  vite: {
+    plugins: [tailwindcss()],
+    ssr: { noExternal: [/@webcules\/ui/] },
+  },
   server: { port: 4322, host: true },
 });
