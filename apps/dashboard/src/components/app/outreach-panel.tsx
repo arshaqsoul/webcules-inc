@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Copy, Mail, MessageCircle, Phone, Reply, Send } from "lucide-react";
+import { Check, Copy, ExternalLink, Facebook, Instagram, Mail, MessageCircle, Music2, Phone, Reply, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -14,15 +14,21 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { logOutreach, markOutreach } from "@/app/actions";
-import { draftEmail, draftFollowup, draftReply, draftWhatsApp } from "@/lib/outreach";
-import { fmtDate } from "@/lib/utils";
+import type { Channel } from "@/db/schema";
+import { draftEmail, draftFacebook, draftFollowup, draftInstagram, draftReply, draftTiktok, draftWhatsApp } from "@/lib/outreach";
+import { fmtDate, socialDmLink } from "@/lib/utils";
 
-const CHANNEL_ICON = { email: Mail, whatsapp: MessageCircle, call: Phone, meeting: Phone, note: Send } as const;
+const CHANNEL_ICON = { email: Mail, whatsapp: MessageCircle, facebook: Facebook, instagram: Instagram, tiktok: Music2, call: Phone, meeting: Phone, note: Send } as const;
+
+const TAB_ICON = { email: Mail, reply: Reply, whatsapp: MessageCircle, facebook: Facebook, instagram: Instagram, tiktok: Music2, f3: Send, f7: Send } as const;
+
+/** Which channel a sent draft is logged under — the two email variants and both follow-ups count as email. */
+const TAB_CHANNEL = { email: "email", reply: "email", whatsapp: "whatsapp", facebook: "facebook", instagram: "instagram", tiktok: "tiktok", f3: "email", f7: "email" } as const;
 
 export function OutreachPanel({ lead, project, touches }: { lead: LeadView; project: ProjectView | null; touches: TouchView[] }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [tab, setTab] = useState<"email" | "reply" | "whatsapp" | "f3" | "f7">("email");
+  const [tab, setTab] = useState<"email" | "reply" | "whatsapp" | "facebook" | "instagram" | "tiktok" | "f3" | "f7">("email");
   const [copied, setCopied] = useState(false);
 
   const ctx = useMemo(
@@ -50,10 +56,27 @@ export function OutreachPanel({ lead, project, touches }: { lead: LeadView; proj
     email: { title: email.subject, body: email.body, label: "Cold email (no links)" },
     reply: { title: reply.subject, body: reply.body, label: "Reply pack (image + link)" },
     whatsapp: { title: "WhatsApp hook", body: draftWhatsApp(ctx), label: "WhatsApp hook" },
+    facebook: { title: "Facebook DM", body: draftFacebook(ctx), label: "Facebook DM" },
+    instagram: { title: "Instagram DM", body: draftInstagram(ctx), label: "Instagram DM" },
+    tiktok: { title: "TikTok DM", body: draftTiktok(ctx), label: "TikTok DM" },
     f3: { title: "Day-3 follow-up", body: draftFollowup(ctx, 3), label: "Day-3 follow-up" },
     f7: { title: "Day-7 last nudge", body: draftFollowup(ctx, 7), label: "Day-7 last nudge" },
   };
   const current = drafts[tab];
+
+  const dmLink = useMemo(
+    () =>
+      tab === "whatsapp"
+        ? null // WhatsApp is opened straight from the header button (native app, prefilled)
+        : tab === "facebook"
+          ? socialDmLink("facebook", lead.facebook)
+          : tab === "instagram"
+            ? socialDmLink("instagram", lead.instagram)
+            : tab === "tiktok"
+              ? socialDmLink("tiktok", lead.tiktok)
+              : null,
+    [tab, lead.facebook, lead.instagram, lead.tiktok],
+  );
 
   async function copy() {
     await navigator.clipboard.writeText(tab === "email" || tab === "reply" ? `Subject: ${current.title}\n\n${current.body}` : current.body);
@@ -62,11 +85,19 @@ export function OutreachPanel({ lead, project, touches }: { lead: LeadView; proj
     setTimeout(() => setCopied(false), 1500);
   }
 
+  /** Social DMs can't take a prefilled message — copy the draft, open the chat, paste. */
+  async function copyAndOpenDm() {
+    if (!dmLink) return;
+    await navigator.clipboard.writeText(current.body);
+    window.open(dmLink, "_blank");
+    toast.success("Draft copied — paste it into the DM");
+  }
+
   function logSent() {
     startTransition(async () => {
       await logOutreach({
         leadId: lead.id,
-        channel: tab === "whatsapp" ? "whatsapp" : "email",
+        channel: TAB_CHANNEL[tab],
         kind: tab === "f3" || tab === "f7" ? "followup" : tab === "reply" ? "reply" : "pitch",
         subject: current.title,
         body: current.body,
@@ -84,18 +115,22 @@ export function OutreachPanel({ lead, project, touches }: { lead: LeadView; proj
           <CardTitle>Pitch drafts</CardTitle>
           <CardDescription>
             The cold email carries <strong>zero links and zero images</strong> (workers.dev links are spam-blocked; a fresh domain can't afford HTML weight). After
-            they reply, send the <strong>Reply pack</strong>: before/after image attached + the live preview link — safe in an engaged thread. WhatsApp carries
-            the link immediately.
+            they reply, send the <strong>Reply pack</strong>: before/after image attached + the live preview link — safe in an engaged thread. WhatsApp opens the
+            desktop app with everything typed; the Facebook/Instagram/TikTok DMs copy the draft and open the chat — paste it in (none of them accept prefilled
+            messages).
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           <div className="flex flex-wrap gap-2">
-            {(Object.keys(drafts) as (keyof typeof drafts)[]).map((k) => (
-              <Button key={k} size="sm" variant={tab === k ? "default" : "outline"} onClick={() => setTab(k)}>
-                {k === "email" ? <Mail /> : k === "whatsapp" ? <MessageCircle /> : k === "reply" ? <Reply /> : <Send />}
-                {drafts[k].label}
-              </Button>
-            ))}
+            {(Object.keys(drafts) as (keyof typeof drafts)[]).map((k) => {
+              const Icon = TAB_ICON[k];
+              return (
+                <Button key={k} size="sm" variant={tab === k ? "default" : "outline"} onClick={() => setTab(k)}>
+                  <Icon />
+                  {drafts[k].label}
+                </Button>
+              );
+            })}
           </div>
 
           {(tab === "email" || tab === "reply") && (
@@ -132,6 +167,14 @@ export function OutreachPanel({ lead, project, touches }: { lead: LeadView; proj
                 <Mail /> Open in mail app
               </Button>
             )}
+            {(tab === "facebook" || tab === "instagram" || tab === "tiktok") &&
+              (dmLink ? (
+                <Button variant="ghost" onClick={copyAndOpenDm}>
+                  <ExternalLink /> Copy & open DM
+                </Button>
+              ) : (
+                <span className="self-center text-xs text-muted-foreground">no {tab} handle on file — add it under Edit</span>
+              ))}
           </div>
         </CardContent>
       </Card>
@@ -231,7 +274,7 @@ function LogTouchDialog({ leadId }: { leadId: string }) {
             startTransition(async () => {
               await logOutreach({
                 leadId,
-                channel: channel as "call" | "meeting" | "note",
+                channel: channel as Channel,
                 kind: "note",
                 body: note,
                 status: "sent",
@@ -254,6 +297,10 @@ function LogTouchDialog({ leadId }: { leadId: string }) {
                 <SelectItem value="meeting">Meeting</SelectItem>
                 <SelectItem value="note">Note</SelectItem>
                 <SelectItem value="reply">Email reply (received)</SelectItem>
+                <SelectItem value="whatsapp">WhatsApp DM</SelectItem>
+                <SelectItem value="facebook">Facebook DM</SelectItem>
+                <SelectItem value="instagram">Instagram DM</SelectItem>
+                <SelectItem value="tiktok">TikTok DM</SelectItem>
               </SelectContent>
             </Select>
           </div>

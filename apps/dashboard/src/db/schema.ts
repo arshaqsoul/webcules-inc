@@ -57,6 +57,12 @@ export const verification = sqliteTable("verification", {
 
 export type Stage = "lead" | "redesigned" | "contacted" | "negotiating" | "won" | "live" | "lost";
 
+/** How a touch went out — the five direct channels plus the manual log-only ones. */
+export type Channel = "email" | "whatsapp" | "facebook" | "instagram" | "tiktok" | "call" | "meeting" | "note";
+
+/** Profile handle on file for each social DM channel — stored bare (no @, no URL). */
+export type SocialChannel = "facebook" | "instagram" | "tiktok";
+
 export const leads = sqliteTable(
   "leads",
   {
@@ -68,6 +74,9 @@ export const leads = sqliteTable(
     contactName: text("contact_name").default(""),
     email: text("email").default(""),
     phone: text("phone").default(""),
+    facebook: text("facebook").default(""),
+    instagram: text("instagram").default(""),
+    tiktok: text("tiktok").default(""),
     stage: text("stage").$type<Stage>().notNull().default("lead"),
     source: text("source").default(""),
     notes: text("notes").default(""),
@@ -104,7 +113,7 @@ export const outreach = sqliteTable(
     leadId: text("lead_id")
       .notNull()
       .references(() => leads.id, { onDelete: "cascade" }),
-    channel: text("channel").$type<"email" | "whatsapp" | "call" | "meeting" | "note">().notNull(),
+    channel: text("channel").$type<Channel>().notNull(),
     kind: text("kind").$type<"pitch" | "followup" | "reply" | "note">().notNull().default("note"),
     subject: text("subject").default(""),
     body: text("body").default(""),

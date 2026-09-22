@@ -24,6 +24,9 @@ export function EditLeadDialog({ lead, compact }: { lead: LeadView; compact?: bo
     contactName: lead.contactName,
     email: lead.email,
     phone: lead.phone,
+    facebook: lead.facebook,
+    instagram: lead.instagram,
+    tiktok: lead.tiktok,
     notes: lead.notes,
   });
 
@@ -46,7 +49,7 @@ export function EditLeadDialog({ lead, compact }: { lead: LeadView; compact?: bo
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>Edit lead</DialogTitle>
-          <DialogDescription>Found their email or mobile after all? Fill it in — the send buttons appear the moment a contact lands.</DialogDescription>
+          <DialogDescription>Found their email, mobile or socials after all? Fill it in — the send buttons appear the moment a contact lands.</DialogDescription>
         </DialogHeader>
         <form
           className="grid gap-4 sm:grid-cols-2"
@@ -79,6 +82,18 @@ export function EditLeadDialog({ lead, compact }: { lead: LeadView; compact?: bo
           <div className="flex flex-col gap-2">
             <Label htmlFor="e-phone">Phone / WhatsApp</Label>
             <Input id="e-phone" value={form.phone} onChange={set("phone")} placeholder="+1 306 …" />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="e-facebook">Facebook page</Label>
+            <Input id="e-facebook" value={form.facebook} onChange={set("facebook")} placeholder="facebook.com/theirpage" />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="e-instagram">Instagram handle</Label>
+            <Input id="e-instagram" value={form.instagram} onChange={set("instagram")} placeholder="@theirhandle" />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="e-tiktok">TikTok handle</Label>
+            <Input id="e-tiktok" value={form.tiktok} onChange={set("tiktok")} placeholder="@theirhandle" />
           </div>
           <div className="flex flex-col gap-2 sm:col-span-2">
             <Label htmlFor="e-siteUrl">Website</Label>

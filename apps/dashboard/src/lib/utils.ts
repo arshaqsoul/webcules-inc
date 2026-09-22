@@ -16,13 +16,13 @@ export function cad(amount: number, opts: { cents?: boolean } = {}) {
 
 export function fmtDate(d: Date | number | null | undefined) {
   if (!d) return "—";
-  const date = typeof d === "number" ? new Date(d * 1000) : d;
+  const date = typeof d === "number" ? new Date(d) : d;
   return new Intl.DateTimeFormat("en-CA", { dateStyle: "medium" }).format(date);
 }
 
 export function daysSince(d: Date | number | null | undefined) {
   if (!d) return null;
-  const date = typeof d === "number" ? new Date(d * 1000) : d;
+  const date = typeof d === "number" ? new Date(d) : d;
   return Math.floor((Date.now() - date.getTime()) / 86400000);
 }
 
@@ -40,4 +40,39 @@ export function whatsappDeepLink(phone: string | null | undefined, text: string)
   const num = waNumber(phone);
   if (!num) return null;
   return `whatsapp://send?phone=${num}&text=${encodeURIComponent(text)}`;
+}
+
+/**
+ * Bare social handle from whatever's on file — "@foo", "instagram.com/foo",
+ * "https://www.facebook.com/foo/about" and "foo" all become "foo" (the DM links need it bare).
+ */
+export function socialHandle(input: string | null | undefined): string | null {
+  let raw = (input ?? "").trim().replace(/^https?:\/\//i, "");
+  if (!raw) return null;
+  if (raw.includes("/")) {
+    const path = raw.slice(raw.indexOf("/") + 1); // URL form: keep what follows the domain
+    if (path) raw = path;
+  }
+  const handle = raw
+    .replace(/^@/, "")
+    .replace(/[/?].*$/, "")
+    .trim();
+  return handle || null;
+}
+
+const socialDmLinks = {
+  facebook: (h: string) => `https://m.me/${h}`,
+  instagram: (h: string) => `https://ig.me/m/${h}`,
+  /** TikTok has no DM deep link — the profile is as close as a URL gets; the Message button is one tap away. */
+  tiktok: (h: string) => `https://www.tiktok.com/@${h}`,
+} as const;
+
+/**
+ * DM deep links for the social channels. Unlike WhatsApp, none of the three accept a
+ * prefilled message — pair these with a clipboard copy of the draft.
+ */
+export function socialDmLink(channel: "facebook" | "instagram" | "tiktok", handle: string | null | undefined): string | null {
+  const h = socialHandle(handle);
+  if (!h) return null;
+  return socialDmLinks[channel](h);
 }

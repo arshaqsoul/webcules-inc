@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, Globe, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
+import { ChevronRight, Facebook, Globe, Instagram, Mail, MapPin, MessageCircle, Music2, Phone } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
@@ -18,9 +18,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { setStage } from "@/app/actions";
 import type { Stage } from "@/db/schema";
 import type { Finding } from "@/lib/forge";
-import { draftEmail, draftWhatsApp } from "@/lib/outreach";
+import { draftEmail, draftFacebook, draftInstagram, draftTiktok, draftWhatsApp } from "@/lib/outreach";
 import { STAGES, nextStage } from "@/lib/pipeline";
-import { fmtDate, whatsappDeepLink } from "@/lib/utils";
+import { fmtDate, socialDmLink, whatsappDeepLink } from "@/lib/utils";
 
 export type LeadView = {
   id: string;
@@ -31,6 +31,9 @@ export type LeadView = {
   contactName: string;
   email: string;
   phone: string;
+  facebook: string;
+  instagram: string;
+  tiktok: string;
   stage: Stage;
   notes: string;
   lastTouchAt: number | null;
@@ -117,6 +120,23 @@ export function LeadDetail({
     : null;
   const waHref = whatsappDeepLink(lead.phone, waDraft);
 
+  // Social DMs can't take a prefilled message — clicking copies the draft and opens the chat, you paste.
+  const socialPitches = useMemo(
+    () =>
+      [
+        { channel: "facebook", icon: Facebook, label: "FB pitch", draft: draftFacebook(ctx), handle: lead.facebook },
+        { channel: "instagram", icon: Instagram, label: "IG pitch", draft: draftInstagram(ctx), handle: lead.instagram },
+        { channel: "tiktok", icon: Music2, label: "TikTok pitch", draft: draftTiktok(ctx), handle: lead.tiktok },
+      ] satisfies { channel: "facebook" | "instagram" | "tiktok"; icon: typeof Facebook; label: string; draft: string; handle: string }[],
+    [ctx, lead.facebook, lead.instagram, lead.tiktok],
+  ).map((p) => ({ ...p, href: socialDmLink(p.channel, p.handle) }));
+
+  async function copyAndOpen(draft: string, href: string) {
+    await navigator.clipboard.writeText(draft);
+    window.open(href, "_blank");
+    toast.success("Draft copied — paste it into the DM");
+  }
+
   function move(s: Stage) {
     setLeadStage(s);
     startTransition(async () => {
@@ -167,6 +187,19 @@ export function LeadDetail({
             ) : (
               <span className="text-xs text-muted-foreground">no mobile on file</span>
             )}
+            {socialPitches.map((p) =>
+              p.href ? (
+                <Button
+                  key={p.channel}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => copyAndOpen(p.draft, p.href as string)}
+                  title={`@${p.handle} — copies the draft and opens the ${p.channel} chat in the browser; paste the message there`}
+                >
+                  <p.icon /> {p.label}
+                </Button>
+              ) : null,
+            )}
             {next && (
               <Button variant={next === "lost" ? "outline" : "default"} size="sm" onClick={() => move(next)}>
                 Advance to {STAGES.find((s) => s.id === next)?.label}
@@ -196,6 +229,13 @@ export function LeadDetail({
             <a href={`tel:${lead.phone}`} className="inline-flex items-center gap-1.5 hover:text-primary">
               <Phone className="size-3.5" /> {lead.phone}
             </a>
+          )}
+          {socialPitches.map((p) =>
+            p.href ? (
+              <a key={p.channel} href={p.href} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 hover:text-primary">
+                <p.icon className="size-3.5" /> @{p.handle}
+              </a>
+            ) : null,
           )}
           <span>last touch {lead.lastTouchAt ? fmtDate(lead.lastTouchAt) : "never"}</span>
         </div>

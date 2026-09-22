@@ -22,7 +22,7 @@ export function LeadFormDialog({
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [form, setForm] = useState({ business: "", industry: "", siteUrl: "", contactName: "", email: "", phone: "", notes: "" });
+  const [form, setForm] = useState({ business: "", industry: "", siteUrl: "", contactName: "", email: "", phone: "", facebook: "", instagram: "", tiktok: "", notes: "" });
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -33,7 +33,7 @@ export function LeadFormDialog({
       try {
         await createLead(form);
         toast.success(`${form.business} added`);
-        setForm({ business: "", industry: "", siteUrl: "", contactName: "", email: "", phone: "", notes: "" });
+        setForm({ business: "", industry: "", siteUrl: "", contactName: "", email: "", phone: "", facebook: "", instagram: "", tiktok: "", notes: "" });
         onOpenChange?.(false);
         router.refresh();
       } catch (err) {
@@ -74,6 +74,18 @@ export function LeadFormDialog({
           <div className="flex flex-col gap-2">
             <Label htmlFor="phone">Phone / WhatsApp</Label>
             <Input id="phone" value={form.phone} onChange={set("phone")} placeholder="+1 306 …" />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="facebook">Facebook page</Label>
+            <Input id="facebook" value={form.facebook} onChange={set("facebook")} placeholder="facebook.com/theirpage" />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="instagram">Instagram handle</Label>
+            <Input id="instagram" value={form.instagram} onChange={set("instagram")} placeholder="@theirhandle" />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="tiktok">TikTok handle</Label>
+            <Input id="tiktok" value={form.tiktok} onChange={set("tiktok")} placeholder="@theirhandle" />
           </div>
           <div className="flex flex-col gap-2 sm:col-span-2">
             <Label htmlFor="notes">Notes</Label>

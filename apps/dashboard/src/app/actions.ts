@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 
 import { db } from "@/db";
 import { leads, outreach, payments, projects, subscriptions, user } from "@/db/schema";
-import type { Stage } from "@/db/schema";
+import type { Channel, Stage } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import type { GtmManifest } from "@/lib/forge";
 import type { Quote } from "@/lib/pricing";
@@ -43,6 +43,9 @@ export type LeadInput = {
   contactName?: string;
   email?: string;
   phone?: string;
+  facebook?: string;
+  instagram?: string;
+  tiktok?: string;
   source?: string;
   notes?: string;
 };
@@ -59,6 +62,9 @@ export async function createLead(input: LeadInput) {
     contactName: input.contactName ?? "",
     email: input.email ?? "",
     phone: input.phone ?? "",
+    facebook: input.facebook ?? "",
+    instagram: input.instagram ?? "",
+    tiktok: input.tiktok ?? "",
     source: input.source ?? "manual",
     notes: input.notes ?? "",
     stage: "lead",
@@ -105,6 +111,9 @@ export async function importForgeProject(gtm: GtmManifest) {
     contactName: gtm.contact?.contactName ?? "",
     email: gtm.contact?.email ?? "",
     phone: gtm.contact?.phone ?? "",
+    facebook: gtm.contact?.facebook ?? "",
+    instagram: gtm.contact?.instagram ?? "",
+    tiktok: gtm.contact?.tiktok ?? "",
     stage: gtm.previewUrl ? "redesigned" : "lead",
     source: "forge-redesign",
     notes: gtm.previewUrl ? `Preview: ${gtm.previewUrl}` : "",
@@ -167,7 +176,7 @@ export async function updateProject(projectId: string, input: { previewUrl?: str
 
 export type OutreachInput = {
   leadId: string;
-  channel: "email" | "whatsapp" | "call" | "meeting" | "note";
+  channel: Channel;
   kind: "pitch" | "followup" | "reply" | "note";
   subject?: string;
   body?: string;

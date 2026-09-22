@@ -92,6 +92,45 @@ export function draftWhatsApp(c: OutreachContext): string {
 $${c.quote.oneTime} CAD to go live on your domain (or $${plan.monthly} CAD/month × ${plan.months} — studios charge $${c.quote.marketLow}–$${c.quote.marketHigh}). $${c.quote.maintenanceMonthly}/mo after that, cancel anytime. Let me know when free for a chat?`;
 }
 
+/**
+ * Facebook DM — sent from the Webcules page, so a link survives, but a message to a
+ * business page you've never talked to lands in Message Requests: the ask has to be
+ * "open the preview", not "reply yes" (requests get forgotten once unread).
+ */
+export function draftFacebook(c: OutreachContext): string {
+  const top = (c.findings ?? []).filter((f) => f.severity !== "minor")[0];
+  const plan = installmentFor(c.quote.oneTime);
+  return `Hi ${owner(c)}, Arshaq here — I run Webcules, a one-person web studio in Saskatoon. ${c.business}'s website undersells the business (${
+    top ? top.title.toLowerCase() : "it's hard to use on phones"
+  }), so I rebuilt the whole thing — no catch, just want you to see it: ${n(c.previewUrl) || "[preview link]"}
+
+If you like what you see, it goes live on your own domain for $${c.quote.oneTime} CAD (or $${plan.monthly}/month × ${plan.months} — Saskatoon studios charge $${c.quote.marketLow}–$${c.quote.marketHigh} for the same thing), and I handle the domain switch and everything technical. Worth a look?`;
+}
+
+/**
+ * Instagram DM — IG filters links in DMs between non-mutuals, so the first message
+ * carries zero links: the ask is "want the before/after?", the link goes out on reply.
+ */
+export function draftInstagram(c: OutreachContext): string {
+  const top = (c.findings ?? []).filter((f) => f.severity === "critical")[0];
+  const hook = top ? top.title.toLowerCase() : "it's showing its age";
+  const plan = installmentFor(c.quote.oneTime);
+  return `Hey ${owner(c)} — Arshaq, web developer in Saskatoon. ${hook} on ${c.business}'s website, so I rebuilt it for free to show what it could be. I've got the before/after ready if you want a look.
+
+If you like it, it's yours: $${c.quote.oneTime} CAD to go live on your domain, or $${plan.monthly}/month × ${plan.months}. No pressure either way — want me to send it over?`;
+}
+
+/**
+ * TikTok DM — shortest of the lot (DMs from non-mutuals are throttled and links are
+ * dead on arrival): one hook, one offer, ask before sending anything.
+ */
+export function draftTiktok(c: OutreachContext): string {
+  const top = (c.findings ?? []).filter((f) => f.severity === "critical")[0];
+  const hook = top ? top.title.toLowerCase() : "your site loads slow on phones";
+  const plan = installmentFor(c.quote.oneTime);
+  return `hi ${owner(c)} — arshaq, web dev in saskatoon. ${hook} on ${c.business}'s website, so i rebuilt the whole thing and recorded a before/after walkthrough. if you want it, it's yours: $${c.quote.oneTime} CAD (or $${plan.monthly}/mo × ${plan.months}), i handle everything technical. can i send it?`;
+}
+
 export function draftFollowup(c: OutreachContext, day: 3 | 7): string {
   if (day === 3) {
     const top = (c.findings ?? []).filter((f) => f.severity !== "minor")[0];
