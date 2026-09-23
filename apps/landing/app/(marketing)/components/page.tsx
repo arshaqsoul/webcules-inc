@@ -6,103 +6,82 @@ import { LIBRARY } from "@/components/library/manifest.gen";
 export const metadata: Metadata = {
   title: "Components — Webcules",
   description:
-    "Copy-pastable components built and used by Webcules. Live previews, docs and source.",
+    "Copy-pastable components built and used by Webcules. Live playgrounds, docs and source — no package to install, just take the code.",
 };
 
 export default function ComponentsOverviewPage() {
   const approved = LIBRARY.filter((c) => c.phase === "approved");
-  const featured = approved.find((c) => c.preview && !c.premium);
 
   return (
-    <div>
-      <h1 className="text-4xl font-semibold tracking-tight">Components</h1>
-      <p className="mt-4 max-w-2xl text-white/60">
-        Copy-pastable components built and battle-tested on Webcules sites.
-        Pick a component from the sidebar — every entry ships with a live
-        playground, docs and full source. No package to install, just take the
-        code.
-      </p>
+    /* Same width as the landing page sections (lg:max-w-[85rem]). */
+    <div className="mx-auto w-full max-w-[85rem] px-4 pb-28 pt-24 sm:px-6 lg:px-8">
+      <div className="mb-12 max-w-2xl">
+        <p className="mb-3 text-xs font-medium uppercase tracking-widest text-white/35">
+          Webcules component library
+        </p>
+        <h1 className="text-4xl font-semibold tracking-tight">Components</h1>
+        <p className="mt-4 text-white/60">
+          Copy-pastable components built and battle-tested on Webcules sites.
+          Pick one to open its playground — tweak every prop live, copy the
+          code, and save your config to your dashboard.
+        </p>
+      </div>
 
-      {featured ? (
-        <section className="mt-12">
-          <h2 className="mb-4 text-lg font-medium">Featured</h2>
+      <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+        {approved.map((c) => (
           <Link
-            href={`/components/${featured.name}`}
-            className="group block overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition-colors hover:border-white/25"
+            key={c.name}
+            href={`/components/${c.name}`}
+            className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition-colors hover:border-white/25"
           >
-            {featured.preview ? (
-              <div className="overflow-hidden">
+            {c.preview ? (
+              <div className="overflow-hidden border-b border-white/10">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={featured.preview}
-                  alt={`${featured.title} preview`}
-                  className="w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.02]"
+                  src={c.preview}
+                  alt={`${c.title} preview`}
+                  className="aspect-[3/2] w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.02]"
                 />
               </div>
             ) : null}
-            <div className="p-5">
-              <h3 className="font-medium text-white group-hover:text-violet-300">
-                {featured.title}
-              </h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-white/55">
-                {featured.description}
+            <div className="flex flex-1 flex-col p-5">
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="font-medium text-white group-hover:text-violet-300">
+                  {c.title}
+                </h3>
+                {c.premium ? (
+                  <span className="rounded-full border border-fuchsia-400/30 bg-fuchsia-400/10 px-2 py-0.5 text-[11px] text-fuchsia-300">
+                    premium
+                  </span>
+                ) : null}
+              </div>
+              <p className="mt-1.5 flex-1 text-sm leading-relaxed text-white/55">
+                {c.tagline}
               </p>
+              <div className="mt-4 flex items-center justify-between">
+                <div className="flex flex-wrap gap-1.5">
+                  {c.tags.map((t) => (
+                    <span
+                      key={t}
+                      className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] text-white/50"
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
+                <span className="text-xs text-white/40 transition-colors group-hover:text-violet-300">
+                  {c.premium ? "Learn more →" : "Open playground →"}
+                </span>
+              </div>
             </div>
           </Link>
-        </section>
-      ) : null}
+        ))}
+      </div>
 
-      {approved.filter((c) => c !== featured).length ? (
-        <section className="mt-12">
-          <h2 className="mb-4 text-lg font-medium">All components</h2>
-          <div className="grid gap-6 sm:grid-cols-2">
-            {approved
-              .filter((c) => c !== featured)
-              .map((c) => (
-                <Link
-                  key={c.name}
-                  href={`/components/${c.name}`}
-                  className="group block overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition-colors hover:border-white/25"
-                >
-                  {c.preview ? (
-                    <div className="overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={c.preview}
-                        alt={`${c.title} preview`}
-                        className="w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.02]"
-                      />
-                    </div>
-                  ) : null}
-                  <div className="p-5">
-                    <h3 className="font-medium text-white group-hover:text-violet-300">
-                      {c.title}
-                    </h3>
-                    <p className="mt-1.5 text-sm leading-relaxed text-white/55">
-                      {c.description}
-                    </p>
-                  </div>
-                </Link>
-              ))}
-          </div>
-        </section>
-      ) : null}
-
-      <section className="mt-12">
-        <h2 className="mb-4 text-lg font-medium">Use it in your project</h2>
-        <p className="mb-4 text-sm leading-relaxed text-white/60">
-          Every component is plain React + Tailwind — no package to install.
-          Grab it with the CLI (or copy the source from its docs page), drop it
-          into your project, and import it like any local component:
-        </p>
-        <pre className="overflow-x-auto rounded-xl border border-white/10 bg-[#0d0d17] p-4 font-mono text-[13px] text-emerald-100/90">
-          <code>{`npx shadcn@latest add "https://webcules.com/r/neural-pathways.json"
-
-import NeuralPathways from "@/components/ui/neural-pathways";
-
-<NeuralPathways className="absolute inset-0" />`}</code>
-        </pre>
-      </section>
+      <p className="mt-12 text-sm leading-relaxed text-white/40">
+        Every component is plain React + Tailwind — no package to install. Grab
+        it with the CLI or copy the source straight from its playground.
+      </p>
     </div>
   );
 }

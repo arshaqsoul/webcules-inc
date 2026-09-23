@@ -8,10 +8,28 @@ export type DemoEntry = {
 export type DemoMeta = { slug: string; title: string; component: string; description: string };
 
 export const demos: Record<string, DemoEntry> = {
+  "cine-scroll": { meta: {
+      "slug": "cine-scroll",
+      "title": "CineScroll",
+      "component": "cine-scroll",
+      "description": "Scroll-scrubbed cinematic hero — SHŪDEN, a last-train story in ten ComfyUI plates. ?panel=1: upload your own scenes, edit the chapters, tune the film."
+    }, load: () => import("./cine-scroll.tsx") },
+  "following-eyes": { meta: {
+      "slug": "following-eyes",
+      "title": "Following Eyes",
+      "component": "following-eyes",
+      "description": "Upload any image — the eyes follow the cursor everywhere. ?panel=1 exposes every prop live"
+    }, load: () => import("./following-eyes.tsx") },
   "neural-pathways": { meta: {
       "slug": "neural-pathways",
       "title": "Neural Pathways",
       "component": "neural-pathways",
       "description": "Dual-waist light-stream lens, fully parametric SVG — ?panel=1 exposes every prop live"
     }, load: () => import("./neural-pathways.tsx") },
+  "silk-aurora": { meta: {
+      "slug": "silk-aurora",
+      "title": "Silk Aurora",
+      "component": "silk-aurora",
+      "description": "Flowing silk ribbons of gradient light — ?panel=1 exposes every prop live"
+    }, load: () => import("./silk-aurora.tsx") },
 };

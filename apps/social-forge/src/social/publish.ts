@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
-import { REPO_ROOT, SOCIAL_ROOT, ensureDir, flagStr, log, readManifest, writeManifest, type Args } from "./util.ts";
+import { REPO_ROOT, SOCIAL_ROOT, ensureDir, flagStr, log, readManifest, requireConfirmed, writeManifest, type Args } from "./util.ts";
 
 const LANDING = path.join(REPO_ROOT, "apps", "landing");
 
@@ -13,6 +13,7 @@ export async function cmdPublish(args: Args) {
   const slug = flagStr(args, "project");
   if (!slug) log.err("usage: social publish --project <slug> [--title X] [--tagline '...'] [--tags a,b,c]") || process.exit(1);
   const m = readManifest(slug);
+  requireConfirmed(m, "publish");
   if (!m.component.name || !m.component.file) {
     log.err("manifest has no component yet — build it first (PLAYBOOK.md phase 3)");
     process.exit(1);

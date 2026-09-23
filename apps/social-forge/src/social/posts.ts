@@ -1,11 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
-import { SOCIAL_ROOT, ensureDir, flagStr, log, readManifest, writeManifest, type Args } from "./util.ts";
+import { SOCIAL_ROOT, ensureDir, flagStr, log, readManifest, requireConfirmed, writeManifest, type Args } from "./util.ts";
 
 export async function cmdPost(args: Args) {
   const slug = flagStr(args, "project");
   if (!slug) log.err("usage: social post --project <slug>") || process.exit(1);
   const m = readManifest(slug);
+  requireConfirmed(m, "post");
   const variants = Object.keys(m.variants ?? {});
   if (!variants.length) log.warn("no variants in manifest — the carousel section will be a placeholder");
 

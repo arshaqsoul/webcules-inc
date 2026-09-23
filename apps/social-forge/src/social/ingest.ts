@@ -5,8 +5,9 @@ import { SOCIAL_ROOT, ensureDir, slugify, flagStr, log, resolveFfmpeg, writeMani
 
 const ANALYSIS_SKELETON = `# Component analysis — {SLUG}
 
-> Written by the agent after reading research/frames/*. Write it to be shown — this file is the
-> spec the component is built from. Update the status line in social.project.json when done.
+> Written by the agent after reading research/frames/*. Write it to be shown — the USER reads
+> this file and confirms it before anything is built. Until they confirm (social confirm),
+> the pipeline is stopped.
 
 ## Reference
 
@@ -27,13 +28,16 @@ What the source motion is (site/app it came from, what happens over time, where 
 - Performance rules: canvas 2D, one RAF, DPR-capped, pause on hidden tab, static frame under prefers-reduced-motion, zero runtime deps
 - Accessibility: decorative (aria-hidden) by default; no content lives inside
 
-## Demo composition
+## Library placement
 
-What the /demo/<slug> page shows (wide + vertical reel layout with the hook baked in).
+How it slots into the Webcules component library next to wildcode-field and neural-pathways:
+title, tagline, tags, what the generated docs page highlights, suggested usage snippet.
 
-## Social angle
+## Optional demo + social angle
 
-Catchphrase, why local business owners should care, which variant leads the carousel.
+Only if the FB/IG render pack is wanted: what the demo page shows (wide + vertical reel with
+the hook baked in). Catchphrase, why local business owners should care, which variant leads
+the carousel.
 `;
 
 export async function cmdIngest(args: Args) {
@@ -88,6 +92,7 @@ export async function cmdIngest(args: Args) {
 
   log.ok(`project ready: webcules/social/${slug}`);
   console.log(`  reference : ${path.relative(root, refFile)}  (${frames} frames extracted)`);
-  console.log(`  next      : Read research/frames/*.png, write research/component-analysis.md, then build`);
-  console.log(`              the component into packages/ui/src/components/ui/<name>.tsx (see PLAYBOOK.md)`);
+  console.log(`  next      : Read research/frames/*.png, write research/component-analysis.md,`);
+  console.log(`              PRESENT it to the user and wait for their confirmation, then`);
+  console.log(`              social confirm --project ${slug} (see PLAYBOOK.md — nothing builds before that)`);
 }

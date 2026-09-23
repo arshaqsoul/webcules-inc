@@ -9,17 +9,21 @@ const require = createRequire(import.meta.url);
  * Capture an animated WebP preview (plus a poster frame) of a component's demo page
  * into webcules/social/<slug>/docs/. Used by the registry packager and storefront.
  *
- * usage: node scripts/preview.ts <slug> [--url http://127.0.0.1:4322] [--seconds 4] [--variant neural]
+ * usage: node scripts/preview.ts <slug> [--url http://127.0.0.1:4322] [--path /demo/<slug>] [--seconds 4] [--variant neural]
+ *        pass --selector "canvas" to record an element (e.g. the docs playground stage) instead of the viewport
  */
 const slug = process.argv[2] && !process.argv[2].startsWith("--") ? process.argv[2] : "";
 if (!slug) {
-  console.error("usage: node scripts/preview.ts <slug> [--url u] [--seconds 4] [--variant v]");
+  console.error("usage: node scripts/preview.ts <slug> [--url u] [--path p] [--seconds 4] [--variant v] [--selector s]");
   process.exit(1);
 }
 const args = parseArgs(process.argv.slice(2));
 const url = (flagStr(args, "url") ?? process.env.URL ?? "http://127.0.0.1:4322").replace(/\/$/, "");
+// --path records any page (default: the demo gallery); e.g. the landing docs playground
+const basePath = flagStr(args, "path") ?? `/demo/${slug}`;
 const seconds = Number(flagStr(args, "seconds") ?? 4);
 const variant = flagStr(args, "variant") ?? "neural";
+const selector = flagStr(args, "selector") ?? "";
 
 const { chromium } = require("playwright");
 const ffmpeg = resolveFfmpeg();
@@ -31,22 +35,29 @@ ensureDir(framesDir);
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 960, height: 540 } });
-await page.goto(`${url}/demo/${slug}?variant=${variant}`, { waitUntil: "networkidle", timeout: 120000 });
+// networkidle never settles on a dev server with an animated canvas — use domcontentloaded
+await page.goto(`${url}${basePath}?variant=${variant}`, { waitUntil: "domcontentloaded", timeout: 120000 });
 await page.waitForSelector("canvas", { timeout: 60000 }).catch(() => {});
-await page.waitForTimeout(2600); // let the intro settle
+await page.waitForTimeout(4000); // let the intro settle
+const stage = selector ? page.locator(selector).first() : null;
+if (stage) await stage.scrollIntoViewIfNeeded().catch(() => {});
 
 const fps = 10;
 const count = Math.round(seconds * fps);
 for (let i = 0; i < count; i++) {
-  await page.screenshot({ path: path.join(framesDir, `f-${String(i).padStart(3, "0")}.png`) });
+  if (stage) await stage.screenshot({ path: path.join(framesDir, `f-${String(i).padStart(3, "0")}.png`) });
+  else await page.screenshot({ path: path.join(framesDir, `f-${String(i).padStart(3, "0")}.png`) });
   await sleep(1000 / fps);
 }
 // poster: one clean high-res frame
 const poster = await browser.newPage({ viewport: { width: 1280, height: 720 } });
-await poster.goto(`${url}/demo/${slug}?variant=${variant}`, { waitUntil: "networkidle", timeout: 120000 });
+await poster.goto(`${url}${basePath}?variant=${variant}`, { waitUntil: "domcontentloaded", timeout: 120000 });
 await poster.waitForSelector("canvas", { timeout: 60000 }).catch(() => {});
-await poster.waitForTimeout(3500);
-await poster.screenshot({ path: path.join(framesDir, "poster.png") });
+await poster.waitForTimeout(4500);
+const posterStage = selector ? poster.locator(selector).first() : null;
+if (posterStage) await posterStage.scrollIntoViewIfNeeded().catch(() => {});
+if (posterStage) await posterStage.screenshot({ path: path.join(framesDir, "poster.png") });
+else await poster.screenshot({ path: path.join(framesDir, "poster.png") });
 await browser.close();
 
 const run = (args: string[]) => {

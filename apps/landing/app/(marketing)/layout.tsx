@@ -6,7 +6,6 @@ import { GeistSans } from "geist/font/sans";
 import React from "react";
 
 import { AdminBar } from "@webcules/payload/components/AdminBar/index";
-import { WebculesFloatingNav } from "@/components/shared/webcules-floating-navbar";
 import { WebculesNav } from "@/components/shared/webcules-nav";
 import { Footer } from "@/components/shared/footer";
 import { Providers } from "@webcules/payload/providers/index";
@@ -41,7 +40,8 @@ export default async function RootLayout({
             }}
           />
 
-          <WebculesFloatingNav />
+          {/* The fixed header (WebculesNav) serves both the top and scrolled
+              states — one navbar, always in sync. */}
           <WebculesNav />
           {children}
           <Footer />

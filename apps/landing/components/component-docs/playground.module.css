@@ -1,0 +1,25 @@
+/* Slim, translucent scrollbar for the playground side panels — the default
+ * OS scrollbar is visually heavy on the dark theme. Firefox honors the
+ * standard properties; the ::-webkit-* block covers Chromium and Safari. */
+.slimScroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 0.16) transparent;
+}
+
+.slimScroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.slimScroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.slimScroll::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: rgb(255 255 255 / 0.14);
+}
+
+.slimScroll::-webkit-scrollbar-thumb:hover {
+  background: rgb(255 255 255 / 0.28);
+}

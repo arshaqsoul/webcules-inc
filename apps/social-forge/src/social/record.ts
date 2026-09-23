@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 import { createRequire } from "node:module";
-import { FORGE_ROOT, SOCIAL_ROOT, ensureDir, flagStr, log, readManifest, resolveFfmpeg, writeManifest, sleep, type Args } from "./util.ts";
+import { FORGE_ROOT, SOCIAL_ROOT, ensureDir, flagStr, log, readManifest, requireConfirmed, resolveFfmpeg, writeManifest, sleep, type Args } from "./util.ts";
 
 // playwright + ffmpeg-static are dev-time tools; loaded lazily so the rest of the CLI works without them.
 const require = createRequire(import.meta.url);
@@ -13,10 +13,11 @@ function killTree(child: ChildProcess) {
   else child.kill("SIGTERM");
 }
 
+/** Any HTTP response counts — the render target may be the demo gallery or the landing app (which has no /api/health). */
 async function healthy(url: string): Promise<boolean> {
   try {
-    const r = await fetch(new URL("/api/health", url));
-    return r.ok;
+    await fetch(url, { redirect: "manual" });
+    return true;
   } catch {
     return false;
   }
@@ -27,7 +28,7 @@ async function ensureServer(flagUrl?: string): Promise<{ url: string; child?: Ch
   if (flagUrl || process.env.SOCIAL_FORGE_URL) {
     const url = (flagUrl ?? process.env.SOCIAL_FORGE_URL)!;
     if (!(await healthy(url))) {
-      log.err(`server at ${url} is not responding (expected /api/health)`);
+      log.err(`server at ${url} is not responding`);
       process.exit(1);
     }
     return { url: url.replace(/\/$/, "") };
@@ -56,6 +57,7 @@ export async function cmdRender(args: Args) {
   const slug = flagStr(args, "project");
   if (!slug) log.err("usage: social render --project <slug> [--url http://…] [--seconds 8]") || process.exit(1);
   const m = readManifest(slug);
+  requireConfirmed(m, "render");
   const variants = Object.keys(m.variants ?? {});
   if (!variants.length) {
     log.err("manifest has no variants — define at least one (e.g. \"neural\": { \"primary\": \"#f5b04c\", \"secondary\": \"#38bdf8\" })");
@@ -72,6 +74,9 @@ export async function cmdRender(args: Args) {
   const ffmpegPath = resolveFfmpeg();
 
   const { url, child } = await ensureServer(flagStr(args, "url"));
+  // --path retargets the recording at any page (e.g. the landing docs playground at
+  // /components/<name>); unknown query params are simply ignored by such pages.
+  const basePath = flagStr(args, "path") ?? `/demo/${slug}`;
   const seconds = Number(flagStr(args, "seconds") ?? "8");
   const warmupMs = 1800; // let the intro settle so the loop point looks intentional
   const rendersDir = path.join(SOCIAL_ROOT, slug, "social", "renders");
@@ -92,14 +97,14 @@ export async function cmdRender(args: Args) {
     // Pre-warm: a throwaway page triggers vite's cold compile OUTSIDE the recorded window
     // (a freshly restarted dev server otherwise bakes ~4s of black screen into every video).
     const warm = await browser.newPage();
-    await warm.goto(`${url}/demo/${slug}?variant=${variants[0]}`, { waitUntil: "networkidle", timeout: 120000 });
+    await warm.goto(`${url}${basePath}?variant=${variants[0]}`, { waitUntil: "networkidle", timeout: 120000 });
     await warm.waitForSelector("canvas", { timeout: 60000 }).catch(() => {});
     await warm.close();
 
     const shoot = async (name: string, viewport: { width: number; height: number }, query: string, secs: number) => {
       const ctx = await browser.newContext({ viewport, recordVideo: { dir: tmpDir, size: viewport } });
       const page = await ctx.newPage();
-      await page.goto(`${url}/demo/${slug}?${query}`, { waitUntil: "networkidle" });
+      await page.goto(`${url}${basePath}?${query}`, { waitUntil: "networkidle" });
       await page.waitForSelector("canvas", { timeout: 60000 }).catch(() => {});
       await page.waitForTimeout(warmupMs + secs * 1000);
       await ctx.close();
@@ -116,7 +121,7 @@ export async function cmdRender(args: Args) {
 
     for (const v of variants) {
       const page = await browser.newPage({ viewport: { width: 1080, height: 1350 } });
-      await page.goto(`${url}/demo/${slug}?variant=${v}`, { waitUntil: "networkidle" });
+      await page.goto(`${url}${basePath}?variant=${v}`, { waitUntil: "networkidle" });
       await page.waitForTimeout(3200);
       const still = path.join(stillsDir, `${v}-1080x1350.png`);
       await page.screenshot({ path: still });

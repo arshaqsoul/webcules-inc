@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import JSZip from "jszip";
-import { SOCIAL_ROOT, REPO_ROOT, ensureDir, flagStr, log, readManifest, writeManifest, type Args } from "./util.ts";
+import { SOCIAL_ROOT, REPO_ROOT, ensureDir, flagStr, log, readManifest, requireConfirmed, writeManifest, type Args } from "./util.ts";
 
 function registryReadme(name: string, title: string, hostUrl: string): string {
   return `# ${title}
@@ -46,6 +46,7 @@ export async function cmdRegistry(args: Args) {
   const slug = flagStr(args, "project");
   if (!slug) log.err("usage: social registry --project <slug>") || process.exit(1);
   const m = readManifest(slug);
+  requireConfirmed(m, "registry");
   if (!m.component.file || !m.component.name) {
     log.err(`manifest has no component yet — build it first (PLAYBOOK.md phase 3), then update social.project.json`);
     process.exit(1);

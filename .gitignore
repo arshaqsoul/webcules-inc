@@ -44,3 +44,6 @@ packages/*/public
 *.log
 apps/dashboard/data/*.db
 .next-dev/
+
+# detached landing dev server logs
+.dev-server*.log

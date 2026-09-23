@@ -62,7 +62,9 @@ const outDir = resolve(landing, "public", "r");
 mkdirSync(outDir, { recursive: true });
 
 for (const c of COMPONENTS) {
-  const files = c.files.map((f) => ({ path: f.path, type: f.type, content: read(f.src) }));
+  const files = c.files.map((f) => ({ path: f.path, type: f.type,
+    // the source imports the monorepo path; consumers resolve cn from their own lib/utils
+    content: read(f.src).replaceAll("@webcules/ui/lib/utils", "@/lib/utils") }));
   const registry = {
     $schema: "https://ui.shadcn.com/schema/registry-item.json",
     name: c.name,

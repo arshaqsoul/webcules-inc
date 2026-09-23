@@ -188,14 +188,27 @@ export type Manifest = {
   slug: string;
   created: string;
   source: string;
-  component: { name: string; file: string; demo: string; description?: string; registryUrl?: string; docs?: string; preview?: string; poster?: string };
+  component: { name: string; file: string; demo: string; title?: string; description?: string; registryUrl?: string; docs?: string; preview?: string; poster?: string };
   reference: { file: string; kind: string };
-  status: "ingested" | "analyzed" | "built" | "synced" | "packaged" | "rendered" | "posted";
+  status: "ingested" | "analyzed" | "confirmed" | "built" | "synced" | "packaged" | "rendered" | "posted";
+  /** the user gate — set by `social confirm`; nothing builds before it exists */
+  analysis?: { confirmedAt?: string; feedback?: string };
   variants: Record<string, Record<string, string>>;
   catchphrase: string;
   cta: string;
   hashtags: string[];
 };
+
+const POST_CONFIRM: ReadonlySet<Manifest["status"]> = new Set(["confirmed", "built", "synced", "packaged", "rendered", "posted"]);
+
+/** Hard user gate: analysis must be confirmed before anything is built or packaged. */
+export function requireConfirmed(m: Manifest, cmd: string) {
+  if (POST_CONFIRM.has(m.status)) return;
+  die(
+    `analysis not confirmed yet (status: ${m.status}) — "${cmd}" is blocked`,
+    `show research/component-analysis.md to the user, apply their feedback, then: social confirm --project ${m.slug}`,
+  );
+}
 
 export function manifestPath(slug: string): string {
   return path.join(SOCIAL_ROOT, slug, "social.project.json");

@@ -119,7 +119,8 @@ function smoothPath(pts: Pt[]): string {
   return d;
 }
 
-type Strand = { d: string; frames: string[]; whipDur: number; width: number; opacity: number; hero: boolean };
+type StrandBase = { d: string; width: number; opacity: number; hero: boolean };
+type Strand = StrandBase & { frames: string[]; whipDur: number };
 
 const FOG_FRAG = `
 precision mediump float;
@@ -172,7 +173,7 @@ function FogCanvas({
   w: number; h: number; primary: string; secondary: string; waistP: Pt; waistS: Pt;
   density: number; speed: number; cloudSpeed: number; glow: number; seed: number; reduced: boolean;
   onUnavailable: () => void;
-  mode: number; tint: string;
+  mode: "corners" | "bottom" | "top" | "veil"; tint: string;
 }) {
   const ref = useRef<HTMLCanvasElement | null>(null);
   useEffect(() => {
@@ -275,7 +276,7 @@ function FogCanvas({
 }
 
 /** One filament: origin → waist spine; the wave is a traveling phase (whip lash) + a static hook. */
-function strand(w: number, h: number, wing: number, i: number, count: number, p: Required<Pick<NeuralPathwaysProps, "focalX" | "focalY" | "lensGap" | "spread" | "waveAmp" | "waveFreq" | "thickness" | "heroStrands" | "streamCount">>, waist: Pt, travel = 0): Strand {
+function strand(w: number, h: number, wing: number, i: number, count: number, p: Required<Pick<NeuralPathwaysProps, "focalX" | "focalY" | "lensGap" | "spread" | "waveAmp" | "waveFreq" | "thickness" | "heroStrands" | "streamCount" | "seed">>, waist: Pt, travel = 0): StrandBase {
   const top = wing < 2;
   const o: Pt = top
     ? { x: (wing === 0 ? -0.06 : 1.06) * w, y: -0.16 * h }

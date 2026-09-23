@@ -72,3 +72,59 @@ cd apps/cms && pnpm dev   # uses wrangler platform proxy: local D1 + local R2
 
 `.dev.vars` holds local secrets. The first `payload` command in dev
 auto-pushes the schema to the local D1 database.
+
+## Components playground auth (better-auth + D1)
+
+The landing app (`apps/landing`) runs its own **better-auth 1.7.5** instance
+(`lib/auth.server.ts`) on the shared D1 database `webcules-cms`, with magic
+link, email OTP, and Google sign-in for the components playground. Server
+config: `apps/landing/lib/{auth.server,db,db-schema,session}.ts`; API surface
+under `apps/landing/app/api/{auth,configs}`.
+
+### Tables
+
+Five tables live in the shared D1: `user`, `session`, `account`,
+`verification` (better-auth defaults) and `saved_configs` (playground). Schema
+is defined in `apps/landing/lib/db-schema.ts` and mirrored in
+`apps/landing/migrations/0001_auth.sql`.
+
+### Applying the migration
+
+```bash
+# local (miniflare-managed local D1)
+pnpm --filter landing db:migrate
+
+# REAL remote shared D1
+cd apps/landing && npx wrangler d1 execute webcules-cms --remote --file=./migrations/0001_auth.sql
+```
+
+### Secrets (set once per worker via `wrangler secret put`)
+
+```bash
+cd apps/landing
+npx wrangler secret put BETTER_AUTH_SECRET      # openssl rand -base64 32
+npx wrangler secret put GOOGLE_CLIENT_ID        # optional — enables Google sign-in
+npx wrangler secret put GOOGLE_CLIENT_SECRET    # optional
+npx wrangler secret put RESEND_API_KEY          # optional — enables real email delivery
+```
+
+`BETTER_AUTH_URL` and `EMAIL_FROM` are non-secret vars in
+`apps/landing/wrangler.jsonc`. Local dev values come from
+`apps/landing/.dev.vars`.
+
+### Google OAuth setup
+
+Reuse the **same Google OAuth client** as the backgrounds app; just add these
+authorized redirect URIs to it:
+
+- `https://webcules.com/api/auth/callback/google` (production)
+- `http://localhost:3000/api/auth/callback/google` (dev)
+
+### Resend (email delivery)
+
+- Verify the `webcules.com` domain in Resend (DKIM), then use a from address
+  on that domain — it must match `EMAIL_FROM`
+  (`Webcules <noreply@webcules.com>`).
+- When `RESEND_API_KEY` is unset (local dev), emails are NOT sent: the magic
+  link / OTP code is printed to the server console prefixed with
+  `[auth:dev-delivery]` so sign-in flows can be completed end-to-end.

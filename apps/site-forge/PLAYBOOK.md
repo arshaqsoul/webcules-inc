@@ -126,6 +126,14 @@ For briefs like "rebuild this recording" or any award-tier scroll-driven site, t
 sections/islands are not enough. This is the pattern that ships them (built & verified on
 `webcules/reverie` — a portal-flythrough clone of a reference recording).
 
+**WebGL showpieces (rare, earned):** when the brief calls for a true-3D moment (3D particle
+hero, shader backdrop, volumetric glow), build it as a raw-three.js island (`three` added to
+the project) — never react-three-fiber, never a hand-rolled canvas-2D pseudo-3D engine; scene
+state is a pure function of scroll progress (the GSAP scrub drives the DOM layers, the scene
+just reads `t`), wall-clock timed, DPR ≤ 2, `prefers-reduced-motion` → static plate, and
+`?t=<0..1>` freeze support so review can capture deterministic beats. Recipes: the
+`video2code-3d` skill (plugin cache) and `/forge-redesign`'s signature-moment step.
+
 **Reference-recording intake (replaces Phase 1 when the design is fully specified by a video):**
 
 - No ffmpeg in PATH — use ComfyUI's venv: `pip install imageio-ffmpeg` once, then

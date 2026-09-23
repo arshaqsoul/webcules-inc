@@ -47,6 +47,8 @@
   },
   "vars": {
     "NEXT_PUBLIC_SERVER_URL": "https://cms.webcules.com",
-    "NEXT_PUBLIC_BASE_URL": "https://webcules.com"
+    "NEXT_PUBLIC_BASE_URL": "https://webcules.com",
+    "BETTER_AUTH_URL": "https://webcules.com",
+    "EMAIL_FROM": "Webcules <noreply@webcules.com>"
   }
 }

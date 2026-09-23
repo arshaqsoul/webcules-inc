@@ -20,7 +20,7 @@
       "name": "neural-pathways",
       "title": "NeuralPathways",
       "tagline": "Dual-waist light-stream lens with living fog",
-      "description": "Two duotone wings of light filaments whip inward and pinch through a glowing lens, over procedural scene-lit fog. Pure SVG geometry + CSS motion + one WebGL fog pass \u2014 zero dependencies, reduced-motion aware.",
+      "description": "Two duotone wings of light filaments whip inward and pinch through a glowing lens, over procedural scene-lit fog. Pure SVG geometry + CSS motion + one WebGL fog pass — zero dependencies, reduced-motion aware.",
       "tags": [
         "svg",
         "animation",
@@ -30,6 +30,89 @@
       "phase": "approved",
       "docsMode": "custom",
       "preview": "/components/neural-pathways.webp"
+    },
+    {
+      "name": "silk-aurora",
+      "title": "SilkAurora",
+      "tagline": "Flowing silk ribbons of gradient light — a living aurora for your hero.",
+      "description": "Flowing silk ribbons of gradient light — a living aurora for your hero. Pure canvas 2D: parametric ribbon sheets that breathe, swing and drift behind your copy, with palettes for sunset silk, chrome glass and midnight nebula. Zero dependencies, deterministic seed, reduced-motion safe.",
+      "tags": [
+        "background",
+        "aurora",
+        "gradient",
+        "hero",
+        "canvas",
+        "animated"
+      ],
+      "premium": false,
+      "phase": "approved",
+      "docsMode": "generated",
+      "preview": "/components/silk-aurora.webp"
+    },
+    {
+      "name": "liquid-bulb",
+      "title": "LiquidBulb",
+      "tagline": "Liquid-glass sphere wrapped in drifting iridescent ribbon loops — pure canvas 2D, no WebGL, fully prop-driven.",
+      "description": "Liquid-glass sphere wrapped in drifting iridescent ribbon loops — pure canvas 2D, no WebGL, fully prop-driven.",
+      "tags": [
+        "background",
+        "hero",
+        "glass",
+        "iridescent",
+        "sphere",
+        "canvas"
+      ],
+      "premium": false,
+      "phase": "approved",
+      "docsMode": "generated",
+      "preview": "/components/liquid-bulb.webp"
+    },
+    {
+      "name": "card-train",
+      "title": "CardTrain",
+      "tagline": "An endless train of tilting cards flowing along a wave — pure canvas 2D, no WebGL, fully prop-driven.",
+      "description": "An endless train of tilting cards flowing along a wave — pure canvas 2D, no WebGL, fully prop-driven.",
+      "tags": [
+        "svg",
+        "animation",
+        "background"
+      ],
+      "premium": false,
+      "phase": "approved",
+      "docsMode": "generated",
+      "preview": "/components/endless-card-train.webp"
+    },
+    {
+      "name": "following-eyes",
+      "title": "FollowingEyes",
+      "tagline": "Upload any image and place customizable eyes on it — the pupils follow the cursor everywhere on the page with eased, clamped motion.",
+      "description": "Upload any image and place customizable eyes on it — the pupils follow the cursor everywhere on the page with eased, clamped motion. Size, pupil size, shine glint, tear drop, blink and idle wander are all props. SVG over your picture, zero runtime deps, reduced-motion safe. Pairs with CustomCursor for the full mascot-hero effect.",
+      "tags": [
+        "svg",
+        "animation",
+        "background"
+      ],
+      "premium": false,
+      "phase": "approved",
+      "docsMode": "generated",
+      "preview": "/components/following-eyes.webp"
+    },
+    {
+      "name": "cine-scroll",
+      "title": "CineScroll",
+      "tagline": "Scroll is the camera. Pin the viewport, feed it frames, and the page becomes one unbroken shot.",
+      "description": "Scroll is the camera: a pinned viewport scrubs a frame sequence with double-exposure blends, velocity whip blur and DOM chapter overlays. Bring your own frames and chapters — photos, renders or locally generated ComfyUI plates.",
+      "tags": [
+        "scroll",
+        "canvas",
+        "cinematic",
+        "image-sequence",
+        "scrollytelling"
+      ],
+      "premium": false,
+      "phase": "approved",
+      "docsMode": "generated",
+      "preview": "/components/cine-scroll.webp"
     }
   ]
 }

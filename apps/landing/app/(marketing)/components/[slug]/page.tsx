@@ -1,75 +1,24 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 
+import { ComponentPlayground } from "@/components/component-docs/component-playground";
 import { LIBRARY } from "@/components/library/manifest.gen";
+import { getRegistryEntry } from "@/components/library/registry";
 
-import { CodeBlock } from "@/components/wildcode-docs/code-block";
-import { WildcodePlayground } from "@/components/wildcode-docs/wildcode-playground";
+import { getAuth, getSavedConfigForUser } from "@/lib/auth.server";
 
 const SITE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
 
-/* docs content for spec-driven (generated) standard components */
-const GENERATED_DOCS: Record<
-  string,
-  { usage: string; playground: boolean; sections: { title: string; items: string[] }[] }
-> = {
-  "neural-pathways": {
-    usage: `import { NeuralPathways } from "@webcules/ui/components/neural-pathways";
-
-export function Hero() {
-  return (
-    <section className="relative h-screen overflow-hidden">
-      <NeuralPathways className="absolute inset-0" />
-      <div className="relative z-10 flex h-full flex-col items-center justify-center text-white">
-        <h1>Websites that stop the scroll.</h1>
-      </div>
-    </section>
-  );
-}`,
-    playground: false,
-    sections: [
-      {
-        title: "Highlights",
-        items: [
-          "Dual-waist light-stream lens: duotone filament wings whip inward and pinch through a glowing core",
-          "Procedural fog banks (WebGL FBM) lit by the wing colors — SVG turbulence fallback when WebGL is unavailable",
-          "Pure SVG geometry + CSS motion: zero runtime dependencies, deterministic rendering",
-          "Three palettes built in (neural / aurora / synapse) and 25+ props covering every visual knob",
-        ],
-      },
-      {
-        title: "Key props",
-        items: [
-          "primary / secondary — the two wing colors; crossTint blends them near the lens",
-          "waveAmp / waveFreq — the traveling whip-wave on each filament",
-          "pulseLines — bright pulses racing along the strands (off = solid lines)",
-          "cloudPosition / cloudDensity / cloudTint — where, how much, and what color the fog is",
-          "particleDensity / particleSize / starDensity — the sparks and dust",
-          "focalX / focalY / lensGap — where and how tight the lens pinches",
-        ],
-      },
-      {
-        title: "Behavior & accessibility",
-        items: [
-          "Decorative (aria-hidden) — sit your content on top of it",
-          "prefers-reduced-motion: renders one settled static frame",
-          "Pauses on hidden tabs; fog needs WebGL, everything else is SVG + CSS",
-        ],
-      },
-    ],
-  },
-};
-
 type Params = { slug: string };
+type SearchParams = Record<string, string | string[] | undefined>;
 
-export function generateStaticParams() {
-  return LIBRARY.filter(
-    (c) => c.phase === "approved" && c.docsMode === "generated" && !c.premium,
-  ).map((c) => ({ slug: c.name }));
-}
-
-export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<Params>;
+}): Promise<Metadata> {
   const { slug } = await params;
   const entry = LIBRARY.find((c) => c.name === slug);
   if (!entry) return {};
@@ -79,15 +28,26 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   };
 }
 
-export default async function LibraryComponentPage({ params }: { params: Promise<Params> }) {
+export default async function LibraryComponentPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<Params>;
+  searchParams: Promise<SearchParams>;
+}) {
   const { slug } = await params;
   const entry = LIBRARY.find((c) => c.name === slug);
   if (!entry) notFound();
 
+  const siblings = LIBRARY.filter((c) => c.phase === "approved" && !c.premium);
+  const idx = siblings.findIndex((c) => c.name === entry.name);
+  const prev = idx > 0 ? (siblings[idx - 1] ?? null) : null;
+  const next = idx < siblings.length - 1 ? (siblings[idx + 1] ?? null) : null;
+
   /* premium: preview-only. No code, no playground, no CLI. */
   if (entry.premium) {
     return (
-      <div>
+      <div className="dark mx-auto w-full max-w-4xl px-6 pb-28 pt-28">
         <div className="mb-8 flex flex-wrap items-center gap-3">
           <h1 className="text-4xl font-semibold tracking-tight">{entry.title}</h1>
           <span className="rounded-full border border-fuchsia-400/30 bg-fuchsia-400/10 px-2.5 py-0.5 text-xs text-fuchsia-300">
@@ -99,11 +59,7 @@ export default async function LibraryComponentPage({ params }: { params: Promise
         {entry.preview ? (
           <div className="mb-10 overflow-hidden rounded-2xl border border-white/10">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={entry.preview}
-              alt={`${entry.title} preview`}
-              className="w-full"
-            />
+            <img src={entry.preview} alt={`${entry.title} preview`} className="w-full" />
           </div>
         ) : null}
 
@@ -127,70 +83,91 @@ export default async function LibraryComponentPage({ params }: { params: Promise
             Book a demo to get it →
           </Link>
         </div>
+
+        <ComponentNav prev={prev} next={next} />
       </div>
     );
   }
 
-  /* standard generated docs */
-  const docs = GENERATED_DOCS[entry.name];
-  const usage = `import { ${entry.title.replace(/\s+/g, "")} } from "@webcules/ui/components/${entry.name}";`;
+  const registry = getRegistryEntry(entry.name);
+  if (!registry) notFound();
+
+  /* Deep link from the dashboard: /components/<slug>?c=<savedConfigId> —
+   * load that config (owning it) as the workbench starting point. */
+  const sp = await searchParams;
+  const savedId = typeof sp.c === "string" ? sp.c : null;
+  let savedConfig = null;
+  if (savedId) {
+    try {
+      const auth = await getAuth();
+      const session = await auth.api.getSession({ headers: await headers() });
+      if (session?.user?.id) {
+        const sc = await getSavedConfigForUser(savedId, session.user.id);
+        if (sc && sc.component === entry.name) savedConfig = sc;
+      }
+    } catch {
+      /* bindings unavailable (e.g. build time) — render without it */
+    }
+  }
 
   return (
-    <div>
-      <div className="mb-8 flex flex-wrap items-center gap-3">
-        <h1 className="text-4xl font-semibold tracking-tight">{entry.title}</h1>
-        {entry.tags.map((t) => (
-          <span
-            key={t}
-            className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-xs text-white/60"
-          >
-            {t}
-          </span>
-        ))}
-      </div>
-      <p className="mb-10 max-w-2xl text-white/60">{entry.tagline}</p>
-
-      {docs?.playground || entry.preview ? (
-        <section className="mb-14">
-          <h2 className="mb-4 text-lg font-medium">Preview</h2>
-          {entry.preview ? (
-            <div className="overflow-hidden rounded-2xl border border-white/10">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={entry.preview} alt={`${entry.title} preview`} className="w-full" />
-            </div>
-          ) : (
-            <p className="text-sm text-white/40">Preview coming soon.</p>
-          )}
-        </section>
-      ) : null}
-
-      <section className="mb-14">
-        <h2 className="mb-4 text-lg font-medium">Usage</h2>
-        <CodeBlock code={usage} title="tsx" />
-      </section>
-
-      {docs
-        ? docs.sections.map((s) => (
-            <section key={s.title} className="mb-14">
-              <h2 className="mb-4 text-lg font-medium">{s.title}</h2>
-              <ul className="list-disc space-y-2 pl-5 text-sm text-white/60">
-                {s.items.map((i) => (
-                  <li key={i}>{i}</li>
-                ))}
-              </ul>
-            </section>
-          ))
-        : null}
-
-      {SITE_URL ? (
-        <section className="mb-14">
-          <h2 className="mb-4 text-lg font-medium">CLI</h2>
-          <CodeBlock
-            code={`npx shadcn@latest add "${SITE_URL}/r/${entry.name}.json"`}
-            title="bash"
-          />
-        </section>
-      ) : null}
+    /* Same width as the landing page sections (lg:max-w-[85rem]). */
+    <div className="dark mx-auto w-full max-w-[85rem] px-4 pb-28 pt-24 sm:px-6 lg:px-8">
+      <ComponentPlayground
+        entry={{
+          name: entry.name,
+          title: entry.title,
+          tagline: entry.tagline,
+          description: entry.description,
+          tags: entry.tags,
+        }}
+        registry={registry}
+        siteUrl={SITE_URL}
+        savedConfig={savedConfig}
+        prev={prev ? { name: prev.name, title: prev.title } : null}
+        next={next ? { name: next.name, title: next.title } : null}
+      />
     </div>
+  );
+}
+
+function ComponentNav({
+  prev,
+  next,
+}: {
+  prev: { name: string; title: string } | null;
+  next: { name: string; title: string } | null;
+}) {
+  return (
+    <nav className="mt-16 grid gap-3 border-t border-white/10 pt-8 sm:grid-cols-2">
+      {prev ? (
+        <Link
+          href={`/components/${prev.name}`}
+          className="group rounded-xl border border-white/10 bg-white/[0.02] p-4 transition-colors hover:border-white/25"
+        >
+          <span className="text-xs text-white/40 group-hover:text-white/60">
+            ← Previous
+          </span>
+          <span className="mt-1 block font-medium text-white group-hover:text-violet-300">
+            {prev.title}
+          </span>
+        </Link>
+      ) : (
+        <span />
+      )}
+      {next ? (
+        <Link
+          href={`/components/${next.name}`}
+          className="group rounded-xl border border-white/10 bg-white/[0.02] p-4 text-right transition-colors hover:border-white/25"
+        >
+          <span className="text-xs text-white/40 group-hover:text-white/60">
+            Next →
+          </span>
+          <span className="mt-1 block font-medium text-white group-hover:text-violet-300">
+            {next.title}
+          </span>
+        </Link>
+      ) : null}
+    </nav>
   );
 }

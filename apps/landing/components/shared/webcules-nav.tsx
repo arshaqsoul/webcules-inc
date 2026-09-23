@@ -2,10 +2,13 @@
 import { cn } from "@webcules/ui/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUpRight, ChevronDown, Menu, X } from "lucide-react";
+import Link from "next/link";
 import { Fragment, JSX, useState } from "react";
+
+import { useSession } from "@/lib/auth-client";
+
 import { CTAButton } from "./cta-button";
 import Logo from "./logo";
-import Link from "next/link";
 
 const apps = [
   {
@@ -55,16 +58,36 @@ const AppsMenu = () => (
   </div>
 );
 
+/* Auth-aware link: Dashboard when signed in, Sign in when not. */
+const AuthLink = ({ className }: { className?: string }) => {
+  const { data: session, isPending } = useSession();
+  if (isPending) return null;
+  return (
+    <Link
+      href={session ? "/dashboard" : "/login"}
+      className={cn(
+        "relative flex items-center text-sm text-neutral-600 hover:text-neutral-500 dark:text-neutral-50 dark:hover:text-neutral-300",
+        className,
+      )}
+    >
+      {session ? "Dashboard" : "Sign in"}
+    </Link>
+  );
+};
+
+/** Single source of truth for the site navigation — the header is fixed, so
+ *  this same pill serves both the top-of-page and scrolled states. */
+export const WEBNCULES_NAV_ITEMS = [
+  { name: "Home", link: "/" },
+  { name: "Services", link: "/#services" },
+  { name: "Pricing", link: "/#pricing" },
+  { name: "Components", link: "/components" },
+  { name: "Blog", link: "/posts" },
+  { name: "Contact", link: "/contact" },
+];
+
 export const WebculesNav = () => {
-  const navItems = [
-    { name: "Home", link: "/" },
-    { name: "Services", link: "/#services" },
-    { name: "Pricing", link: "/#pricing" },
-    { name: "Components", link: "/components" },
-    { name: "Blog", link: "/posts" },
-    { name: "Contact", link: "/contact" },
-  ];
-  return <Navbar navItems={navItems} />;
+  return <Navbar navItems={WEBNCULES_NAV_ITEMS} />;
 };
 
 const Navbar = ({
@@ -86,7 +109,7 @@ const Navbar = ({
         transition={{
           duration: 0.2,
         }}
-        className={cn(`flex flex-row px-12 sm:relative z-20 sticky`, className)}
+        className={cn(`flex flex-row px-12 z-50 fixed inset-x-0 top-0`, className)}
       >
         <div className="flex justify-center rounded-full absolute top-8 left-1 lg:left-48">
           <Logo />
@@ -119,6 +142,8 @@ const Navbar = ({
               {idx === 0 && <AppsMenu />}
             </Fragment>
           ))}
+          <span className="h-4 w-px bg-neutral-300 dark:bg-white/20" />
+          <AuthLink />
         </div>
         <div className="hidden sm:flex justify-center rounded-full absolute top-10 right-4 lg:right-48">
           <CTAButton pricing={false} />
@@ -164,6 +189,7 @@ const Navbar = ({
               </a>
             ))}
             <div className="flex flex-grow justify-center py-2">
+              <AuthLink className="block py-2 px-4" />
               <CTAButton pricing={true} />
             </div>
           </motion.div>
