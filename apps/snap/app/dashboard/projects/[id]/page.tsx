@@ -3,9 +3,11 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { ProjectFiles } from "@/components/project-files";
+import { ProjectGalleries } from "@/components/project-galleries";
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { listAssets } from "@/lib/repos/assets";
+import { listProjectGrants } from "@/lib/shares/grants";
 import { getOrgContext } from "@/lib/session";
 import { and, eq } from "drizzle-orm";
 
@@ -38,14 +40,16 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     ? await db.select().from(schema.clients).where(eq(schema.clients.id, project.clientId)).limit(1)
     : [null];
 
-  const [events, assets] = await Promise.all([
+  const [events, assets, grants] = await Promise.all([
     db
       .select()
       .from(schema.projectStatusEvents)
       .where(eq(schema.projectStatusEvents.projectId, id))
       .orderBy(schema.projectStatusEvents.createdAt),
     listAssets(ctx.organizationId, id),
+    listProjectGrants(ctx.organizationId, id),
   ]);
+  const approvedCount = assets.filter((a) => a.status === "approved" || a.status === "shared").length;
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-5">
@@ -85,6 +89,19 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             bytes: a.bytes,
             createdAt: a.createdAt.toISOString(),
           }))}
+        />
+      </section>
+
+      <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
+        <h2 className="text-[15px] font-medium text-ink">Client gallery</h2>
+        <p className="mb-4 mt-1 text-xs text-ink-subtle">
+          Send a secure link — the client verifies by email code, and you can revoke or rotate it any time.
+        </p>
+        <ProjectGalleries
+          projectId={id}
+          clientEmail={client?.email ?? ""}
+          approvedCount={approvedCount}
+          grants={grants}
         />
       </section>
 

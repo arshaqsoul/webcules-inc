@@ -178,7 +178,7 @@ export function bookingCanceledEmail(studioName: string, params: {
   startAt: Date;
   tz: string;
   accent: string;
-}) {
+}): { subject: string; html: string; text: string } {
   const when = new Intl.DateTimeFormat("en-US", {
     timeZone: params.tz, weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit",
   }).format(params.startAt);
@@ -187,10 +187,45 @@ export function bookingCanceledEmail(studioName: string, params: {
     html: shell(
       params.accent,
       "Booking canceled",
-      `<p style="margin:0 0 12px;">Hi ${params.clientName}, your session with <strong>${studioName}</strong> scheduled for <strong style="color:#0f1011;">${when}</strong> has been canceled.</p>
+      `<p style="margin:0 0 12px;">Hi ${params.clientName}, your session with <strong style="color:#0f1011;">${studioName}</strong> scheduled for <strong style="color:#0f1011;">${when}</strong> has been canceled.</p>
        <p style="margin:0;">Questions? Just reply to this email.</p>`,
       `Sent by ${studioName} via Snap.`,
     ),
     text: `Hi ${params.clientName}, your session with ${studioName} on ${when} has been canceled.`,
+  };
+}
+
+/** Gallery link — branded "your photos are ready" with expiry info. */
+export function galleryLinkEmail(studioName: string, params: {
+  clientName: string;
+  galleryUrl: string;
+  photoCount: number;
+  expiresAt: Date | null;
+  accent: string;
+  fresh?: boolean; // false = re-send of an existing link
+}): { subject: string; html: string; text: string } {
+  const expires = params.expiresAt
+    ? new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" }).format(params.expiresAt)
+    : null;
+  const expiryNote = expires
+    ? `<p style="margin:16px 0 0;font-size:13px;color:#8a8f98;">This link stops working on <strong style="color:#3f4149;">${expires}</strong> — make sure to save your favorites before then.</p>`
+    : "";
+  const title = params.fresh === false ? "Your gallery link" : "Your photos are ready";
+  const intro =
+    params.fresh === false
+      ? `<p style="margin:0 0 16px;">Hi ${params.clientName}, here's your gallery link from <strong style="color:#0f1011;">${studioName}</strong> once again.</p>`
+      : `<p style="margin:0 0 16px;">Hi ${params.clientName}, <strong style="color:#0f1011;">${studioName}</strong> has shared ${params.photoCount} photo${params.photoCount === 1 ? "" : "s"} with you.</p>`;
+  return {
+    subject: `${params.fresh === false ? "Your gallery link" : "Your photos are ready"} — ${studioName}`,
+    html: shell(
+      params.accent,
+      title,
+      `${intro}
+       <p style="margin:24px 0 0;"><a href="${params.galleryUrl}" style="display:inline-block;background:${params.accent};color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">View gallery</a></p>
+       <p style="margin:16px 0 0;font-size:12px;color:#8a8f98;">Or paste this link into your browser:<br><a href="${params.galleryUrl}" style="color:${params.accent};word-break:break-all;">${params.galleryUrl}</a></p>
+       ${expiryNote}`,
+      `Gallery from ${studioName}, delivered via Snap.`,
+    ),
+    text: `Hi ${params.clientName}, ${studioName} shared ${params.photoCount} photo${params.photoCount === 1 ? "" : "s"} with you. View gallery: ${params.galleryUrl}${expires ? `\n\nThis link expires ${expires}.` : ""}`,
   };
 }

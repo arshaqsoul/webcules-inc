@@ -380,8 +380,10 @@ export const shareGrants = sqliteTable(
       .notNull()
       .references(() => projects.id, { onDelete: "cascade" }),
     clientEmail: text("client_email").notNull(),
-    /** SHA-256 of the 256-bit URL token — the raw token is never stored. */
+    /** SHA-256 of the 256-bit URL token — the lookup key; raw token never stored. */
     tokenHash: text("token_hash").notNull().unique(),
+    /** AES-GCM(token) under a BETTER_AUTH_SECRET-derived key — re-email only. */
+    tokenEnc: text("token_enc"),
     /** active | revoked | regenerated (null expiry = never expires) */
     status: text("status").notNull().default("active"),
     expiresAt: integer("expires_at", { mode: "timestamp" }),
