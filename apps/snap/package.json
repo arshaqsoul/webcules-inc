@@ -1,0 +1,49 @@
+{
+  "name": "snap",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vinext dev",
+    "build": "vinext build",
+    "start": "wrangler dev --config dist/server/wrangler.json",
+    "deploy": "vinext-cloudflare deploy --config dist/server/wrangler.json",
+    "preview": "vinext build && wrangler dev --config dist/server/wrangler.json",
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "wrangler d1 execute webcules-snap --local --file=./migrations/0001_init.sql",
+    "db:migrate:remote": "wrangler d1 execute webcules-snap --remote --file=./migrations/0001_init.sql"
+  },
+  "dependencies": {
+    "@vinext/cloudflare": "latest",
+    "@webcules/ui": "workspace:*",
+    "better-auth": "^1.7.6",
+    "drizzle-orm": "^0.45.3",
+    "lucide-react": "^0.544.0",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-server-dom-webpack": "latest",
+    "vinext": "latest",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "latest",
+    "@tailwindcss/postcss": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@vitejs/plugin-react": "latest",
+    "@vitejs/plugin-rsc": "latest",
+    "@webcules/typescript-config": "workspace:*",
+    "tailwindcss": "latest",
+    "typescript": "latest",
+    "vite": "latest",
+    "wrangler": "latest"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "sharp",
+      "unrs-resolver"
+    ]
+  }
+}

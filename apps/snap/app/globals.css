@@ -1,0 +1,136 @@
+/*
+ * Snap design system — Linear-style dark language.
+ * Source of truth: Linear project doc "Snap · Design System".
+ * canvas #010102 · surface ladder #0f1011→#191a1b · hairlines #23252a→#3e3e44
+ * ink scale #f7f8f8→#62666d · single chromatic accent: lavender #5e6ad2.
+ *
+ * The shared @webcules/ui globals bring Tailwind, tw-animate, base component
+ * variables and @source scanning for apps/**. Snap then overrides the palette
+ * in :root directly — Snap is dark-only, no light theme ships.
+ */
+@import "@webcules/ui/globals.css";
+
+:root {
+  /* --- shadcn variable slots (dark-only values) --- */
+  --background: #010102; /* canvas */
+  --foreground: #f7f8f8; /* ink */
+  --card: #0f1011; /* surface-1 */
+  --card-foreground: #f7f8f8;
+  --popover: #18191a; /* surface-3 */
+  --popover-foreground: #f7f8f8;
+  --primary: #5e6ad2; /* lavender — brand mark, primary CTA, focus, links ONLY */
+  --primary-foreground: #ffffff;
+  --secondary: #0f1011; /* secondary button: surface-1 + hairline */
+  --secondary-foreground: #f7f8f8;
+  --muted: #141516; /* surface-2 */
+  --muted-foreground: #8a8f98; /* ink-subtle */
+  --accent: #141516;
+  --accent-foreground: #f7f8f8;
+  --destructive: #eb5757;
+  --destructive-foreground: #ffffff;
+  --success: #27a644; /* the only semantic color */
+  --border: #23252a; /* hairline */
+  --input: #34343a; /* hairline-strong */
+  --ring: #5e69d1; /* lavender-focus */
+  --radius: 0.5rem; /* 8px — buttons, inputs */
+  --sidebar: #0f1011;
+  --sidebar-foreground: #f7f8f8;
+  --sidebar-primary: #5e6ad2;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #141516;
+  --sidebar-accent-foreground: #f7f8f8;
+  --sidebar-border: #23252a;
+  --sidebar-ring: #5e69d1;
+
+  /* --- studio-brand theming hooks (client-facing surfaces only) --- */
+  /* Overridden at widget/gallery/portal roots from server-resolved brand
+   * data; values are hex-sanitized server-side before rendering. */
+  --studio-accent: var(--primary);
+  --studio-logo: none;
+}
+
+.dark {
+  /* Snap is dark-only; .dark mirrors :root so `dark:` variants behave. */
+  --background: #010102;
+  --foreground: #f7f8f8;
+  --card: #0f1011;
+  --card-foreground: #f7f8f8;
+  --popover: #18191a;
+  --popover-foreground: #f7f8f8;
+  --primary: #5e6ad2;
+  --primary-foreground: #ffffff;
+  --secondary: #0f1011;
+  --secondary-foreground: #f7f8f8;
+  --muted: #141516;
+  --muted-foreground: #8a8f98;
+  --accent: #141516;
+  --accent-foreground: #f7f8f8;
+  --destructive: #eb5757;
+  --destructive-foreground: #ffffff;
+  --border: #23252a;
+  --input: #34343a;
+  --ring: #5e69d1;
+  --sidebar: #0f1011;
+  --sidebar-foreground: #f7f8f8;
+  --sidebar-primary: #5e6ad2;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #141516;
+  --sidebar-accent-foreground: #f7f8f8;
+  --sidebar-border: #23252a;
+  --sidebar-ring: #5e69d1;
+}
+
+@theme inline {
+  /* Snap-native tokens → utilities (bg-surface-1, text-ink-subtle, …) */
+  --color-canvas: #010102;
+  --color-surface-1: #0f1011;
+  --color-surface-2: #141516;
+  --color-surface-3: #18191a;
+  --color-surface-4: #191a1b;
+  --color-hairline: #23252a;
+  --color-hairline-strong: #34343a;
+  --color-hairline-tertiary: #3e3e44;
+  --color-ink: #f7f8f8;
+  --color-ink-muted: #d0d6e0;
+  --color-ink-subtle: #8a8f98;
+  --color-ink-tertiary: #62666d;
+  --color-lavender: #5e6ad2;
+  --color-lavender-hover: #828fff;
+  --color-lavender-focus: #5e69d1;
+  --color-success: #27a644;
+
+  --radius-card: 0.75rem; /* 12px — cards */
+  --radius-panel: 1rem; /* 16px — hero/product panels */
+
+  --font-sans:
+    Inter, "SF Pro Display", -apple-system, system-ui, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-mono:
+    "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--primary) 40%, transparent);
+}
+
+/* Focus ring per spec: 2px lavender-focus at 50% opacity. */
+:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-lavender-focus) 50%, transparent);
+  outline-offset: 1px;
+}

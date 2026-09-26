@@ -1,0 +1,9 @@
+# Copy to .dev.vars (gitignored) for local development.
+# Non-secret runtime config lives in wrangler.jsonc vars; production secrets
+# are set with `wrangler secret put` — never committed.
+
+# Auth
+BETTER_AUTH_SECRET=generate-with-openssl-rand-base64-32
+
+# Inbound-email webhook (set once the Snap inbound route exists)
+SNAP_INBOUND_WEBHOOK_SECRET=

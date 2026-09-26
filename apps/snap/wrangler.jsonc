@@ -1,0 +1,42 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "webcules-snap",
+  "compatibility_date": "2026-09-26",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "vinext/server/fetch-handler",
+  "assets": {
+    "directory": "dist/client",
+    "not_found_handling": "none",
+    "binding": "ASSETS"
+  },
+  // Dedicated D1 — Snap tenant data is isolated from webcules-cms by design.
+  "d1_databases": [
+    {
+      "binding": "D1",
+      "database_name": "webcules-snap",
+      "database_id": "daf6fd47-5885-414e-bcbb-1c045ee60f12"
+    }
+  ],
+  // Private bucket — no public access, no custom domain. All access via the
+  // worker binding (authorized proxy) + short-TTL presigned upload PUTs.
+  "r2_buckets": [
+    {
+      "binding": "R2",
+      "bucket_name": "snap-webcules"
+    }
+  ],
+  // Outbound transactional email (Cloudflare Email Service beta).
+  "send_email": [{ "name": "EMAIL" }],
+  "routes": [
+    {
+      "pattern": "snap.webcules.com",
+      "custom_domain": true
+    }
+  ],
+  "observability": { "enabled": true },
+  "vars": {
+    "NEXT_PUBLIC_APP_URL": "https://snap.webcules.com",
+    "BETTER_AUTH_URL": "https://snap.webcules.com",
+    "EMAIL_FROM": "Snap <hello@snap.webcules.com>"
+  }
+}
