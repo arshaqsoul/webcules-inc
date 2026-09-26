@@ -56,22 +56,33 @@ export async function readConnectStatus(
   return { state, account };
 }
 
-/** Onboarding or re-auth link (Stripe-hosted). */
+/** Onboarding or re-auth link (Stripe-hosted). Accounts that haven't fully
+ * finished onboarding (e.g. identity verification pending) only accept
+ * `account_onboarding`; fully-onboarded ones accept `account_update` — so a
+ * rejected type falls back to the other. */
 export async function createAccountLink(
   stripe: Stripe,
   accountId: string,
   kind: "account_onboarding" | "account_update",
   baseUrl: string,
 ): Promise<string | null> {
-  try {
-    const link = await stripe.accountLinks.create({
+  const make = (type: "account_onboarding" | "account_update") =>
+    stripe.accountLinks.create({
       account: accountId,
       refresh_url: `${baseUrl}/dashboard/settings?payouts=refresh`,
       return_url: `${baseUrl}/dashboard/settings?payouts=return`,
-      type: kind,
+      type,
     });
-    return link.url;
+  try {
+    return (await make(kind)).url;
   } catch (err) {
+    if (/Valid types for this account/.test(String(err))) {
+      try {
+        return (await make(kind === "account_onboarding" ? "account_update" : "account_onboarding")).url;
+      } catch {
+        return null;
+      }
+    }
     console.error("connect: account link create failed:", String(err));
     return null;
   }

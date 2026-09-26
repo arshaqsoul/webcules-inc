@@ -29,7 +29,7 @@ function humanizeRequirement(req: string): string {
   const readable = req
     .replace(/^individual\./, "your ")
     .replace(/^company\./, "the business ")
-    .replace(/\./g, " ")
+    .replace(/[._]/g, " ")
     .replace(/verification /, "");
   return readable.charAt(0).toUpperCase() + readable.slice(1);
 }
