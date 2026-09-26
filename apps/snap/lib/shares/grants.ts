@@ -42,7 +42,7 @@ async function tokenKey(): Promise<CryptoKey> {
   );
 }
 
-async function encryptToken(token: string): Promise<string> {
+export async function encryptToken(token: string): Promise<string> {
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const cipher = new Uint8Array(
     await crypto.subtle.encrypt({ name: "AES-GCM", iv }, await tokenKey(), new TextEncoder().encode(token)),
@@ -53,7 +53,7 @@ async function encryptToken(token: string): Promise<string> {
   return btoa(String.fromCharCode(...out));
 }
 
-async function decryptToken(enc: string): Promise<string | null> {
+export async function decryptToken(enc: string): Promise<string | null> {
   try {
     const bin = atob(enc);
     const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));

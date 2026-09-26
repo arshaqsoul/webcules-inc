@@ -10,6 +10,8 @@ import * as schema from "@/lib/db-schema";
 import { listAssets } from "@/lib/repos/assets";
 import { getProjectAuditActivity } from "@/lib/repos/audit";
 import { getProjectPaymentSummary, listPayments } from "@/lib/repos/payments";
+import { listProjectInvoices } from "@/lib/invoices";
+import { ProjectInvoices } from "@/components/project-invoices";
 import { getProjectShareActivity, listProjectGrants } from "@/lib/shares/grants";
 import { getOrgContext } from "@/lib/session";
 import { and, eq } from "drizzle-orm";
@@ -43,7 +45,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     ? await db.select().from(schema.clients).where(eq(schema.clients.id, project.clientId)).limit(1)
     : [null];
 
-  const [events, assets, grants, shareActivity, payments, auditEvents, paymentSummary] = await Promise.all([
+  const [events, assets, grants, shareActivity, payments, auditEvents, paymentSummary, invoices] = await Promise.all([
     db
       .select()
       .from(schema.projectStatusEvents)
@@ -55,6 +57,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     listPayments(ctx.organizationId, { projectId: id }),
     getProjectAuditActivity(ctx.organizationId, id),
     getProjectPaymentSummary(ctx.organizationId, id),
+    listProjectInvoices(ctx.organizationId, id),
   ]);
   const approvedCount = assets.filter((a) => a.status === "approved" || a.status === "shared").length;
 
@@ -185,7 +188,29 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         />
       </section>
 
-      <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
+              <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
+          <h2 className="text-[15px] font-medium text-ink">Invoices</h2>
+          <p className="mb-4 mt-1 text-xs text-ink-subtle">
+            Branded, numbered invoices with secure client links.
+          </p>
+          <ProjectInvoices
+            projectId={id}
+            invoices={invoices.map((inv) => ({
+              id: inv.id,
+              number: inv.number,
+              status: inv.status,
+              totalMinor: inv.totalMinor,
+              currency: inv.currency,
+              clientEmail: inv.clientEmail ?? null,
+              issuedAt: inv.issuedAt ? inv.issuedAt.toISOString() : null,
+              dueAt: inv.dueAt ? inv.dueAt.toISOString() : null,
+              hasPdf: Boolean(inv.pdfKey),
+            }))}
+            clientEmail={client?.email ?? null}
+            quotedTotalMinor={paymentSummary.quotedTotalMinor}
+          />
+        </section>
+        <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
         <h2 className="text-[15px] font-medium text-ink">Activity</h2>
         <div className="mt-3 flex flex-col gap-3">
           {feed.length === 0 && <p className="text-sm text-ink-subtle">No activity yet.</p>}

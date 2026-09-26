@@ -414,6 +414,28 @@ export function projectCompleteClientEmail(studioName: string, params: {
   };
 }
 
+/** Invoice sent to a client (WEB-137) — secure link, branded. */
+export function invoiceEmail(studioName: string, params: {
+  accent: string;
+  invoiceNumber: string;
+  amountLabel: string;
+  dueLabel: string | null;
+  invoiceUrl: string;
+}): { subject: string; html: string; text: string } {
+  return {
+    subject: `Invoice ${params.invoiceNumber} from ${studioName}`,
+    html: shell(
+      params.accent,
+      `Invoice ${params.invoiceNumber}`,
+      `<p style="margin:0 0 16px;"><strong style="color:#0f1011;">${studioName}</strong> has sent you an invoice for <strong style="color:#0f1011;">${params.amountLabel}</strong>${params.dueLabel ? `, due ${params.dueLabel}` : ""}.</p>
+       <p style="margin:0 0 16px;">Open the secure link to view the details and download the PDF.</p>
+       <p style="margin:24px 0 0;"><a href="${params.invoiceUrl}" style="display:inline-block;background:${params.accent};color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">View invoice</a></p>`,
+      `Invoices from Snap studios open via secure links unique to you.`,
+    ),
+    text: `${studioName} sent invoice ${params.invoiceNumber} for ${params.amountLabel}${params.dueLabel ? ` (due ${params.dueLabel})` : ""}. View it: ${params.invoiceUrl}`,
+  };
+}
+
 /** Gallery OTP — big friendly code, short-lived. */
 export function galleryOtpEmail(studioName: string, params: {
   code: string;

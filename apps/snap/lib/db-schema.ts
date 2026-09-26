@@ -582,10 +582,21 @@ export const invoices = sqliteTable(
     dueAt: integer("due_at", { mode: "timestamp" }),
     /** R2 key of the generated branded PDF (org-prefixed). */
     pdfKey: text("pdf_key"),
+    /** WEB-137: recipient + secure-link token (grant pattern: hash lookup). */
+    clientEmail: text("client_email"),
+    accessTokenHash: text("access_token_hash"),
+    tokenEnc: text("token_enc"),
     createdAt: ts("created_at"),
   },
   (t) => [uniqueIndex("invoice_org_number_unique").on(t.organizationId, t.number)],
 );
+
+/** Per-org sequential counters (invoice numbering). */
+export const orgCounters = sqliteTable("org_counter", {
+  organizationId: text("organization_id").primaryKey(),
+  invoiceSeq: integer("invoice_seq").notNull().default(0),
+});
+
 
 /* ---------------- Logs ---------------- */
 
