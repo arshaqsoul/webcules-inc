@@ -9,7 +9,7 @@ import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { listAssets } from "@/lib/repos/assets";
 import { getProjectAuditActivity } from "@/lib/repos/audit";
-import { listPayments } from "@/lib/repos/payments";
+import { getProjectPaymentSummary, listPayments } from "@/lib/repos/payments";
 import { getProjectShareActivity, listProjectGrants } from "@/lib/shares/grants";
 import { getOrgContext } from "@/lib/session";
 import { and, eq } from "drizzle-orm";
@@ -43,7 +43,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     ? await db.select().from(schema.clients).where(eq(schema.clients.id, project.clientId)).limit(1)
     : [null];
 
-  const [events, assets, grants, shareActivity, payments, auditEvents] = await Promise.all([
+  const [events, assets, grants, shareActivity, payments, auditEvents, paymentSummary] = await Promise.all([
     db
       .select()
       .from(schema.projectStatusEvents)
@@ -54,6 +54,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     getProjectShareActivity(ctx.organizationId, id),
     listPayments(ctx.organizationId, { projectId: id }),
     getProjectAuditActivity(ctx.organizationId, id),
+    getProjectPaymentSummary(ctx.organizationId, id),
   ]);
   const approvedCount = assets.filter((a) => a.status === "approved" || a.status === "shared").length;
 
@@ -161,6 +162,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           Booking payments for this project. Refunds cancel the booking and email the client.
         </p>
         <ProjectPayments
+          projectId={id}
           payments={payments.map((p) => ({
             id: p.id,
             kind: p.kind,
@@ -168,7 +170,18 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             currency: p.currency,
             status: p.status,
             occurredAt: p.occurredAt,
+            method: p.method ?? null,
+            note: p.note ?? null,
+            stripePaymentIntentId: p.stripePaymentIntentId ?? null,
           }))}
+          summary={{
+            quotedTotalMinor: paymentSummary.quotedTotalMinor,
+            currency: paymentSummary.currency,
+            collectedMinor: paymentSummary.collectedMinor,
+            refundedMinor: paymentSummary.refundedMinor,
+            status: paymentSummary.status,
+            paymentCount: paymentSummary.paymentCount,
+          }}
         />
       </section>
 

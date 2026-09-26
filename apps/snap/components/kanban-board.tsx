@@ -14,6 +14,8 @@ export type BoardProject = {
   eventDate: string | null;
   clientName: string | null;
   clientEmail: string | null;
+  /** WEB-135: derived money state — unpaid | partial | paid | overpaid | none. */
+  payStatus?: "unpaid" | "partial" | "paid" | "overpaid" | "none";
 };
 
 const COLUMNS = [
@@ -88,11 +90,27 @@ export function KanbanBoard({ projects }: { projects: BoardProject[] }) {
                     {p.title}
                   </Link>
                   <p className="mt-0.5 truncate text-xs text-ink-subtle">{p.clientName ?? p.clientEmail}</p>
-                  {p.eventDate && (
-                    <p className="mt-1.5 text-[11px] text-ink-tertiary">
-                      📅 {new Date(p.eventDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                    </p>
-                  )}
+                  <div className="mt-1.5 flex items-center gap-2 text-[11px] text-ink-tertiary">
+                    {p.eventDate && (
+                      <span>📅 {new Date(p.eventDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+                    )}
+                    {p.payStatus && p.payStatus !== "none" && (
+                      <span
+                        title={`Payment ${p.payStatus}`}
+                        className={
+                          p.payStatus === "paid"
+                            ? "rounded-full bg-success/10 px-1.5 py-0.5 font-medium text-success-text"
+                            : p.payStatus === "partial"
+                              ? "rounded-full bg-amber-500/10 px-1.5 py-0.5 font-medium text-amber-600 dark:text-amber-400"
+                              : p.payStatus === "overpaid"
+                                ? "rounded-full bg-sky-500/10 px-1.5 py-0.5 font-medium text-sky-600 dark:text-sky-400"
+                                : "rounded-full bg-destructive/10 px-1.5 py-0.5 font-medium text-destructive"
+                        }
+                      >
+                        $ {p.payStatus}
+                      </span>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

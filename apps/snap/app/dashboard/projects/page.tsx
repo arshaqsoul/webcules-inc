@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { KanbanBoard } from "@/components/kanban-board";
 import { listProjects } from "@/lib/repos/projects";
+import { getOrgPaymentStatuses } from "@/lib/repos/payments";
 import { getOrgContext } from "@/lib/session";
 
 export const metadata = { title: "Projects" };
@@ -9,7 +10,10 @@ export const metadata = { title: "Projects" };
 export default async function ProjectsPage() {
   const ctx = await getOrgContext();
   if (!ctx) redirect("/login");
-  const projects = await listProjects(ctx.organizationId);
+  const [projects, payStatuses] = await Promise.all([
+    listProjects(ctx.organizationId),
+    getOrgPaymentStatuses(ctx.organizationId),
+  ]);
 
   return (
     <div className="flex flex-col gap-5">
@@ -32,6 +36,7 @@ export default async function ProjectsPage() {
             eventDate: p.eventDate ? p.eventDate.toISOString() : null,
             clientName: p.clientName ?? null,
             clientEmail: p.clientEmail ?? null,
+            payStatus: payStatuses.get(p.id)?.status ?? "none",
           }))}
         />
       )}

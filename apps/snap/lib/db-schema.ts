@@ -282,6 +282,9 @@ export const projects = sqliteTable(
     status: text("status").notNull().default("booked"),
     eventDate: integer("event_date", { mode: "timestamp" }),
     notes: text("notes"),
+    /** WEB-135: quoted package total — anchors paid/partial/unpaid badges. */
+    quotedTotalMinor: integer("quoted_total_minor"),
+    quotedCurrency: text("quoted_currency").notNull().default("usd"),
     createdAt: ts("created_at"),
     updatedAt: ts("updated_at"),
   },
@@ -549,6 +552,9 @@ export const payments = sqliteTable(
     /** pending | succeeded | failed | refunded */
     status: text("status").notNull().default("pending"),
     occurredAt: integer("occurred_at", { mode: "timestamp" }),
+    /** WEB-135: manual/offline records — cash, e-transfer, cheque, other. */
+    method: text("method"),
+    note: text("note"),
     createdAt: ts("created_at"),
   },
   (t) => [index("payment_org_project_idx").on(t.organizationId, t.projectId)],
