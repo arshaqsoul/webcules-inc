@@ -43,6 +43,8 @@
     // the gallery then opens on link possession alone.
     "GALLERY_OTP_MODE": "otp",
     // S3 endpoint host for storage-class moves (RAW Vault) — keys are secrets.
-    "R2_S3_ACCOUNT_ID": "5677ff5e25a4e78485b774931f981681"
+    "R2_S3_ACCOUNT_ID": "5677ff5e25a4e78485b774931f981681",
+    // Founder allowlist — margin report (WEB-161) access + alert recipient.
+    "FOUNDER_EMAILS": "arshaqhishamsl@gmail.com"
   }
 }

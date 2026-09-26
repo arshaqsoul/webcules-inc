@@ -649,3 +649,25 @@ export const galleryViewMonthly = sqliteTable(
     index("gallery_view_monthly_org_idx").on(t.organizationId, t.month),
   ],
 );
+
+/* ---------------- Usage snapshots / margin monitoring (WEB-161) ---------------- */
+
+/** Month-to-date usage per org, refreshed daily by the cron; the month key
+ * rolls over so the last write of a month freezes its snapshot. */
+export const usageCounters = sqliteTable(
+  "usage_counters",
+  {
+    organizationId: text("organization_id").notNull(),
+    /** 'YYYY-MM' */
+    month: text("month").notNull(),
+    storedBytes: integer("stored_bytes").notNull().default(0),
+    imageViews: integer("image_views").notNull().default(0),
+    emailsSent: integer("emails_sent").notNull().default(0),
+    uploadOps: integer("upload_ops").notNull().default(0),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.organizationId, t.month] }),
+    index("usage_counters_month_idx").on(t.month),
+  ],
+);

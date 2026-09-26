@@ -323,6 +323,26 @@ export function dormancyEmail(studioName: string, params: {
   };
 }
 
+/** Founder margin alert (WEB-161) — threshold trip digest, max 1/day. */
+export function marginAlertEmail(lines: string[], params: {
+  month: string;
+  reportUrl: string;
+}): { subject: string; html: string; text: string } {
+  const items = lines.map((l) => `<li style="margin:0 0 6px;">${l}</li>`).join("");
+  return {
+    subject: `Snap margin alert — ${lines.length} threshold${lines.length === 1 ? "" : "s"} tripped (${params.month})`,
+    html: shell(
+      "#d97706",
+      "Margin thresholds tripped",
+      `<p style="margin:0 0 12px;">Usage snapshot for <strong style="color:#0f1011;">${params.month}</strong> crossed alert thresholds:</p>
+       <ul style="margin:0 0 16px;padding-left:20px;font-size:14px;">${items}</ul>
+       <p style="margin:0;font-size:13px;color:#8a8f98;">Daily digest — you'll only hear about this again tomorrow if it persists.</p>`,
+      `Snap platform monitoring (WEB-161): org COGS > 50% of plan price, or account email > 50% of the 3k/mo allowance.`,
+    ),
+    text: `Snap margin alerts (${params.month}):\n${lines.map((l) => `- ${l}`).join("\n")}`,
+  };
+}
+
 /** Gallery OTP — big friendly code, short-lived. */
 export function galleryOtpEmail(studioName: string, params: {
   code: string;

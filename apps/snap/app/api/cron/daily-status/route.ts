@@ -134,5 +134,16 @@ export async function POST(req: Request) {
     console.error("view limit prune failed:", String(err));
   }
 
-  return Response.json({ ok: true, moved: due.length, warned, downgraded, vault, dormancy });
+  // WEB-161: usage snapshot rollup + founder threshold alerts (max 1/day).
+  let margin: { rolledUp: number; alertSent: boolean; alerts: number } | null = null;
+  try {
+    const { rollupUsageSnapshots, sendMarginAlertIfTripped } = await import("@/lib/margin");
+    const rolledUp = await rollupUsageSnapshots();
+    const alert = await sendMarginAlertIfTripped();
+    margin = { rolledUp, alertSent: alert.sent, alerts: alert.alerts };
+  } catch (err) {
+    console.error("margin rollup failed:", String(err));
+  }
+
+  return Response.json({ ok: true, moved: due.length, warned, downgraded, vault, dormancy, margin });
 }
