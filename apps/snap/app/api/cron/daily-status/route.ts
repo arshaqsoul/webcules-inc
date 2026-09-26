@@ -134,6 +134,24 @@ export async function POST(req: Request) {
     console.error("view limit prune failed:", String(err));
   }
 
+  // WEB-165: abandoned payment holds — unpaid pending bookings past the
+  // Stripe checkout window (24h + margin) release their slot.
+  let expiredHolds = 0;
+  try {
+    const { cancelBooking } = await import("@/lib/repos/bookings");
+    const stale = await db
+      .select({ id: schema.bookings.id, organizationId: schema.bookings.organizationId })
+      .from(schema.bookings)
+      .where(and(eq(schema.bookings.status, "pending"), lte(schema.bookings.createdAt, new Date(Date.now() - 26 * 3600e3))))
+      .limit(100);
+    for (const b of stale) {
+      await cancelBooking(b.organizationId, b.id, "system");
+      expiredHolds++;
+    }
+  } catch (err) {
+    console.error("pending-hold sweep failed:", String(err));
+  }
+
   // WEB-161: usage snapshot rollup + founder threshold alerts (max 1/day).
   let margin: { rolledUp: number; alertSent: boolean; alerts: number } | null = null;
   try {
@@ -145,5 +163,5 @@ export async function POST(req: Request) {
     console.error("margin rollup failed:", String(err));
   }
 
-  return Response.json({ ok: true, moved: due.length, warned, downgraded, vault, dormancy, margin });
+  return Response.json({ ok: true, moved: due.length, warned, downgraded, expiredHolds, vault, dormancy, margin });
 }

@@ -61,7 +61,9 @@ export function originAllowed(studio: ResolvedStudio, origin: string | null): bo
 /** CSP frame-ancestors value for the studio's embed pages. */
 export function frameAncestorsDirective(studio: ResolvedStudio): string {
   if (studio.embedOrigins.length === 0) return "frame-ancestors *";
-  return `frame-ancestors ${studio.embedOrigins.map((o) => o.replace(/\/$/, "")).join(" ")}`;
+  // 'self': snap's own public booking page (/b/{slug}) is first-party and
+  // always allowed to frame the widget regardless of origin config.
+  return `frame-ancestors 'self' ${studio.embedOrigins.map((o) => o.replace(/\/$/, "")).join(" ")}`;
 }
 
 export function safeHexColor(input: string | undefined | null): string | null {

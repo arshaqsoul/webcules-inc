@@ -303,9 +303,13 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
         btn.disabled = false;
       } else {
         msg.className = "msg err";
-        msg.textContent = body.error === "slot_unavailable" || body.error === "conflict"
-          ? "That slot was just taken — please pick another."
-          : body.error === "studio_booking_limit"
+        if (body.error === "slot_unavailable" || body.error === "conflict") {
+          msg.textContent = "That slot was just taken — please pick another.";
+          // Bust the month cache so the stale slot disappears immediately.
+          var gone = data.month;
+          data = { month: null, days: null };
+          load(gone);
+        } else msg.textContent = body.error === "studio_booking_limit"
           ? "This studio can't take more bookings right now — please contact them directly."
           : body.error === "captcha_failed"
           ? "Verification failed — please try again."

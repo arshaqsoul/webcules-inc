@@ -17,7 +17,7 @@ import * as schema from "@/lib/db-schema";
 import { bookingCanceledEmail, sendEmail } from "@/lib/email";
 import { safeHexColor } from "@/lib/embed";
 import { applySubscriptionState } from "@/lib/billing";
-import { confirmBookingPaid } from "@/lib/repos/bookings";
+import { cancelBooking, confirmBookingPaid } from "@/lib/repos/bookings";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { getStripe } from "@/lib/stripe";
 
@@ -203,6 +203,14 @@ export async function POST(req: Request) {
         const invoice = event.data.object as Stripe.Invoice;
         const subRef = (invoice.parent as { subscription?: { subscription?: string } } | undefined)?.subscription?.subscription ?? null;
         console.error("billing: invoice payment failed — customer:", invoice.customer ?? "?", "sub:", subRef ?? "?");
+        break;
+      }
+      case "checkout.session.expired": {
+        // WEB-165: abandoned payment — release the slot hold.
+        const session = event.data.object as Stripe.Checkout.Session;
+        if (session.metadata?.bookingId && session.metadata?.organizationId) {
+          await cancelBooking(session.metadata.organizationId, session.metadata.bookingId, "system");
+        }
         break;
       }
       default:

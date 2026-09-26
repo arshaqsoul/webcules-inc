@@ -259,6 +259,31 @@ export function SettingsForm({ initial }: { initial: Initial }) {
             <RefreshCw className="mr-1.5 h-3.5 w-3.5" aria-hidden /> Rotate key
           </Button>
         </div>
+        <div className="mt-4 border-t border-hairline pt-3">
+          <p className="text-xs font-medium text-ink">Shareable booking link</p>
+          <p className="mt-0.5 text-xs text-ink-subtle">A standalone booking page for bio links, Instagram and email signatures — no website needed.</p>
+          <div className="mt-2 flex items-center gap-2">
+            <a
+              href={"/b/" + initial.slug}
+              target="_blank"
+              rel="noreferrer"
+              className="flex-1 truncate rounded-md bg-canvas px-3 py-2 font-mono text-xs text-primary underline-offset-2 hover:underline"
+            >
+              {"https://snap.webcules.com/b/" + initial.slug}
+            </a>
+            <Button
+              variant="secondary"
+              size="icon"
+              aria-label="Copy booking link"
+              onClick={async () => {
+                await navigator.clipboard.writeText("https://snap.webcules.com/b/" + initial.slug);
+                setStatus("Booking link copied.");
+              }}
+            >
+              <Copy className="h-4 w-4" aria-hidden />
+            </Button>
+          </div>
+        </div>
       </section>
 
       <section className={card}>
