@@ -94,6 +94,13 @@ export async function refundPayment(
     return { ok: false, error: "stripe_failed" };
   }
 
+  // Flip to "refunding" immediately — the charge.refunded webhook finalizes
+  // to "refunded" seconds later; the ledger shouldn't look untouched meanwhile.
+  await db
+    .update(schema.payments)
+    .set({ status: "refunding" })
+    .where(eq(schema.payments.id, paymentId));
+
   await db.insert(schema.auditLog).values({
     id: crypto.randomUUID(),
     organizationId,
@@ -102,7 +109,7 @@ export async function refundPayment(
     action: "payment.refund_requested",
     targetType: "payment",
     targetId: paymentId,
-    meta: JSON.stringify({ paymentIntent: payment.stripePaymentIntentId }),
+    meta: JSON.stringify({ paymentIntent: payment.stripePaymentIntentId, projectId: payment.projectId }),
   });
   return { ok: true };
 }

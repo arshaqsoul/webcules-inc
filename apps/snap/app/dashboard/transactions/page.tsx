@@ -8,6 +8,7 @@ export const metadata = { title: "Transactions" };
 
 const STATUS_TONE: Record<string, string> = {
   pending: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+  refunding: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
   succeeded: "bg-success/10 text-success-text",
   failed: "bg-destructive/10 text-destructive",
   refunded: "bg-surface-2 text-ink-subtle",

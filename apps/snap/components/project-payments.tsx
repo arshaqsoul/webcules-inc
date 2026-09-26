@@ -18,6 +18,7 @@ export type PaymentItem = {
 
 const STATUS_TONE: Record<string, string> = {
   pending: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+  refunding: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
   succeeded: "bg-success/10 text-success-text",
   failed: "bg-destructive/10 text-destructive",
   refunded: "bg-surface-2 text-ink-subtle",
@@ -27,6 +28,7 @@ export function ProjectPayments({ payments }: { payments: PaymentItem[] }) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
 
   async function refund(id: string) {
     if (!confirm("Refund this payment in full? The booking will be canceled and the client emailed.")) return;
@@ -42,6 +44,7 @@ export function ProjectPayments({ payments }: { payments: PaymentItem[] }) {
             : "Refund failed — check that Stripe can process it, then retry.",
         );
       } else {
+        setNotice("Refund issued — it shows as Refunding now and confirms once Stripe processes it.");
         router.refresh();
       }
     } catch {
@@ -53,6 +56,7 @@ export function ProjectPayments({ payments }: { payments: PaymentItem[] }) {
   return (
     <div className="flex flex-col gap-3">
       {payments.length === 0 && <p className="text-sm text-ink-subtle">No payments on this project yet.</p>}
+      {notice && <p className="text-xs text-success-text">{notice}</p>}
       {error && <p className="text-xs text-destructive">{error}</p>}
       {payments.map((p) => (
         <div key={p.id} className="flex flex-wrap items-center gap-3 rounded-[12px] border border-hairline bg-surface-1 px-4 py-3 text-sm">

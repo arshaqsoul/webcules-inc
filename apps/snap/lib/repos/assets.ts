@@ -234,15 +234,18 @@ export async function bulkAssetAction(
     result.done++;
   }
   if (params.assetIds.length) {
+    // Attribute the bulk run to the project (first asset's project, org-scoped)
+    // so the project activity feed can surface it.
+    const firstAsset = await getAsset(organizationId, params.assetIds[0]);
     await getDb().insert(schema.auditLog).values({
       id: crypto.randomUUID(),
       organizationId,
       actorType: "user",
       actorId: params.actorUserId,
       action: `asset.bulk_${params.action}`,
-      targetType: "project",
-      targetId: params.assetIds[0],
-      meta: JSON.stringify({ count: params.assetIds.length, done: result.done, blocked: result.blocked.length, tag: params.tag ?? null }),
+      targetType: firstAsset ? "project" : "asset",
+      targetId: firstAsset?.projectId ?? params.assetIds[0],
+      meta: JSON.stringify({ count: params.assetIds.length, done: result.done, blocked: result.blocked.length, tag: params.tag ?? null, projectId: firstAsset?.projectId ?? null }),
     });
   }
   return result;

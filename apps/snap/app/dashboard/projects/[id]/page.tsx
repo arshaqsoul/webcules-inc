@@ -8,6 +8,7 @@ import { ProjectPayments } from "@/components/project-payments";
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { listAssets } from "@/lib/repos/assets";
+import { getProjectAuditActivity } from "@/lib/repos/audit";
 import { listPayments } from "@/lib/repos/payments";
 import { getProjectShareActivity, listProjectGrants } from "@/lib/shares/grants";
 import { getOrgContext } from "@/lib/session";
@@ -42,7 +43,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     ? await db.select().from(schema.clients).where(eq(schema.clients.id, project.clientId)).limit(1)
     : [null];
 
-  const [events, assets, grants, shareActivity, payments] = await Promise.all([
+  const [events, assets, grants, shareActivity, payments, auditEvents] = await Promise.all([
     db
       .select()
       .from(schema.projectStatusEvents)
@@ -52,10 +53,12 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     listProjectGrants(ctx.organizationId, id),
     getProjectShareActivity(ctx.organizationId, id),
     listPayments(ctx.organizationId, { projectId: id }),
+    getProjectAuditActivity(ctx.organizationId, id),
   ]);
   const approvedCount = assets.filter((a) => a.status === "approved" || a.status === "shared").length;
 
-  // One chronological feed: pipeline status events + gallery access audit.
+  // One chronological feed: pipeline status events + gallery access audit +
+  // system/user audit trail (payments, bulk curation runs).
   const GALLERY_EVENT_LABEL: Record<string, string> = {
     view: "opened the gallery",
     otp_sent: "requested a verification code",
@@ -63,11 +66,24 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     otp_fail: "failed a code check",
     download: "downloaded a file",
   };
+  const AUDIT_EVENT_LABEL: Record<string, (meta: Record<string, unknown>) => string> = {
+    "payment.refund_requested": () => "issued a refund",
+    "booking.payment_confirmed": () => "booking payment confirmed",
+    "asset.bulk_approve": (m) => `bulk approved ${m.count ?? ""} files`.trim(),
+    "asset.bulk_reject": (m) => `bulk rejected ${m.count ?? ""} files`.trim(),
+    "asset.bulk_delete": (m) => `bulk deleted ${m.count ?? ""} files`.trim(),
+    "asset.bulk_tag": (m) => `tagged ${m.count ?? ""} files${m.tag ? ` "${String(m.tag)}"` : ""}`.trim(),
+    "asset.bulk_untag": (m) => `untagged ${m.count ?? ""} files${m.tag ? ` "${String(m.tag)}"` : ""}`.trim(),
+    "asset.delete_blocked": () => "delete blocked — active client gallery",
+    "asset.reject_blocked": () => "reject blocked — active client gallery",
+    "share.grant.created": () => "created a client gallery link",
+    "share.grant.revoked": () => "revoked a client gallery link",
+    "share.grant.regenerated": () => "rotated a client gallery link",
+  };
   const feed = [
     ...events.map((e) => ({
       key: e.id,
       at: e.createdAt,
-      kind: "status" as const,
       dot: STATUS_ACCENT[e.toStatus] ?? "#8a8f98",
       label: e.fromStatus ? `${e.fromStatus} → ${e.toStatus}` : `created as ${e.toStatus}`,
       note: e.note ?? null,
@@ -75,11 +91,20 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     ...shareActivity.map((a) => ({
       key: a.id,
       at: new Date(a.createdAt),
-      kind: "gallery" as const,
       dot: "#5e6ad2",
       label: `${a.clientEmail.split("@")[0]} ${GALLERY_EVENT_LABEL[a.event] ?? a.event}`,
       note: null,
     })),
+    ...auditEvents.map((e) => {
+      const label = AUDIT_EVENT_LABEL[e.action]?.(e.meta);
+      return {
+        key: e.id,
+        at: new Date(e.createdAt),
+        dot: "#8f5fee",
+        label: label ?? e.action.replace(/[._]/g, " "),
+        note: e.blocked ? `${e.blocked} blocked` : null,
+      };
+    }),
   ].sort((a, b) => a.at.getTime() - b.at.getTime());
 
   return (
@@ -154,7 +179,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 className="h-2 w-2 shrink-0 rounded-full"
                 style={{ background: e.dot }}
               />
-              <span className={e.kind === "gallery" ? "text-ink-muted" : "text-ink"}>{e.label}</span>
+              <span className="text-ink">{e.label}</span>
               {e.note && <span className="text-xs text-ink-tertiary">{e.note}</span>}
               <span className="ml-auto text-xs text-ink-tertiary">
                 {e.at.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
