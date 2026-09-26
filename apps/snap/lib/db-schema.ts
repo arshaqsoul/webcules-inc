@@ -207,6 +207,8 @@ export const clients = sqliteTable(
     /** Portal user this client record belongs to (linked on first login). */
     userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
     notes: text("notes"),
+    /** Client-notification opt-out for THIS studio (WEB-136; per-row = per-studio). */
+    notify: integer("notify", { mode: "boolean" }).notNull().default(true),
     createdAt: ts("created_at"),
     updatedAt: ts("updated_at"),
   },

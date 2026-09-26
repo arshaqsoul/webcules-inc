@@ -10,8 +10,10 @@
  */
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { emailOTP } from "better-auth/plugins/email-otp";
 import { organization } from "better-auth/plugins/organization";
+import { and, eq } from "drizzle-orm";
 import { env } from "cloudflare:workers";
 
 import { getDb } from "./db";
@@ -95,6 +97,30 @@ async function createAuthInstance() {
       storage: "database",
       window: 60,
       max: 30,
+    },
+    hooks: {
+      // WEB-90 isolation guard: a studio's client must never be invited into
+      // the organization — a member seat would expose every other client's
+      // data to them. Clients reach Snap through the portal, not as members.
+      before: createAuthMiddleware(async (ctx) => {
+        if (ctx.path !== "/organization/invite-member") return;
+        const email = String((ctx.body as { email?: string } | undefined)?.email ?? "").trim().toLowerCase();
+        const organizationId = String(
+          (ctx.body as { organizationId?: string } | undefined)?.organizationId ?? "",
+        );
+        if (!email || !organizationId) return;
+        const hit = await getDb()
+          .select({ id: schema.clients.id })
+          .from(schema.clients)
+          .where(and(eq(schema.clients.organizationId, organizationId), eq(schema.clients.email, email)))
+          .limit(1);
+        if (hit.length) {
+          throw new APIError("FORBIDDEN", {
+            message:
+              "This email belongs to a studio client — clients access Snap through the client portal, not as team members.",
+          });
+        }
+      }),
     },
     plugins: [
       organization({
