@@ -1,0 +1,10 @@
+{
+  "extends": "@webcules/typescript-config/base.json",
+  "compilerOptions": {
+    "lib": ["es2022", "webworker"],
+    "types": ["@cloudflare/workers-types"],
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": ["src"]
+}

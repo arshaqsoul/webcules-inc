@@ -1,0 +1,15 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "webcules-snap-email",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-08-15",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "send_email": [{ "name": "EMAIL" }],
+  "vars": {
+    // Where parsed inbound emails are delivered once the Snap app is live.
+    // Leave empty to hold emails in logs + ops forward only.
+    "SNAP_INBOUND_WEBHOOK_URL": "",
+    "OPS_FORWARD_ADDRESS": "webculesco@gmail.com"
+  }
+}
