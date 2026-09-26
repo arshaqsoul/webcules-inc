@@ -25,6 +25,14 @@ const bodySchema = z.object({
       bufferMinutes: z.number().int().min(0).max(240).optional(),
       leadTimeMinutes: z.number().int().min(0).max(60 * 24 * 30).optional(),
       maxAdvanceDays: z.number().int().min(1).max(365).optional(),
+      payment: z
+        .object({
+          enabled: z.boolean(),
+          kind: z.enum(["deposit", "full"]),
+          amountMinor: z.number().int().min(100).max(100_000_00),
+          label: z.string().trim().max(80).optional(),
+        })
+        .optional(),
     })
     .optional(),
   blackouts: z.array(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)).max(100),

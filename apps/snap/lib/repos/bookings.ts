@@ -20,6 +20,8 @@ export async function createBookingFromWidget(params: {
   clientEmail: string;
   clientPhone?: string | null;
   notes?: string | null;
+  /** Payment-required studios hold the booking as pending until the webhook confirms payment. */
+  pendingWhenPaymentRequired?: boolean;
 }): Promise<CreateBookingResult> {
   const db = getDb();
   const profile = await getStudioProfile(params.organizationId);
@@ -60,11 +62,13 @@ export async function createBookingFromWidget(params: {
 
   const bookingId = crypto.randomUUID();
   const projectId = crypto.randomUUID();
+  const bookingStatus = params.pendingWhenPaymentRequired ? "pending" : "confirmed";
 
   try {
-    await db.batch([
-      // Project first — booking.projectId carries an FK to it.
-      db.insert(schema.projects).values({
+    // Project first — booking.projectId carries an FK to it. Sequential awaits:
+    // variable-shaped batches don't type as tuples, and order matters.
+    if (bookingStatus === "confirmed") {
+      await db.insert(schema.projects).values({
         id: projectId,
         organizationId: params.organizationId,
         clientId: client.id,
@@ -72,38 +76,40 @@ export async function createBookingFromWidget(params: {
         title: `${params.clientName} — session`,
         status: "booked",
         eventDate: endAt,
-      }),
-      db.insert(schema.bookings).values({
-        id: bookingId,
-        organizationId: params.organizationId,
-        projectId,
-        startAt,
-        endAt,
-        timezone: profile.timezone,
-        clientEmail: email,
-        clientName: params.clientName,
-        status: "confirmed",
-        paymentStatus: "unpaid",
-        notes: params.notes ?? null,
-      }),
-      db.insert(schema.projectStatusEvents).values({
+      });
+    }
+    await db.insert(schema.bookings).values({
+      id: bookingId,
+      organizationId: params.organizationId,
+      projectId: bookingStatus === "confirmed" ? projectId : null,
+      startAt,
+      endAt,
+      timezone: profile.timezone,
+      clientEmail: email,
+      clientName: params.clientName,
+      status: bookingStatus,
+      paymentStatus: "unpaid",
+      notes: params.notes ?? null,
+    });
+    if (bookingStatus === "confirmed") {
+      await db.insert(schema.projectStatusEvents).values({
         id: crypto.randomUUID(),
         organizationId: params.organizationId,
         projectId,
         fromStatus: null,
         toStatus: "booked",
         note: "Created from calendar booking",
-      }),
-      db.insert(schema.auditLog).values({
-        id: crypto.randomUUID(),
-        organizationId: params.organizationId,
-        actorType: "system",
-        action: "booking.created",
-        targetType: "booking",
-        targetId: bookingId,
-        meta: JSON.stringify({ projectId, source: "calendar" }),
-      }),
-    ]);
+      });
+    }
+    await db.insert(schema.auditLog).values({
+      id: crypto.randomUUID(),
+      organizationId: params.organizationId,
+      actorType: "system",
+      action: "booking.created",
+      targetType: "booking",
+      targetId: bookingId,
+      meta: JSON.stringify({ projectId, source: "calendar", status: bookingStatus }),
+    });
   } catch (err) {
     // Partial unique index (0004) fires on concurrent double-books.
     if (String(err).includes("booking_org_start_active") || String(err).includes("UNIQUE")) {
@@ -165,4 +171,89 @@ export async function getBookingByRef(bookingId: string) {
   const db = getDb();
   const rows = await db.select().from(schema.bookings).where(eq(schema.bookings.id, bookingId)).limit(1);
   return rows[0] ?? null;
+}
+
+/** Payment confirmed via webhook: pending booking → confirmed, project
+ * created, payment row recorded. Returns context for confirmation emails. */
+export async function confirmBookingPaid(params: {
+  bookingId: string;
+  organizationId: string;
+  stripePaymentIntentId: string | null;
+}): Promise<{ ok: boolean; booking?: typeof schema.bookings.$inferSelect }> {
+  const db = getDb();
+  const booking = (
+    await db
+      .select()
+      .from(schema.bookings)
+      .where(
+        and(
+          eq(schema.bookings.id, params.bookingId),
+          eq(schema.bookings.organizationId, params.organizationId),
+        ),
+      )
+      .limit(1)
+  )[0];
+  if (!booking) return { ok: false };
+  if (booking.status === "confirmed") return { ok: true, booking }; // idempotent
+
+  const client = (
+    await db
+      .insert(schema.clients)
+      .values({
+        id: crypto.randomUUID(),
+        organizationId: params.organizationId,
+        email: booking.clientEmail,
+        name: booking.clientName ?? booking.clientEmail,
+      })
+      .onConflictDoUpdate({
+        target: [schema.clients.organizationId, schema.clients.email],
+        set: { name: booking.clientName ?? booking.clientEmail, updatedAt: new Date() },
+      })
+      .returning()
+  )[0];
+
+  const projectId = crypto.randomUUID();
+  await db.batch([
+    db.insert(schema.projects).values({
+      id: projectId,
+      organizationId: params.organizationId,
+      clientId: client.id,
+      bookingId: booking.id,
+      title: `${booking.clientName ?? booking.clientEmail} — session`,
+      status: "booked",
+      eventDate: booking.endAt,
+    }),
+    db
+      .update(schema.bookings)
+      .set({ status: "confirmed", paymentStatus: "paid", projectId, updatedAt: new Date() })
+      .where(eq(schema.bookings.id, booking.id)),
+    db.insert(schema.projectStatusEvents).values({
+      id: crypto.randomUUID(),
+      organizationId: params.organizationId,
+      projectId,
+      fromStatus: null,
+      toStatus: "booked",
+      note: "Created from paid calendar booking",
+    }),
+    db.insert(schema.payments).values({
+      id: crypto.randomUUID(),
+      organizationId: params.organizationId,
+      projectId,
+      stripePaymentIntentId: params.stripePaymentIntentId,
+      kind: "booking",
+      amountMinor: 0, // reconciled from the Stripe session by a follow-up retrieve if needed
+      status: "succeeded",
+      occurredAt: new Date(),
+    }),
+    db.insert(schema.auditLog).values({
+      id: crypto.randomUUID(),
+      organizationId: params.organizationId,
+      actorType: "system",
+      action: "booking.payment_confirmed",
+      targetType: "booking",
+      targetId: booking.id,
+      meta: JSON.stringify({ projectId }),
+    }),
+  ]);
+  return { ok: true, booking };
 }

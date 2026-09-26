@@ -23,6 +23,7 @@
     "react": "latest",
     "react-dom": "latest",
     "react-server-dom-webpack": "latest",
+    "stripe": "^22.6.2",
     "vinext": "latest",
     "zod": "^4.6.5"
   },

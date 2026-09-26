@@ -4,6 +4,7 @@
  * First month renders server-side (inline JSON) for instant paint; the
  * visitor's timezone is shown alongside the studio's. */
 import { monthDates } from "@/lib/availability";
+import { env } from "cloudflare:workers";
 import { frameAncestorsDirective, resolveStudioByEmbedKey, safeHexColor } from "@/lib/embed";
 import { computeDateSlots } from "@/lib/repos/availability";
 import { getStudioProfile } from "@/lib/repos/studios";
@@ -36,6 +37,7 @@ export async function GET(req: Request) {
   const profile = await getStudioProfile(studio.organizationId);
   const tz = profile?.timezone ?? "UTC";
   const accent = safeHexColor(studio.brand.accent) ?? "#5e6ad2";
+  const siteKey = env.TURNSTILE_SITE_KEY ?? "";
   const logo = studio.logoKey
     ? `<img src="/api/embed/logo?key=${esc(studio.embedKey)}" alt="${esc(studio.studioName)}" style="max-height:36px;max-width:160px;object-fit:contain;" />`
     : `<span style="font-size:15px;font-weight:600;color:#0f1011;">${esc(studio.studioName)}</span>`;
@@ -58,6 +60,7 @@ export async function GET(req: Request) {
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="robots" content="noindex" />
 <title>Book ${esc(studio.studioName)}</title>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <style>
   :root { --accent: ${accent}; }
   * { box-sizing: border-box; }
@@ -116,6 +119,7 @@ export async function GET(req: Request) {
       <label for="b-phone">Phone (optional)</label><input id="b-phone" type="tel" autocomplete="tel" />
       <label for="b-notes">Anything we should know? (optional)</label><textarea id="b-notes"></textarea>
       <div class="hp" aria-hidden="true"><label>Leave empty<input name="company_website" tabindex="-1" autocomplete="off" /></label></div>
+      <div id="ts" style="margin:12px 0 0;"></div>
       <button class="cta" id="book-btn" type="submit">Confirm booking</button>
     </form>
     <div class="msg" id="msg" role="status"></div>
@@ -129,6 +133,13 @@ export async function GET(req: Request) {
   var studioName = ${JSON.stringify(studio.studioName)};
   var data = ${JSON.stringify({ month, days })};
   var selectedDay = null, selectedSlot = null;
+  var tsToken = "";
+  var SITE_KEY = ${JSON.stringify(siteKey)};
+  function initTs() {
+    if (SITE_KEY && window.turnstile && !document.getElementById("ts").hasChildNodes()) {
+      turnstile.render("#ts", { sitekey: SITE_KEY, callback: function (t) { tsToken = t; } });
+    }
+  }
 
   var visitorTz = "UTC";
   try { visitorTz = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch (e) {}
@@ -216,6 +227,7 @@ export async function GET(req: Request) {
         b.classList.add("sel");
         selectedSlot = iso;
         document.getElementById("book-form").hidden = false;
+        initTs();
         postHeight();
       });
       wrap.appendChild(b);
@@ -252,15 +264,24 @@ export async function GET(req: Request) {
           email: document.getElementById("b-email").value,
           phone: document.getElementById("b-phone").value,
           notes: document.getElementById("b-notes").value,
-          embedOrigin: (document.referrer && new URL(document.referrer).origin) || ""
+          embedOrigin: (document.referrer && new URL(document.referrer).origin) || "",
+          turnstileToken: tsToken
         })
       });
       var body = await res.json().catch(function () { return {}; });
-      if (res.ok) {
+      if (res.ok && body.checkoutUrl) {
+        msg.className = "msg ok";
+        msg.textContent = "Redirecting to secure payment…";
+        parent.postMessage({ type: "snap:checkout", url: body.checkoutUrl }, origin);
+      } else if (res.ok) {
         document.getElementById("panel").hidden = true;
         msg.className = "msg ok";
         msg.textContent = "Booked! A confirmation email is on its way to you.";
         load(data.month);
+      } else if (body.error === "captcha_failed") {
+        msg.className = "msg err";
+        msg.textContent = "Verification failed — please try again.";
+        btn.disabled = false;
       } else {
         msg.className = "msg err";
         msg.textContent = body.error === "slot_unavailable" || body.error === "conflict"

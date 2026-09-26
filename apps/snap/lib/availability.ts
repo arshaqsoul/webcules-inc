@@ -12,11 +12,20 @@ export type AvailabilityRule = typeof availabilityRules.$inferSelect;
 export type BlackoutDate = typeof blackoutDates.$inferSelect;
 export type Booking = typeof bookings.$inferSelect;
 
+export type BookingPaymentSettings = {
+  enabled: boolean;
+  /** deposit | full */
+  kind: "deposit" | "full";
+  amountMinor: number;
+  label?: string;
+};
+
 export type BookingSettings = {
   slotMinutes: number;
   bufferMinutes: number;
   leadTimeMinutes: number;
   maxAdvanceDays: number;
+  payment?: BookingPaymentSettings;
 };
 
 export const DEFAULT_BOOKING_SETTINGS: BookingSettings = {

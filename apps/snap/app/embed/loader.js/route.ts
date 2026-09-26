@@ -34,6 +34,10 @@ const LOADER_JS = `(function () {
     window.addEventListener("message", function (event) {
       if (event.origin !== origin || event.source !== frame.contentWindow) return;
       var data = event.data || {};
+      if (data.type === "snap:checkout" && typeof data.url === "string" && data.url.indexOf("https://checkout.stripe.com/") === 0) {
+        window.location.href = data.url;
+        return;
+      }
       if (data.type === "snap:height" && typeof data.height === "number") {
         frame.style.height = Math.max(120, Math.round(data.height)) + "px";
         if (frame.__modal) {

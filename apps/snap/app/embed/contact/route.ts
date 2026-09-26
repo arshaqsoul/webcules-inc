@@ -6,6 +6,7 @@
  * Epic 4 will swap the body for the full inquiry form + lead capture; this
  * ships the branded shell with height-resize + CSP frame-ancestors.
  */
+import { env } from "cloudflare:workers";
 import { frameAncestorsDirective, resolveStudioByEmbedKey, safeHexColor } from "@/lib/embed";
 
 export const dynamic = "force-dynamic";
@@ -34,6 +35,7 @@ export async function GET(req: Request) {
   }
 
   const accent = safeHexColor(studio.brand.accent) ?? "#5e6ad2";
+  const siteKey = env.TURNSTILE_SITE_KEY ?? "";
   const logo = studio.logoKey
     ? `<img src="/api/embed/logo?key=${esc(studio.embedKey)}" alt="${esc(studio.studioName)}" style="max-height:36px;max-width:160px;object-fit:contain;" />`
     : `<span style="font-size:15px;font-weight:600;color:#0f1011;">${esc(studio.studioName)}</span>`;
@@ -46,6 +48,7 @@ export async function GET(req: Request) {
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="robots" content="noindex" />
 <title>Contact ${esc(studio.studioName)}</title>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <style>
   :root { --accent: ${accent}; }
   * { box-sizing: border-box; }
@@ -90,6 +93,7 @@ export async function GET(req: Request) {
     </div>
     <div class="field"><label for="f-message">Tell us more</label><textarea id="f-message" name="message"></textarea></div>
     <div class="hp" aria-hidden="true"><label>Leave empty<input name="company_website" tabindex="-1" autocomplete="off" /></label></div>
+    <div id="ts" style="margin-bottom:12px;"></div>
     <button type="submit">Send inquiry</button>
     <div class="msg" id="form-msg" role="status"></div>
   </form>
@@ -106,12 +110,23 @@ export async function GET(req: Request) {
 
   var form = document.getElementById("lead-form");
   var msg = document.getElementById("form-msg");
+  var tsToken = "";
+  var SITE_KEY = ${JSON.stringify(siteKey)};
+  function initTs() {
+    if (SITE_KEY && window.turnstile && !tsToken) {
+      turnstile.render("#ts", { sitekey: SITE_KEY, callback: function (t) { tsToken = t; } });
+    } else if (SITE_KEY && !window.turnstile) {
+      setTimeout(initTs, 400);
+    }
+  }
+  initTs();
   form.addEventListener("submit", async function (e) {
     e.preventDefault();
     var btn = form.querySelector("button");
     btn.disabled = true; msg.className = "msg"; msg.textContent = "";
     var data = Object.fromEntries(new FormData(form).entries());
     data.embedOrigin = (document.referrer && new URL(document.referrer).origin) || "";
+    data.turnstileToken = tsToken;
     try {
       var res = await fetch(origin + "/api/embed/leads?key=" + encodeURIComponent(key), {
         method: "POST",

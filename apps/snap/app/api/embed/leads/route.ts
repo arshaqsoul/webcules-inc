@@ -10,6 +10,7 @@ import * as schema from "@/lib/db-schema";
 import { getAuth } from "@/lib/auth.server";
 import { inquiryAckEmail, inquiryReceivedEmail, sendEmail } from "@/lib/email";
 import { originAllowed, resolveStudioByEmbedKey, safeHexColor } from "@/lib/embed";
+import { verifyTurnstile } from "@/lib/turnstile";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,7 @@ const leadSchema = z.object({
   eventType: z.string().trim().max(40).optional().or(z.literal("")),
   message: z.string().trim().max(4000).optional().or(z.literal("")),
   embedOrigin: z.string().trim().max(200).optional().or(z.literal("")),
+  turnstileToken: z.string().max(4096).optional(),
   company_website: z.string().optional(), // honeypot — must be empty
 });
 
@@ -45,6 +47,9 @@ export async function POST(req: Request) {
 
   if (!originAllowed(studio, input.embedOrigin || null)) {
     return Response.json({ error: "origin_not_allowed" }, { status: 403 });
+  }
+  if (!(await verifyTurnstile(input.turnstileToken, req.headers.get("CF-Connecting-IP")))) {
+    return Response.json({ error: "captcha_failed" }, { status: 403 });
   }
 
   const db = getDb();

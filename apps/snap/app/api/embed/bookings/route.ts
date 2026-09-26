@@ -4,8 +4,11 @@ import { z } from "zod";
 
 import { originAllowed, resolveStudioByEmbedKey, safeHexColor } from "@/lib/embed";
 import { bookingConfirmedEmails, sendEmail } from "@/lib/email";
+import { getBookingSettings } from "@/lib/repos/availability";
 import { createBookingFromWidget } from "@/lib/repos/bookings";
 import { getStudioProfile } from "@/lib/repos/studios";
+import { getStripe } from "@/lib/stripe";
+import { verifyTurnstile } from "@/lib/turnstile";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +19,7 @@ const bodySchema = z.object({
   phone: z.string().trim().max(40).optional().or(z.literal("")),
   notes: z.string().trim().max(2000).optional().or(z.literal("")),
   embedOrigin: z.string().trim().max(200).optional().or(z.literal("")),
+  turnstileToken: z.string().max(4096).optional(),
 });
 
 export async function POST(req: Request) {
@@ -38,6 +42,55 @@ export async function POST(req: Request) {
   }
   if (!originAllowed(studio, body.embedOrigin || null) && !originAllowed(studio, req.headers.get("Origin"))) {
     return Response.json({ error: "origin_not_allowed" }, { status: 403 });
+  }
+  const ip = req.headers.get("CF-Connecting-IP");
+  if (!(await verifyTurnstile(body.turnstileToken, ip))) {
+    return Response.json({ error: "captcha_failed" }, { status: 403 });
+  }
+
+  // Payment-required studios: hold the booking pending and hand back a
+  // Stripe Checkout URL — the webhook confirms and finishes the flow.
+  const settings = await getBookingSettings(studio.organizationId);
+  if (settings.payment?.enabled) {
+    const stripe = await getStripe();
+    if (stripe) {
+      const held = await createBookingFromWidget({
+        organizationId: studio.organizationId,
+        slotStartIso: body.slotStart,
+        clientName: body.name,
+        clientEmail: body.email,
+        clientPhone: body.phone || null,
+        notes: body.notes || null,
+        pendingWhenPaymentRequired: true,
+      });
+      if (!held.ok) {
+        const status = held.error === "conflict" ? 409 : 400;
+        return Response.json({ error: held.error }, { status });
+      }
+      const session = await stripe.checkout.sessions.create({
+        mode: "payment",
+        customer_email: body.email.toLowerCase(),
+        line_items: [
+          {
+            price_data: {
+              currency: "usd",
+              unit_amount: settings.payment.amountMinor,
+              product_data: {
+                name:
+                  settings.payment.kind === "deposit"
+                    ? `Session deposit — ${studio.studioName}`
+                    : `Session payment — ${studio.studioName}`,
+              },
+            },
+            quantity: 1,
+          },
+        ],
+        metadata: { bookingId: held.bookingId, organizationId: studio.organizationId },
+        success_url: `${url.origin}/booking/success?booking=${held.bookingId}`,
+        cancel_url: `${url.origin}/booking/cancel?booking=${held.bookingId}`,
+      });
+      return Response.json({ ok: true, requiresPayment: true, checkoutUrl: session.url });
+    }
   }
 
   const result = await createBookingFromWidget({
