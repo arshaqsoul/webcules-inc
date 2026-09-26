@@ -10,7 +10,7 @@
  *  - raw share-link tokens are NEVER stored — only tokenHash (SHA-256)
  */
 import { sql } from "drizzle-orm";
-import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 const ts = (name: string) => integer(name, { mode: "timestamp" }).notNull().default(sql`(unixepoch())`);
 
@@ -618,4 +618,34 @@ export const auditLog = sqliteTable(
     createdAt: ts("created_at"),
   },
   (t) => [index("audit_log_org_idx").on(t.organizationId, t.createdAt)],
+);
+
+/* ---------------- Gallery view rate limiting (WEB-160) ---------------- */
+
+/** Fixed 60s windows per IP; counters, not logs (one row per IP-minute). */
+export const viewRateWindows = sqliteTable(
+  "view_rate_window",
+  {
+    ip: text("ip").notNull(),
+    windowStart: integer("window_start").notNull(),
+    count: integer("count").notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.ip, t.windowStart] })],
+);
+
+/** Monthly per-gallery view rollup — the budget counter AND the per-org
+ * usage source for margin monitoring (WEB-161). */
+export const galleryViewMonthly = sqliteTable(
+  "gallery_view_monthly",
+  {
+    organizationId: text("organization_id").notNull(),
+    grantId: text("grant_id").notNull(),
+    /** 'YYYY-MM' */
+    month: text("month").notNull(),
+    views: integer("views").notNull().default(0),
+  },
+  (t) => [
+    primaryKey({ columns: [t.organizationId, t.grantId, t.month] }),
+    index("gallery_view_monthly_org_idx").on(t.organizationId, t.month),
+  ],
 );

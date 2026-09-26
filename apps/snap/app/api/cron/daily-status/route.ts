@@ -125,5 +125,14 @@ export async function POST(req: Request) {
     console.error("dormancy sweep failed:", String(err));
   }
 
+  // WEB-160: view-limit table retention (windows are only needed live; the
+  // monthly rollup keeps 13 months for margin reporting).
+  try {
+    const { pruneViewLimitTables } = await import("@/lib/limits");
+    await pruneViewLimitTables();
+  } catch (err) {
+    console.error("view limit prune failed:", String(err));
+  }
+
   return Response.json({ ok: true, moved: due.length, warned, downgraded, vault, dormancy });
 }

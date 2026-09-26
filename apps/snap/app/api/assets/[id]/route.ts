@@ -6,8 +6,9 @@
 import { getObject } from "@/lib/storage/service";
 import { deleteAsset, getAsset, setAssetStatus } from "@/lib/repos/assets";
 import { getOrgContext } from "@/lib/session";
-import { logShareAccess, resolveGalleryAccess } from "@/lib/shares/gallery-auth";
+import { clientIp, logShareAccess, resolveGalleryAccess } from "@/lib/shares/gallery-auth";
 import { assetInGrant, getGrantById } from "@/lib/shares/grants";
+import { checkImageView } from "@/lib/limits";
 
 export const dynamic = "force-dynamic";
 
@@ -86,6 +87,21 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const grant = await getGrantById(access.grant.id); // fresh row for expiry/policy
     const asset = await getAsset(access.grant.organizationId, id);
     if (!asset || !grant) return Response.json({ error: "not_found" }, { status: 404 });
+
+    // WEB-160: per-IP 30 views/min + per-gallery monthly budget. Range
+    // requests (video scrubbing) continue an already-admitted view.
+    const ip = clientIp(req);
+    const rangeReq = req.headers.has("Range");
+    if (ip && !rangeReq) {
+      const limit = await checkImageView(ip, grant.organizationId, grant.id);
+      if (!limit.ok) {
+        return Response.json(
+          { error: limit.reason === "ip" ? "rate_limited" : "view_budget_exceeded" },
+          { status: 429, headers: { "Retry-After": String(limit.retryAfterS) } },
+        );
+      }
+    }
+
     if (wantsDownload && grant.allowDownload) {
       await logShareAccess(grant.id, "download", req);
     }

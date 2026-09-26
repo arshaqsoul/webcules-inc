@@ -31,6 +31,34 @@ export type GalleryAsset = {
   bytes: number;
 };
 
+/** WEB-160: gallery image with 429 backoff — a rate-limited load retries
+ * with increasing spacing (5s/15s/25s) instead of showing a broken image. */
+function BackoffImage(props: {
+  id: string;
+  alt: string;
+  className?: string;
+  loading?: "lazy" | "eager";
+  onClick?: React.MouseEventHandler<HTMLImageElement>;
+}) {
+  const [attempt, setAttempt] = useState(0);
+  const src = `/api/assets/${props.id}${attempt ? `?r=${attempt}` : ""}`;
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- authorized proxy, no optimizer
+    <img
+      src={src}
+      alt={props.alt}
+      loading={props.loading}
+      className={props.className}
+      onClick={props.onClick}
+      onError={() => {
+        if (attempt < 3) {
+          setTimeout(() => setAttempt((a) => a + 1), 5000 + attempt * 10000);
+        }
+      }}
+    />
+  );
+}
+
 function fmtBytes(bytes: number): string {
   return bytes > 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
 }
@@ -336,9 +364,8 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
               aria-label={`Open ${a.filename}`}
             >
               {a.kind === "image" ? (
-                // eslint-disable-next-line @next/next/no-img-element -- authorized proxy, no optimizer
-                <img
-                  src={`/api/assets/${a.id}`}
+                <BackoffImage
+                  id={a.id}
                   alt={a.filename}
                   loading="lazy"
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
@@ -417,10 +444,9 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
                 onClick={(e) => e.stopPropagation()}
               />
             ) : current.kind === "image" ? (
-              // eslint-disable-next-line @next/next/no-img-element -- authorized proxy, no optimizer
-              <img
+              <BackoffImage
                 key={current.id}
-                src={`/api/assets/${current.id}`}
+                id={current.id}
                 alt={current.filename}
                 className="max-h-full max-w-full object-contain"
                 onClick={(e) => e.stopPropagation()}

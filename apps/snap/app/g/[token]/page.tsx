@@ -12,6 +12,7 @@ import { getPlanEntitlements } from "@/lib/plans";
 import { logShareAccess, resolveGalleryAccess } from "@/lib/shares/gallery-auth";
 import { getGrantAssets, getGrantByTokenHashAny, resolveGrantByToken } from "@/lib/shares/grants";
 import { safeHexColor } from "@/lib/embed";
+import { countGalleryOpen } from "@/lib/limits";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Your gallery", robots: { index: false } };
@@ -61,6 +62,9 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
   // Email-shock contingency: OTPs off, the link itself is the gate.
   if (env.GALLERY_OTP_MODE === "off") {
     await logShareAccess(grant.id, "view");
+    if (!(await countGalleryOpen(grant.organizationId, grant.id))) {
+      return <GalleryPaused {...shared} />;
+    }
     return (
       <GalleryView
         {...shared}
@@ -90,6 +94,9 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
   }
 
   await logShareAccess(grant.id, "view");
+  if (!(await countGalleryOpen(grant.organizationId, grant.id))) {
+    return <GalleryPaused {...shared} />;
+  }
   return (
     <GalleryView
       {...shared}
@@ -103,6 +110,24 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
       allowDownload={grant.allowDownload}
       expiresAt={grant.expiresAt ? grant.expiresAt.toISOString() : null}
     />
+  );
+}
+
+/** WEB-160: monthly view budget exhausted — a calm page, never broken images. */
+function GalleryPaused({ studioName, contactEmail, accent }: { studioName: string; contactEmail: string | null; accent: string }) {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-canvas p-6">
+      <div className="w-full max-w-md rounded-2xl border border-hairline bg-surface p-8 text-center">
+        <span className="text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: accent }}>
+          {studioName}
+        </span>
+        <h1 className="mt-3 text-xl font-semibold text-ink">This gallery is taking a short break</h1>
+        <p className="mt-2 text-sm text-ink-subtle">
+          It has been viewed an extraordinary number of times this month. Your photographer has been notified —
+          check back soon, or reach out directly{contactEmail ? ` at ${contactEmail}` : ""}.
+        </p>
+      </div>
+    </main>
   );
 }
 
