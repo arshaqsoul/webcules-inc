@@ -167,23 +167,39 @@ export async function ingestInboundEmail(payload: {
   text: string | null;
   html: string | null;
   messageId: string | null;
-}): Promise<{ matched: boolean }> {
+}): Promise<{ matched: boolean; leadId?: string; organizationId?: string }> {
   const sender = payload.from.toLowerCase();
-  // Outbound-reply trail resolves the org (shared From addresses today; the
-  // per-studio inbound addresses story removes the heuristic).
-  const result = await getD1()
-    .prepare(
-      `SELECT lm.lead_id AS leadId, lm.organization_id AS organizationId
-       FROM lead_message lm
-       JOIN lead l ON l.id = lm.lead_id
-       WHERE lm.direction = 'out' AND lower(l.email) = ?
-         AND l.status IN ('new','replied')
-         AND lm.created_at > unixepoch() - 45*86400
-       ORDER BY lm.created_at DESC
-       LIMIT 1`,
-    )
-    .bind(sender)
-    .first<{ leadId: string; organizationId: string }>();
+
+  // Primary: lead-scoped sub-address (hello+{leadId}@snap.webcules.com) —
+  // exact match, no cross-studio ambiguity.
+  let result: { leadId: string; organizationId: string } | null = null;
+  const tagMatch = payload.to.match(/hello\+([0-9a-f-]{36})@snap\.webcules\.com/i);
+  if (tagMatch) {
+    const lead = (
+      await getDb()
+        .select({ id: schema.leads.id, organizationId: schema.leads.organizationId })
+        .from(schema.leads)
+        .where(eq(schema.leads.id, tagMatch[1]))
+        .limit(1)
+    )[0];
+    if (lead) result = { leadId: lead.id, organizationId: lead.organizationId };
+  }
+  // Fallback (transition period): outbound-reply trail by sender.
+  if (!result) {
+    result = await getD1()
+      .prepare(
+        `SELECT lm.lead_id AS leadId, lm.organization_id AS organizationId
+         FROM lead_message lm
+         JOIN lead l ON l.id = lm.lead_id
+         WHERE lm.direction = 'out' AND lower(l.email) = ?
+           AND l.status IN ('new','replied')
+           AND lm.created_at > unixepoch() - 45*86400
+         ORDER BY lm.created_at DESC
+         LIMIT 1`,
+      )
+      .bind(sender)
+      .first<{ leadId: string; organizationId: string }>();
+  }
   if (!result) return { matched: false };
 
   const db = getDb();
@@ -200,5 +216,5 @@ export async function ingestInboundEmail(payload: {
     .update(schema.leads)
     .set({ updatedAt: new Date() })
     .where(eq(schema.leads.id, result.leadId));
-  return { matched: true };
+  return { matched: true, leadId: result.leadId, organizationId: result.organizationId };
 }

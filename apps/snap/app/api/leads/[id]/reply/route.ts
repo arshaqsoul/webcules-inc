@@ -47,6 +47,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const accent = safeHexColor(profile?.brand ? JSON.parse(profile.brand).accent : null) ?? "#5e6ad2";
   const firstName = lead.name.split(" ")[0] || "there";
   const subject = `Re: Your inquiry to ${studioName}`;
+  // Lead-scoped sub-address: client replies land on snap.webcules.com, route
+  // through the email worker, and thread into this lead exactly (no Reply-To
+  // diversion into the studio's private inbox).
+  const fromAddress = `hello+${lead.id}@snap.webcules.com`;
 
   const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
   const html = `<!doctype html><html><body style="margin:0;padding:0;background:#f7f8f8;font-family:Inter,-apple-system,system-ui,'Segoe UI',Roboto,sans-serif;">
@@ -55,7 +59,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       <tr><td style="padding-bottom:8px;"><span style="font-size:13px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:${accent};">${esc(studioName)}</span></td></tr>
       <tr><td style="padding-bottom:24px;"><h1 style="margin:0;font-size:20px;line-height:1.3;font-weight:600;color:#0f1011;">Hi ${esc(firstName)},</h1></td></tr>
       <tr><td style="font-size:15px;line-height:1.7;color:#3f4149;white-space:pre-wrap;">${esc(parsed.data.body)}</td></tr>
-      <tr><td style="padding-top:32px;border-top:1px solid #e3e5e8;"><p style="margin:0;font-size:12px;line-height:1.5;color:#8a8f98;">Reply to this email and it will reach ${esc(studioName)} directly.</p></td></tr>
+      <tr><td style="padding-top:32px;border-top:1px solid #e3e5e8;"><p style="margin:0;font-size:12px;line-height:1.5;color:#8a8f98;">Just reply to this email — ${esc(studioName)} sees your message instantly.</p></td></tr>
     </table>
   </td></tr></table></body></html>`;
 
@@ -64,10 +68,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     subject,
     html,
     text: `Hi ${firstName},\n\n${parsed.data.body}\n\n— ${studioName}`,
-    replyTo: profile?.contactEmail ?? undefined,
     organizationId: ctx.organizationId,
     template: "lead.reply",
     refId: lead.id,
+    fromOverride: fromAddress,
   });
 
   await recordOutboundReply({

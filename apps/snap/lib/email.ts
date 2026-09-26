@@ -12,6 +12,8 @@ export async function sendEmail(params: {
   html: string;
   text: string;
   replyTo?: string;
+  /** Override the From address (must be @snap.webcules.com, e.g. hello+{leadId}@). */
+  fromOverride?: string;
   organizationId?: string | null;
   template: string;
   refId?: string | null;
@@ -22,10 +24,13 @@ export async function sendEmail(params: {
     );
     return false;
   }
+  if (params.fromOverride && !params.fromOverride.endsWith("@snap.webcules.com")) {
+    throw new Error("fromOverride must be on the snap.webcules.com domain");
+  }
   try {
     await env.EMAIL.send({
       to: params.to,
-      from: env.EMAIL_FROM || "Snap <hello@snap.webcules.com>",
+      from: params.fromOverride ?? env.EMAIL_FROM ?? "Snap <hello@snap.webcules.com>",
       subject: params.subject,
       html: params.html,
       text: params.text,
