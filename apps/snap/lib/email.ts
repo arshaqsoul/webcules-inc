@@ -118,3 +118,69 @@ export function inquiryAckEmail(studioName: string, leadName: string, accent: st
     text: `Thanks, ${leadName}! Your inquiry to ${studioName} is in. They typically reply within a day.`,
   };
 }
+
+export function bookingConfirmedEmails(studioName: string, params: {
+  clientName: string;
+  startAt: Date;
+  endAt: Date;
+  tz: string;
+  icsUrl: string;
+  accent: string;
+}) {
+  const when = new Intl.DateTimeFormat("en-US", {
+    timeZone: params.tz,
+    weekday: "long", month: "long", day: "numeric",
+    hour: "numeric", minute: "2-digit", timeZoneName: "short",
+  }).format(params.startAt);
+  const button = (label: string) =>
+    `<p style="margin:24px 0 0;"><a href="${params.icsUrl}" style="display:inline-block;background:${params.accent};color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">${label}</a></p>`;
+  const whenBlock = `<p style="margin:0 0 16px;padding:12px 16px;background:#f7f8f8;border-radius:8px;"><strong style="color:#0f1011;">${when}</strong> <span style="color:#8a8f98;">(${params.tz})</span></p>`;
+
+  const client = {
+    subject: `Booking confirmed — ${studioName}`,
+    html: shell(
+      params.accent,
+      "You're booked!",
+      `<p style="margin:0 0 16px;">Hi ${params.clientName}, your session with <strong>${studioName}</strong> is confirmed for:</p>
+       ${whenBlock}
+       ${button("Add to calendar")}`,
+      `Booked with ${studioName} via Snap.`,
+    ),
+    text: `Hi ${params.clientName}, your session with ${studioName} is confirmed for ${when} (${params.tz}). Add to calendar: ${params.icsUrl}`,
+  };
+  const studio = {
+    subject: `New booking — ${params.clientName} · ${when}`,
+    html: shell(
+      params.accent,
+      "New booking confirmed",
+      `<p style="margin:0 0 16px;"><strong style="color:#0f1011;">${params.clientName}</strong> booked a session:</p>
+       ${whenBlock}
+       ${button("Add to calendar")}`,
+      "A project was created for this booking — see Projects.",
+    ),
+    text: `New booking: ${params.clientName}, ${when} (${params.tz}). Project created automatically. ICS: ${params.icsUrl}`,
+  };
+  return { client, studio };
+}
+
+export function bookingCanceledEmail(studioName: string, params: {
+  clientName: string;
+  startAt: Date;
+  tz: string;
+  accent: string;
+}) {
+  const when = new Intl.DateTimeFormat("en-US", {
+    timeZone: params.tz, weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit",
+  }).format(params.startAt);
+  return {
+    subject: `Booking canceled — ${studioName}`,
+    html: shell(
+      params.accent,
+      "Booking canceled",
+      `<p style="margin:0 0 12px;">Hi ${params.clientName}, your session with <strong>${studioName}</strong> scheduled for <strong style="color:#0f1011;">${when}</strong> has been canceled.</p>
+       <p style="margin:0;">Questions? Just reply to this email.</p>`,
+      `Sent by ${studioName} via Snap.`,
+    ),
+    text: `Hi ${params.clientName}, your session with ${studioName} on ${when} has been canceled.`,
+  };
+}
