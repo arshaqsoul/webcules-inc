@@ -19,6 +19,8 @@ type Brand = {
   accent: string;
   logoUrl: string | null;
   contactEmail: string | null;
+  /** Studio+ plans may remove Snap branding (WEB-151 white-label gate). */
+  whiteLabel?: boolean;
 };
 
 export type GalleryAsset = {
@@ -79,6 +81,7 @@ export function GalleryGate({ studioName, accent, logoUrl, token, maskedEmail, t
   maskedEmail: string;
   turnstileSiteKey: string;
 }) {
+  const whiteLabel = false; // gate footer stays Snap-branded until verified
   const [step, setStep] = useState<"email" | "code">("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -262,7 +265,7 @@ export function GalleryGate({ studioName, accent, logoUrl, token, maskedEmail, t
         </form>
 
         <p className="mt-6 border-t border-hairline pt-4 text-xs text-ink-tertiary">
-          Delivered by Snap · snap.webcules.com
+          {whiteLabel ? `© ${studioName}` : "Delivered by Snap · snap.webcules.com"}
         </p>
       </div>
     </main>
@@ -271,7 +274,7 @@ export function GalleryGate({ studioName, accent, logoUrl, token, maskedEmail, t
 
 /* ---------------- Gallery view ---------------- */
 
-export function GalleryView({ studioName, accent, logoUrl, contactEmail, assets, allowDownload, expiresAt }: Brand & {
+export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLabel, assets, allowDownload, expiresAt }: Brand & {
   assets: GalleryAsset[];
   allowDownload: boolean;
   expiresAt: string | null;
@@ -363,8 +366,8 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, assets,
       )}
 
       <footer className="mx-auto max-w-6xl px-5 pb-10 pt-2 text-center text-xs text-ink-tertiary">
-        Delivered by {studioName} via Snap
-        {contactEmail ? <> · <a href={`mailto:${contactEmail}`} className="underline underline-offset-2">Contact the studio</a></> : null}
+        {whiteLabel ? `© ${studioName}` : <>Delivered by {studioName} via Snap</>}
+        {!whiteLabel && contactEmail ? <> · <a href={`mailto:${contactEmail}`} className="underline underline-offset-2">Contact the studio</a></> : null}
       </footer>
 
       {current && (

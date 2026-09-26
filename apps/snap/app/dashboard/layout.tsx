@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 
 import { getOrgContext } from "@/lib/session";
 import { getStudioProfile } from "@/lib/repos/studios";
+import { getPlanEntitlements } from "@/lib/plans";
 import { SignOutButton } from "@/components/sign-out-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -26,6 +27,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   const profile = await getStudioProfile(ctx.organizationId);
   if (!profile) redirect("/onboarding");
+
+  // WEB-150: persistent usage banner at ≥90% of plan storage / hard lock.
+  const ent = await getPlanEntitlements(ctx.organizationId);
+  const usageBanner =
+    ent && (ent.atHardLock || ent.storagePct >= 90)
+      ? ent.atHardLock
+        ? "Uploads are locked — you've reached 2× your plan storage. Galleries and downloads keep working."
+        : `Storage at ${ent.storagePct}% of your ${ent.name} plan — uploads lock at 2× your cap.`
+      : null;
 
   return (
     <div className="flex min-h-screen">
@@ -56,6 +66,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <span className="truncate text-sm font-medium text-ink">{profile.studioName}</span>
           <SignOutButton compact />
         </header>
+        {usageBanner && (
+          <div className={`flex flex-wrap items-center gap-2 px-6 py-2 text-xs ${ent?.atHardLock ? "bg-destructive/10 text-destructive" : "bg-amber-500/10 text-amber-700 dark:text-amber-400"}`}>
+            <span className="flex-1">{usageBanner}</span>
+            <Link href="/dashboard/settings" className="font-medium underline underline-offset-2">
+              Review plan
+            </Link>
+          </div>
+        )}
         <main className="flex-1 p-6">{children}</main>
       </div>
     </div>

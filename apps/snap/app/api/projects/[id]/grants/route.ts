@@ -8,6 +8,7 @@ import * as schema from "@/lib/db-schema";
 import { getOrgContext } from "@/lib/session";
 import { createShareGrant, listProjectGrants, normalizeExpiry } from "@/lib/shares/grants";
 import { sendGrantEmail } from "@/lib/shares/notify";
+import { getPlanEntitlements } from "@/lib/plans";
 
 export const dynamic = "force-dynamic";
 
@@ -65,6 +66,20 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const expiry = normalizeExpiry(body.expiresInDays ?? null);
   if (!expiry.ok) return Response.json({ error: "invalid_expiry" }, { status: 400 });
   const expiresAt = expiry.expiresAt;
+
+  // Tier gate (WEB-151): active gallery cap (Free 5, Lite 15).
+  const ent = await getPlanEntitlements(ctx.organizationId);
+  if (ent?.maxActiveGalleries !== null && ent && ent.activeGalleries >= (ent.maxActiveGalleries ?? 0)) {
+    return Response.json(
+      {
+        error: "gallery_limit",
+        plan: ent.id,
+        activeGalleries: ent.activeGalleries,
+        maxActiveGalleries: ent.maxActiveGalleries,
+      },
+      { status: 402 },
+    );
+  }
 
   // Asset set: explicit list, else the approved/shared (sent-to-client) set.
   const db = getDb();

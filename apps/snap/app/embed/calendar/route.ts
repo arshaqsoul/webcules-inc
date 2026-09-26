@@ -297,6 +297,10 @@ export async function GET(req: Request) {
         msg.className = "msg err";
         msg.textContent = body.error === "slot_unavailable" || body.error === "conflict"
           ? "That slot was just taken — please pick another."
+          : body.error === "studio_booking_limit"
+          ? "This studio can't take more bookings right now — please contact them directly."
+          : body.error === "captcha_failed"
+          ? "Verification failed — please try again."
           : "Booking failed — please try again.";
         btn.disabled = false;
       }

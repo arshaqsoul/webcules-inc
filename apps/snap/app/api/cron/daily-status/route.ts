@@ -54,5 +54,57 @@ export async function POST(req: Request) {
   await db.run(sql`DELETE FROM share_access_log WHERE created_at < unixepoch() - 180 * 86400`);
   await db.run(sql`DELETE FROM share_otp WHERE expires_at < unixepoch() - 86400`);
 
-  return Response.json({ ok: true, moved: due.length });
+  // WEB-150: usage warnings — email studios at ≥90% of plan storage or in the
+  // overage zone (≤1/day by construction; contact email only when set).
+  const { getPlanEntitlements } = await import("@/lib/plans");
+  const { sendEmail, usageWarningEmail } = await import("@/lib/email");
+  const { getStudioProfile } = await import("@/lib/repos/studios");
+  const { safeHexColor } = await import("@/lib/embed");
+  const orgs = await db.select({ id: schema.organization.id }).from(schema.organization).limit(500);
+  let warned = 0;
+  for (const org of orgs) {
+    const ent = await getPlanEntitlements(org.id);
+    if (!ent || ent.storagePct < 90) continue;
+    const profile = await getStudioProfile(org.id);
+    if (!profile?.contactEmail) continue;
+    const gb = (b: number) => `${(b / 1024 ** 3).toFixed(0)}GB`;
+    const tmpl = usageWarningEmail(profile.studioName, {
+      usedLabel: gb(ent.storageUsedBytes),
+      capLabel: gb(ent.storageBytes),
+      pct: ent.storagePct,
+      planName: ent.name,
+      settingsUrl: "https://snap.webcules.com/dashboard/settings",
+      accent: safeHexColor(JSON.parse(profile.brand || "{}").accent) ?? "#5e6ad2",
+    });
+    await sendEmail({
+      to: profile.contactEmail,
+      subject: tmpl.subject,
+      html: tmpl.html,
+      text: tmpl.text,
+      organizationId: org.id,
+      template: "plan.usage_warning",
+    });
+    warned++;
+  }
+
+  // WEB-152: dunning — past_due beyond the 14-day grace downgrades to Free.
+  // Caps tighten; data is never deleted. (Stripe subscription may still
+  // recover — a later payment re-upgrades via the subscription webhook.)
+  const graceCutoff = Date.now() - 14 * 86400 * 1000;
+  const stale = await db
+    .select({ organizationId: schema.studioProfiles.organizationId, updatedAt: schema.studioProfiles.updatedAt })
+    .from(schema.studioProfiles)
+    .where(eq(schema.studioProfiles.planStatus, "past_due"));
+  let downgraded = 0;
+  for (const row of stale) {
+    if (row.updatedAt.getTime() < graceCutoff) {
+      await db
+        .update(schema.studioProfiles)
+        .set({ plan: "free", planStatus: "active", updatedAt: new Date() })
+        .where(eq(schema.studioProfiles.organizationId, row.organizationId));
+      downgraded++;
+    }
+  }
+
+  return Response.json({ ok: true, moved: due.length, warned, downgraded });
 }

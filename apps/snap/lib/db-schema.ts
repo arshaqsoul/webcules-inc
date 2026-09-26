@@ -161,6 +161,15 @@ export const studioProfiles = sqliteTable("studio_profile", {
   stripeAccountId: text("stripe_account_id"),
   /** not_connected | pending | active | restricted — derived from Stripe, cached. */
   stripeConnectState: text("stripe_connect_state").notNull().default("not_connected"),
+  /** Snap plan: free | lite | studio | pro (definitions in lib/plans.ts). */
+  plan: text("plan").notNull().default("studio"),
+  /** active | past_due | grace | canceled — subscription health. */
+  planStatus: text("plan_status").notNull().default("active"),
+  /** Snap's own billing (platform account) — customer + subscription ids. */
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  /** Current subscription period end (epoch seconds). */
+  planPeriodEnd: integer("plan_period_end"),
   createdAt: ts("created_at"),
   updatedAt: ts("updated_at"),
 });

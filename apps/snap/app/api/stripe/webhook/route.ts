@@ -16,6 +16,7 @@ import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { bookingCanceledEmail, sendEmail } from "@/lib/email";
 import { safeHexColor } from "@/lib/embed";
+import { applySubscriptionState } from "@/lib/billing";
 import { confirmBookingPaid } from "@/lib/repos/bookings";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { getStripe } from "@/lib/stripe";
@@ -71,6 +72,18 @@ export async function POST(req: Request) {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
+
+        // Snap plan subscription checkout (WEB-152) — distinct from bookings.
+        if (session.mode === "subscription" && session.metadata?.kind === "plan_checkout") {
+          const organizationId = session.metadata.organizationId;
+          const subId = typeof session.subscription === "string" ? session.subscription : null;
+          if (organizationId && subId) {
+            const sub = await (await getStripe())!.subscriptions.retrieve(subId);
+            await applySubscriptionState(sub);
+          }
+          break;
+        }
+
         const bookingId = session.metadata?.bookingId;
         const organizationId = session.metadata?.organizationId;
         if (bookingId && organizationId) {
@@ -176,6 +189,20 @@ export async function POST(req: Request) {
           const { deriveConnectState, saveConnectState } = await import("@/lib/connect");
           await saveConnectState(organizationId, account.id, deriveConnectState(account));
         }
+        break;
+      }
+      case "customer.subscription.created":
+      case "customer.subscription.updated":
+      case "customer.subscription.deleted": {
+        const sub = event.data.object as Stripe.Subscription;
+        const { applySubscriptionState } = await import("@/lib/billing");
+        await applySubscriptionState(sub);
+        break;
+      }
+      case "invoice.payment_failed": {
+        const invoice = event.data.object as Stripe.Invoice;
+        const subRef = (invoice.parent as { subscription?: { subscription?: string } } | undefined)?.subscription?.subscription ?? null;
+        console.error("billing: invoice payment failed — customer:", invoice.customer ?? "?", "sub:", subRef ?? "?");
         break;
       }
       default:

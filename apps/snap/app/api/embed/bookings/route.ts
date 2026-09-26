@@ -7,6 +7,7 @@ import { bookingConfirmedEmails, sendEmail } from "@/lib/email";
 import { getBookingSettings } from "@/lib/repos/availability";
 import { createBookingFromWidget } from "@/lib/repos/bookings";
 import { getStudioProfile } from "@/lib/repos/studios";
+import { getPlanEntitlements } from "@/lib/plans";
 import { getStripe } from "@/lib/stripe";
 import { verifyTurnstile } from "@/lib/turnstile";
 
@@ -46,6 +47,16 @@ export async function POST(req: Request) {
   const ip = req.headers.get("CF-Connecting-IP");
   if (!(await verifyTurnstile(body.turnstileToken, ip))) {
     return Response.json({ error: "captcha_failed" }, { status: 403 });
+  }
+
+  // Tier gate (WEB-151): Free allows 1 active booking at a time. The client
+  // sees a friendly message; the photographer sees the upsell in settings.
+  const ent = await getPlanEntitlements(studio.organizationId);
+  if (ent?.maxActiveBookings !== null && ent && ent.activeBookings >= (ent.maxActiveBookings ?? 0)) {
+    return Response.json(
+      { error: "studio_booking_limit", plan: ent.id, activeBookings: ent.activeBookings },
+      { status: 402 },
+    );
   }
 
   // Payment-required studios: hold the booking pending and hand back a

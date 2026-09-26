@@ -195,6 +195,24 @@ export function bookingCanceledEmail(studioName: string, params: {
   };
 }
 
+/** Usage warning (WEB-150) — 90% of plan storage / overage zone entry. */
+export function usageWarningEmail(studioName: string, params: {
+  usedLabel: string; capLabel: string; pct: number; planName: string; settingsUrl: string; accent: string;
+}): { subject: string; html: string; text: string } {
+  return {
+    subject: `Storage at ${params.pct}% — ${studioName}`,
+    html: shell(
+      params.accent,
+      "You're close to your storage cap",
+      `<p style="margin:0 0 16px;">Your ${params.planName} plan storage is at <strong style="color:#0f1011;">${params.pct}%</strong> (${params.usedLabel} of ${params.capLabel}).</p>
+       <p style="margin:0 0 16px;">Uploads keep working into the overage zone, but they lock at 2× your plan storage. Upgrading keeps everything smooth — and your files are never deleted.</p>
+       <p style="margin:24px 0 0;"><a href="${params.settingsUrl}" style="display:inline-block;background:${params.accent};color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">Review your plan</a></p>`,
+      `Storage alert from your Snap ${params.planName} plan.`,
+    ),
+    text: `Your Snap ${params.planName} storage is at ${params.pct}% (${params.usedLabel} of ${params.capLabel}). Review your plan: ${params.settingsUrl}`,
+  };
+}
+
 /** Gallery OTP — big friendly code, short-lived. */
 export function galleryOtpEmail(studioName: string, params: {
   code: string;
