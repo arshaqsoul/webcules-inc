@@ -87,6 +87,25 @@ export default {
       }
     }
   },
+
+  /** Daily pipeline automation: ping snap's cron endpoint (status moves). */
+  async scheduled(controller: ScheduledController, env: Env): Promise<void> {
+    void controller;
+    const target = env.SNAP_INBOUND_WEBHOOK_URL.replace(/\/api\/email\/inbound$/, "/api/cron/daily-status");
+    try {
+      const res = await fetch(target, {
+        method: "POST",
+        headers: {
+          ...(env.SNAP_INBOUND_WEBHOOK_SECRET
+            ? { Authorization: `Bearer ${env.SNAP_INBOUND_WEBHOOK_SECRET}` }
+            : {}),
+        },
+      });
+      console.log("snap-email cron ping:", res.status, await res.text());
+    } catch (err) {
+      console.error("snap-email cron ping failed:", String(err));
+    }
+  },
 } satisfies ExportedHandler<Env>;
 
 async function deliverToSnap(env: Env, payload: InboundPayload): Promise<void> {

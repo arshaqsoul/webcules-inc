@@ -5,6 +5,7 @@
   "compatibility_date": "2025-08-15",
   "compatibility_flags": ["nodejs_compat"],
   "observability": { "enabled": true },
+  "triggers": { "crons": ["0 6 * * *"] },
   "send_email": [{ "name": "EMAIL" }],
   "vars": {
     // Where parsed inbound emails are delivered once the Snap app is live.

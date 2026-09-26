@@ -30,9 +30,9 @@ export async function putObject(
   return key;
 }
 
-export async function getObject(orgId: string, key: string) {
+export async function getObject(orgId: string, key: string, range?: { offset: number; length?: number }) {
   assertOrgKey(orgId, key);
-  return env.R2.get(key);
+  return env.R2.get(key, range ? { range: { offset: range.offset, length: range.length } } : undefined);
 }
 
 export async function deleteObject(orgId: string, key: string): Promise<void> {
