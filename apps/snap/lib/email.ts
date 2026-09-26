@@ -24,8 +24,13 @@ export async function sendEmail(params: {
     );
     return false;
   }
-  if (params.fromOverride && !params.fromOverride.endsWith("@snap.webcules.com")) {
-    throw new Error("fromOverride must be on the snap.webcules.com domain");
+  if (params.fromOverride) {
+    // Accept "addr@domain" or "Display Name <addr@domain>" — validate the
+    // address part only (the display format is what EMAIL.send expects).
+    const addr = params.fromOverride.match(/<(.+)>/)?.[1] ?? params.fromOverride;
+    if (!addr.endsWith("@snap.webcules.com")) {
+      throw new Error("fromOverride must be on the snap.webcules.com domain");
+    }
   }
   try {
     await env.EMAIL.send({
