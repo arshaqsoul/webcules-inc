@@ -1,0 +1,212 @@
+[
+ {
+  "slug": "askchem-claim-centered-infrastructure-for-chemistry-literature-synthesis",
+  "summary": "AskChem is a claim-centered infrastructure for cross-paper chemistry search and synthesis, built by a team including Bing Yan and Kyunghyun Cho. It shifts the unit of retrieval from the paper to the provenance-carrying claim: each paper is converted into atomic, typed claims grounded by a source DOI and a verbatim quote or an explicit evidence locator. Over this shared claim store, the system exposes a stabilized faceted taxonomy for hierarchical retrieval and browsing, an evidence graph linking claims through relations, and an exploratory living taxonomy that situates papers under scientific principles.\n- **Scale and access**: AskChem currently indexes 2.4M claims from 147K papers and provides a web interface plus REST, SDK, and MCP access for AI agents.\n- **Benchmark gains**: On AskChem-Bench, grounding a GPT-5.5 reader in AskChem yields 100% resolvable DOIs versus 88.3% without retrieval, along with the highest citation density among five tested systems.\n- **Verifiable provenance**: Because each claim carries its source DOI and evidence locator, cross-paper answers can be checked without manual provenance work.",
+  "primaryTopic": "search-agents",
+  "secondaryTopic": "research-automation",
+  "confidence": 0.75
+ },
+ {
+  "slug": "skillclaw-let-skills-evolve-collectively-with-agentic-evolver",
+  "summary": "From a team including Ziyu Ma and Shidong Yang, SkillClaw is a framework for collective skill evolution in multi-user agent ecosystems. LLM agents such as OpenClaw rely on reusable skills that remain largely static after deployment, so similar workflows, tool usage patterns, and failure modes are repeatedly rediscovered across users. SkillClaw treats cross-user and over-time interactions as the primary signal for improving skills: it continuously aggregates trajectories generated during use and processes them with an autonomous evolver that identifies recurring behavioral patterns and translates them into updates, refining existing skills or extending them with new capabilities.\n- **Shared repository**: Updated skills are synchronized across users, so improvements discovered in one context propagate system-wide without additional user effort.\n- **Results**: Experiments on WildClawBench show that with limited interaction and feedback, SkillClaw significantly improves the performance of Qwen3-Max in real-world agent scenarios.",
+  "primaryTopic": "agent-skills",
+  "secondaryTopic": "agent-training",
+  "confidence": 0.9
+ },
+ {
+  "slug": "weak-driven-learning-how-weak-agents-make-strong-agents-stronger",
+  "summary": "WMSS (Weak Agents Can Make Strong Agents Stronger) is a post-training paradigm from Zehao Chen and colleagues that leverages a model's own historical weak checkpoints to guide continued optimization. The work targets a persistent saturation bottleneck: once models grow highly confident, further training yields diminishing returns, even though informative supervision signals remain latent in their weak states. The method identifies recoverable learning gaps via entropy dynamics and reinforces them through compensatory learning, allowing strong agents to improve beyond conventional post-training saturation.\n- **Entropy-guided signals**: Recoverable learning gaps are located by tracking entropy dynamics across checkpoints instead of reinforcing target predictions alone.\n- **No inference overhead**: On mathematical reasoning and code generation datasets, agents trained with the approach achieve effective performance improvements while incurring zero additional inference cost.\n- **Weak-state supervision**: Historical weak states become the training signal, converting past failures into compensatory updates for the final model.",
+  "primaryTopic": "rl-for-reasoning",
+  "secondaryTopic": "agent-training",
+  "confidence": 0.55
+ },
+ {
+  "slug": "recursive-multi-agent-systems",
+  "summary": "RecursiveMAS extends the recursive, looped scaling of single language models to multi-agent systems, from Jiaru Zou and collaborators, asking whether agent collaboration itself can be scaled through recursion. The framework casts an entire multi-agent system as a unified latent-space recursive computation, connecting heterogeneous agents in a collaboration loop through a lightweight RecursiveLink module that enables in-distribution latent thought generation and cross-agent latent state transfer. An inner-outer loop learning algorithm co-optimizes the whole system through shared gradient-based credit assignment across recursion rounds, and theoretical analysis shows the approach is more efficient than standard text-based multi-agent systems while keeping gradients stable.\n- **Evaluation breadth**: Instantiated under 4 representative collaboration patterns across 9 benchmarks in mathematics, science, medicine, search, and code generation, RecursiveMAS delivers an average accuracy improvement of 8.3% over advanced baselines.\n- **Efficiency**: It achieves 1.2×-2.4× end-to-end inference speedup and 34.6%-75.6% token usage reduction.",
+  "primaryTopic": "reasoning-methods",
+  "secondaryTopic": "agent-training",
+  "confidence": 0.6
+ },
+ {
+  "slug": "kimi-k2-5-visual-agentic-intelligence",
+  "summary": "Kimi K2.5 is an open-source multimodal agentic model from Moonshot AI / Kimi, designed to advance general agentic intelligence by jointly optimizing text and vision so the two modalities enhance each other. Training combines joint text-vision pre-training, zero-vision SFT, and joint text-vision reinforcement learning on this multimodal foundation. K2.5 also introduces Agent Swarm, a self-directed parallel orchestration framework that dynamically decomposes complex tasks into heterogeneous sub-problems and executes them concurrently. Evaluations report state-of-the-art results across coding, vision, reasoning, and agentic tasks.\n- **Orchestration speed**: Agent Swarm reduces latency by up to 4.5× over single-agent baselines.\n- **Open release**: The post-trained Kimi K2.5 checkpoint is released to support future research and real-world applications of agentic intelligence.",
+  "primaryTopic": "vlm-architectures",
+  "secondaryTopic": "agent-training",
+  "confidence": 0.6
+ },
+ {
+  "slug": "qwen-image-technical-report",
+  "summary": "Alibaba / Qwen presents Qwen-Image, an image generation foundation model targeting complex text rendering and precise image editing. A data pipeline spanning large-scale collection, filtering, annotation, synthesis, and balancing feeds a progressive training strategy that starts with non-text-to-text rendering, evolves from simple to complex textual inputs, and scales up to paragraph-level descriptions. The curriculum substantially enhances native text rendering, yielding strong performance in alphabetic languages such as English and marked progress on logographic languages like Chinese. For editing consistency, an improved multi-task training paradigm covers text-to-image, text-image-to-image, and image-to-image reconstruction while aligning latent representations between Qwen2.5-VL and MMDiT.\n- **Dual-encoding mechanism**: The original image is fed separately into Qwen2.5-VL and the VAE encoder to obtain semantic and reconstructive representations, balancing semantic consistency with visual fidelity.\n- **Results**: The model achieves state-of-the-art performance across multiple benchmarks in both generation and editing.",
+  "primaryTopic": "image-generation",
+  "secondaryTopic": null,
+  "confidence": 0.95
+ },
+ {
+  "slug": "agent-learning-via-early-experience",
+  "summary": "'Agent Learning via Early Experience' proposes a middle-ground paradigm for training language agents, from Kai Zhang and collaborators, positioned between imitation learning and reinforcement learning. Training from experience data with reinforcement learning is difficult in environments that lack verifiable rewards or require long-horizon rollouts, so most agents fall back on supervised fine-tuning on expert data that generalizes poorly. Early experience instead uses interaction data generated by the agent's own actions, with resulting future states serving as supervision without reward signals. Two strategies exploit this data: implicit world modeling, which grounds the policy in environment dynamics, and self-reflection, where the agent learns from its suboptimal actions.\n- **Evaluation**: Across eight diverse environments and multiple model families, the approaches consistently improve effectiveness and out-of-domain generalization.\n- **Bridge to RL**: In environments with verifiable rewards, early experience offers a strong foundation for subsequent reinforcement learning.",
+  "primaryTopic": "agent-training",
+  "secondaryTopic": null,
+  "confidence": 0.9
+ },
+ {
+  "slug": "intern-s1-a-scientific-multimodal-foundation-model",
+  "summary": "Intern-S1 is a scientific multimodal foundation model, a Mixture-of-Experts model with 28 billion activated parameters and 241 billion total parameters built to pair general understanding and reasoning with expertise across science modalities. It is continually pre-trained on 5T tokens, including over 2.5T tokens from scientific domains. Post-training runs offline and then online reinforcement learning in InternBootCamp, where a proposed Mixture-of-Rewards (MoR) scheme synergizes RL training on more than 1000 tasks simultaneously. The model is competitive on general reasoning among open-source models and significantly outperforms them in scientific domains.\n- **Scientific results**: Intern-S1 surpasses closed-source state-of-the-art models on professional tasks such as molecular synthesis planning, reaction condition prediction, and predicting thermodynamic stabilities for crystals.\n- **Reward design**: MoR coordinates rewards across the large task suite, supporting top-tier performance in online RL training.\n- **Availability**: The model weights are publicly released.",
+  "primaryTopic": "science-medicine",
+  "secondaryTopic": "rl-for-reasoning",
+  "confidence": 0.8
+ },
+ {
+  "slug": "citevqa-benchmarking-evidence-attribution-for-trustworthy-document-intelligence",
+  "summary": "CiteVQA is a benchmark for evidence attribution in document intelligence, from Dongsheng Ma and colleagues, requiring multimodal LLMs to return element-level bounding-box citations alongside each answer. Current Doc-VQA evaluations score only the final answer, masking a failure mode in which a model lands on the correct answer while grounding it in the wrong passage, a risk in high-stakes domains like law, finance, and medicine. The benchmark comprises 1,897 questions across 711 PDFs spanning seven domains and two languages, averaging 40.6 pages per document. Ground-truth citations are generated by an automated pipeline that identifies crucial evidence via masking ablation and are validated through expert review.\n- **Strict Attributed Accuracy**: The core metric credits a prediction only when both the answer and the cited region are correct.\n- **Attribution Hallucination**: Auditing 20 MLLMs shows models frequently produce the right answer while citing the wrong region; the strongest system, Gemini-3.1-Pro-Preview, reaches an SAA of only 76.0, and the strongest open-source MLLM just 22.5.",
+  "primaryTopic": "document-ocr",
+  "secondaryTopic": null,
+  "confidence": 0.95
+ },
+ {
+  "slug": "deepseek-v3-2-pushing-the-frontier-of-open-large-language-models",
+  "summary": "DeepSeek-V3.2, an open large language model from DeepSeek, harmonizes computational efficiency with strong reasoning and agent performance. DeepSeek Sparse Attention (DSA) substantially reduces computational complexity while preserving model performance in long-context scenarios. A scalable reinforcement learning framework with increased post-training compute makes the model comparable to GPT-5, while the high-compute variant DeepSeek-V3.2-Speciale surpasses GPT-5, shows reasoning on par with Gemini-3.0-Pro, and earns gold-medal performance in both the 2025 International Mathematical Olympiad (IMO) and the International Olympiad in Informatics (IOI). A large-scale agentic task synthesis pipeline completes the technical stack by generating tool-use training data at scale.\n- **Agentic post-training**: The synthesis pipeline integrates reasoning into tool-use scenarios, yielding improvements in generalization and instruction-following robustness within complex, interactive environments.\n- **Efficient attention**: DSA lowers long-context computational cost without sacrificing performance.",
+  "primaryTopic": "rl-for-reasoning",
+  "secondaryTopic": "long-context",
+  "confidence": 0.55
+ },
+ {
+  "slug": "ernie-5-0-technical-report",
+  "summary": "The ERNIE 5.0 technical report, from a team including Haifeng Wang and Hua Wu, introduces a natively autoregressive foundation model for unified multimodal understanding and generation across text, image, video, and audio. All modalities train from scratch under a unified next-group-of-tokens prediction objective on an ultra-sparse mixture-of-experts architecture with modality-agnostic expert routing. An elastic training paradigm lets a single pre-training run learn a family of sub-models with varying depths, expert capacities, and routing sparsity, enabling flexible trade-offs among performance, model size, and inference latency. The report also addresses scaling reinforcement learning for stable post-training under ultra-sparse MoE and diverse multimodal settings.\n- **Scale milestone**: Among publicly disclosed models, ERNIE 5.0 is presented as the first production-scale trillion-parameter unified autoregressive model supporting both multimodal understanding and generation.\n- **Analysis**: Visualizations of modality-agnostic expert routing and empirical analysis of elastic training accompany the release.",
+  "primaryTopic": "vlm-architectures",
+  "secondaryTopic": "audio-speech",
+  "confidence": 0.6
+ },
+ {
+  "slug": "does-your-reasoning-model-implicitly-know-when-to-stop-thinking",
+  "summary": "SAGE (Self-Aware Guided Efficient Reasoning) is a sampling paradigm for large reasoning models from Zixuan Huang and colleagues, built on an empirically verified finding: LRMs implicitly know the appropriate time to stop thinking. Long chains of thought bring substantial redundancy, and longer reasoning is frequently uncorrelated with correctness and can even be detrimental to accuracy, yet this stopping capability is obscured by current sampling paradigms. SAGE is designed to unleash that efficient reasoning potential. Integrating SAGE as mixed sampling into group-based reinforcement learning (SAGE-RL) incorporates the discovered efficient reasoning patterns into standard pass@1 inference.\n- **Joint gains**: SAGE-RL markedly enhances both reasoning accuracy and efficiency of LRMs across multiple challenging mathematical benchmarks.\n- **Diagnosis**: The bottleneck lies in sampling paradigms rather than in a missing model capability.",
+  "primaryTopic": "reasoning-methods",
+  "secondaryTopic": "rl-for-reasoning",
+  "confidence": 0.85
+ },
+ {
+  "slug": "metis-memory-foundation-model",
+  "summary": "Zeyu Zhang and collaborators introduce Metis, the first prototype of a memory foundation model, moving agent memory from external modules into native model capabilities. The formulation defines native memory through a persistent, dynamically evolving memory state within the backbone and native memory procedures that autonomously store and use information through model computation. Metis equips a foundation model with a native memory state: historical information is compressed into the model and accessed through memory attention, supported by large-scale memory-specific training data and multiple optimization objectives introduced through mid-training. Online memory maintenance is gradient-free, and memory updates require only a forward pass.\n- **Frozen weights**: At inference time all learned model weights remain frozen while native memory states are autonomously transformed through standard forward computation.\n- **Rationale**: Native memory offers advantages in architecture, end-to-end optimization, and efficiency relative to external memory modules.\n- **Release**: The project and model checkpoints are publicly available.",
+  "primaryTopic": "long-context",
+  "secondaryTopic": "model-architecture",
+  "confidence": 0.75
+ },
+ {
+  "slug": "clawbench-can-ai-agents-complete-everyday-online-tasks",
+  "summary": "ClawBench, an evaluation framework from Yuxuan Zhang and colleagues, tests whether AI agents can reliably complete everyday online workflows. It comprises 153 tasks spanning 144 platforms and 15 categories, from completing purchases and booking appointments to submitting job applications. Unlike benchmarks run in offline sandboxes with static pages, ClawBench operates on production websites, preserving the complexity, dynamism, and interaction challenges of real web environments; an interception layer blocks final submission requests, keeping evaluation side-effect free. Tasks require capabilities beyond existing benchmarks, including obtaining information from user-provided documents, navigating multi-step workflows, and write-heavy operations like correctly filling many detailed forms.\n- **Frontier-model results**: Evaluations of 8 frontier models show both proprietary and open-source systems complete only a small portion of tasks, with Claude Sonnet 4.6 achieving only 33.3%.\n- **Aim**: Progress on ClawBench is framed as a step toward general-purpose assistants.",
+  "primaryTopic": "agent-benchmarks",
+  "secondaryTopic": null,
+  "confidence": 0.95
+ },
+ {
+  "slug": "skillopt-executive-strategy-for-self-evolving-agent-skills",
+  "summary": "From Yifan Yang and colleagues, SkillOpt is the first systematic, controllable text-space optimizer for agent skills. The authors argue a skill should be trained as the external state of a frozen agent with the discipline of weight-space optimization, rather than being hand-crafted or loosely self-revised. A separate optimizer model turns scored rollouts into bounded add/delete/replace edits on a skill document, accepting an edit only when it strictly improves a held-out validation score. A textual learning-rate budget, rejected-edit buffer, and epoch-wise slow/meta updates add stability with zero inference-time model calls at deployment.\n- **Coverage**: Across six benchmarks, seven target models, and three harnesses, SkillOpt is best or tied on all 52 evaluated cells, beating human, one-shot LLM, Trace2Skill, TextGrad, GEPA, and EvoSkill skills.\n- **Gains on GPT-5.5**: It lifts average no-skill accuracy by +23.5 points in direct chat, +24.8 inside the Codex agentic loop, and +19.1 inside Claude Code.\n- **Transfer**: Optimized skills retain value across model scales, between execution environments, and on a nearby math benchmark.",
+  "primaryTopic": "agent-skills",
+  "secondaryTopic": null,
+  "confidence": 0.95
+ },
+ {
+  "slug": "vla-adapter-an-effective-paradigm-for-tiny-scale-vision-language-action-model",
+  "summary": "Researchers including Yihao Wang introduce VLA-Adapter, a paradigm for tiny-scale vision-language-action models that reduces the reliance of VLA models on large-scale VLM pre-training and extensive robotic data. The authors first systematically analyze which vision-language conditions are essential for bridging perception and action spaces, then propose a lightweight Policy module with Bridge Attention that autonomously injects the optimal condition into the action space. Using only a 0.5B-parameter backbone and no robotic data pre-training, the method achieves state-of-the-art-level performance on simulated and real-world robotic benchmarks while offering the fastest inference speed reported to date.\n- **Accessibility**: A powerful VLA model trains in just 8 hours on a single consumer-grade GPU, greatly lowering the deployment barrier.\n- **Design insight**: The analysis of VL conditions identifies which signals matter most for bridging perception and action.",
+  "primaryTopic": "robot-policies",
+  "secondaryTopic": "model-efficiency",
+  "confidence": 0.9
+ },
+ {
+  "slug": "tstars-tryon-1-0-robust-and-realistic-virtual-try-on-for-diverse-fashion-items",
+  "summary": "Tstars-Tryon 1.0 is a commercial-scale virtual try-on system from Mengting Chen and colleagues, built to be robust, realistic, and efficient across diverse fashion items. The system maintains a high success rate on challenging cases like extreme poses, severe illumination variations, and motion blur, while preserving garment texture, material properties, and structure with few common AI-generated artifacts. Beyond apparel try-on, it supports flexible multi-image composition with up to 6 reference images across 8 fashion categories and coordinated control over person identity and background. Inference is heavily optimized to deliver near real-time generation for commercial deployment.\n- **Production scale**: The model is deployed at industrial scale on the Taobao App, serving millions of users with tens of millions of requests.\n- **System design**: Capabilities come from an integrated design spanning end-to-end model architecture, a scalable data engine, robust infrastructure, and a multi-stage training paradigm.\n- **Benchmark**: The team also releases a comprehensive benchmark.",
+  "primaryTopic": "image-generation",
+  "secondaryTopic": null,
+  "confidence": 0.9
+ },
+ {
+  "slug": "crafter-a-multi-agent-harness-for-editable-scientific-figure-generation-from",
+  "summary": "Haozhe Zhao and colleagues present Crafter, a multi-agent harness for editable scientific figure generation from diverse inputs. Existing automated systems each target a single figure type under text-only input and produce raster outputs that cannot be locally revised; because figures are structured compositions of discrete semantic components, localized generator errors call for a harness rather than a stronger backbone. Crafter generalizes across figure types and input conditions without architectural changes, while CraftEditor applies the same pattern to convert raster outputs into editable SVGs. The team also introduces CraftBench, a benchmark spanning three figure types and four input conditions with human quality annotation.\n- **Results**: Crafter substantially outperforms standalone generators and the agentic baseline on PaperBanana-Bench and CraftBench, with ablations confirming each component's independent contribution.\n- **Editability**: CraftEditor faithfully converts outputs into editable SVGs that surpass all baselines.",
+  "primaryTopic": "research-automation",
+  "secondaryTopic": "image-generation",
+  "confidence": 0.8
+ },
+ {
+  "slug": "z-image-an-efficient-image-generation-foundation-model-with-single-stream",
+  "summary": "Z-Image is an efficient 6B-parameter image generation foundation model from the Z-Image Team, built on a Scalable Single-Stream Diffusion Transformer (S3-DiT) architecture that challenges the scale-at-all-costs paradigm. Leading open-source alternatives such as Qwen-Image, Hunyuan-Image-3.0, and FLUX.2 carry 20B to 80B parameters, which makes inference and fine-tuning impractical on consumer-grade hardware. By optimizing the entire model lifecycle, the team completes the full training workflow in 314K H800 GPU hours, approximately $630K. A few-step distillation scheme with reward post-training yields Z-Image-Turbo, offering sub-second inference latency on an enterprise-grade H800 GPU and compatibility with hardware under 16GB VRAM.\n- **Editing variant**: An omni-pre-training paradigm also enables Z-Image-Edit, an editing model with strong instruction-following capabilities.\n- **Quality**: The model achieves performance comparable to or surpassing leading competitors, with noted strength in photorealistic generation and bilingual text rendering.\n- **Openness**: Code, weights, and an online demo are publicly released.",
+  "primaryTopic": "image-generation",
+  "secondaryTopic": "model-efficiency",
+  "confidence": 0.9
+ },
+ {
+  "slug": "socialomni-benchmarking-audio-visual-social-interactivity-in-omni-models",
+  "summary": "Tianyu Xie and colleagues introduce SocialOmni, a benchmark for audio-visual social interactivity in omni-modal large language models. Existing OLM benchmarks remain anchored to static, accuracy-centric tasks, leaving social interactivity in natural dialogues unassessed. The benchmark operationalizes three dimensions: speaker separation and identification (who is speaking), interruption timing control (when to interject), and natural interruption generation (how to phrase the interruption). It features 2,000 perception samples and a quality-controlled set of 209 interaction-generation instances with strict temporal and contextual constraints, plus controlled audio-visual inconsistency scenarios.\n- **Findings**: Benchmarking 12 leading OLMs uncovers significant variance in social-interaction capability and a pronounced decoupling between perceptual accuracy and contextually appropriate interruption generation.\n- **Implication**: Understanding-centric metrics alone are insufficient to characterize conversational social competence, and the diagnostics offer actionable signals for closing the perception-interaction divide.",
+  "primaryTopic": "audio-speech",
+  "secondaryTopic": null,
+  "confidence": 0.85
+ },
+ {
+  "slug": "wilddet3d-scaling-promptable-3d-detection-in-the-wild",
+  "summary": "WildDet3D is a unified, promptable system for monocular 3D object detection in the wild, from Weikai Huang and collaborators, targeting open-world spatial understanding from a single RGB image. Prior methods support a single prompt type and lack mechanisms for incorporating geometric cues, while existing 3D datasets cover only narrow categories in controlled environments. WildDet3D is a geometry-aware architecture that natively accepts text, point, and box prompts and can incorporate auxiliary depth signals at inference time. Its companion WildDet3D-Data, the largest open 3D detection dataset to date, generates candidate 3D boxes from existing 2D annotations and retains human-verified ones: over 1M images across 13.5K categories in diverse real-world scenes.\n- **Benchmark results**: The system reaches 22.6/24.8 AP3D with text and box prompts on the new WildDet3D-Bench and 34.2/36.4 AP3D on Omni3D, plus zero-shot scores of 40.3/48.9 ODS on Argoverse 2 and ScanNet.\n- **Depth cueing**: Incorporating depth cues at inference yields substantial additional gains, +20.7 AP on average across settings.",
+  "primaryTopic": "spatial-3d",
+  "secondaryTopic": null,
+  "confidence": 0.95
+ },
+ {
+  "slug": "less-is-enough-synthesizing-diverse-data-in-llm-feature-space-with-sparse",
+  "summary": "'Less is Enough' introduces Feature Activation Coverage (FAC), a metric measuring post-training data diversity in an interpretable feature space, from Zhongzhi Li and colleagues. Existing approaches quantify diversity with text-based metrics that capture linguistic variation but provide only weak signals for the task-relevant features that determine downstream performance. Building on FAC, the FAC Synthesis framework first uses a sparse autoencoder to identify features missing from a seed dataset, then generates synthetic samples that explicitly reflect those features. Experiments show consistent improvements in both data diversity and downstream performance.\n- **Task range**: Gains hold across instruction following, toxicity detection, reward modeling, and behavior steering.\n- **Cross-model structure**: A shared, interpretable feature space appears across the LLaMA, Mistral, and Qwen model families, enabling cross-model knowledge transfer.\n- **Practicality**: The work offers a data-centric methodology for optimizing LLM post-training data.",
+  "primaryTopic": "data-curation",
+  "secondaryTopic": "interpretability-analysis",
+  "confidence": 0.8
+ },
+ {
+  "slug": "squtr-a-robustness-benchmark-for-spoken-query-to-text-retrieval-under-acoustic",
+  "summary": "SQuTR is a robustness benchmark for spoken query to text retrieval under acoustic noise, from Yuejie Li and colleagues. Existing evaluation datasets are often limited to simple queries under constrained noise conditions, making robustness under complex acoustic perturbations hard to assess. The benchmark aggregates 37,317 unique queries from six commonly used English and Chinese text retrieval datasets, synthesizes speech using voice profiles from 200 real speakers, and mixes 17 categories of real-world environmental noise under controlled SNR levels. A unified evaluation protocol enables large-scale, reproducible comparison of cascaded and end-to-end retrieval systems.\n- **Findings**: Retrieval performance decreases as noise increases, with substantially different drops across systems.\n- **Hard cases**: Even large-scale retrieval models struggle under extreme noise, marking robustness as a critical bottleneck.\n- **Utility**: SQuTR provides a reproducible testbed for benchmarking and diagnostic analysis in spoken query retrieval.",
+  "primaryTopic": "audio-speech",
+  "secondaryTopic": null,
+  "confidence": 0.9
+ },
+ {
+  "slug": "llada2-0-uni-unifying-multimodal-understanding-and-generation-with-diffusion",
+  "summary": "LLaDA2.0-Uni is a unified discrete diffusion large language model from Inclusion AI that supports multimodal understanding and generation within a natively integrated framework. Its architecture combines a fully semantic discrete tokenizer, a MoE-based dLLM backbone, and a diffusion decoder: continuous visual inputs are discretized via SigLIP-VQ so the backbone runs block-level masked diffusion over both text and vision, while the decoder reconstructs visual tokens into high-fidelity images. Inference efficiency improves beyond parallel decoding through prefix-aware optimizations in the backbone and few-step distillation in the decoder. Carefully curated large-scale data and a tailored multi-stage training pipeline support the system.\n- **Capabilities**: The model matches specialized VLMs in multimodal understanding while delivering strong performance in image generation and editing.\n- **Interleaving**: Native support for interleaved generation and reasoning establishes a scalable paradigm for next-generation unified foundation models.\n- **Openness**: Code and models are publicly available.",
+  "primaryTopic": "vlm-architectures",
+  "secondaryTopic": "diffusion-lms",
+  "confidence": 0.7
+ },
+ {
+  "slug": "thinking-with-video-video-generation-as-a-promising-multimodal-reasoning",
+  "summary": "'Thinking with Video' proposes video generation as a multimodal reasoning paradigm, from Jingqi Tong and colleagues, using video frames as a unified medium for multimodal reasoning. Text- and image-based thinking have inherent limits: images capture only single moments and miss dynamic processes, while keeping text and vision as separate modalities hinders unified understanding and generation; video generation models such as Sora-2 address both gaps. The team develops the Video Thinking Benchmark (VideoThinkBench), covering vision-centric tasks like Eyeballing Puzzles and text-centric tasks including GSM8K and MMMU. Evaluations on VideoThinkBench establish Sora-2 as a capable reasoner.\n- **Vision-centric results**: Sora-2 is comparable to state-of-the-art VLMs and surpasses GPT-5 by 10% on eyeballing puzzles.\n- **Text-centric results**: Sora-2 achieves 92% accuracy on MATH and 69.2% accuracy on MMMU.\n- **Enhancements**: Self-consistency and in-context learning improve Sora-2's performance.",
+  "primaryTopic": "reasoning-methods",
+  "secondaryTopic": "video-generation",
+  "confidence": 0.65
+ },
+ {
+  "slug": "on-the-scaling-of-peft-towards-million-personal-models-of-trillion-parameters",
+  "summary": "'On the Scaling of PEFT: Towards Million Personal Models of Trillion Parameters' studies small trainable adapters as persistent local state on top of strong shared foundation models, from the Mind Lab group. Rather than treating parameter-efficient fine-tuning as merely a cheaper alternative to full fine-tuning, the framing assigns shared competence to the base model while adapters carry instance-specific behavior such as preferences, skills, tool habits, and memory-like updates. MinT provides one infrastructure example for managing adapter identity, revision, provenance, evaluation, and serving residency.\n- **Three scaling axes**: Scale Up (stronger shared priors make small local updates more useful), Scale Down (how small adapters can remain reliable), and Scale Out (many persistent adapted instances coexist).\n- **Conclusion**: The results suggest PEFT can serve as a compact substrate for persistent personal models rather than only a budget substitute for full fine-tuning.",
+  "primaryTopic": "model-efficiency",
+  "secondaryTopic": null,
+  "confidence": 0.65
+ },
+ {
+  "slug": "the-landscape-of-agentic-reinforcement-learning-for-llms-a-survey",
+  "summary": "'The Landscape of Agentic Reinforcement Learning for LLMs: A Survey' charts the shift from conventional LLM RL to agentic RL, from Guibin Zhang and colleagues. The survey formalizes the conceptual shift by contrasting the degenerate single-step Markov decision processes of LLM-RL with the temporally extended, partially observable MDPs that define agentic RL, reframing LLMs from passive sequence generators into autonomous, decision-making agents embedded in complex, dynamic worlds. It proposes a twofold taxonomy: one organized around core agentic capabilities including planning, tool use, memory, reasoning, self-improvement, and perception, and the other around their applications across task domains. Central to the thesis is that reinforcement learning transforms these capabilities from static, heuristic modules into adaptive, robust agentic behavior.\n- **Scope**: The survey synthesizes over five hundred recent works.\n- **Compendium**: It consolidates open-source environments, benchmarks, and frameworks into a practical resource for accelerating future research.",
+  "primaryTopic": "agent-training",
+  "secondaryTopic": "agent-benchmarks",
+  "confidence": 0.85
+ },
+ {
+  "slug": "incoder-32b-thinking-industrial-code-world-model-for-thinking",
+  "summary": "InCoder-32B-Thinking is a reasoning model for industrial code from Jian Yang and colleagues, targeting chip design, GPU optimization, and embedded systems that lack expert reasoning traces about hardware constraints and timing semantics. The Error-driven Chain-of-Thought (ECoT) synthesis framework generates reasoning chains from multi-turn dialogue with environmental error feedback, explicitly modeling the error-correction process. Traces are produced with an industrial code world model (ICWM) trained on domain-specific execution traces from Verilog simulation, GPU profiling, and similar sources; ICWM learns the causal dynamics of how code affects hardware behavior and enables self-verification by predicting execution outcomes before compilation. All synthesized traces are validated through domain toolchains, matching the natural reasoning depth of industrial tasks.\n- **General coding**: The model reaches 81.3% on LiveCodeBench v5 among 14 general benchmarks.\n- **Industrial results**: It scores 84.0% on CAD-Coder and 38.0% on KernelBench across 9 industrial benchmarks, achieving top-tier open-source results across all domains.",
+  "primaryTopic": "coding-agents",
+  "secondaryTopic": "reasoning-methods",
+  "confidence": 0.8
+ },
+ {
+  "slug": "mean-mode-screaming-mean-variance-split-residuals-for-1000-layer-diffusion",
+  "summary": "'Mean Mode Screaming: Mean-Variance Split Residuals for 1000-Layer Diffusion Transformers' examines a structural vulnerability that emerges when scaling Diffusion Transformers to hundreds of layers, from author Pengqi Lu. Deep DiTs can enter a silent, mean-dominated collapse that homogenizes token representations and suppresses centered variation; through mechanistic auditing, the author isolates the trigger as Mean Mode Screaming (MMS), a mean-coherent backward shock on residual writers that can occur even when training appears stable. The behavior follows an exact decomposition of these gradients into mean-coherent and centered components. The proposed Mean-Variance Split (MV-Split) residuals combine a separately gained centered residual update with a leaky trunk-mean replacement.\n- **Stability results**: On a 400-layer single-stream DiT, MV-Split prevents the divergent collapse that crashes the un-stabilized baseline and remains better than token-isotropic gating such as LayerScale across the full schedule.\n- **Scale validation**: A 1000-layer DiT run establishes that the architecture remains stably trainable at extreme depth.",
+  "primaryTopic": "model-architecture",
+  "secondaryTopic": "image-generation",
+  "confidence": 0.75
+ },
+ {
+  "slug": "video-mme-v2-towards-the-next-stage-in-benchmarks-for-comprehensive-video",
+  "summary": "Video-MME-v2 is a comprehensive benchmark for video understanding from Chaoyou Fu and colleagues, built to address the discrepancy between inflated leaderboard scores and real-world model capabilities. A progressive tri-level hierarchy raises the complexity of video comprehension, from multi-point visual information aggregation to temporal dynamics modeling and finally complex multimodal reasoning. In place of per-question accuracy, a group-based non-linear evaluation strategy enforces consistency across related queries and coherence in multi-step reasoning, penalizing fragmented or guess-based correctness. Construction used a controlled human annotation pipeline with 12 annotators and 50 independent reviewers, backed by 3,300 human-hours and up to 5 rounds of quality assurance.\n- **Findings**: A substantial gap separates the best model, Gemini-3-Pro, from human experts, and errors in visual aggregation and temporal modeling propagate to limit high-level reasoning.\n- **Thinking caveat**: Thinking-based reasoning depends heavily on textual cues, helping with subtitles but sometimes degrading performance in purely visual settings.",
+  "primaryTopic": "video-understanding",
+  "secondaryTopic": null,
+  "confidence": 0.95
+ }
+]

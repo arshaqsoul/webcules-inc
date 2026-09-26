@@ -1,0 +1,212 @@
+[
+ {
+  "slug": "sharing-is-caring-efficient-lm-post-training-with-collective-rl-experience",
+  "summary": "SAPO is a fully decentralized, asynchronous reinforcement learning post-training algorithm from the Gensyn team that trains language models across networks of heterogeneous compute nodes. Instead of centralizing rollouts, each node manages its own policy models and shares rollouts with the rest of the network, with no assumptions about latency, model homogeneity, or hardware. By sampling rollouts shared across the network, it lets \"Aha moments\" propagate and bootstrap learning while avoiding the scaling bottlenecks of centralized RL post-training.\n- **Decentralized by design**: nodes can operate in silo, with no explicit latency, memory, or reliability coordination required.\n- **Up to 94% reward gains**: controlled experiments showed cumulative reward improvements of up to 94%.\n- **Community-scale demo**: tested on a network with thousands of nodes contributed by Gensyn community members on diverse hardware and models.",
+  "primaryTopic": "rl-for-reasoning",
+  "secondaryTopic": "model-efficiency",
+  "confidence": 0.78
+ },
+ {
+  "slug": "grandcode-achieving-grandmaster-level-in-competitive-programming-via-agentic",
+  "summary": "GrandCode is a multi-agent reinforcement learning system that reached grandmaster level in competitive programming, becoming the first AI system to consistently beat all human participants in live Codeforces contests. It orchestrates agentic modules for hypothesis proposal, solving, test generation, and summarization, jointly improving them through post-training and online test-time RL. Its Agentic GRPO algorithm is designed for multi-stage agent rollouts with delayed rewards and the severe off-policy drift prevalent in agentic RL.\n- **Live victories**: placed first in Codeforces Rounds 1087 (Mar 21, 2026), 1088 (Mar 28, 2026), and 1089 (Mar 29, 2026), beating all human participants including legendary grandmasters.\n- **Prior best**: Google's Gemini 3 Deep Think had reached 8th place, not evaluated under live competition conditions.\n- **Agentic GRPO**: a new RL variant built for the off-policy drift of multi-stage agent rollouts.",
+  "primaryTopic": "coding-agents",
+  "secondaryTopic": "agent-training",
+  "confidence": 0.9
+ },
+ {
+  "slug": "the-dragon-hatchling-the-missing-link-between-the-transformer-and-models-of",
+  "summary": "Dragon Hatchling (BDH) is a biologically inspired LLM architecture built from a scale-free network of locally interacting neuron particles, positioned as the missing link between Transformers and models of the brain. It exhibits Transformer-like scaling laws, rivaling GPT-2 on language and translation tasks at the same parameter counts (10M to 1B) and the same training data, while staying GPU-friendly and inherently interpretable. Working memory during inference relies entirely on synaptic plasticity with Hebbian learning in spiking neurons.\n- **Monosemantic by construction**: activation vectors are sparse and positive, and individual synapses measurably strengthen when the model hears or reasons about a specific concept.\n- **Brain-plausible graph**: the neuron interaction network shows high modularity with a heavy-tailed degree distribution.\n- **Interpretable state**: interpretability of state is an inherent architectural feature, beyond interpretability of neurons or parameters.",
+  "primaryTopic": "model-architecture",
+  "secondaryTopic": "interpretability-analysis",
+  "confidence": 0.85
+ },
+ {
+  "slug": "a-very-big-video-reasoning-suite",
+  "summary": "The Very Big Video Reasoning (VBVR) suite is the first large-scale resource for studying video reasoning: 200 curated reasoning tasks following a principled taxonomy and over one million video clips, roughly three orders of magnitude larger than existing datasets. It pairs the data with VBVR-Bench, a verifiable evaluation framework that replaces model-based judging with rule-based, human-aligned scorers for reproducible and interpretable diagnosis. Early large-scale scaling studies show signs of emergent generalization to unseen reasoning tasks.\n- **Unprecedented scale**: about 1,000x larger than prior video reasoning datasets.\n- **Verifiable scoring**: rule-based scorers move evaluation beyond model-based judgment.\n- **Fully open**: data, benchmark toolkit, and models are publicly available at video-reason.com.",
+  "primaryTopic": "video-understanding",
+  "secondaryTopic": "video-generation",
+  "confidence": 0.85
+ },
+ {
+  "slug": "less-is-more-recursive-reasoning-with-tiny-networks",
+  "summary": "Tiny Recursive Model (TRM) is a much simpler recursive reasoning approach that beats far larger LLMs on hard puzzle tasks with a single tiny network of only 2 layers. It improves on the Hierarchical Reasoning Model (HRM), which used two small networks recursing at different frequencies to beat LLMs on Sudoku, Maze, and ARC-AGI with 27M parameters and around 1,000 examples. With only 7M parameters, TRM reaches 45% test accuracy on ARC-AGI-1 and 8% on ARC-AGI-2.\n- **Outsizes its weight class**: higher accuracy than most LLMs — including Deepseek R1, o3-mini, and Gemini 2.5 Pro — with less than 0.01% of the parameters.\n- **Simpler recursion**: one tiny network with two layers achieves significantly higher generalization than HRM's two-network design.",
+  "primaryTopic": "reasoning-methods",
+  "secondaryTopic": "model-architecture",
+  "confidence": 0.85
+ },
+ {
+  "slug": "adams-law-textual-frequency-law-on-large-language-models",
+  "summary": "Adam's Law proposes textual frequency as an understudied lever for LLMs: frequent textual expressions should be preferred for both prompting and fine-tuning. The framework estimates sentence-level frequency from online resources when training data is closed, paraphrases inputs toward more frequent expressions, and refines the estimates through Textual Frequency Distillation via story completion. It closes with Curriculum Textual Frequency Training (CTFT), fine-tuning LLMs in increasing order of sentence-level frequency.\n- **TFPD benchmark**: experiments run on the curated Textual Frequency Paired Dataset across math reasoning, machine translation, commonsense reasoning, and agentic tool calling.\n- **Three-part pipeline**: an input paraphraser, Textual Frequency Distillation, and curriculum frequency training operationalize the law.",
+  "primaryTopic": "data-curation",
+  "secondaryTopic": null,
+  "confidence": 0.7
+ },
+ {
+  "slug": "abot-earth-0-5-generative-3d-earth-model",
+  "summary": "ABot-Earth 0.5 is a generative 3D Earth model that synthesizes vast, seamless 3D environments from geospatially referenced satellite imagery using a generative model formulated directly with 3D Gaussian Splatting. Trained on a diverse corpus of real-world urban reconstructions, it generates realistic geometry and textures at under 10 minutes per square kilometer, with integrated hierarchical level-of-detail structures enabling real-time interactive visualization in web-based map engines. The high-fidelity sandbox mitigates the sim-to-real domain gap for downstream Embodied AI applications such as closed-loop UAV navigation.\n- **Interactive at web scale**: hierarchical LOD structures support real-time visualization on web map engines.\n- **Ultra-low-cost reconstruction**: significantly lowers technical and financial barriers to large-scale 3D reconstruction and global digital Earth visualization.",
+  "primaryTopic": "spatial-3d",
+  "secondaryTopic": null,
+  "confidence": 0.85
+ },
+ {
+  "slug": "looped-world-models",
+  "summary": "Looped World Models (LoopWM) are the first looped architectures for world modeling, resolving the tension between faithful long-horizon simulation and the cost and compounding errors of deeper models. A parameter-shared transformer block iteratively refines latent environment states, with adaptive computation automatically scaling depth to match the complexity of each prediction step. The approach yields up to 100x parameter efficiency over conventional approaches.\n- **New scaling axis**: iterative latent depth is orthogonal to scaling model size and training data.\n- **Adaptive depth**: computation per step matches the complexity of the prediction, keeping deployment cheap without sacrificing simulation fidelity.",
+  "primaryTopic": "video-generation",
+  "secondaryTopic": "model-architecture",
+  "confidence": 0.75
+ },
+ {
+  "slug": "orca-the-world-is-in-your-mind",
+  "summary": "Orca is a general world foundation model that learns a unified world latent space from multimodal world signals, centered on Next-State-Prediction rather than isolated next-token, next-frame, or next-action objectives. It combines unconscious learning of dense natural state transitions from continuous video with conscious learning of sparse meaningful transitions via language-described events and VQA supervision, pretraining on 125K hours of video and 160M event annotations. With the backbone frozen, lightweight modality-specific decoders expose the latent through text generation, image prediction, and embodied action generation.\n- **Stronger latent, stronger readouts**: downstream performance scales with world latent quality, and Orca outperforms similar-sized specialized baselines.\n- **Two learning paradigms**: dense video transitions plus sparse event-level supervision build one shared world model.",
+  "primaryTopic": "video-generation",
+  "secondaryTopic": "vlm-architectures",
+  "confidence": 0.75
+ },
+ {
+  "slug": "kimi-k3-open-frontier-intelligence",
+  "summary": "Kimi K3 is a 2.8T-parameter Mixture-of-Experts model from Moonshot AI with 104 billion activated parameters, native vision capabilities, and a 1-million-token context window, released with full open weights. It is built on Kimi Delta Attention and Attention Residuals for information flow across sequence length and depth, plus Stable LatentMoE activating 16 of 896 routed experts per token — together delivering roughly 2.5x improvement in overall scaling efficiency over Kimi K2. Post-training spans general, agentic, and coding domains with multiple reasoning-effort levels.\n- **Million-token agentic RL**: infrastructure supports persistent rollout and sandbox states at million-token horizons.\n- **Frontier results**: consistently outperforms other evaluated open and proprietary models, while still trailing Claude Fable 5 and GPT-5.6 Sol.",
+  "primaryTopic": "long-context",
+  "secondaryTopic": "model-efficiency",
+  "confidence": 0.8
+ },
+ {
+  "slug": "gamma-world-generative-multi-agent-world-modeling-beyond-two-players",
+  "summary": "Gamma-World is NVIDIA's generative multi-agent world model for interactive simulation, extending interactive video generation beyond single-agent control to multiple players, robots, or embodied agents acting simultaneously in a shared space. Simplex Rotary Agent Encoding represents agents as vertices of a regular simplex in rotary angle space — a parameter-free, permutation-equivalent agent identity — while Sparse Hub Attention reduces cross-agent attention from quadratic to linear cost via learnable hub tokens. A full-context diffusion teacher is distilled into a causal student that generates temporal blocks with KV caching for real-time rollout at 24 FPS.\n- **Scales without retraining**: generalizes from two to four players with no additional training.\n- **Consistency gains**: improves video fidelity, action controllability, and inter-agent consistency over slot-based and dense-attention baselines.",
+  "primaryTopic": "video-generation",
+  "secondaryTopic": null,
+  "confidence": 0.9
+ },
+ {
+  "slug": "ai-can-learn-scientific-taste",
+  "summary": "This paper presents evidence that AI can learn scientific taste — the expert judgement to recognize and propose research ideas with long-term impact. The authors introduce Reinforcement Learning from Community Feedback (RLCF), first training a Scientific Judge on field- and time-matched pairs of high- versus low-citation papers, then a Scientific Thinker to propose ideas with high potential impact. The 30B Scientific Judge variant outperforms strong LLM baselines including GPT-5.4 Thinking.\n- **Generalizes forward**: the judge transfers to future-year papers, unseen fields, and other community metrics.\n- **Ideation with impact**: Scientific Thinker proposes research ideas judged higher-potential than baseline proposals.",
+  "primaryTopic": "science-medicine",
+  "secondaryTopic": "research-automation",
+  "confidence": 0.8
+ },
+ {
+  "slug": "agents-last-exam",
+  "summary": "Agents' Last Exam (ALE) is a benchmark for evaluating AI agents on long-horizon, economically valuable, real-world tasks with verifiable outcomes, developed with 250+ industry experts. It organizes non-physical industries against the O*NET / SOC 2018 federal occupational taxonomy into 13 industry clusters, 55 subfields, and 1K+ tasks. The hardest tier remains far from saturated: the average full pass rate stays below 1% across mainstream harness and backbone configurations.\n- **Living benchmark**: the task pool grows continuously as new workflows and industries are onboarded.\n- **GDP-relevant framing**: intended not as another leaderboard but as an instrument for closing the gap between benchmark success and economically meaningful deployment.",
+  "primaryTopic": "agent-benchmarks",
+  "secondaryTopic": null,
+  "confidence": 0.9
+ },
+ {
+  "slug": "demystifying-video-reasoning",
+  "summary": "This paper challenges the Chain-of-Frames assumption that reasoning in diffusion-based video models unfolds sequentially across frames, showing it instead emerges along the diffusion denoising steps. Qualitative analysis and targeted probing reveal a Chain-of-Steps process: models explore multiple candidate solutions in early denoising steps and progressively converge to a final answer, with emergent working memory, self-correction, and perception-before-action behaviors. Analysis of Diffusion Transformer layers shows middle layers conduct the key reasoning procedures.\n- **Training-free boost**: a proof-of-concept Training-Free Ensemble improves reasoning by combining latent trajectories from identical models with different random seeds.\n- **First systematic dissection**: the work grounds future research into video models as a new substrate for intelligence.",
+  "primaryTopic": "interpretability-analysis",
+  "secondaryTopic": "video-generation",
+  "confidence": 0.8
+ },
+ {
+  "slug": "dataflex-a-unified-framework-for-data-centric-dynamic-training-of-large",
+  "summary": "DataFlex is a unified framework for data-centric dynamic training of LLMs, built on LLaMA-Factory to bring sample selection, domain mixture adjustment, and sample reweighting into a single drop-in system. It replaces the isolated codebases and inconsistent interfaces that hinder reproducibility and fair comparison, unifying embedding extraction, inference, and gradient computation with support for large-scale settings like DeepSpeed ZeRO-3. Dynamic data selection consistently outperforms static full-data training on MMLU across Mistral-7B and Llama-3.2-3B.\n- **Mixture gains**: DoReMi and ODM improve both MMLU accuracy and corpus-level perplexity when pretraining Qwen2.5-1.5B on SlimPajama at 6B and 30B token scales.\n- **Faster too**: DataFlex achieves consistent runtime improvements over the original implementations.",
+  "primaryTopic": "data-curation",
+  "secondaryTopic": null,
+  "confidence": 0.9
+ },
+ {
+  "slug": "molmoact2-action-reasoning-models-for-real-world-deployment",
+  "summary": "MolmoAct2 is a fully open action reasoning model for robots, designed for the deployment criteria where closed frontier models, expensive hardware, and latency-heavy reasoning policies fall short. Its MolmoER backbone specializes in spatial and embodied reasoning via a specialize-then-rehearse recipe on a 3.3M-sample corpus, and the release includes OpenFAST, an open-weight action tokenizer trained on millions of trajectories across five embodiments. The architecture grafts a flow-matching continuous-action expert onto a discrete-token VLM through per-layer KV-cache conditioning.\n- **Largest open bimanual dataset**: MolmoAct2-BimanualYAM contributes 720 hours of teleoperated bimanual trajectories, alongside quality-filtered Franka (DROID) and SO100/101 subsets.\n- **Beats frontier ER**: MolmoER surpasses GPT-5 and Gemini Robotics ER-1.5 across 13 embodied-reasoning benchmarks; the full model outperforms Pi-05 across 7 simulation and real-world benchmarks.\n- **MolmoThink**: adaptive-depth reasoning re-predicts depth tokens only for scene regions that change between timesteps.",
+  "primaryTopic": "robot-policies",
+  "secondaryTopic": "vlm-architectures",
+  "confidence": 0.9
+ },
+ {
+  "slug": "opus-towards-efficient-and-principled-data-selection-in-large-language-model",
+  "summary": "OPUS (Optimizer-induced Projected Utility Selection) is a dynamic data selection framework that scores pretraining candidates in the optimizer-induced update space, projecting their effective updates onto a target direction from a stable, in-distribution proxy. Ghost technique with CountSketch and Boltzmann sampling for diversity keep the total overhead at 4.7% of compute. In pretraining of GPT-2 Large/XL on FineWeb and FineWeb-Edu with 30B tokens, OPUS outperforms industrial-level baselines and even full 200B-token training.\n- **Specialized domains**: continued pretraining of Qwen3-8B-Base on SciencePedia achieves superior performance with 0.5B tokens versus full training on 3B tokens.\n- **Composable**: combined with industrial-level static filters, OPUS further improves pre-training efficiency even with lower-quality data.",
+  "primaryTopic": "data-curation",
+  "secondaryTopic": "model-efficiency",
+  "confidence": 0.9
+ },
+ {
+  "slug": "fipo-eliciting-deep-reasoning-with-future-kl-influenced-policy-optimization",
+  "summary": "FIPO (Future-KL Influenced Policy Optimization) is a reinforcement learning algorithm that addresses GRPO-style training's coarse credit assignment, where outcome-based rewards distribute a global advantage uniformly across every token and fail to distinguish critical logical pivots from trivial tokens. It incorporates discounted future-KL divergence into the policy update, creating a dense advantage formulation that re-weights tokens by their influence on subsequent trajectory behavior. On Qwen2.5-32B, average chain-of-thought length extends from roughly 4,000 to over 10,000 tokens and AIME 2024 Pass@1 accuracy rises from 50.0% to a peak of 58.0%.\n- **Beats strong baselines**: outperforms DeepSeek-R1-Zero-Math-32B (around 47.0%) and o1-mini (approximately 56.0%).\n- **Open training system**: built on the verl framework.",
+  "primaryTopic": "rl-for-reasoning",
+  "secondaryTopic": "reasoning-methods",
+  "confidence": 0.9
+ },
+ {
+  "slug": "a-s-e-a-repository-level-benchmark-for-evaluating-security-in-ai-generated-code",
+  "summary": "A.S.E (AI Code Generation Security Evaluation) is a repository-level benchmark for assessing the security of AI-generated code under conditions that mirror real-world AI-assisted programming, where snippet-level benchmarks fall short. Evaluations of leading LLMs reveal that current models still struggle with secure coding: repository-level complexity challenges models that typically perform well on snippet-level tasks, and a larger reasoning budget does not necessarily lead to better code generation. The results help developers identify the most suitable models for practical tasks.\n- **Real-world shape**: tasks reflect production AI programming scenarios rather than isolated functions.\n- **Reasoning caveat**: more thinking does not reliably produce more secure code.",
+  "primaryTopic": "coding-agents",
+  "secondaryTopic": "safety-alignment",
+  "confidence": 0.85
+ },
+ {
+  "slug": "carla-air-fly-drones-inside-a-carla-world-a-unified-infrastructure-for-air",
+  "summary": "CARLA-Air is an open-source infrastructure that unifies high-fidelity urban driving and physics-accurate multirotor flight within a single Unreal Engine process, avoiding the synchronization overhead and spatial-temporal inconsistency of bridge-based co-simulation. It preserves CARLA and AirSim native Python APIs plus ROS 2 interfaces for zero-modification code reuse, and synchronously captures up to 18 sensor modalities across all platforms at each physics tick. Environments combine rule-compliant traffic, socially-aware pedestrians, and aerodynamically consistent UAV dynamics.\n- **Air-ground workloads**: supports cooperation, embodied navigation, vision-language action, multi-modal perception and dataset construction, and RL policy training.\n- **Revives AirSim**: carries the archived flight stack forward on modern infrastructure, with prebuilt binaries and full source released.",
+  "primaryTopic": "robot-policies",
+  "secondaryTopic": null,
+  "confidence": 0.8
+ },
+ {
+  "slug": "mhc-manifold-constrained-hyper-connections",
+  "summary": "mHC (Manifold-Constrained Hyper-Connections) is DeepSeek's answer to the instability introduced by Hyper-Connections, which expand the residual stream width and diversify connectivity but sacrifice the identity mapping property that makes residual connections stable. The framework projects the HC residual connection space onto a specific manifold to restore identity mapping, paired with rigorous infrastructure optimization for efficiency. Experiments show tangible performance improvements and superior scalability when training at scale.\n- **Stable at scale**: addresses the severe training instability and memory-access overhead of prior HC-style designs.\n- **Flexible extension**: a practical framework that informs topological architecture design for future foundation models.",
+  "primaryTopic": "model-architecture",
+  "secondaryTopic": null,
+  "confidence": 0.9
+ },
+ {
+  "slug": "rethinking-generalization-in-reasoning-sft-a-conditional-analysis-on",
+  "summary": "This paper revisits the prevailing narrative that supervised fine-tuning memorizes while reinforcement learning generalizes, finding that cross-domain generalization in reasoning SFT with long chain-of-thought supervision is conditional rather than absent. Some reported failures are under-optimization artifacts: cross-domain performance first degrades before recovering and improving with extended training, so short training checkpoints underestimate generalization. Data quality and structure matter — low-quality solutions broadly hurt generalization, while verified long-CoT traces yield consistent cross-domain gains.\n- **Capability is essential**: stronger models internalize transferable procedural patterns such as backtracking even from a toy arithmetic game, while weaker ones imitate surface verbosity.\n- **Asymmetric cost**: reasoning improves while safety degrades, reframing the question as one of conditions and trade-offs.",
+  "primaryTopic": "interpretability-analysis",
+  "secondaryTopic": "data-curation",
+  "confidence": 0.8
+ },
+ {
+  "slug": "hrm-text-efficient-pretraining-beyond-scaling",
+  "summary": "HRM-Text replaces standard Transformers with a Hierarchical Recurrent Model that decouples computation into slow-evolving strategic and fast-evolving execution layers, inspired by the multi-timescale organization of the brain's frontoparietal loop. Stabilized by MagicNorm and warmup deep credit assignment, it trains exclusively on instruction-response pairs with a task-completion objective and PrefixLM masking instead of raw-text pretraining. A 1B-parameter model trained from scratch on only 40 billion unique tokens and a $1,500 budget achieves 60.7% on MMLU, 81.9% on ARC-C, 82.2% on DROP, 84.5% on GSM8K, and 56.2% on MATH.\n- **Radical efficiency**: roughly 100-900x fewer training tokens and 96-432x less estimated compute than standard baselines, performing competitively with 2-7B open models.\n- **Existence proof**: co-designing architecture and objective radically cuts the compute-to-performance ratio of pretraining from scratch.",
+  "primaryTopic": "model-architecture",
+  "secondaryTopic": "model-efficiency",
+  "confidence": 0.85
+ },
+ {
+  "slug": "green-vla-staged-vision-language-action-model-for-generalist-robots",
+  "summary": "Green-VLA is a staged vision-language-action framework for real-world deployment on the Green humanoid robot, following a five-stage curriculum from foundational VLMs and multimodal grounding through multi-embodiment pretraining, embodiment-specific adaptation, and reinforcement-learning policy alignment. A unified, embodiment-aware action interface lets a single policy control humanoids, mobile manipulators, and fixed-base arms, trained on 3,000 hours of demonstrations with temporal alignment and quality filtering. Inference adds episode-progress prediction, out-of-distribution detection, and joint-prediction-based guidance for safety and precise target selection.\n- **Generalization holds**: strong results on Simpler BRIDGE WidowX and CALVIN ABC-D alongside real-robot evaluations.\n- **RL alignment pays off**: gains in success rate, robustness, and long-horizon efficiency.",
+  "primaryTopic": "robot-policies",
+  "secondaryTopic": null,
+  "confidence": 0.85
+ },
+ {
+  "slug": "dinov3",
+  "summary": "DINOv3 is Meta AI / FAIR's self-supervised vision foundation model, scaling both dataset and model size through careful data preparation, design, and optimization, and introducing Gram anchoring to address the long-unsolved degradation of dense feature maps during long training schedules. Post-hoc strategies further enhance flexibility across resolution, model size, and alignment with text. The result is a versatile model that outperforms the specialized state of the art across a broad range of settings without fine-tuning.\n- **Dense features that last**: Gram anchoring keeps dense feature quality stable over long training.\n- **A whole suite**: the DINOv3 family covers diverse resource constraints and deployment scenarios, learning from natural to aerial images with a single algorithm.",
+  "primaryTopic": "vlm-architectures",
+  "secondaryTopic": null,
+  "confidence": 0.8
+ },
+ {
+  "slug": "incoder-32b-code-foundation-model-for-industrial-scenarios",
+  "summary": "InCoder-32B (Industrial-Coder-32B) is the first 32B-parameter code foundation model unifying code intelligence across chip design, GPU kernel optimization, embedded systems, compiler optimization, and 3D modeling, targeting industrial scenarios where general code LLMs degrade. Training moves from general code pretraining through curated industrial code annealing, mid-training that progressively extends context from 8K to 128K tokens with synthetic industrial reasoning data, and post-training with execution-grounded verification. Evaluation spans 14 mainstream general code benchmarks and 9 industrial benchmarks across 4 specialized domains.\n- **General plus industrial**: highly competitive on general tasks while establishing strong open-source baselines across industrial domains.\n- **Hardware-aware coding**: built for reasoning about hardware semantics, specialized language constructs, and strict resource constraints.",
+  "primaryTopic": "coding-agents",
+  "secondaryTopic": null,
+  "confidence": 0.85
+ },
+ {
+  "slug": "program-as-weights-a-programming-paradigm-for-fuzzy-functions",
+  "summary": "Program-as-Weights (PAW) introduces fuzzy-function programming: compiling natural-language specifications of rule-resistant tasks — alerting on important log lines, repairing malformed JSON, ranking search results by intent — into compact, locally executable neural artifacts instead of calling LLM APIs. A 4B compiler trained on FuzzyBench, a released 10M-example dataset, emits parameter-efficient adapters for a frozen, lightweight interpreter. A 0.6B Qwen3 interpreter executing PAW programs matches direct prompting of Qwen3-32B while using roughly one fiftieth of the inference memory at 30 tokens/s on a MacBook M3.\n- **Tool builder, not problem solver**: the foundation model is invoked once per function definition and produces a reusable artifact whose subsequent calls are cheap and offline.\n- **Locality and reproducibility**: no API round-trips, no per-call price, predictable behavior.",
+  "primaryTopic": "model-efficiency",
+  "secondaryTopic": "coding-agents",
+  "confidence": 0.8
+ },
+ {
+  "slug": "abot-world-0-infinite-interactive-world-rollout-on-a-single-desktop-gpu",
+  "summary": "ABot-World-0 is an action-conditioned video world model for real-time, long-horizon closed-loop interaction, supported by multi-source data infrastructure spanning AAA games, simulation engines, and internet videos. A bidirectional action-conditioned teacher is progressively distilled into a causal student through teacher forcing and ODE distillation, with LongForcing aligning long student self-rollouts to an extended-horizon teacher to mitigate autoregressive drift. Raw keyboard actions provide a unified control interface, while reference-character memory preserves identity consistency in third-person rollouts.\n- **Desktop-class deployment**: streams 720P video at up to 16 FPS on a single NVIDIA RTX 5090, with 1.2s action-to-first-frame latency and approximately 19GiB peak VRAM in low-bit configurations.\n- **Quality pipeline**: WorldExplorer agent-driven collection plus 14 deterministic checks, VLM-based assessment, and synchronized action and text annotation.",
+  "primaryTopic": "video-generation",
+  "secondaryTopic": null,
+  "confidence": 0.85
+ },
+ {
+  "slug": "from-code-foundation-models-to-agents-and-applications-a-comprehensive-survey",
+  "summary": "This comprehensive survey and practical guide maps the complete life cycle of code intelligence, from data curation through code pre-training, supervised fine-tuning, reinforcement learning, and autonomous coding agents, backed by analytic and probing experiments. It traces the field's evolution from rule-based systems to Transformer models achieving over 95% success on benchmarks like HumanEval, critically examining general LLMs (GPT-4, Claude, LLaMA) alongside code-specialized models (StarCoder, Code LLaMA, DeepSeek-Coder, QwenCoder).\n- **Research-practice gap**: covers code correctness, security, contextual awareness of large codebases, and integration with development workflows where academic benchmarks diverge from deployment.\n- **Practical guidance**: scaling laws, framework selection, hyperparameter sensitivity, and dataset comparisons.",
+  "primaryTopic": "coding-agents",
+  "secondaryTopic": null,
+  "confidence": 0.85
+ },
+ {
+  "slug": "qwen-ui-agent-technical-report-toward-next-generation-real-world-centric",
+  "summary": "Qwen-UI-Agent is a real-world-centric foundation GUI agent spanning mobile, computer-use, web, and DeepSearch environments, combining diverse sandbox environments with a large-scale real-device mobile runtime. Its unified action space interleaves GUI operations with CLI execution and generates batched actions in a single model turn, while an AutoResearch-style data flywheel uses agents to construct tasks, diagnose failures, and plan iterations. Online RL supports training on trajectories exceeding 100 turns with over 10,000 concurrent environments accelerating rollout.\n- **Mobile SOTA**: 82.1% on MobileWorld, 92.2% on MobileWorld-Real, and 97.5% on AndroidDaily.\n- **Cross-platform strength**: 79.5% on OSWorld-Verified, 73.6% on WebArena, and 81.5% on ScreenSpot-Pro, competitive with frontier models including Opus 4.8, Gemini 3.1 Pro, and GPT-5.6 Sol.",
+  "primaryTopic": "agent-benchmarks",
+  "secondaryTopic": "agent-training",
+  "confidence": 0.85
+ }
+]

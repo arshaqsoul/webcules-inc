@@ -1,0 +1,702 @@
+[
+ {
+  "arxivId": "2602.11858",
+  "slug": "zooming-without-zooming-region-to-image-distillation-for-fine-grained",
+  "title": "Zooming without Zooming: Region-to-Image Distillation for Fine-Grained Multimodal Perception",
+  "authors": [
+   "Lai Wei",
+   "Liangbo He",
+   "Jun Lan",
+   "Lingzhong Dong",
+   "Yutong Cai",
+   "Siyuan Li"
+  ],
+  "abstract": "Multimodal Large Language Models (MLLMs) excel at broad visual understanding but still struggle with fine-grained perception, where decisive evidence is small and easily overwhelmed by global context. Recent \"Thinking-with-Images\" methods alleviate this by iteratively zooming in and out regions of interest during inference, but incur high latency due to repeated tool calls and visual re-encoding. To address this, we propose Region-to-Image Distillation, which transforms zooming from an inference-time tool into a training-time primitive, thereby internalizing the benefits of agentic zooming into a single forward pass of an MLLM. In particular, we first zoom in to micro-cropped regions to let strong teacher models generate high-quality VQA data, and then distill this region-grounded supervision back to the full image. After training on such data, the smaller student model improves \"single-glance\" fine-grained perception without tool use. To rigorously evaluate this capability, we further present ZoomBench, a hybrid-annotated benchmark of 845 VQA data spanning six fine-grained perceptual dimensions, together with a dual-view protocol that quantifies the global--regional \"zooming gap\". Experiments show that our models achieve leading performance across multiple fine-grained perception benchmarks, and also improve general multimodal cognition on benchmarks such as visual reasoning and GUI agents. We further discuss when \"Thinking-with-Images\" is necessary versus when its gains can be distilled into a single forward pass. Our code is available at https://github.com/inclusionAI/Zooming-without-Zooming.",
+  "publishedAt": "2026-02-12T12:00:35Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI",
+   "cs.CL",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 61,
+  "citationCount": 23,
+  "githubStars": 184,
+  "pageCount": 31
+ },
+ {
+  "arxivId": "2603.16871",
+  "slug": "worldcam-interactive-autoregressive-3d-gaming-worlds-with-camera-pose-as-a",
+  "title": "WorldCam: Interactive Autoregressive 3D Gaming Worlds with Camera Pose as a Unifying Geometric Representation",
+  "authors": [
+   "Jisu Nam",
+   "Yicong Hong",
+   "Chun-Hao Paul Huang",
+   "Feng Liu",
+   "JoungBin Lee",
+   "Jiyoung Kim"
+  ],
+  "abstract": "Recent advances in video diffusion transformers have enabled interactive gaming world models that allow users to explore generated environments over extended horizons. However, existing approaches struggle with precise action control and long-horizon 3D consistency. Most prior works treat user actions as abstract conditioning signals, overlooking the fundamental geometric coupling between actions and the 3D world, whereby actions induce relative camera motions that accumulate into a global camera pose within a 3D world. In this paper, we establish camera pose as a unifying geometric representation to jointly ground immediate action control and long-term 3D consistency. First, we define a physics-based continuous action space and represent user inputs in the Lie algebra to derive precise 6-DoF camera poses, which are injected into the generative model via a camera embedder to ensure accurate action alignment. Second, we use global camera poses as spatial indices to retrieve relevant past observations, enabling geometrically consistent revisiting of locations during long-horizon navigation. To support this research, we introduce a large-scale dataset comprising 3,000 minutes of authentic human gameplay annotated with camera trajectories and textual descriptions. Extensive experiments show that our approach substantially outperforms state-of-the-art interactive gaming world models in action controllability, long-horizon visual quality, and 3D spatial consistency.",
+  "publishedAt": "2026-03-17T17:59:56Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 61,
+  "citationCount": 6,
+  "githubStars": 179,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2605.11739",
+  "slug": "learning-to-foresee-unveiling-the-unlocking-efficiency-of-on-policy-distillation",
+  "title": "Learning to Foresee: Unveiling the Unlocking Efficiency of On-Policy Distillation",
+  "authors": [
+   "Yuchen Cai",
+   "Ding Cao",
+   "Liang Lin",
+   "Chunxi Luo",
+   "Xin Xu",
+   "Kai Yang"
+  ],
+  "abstract": "On-policy distillation (OPD) has emerged as an efficient post-training paradigm for large language models. However, existing studies largely attribute this advantage to denser and more stable supervision, while the parameter-level mechanisms underlying OPD's efficiency remain poorly understood. In this work, we argue that OPD's efficiency stems from a form of ``foresight'': it establishes a stable update trajectory toward the final model early in training. This foresight manifests in two aspects. First, at the \\textbf{Module-Allocation Level}, OPD identifies regions with low marginal utility and concentrates updates on modules that are more critical to reasoning. Second, at the \\textbf{Update-Direction Level}, OPD exhibits stronger low-rank concentration, with its dominant subspaces aligning closely with the final update subspace early in training. Building on these findings, we propose \\textbf{EffOPD}, a plug-and-play acceleration method that speeds up OPD by adaptively selecting an extrapolation step size and moving along the current update direction. EffOPD requires no additional trainable modules or complex hyperparameter tuning, and achieves an average training acceleration of $3\\times$ while maintaining comparable final performance. Overall, our findings provide a parameter-dynamics perspective for understanding the efficiency of OPD and offer practical insights for designing more efficient post-training methods for large language models.",
+  "publishedAt": "2026-05-12T08:19:15Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 61,
+  "citationCount": 4,
+  "githubStars": 73,
+  "pageCount": 55
+ },
+ {
+  "arxivId": "2605.21850",
+  "slug": "acc-compiling-agent-trajectories-for-long-context-training",
+  "title": "ACC: Compiling Agent Trajectories for Long-Context Training",
+  "authors": [
+   "Qisheng Su",
+   "Zhen Fang",
+   "Shiting Huang",
+   "Yu Zeng",
+   "Yiming Zhao",
+   "Kou Shi"
+  ],
+  "abstract": "Recent development of agents has renewed demand for long-context reasoning capacity of LLMs. However, training LLMs for this capacity requires costly long-document curation or heuristic context synthesis. We observe that agents produce massive trajectories when solving problems, invoking tools and receiving environment observations across many turns. The evidence needed to answer the original question is thus scattered throughout these turns, requiring integration of distant context segments. Nevertheless, standard agent SFT masks tool responses and only trains turn-level tool selection, creating a supervision blind spot where these scattered signals go unused. We propose Agent Context Compilation (ACC), which converts trajectories from search, software engineering, and database querying agents into long-context QA pairs that combine the original question with tool responses and environment observations gathered across multiple turns, training the model to answer directly without tool use. This makes the dependencies between the question and the evidence explicit, enabling direct supervision of long-context reasoning over distant segments without additional annotation. ACC is a simple but effective approach that can be combined with any existing long-context extension or training method, providing scalable supervised fine-tuning data. We validate ACC on long-range dependency modeling tasks through MRCR and GraphWalks, challenging benchmarks requiring cross-turn coreference resolution and graph traversal over extended contexts. Training Qwen3-30B-A3B with ACC achieves 68.3 on MRCR (+18.1) and 77.5 on GraphWalks (+7.6), results comparable to Qwen3-235B-A22B, while preserving general capabilities on GPQA, MMLU-Pro, AIME, and IFEval. Further mechanism analysis reveals that the ACC-trained model exhibits task-adaptive attention restructuring and expert specialization.",
+  "publishedAt": "2026-05-21T00:47:03Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 61,
+  "citationCount": 0,
+  "githubStars": null,
+  "pageCount": 17
+ },
+ {
+  "arxivId": "2607.18217",
+  "slug": "homie-human-object-centric-video-personalization-via-multimodal-intelligent",
+  "title": "HOMIE: Human-object Centric Video Personalization via Multimodal Intelligent Enhancement",
+  "authors": [
+   "Yiyang Cai",
+   "Nan Chen",
+   "Rongchang Xie",
+   "Junwen Pan",
+   "Chunyang Jiang",
+   "Cheng Chen"
+  ],
+  "abstract": "Human-object centric video personalization (HOCVP) is a core task within subject-driven video generation. However, existing methods suffer from two key limitations. First, most approaches focusing on inter-subject personalization still struggle to strike a balance between high subject fidelity and accurate interaction patterns between humans and diverse objects, especially when objects represent abstract concepts such as logos. Second, while intra-subject references (e.g., OCR maps, multi-view inputs) are expected to enhance subject fidelity, most existing works lack mechanisms to understand such latent correspondence. To address both challenges, we propose HOMIE, an HOCVP framework that tackles both inter- and intra-subject input settings in a unified manner. Compared to previous approaches, HOMIE proposes a better MLLM integration strategy to extract knowledge of reference-level relationships without compromising the controllability of text encoders or incurring costly re-alignment. Specifically, we introduce global multimodal guidance within self-attention to better align MLLM-derived semantic features with VAE tokens. Furthermore, we propose modality-reference embedding to differentiate tokens from MLLM features and VAE tokens and associate intra-subject reference image tokens. Extensive experiments validate that our method achieves state-of-the-art performance across various HOCVP tasks. Project Page: https://yiyangcai.github.io/homie-page.github.io/",
+  "publishedAt": "2026-07-20T17:51:35Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 61,
+  "citationCount": 0,
+  "githubStars": 166,
+  "pageCount": 28
+ },
+ {
+  "arxivId": "2508.04825",
+  "slug": "voost-a-unified-and-scalable-diffusion-transformer-for-bidirectional-virtual",
+  "title": "Voost: A Unified and Scalable Diffusion Transformer for Bidirectional Virtual Try-On and Try-Off",
+  "authors": [
+   "Seungyong Lee",
+   "Jeong-gi Kwak"
+  ],
+  "abstract": "Virtual try-on aims to synthesize a realistic image of a person wearing a target garment, but accurately modeling garment-body correspondence remains a persistent challenge, especially under pose and appearance variation. In this paper, we propose Voost - a unified and scalable framework that jointly learns virtual try-on and try-off with a single diffusion transformer. By modeling both tasks jointly, Voost enables each garment-person pair to supervise both directions and supports flexible conditioning over generation direction and garment category, enhancing garment-body relational reasoning without task-specific networks, auxiliary losses, or additional labels. In addition, we introduce two inference-time techniques: attention temperature scaling for robustness to resolution or mask variation, and self-corrective sampling that leverages bidirectional consistency between tasks. Extensive experiments demonstrate that Voost achieves state-of-the-art results on both try-on and try-off benchmarks, consistently outperforming strong baselines in alignment accuracy, visual fidelity, and generalization.",
+  "publishedAt": "2025-08-06T19:10:58Z",
+  "primaryArxivCategory": [
+   "cs.GR",
+   "cs.AI",
+   "cs.CV",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 60,
+  "citationCount": 12,
+  "githubStars": 340,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2508.10975",
+  "slug": "beyondweb-lessons-from-scaling-synthetic-data-for-trillion-scale-pretraining",
+  "title": "BeyondWeb: Lessons from Scaling Synthetic Data for Trillion-scale Pretraining",
+  "authors": [
+   "DatologyAI",
+   ":",
+   "Pratyush Maini",
+   "Vineeth Dorna",
+   "Parth Doshi",
+   "Aldo Carranza"
+  ],
+  "abstract": "Recent advances in large language model (LLM) pretraining have shown that simply scaling data quantity eventually leads to diminishing returns, hitting a data wall. In response, the use of synthetic data for pretraining has emerged as a promising paradigm for pushing the frontier of performance. Despite this, the factors affecting synthetic data quality remain poorly understood. In this work, we introduce BeyondWeb, a synthetic data generation framework that produces high-quality synthetic data for pretraining. BeyondWeb significantly extends the capabilities of traditional web-scale datasets, outperforming state-of-the-art synthetic pretraining datasets such as Cosmopedia and Nemotron-CC's high-quality synthetic subset (Nemotron-Synth) by up to 5.1 percentage points (pp) and 2.6pp, respectively, when averaged across a suite of 14 benchmark evaluations. It delivers up to 7.7x faster training than open web data and 2.7x faster than Nemotron-Synth. Remarkably, a 3B model trained for 180B tokens on BeyondWeb outperforms an 8B model trained for the same token budget on Cosmopedia. We also present several insights from BeyondWeb on synthetic data for pretraining: what drives its benefits, which data to rephrase and how, and the impact of model size and family on data quality. Overall, our work shows that there's no silver bullet for generating high-quality synthetic pretraining data. The best outcomes require jointly optimizing many factors, a challenging task that requires rigorous science and practical expertise. Naive approaches can yield modest improvements, potentially at great cost, while well-executed methods can yield transformative improvements, as exemplified by BeyondWeb.",
+  "publishedAt": "2025-08-14T17:55:47Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 60,
+  "citationCount": 16,
+  "githubStars": null,
+  "pageCount": 29
+ },
+ {
+  "arxivId": "2509.07969",
+  "slug": "mini-o3-scaling-up-reasoning-patterns-and-interaction-turns-for-visual-search",
+  "title": "Mini-o3: Scaling Up Reasoning Patterns and Interaction Turns for Visual Search",
+  "authors": [
+   "Xin Lai",
+   "Junyi Li",
+   "Wei Li",
+   "Tao Liu",
+   "Tianjian Li",
+   "Hengshuang Zhao"
+  ],
+  "abstract": "Recent advances in large multimodal models have leveraged image-based tools with reinforcement learning to tackle visual problems. However, existing open-source approaches often exhibit monotonous reasoning patterns and allow only a limited number of interaction turns, making them inadequate for difficult tasks that require trial-and-error exploration. In this work, we address this limitation by scaling up tool-based interactions and introduce Mini-o3, a system that executes deep, multi-turn reasoning -- spanning tens of steps -- and achieves state-of-the-art performance on challenging visual search tasks. Our recipe for reproducing OpenAI o3-style behaviors comprises three key components. First, we construct the Visual Probe Dataset, a collection of thousands of challenging visual search problems designed for exploratory reasoning. Second, we develop an iterative data collection pipeline to obtain cold-start trajectories that exhibit diverse reasoning patterns, including depth-first search, trial-and-error, and goal maintenance. Third, we propose an over-turn masking strategy that prevents penalization of over-turn responses (those that hit the maximum number of turns) during reinforcement learning, thereby balancing training-time efficiency with test-time scalability. Despite training with an upper bound of only six interaction turns, our model generates trajectories that naturally scale to tens of turns at inference time, with accuracy improving as the number of turns increases. Extensive experiments demonstrate that Mini-o3 produces rich reasoning patterns and deep thinking paths, effectively solving challenging visual search problems.",
+  "publishedAt": "2025-09-09T17:54:21Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 60,
+  "citationCount": 101,
+  "githubStars": 424,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2509.26328",
+  "slug": "fast-dllm-v2-efficient-block-diffusion-llm",
+  "title": "Fast-dLLM v2: Efficient Block-Diffusion LLM",
+  "authors": [
+   "Chengyue Wu",
+   "Hao Zhang",
+   "Shuchen Xue",
+   "Shizhe Diao",
+   "Yonggan Fu",
+   "Zhijian Liu"
+  ],
+  "abstract": "Autoregressive (AR) large language models (LLMs) have achieved remarkable performance across a wide range of natural language tasks, yet their inherent sequential decoding limits inference efficiency. In this work, we propose Fast-dLLM v2, a carefully designed block diffusion language model (dLLM) that efficiently adapts pretrained AR models into dLLMs for parallel text generation, requiring only approximately 1B tokens of fine-tuning. This represents a 500x reduction in training data compared to full-attention diffusion LLMs such as Dream (580B tokens), while preserving the original model's performance. Our approach introduces a novel training recipe that combines a block diffusion mechanism with a complementary attention mask, enabling blockwise bidirectional context modeling without sacrificing AR training objectives. To further accelerate decoding, we design a hierarchical caching mechanism: a block-level cache that stores historical context representations across blocks, and a sub-block cache that enables efficient parallel generation within partially decoded blocks. Coupled with our parallel decoding pipeline, Fast-dLLM v2 achieves up to 2.5x speedup over standard AR decoding without compromising generation quality. Extensive experiments across diverse benchmarks demonstrate that Fast-dLLM v2 matches or surpasses AR baselines in accuracy, while delivering state-of-the-art efficiency among dLLMs - marking a significant step toward the practical deployment of fast and accurate LLMs. Code and model will be publicly released.",
+  "publishedAt": "2025-09-30T14:40:18Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": "NVIDIA",
+  "hfUpvotes": 60,
+  "citationCount": 114,
+  "githubStars": 1069,
+  "pageCount": 17
+ },
+ {
+  "arxivId": "2510.00938",
+  "slug": "large-reasoning-models-learn-better-alignment-from-flawed-thinking",
+  "title": "Large Reasoning Models Learn Better Alignment from Flawed Thinking",
+  "authors": [
+   "ShengYun Peng",
+   "Eric Smith",
+   "Ivan Evtimov",
+   "Song Jiang",
+   "Pin-Yu Chen",
+   "Hongyuan Zhan"
+  ],
+  "abstract": "Large reasoning models (LRMs) \"think\" by generating structured chain-of-thought (CoT) before producing a final answer, yet they still lack the ability to reason critically about safety alignment and are easily biased when a flawed premise is injected into their thought process. We propose RECAP (Robust Safety Alignment via Counter-Aligned Prefilling), a principled reinforcement learning (RL) method for post-training that explicitly teaches models to override flawed reasoning trajectories and reroute to safe and helpful responses. RECAP trains on a mixture of synthetically generated counter-aligned CoT prefills and standard prompts, requires no additional training cost or modifications beyond vanilla reinforcement learning from human feedback (RLHF), and substantially improves safety and jailbreak robustness, reduces overrefusal, and preserves core reasoning capability -- all while maintaining inference token budget. Extensive analysis shows that RECAP-trained models engage in self-reflection more frequently and remain robust under adaptive attacks, preserving safety even after repeated attempts to override their reasoning.",
+  "publishedAt": "2025-10-01T14:15:43Z",
+  "primaryArxivCategory": [
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 60,
+  "citationCount": 10,
+  "githubStars": null,
+  "pageCount": 28
+ },
+ {
+  "arxivId": "2510.13795",
+  "slug": "bee-a-high-quality-corpus-and-full-stack-suite-to-unlock-advanced-fully-open",
+  "title": "Bee: A High-Quality Corpus and Full-Stack Suite to Unlock Advanced Fully Open MLLMs",
+  "authors": [
+   "Yi Zhang",
+   "Bolin Ni",
+   "Xin-Sheng Chen",
+   "Heng-Rui Zhang",
+   "Yongming Rao",
+   "Houwen Peng"
+  ],
+  "abstract": "Fully open multimodal large language models (MLLMs) currently lag behind proprietary counterparts, primarily due to a significant gap in data quality for supervised fine-tuning (SFT). Existing open-source datasets are often plagued by widespread noise and a critical deficit in complex reasoning data, such as Chain-of-Thought (CoT), which hinders the development of advanced model capabilities. Addressing these challenges, our work makes three primary contributions. First, we introduce Honey-Data-15M, a new SFT dataset comprising approximately 15 million QA pairs, processed through multiple cleaning techniques and enhanced with a novel dual-level (short and long) CoT enrichment strategy. Second, we introduce HoneyPipe, the data curation pipeline, and its underlying framework DataStudio, providing the community with a transparent and adaptable methodology for data curation that moves beyond static dataset releases. Finally, to validate our dataset and pipeline, we train Bee-8B, an 8B model on Honey-Data-15M. Experiments show that Bee-8B establishes a new state-of-the-art (SOTA) for fully open MLLMs, achieving performance that is competitive with, and in some cases surpasses, recent semi-open models such as InternVL3.5-8B. Our work delivers to the community a suite of foundational resources, including: the Honey-Data-15M corpus; the full-stack suite comprising HoneyPipe and DataStudio; training recipes; an evaluation harness; and the model weights. This effort demonstrates that a principled focus on data quality is a key pathway to developing fully open MLLMs that are highly competitive with their semi-open counterparts.",
+  "publishedAt": "2025-10-15T17:52:59Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 60,
+  "citationCount": 25,
+  "githubStars": null,
+  "pageCount": 68
+ },
+ {
+  "arxivId": "2511.02779",
+  "slug": "when-visualizing-is-the-first-step-to-reasoning-mira-a-benchmark-for-visual",
+  "title": "When Visualizing is the First Step to Reasoning: MIRA, a Benchmark for Visual Chain-of-Thought",
+  "authors": [
+   "Yiyang Zhou",
+   "Haoqin Tu",
+   "Zijun Wang",
+   "Zeyu Wang",
+   "Niklas Muennighoff",
+   "Fan Nie"
+  ],
+  "abstract": "We propose MIRA, a new benchmark designed to evaluate models in scenarios where generating intermediate visual images is essential for successful reasoning. Unlike traditional CoT methods that rely solely on text, tasks in MIRA require models to generate and utilize intermediate images - such as sketches, structural diagrams, or path drawings - to guide their reasoning process. This setup closely mirrors how humans solve complex problems through \"drawing to think\". To solve this, MIRA focuses on tasks that are intrinsically challenging and involve complex structures, spatial relationships, or reasoning steps that are difficult to express through language alone. To ensure that our evaluation data is of high-quality, we include 546 multimodal problems, annotated with intermediate visual images and final answers. We also propose a unified evaluation protocol for MIRA that spans three levels of evaluation input: direct input with image and question only, text-only CoT input with image and thinking prompts, and Visual-CoT input with both annotated image clues and textual thinking prompts. To probe the upper bound of model capacity on our benchmark, we also report pass@k and majority voting accuracies under different k settings. Experimental results show that existing multimodal large language models, including strongest private models as well as strong open-weight models, perform poorly when relying solely on textual prompts. However, when intermediate visual cues are provided, model performance improves consistently, yielding an average relative gain of 33.7% across all models and tasks. We also probe the upper bound by expanding the search space and designing textual prompts aligned with Visual-CoT, but both yield only limited improvements compared to our Visual-CoT setting. These results underscore the critical role of imagined visual information in enabling successful reasoning on MIRA.",
+  "publishedAt": "2025-11-04T18:00:51Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 60,
+  "citationCount": 10,
+  "githubStars": null,
+  "pageCount": 28
+ },
+ {
+  "arxivId": "2511.15848",
+  "slug": "step-audio-r1-technical-report",
+  "title": "Step-Audio-R1 Technical Report",
+  "authors": [
+   "Fei Tian",
+   "Xiangyu Tony Zhang",
+   "Yuxin Zhang",
+   "Haoyang Zhang",
+   "Yuxin Li",
+   "Daijiao Liu"
+  ],
+  "abstract": "Recent advances in reasoning models have demonstrated remarkable success in text and vision domains through extended chain-of-thought deliberation. However, a perplexing phenomenon persists in audio language models: they consistently perform better with minimal or no reasoning, raising a fundamental question - can audio intelligence truly benefit from deliberate thinking? We introduce Step-Audio-R1, the first audio reasoning model that successfully unlocks reasoning capabilities in the audio domain. Through our proposed Modality-Grounded Reasoning Distillation (MGRD) framework, Step-Audio-R1 learns to generate audio-relevant reasoning chains that genuinely ground themselves in acoustic features rather than hallucinating disconnected deliberations. Our model exhibits strong audio reasoning capabilities, surpassing Gemini 2.5 Pro and achieving performance comparable to the state-of-the-art Gemini 3 Pro across comprehensive audio understanding and reasoning benchmarks spanning speech, environmental sounds, and music. These results demonstrate that reasoning is a transferable capability across modalities when appropriately anchored, transforming extended deliberation from a liability into a powerful asset for audio intelligence. By establishing the first successful audio reasoning model, Step-Audio-R1 opens new pathways toward building truly multimodal reasoning systems that think deeply across all sensory modalities.",
+  "publishedAt": "2025-11-19T20:12:50Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL",
+   "cs.SD"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 60,
+  "citationCount": 35,
+  "githubStars": null,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2512.07525",
+  "slug": "beyond-real-imaginary-extension-of-rotary-position-embeddings-for-long-context",
+  "title": "Beyond Real: Imaginary Extension of Rotary Position Embeddings for Long-Context LLMs",
+  "authors": [
+   "Xiaoran Liu",
+   "Yuerong Song",
+   "Zhigeng Liu",
+   "Zengfeng Huang",
+   "Qipeng Guo",
+   "Zhaoxiang Liu"
+  ],
+  "abstract": "Rotary Position Embeddings (RoPE) have become a standard for encoding sequence order in Large Language Models (LLMs) by applying rotations to query and key vectors in the complex plane. Standard implementations, however, utilize only the real component of the complex-valued dot product for attention score calculation. This simplification discards the imaginary component, which contains valuable phase information, leading to a potential loss of relational details crucial for modeling long-context dependencies. In this paper, we propose an extension that re-incorporates this discarded imaginary component. Our method leverages the full complex-valued representation to create a dual-component attention score. We theoretically and empirically demonstrate that this approach enhances the modeling of long-context dependencies by preserving more positional information. Furthermore, evaluations on a suite of long-context language modeling benchmarks show that our method consistently improves performance over the standard RoPE, with the benefits becoming more significant as context length increases. The code is available at https://github.com/OpenMOSS/rope_pp.",
+  "publishedAt": "2025-12-08T12:59:54Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 60,
+  "citationCount": 1,
+  "githubStars": 33,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2601.06002",
+  "slug": "the-molecular-structure-of-thought-mapping-the-topology-of-long-chain-of",
+  "title": "The Molecular Structure of Thought: Mapping the Topology of Long Chain-of-Thought Reasoning",
+  "authors": [
+   "Qiguang Chen",
+   "Yantao Du",
+   "Ziniu Li",
+   "Jinhao Liu",
+   "Songyao Duan",
+   "Jiarui Guo"
+  ],
+  "abstract": "Large language models (LLMs) often fail to learn effective long chain-of-thought (Long CoT) reasoning from human or non-Long-CoT LLMs imitation. To understand this, we propose that effective and learnable Long CoT trajectories feature stable molecular-like structures in unified view, which are formed by three interaction types: Deep-Reasoning (covalent-like), Self-Reflection (hydrogen-bond-like), and Self-Exploration (van der Waals-like). Analysis of distilled trajectories reveals these structures emerge from Long CoT fine-tuning, not keyword imitation. We introduce Effective Semantic Isomers and show that only bonds promoting fast entropy convergence support stable Long CoT learning, while structural competition impairs training. Drawing on these findings, we present Mole-Syn, a distribution-transfer-graph method that guides synthesis of effective Long CoT structures, boosting performance and RL stability across benchmarks.",
+  "publishedAt": "2026-01-09T18:39:01Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 60,
+  "citationCount": 3,
+  "githubStars": null,
+  "pageCount": 36
+ },
+ {
+  "arxivId": "2602.24233",
+  "slug": "enhancing-spatial-understanding-in-image-generation-via-reward-modeling",
+  "title": "Enhancing Spatial Understanding in Image Generation via Reward Modeling",
+  "authors": [
+   "Zhenyu Tang",
+   "Chaoran Feng",
+   "Yufan Deng",
+   "Jie Wu",
+   "Xiaojie Li",
+   "Rui Wang"
+  ],
+  "abstract": "Recent progress in text-to-image generation has greatly advanced visual fidelity and creativity, but it has also imposed higher demands on prompt complexity-particularly in encoding intricate spatial relationships. In such cases, achieving satisfactory results often requires multiple sampling attempts. To address this challenge, we introduce a novel method that strengthens the spatial understanding of current image generation models. We first construct the SpatialReward-Dataset with over 80k preference pairs. Building on this dataset, we build SpatialScore, a reward model designed to evaluate the accuracy of spatial relationships in text-to-image generation, achieving performance that even surpasses leading proprietary models on spatial evaluation. We further demonstrate that this reward model effectively enables online reinforcement learning for the complex spatial generation. Extensive experiments across multiple benchmarks show that our specialized reward model yields significant and consistent gains in spatial understanding for image generation.",
+  "publishedAt": "2026-02-27T17:59:57Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 60,
+  "citationCount": 0,
+  "githubStars": 86,
+  "pageCount": 17
+ },
+ {
+  "arxivId": "2603.08660",
+  "slug": "how-far-can-unsupervised-rlvr-scale-llm-training",
+  "title": "How Far Can Unsupervised RLVR Scale LLM Training?",
+  "authors": [
+   "Bingxiang He",
+   "Yuxin Zuo",
+   "Zeyuan Liu",
+   "Shangziqi Zhao",
+   "Zixuan Fu",
+   "Junlin Yang"
+  ],
+  "abstract": "Unsupervised reinforcement learning with verifiable rewards (URLVR) offers a pathway to scale LLM training beyond the supervision bottleneck by deriving rewards without ground truth labels. Recent works leverage model intrinsic signals, showing promising early gains, yet their potential and limitations remain unclear. In this work, we revisit URLVR and provide a comprehensive analysis spanning taxonomy, theory and extensive experiments. We first classify URLVR methods into intrinsic versus external based on reward sources, then establish a unified theoretical framework revealing that all intrinsic methods converge toward sharpening the model's initial distribution This sharpening mechanism succeeds when initial confidence aligns with correctness but fails catastrophically when misaligned. Through systematic experiments, we show intrinsic rewards consistently follow a rise-then-fall pattern across methods, with collapse timing determined by model prior rather than engineering choices. Despite these scaling limits, we find intrinsic rewards remain valuable in test-time training on small datasets, and propose Model Collapse Step to measure model prior, serving as a practical indicator for RL trainability. Finally, we explore external reward methods that ground verification in computational asymmetries, showing preliminary evidence they may escape the confidence-correctness ceiling. Our findings chart boundaries for intrinsic URLVR while motivating paths toward scalable alternatives.",
+  "publishedAt": "2026-03-09T17:38:11Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 60,
+  "citationCount": 24,
+  "githubStars": 1110,
+  "pageCount": 54
+ },
+ {
+  "arxivId": "2603.16856",
+  "slug": "online-experiential-learning-for-language-models",
+  "title": "Online Experiential Learning for Language Models",
+  "authors": [
+   "Tianzhu Ye",
+   "Li Dong",
+   "Qingxiu Dong",
+   "Xun Wu",
+   "Shaohan Huang",
+   "Furu Wei"
+  ],
+  "abstract": "The prevailing paradigm for improving large language models relies on offline training with human annotations or simulated environments, leaving the rich experience accumulated during real-world deployment entirely unexploited. We propose Online Experiential Learning (OEL), a framework that enables language models to continuously improve from their own deployment experience. OEL operates in two stages: first, transferable experiential knowledge is extracted and accumulated from interaction trajectories collected on the user side; second, this knowledge is consolidated into model parameters via on-policy context distillation, requiring no access to the user-side environment. The two stages are iterated to form an online learning loop, where the improved model collects higher-quality trajectories that yield richer experiential knowledge for subsequent rounds. We evaluate OEL on text-based game environments across multiple model scales and both thinking and non-thinking variants. OEL achieves consistent improvements over successive iterations, enhancing both task accuracy and token efficiency while preserving out-of-distribution performance. Our analysis further shows that extracted experiential knowledge is significantly more effective than raw trajectories, and that on-policy consistency between the knowledge source and the policy model is critical for effective learning.",
+  "publishedAt": "2026-03-17T17:57:49Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 60,
+  "citationCount": 20,
+  "githubStars": null,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2603.19199",
+  "slug": "faster-rethinking-real-time-flow-vlas",
+  "title": "FASTER: Rethinking Real-Time Flow VLAs",
+  "authors": [
+   "Yuxiang Lu",
+   "Zhe Liu",
+   "Xianzhe Fan",
+   "Zhenya Yang",
+   "Jinghua Hou",
+   "Junyi Li"
+  ],
+  "abstract": "Real-time execution is crucial for deploying Vision-Language-Action (VLA) models in the physical world. Existing asynchronous inference methods primarily optimize trajectory smoothness, but neglect the critical latency in reacting to environmental changes. By rethinking the notion of reaction in action chunking policies, this paper presents a systematic analysis of the factors governing reaction time. We show that reaction time follows a uniform distribution determined jointly by the Time to First Action (TTFA) and the execution horizon. Moreover, we reveal that the standard practice of applying a constant schedule in flow-based VLAs can be inefficient and forces the system to complete all sampling steps before any movement can start, forming the bottleneck in reaction latency. To overcome this issue, we propose Fast Action Sampling for ImmediaTE Reaction (FASTER). By introducing a Horizon-Aware Schedule, FASTER adaptively prioritizes near-term actions during flow sampling, compressing the denoising of the immediate reaction by tenfold (e.g., in $π_{0.5}$ and X-VLA) into a single step, while preserving the quality of long-horizon trajectory. Coupled with a streaming client-server pipeline, FASTER substantially reduces the effective reaction latency on real robots, especially when deployed on consumer-grade GPUs. Real-world experiments, including a highly dynamic table tennis task, prove that FASTER unlocks substantially improved real-time responsiveness for generalist policies, enabling rapid generation of accurate and smooth trajectories.",
+  "publishedAt": "2026-03-19T17:51:37Z",
+  "primaryArxivCategory": [
+   "cs.RO",
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 60,
+  "citationCount": 10,
+  "githubStars": null,
+  "pageCount": 30
+ },
+ {
+  "arxivId": "2604.15804",
+  "slug": "qwen3-5-omni-technical-report",
+  "title": "Qwen3.5-Omni Technical Report",
+  "authors": [
+   "Qwen Team"
+  ],
+  "abstract": "In this work, we present Qwen3.5-Omni, the latest advancement in the Qwen-Omni model family. Representing a significant evolution over its predecessor, Qwen3.5-Omni scales to hundreds of billions of parameters and supports a 256k context length. By leveraging a massive dataset comprising heterogeneous text-vision pairs and over 100 million hours of audio-visual content, the model demonstrates robust omni-modality capabilities. Qwen3.5-Omni-plus achieves SOTA results across 215 audio and audio-visual understanding, reasoning, and interaction subtasks and benchmarks, surpassing Gemini-3.1 Pro in key audio tasks and matching it in comprehensive audio-visual understanding. Architecturally, Qwen3.5-Omni employs a Hybrid Attention Mixture-of-Experts (MoE) framework for both Thinker and Talker, enabling efficient long-sequence inference. The model facilitates sophisticated interaction, supporting over 10 hours of audio understanding and 400 seconds of 720P video (at 1 FPS). To address the inherent instability and unnaturalness in streaming speech synthesis, often caused by encoding efficiency discrepancies between text and speech tokenizers, we introduce ARIA. ARIA dynamically aligns text and speech units, significantly enhancing the stability and prosody of conversational speech with minimal latency impact. Furthermore, Qwen3.5-Omni expands linguistic boundaries, supporting multilingual understanding and speech generation across 10 languages with human-like emotional nuance. Finally, Qwen3.5-Omni exhibits superior audio-visual grounding capabilities, generating script-level structured captions with precise temporal synchronization and automated scene segmentation. Remarkably, we observed the emergence of a new capability in omnimodal models: directly performing coding based on audio-visual instructions, which we call Audio-Visual Vibe Coding.",
+  "publishedAt": "2026-04-17T08:05:46Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "eess.AS"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 60,
+  "citationCount": 87,
+  "githubStars": null,
+  "pageCount": 28
+ },
+ {
+  "arxivId": "2605.09131",
+  "slug": "mcp-cosmos-world-model-augmented-agents-for-complex-task-execution-in-mcp",
+  "title": "MCP-Cosmos: World Model-Augmented Agents for Complex Task Execution in MCP Environments",
+  "authors": [
+   "Giridhar Ganapavarapu",
+   "Dhaval Patel"
+  ],
+  "abstract": "The Model Context Protocol (MCP) has unified the interface between Large Language Models (LLMs) and external tools, yet a fundamental gap remains in how agents conceptualize the environments within which they operate. Current paradigms are bifurcated: Task-level planning often ignores execution-time dynamics, while reactive execution lacks long-horizon foresight. We present MCP-Cosmos, a framework that infuses generative World Models (WM) into the MCP ecosystem to enable predictive task automation. By unifying three disparate technologies, namely MCP, World Model, and Agent, we demonstrate that a \"Bring Your Own World Model\" (BYOWM) strategy allows agents to simulate state transitions and refine plans in a latent space before execution. We conducted experiments using two strategies, namely ReAct and SPIRAL with 2 planning models and 3 representative world models over 20+ MCP-Bench tasks. We observed improvements in Agent's environment interaction KPI such as tool success rate and tool parameter accuracy. The framework also offers new metrics such as Execution Quality to generate new insights about the effectiveness of world models compared to baseline.",
+  "publishedAt": "2026-05-09T19:25:56Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.MA"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 60,
+  "citationCount": 1,
+  "githubStars": null,
+  "pageCount": 14
+ },
+ {
+  "arxivId": "2605.22878",
+  "slug": "sciatlas-a-large-scale-knowledge-graph-for-automated-scientific-research",
+  "title": "SciAtlas: A Large-Scale Knowledge Graph for Automated Scientific Research",
+  "authors": [
+   "Shuofei Qiao",
+   "Yunxiang Wei",
+   "Jiazheng Fan",
+   "Bin Wu",
+   "Busheng Zhang",
+   "Mengru Wang"
+  ],
+  "abstract": "The exponential growth of global academic output has confronted researchers and AI agents with an unprecedented ``information explosion,'' where fragmented and unstructured knowledge organization impedes deep interdisciplinary integration. Current academic retrieval tools predominantly rely on superficial keyword matching or vector-space semantic retrieval, which lack the topological reasoning capabilities required to navigate complex logical connections. Agentic deep-research-based frameworks are often prone to logical hallucinations and consuming high inference costs. To bridge this gap, in this report, we introduce SciAtlas, a large-scale, multi-disciplinary, heterogeneous academic resource knowledge graph designed as a panoramic scientific evolution network. By integrating over 43M papers from 26 disciplines, and a total of 157M entities and 3B triplets, SciAtlas provides a structured topological cognitive substrate that dismantles disciplinary barriers and furnishes AI agents with a global perspective. Furthermore, we develop a neuro-symbolic retrieval algorithm featuring tri-path collaborative recall and graph reranking, achieving a seamless transition from simple semantic matching to deterministic association discovery. We also present key application directions of SciAtlas, including literature review, automated research trend synthesis, idea positioning, and academic trajectory exploration, to demonstrate that SciAtlas can serve as an effective ``cognitive map'' to empower the full loop of automated scientific research while significantly reducing reasoning costs. We have released the interfaces for KG retrieval and various downstream tasks in our GitHub repo.",
+  "publishedAt": "2026-05-20T16:03:29Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL",
+   "cs.IR",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 60,
+  "citationCount": 0,
+  "githubStars": 137,
+  "pageCount": 28
+ },
+ {
+  "arxivId": "2605.30161",
+  "slug": "why-far-looks-up-probing-spatial-representation-in-vision-language-models",
+  "title": "Why Far Looks Up: Probing Spatial Representation in Vision-Language Models",
+  "authors": [
+   "Cheolhong Min",
+   "Jaeyun Jung",
+   "Daeun Lee",
+   "Hyeonseong Jeon",
+   "Yu Su",
+   "Jonathan Tremblay"
+  ],
+  "abstract": "Vision-language models (VLMs) achieve strong performance on spatial reasoning benchmarks, yet it remains unclear whether this reflects structured 3D understanding or reliance on statistical shortcuts in natural images. We introduce a representation-level analysis framework that constructs minimal contrastive pairs to measure how spatial axes are organized and disentangled within VLM embeddings. Our analysis across multiple model families reveals a consistent vertical-distance entanglement: models conflate vertical image position with distance, mirroring the perspective bias of natural photographs. This bias produces a significant accuracy gap between perspective-consistent and counter-heuristic examples, and intensifies under data scaling even as overall benchmark accuracy improves. We further show that models with similar benchmark scores can exhibit different internal representations, and that these differences predict accuracy and robustness across diverse spatial reasoning benchmarks. To isolate this bias from evaluation-set skew, we introduce SpatialTunnel, a synthetic benchmark designed to expose spatial shortcut biases by removing common correlations present in natural images. Experiments confirm that the entanglement is model-intrinsic, and that models with well-separated spatial axes exhibit greater robustness, suggesting that well-structured spatial representations lead to more reliable spatial reasoning across diverse benchmarks. Code and benchmark are available on the project page: https://cheolhong0916.github.io/whyfarlooksup.github.io/.",
+  "publishedAt": "2026-05-28T16:18:01Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": "NVIDIA",
+  "hfUpvotes": 60,
+  "citationCount": 1,
+  "githubStars": 16,
+  "pageCount": 43
+ },
+ {
+  "arxivId": "2606.02373",
+  "slug": "harness-1-reinforcement-learning-for-search-agents-with-state-externalizing",
+  "title": "Harness-1: Reinforcement Learning for Search Agents with State-Externalizing Harnesses",
+  "authors": [
+   "Pengcheng Jiang",
+   "Zhiyi Shi",
+   "Kelly Hong",
+   "Xueqiang Xu",
+   "Jiashuo Sun",
+   "Jimeng Sun"
+  ],
+  "abstract": "Search agents are often trained as policies over growing transcripts: the model must decide how to search while also remembering what it has seen, which evidence is useful, which constraints remain open, and which claims have actually been checked. We argue that this formulation puts too much routine state management inside the policy: reinforcement learning is forced to optimize both semantic search decisions and recoverable bookkeeping that the environment can maintain more reliably. We introduce Harness-1, a 20B search agent (retrieval subagent) trained with reinforcement learning inside a stateful search harness. The harness maintains environment-side working memory, including a candidate pool, an importance-tagged curated set, compact evidence links, verification records, compressed and deduplicated observations, and budget-aware context rendering. The policy retains the semantic decisions: what to search, which documents to keep or discard, what to verify, and when to stop. Across eight retrieval benchmarks spanning web, finance, patents, and multi-hop QA, Harness-1 achieves 0.730 average curated recall, outperforming the next strongest open search subagent by +11.4 points and remaining competitive with much larger frontier-model searchers. Its gains are especially strong on held-out transfer benchmarks, suggesting that reinforcement learning over explicit search state can produce retrieval behaviors that generalize beyond the training domains. Our code is available at https://github.com/pat-jj/harness-1.",
+  "publishedAt": "2026-06-01T15:21:41Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL",
+   "cs.IR"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 60,
+  "citationCount": 2,
+  "githubStars": 941,
+  "pageCount": 63
+ },
+ {
+  "arxivId": "2606.12291",
+  "slug": "measuring-epistemic-resilience-of-llms-under-misleading-medical-context",
+  "title": "Measuring Epistemic Resilience of LLMs Under Misleading Medical Context",
+  "authors": [
+   "Hongjian Zhou",
+   "Xinyu Zou",
+   "Jinge Wu",
+   "Sean Wu",
+   "Junchi Yu",
+   "Bradley Max Segal"
+  ],
+  "abstract": "Large language models (LLMs) now reach expert-level scores on medical licensing exams, encouraging the assumption that high scores imply safe medical judgment while patients increasingly use them for health advice. We show this assumption is fragile: when misleading context is injected into questions that LLMs originally answer correctly, they abandon the correct answer. We call the ability to maintain correct judgment under adversarial context epistemic resilience, and introduce MedMisBench to measure it. MedMisBench contains 10,932 medical question items and 48,889 misleading context-option pairs spanning medical reasoning, agentic capability, and patient-journey evaluation. Across 11 model configurations, mean accuracy falls from 71.1% on original questions to 38.0% under focused misleading context, with 51.5% attack success. The most damaging injections are formal, rule-like fabrications: authority-framed falsehoods reach 69.5% attack success and exception-poisoning claims reach 64.1%. A 14-member clinical panel from 7 countries identified serious potential harm in 38.2% of reviewed cases. MedMisBench exposes a structural blind spot in LLM evaluation in medical settings: existing benchmarks measure what models know, but not whether they preserve correct medical judgment under misleading context.",
+  "publishedAt": "2026-06-10T16:27:26Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 60,
+  "citationCount": 1,
+  "githubStars": 9,
+  "pageCount": 32
+ },
+ {
+  "arxivId": "2606.20517",
+  "slug": "multi-lcb-extending-livecodebench-to-multiple-programming-languages",
+  "title": "Multi-LCB: Extending LiveCodeBench to Multiple Programming Languages",
+  "authors": [
+   "Maria Ivanova",
+   "Pavel Zadorozhny",
+   "Rodion Levichev",
+   "Ivan Petrov",
+   "Adamenko Pavel",
+   "Ivan Lopatin"
+  ],
+  "abstract": "LiveCodeBench (LCB) has recently become a widely adopted benchmark for evaluating large language models (LLMs) on code-generation tasks. By curating competitive programming problems, constantly adding fresh problems to the set, and filtering them by release dates, LCB provides contamination-aware evaluation and offers a holistic view of coding capability. However, LCB remains restricted to Python, leaving open the question of whether LLMs can generalize across the diverse programming languages required in real-world software engineering. We introduce Multi-LCB, a benchmark for evaluating LLMs across twelve programming languages, including Python. Multi-LCB transforms Python tasks from the LCB dataset into equivalent tasks in other languages while preserving LCB's contamination controls and evaluation protocol. Because it is fully compatible with the original LCB format, Multi-LCB will automatically track future LCB updates, enabling systematic assessment of cross-language code generation competence and requiring models to sustain performance well beyond Python. We evaluated 24 LLMs for instruction and reasoning on Multi-LCB, uncovering evidence of Python overfitting, language-specific contamination, and substantial disparities in multilingual performance. Our results establish Multi-LCB as a rigorous new benchmark for multi-programming-language code evaluation, directly addressing LCB's primary limitation and exposing critical gaps in current LLM capabilities.",
+  "publishedAt": "2026-06-18T17:35:57Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.PL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 60,
+  "citationCount": 1,
+  "githubStars": 27,
+  "pageCount": 35
+ },
+ {
+  "arxivId": "2606.27378",
+  "slug": "formalizing-latent-thoughts-four-axioms-of-thought-representation-in-llms",
+  "title": "Formalizing Latent Thoughts: Four Axioms of Thought Representation in LLMs",
+  "authors": [
+   "Fahd Seddik",
+   "Fatemeh Fard"
+  ],
+  "abstract": "We introduce an axiomatic evaluation framework for latent thought representations in LLMs, comprising metrics that are independent of downstream benchmark scores and reveal representational failures that benchmark accuracy masks. Existing evaluations conflate representation quality with model capacity. Therefore, failures cannot be attributed to the representation rather than to the model that processes it. We formalize four functional axioms (Causality, Minimality, Separability, and Stability) and define a quantitative measure for each, computed directly on the representation independently of downstream accuracy. We audit open-weight LLMs across 23 reasoning tasks (e.g., Spatial Reasoning, Factual QA). We find that no candidate satisfies all four axioms simultaneously, that the representations distinguish task type reliably but cannot distinguish between two questions within the same task, and that the representations encode little information beyond what is already present in the input embedding. The failure is consistent across dense, reasoning-distilled, and RL-trained model families, indicating that the gap is structural rather than a property of model size or training procedure.",
+  "publishedAt": "2026-05-07T04:04:25Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 60,
+  "citationCount": 0,
+  "githubStars": 7,
+  "pageCount": 44
+ },
+ {
+  "arxivId": "2508.03501",
+  "slug": "training-long-context-multi-turn-software-engineering-agents-with",
+  "title": "Training Long-Context, Multi-Turn Software Engineering Agents with Reinforcement Learning",
+  "authors": [
+   "Alexander Golubev",
+   "Maria Trofimova",
+   "Sergei Polezhaev",
+   "Ibragim Badertdinov",
+   "Maksim Nekrashevich",
+   "Anton Shevtsov"
+  ],
+  "abstract": "Research on applications of reinforcement learning (RL) to large language models has mostly been focused on single-turn problems, such as mathematical reasoning or single-shot code generation. While these problems can be viewed as token-level multi-turn Markov decision processes (MDPs), this view corresponds to a degenerate case of multi-turn interaction where the environment provides no feedback. This contrasts with many real-world domains, such as software engineering (SWE), which require rich multi-turn interactions with a stateful environment that responds to each action with a non-trivial observation. To bridge this gap, we demonstrate the successful application of RL to this general regime. Our methodology begins with rejection fine-tuning (RFT) using execution feedback to train a policy to follow instructions and formatting effectively, followed by a synchronous RL pipeline using DAPO for iterative improvement. Applying this pipeline to Qwen2.5-72B-Instruct, we increase its Pass@1 on the SWE-bench Verified benchmark from 11% to 39%, substantially improving upon the 20% RFT baseline. On the May and June splits of SWE-rebench, the resulting agent achieves Pass@1 of 35% and 31% respectively, competitive with even larger models such as DeepSeek-V3-0324 or Qwen3-235B-A22B, demonstrating that our methodology offers a practical approach for training capable agents for multi-turn interactive tasks using open-weight models.",
+  "publishedAt": "2025-08-05T14:30:47Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.CL",
+   "cs.SE"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 59,
+  "citationCount": 27,
+  "githubStars": null,
+  "pageCount": 25
+ },
+ {
+  "arxivId": "2508.13491",
+  "slug": "from-scores-to-skills-a-cognitive-diagnosis-framework-for-evaluating-financial",
+  "title": "From Scores to Skills: A Cognitive Diagnosis Framework for Evaluating Financial Large Language Models",
+  "authors": [
+   "Ziyan Kuang",
+   "Feiyu Zhu",
+   "Maowei Jiang",
+   "Yanzhao Lai",
+   "Zelin Wang",
+   "Zhitong Wang"
+  ],
+  "abstract": "Large Language Models (LLMs) have shown promise for financial applications, yet their suitability for this high-stakes domain remains largely unproven due to inadequacies in existing benchmarks. Existing benchmarks solely rely on score-level evaluation, summarizing performance with a single score that obscures the nuanced understanding of what models truly know and their precise limitations. They also rely on datasets that cover only a narrow subset of financial concepts, while overlooking other essentials for real-world applications. To address these gaps, we introduce FinCDM, the first cognitive diagnosis evaluation framework tailored for financial LLMs, enabling the evaluation of LLMs at the knowledge-skill level, identifying what financial skills and knowledge they have or lack based on their response patterns across skill-tagged tasks, rather than a single aggregated number. We construct CPA-KQA, the first cognitively informed financial evaluation dataset derived from the Certified Public Accountant (CPA) examination, with comprehensive coverage of real-world accounting and financial skills. It is rigorously annotated by domain experts, who author, validate, and annotate questions with high inter-annotator agreement and fine-grained knowledge labels. Our extensive experiments on 30 proprietary, open-source, and domain-specific LLMs show that FinCDM reveals hidden knowledge gaps, identifies under-tested areas such as tax and regulatory reasoning overlooked by traditional benchmarks, and uncovers behavioral clusters among models. FinCDM introduces a new paradigm for financial LLM evaluation by enabling interpretable, skill-aware diagnosis that supports more trustworthy and targeted model development, and all datasets and evaluation scripts will be publicly released to support further research.",
+  "publishedAt": "2025-08-19T03:52:15Z",
+  "primaryArxivCategory": [
+   "cs.CE"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 59,
+  "citationCount": 4,
+  "githubStars": 3,
+  "pageCount": 13
+ },
+ {
+  "arxivId": "2508.14041",
+  "slug": "longsplat-robust-unposed-3d-gaussian-splatting-for-casual-long-videos",
+  "title": "LongSplat: Robust Unposed 3D Gaussian Splatting for Casual Long Videos",
+  "authors": [
+   "Chin-Yang Lin",
+   "Cheng Sun",
+   "Fu-En Yang",
+   "Min-Hung Chen",
+   "Yen-Yu Lin",
+   "Yu-Lun Liu"
+  ],
+  "abstract": "LongSplat addresses critical challenges in novel view synthesis (NVS) from casually captured long videos characterized by irregular camera motion, unknown camera poses, and expansive scenes. Current methods often suffer from pose drift, inaccurate geometry initialization, and severe memory limitations. To address these issues, we introduce LongSplat, a robust unposed 3D Gaussian Splatting framework featuring: (1) Incremental Joint Optimization that concurrently optimizes camera poses and 3D Gaussians to avoid local minima and ensure global consistency; (2) a robust Pose Estimation Module leveraging learned 3D priors; and (3) an efficient Octree Anchor Formation mechanism that converts dense point clouds into anchors based on spatial density. Extensive experiments on challenging benchmarks demonstrate that LongSplat achieves state-of-the-art results, substantially improving rendering quality, pose accuracy, and computational efficiency compared to prior approaches. Project page: https://linjohnss.github.io/longsplat/",
+  "publishedAt": "2025-08-19T17:59:56Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 59,
+  "citationCount": 28,
+  "githubStars": 799,
+  "pageCount": 20
+ }
+]

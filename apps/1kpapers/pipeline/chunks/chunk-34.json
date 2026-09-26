@@ -1,0 +1,605 @@
+[
+ {
+  "arxivId": "2510.04374",
+  "slug": "gdpval-evaluating-ai-model-performance-on-real-world-economically-valuable-tasks",
+  "title": "GDPval: Evaluating AI Model Performance on Real-World Economically Valuable Tasks",
+  "authors": [
+   "Tejal Patwardhan",
+   "Rachel Dias",
+   "Elizabeth Proehl",
+   "Grace Kim",
+   "Michele Wang",
+   "Olivia Watkins"
+  ],
+  "abstract": "We introduce GDPval, a benchmark evaluating AI model capabilities on real-world economically valuable tasks. GDPval covers the majority of U.S. Bureau of Labor Statistics Work Activities for 44 occupations across the top 9 sectors contributing to U.S. GDP (Gross Domestic Product). Tasks are constructed from the representative work of industry professionals with an average of 14 years of experience. We find that frontier model performance on GDPval is improving roughly linearly over time, and that the current best frontier models are approaching industry experts in deliverable quality. We analyze the potential for frontier models, when paired with human oversight, to perform GDPval tasks cheaper and faster than unaided experts. We also demonstrate that increased reasoning effort, increased task context, and increased scaffolding improves model performance on GDPval. Finally, we open-source a gold subset of 220 tasks and provide a public automated grading service at evals.openai.com to facilitate future research in understanding real-world model capabilities.",
+  "publishedAt": "2025-10-05T21:36:43Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.CY"
+  ],
+  "officialLab": "OpenAI",
+  "hfUpvotes": 0,
+  "citationCount": 108,
+  "githubStars": null,
+  "pageCount": 29
+ },
+ {
+  "arxivId": "2510.07192",
+  "slug": "poisoning-attacks-on-llms-require-a-near-constant-number-of-poison-samples",
+  "title": "Poisoning Attacks on LLMs Require a Near-constant Number of Poison Samples",
+  "authors": [
+   "Alexandra Souly",
+   "Javier Rando",
+   "Ed Chapman",
+   "Xander Davies",
+   "Burak Hasircioglu",
+   "Ezzeldin Shereen"
+  ],
+  "abstract": "Poisoning attacks can compromise the safety of large language models (LLMs) by injecting malicious documents into their training data. Existing work has studied pretraining poisoning assuming adversaries control a percentage of the training corpus. However, for large models, even small percentages translate to impractically large amounts of data. This work demonstrates for the first time that poisoning attacks instead require a near-constant number of documents regardless of dataset size. We conduct the largest pretraining poisoning experiments to date, pretraining models from 600M to 13B parameters on chinchilla-optimal datasets (6B to 260B tokens). We find that 250 poisoned documents similarly compromise models across all model and dataset sizes, despite the largest models training on more than 20 times more clean data. We also run smaller-scale experiments to ablate factors that could influence attack success, including broader ratios of poisoned to clean data and non-random distributions of poisoned samples. Finally, we demonstrate the same dynamics for poisoning during fine-tuning. Altogether, our results suggest that injecting backdoors through data poisoning may be easier for large models than previously believed as the number of poisons required does not scale up with model size, highlighting the need for more research on defences to mitigate this risk in future models.",
+  "publishedAt": "2025-10-08T16:25:05Z",
+  "primaryArxivCategory": [
+   "cs.LG"
+  ],
+  "officialLab": "Anthropic",
+  "hfUpvotes": 0,
+  "citationCount": 76,
+  "githubStars": null,
+  "pageCount": 30
+ },
+ {
+  "arxivId": "2511.13653",
+  "slug": "weight-sparse-transformers-have-interpretable-circuits",
+  "title": "Weight-sparse transformers have interpretable circuits",
+  "authors": [
+   "Leo Gao",
+   "Achyuta Rajaram",
+   "Jacob Coxon",
+   "Soham V. Govande",
+   "Bowen Baker",
+   "Dan Mossing"
+  ],
+  "abstract": "Finding human-understandable circuits in language models is a central goal of the field of mechanistic interpretability. We train models to have more understandable circuits by constraining most of their weights to be zeros, so that each neuron only has a few connections. To recover fine-grained circuits underlying each of several hand-crafted tasks, we prune the models to isolate the part responsible for the task. These circuits often contain neurons and residual channels that correspond to natural concepts, with a small number of straightforwardly interpretable connections between them. We study how these models scale and find that making weights sparser trades off capability for interpretability, and scaling model size improves the capability-interpretability frontier. However, scaling sparse models beyond tens of millions of nonzero parameters while preserving interpretability remains a challenge. In addition to training weight-sparse models de novo, we show preliminary results suggesting our method can also be adapted to explain existing dense models. Our work produces circuits that achieve an unprecedented level of human understandability and validates them with considerable rigor.",
+  "publishedAt": "2025-11-17T18:02:06Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI"
+  ],
+  "officialLab": "OpenAI",
+  "hfUpvotes": 0,
+  "citationCount": 37,
+  "githubStars": null,
+  "pageCount": 31
+ },
+ {
+  "arxivId": "2512.08093",
+  "slug": "training-llms-for-honesty-via-confessions",
+  "title": "Training LLMs for Honesty via Confessions",
+  "authors": [
+   "Manas Joglekar",
+   "Jeremy Chen",
+   "Gabriel Wu",
+   "Jason Yosinski",
+   "Jasmine Wang",
+   "Boaz Barak"
+  ],
+  "abstract": "Large language models (LLMs) can be dishonest when reporting on their actions and beliefs -- for example, they may overstate their confidence in factual claims or cover up evidence of covert actions. Such dishonesty may arise due to the effects of reinforcement learning (RL), where challenges with reward shaping can result in a training process that inadvertently incentivizes the model to lie or misrepresent its actions. In this work we propose a method for eliciting an honest expression of an LLM's shortcomings via a self-reported *confession*. A confession is an output, provided upon request after a model's original answer, that is meant to serve as a full account of the model's compliance with the letter and spirit of its policies and instructions. The reward assigned to a confession during training is solely based on its honesty, and does not impact positively or negatively the main answer's reward. As long as the \"path of least resistance\" for maximizing confession reward is to surface misbehavior rather than covering it up, this incentivizes models to be honest in their confessions. Our findings provide some justification this empirical assumption, especially in the case of egregious model misbehavior. To demonstrate the viability of our approach, we train GPT-5-Thinking to produce confessions, and we evaluate its honesty in out-of-distribution scenarios measuring hallucination, instruction following, scheming, and reward hacking. We find that when the model lies or omits shortcomings in its \"main\" answer, it often confesses to these behaviors honestly, and this confession honesty modestly improves with training. Confessions can enable a number of inference-time interventions including monitoring, rejection sampling, and surfacing issues to the user.",
+  "publishedAt": "2025-12-08T23:05:52Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI"
+  ],
+  "officialLab": "OpenAI",
+  "hfUpvotes": 0,
+  "citationCount": 17,
+  "githubStars": null,
+  "pageCount": 33
+ },
+ {
+  "arxivId": "2601.04603",
+  "slug": "constitutional-classifiers-efficient-production-grade-defenses-against",
+  "title": "Constitutional Classifiers++: Efficient Production-Grade Defenses against Universal Jailbreaks",
+  "authors": [
+   "Hoagy Cunningham",
+   "Jerry Wei",
+   "Zihan Wang",
+   "Andrew Persic",
+   "Alwin Peng",
+   "Jordan Abderrachid"
+  ],
+  "abstract": "We introduce enhanced Constitutional Classifiers that deliver production-grade jailbreak robustness with dramatically reduced computational costs and refusal rates compared to previous-generation defenses. Our system combines several key insights. First, we develop exchange classifiers that evaluate model responses in their full conversational context, which addresses vulnerabilities in last-generation systems that examine outputs in isolation. Second, we implement a two-stage classifier cascade where lightweight classifiers screen all traffic and escalate only suspicious exchanges to more expensive classifiers. Third, we train efficient linear probe classifiers and ensemble them with external classifiers to simultaneously improve robustness and reduce computational costs. Together, these techniques yield a production-grade system achieving a 40x computational cost reduction compared to our baseline exchange classifier, while maintaining a 0.05% refusal rate on production traffic. Through extensive red-teaming comprising over 1,700 hours, we demonstrate strong protection against universal jailbreaks -- no attack on this system successfully elicited responses to all eight target queries comparable in detail to an undefended model. Our work establishes Constitutional Classifiers as practical and efficient safeguards for large language models.",
+  "publishedAt": "2026-01-08T05:16:12Z",
+  "primaryArxivCategory": [
+   "cs.CR",
+   "cs.AI"
+  ],
+  "officialLab": "Anthropic",
+  "hfUpvotes": 0,
+  "citationCount": 28,
+  "githubStars": null,
+  "pageCount": 17
+ },
+ {
+  "arxivId": "2601.07372",
+  "slug": "conditional-memory-via-scalable-lookup-a-new-axis-of-sparsity-for-large",
+  "title": "Conditional Memory via Scalable Lookup: A New Axis of Sparsity for Large Language Models",
+  "authors": [
+   "Xin Cheng",
+   "Rui Tian",
+   "Wangding Zeng",
+   "Damai Dai",
+   "Qinyu Chen",
+   "Bingxuan Wang"
+  ],
+  "abstract": "While Mixture-of-Experts (MoE) scales capacity via conditional computation, Transformers lack a native primitive for knowledge lookup, forcing them to inefficiently simulate retrieval through computation. To address this, we introduce conditional memory as a complementary sparsity axis, instantiated via Engram, a module that modernizes classic $N$-gram embedding for O(1) lookup. By formulating the Sparsity Allocation problem, we uncover a U-shaped scaling law that optimizes the trade-off between neural computation (MoE) and static memory (Engram). Guided by this law, we scale Engram to 27B parameters, achieving superior performance over a strictly iso-parameter and iso-FLOPs MoE baseline. Most notably, while the memory module is expected to aid knowledge retrieval (e.g., MMLU +3.4; CMMLU +4.0), we observe even larger gains in general reasoning (e.g., BBH +5.0; ARC-Challenge +3.7) and code/math domains~(HumanEval +3.0; MATH +2.4). Mechanistic analyses reveal that Engram relieves the backbone's early layers from static reconstruction, effectively deepening the network for complex reasoning. Furthermore, by delegating local dependencies to lookups, it frees up attention capacity for global context, substantially boosting long-context retrieval (e.g., Multi-Query NIAH: 84.2 to 97.0). Finally, Engram establishes infrastructure-aware efficiency: its deterministic addressing enables runtime prefetching from host memory, incurring negligible overhead. We envision conditional memory as an indispensable modeling primitive for next-generation sparse models.",
+  "publishedAt": "2026-01-12T09:54:49Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": "DeepSeek",
+  "hfUpvotes": 0,
+  "citationCount": 63,
+  "githubStars": 4580,
+  "pageCount": 35
+ },
+ {
+  "arxivId": "2601.19062",
+  "slug": "whos-in-charge-disempowerment-patterns-in-real-world-llm-usage",
+  "title": "Who's in Charge? Disempowerment Patterns in Real-World LLM Usage",
+  "authors": [
+   "Mrinank Sharma",
+   "Miles McCain",
+   "Raymond Douglas",
+   "David Duvenaud"
+  ],
+  "abstract": "Although AI assistants are now deeply embedded in society, there has been limited empirical study of how their usage affects human empowerment. We present the first large-scale empirical analysis of disempowerment patterns in real-world AI assistant interactions, analyzing 1.5 million consumer Claude$.$ai conversations using a privacy-preserving approach. We focus on situational disempowerment potential, which occurs when AI assistant interactions risk leading users to form distorted perceptions of reality, make inauthentic value judgments, or act in ways misaligned with their values. Quantitatively, we find that severe forms of disempowerment potential occur in fewer than one in a thousand conversations, though rates are substantially higher in personal domains like relationships and lifestyle. Qualitatively, we uncover several concerning patterns, such as validation of persecution narratives and grandiose identities with emphatic sycophantic language, definitive moral judgments about third parties, and complete scripting of value-laden personal communications that users appear to implement verbatim. Analysis of historical trends reveals an increase in the prevalence of disempowerment potential over time. We also find that interactions with greater disempowerment potential receive higher user approval ratings, possibly suggesting a tension between short-term user preferences and long-term human empowerment. Our findings highlight the need for AI systems designed to robustly support human autonomy and flourishing.",
+  "publishedAt": "2026-01-27T00:55:11Z",
+  "primaryArxivCategory": [
+   "cs.CY",
+   "cs.AI",
+   "cs.CL",
+   "cs.HC"
+  ],
+  "officialLab": "Anthropic",
+  "hfUpvotes": 0,
+  "citationCount": 19,
+  "githubStars": null,
+  "pageCount": 73
+ },
+ {
+  "arxivId": "2602.11729",
+  "slug": "cross-architecture-model-diffing-with-crosscoders-unsupervised-discovery-of",
+  "title": "Cross-Architecture Model Diffing with Crosscoders: Unsupervised Discovery of Differences Between LLMs",
+  "authors": [
+   "Thomas Jiralerspong",
+   "Trenton Bricken"
+  ],
+  "abstract": "Model diffing, the process of comparing models' internal representations to identify their differences, is a promising approach for uncovering safety-critical behaviors in new models. However, its application has so far been primarily focused on comparing a base model with its finetune. Since new LLM releases are often novel architectures, cross-architecture methods are essential to make model diffing widely applicable. Crosscoders are one solution capable of cross-architecture model diffing but have only ever been applied to base vs finetune comparisons. We provide the first application of crosscoders to cross-architecture model diffing and introduce Dedicated Feature Crosscoders (DFCs), an architectural modification designed to better isolate features unique to one model. Using this technique, we find in an unsupervised fashion features including Chinese Communist Party alignment in Qwen3-8B and Deepseek-R1-0528-Qwen3-8B, American exceptionalism in Llama3.1-8B-Instruct, and a copyright refusal mechanism in GPT-OSS-20B. Together, our results work towards establishing cross-architecture crosscoder model diffing as an effective method for identifying meaningful behavioral differences between AI models.",
+  "publishedAt": "2026-02-12T08:53:25Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.LG",
+   "cs.SE"
+  ],
+  "officialLab": "Anthropic",
+  "hfUpvotes": 0,
+  "citationCount": 9,
+  "githubStars": null,
+  "pageCount": 75
+ },
+ {
+  "arxivId": "2603.10521",
+  "slug": "ih-challenge-a-training-dataset-to-improve-instruction-hierarchy-on-frontier",
+  "title": "IH-Challenge: A Training Dataset to Improve Instruction Hierarchy on Frontier LLMs",
+  "authors": [
+   "Chuan Guo",
+   "Juan Felipe Ceron Uribe",
+   "Sicheng Zhu",
+   "Christopher A. Choquette-Choo",
+   "Steph Lin",
+   "Nikhil Kandpal"
+  ],
+  "abstract": "Instruction hierarchy (IH) defines how LLMs prioritize system, developer, user, and tool instructions under conflict, providing a concrete, trust-ordered policy for resolving instruction conflicts. IH is key to defending against jailbreaks, system prompt extractions, and agentic prompt injections. However, robust IH behavior is difficult to train: IH failures can be confounded with instruction-following failures, conflicts can be nuanced, and models can learn shortcuts such as overrefusing. We introduce IH-Challenge, a reinforcement learning training dataset, to address these difficulties. Fine-tuning GPT-5-Mini on IH-Challenge with online adversarial example generation improves IH robustness by +10.0% on average across 16 in-distribution, out-of-distribution, and human red-teaming benchmarks (84.1% to 94.1%), reduces unsafe behavior from 6.6% to 0.7% while improving helpfulness on general safety evaluations, and saturates an internal static agentic prompt injection evaluation, with minimal capability regression. We release the IH-Challenge dataset (https://huggingface.co/datasets/openai/ih-challenge) to support future research on robust instruction hierarchy.",
+  "publishedAt": "2026-03-11T08:27:09Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL",
+   "cs.CR",
+   "cs.LG"
+  ],
+  "officialLab": "OpenAI",
+  "hfUpvotes": 0,
+  "citationCount": 12,
+  "githubStars": null,
+  "pageCount": 25
+ },
+ {
+  "arxivId": "2607.07184",
+  "slug": "predicting-llm-safety-before-release-by-simulating-deployment",
+  "title": "Predicting LLM Safety Before Release by Simulating Deployment",
+  "authors": [
+   "Marcus Williams",
+   "Hannah Sheahan",
+   "Cameron Raymond",
+   "Tomek Korbak",
+   "Deng Pan",
+   "Peilin Yang"
+  ],
+  "abstract": "Pre-deployment safety evaluations aim to inform the downstream risks of releasing a new AI model. Yet most evaluations provide limited evidence about how often undesired model behavior will occur in deployment: they generally have insufficient coverage, are unrepresentative, and are generally recognizable as tests. To address these concerns, we study a simple way to simulate a model deployment: starting from de-identified conversations from a previous model deployment, we hold fixed the initial conversation prefix and regenerate the next response using a candidate model. The resulting responses can then both be audited for novel misalignments and used to estimate the prevalence of model misbehavior before deployment. We evaluate deployment simulation across four GPT-5-series deployments, using registered, outcome-blinded predictions for GPT-5.4 and retrospective analyses of three earlier releases. We find that deployment simulation produces informative estimates of post-deployment misbehavior rates and outperforms baselines based on adversarially selected production data; its evaluation-awareness point estimates were also much closer to production traffic than those from traditional evaluations. We also identify the realism of tool resampling as a central challenge for further improving predictions and share results suggesting that this challenge is surmountable even in complex tool-use settings. Finally, we show that deployment simulation can be seeded from public chat datasets and remain informative about production misbehavior rates, suggesting a path for external researchers to run deployment-grounded evaluations without access to private production logs. Overall, deployment simulation helps evaluators forecast how language models will behave in the real world and supports more quantitative assessment of deployment risk.",
+  "publishedAt": "2026-07-08T09:17:47Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI"
+  ],
+  "officialLab": "OpenAI",
+  "hfUpvotes": 0,
+  "citationCount": 1,
+  "githubStars": null,
+  "pageCount": 31
+ },
+ {
+  "arxivId": "2601.16344",
+  "slug": "dsgym-a-holistic-framework-for-evaluating-and-training-data-science-agents",
+  "title": "DSGym: A Holistic Framework for Evaluating and Training Data Science Agents",
+  "authors": [
+   "Fan Nie",
+   "Junlin Wang",
+   "Harper Hua",
+   "Federico Bianchi",
+   "Yongchan Kwon",
+   "Zhenting Qi"
+  ],
+  "abstract": "Data science agents promise to accelerate discovery and insight-generation by turning data into executable analyses and findings. Yet existing data science benchmarks fall short due to fragmented evaluation interfaces that make cross-benchmark comparison difficult, narrow task coverage and a lack of rigorous data grounding. In particular, we show that a substantial portion of tasks in current benchmarks can be solved without using the actual data. To address these limitations, we introduce DSGym, a standardized framework for evaluating and training data science agents in self-contained execution environments. Unlike static benchmarks, DSGym provides a modular architecture that makes it easy to add tasks, agent scaffolds, and tools, positioning it as a live, extensible testbed. We curate DSGym-Tasks, a holistic task suite that standardizes and refines existing benchmarks via quality and shortcut solvability filtering. We further expand coverage with (1) DSBio: expert-derived bioinformatics tasks grounded in literature and (2) DSPredict: challenging prediction tasks spanning domains such as computer vision, molecular prediction, and single-cell perturbation. Beyond evaluation, DSGym enables agent training via execution-verified data synthesis pipeline. As a case study, we build a 2,000-example training set and trained a 4B model in DSGym that outperforms GPT-4o on standardized analysis benchmarks. Overall, DSGym enables rigorous end-to-end measurement of whether agents can plan, implement, and validate data analyses in realistic scientific context.",
+  "publishedAt": "2026-01-22T00:00:00Z",
+  "primaryArxivCategory": [],
+  "officialLab": "Together AI",
+  "hfUpvotes": null,
+  "citationCount": 12,
+  "githubStars": 58,
+  "pageCount": 37
+ },
+ {
+  "arxivId": "2602.13692",
+  "slug": "thunderagent-a-simple-fast-and-program-aware-agentic-inference-system",
+  "title": "ThunderAgent: A Simple, Fast and Program-Aware Agentic Inference System",
+  "authors": [
+   "Hao Kang",
+   "Ziyang Li",
+   "Xinyu Yang",
+   "Weili Xu",
+   "Yinfang Chen",
+   "Junxiong Wang"
+  ],
+  "abstract": "Large language models(LLMs) are now used to power complex multi-turn agentic workflows. Existing systems run agentic inference by loosely assembling isolated components: an LLM inference engine (e.g., vLLM) and a tool orchestrator (e.g., Kubernetes). Although agentic workflows involve multiple LLM and tool requests, these systems schedule and allocate resources separately on a per-request basis, without end-to-end knowledge of the workflow. This leads to sub-optimal management of KV cache and tool execution environments. To address the challenges, we propose ThunderAgent, a fast, simple, and program-aware agentic inference system. We first abstract agentic workflows as LLM Programs, enabling a unified view of heterogeneous resources, including KV caches, system states, and external tool assets such as disk memory and network ports. Built upon this abstraction, ThunderAgent introduces a program-aware scheduler and a tool resource manager designed to maximize KV cache hit rates, mitigate memory imbalances, and enable asynchronous environment preparation. Evaluations across coding, routing, and scientific discovery agents demonstrate that ThunderAgent achieves 1.5-3.6x throughput improvements in serving, 1.8-3.9x in RL rollout, and up to 4.2x disk memory savings compared to state-of-the-art inference systems. To facilitate reproducibility and support future development, we open-source the system implementations of the whole ThunderAgent at: https://github.com/Agentic-Kinetics/ThunderAgent.",
+  "publishedAt": "2026-02-14T00:00:00Z",
+  "primaryArxivCategory": [],
+  "officialLab": "Together AI",
+  "hfUpvotes": null,
+  "citationCount": 13,
+  "githubStars": null,
+  "pageCount": 34
+ },
+ {
+  "arxivId": "2601.16175",
+  "slug": "learning-to-discover-at-test-time",
+  "title": "Learning to Discover at Test Time",
+  "authors": [
+   "Mert Yuksekgonul",
+   "Daniel Koceja",
+   "Xinhao Li",
+   "Federico Bianchi",
+   "Jed McCaleb",
+   "Xiaolong Wang"
+  ],
+  "abstract": "How can we use AI to discover a new state of the art for a scientific problem? Prior work in test-time scaling, such as AlphaEvolve, performs search by prompting a frozen LLM. We perform reinforcement learning at test time, so the LLM can continue to train, but now with experience specific to the test problem. This form of continual learning is quite special, because its goal is to produce one great solution rather than many good ones on average, and to solve this very problem rather than generalize to other problems. Therefore, our learning objective and search subroutine are designed to prioritize the most promising solutions. We call this method Test-Time Training to Discover (TTT-Discover). Following prior work, we focus on problems with continuous rewards. We report results for every problem we attempted, across mathematics, GPU kernel engineering, algorithm design, and biology. TTT-Discover sets the new state of the art in almost all of them: (i) Erd\\H{o}s'minimum overlap problem and an autocorrelation inequality; (ii) a GPUMode kernel competition (up to $2\\times$ faster than prior art); (iii) past AtCoder algorithm competitions; and (iv) denoising problem in single-cell analysis. Our solutions are reviewed by experts or the organizers. All our results are achieved with an open model, OpenAI gpt-oss-120b, and can be reproduced with our publicly available code, in contrast to previous best results that required closed frontier models. Our test-time training runs are performed using Tinker, an API by Thinking Machines, with a cost of only a few hundred dollars per problem.",
+  "publishedAt": "2026-01-22T00:00:00Z",
+  "primaryArxivCategory": [],
+  "officialLab": "Together AI",
+  "hfUpvotes": null,
+  "citationCount": 71,
+  "githubStars": 613,
+  "pageCount": 72
+ },
+ {
+  "arxivId": "2511.21667",
+  "slug": "escaping-the-verifier-learning-to-reason-via-demonstrations",
+  "title": "Escaping the Verifier: Learning to Reason via Demonstrations",
+  "authors": [
+   "Locke Cai",
+   "Ivan Provilkov"
+  ],
+  "abstract": "Training Large Language Models (LLMs) to reason often relies on Reinforcement Learning (RL) with task-specific verifiers. However, many real-world reasoning-intensive tasks lack verifiers, despite offering abundant expert demonstrations that remain under-utilized for reasoning-focused training. We introduce RARO (Relativistic Adversarial Reasoning Optimization), which learns strong reasoning capabilities from expert demonstrations alone via Inverse Reinforcement Learning. RARO sets up an adversarial game between a policy and a relativistic critic: the policy learns to mimic expert answers, while the critic aims to identify the experts among expert-policy answer pairs. Both the policy and the critic are trained jointly and continuously via RL, and we identify the key stabilization techniques required for robust learning. Empirically, RARO significantly outperforms strong verifier-free baselines across all evaluation tasks: +13.7% accuracy on Countdown (1.5B), +8.2% accuracy on DeepMath (7B), and +19.1% win-rate on Poetry Writing (7B) against expert poems. RARO also exhibits similar robust scaling trends as RL with verifiers. These results demonstrate that RARO effectively elicits strong reasoning performance from expert demonstrations alone, enabling robust reasoning learning even when task-specific verifiers are unavailable.",
+  "publishedAt": "2025-11-26T00:00:00Z",
+  "primaryArxivCategory": [],
+  "officialLab": "Together AI",
+  "hfUpvotes": null,
+  "citationCount": 5,
+  "githubStars": null,
+  "pageCount": 31
+ },
+ {
+  "arxivId": "2603.04304",
+  "slug": "v1-unifying-generation-and-self-verification-for-parallel-reasoners",
+  "title": "V1: Unifying Generation and Self-Verification for Parallel Reasoners",
+  "authors": [
+   "Harman Singh",
+   "Xiuyu Li",
+   "Kusha Sareen",
+   "Monishwaran Maheswaran",
+   "Sijun Tan",
+   "Xiaoxia Wu"
+  ],
+  "abstract": "Test-time scaling for complex reasoning tasks shows that leveraging inference-time compute, by methods such as independently sampling and aggregating multiple solutions, results in significantly better task outcomes. However, a critical bottleneck is verification: sampling is only effective if correct solutions can be reliably identified among candidates. While existing approaches typically evaluate candidates independently via scalar scoring, we demonstrate that models are substantially stronger at pairwise self-verification. Leveraging this insight, we introduce $V_1$, a framework that unifies generation and verification through efficient pairwise ranking. $V_1$ comprises two components: $V_1$-Infer, an uncertainty-guided algorithm using a tournament-based ranking that dynamically allocates self-verification compute to candidate pairs whose relative correctness is most uncertain; and $V_1$-PairRL, an RL framework that jointly trains a single model as both generator and pairwise self-verifier, ensuring the verifier adapts to the generator's evolving distribution. On code generation (LiveCodeBench, CodeContests, SWE-Bench) and math reasoning (AIME, HMMT) benchmarks, $V_1$-Infer improves Pass@1 by up to $10%$ over pointwise verification and outperforms recent test-time scaling methods while being significantly more efficient. Furthermore, $V_1$-PairRL achieves $7$--$9%$ test-time scaling gains over standard RL and pointwise joint training, and improves base Pass@1 by up to 8.7% over standard RL in a code-generation setting.",
+  "publishedAt": "2026-03-04T00:00:00Z",
+  "primaryArxivCategory": [],
+  "officialLab": "Together AI",
+  "hfUpvotes": null,
+  "citationCount": 7,
+  "githubStars": 39,
+  "pageCount": 39
+ },
+ {
+  "arxivId": "2602.06932",
+  "slug": "when-rl-meets-adaptive-speculative-training-a-unified-training-serving-system",
+  "title": "When RL Meets Adaptive Speculative Training: A Unified Training-Serving System",
+  "authors": [
+   "Junxiong Wang",
+   "Fengxiang Bie",
+   "Jisen Li",
+   "Zhongzhu Zhou",
+   "Zelei Shao",
+   "Yubo Wang"
+  ],
+  "abstract": "Speculative decoding can significantly accelerate LLM serving, yet most deployments today disentangle speculator training from serving, treating speculator training as a standalone offline modeling problem. We show that this decoupled formulation introduces substantial deployment and adaptation lag: (1) high time-to-serve, since a speculator must be trained offline for a considerable period before deployment; (2) delayed utility feedback, since the true end-to-end decoding speedup is only known after training and cannot be inferred reliably from acceptance rate alone due to model-architecture and system-level overheads; and (3) domain-drift degradation, as the target model is repurposed to new domains and the speculator becomes stale and less effective. To address these issues, we present Aurora, a unified training-serving system that closes the loop by continuously learning a speculator directly from live inference traces. Aurora reframes online speculator learning as an asynchronous reinforcement-learning problem: accepted tokens provide positive feedback, while rejected speculator proposals provide implicit negative feedback that we exploit to improve sample efficiency. Our design integrates an SGLang-based inference server with an asynchronous training server, enabling hot-swapped speculator updates without service interruption. Crucially, Aurora supports day-0 deployment: a speculator can be served immediately and rapidly adapted to live traffic, improving system performance while providing immediate utility feedback. Across experiments, Aurora achieves a 1.5x day-0 speedup on recently released frontier models (e.g., MiniMax M2.1 229B and Qwen3-Coder-Next 80B). Aurora also adapts effectively to distribution shifts in user traffic, delivering an additional 1.25x speedup over a well-trained but static speculator on widely used models (e.g., Qwen3 and Llama3).",
+  "publishedAt": "2026-02-06T00:00:00Z",
+  "primaryArxivCategory": [],
+  "officialLab": "Together AI",
+  "hfUpvotes": null,
+  "citationCount": 1,
+  "githubStars": null,
+  "pageCount": 25
+ },
+ {
+  "arxivId": "2602.21196",
+  "slug": "untied-ulysses-memory-efficient-context-parallelism-via-headwise-chunking",
+  "title": "Untied Ulysses: Memory-Efficient Context Parallelism via Headwise Chunking",
+  "authors": [
+   "Ravi Ghadia",
+   "Maksim Abraham",
+   "S. Vorobyov",
+   "Max Ryabinin"
+  ],
+  "abstract": "Efficiently processing long sequences with Transformer models usually requires splitting the computations across accelerators via context parallelism. The dominant approaches in this family of methods, such as Ring Attention or DeepSpeed Ulysses, enable scaling over the context dimension but do not focus on memory efficiency, which limits the sequence lengths they can support. More advanced techniques, such as Fully Pipelined Distributed Transformer or activation offloading, can further extend the possible context length at the cost of training throughput. In this paper, we present UPipe, a simple yet effective context parallelism technique that performs fine-grained chunking at the attention head level. This technique significantly reduces the activation memory usage of self-attention, breaking the activation memory barrier and unlocking much longer context lengths. Our approach reduces intermediate tensor memory usage in the attention layer by as much as 87.5$\\%$ for 32B Transformers, while matching previous context parallelism techniques in terms of training speed. UPipe can support the context length of 5M tokens when training Llama3-8B on a single 8$\\times$H100 node, improving upon prior methods by over 25$\\%$.",
+  "publishedAt": "2026-02-24T00:00:00Z",
+  "primaryArxivCategory": [],
+  "officialLab": "Together AI",
+  "hfUpvotes": null,
+  "citationCount": 0,
+  "githubStars": 25,
+  "pageCount": 16
+ },
+ {
+  "arxivId": "2511.02237",
+  "slug": "opportunistic-expert-activation-batch-aware-expert-routing-for-faster-decode",
+  "title": "Opportunistic Expert Activation: Batch-Aware Expert Routing for Faster Decode Without Retraining",
+  "authors": [
+   "Costin-Andrei Oncescu",
+   "Qingyang Wu",
+   "Wai Tong Chung",
+   "Robert Wu",
+   "Bryan Gopal",
+   "Junxiong Wang"
+  ],
+  "abstract": "An increasing number of LLMs employ Mixture-of-Experts (MoE) architectures where the feed-forward layer is replaced by a pool of experts and each token only activates a small subset of them. During autoregressive generation, these models often enter a memory-bound regime even for moderate batch sizes because the average expert load grows more slowly than in an equivalent dense feedforward layer. Consequently, MoE latency is governed by the number of activated experts. We introduce a framework for dynamically re-routing token-to-expert mapping to lower this number (and thus, the decode latency) while preserving a comparable quality. Our best results use a batch-aware routing that works by having tokens piggyback experts that have already been loaded into memory due to being crucial to other tokens within the same batch. Empirically, we evaluate our method on the Qwen3-30B and Qwen3-235B models with a batch size of $16$. Without any statistically significant loss in accuracy, our approach achieves latency reductions of $39\\%$ and $15\\%$ in the MoE layer decode latency, respectively.",
+  "publishedAt": "2025-11-04T00:00:00Z",
+  "primaryArxivCategory": [],
+  "officialLab": "Together AI",
+  "hfUpvotes": null,
+  "citationCount": 4,
+  "githubStars": null,
+  "pageCount": 18
+ },
+ {
+  "arxivId": null,
+  "slug": "parallelkernelbench-benchmarking-llms-on-multi-gpu-kernel-generation",
+  "title": "ParallelKernelBench: Benchmarking LLMs on Multi-GPU Kernel Generation",
+  "authors": [
+   "Willy Chan",
+   "Nathan Paek",
+   "Simon Guo",
+   "Simran Arora",
+   "Daniel Y. Fu"
+  ],
+  "abstract": null,
+  "publishedAt": "2026-06-23T00:00:00Z",
+  "primaryArxivCategory": [],
+  "officialLab": "Together AI",
+  "hfUpvotes": null,
+  "citationCount": null,
+  "githubStars": 47,
+  "pageCount": 46
+ },
+ {
+  "arxivId": "2603.15569",
+  "slug": "mamba-3-improved-sequence-modeling-using-state-space-principles",
+  "title": "Mamba-3: Improved Sequence Modeling using State Space Principles",
+  "authors": [
+   "Aakash Lahoti",
+   "Kevin Y. Li",
+   "Berlin Chen",
+   "Caitlin Wang",
+   "Aviv Bick",
+   "J. Kolter"
+  ],
+  "abstract": "Scaling inference-time compute has emerged as an important driver of LLM performance, making inference efficiency a central focus of model design alongside model quality. While the current Transformer-based models deliver strong model quality, their quadratic compute and linear memory make inference expensive. This has spurred the development of sub-quadratic models with reduced linear compute and constant memory requirements. However, many recent linear models trade off model quality and capability for algorithmic efficiency, failing on tasks such as state tracking. Moreover, their theoretically linear inference remains hardware-inefficient in practice. Guided by an inference-first perspective, we introduce three core methodological improvements inspired by the state space model (SSM) viewpoint of linear models. We combine: (1) a more expressive recurrence derived from SSM discretization, (2) a complex-valued state update rule that enables richer state tracking, and (3) a multi-input, multi-output (MIMO) formulation for better model performance without increasing decode latency. Together with architectural refinements, our Mamba-3 model achieves significant gains across retrieval, state-tracking, and downstream language modeling tasks. At the 1.5B scale, Mamba-3 improves average downstream accuracy by 0.6 percentage points compared to the next best model (Gated DeltaNet), with Mamba-3's MIMO variant further improving accuracy by another 1.2 points for a total 1.8 point gain. Across state-size experiments, Mamba-3 achieves comparable perplexity to Mamba-2 despite using half of its predecessor's state size. Our evaluations demonstrate Mamba-3's ability to advance the performance-efficiency Pareto frontier.",
+  "publishedAt": "2026-03-16T00:00:00Z",
+  "primaryArxivCategory": [],
+  "officialLab": "Together AI",
+  "hfUpvotes": null,
+  "citationCount": 68,
+  "githubStars": null,
+  "pageCount": 31
+ },
+ {
+  "arxivId": "2603.05451",
+  "slug": "flashattention-4-algorithm-and-kernel-pipelining-co-design-for-asymmetric",
+  "title": "FlashAttention-4: Algorithm and Kernel Pipelining Co-Design for Asymmetric Hardware Scaling",
+  "authors": [
+   "Ted Zadouri",
+   "Markus Hoehnerbach",
+   "Jay Shah",
+   "Timothy Liu",
+   "Vijay Thakkar",
+   "Tri Dao"
+  ],
+  "abstract": "Attention, as a core layer of the ubiquitous Transformer architecture, is the bottleneck for large language models and long-context applications. While FlashAttention-3 optimized attention for Hopper GPUs through asynchronous execution and warp specialization, it primarily targets the H100 architecture. The AI industry has rapidly transitioned to deploying Blackwell-based systems such as the B200 and GB200, which exhibit fundamentally different performance characteristics due to asymmetric hardware scaling: tensor core throughput doubles while other functional units (shared memory bandwidth, exponential units) scale more slowly or remain unchanged. We develop several techniques to address these shifting bottlenecks on Blackwell GPUs: (1) redesigned pipelines that exploit fully asynchronous MMA operations and larger tile sizes, (2) software-emulated exponential and conditional softmax rescaling that reduces non-matmul operations, and (3) leveraging tensor memory and the 2-CTA MMA mode to reduce shared memory traffic and atomic adds in the backward pass. We demonstrate that our method, FlashAttention-4, achieves up to 1.3$\\times$ speedup over cuDNN 9.13 and 2.7$\\times$ over Triton on B200 GPUs with BF16, reaching up to 1613 TFLOPs/s (71% utilization). Beyond algorithmic innovations, we implement FlashAttention-4 entirely in CuTe-DSL embedded in Python, achieving 20-30$\\times$ faster compile times compared to traditional C++ template-based approaches while maintaining full expressivity.",
+  "publishedAt": "2026-03-05T00:00:00Z",
+  "primaryArxivCategory": [],
+  "officialLab": "Together AI",
+  "hfUpvotes": null,
+  "citationCount": 36,
+  "githubStars": null,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2511.19269",
+  "slug": "cdlm-consistency-diffusion-language-models-for-faster-sampling",
+  "title": "CDLM: Consistency Diffusion Language Models for Faster Sampling",
+  "authors": [
+   "Minseo Kim",
+   "Chenfeng Xu",
+   "Coleman Hooper",
+   "Harman M. Singh",
+   "Ben Athiwaratkun",
+   "Ce Zhang"
+  ],
+  "abstract": "Diffusion Language Models (DLMs) offer a promising parallel generation paradigm but suffer from slow inference due to numerous refinement steps and the inability to use standard KV caching. We introduce CDLM (Consistency Diffusion Language Models), a training-based acceleration method that simultaneously tackles both bottlenecks. CDLM integrates consistency modeling to drastically reduce the number of required sampling steps by enabling multi-token finalization. Furthermore, we enforce a block-wise causal attention mask during fine-tuning, making the model fully compatible with KV caching. Experiments show CDLM achieves 3.6x-14.5x lower latency while maintaining competitive accuracy on math and coding tasks. The full training and evaluation code is available at https://github.com/SqueezeAILab/CDLM.",
+  "publishedAt": "2025-11-24T00:00:00Z",
+  "primaryArxivCategory": [],
+  "officialLab": "Together AI",
+  "hfUpvotes": null,
+  "citationCount": 17,
+  "githubStars": 41,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2511.13841",
+  "slug": "beat-the-long-tail-distribution-aware-speculative-decoding-for-rl-training",
+  "title": "Beat the Long Tail: Distribution-Aware Speculative Decoding for RL Training",
+  "authors": [
+   "Zelei Shao",
+   "Vikranth Srivatsa",
+   "Sanjana Srivastava",
+   "Qingyang Wu",
+   "Alpay Ariyak",
+   "Xiaoxia Wu"
+  ],
+  "abstract": "Reinforcement learning(RL) post-training has become essential for aligning large language models (LLMs), yet its efficiency is increasingly constrained by the rollout phase, where long trajectories are generated token by token. We identify a major bottleneck:the long-tail distribution of rollout lengths, where a small fraction of long generations dominates wall clock time and a complementary opportunity; the availability of historical rollouts that reveal stable prompt level patterns across training epochs. Motivated by these observations, we propose DAS, a Distribution Aware Speculative decoding framework that accelerates RL rollouts without altering model outputs. DAS integrates two key ideas: an adaptive, nonparametric drafter built from recent rollouts using an incrementally maintained suffix tree, and a length aware speculation policy that allocates more aggressive draft budgets to long trajectories that dominate makespan. This design exploits rollout history to sustain acceptance while balancing base and token level costs during decoding. Experiments on math and code reasoning tasks show that DAS reduces rollout time up to 50% while preserving identical training curves, demonstrating that distribution-aware speculative decoding can significantly accelerate RL post training without compromising learning quality.",
+  "publishedAt": "2025-11-17T00:00:00Z",
+  "primaryArxivCategory": [],
+  "officialLab": "Together AI",
+  "hfUpvotes": null,
+  "citationCount": 9,
+  "githubStars": null,
+  "pageCount": 12
+ },
+ {
+  "arxivId": "2511.18643",
+  "slug": "kitty-accurate-and-efficient-2-bit-kv-cache-quantization-with-dynamic-channel",
+  "title": "Kitty: Accurate and Efficient 2-bit KV Cache Quantization with Dynamic Channel-Wise Precision Boost",
+  "authors": [
+   "Haojun Xia",
+   "Xiaoxia Wu",
+   "Jisen Li",
+   "Robert Wu",
+   "Junxiong Wang",
+   "Jue Wang"
+  ],
+  "abstract": "The KV cache is a dominant memory bottleneck for LLM inference. While 4-bit KV quantization preserves accuracy, 2-bit often degrades it, especially on long-context reasoning. We close this gap via an algorithm-system co-design for mixed-precision KV caching: Kitty. On the algorithm side, extensive experiments show that Dynamic Channel-wise Precision Boost -- which ranks Key-cache channels by sensitivity and keeps only a small fraction at higher precision -- maintains near-zero loss in accuracy drop while approaching 2-bit memory. The main challenge is handling dynamic 4-bit channel boosts while keeping the page layout coalesced and the dequantization uniform, with no scattered reads or hard-coded masks. Kitty addresses these issues by decompose each mixed-precision Key page into two tensors with unified 2-bit precision. Based on this, Kitty provides a page-centric KV layout, Triton-compatible page dequantization kernels, and a lightweight runtime pipeline that preserves coalescing and avoids divergence. Across seven tasks and two model families (Qwen3, LLaMA3), Kitty cuts KV memory by nearly 8x with negligible accuracy loss, enabling up to 8x larger batches and 2.1x-4.1x higher throughput under the same memory budget. We release the full implementation of Kitty at https://github.com/Summer-Summer/Kitty.",
+  "publishedAt": "2025-11-23T00:00:00Z",
+  "primaryArxivCategory": [],
+  "officialLab": "Together AI",
+  "hfUpvotes": null,
+  "citationCount": 7,
+  "githubStars": null,
+  "pageCount": 12
+ },
+ {
+  "arxivId": "2511.13940",
+  "slug": "parallelkittens-systematic-and-practical-simplification-of-multi-gpu-ai-kernels",
+  "title": "ParallelKittens: Systematic and Practical Simplification of Multi-GPU AI Kernels",
+  "authors": [
+   "Stuart H. Sul",
+   "Simran Arora",
+   "B. Spector",
+   "Christopher R'e"
+  ],
+  "abstract": "Inter-GPU communication has become a major bottleneck for modern AI workloads as models scale and improvements in hardware compute throughput outpace improvements in interconnect bandwidth. Existing systems mitigate this through compute-communication overlap but often fail to meet theoretical peak performance across heterogeneous workloads and new accelerators. Instead of operator-specific techniques, we ask whether a small set of simple, reusable principles can systematically guide the design of optimal multi-GPU kernels. We present ParallelKittens (PK), a minimal CUDA framework that drastically simplifies the development of overlapped multi-GPU kernels. PK extends the ThunderKittens framework and embodies the principles of multi-GPU kernel design through eight core primitives and a unified programming template, derived from a comprehensive analysis of the factors that govern multi-GPU performance$\\unicode{x2014}$data-transfer mechanisms, resource scheduling, and design overheads. We validate PK on both Hopper and Blackwell architectures. With fewer than 50 lines of device code, PK achieves up to $2.33 \\times$ speedup for data- and tensor-parallel workloads, $4.08 \\times$ for sequence-parallel workloads, and $1.22 \\times$ for expert-parallel workloads.",
+  "publishedAt": "2025-11-17T00:00:00Z",
+  "primaryArxivCategory": [],
+  "officialLab": "Together AI",
+  "hfUpvotes": null,
+  "citationCount": 9,
+  "githubStars": null,
+  "pageCount": 27
+ },
+ {
+  "arxivId": "2505.17967",
+  "slug": "fft-based-dynamic-subspace-selection-for-low-rank-adaptive-optimization-of",
+  "title": "FFT-Based Dynamic Subspace Selection for Low-Rank Adaptive Optimization of Large Language Models",
+  "authors": [
+   "Ionut-Vlad Modoranu",
+   "Mher Safaryan",
+   "Erik Schultheis",
+   "Dan Alistarh"
+  ],
+  "abstract": "Low-rank optimization has emerged as a promising direction in training large language models (LLMs) to improve running time and reduce the memory usage of adaptive optimizers by constraining learning to a lower-dimensional space. Prior work typically projects gradients of linear layers using approaches based on Singular Value Decomposition (SVD) or QR-decomposition. Applying these techniques individually to each layer in large models is computationally expensive and incurs additional memory costs due to storing the projection matrices. In this work, we propose a computationally efficient and conceptually simple, two-step procedure to approximate SVD/QR-based gradient projections into lower-dimensional spaces by using a predefined orthogonal matrix of the Discrete Cosine Transform (DCT). We dynamically select columns from the DCT matrix based on their alignment with the gradient of each layer. The effective projection matrices are obtained via a simple matmul with the DCT matrix in $O(n^3)$ time, followed by a lightweight sorting step to identify the most relevant basis vectors. For large layers, DCT can be computed via Makhoul's $N$-point algorithm based on Fast Fourier Transform (FFT) in $O(n^2 \\log(n))$ time. Due to the predefined nature of the orthogonal bases, they are computed once at the start of training. Our numerical experiments on both pre-training and fine-tuning tasks demonstrate the effectiveness of our dual strategy in approximating optimal low-rank projections, obtaining an approach with rank-independent running time that matches the performance of costly SVD/QR-based methods while achieving faster runtime and reduced memory usage by up to $25\\%$ across different model sizes. Our code is available at \\href{https://github.com/IST-DASLab/ISTA-DASLab-Optimizers}{\\texttt{https://github.com/IST-DASLab/ISTA-DASLab-Optimizers}}.",
+  "publishedAt": "2025-05-23T00:00:00Z",
+  "primaryArxivCategory": [],
+  "officialLab": "Together AI",
+  "hfUpvotes": null,
+  "citationCount": 2,
+  "githubStars": 14,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2506.16411",
+  "slug": "when-does-divide-and-conquer-work-for-long-context-llm-a-noise-decomposition",
+  "title": "When Does Divide and Conquer Work for Long Context LLM? A Noise Decomposition Framework",
+  "authors": [
+   "Zhen Xu",
+   "Shang Zhu",
+   "Jue Wang",
+   "Junlin Wang",
+   "Ben Athiwaratkun",
+   "Chi Wang"
+  ],
+  "abstract": "We investigate the challenge of applying Large Language Models (LLMs) to long texts. We propose a theoretical framework that distinguishes the failure modes of long context tasks into three categories: cross-chunk dependence (task noise), confusion that grows with context size (model noise), and the imperfect integration of partial results (aggregator noise). Under this view, we analyze when it is effective to use multi-agent chunking, i.e., dividing a lengthy sequence into smaller chunks and aggregating the processed results of each chunk. Our experiments on tasks such as retrieval, question answering, and summarization confirm both the theoretical analysis and the conditions that favor multi-agent chunking. By exploring the accelerated decay of model fidelity with input length, we also explain why, for large inputs, a weaker model configured with chunk-based processing can surpass a more advanced model like GPT4o applied in a single shot. Overall, we present a principled understanding framework and our results highlight a direct pathway to handling long contexts in LLMs with carefully managed chunking and aggregator strategies.",
+  "publishedAt": "2025-06-19T00:00:00Z",
+  "primaryArxivCategory": [],
+  "officialLab": "Together AI",
+  "hfUpvotes": null,
+  "citationCount": 7,
+  "githubStars": null,
+  "pageCount": 23
+ },
+ {
+  "arxivId": "2603.03251",
+  "slug": "speculative-speculative-decoding",
+  "title": "Speculative Speculative Decoding",
+  "authors": [
+   "Tanishq Kumar",
+   "Tri Dao",
+   "Avner May"
+  ],
+  "abstract": "Autoregressive decoding is bottlenecked by its sequential nature. Speculative decoding has become a standard way to accelerate inference by using a fast draft model to predict upcoming tokens from a slower target model, and then verifying them in parallel with a single target model forward pass. However, speculative decoding itself relies on a sequential dependence between speculation and verification. We introduce speculative speculative decoding (SSD) to parallelize these operations. While a verification is ongoing, the draft model predicts likely verification outcomes and prepares speculations pre-emptively for them. If the actual verification outcome is then in the predicted set, a speculation can be returned immediately, eliminating drafting overhead entirely. We identify three key challenges presented by speculative speculative decoding, and suggest principled methods to solve each. The result is Saguaro, an optimized SSD algorithm. Our implementation is on average 30% faster than optimized speculative decoding baselines and up to 5x faster than autoregressive decoding with open source inference engines.",
+  "publishedAt": "2026-03-03T00:00:00Z",
+  "primaryArxivCategory": [],
+  "officialLab": "Together AI",
+  "hfUpvotes": null,
+  "citationCount": 11,
+  "githubStars": null,
+  "pageCount": 34
+ }
+]

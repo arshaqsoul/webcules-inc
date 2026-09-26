@@ -1,0 +1,725 @@
+[
+ {
+  "arxivId": "2603.22458",
+  "slug": "mineru-diffusion-rethinking-document-ocr-as-inverse-rendering-via-diffusion",
+  "title": "MinerU-Diffusion: Rethinking Document OCR as Inverse Rendering via Diffusion Decoding",
+  "authors": [
+   "Hejun Dong",
+   "Junbo Niu",
+   "Bin Wang",
+   "Weijun Zeng",
+   "Wentao Zhang",
+   "Conghui He"
+  ],
+  "abstract": "Optical character recognition (OCR) has evolved from line-level transcription to structured document parsing, requiring models to recover long-form sequences containing layout, tables, and formulas. Despite recent advances in vision-language models, most existing systems rely on autoregressive decoding, which introduces sequential latency and amplifies error propagation in long documents. In this work, we revisit document OCR from an inverse rendering perspective, arguing that left-to-right causal generation is an artifact of serialization rather than an intrinsic property of the task. Motivated by this insight, we propose MinerU-Diffusion, a unified diffusion-based framework that replaces autoregressive sequential decoding with parallel diffusion denoising under visual conditioning. MinerU-Diffusion employs a block-wise diffusion decoder and an uncertainty-driven curriculum learning strategy to enable stable training and efficient long-sequence inference. Extensive experiments demonstrate that MinerU-Diffusion consistently improves robustness while achieving up to 3.2x faster decoding compared to autoregressive baselines. Evaluations on the proposed Semantic Shuffle benchmark further confirm its reduced dependence on linguistic priors and stronger visual OCR capability.",
+  "publishedAt": "2026-03-23T18:25:17Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 139,
+  "citationCount": 7,
+  "githubStars": 628,
+  "pageCount": 33
+ },
+ {
+  "arxivId": "2605.25604",
+  "slug": "dvao-dynamic-variance-adaptive-advantage-optimization-for-multi-reward",
+  "title": "DVAO: Dynamic Variance-adaptive Advantage Optimization for Multi-reward Reinforcement Learning",
+  "authors": [
+   "Guochao Jiang",
+   "Jingyi Song",
+   "Guofeng Quan",
+   "Chuzhan Hao",
+   "Guohua Liu",
+   "Yuewei Zhang"
+  ],
+  "abstract": "Reinforcement Learning has become a standard paradigm for aligning Large Language Models with human intent and task requirements. While Group Relative Policy Optimization offers an efficient, value-model-free alternative to Proximal Policy Optimization, adapting it to real-world multi-reward settings remains challenging. Standard scalarization practices, such as Reward Combination and Advantage Combination, suffer from significant drawbacks: Reward Combination frequently generates advantages with excessively large squared magnitudes that lead to training instability, while Advantage Combination relies on static hyperparameters and ignores cross-objective correlations. To address these limitations, we propose Dynamic Variance-adaptive Advantage Optimization (DVAO), which dynamically adjusts combination weights based on the empirical reward variance of each objective within a rollout group, effectively up-weighting objectives with a stronger learning signal while suppressing noisy ones. We mathematically prove that DVAO maintains bounded advantage magnitudes for stable training and introduces a self-adaptive cross-objective regularization mechanism. Extensive experiments on mathematical reasoning and tool-use benchmarks using Qwen3 and Qwen2.5 models demonstrate that DVAO significantly outperforms baseline methods, achieving a superior multi-objective Pareto frontier and robust training stability.",
+  "publishedAt": "2026-05-25T08:55:16Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 139,
+  "citationCount": 1,
+  "githubStars": null,
+  "pageCount": 16
+ },
+ {
+  "arxivId": "2607.05394",
+  "slug": "weak-to-strong-generalization-via-direct-on-policy-distillation",
+  "title": "Weak-to-Strong Generalization via Direct On-Policy Distillation",
+  "authors": [
+   "Shiyuan Feng",
+   "Huan-ang Gao",
+   "Haohan Chi",
+   "Hanlin Wu",
+   "Zhilong Zhang",
+   "Zheng Jiang"
+  ],
+  "abstract": "Reinforcement learning with verifiable rewards (RLVR) is a powerful recipe for improving language-model reasoning, but it is expensive to repeat on every new strong model because the target model must generate many rollouts during training. As models scale, post-training itself becomes a bottleneck. We study a weak-to-strong alternative: run RL on a smaller model where rollouts are cheaper, then reuse what that RL run learned to improve a stronger target model. Directly distilling the post-RL weak teacher is not enough, because the teacher's final policy mixes useful RL gains with the limitations of the smaller model. We propose Direct On-Policy Distillation (Direct-OPD), which transfers the teacher's RL-induced policy shift instead. Direct-OPD compares the post-RL teacher with its own pre-RL reference and treats their log-ratio as a dense implicit reward for the student. In plain terms, the checkpoint pair tells us which actions RL made the weak model more or less likely to take, and Direct-OPD applies that signal on the stronger student's own on-policy states. This directly reuses the weak model's RL supervision signal without running sparse-reward RL on the target model. Empirically, Direct-OPD consistently leverages weaker teachers to improve stronger target models; notably, it boosts Qwen3-1.7B from 48.3% to 58.3% on AIME 2024 in just 4 hours on 8 A100 GPUs. It outperforms step-matched direct RL and enables the sequential composition of multiple policy shifts. Our results show that RL outcomes can be reused across model scales as implicit reward signals, not merely as final models to imitate.",
+  "publishedAt": "2026-07-06T17:59:58Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 139,
+  "citationCount": 4,
+  "githubStars": null,
+  "pageCount": 24
+ },
+ {
+  "arxivId": "2511.16719",
+  "slug": "sam-3-segment-anything-with-concepts",
+  "title": "SAM 3: Segment Anything with Concepts",
+  "authors": [
+   "Nicolas Carion",
+   "Laura Gustafson",
+   "Yuan-Ting Hu",
+   "Shoubhik Debnath",
+   "Ronghang Hu",
+   "Didac Suris"
+  ],
+  "abstract": "We present Segment Anything Model (SAM) 3, a unified model that detects, segments, and tracks objects in images and videos based on concept prompts, which we define as either short noun phrases (e.g., \"yellow school bus\"), image exemplars, or a combination of both. Promptable Concept Segmentation (PCS) takes such prompts and returns segmentation masks and unique identities for all matching object instances. To advance PCS, we build a scalable data engine that produces a high-quality dataset with 4M unique concept labels, including hard negatives, across images and videos. Our model consists of an image-level detector and a memory-based video tracker that share a single backbone. Recognition and localization are decoupled with a presence head, which boosts detection accuracy. SAM 3 doubles the accuracy of existing systems in both image and video PCS, and improves previous SAM capabilities on visual segmentation tasks. We open source SAM 3 along with our new Segment Anything with Concepts (SA-Co) benchmark for promptable concept segmentation.",
+  "publishedAt": "2025-11-20T18:59:56Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": "Meta AI / FAIR",
+  "hfUpvotes": 138,
+  "citationCount": 711,
+  "githubStars": 11224,
+  "pageCount": 78
+ },
+ {
+  "arxivId": "2603.00141",
+  "slug": "from-scale-to-speed-adaptive-test-time-scaling-for-image-editing",
+  "title": "From Scale to Speed: Adaptive Test-Time Scaling for Image Editing",
+  "authors": [
+   "Xiangyan Qu",
+   "Zhenlong Yuan",
+   "Jing Tang",
+   "Rui Chen",
+   "Datao Tang",
+   "Meng Yu"
+  ],
+  "abstract": "Image Chain-of-Thought (Image-CoT) is a test-time scaling paradigm that improves image generation by extending inference time. Most Image-CoT methods focus on text-to-image (T2I) generation. Unlike T2I generation, image editing is goal-directed: the solution space is constrained by the source image and instruction. This mismatch causes three challenges when applying Image-CoT to editing: inefficient resource allocation with fixed sampling budgets, unreliable early-stage verification using general MLLM scores, and redundant edited results from large-scale sampling. To address this, we propose ADaptive Edit-CoT (ADE-CoT), an on-demand test-time scaling framework to enhance editing efficiency and performance. It incorporates three key strategies: (1) a difficulty-aware resource allocation that assigns dynamic budgets based on estimated edit difficulty; (2) edit-specific verification in early pruning that uses region localization and caption consistency to select promising candidates; and (3) depth-first opportunistic stopping, guided by an instance-specific verifier, that terminates when intent-aligned results are found. Extensive experiments on three SOTA editing models (Step1X-Edit, BAGEL, FLUX.1 Kontext) across three benchmarks show that ADE-CoT achieves superior performance-efficiency trade-offs. With comparable sampling budgets, ADE-CoT obtains better performance with more than 2x speedup over Best-of-N.",
+  "publishedAt": "2026-02-24T09:13:16Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI",
+   "cs.LG",
+   "eess.IV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 138,
+  "citationCount": 6,
+  "githubStars": null,
+  "pageCount": 31
+ },
+ {
+  "arxivId": "2607.13125",
+  "slug": "boogu-image-0-1-boosting-open-agentic-multimodal-generation-via-understanding",
+  "title": "Boogu-Image-0.1: Boosting Open Agentic Multimodal Generation via Understanding under a Minimal Budget",
+  "authors": [
+   "Guoxuan Chen",
+   "Chufeng Xiao",
+   "Haoran Yang",
+   "Siyue Xie",
+   "Binxiao Huang",
+   "Ming Zhang"
+  ],
+  "abstract": "We introduce Boogu-Image-0.1, an open-source unified multimodal understanding and generation model family, comprising Base, Turbo, Edit, and Edit-Turbo variants. It delivers competitive performance in high-quality text-to-image generation, fast inference, instruction-based editing, and bilingual (Chinese-English) text rendering. Closed-source multimodal systems like Nano-Banana-Pro and GPT-Image-2 achieve strong performance through system-level integration rather than a single model, yet their internal practices remain largely undisclosed. In this work, we demonstrate that strengthening the understanding capability of the system, through a stronger multimodal encoder, agentic prompt rewriting, and related techniques, together with improvements in data quality, training pipelines, and agentic inference-time scaling, can substantially enhance generation and editing performance even under highly constrained compute budgets. Comprehensive evaluations show that Boogu-Image-0.1 consistently matches or surpasses other open-source models across standard benchmarks, and achieves results approaching leading closed-source systems. Notably, this is accomplished with only 208.62 million unique images. The base model's theoretical training cost is only approximately \\$400K. We share practical discussions that we believe are valuable to the broader research community, and release weights, code, and recipes under Apache 2.0 to advance the open ecosystem for unified multimodal understanding and generation. Our code is available here: https://github.com/Boogu-Project/Boogu-Image.",
+  "publishedAt": "2026-07-14T17:52:05Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 138,
+  "citationCount": 0,
+  "githubStars": null,
+  "pageCount": 70
+ },
+ {
+  "arxivId": "2607.27205",
+  "slug": "turbovla-real-time-vision-language-action-model-at-32-hz-on-an-rtx-4090-with-1",
+  "title": "TurboVLA: Real-Time Vision-Language-Action Model at 32 Hz on an RTX 4090 with <1 GB VRAM",
+  "authors": [
+   "Hengyi Xie",
+   "Chenfei Yao",
+   "Xianjin Wu",
+   "Xuanyang Xi",
+   "Yiping Tang",
+   "Di Xu"
+  ],
+  "abstract": "Vision-language-action (VLA) models commonly adopt an LLM-centric $V \\to L \\to A$ pathway, where visual observations are projected into the representation space of a large language model before being decoded into robot actions. Although effective, this design incurs substantial computation and memory overhead at every policy invocation. In this work, we introduce TurboVLA, a new VLA paradigm that reformulates the conventional $V \\to L \\to A$ pathway as a direct $V + L \\to A$ mapping. Instead of using a large language model as the central interface between perception and action, TurboVLA independently encodes visual observations and language instructions, directly exchanges information between them through lightweight bidirectional vision-language interaction, and predicts continuous action chunks with a compact decoder. This simple design constructs task-conditioned representations directly from visual and linguistic features, significantly reducing the computational and memory costs of VLA inference. On LIBERO, TurboVLA achieves 97.7% average success with only 0.2B parameters, 31.2 ms inference latency, and 0.9 GB inference VRAM on a consumer-grade RTX 4090, matching or outperforming substantially larger VLA policies. These results establish TurboVLA as a simple and effective alternative to the prevailing LLM-centric VLA paradigm, offering a new perspective on how vision, language, and action can be connected for efficient robotic manipulation. Code is available at https://github.com/H-EmbodVis/TurboVLA.",
+  "publishedAt": "2026-07-29T17:59:58Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.RO"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 138,
+  "citationCount": 0,
+  "githubStars": 385,
+  "pageCount": 16
+ },
+ {
+  "arxivId": "2509.22576",
+  "slug": "epo-entropy-regularized-policy-optimization-for-llm-agents-reinforcement",
+  "title": "EPO: Entropy-regularized Policy Optimization for LLM Agents Reinforcement Learning",
+  "authors": [
+   "Wujiang Xu",
+   "Wentian Zhao",
+   "Zhenting Wang",
+   "Yu-Jhe Li",
+   "Can Jin",
+   "Mingyu Jin"
+  ],
+  "abstract": "Training LLM agents in multi-turn environments with sparse rewards, where completing a single task requires 30+ turns of interaction within an episode, presents a fundamental challenge for reinforcement learning. We identify a critical failure mode unique to this setting: the exploration-exploitation cascade failure. This cascade begins with early-stage policy premature convergence, where sparse feedback causes agents to commit to flawed, low-entropy strategies. Subsequently, agents enter late-stage policy collapse, where conventional entropy regularization becomes counterproductive, promoting chaotic exploration that destabilizes training. We propose Entropy-regularized Policy Optimization (EPO), a general framework that breaks this failure cycle through three synergistic mechanisms: (1) adopting entropy regularization in multi-turn settings to enhance exploration, (2) an entropy smoothing regularizer that bounds policy entropy within historical averages to prevent abrupt fluctuations, and (3) adaptive phase-based weighting that balances exploration and exploitation across training. Our analysis justifies that EPO guarantees monotonically decreasing entropy variance while maintaining convergence. EPO achieves up to 152% performance improvement on ScienceWorld and up to 19.8% on ALFWorld. Our work demonstrates that multi-turn sparse-reward settings require fundamentally different entropy control than traditional RL, with broad implications for LLM agent training.",
+  "publishedAt": "2025-09-26T16:51:44Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 137,
+  "citationCount": 10,
+  "githubStars": 40,
+  "pageCount": 30
+ },
+ {
+  "arxivId": "2510.26692",
+  "slug": "kimi-linear-an-expressive-efficient-attention-architecture",
+  "title": "Kimi Linear: An Expressive, Efficient Attention Architecture",
+  "authors": [
+   "Kimi Team",
+   "Yu Zhang",
+   "Zongyu Lin",
+   "Xingcheng Yao",
+   "Jiaxi Hu",
+   "Fanqing Meng"
+  ],
+  "abstract": "We introduce Kimi Linear, a hybrid linear attention architecture that, for the first time, outperforms full attention under fair comparisons across various scenarios -- including short-context, long-context, and reinforcement learning (RL) scaling regimes. At its core lies Kimi Delta Attention (KDA), an expressive linear attention module that extends Gated DeltaNet with a finer-grained gating mechanism, enabling more effective use of limited finite-state RNN memory. Our bespoke chunkwise algorithm achieves high hardware efficiency through a specialized variant of the Diagonal-Plus-Low-Rank (DPLR) transition matrices, which substantially reduces computation compared to the general DPLR formulation while remaining more consistent with the classical delta rule. We pretrain a Kimi Linear model with 3B activated parameters and 48B total parameters, based on a layerwise hybrid of KDA and Multi-Head Latent Attention (MLA). Our experiments show that with an identical training recipe, Kimi Linear outperforms full MLA with a sizeable margin across all evaluated tasks, while reducing KV cache usage by up to 75% and achieving up to 6 times decoding throughput for a 1M context. These results demonstrate that Kimi Linear can be a drop-in replacement for full attention architectures with superior performance and efficiency, including tasks with longer input and output lengths. To support further research, we open-source the KDA kernel and vLLM implementations, and release the pre-trained and instruction-tuned model checkpoints.",
+  "publishedAt": "2025-10-30T16:59:43Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.LG"
+  ],
+  "officialLab": "Moonshot AI / Kimi",
+  "hfUpvotes": 137,
+  "citationCount": 116,
+  "githubStars": 1557,
+  "pageCount": 28
+ },
+ {
+  "arxivId": "2605.19833",
+  "slug": "mega-asr-towards-in-the-wild-2-speech-recognition-via-scaling-up-real-world",
+  "title": "Mega-ASR: Towards In-the-wild^2 Speech Recognition via Scaling up Real-world Acoustic Simulation",
+  "authors": [
+   "Zhifei Xie",
+   "Kaiyu Pang",
+   "Haobin Zhang",
+   "Deheng Ye",
+   "Xiaobin Hu",
+   "Shuicheng Yan"
+  ],
+  "abstract": "Despite rapid advances in automatic speech recognition (ASR) and large audio-language models, robust recognition in real-world environments remains limited by an \"acoustic robustness bottleneck\": models often lose acoustic grounding and produce omissions or hallucinations under severe, compositional distortions. We propose Mega-ASR, a unified ASR-in-the-wild framework that combines scalable compound-data construction with progressive acoustic-to-semantic optimization. We introduce Voices-in-the-Wild-2M, covering 7 classic acoustic phenomena and 54 physically plausible compound scenarios, and train Mega-ASR with Acoustic-to-Semantic Progressive Supervised Fine-Tuning and Dual-Granularity WER-Gated Policy Optimization. Extensive experiments demonstrate that Mega-ASR achieves significant advantages over prior state-of-the-art systems on adverse-condition ASR benchmarks (45.69% vs. 54.01% on VOiCES R4-B-F, and 21.49% vs. 29.34% on NOIZEUS Sta-0). On complex compositional acoustic scenarios, Mega-ASR further delivers over 30% relative WER reduction against strong open- and closed-source baselines, establishing a scalable paradigm for robust ASR in-the-wild.",
+  "publishedAt": "2026-05-19T13:26:51Z",
+  "primaryArxivCategory": [
+   "cs.SD",
+   "cs.AI",
+   "cs.CL",
+   "cs.MM",
+   "eess.AS"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 137,
+  "citationCount": 1,
+  "githubStars": 1124,
+  "pageCount": 37
+ },
+ {
+  "arxivId": "2509.18174",
+  "slug": "baseer-a-vision-language-model-for-arabic-document-to-markdown-ocr",
+  "title": "Baseer: A Vision-Language Model for Arabic Document-to-Markdown OCR",
+  "authors": [
+   "Khalil Hennara",
+   "Muhammad Hreden",
+   "Mohamed Motasim Hamed",
+   "Ahmad Bastati",
+   "Zeina Aldallal",
+   "Sara Chrouf"
+  ],
+  "abstract": "Arabic document OCR remains a challenging task due to the language's cursive script, diverse fonts, diacritics, and right-to-left orientation. While modern Multimodal Large Language Models (MLLMs) have advanced document understanding for high-resource languages, their performance on Arabic remains limited. In this work, we introduce Baseer, a vision-language model fine-tuned specifically for Arabic document OCR. Leveraging a large-scale dataset combining synthetic and real-world documents, Baseer is trained using a decoder-only fine-tuning strategy to adapt a pre-trained MLLM while preserving general visual features. We also present Misraj-DocOCR, a high-quality, expert-verified benchmark designed for rigorous evaluation of Arabic OCR systems. Our experiments show that Baseer significantly outperforms existing open-source and commercial solutions, achieving a WER of 0.25 and establishing a new state-of-the-art in the domain of Arabic document OCR. Our results highlight the benefits of domain-specific adaptation of general-purpose MLLMs and establish a strong baseline for high-accuracy OCR on morphologically rich languages like Arabic.",
+  "publishedAt": "2025-09-17T15:07:29Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 135,
+  "citationCount": 2,
+  "githubStars": null,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2511.13612",
+  "slug": "p1-mastering-physics-olympiads-with-reinforcement-learning",
+  "title": "P1: Mastering Physics Olympiads with Reinforcement Learning",
+  "authors": [
+   "Jiacheng Chen",
+   "Qianjia Cheng",
+   "Fangchen Yu",
+   "Haiyuan Wan",
+   "Yuchen Zhang",
+   "Shenghe Zheng"
+  ],
+  "abstract": "Recent progress in large language models (LLMs) has moved the frontier from puzzle-solving to science-grade reasoning-the kind needed to tackle problems whose answers must stand against nature, not merely fit a rubric. Physics is the sharpest test of this shift, which binds symbols to reality in a fundamental way, serving as the cornerstone of most modern technologies. In this work, we manage to advance physics research by developing large language models with exceptional physics reasoning capabilities, especially excel at solving Olympiad-level physics problems. We introduce P1, a family of open-source physics reasoning models trained entirely through reinforcement learning (RL). Among them, P1-235B-A22B is the first open-source model with Gold-medal performance at the latest International Physics Olympiad (IPhO 2025), and wins 12 gold medals out of 13 international/regional physics competitions in 2024/2025. P1-30B-A3B also surpasses almost all other open-source models on IPhO 2025, getting a silver medal. Further equipped with an agentic framework PhysicsMinions, P1-235B-A22B+PhysicsMinions achieves overall No.1 on IPhO 2025, and obtains the highest average score over the 13 physics competitions. Besides physics, P1 models also present great performance on other reasoning tasks like math and coding, showing the great generalibility of P1 series.",
+  "publishedAt": "2025-11-17T17:18:13Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 135,
+  "citationCount": 4,
+  "githubStars": 89,
+  "pageCount": 26
+ },
+ {
+  "arxivId": "2601.20540",
+  "slug": "advancing-open-source-world-models",
+  "title": "Advancing Open-source World Models",
+  "authors": [
+   "Robbyant Team",
+   "Zelin Gao",
+   "Qiuyu Wang",
+   "Yanhong Zeng",
+   "Jiapeng Zhu",
+   "Ka Leong Cheng"
+  ],
+  "abstract": "We present LingBot-World, an open-sourced world simulator stemming from video generation. Positioned as a top-tier world model, LingBot-World offers the following features. (1) It maintains high fidelity and robust dynamics in a broad spectrum of environments, including realism, scientific contexts, cartoon styles, and beyond. (2) It enables a minute-level horizon while preserving contextual consistency over time, which is also known as \"long-term memory\". (3) It supports real-time interactivity, achieving a latency of under 1 second when producing 16 frames per second. We provide public access to the code and model in an effort to narrow the divide between open-source and closed-source technologies. We believe our release will empower the community with practical applications across areas like content creation, gaming, and robot learning.",
+  "publishedAt": "2026-01-28T12:37:01Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 135,
+  "citationCount": 87,
+  "githubStars": 4340,
+  "pageCount": 31
+ },
+ {
+  "arxivId": "2508.05004",
+  "slug": "r-zero-self-evolving-reasoning-llm-from-zero-data",
+  "title": "R-Zero: Self-Evolving Reasoning LLM from Zero Data",
+  "authors": [
+   "Chengsong Huang",
+   "Wenhao Yu",
+   "Xiaoyang Wang",
+   "Hongming Zhang",
+   "Zongxia Li",
+   "Ruosen Li"
+  ],
+  "abstract": "Self-evolving Large Language Models (LLMs) offer a scalable path toward super-intelligence by autonomously generating, refining, and learning from their own experiences. However, existing methods for training such models still rely heavily on vast human-curated tasks and labels, typically via fine-tuning or reinforcement learning, which poses a fundamental bottleneck to advancing AI systems toward capabilities beyond human intelligence. To overcome this limitation, we introduce R-Zero, a fully autonomous framework that generates its own training data from scratch. Starting from a single base LLM, R-Zero initializes two independent models with distinct roles, a Challenger and a Solver. These models are optimized separately and co-evolve through interaction: the Challenger is rewarded for proposing tasks near the edge of the Solver capability, and the Solver is rewarded for solving increasingly challenging tasks posed by the Challenger. This process yields a targeted, self-improving curriculum without any pre-existing tasks and labels. Empirically, R-Zero substantially improves reasoning capability across different backbone LLMs, e.g., boosting the Qwen3-4B-Base by +6.49 on math-reasoning benchmarks and +7.54 on general-domain reasoning benchmarks.",
+  "publishedAt": "2025-08-07T03:38:16Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 134,
+  "citationCount": 167,
+  "githubStars": 831,
+  "pageCount": 21
+ },
+ {
+  "arxivId": "2510.04618",
+  "slug": "agentic-context-engineering-evolving-contexts-for-self-improving-language-models",
+  "title": "Agentic Context Engineering: Evolving Contexts for Self-Improving Language Models",
+  "authors": [
+   "Qizheng Zhang",
+   "Changran Hu",
+   "Shubhangi Upasani",
+   "Boyuan Ma",
+   "Fenglu Hong",
+   "Vamsidhar Kamanuru"
+  ],
+  "abstract": "Large language model (LLM) applications such as agents and domain-specific reasoning increasingly rely on context adaptation: modifying inputs with instructions, strategies, or evidence, rather than weight updates. Prior approaches improve usability but often suffer from brevity bias, which drops domain insights for concise summaries, and from context collapse, where iterative rewriting erodes details over time. We introduce ACE (Agentic Context Engineering), a framework that treats contexts as evolving playbooks that accumulate, refine, and organize strategies through a modular process of generation, reflection, and curation. ACE prevents collapse with structured, incremental updates that preserve detailed knowledge and scale with long-context models. Across agent and domain-specific benchmarks, ACE optimizes contexts both offline (e.g., system prompts) and online (e.g., agent memory), consistently outperforming strong baselines: +10.6% on agents and +8.6% on finance, while significantly reducing adaptation latency and rollout cost. Notably, ACE could adapt effectively without labeled supervision and instead by leveraging natural execution feedback. On the AppWorld leaderboard, ACE matches the top-ranked production-level agent on the overall average and surpasses it on the harder test-challenge split, despite using a smaller open-source model. These results show that comprehensive, evolving contexts enable scalable, efficient, and self-improving LLM systems with low overhead.",
+  "publishedAt": "2025-10-06T09:30:18Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 134,
+  "citationCount": 236,
+  "githubStars": 1248,
+  "pageCount": 32
+ },
+ {
+  "arxivId": "2512.08765",
+  "slug": "wan-move-motion-controllable-video-generation-via-latent-trajectory-guidance",
+  "title": "Wan-Move: Motion-controllable Video Generation via Latent Trajectory Guidance",
+  "authors": [
+   "Ruihang Chu",
+   "Yefei He",
+   "Zhekai Chen",
+   "Shiwei Zhang",
+   "Xiaogang Xu",
+   "Bin Xia"
+  ],
+  "abstract": "We present Wan-Move, a simple and scalable framework that brings motion control to video generative models. Existing motion-controllable methods typically suffer from coarse control granularity and limited scalability, leaving their outputs insufficient for practical use. We narrow this gap by achieving precise and high-quality motion control. Our core idea is to directly make the original condition features motion-aware for guiding video synthesis. To this end, we first represent object motions with dense point trajectories, allowing fine-grained control over the scene. We then project these trajectories into latent space and propagate the first frame's features along each trajectory, producing an aligned spatiotemporal feature map that tells how each scene element should move. This feature map serves as the updated latent condition, which is naturally integrated into the off-the-shelf image-to-video model, e.g., Wan-I2V-14B, as motion guidance without any architecture change. It removes the need for auxiliary motion encoders and makes fine-tuning base models easily scalable. Through scaled training, Wan-Move generates 5-second, 480p videos whose motion controllability rivals Kling 1.5 Pro's commercial Motion Brush, as indicated by user studies. To support comprehensive evaluation, we further design MoveBench, a rigorously curated benchmark featuring diverse content categories and hybrid-verified annotations. It is distinguished by larger data volume, longer video durations, and high-quality motion annotations. Extensive experiments on MoveBench and the public dataset consistently show Wan-Move's superior motion quality. Code, models, and benchmark data are made publicly available.",
+  "publishedAt": "2025-12-09T16:13:55Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 134,
+  "citationCount": 37,
+  "githubStars": 650,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2512.15431",
+  "slug": "step-gui-technical-report",
+  "title": "Step-GUI Technical Report",
+  "authors": [
+   "Haolong Yan",
+   "Jia Wang",
+   "Xin Huang",
+   "Yeqing Shen",
+   "Ziyang Meng",
+   "Zhimin Fan"
+  ],
+  "abstract": "Recent advances in multimodal large language models unlock unprecedented opportunities for GUI automation. However, a fundamental challenge remains: how to efficiently acquire high-quality training data while maintaining annotation reliability? We introduce a self-evolving training pipeline powered by the Calibrated Step Reward System, which converts model-generated trajectories into reliable training signals through trajectory-level calibration, achieving >90% annotation accuracy with 10-100x lower cost. Leveraging this pipeline, we introduce Step-GUI, a family of models (4B/8B) that achieves state-of-the-art GUI performance (8B: 80.2% AndroidWorld, 48.5% OSWorld, 62.6% ScreenShot-Pro) while maintaining robust general capabilities. As GUI agent capabilities improve, practical deployment demands standardized interfaces across heterogeneous devices while protecting user privacy. To this end, we propose GUI-MCP, the first Model Context Protocol for GUI automation with hierarchical architecture that combines low-level atomic operations and high-level task delegation to local specialist models, enabling high-privacy execution where sensitive data stays on-device. Finally, to assess whether agents can handle authentic everyday usage, we introduce AndroidDaily, a benchmark grounded in real-world mobile usage patterns with 3146 static actions and 235 end-to-end tasks across high-frequency daily scenarios (8B: static 89.91%, end-to-end 52.50%). Our work advances the development of practical GUI agents and demonstrates strong potential for real-world deployment in everyday digital interactions.",
+  "publishedAt": "2025-12-17T13:26:30Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 134,
+  "citationCount": 27,
+  "githubStars": null,
+  "pageCount": 41
+ },
+ {
+  "arxivId": "2603.25040",
+  "slug": "intern-s1-pro-scientific-multimodal-foundation-model-at-trillion-scale",
+  "title": "Intern-S1-Pro: Scientific Multimodal Foundation Model at Trillion Scale",
+  "authors": [
+   "Yicheng Zou",
+   "Dongsheng Zhu",
+   "Lin Zhu",
+   "Tong Zhu",
+   "Yunhua Zhou",
+   "Peiheng Zhou"
+  ],
+  "abstract": "We introduce Intern-S1-Pro, the first one-trillion-parameter scientific multimodal foundation model. Scaling to this unprecedented size, the model delivers a comprehensive enhancement across both general and scientific domains. Beyond stronger reasoning and image-text understanding capabilities, its intelligence is augmented with advanced agent capabilities. Simultaneously, its scientific expertise has been vastly expanded to master over 100 specialized tasks across critical science fields, including chemistry, materials, life sciences, and earth sciences. Achieving this massive scale is made possible by the robust infrastructure support of XTuner and LMDeploy, which facilitates highly efficient Reinforcement Learning (RL) training at the 1-trillion parameter level while ensuring strict precision consistency between training and inference. By seamlessly integrating these advancements, Intern-S1-Pro further fortifies the fusion of general and specialized intelligence, working as a Specializable Generalist, demonstrating its position in the top tier of open-source models for general capabilities, while outperforming proprietary models in the depth of specialized scientific tasks.",
+  "publishedAt": "2026-03-26T05:21:45Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.CL",
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 134,
+  "citationCount": 14,
+  "githubStars": null,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2601.00393",
+  "slug": "neoverse-enhancing-4d-world-model-with-in-the-wild-monocular-videos",
+  "title": "NeoVerse: Enhancing 4D World Model with in-the-wild Monocular Videos",
+  "authors": [
+   "Yuxue Yang",
+   "Lue Fan",
+   "Ziqi Shi",
+   "Junran Peng",
+   "Feng Wang",
+   "Zhaoxiang Zhang"
+  ],
+  "abstract": "In this paper, we propose NeoVerse, a versatile 4D world model that is capable of 4D reconstruction, novel-trajectory video generation, and rich downstream applications. We first identify a common limitation of scalability in current 4D world modeling methods, caused either by expensive and specialized multi-view 4D data or by cumbersome training pre-processing. In contrast, our NeoVerse is built upon a core philosophy that makes the full pipeline scalable to diverse in-the-wild monocular videos. Specifically, NeoVerse features pose-free feed-forward 4D reconstruction, online monocular degradation pattern simulation, and other well-aligned techniques. These designs empower NeoVerse with versatility and generalization to various domains. Meanwhile, NeoVerse achieves state-of-the-art performance in standard reconstruction and generation benchmarks. Our project page is available at https://neoverse-4d.github.io.",
+  "publishedAt": "2026-01-01T17:07:30Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 133,
+  "citationCount": 28,
+  "githubStars": 647,
+  "pageCount": 15
+ },
+ {
+  "arxivId": "2605.12357",
+  "slug": "mem-efficient-online-memory-for-large-language-models",
+  "title": "$δ$-mem: Efficient Online Memory for Large Language Models",
+  "authors": [
+   "Jingdi Lei",
+   "Di Zhang",
+   "Junxian Li",
+   "Weida Wang",
+   "Kaixuan Fan",
+   "Xiang Liu"
+  ],
+  "abstract": "Large language models increasingly need to accumulate and reuse historical information in long-term assistants and agent systems. Simply expanding the context window is costly and often fails to ensure effective context utilization. We propose $δ$-mem, a lightweight memory mechanism that augments a frozen full-attention backbone with a compact online state of associative memory. $δ$-mem compresses past information into a fixed-size state matrix updated by delta-rule learning, and uses its readout to generate low-rank corrections to the backbone's attention computation during generation. With only an $8\\times8$ online memory state, $δ$-mem improves the average score to $1.10\\times$ that of the frozen backbone and $1.15\\times$ that of the strongest non-$δ$-mem memory baseline. It achieves larger gains on memory-heavy benchmarks, reaching $1.31\\times$ on MemoryAgentBench and $1.20\\times$ on LoCoMo, while largely preserving general capabilities. These results show that effective memory can be realized through a compact online state directly coupled with attention computation, without full fine-tuning, backbone replacement, or explicit context extension.",
+  "publishedAt": "2026-05-12T16:31:44Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 133,
+  "citationCount": 3,
+  "githubStars": 253,
+  "pageCount": 15
+ },
+ {
+  "arxivId": "2511.03276",
+  "slug": "diffusion-language-models-are-super-data-learners",
+  "title": "Diffusion Language Models are Super Data Learners",
+  "authors": [
+   "Jinjie Ni",
+   "Qian Liu",
+   "Longxu Dou",
+   "Chao Du",
+   "Zili Wang",
+   "Hang Yan"
+  ],
+  "abstract": "Under strictly controlled pre-training settings, we observe a Crossover: when unique data is limited, diffusion language models (DLMs) consistently surpass autoregressive (AR) models by training for more epochs. The crossover shifts later with more or higher-quality data, earlier with larger models, and persists across dense and sparse architectures. We attribute the gains to three compounding factors: (1) any-order modeling, (2) super-dense compute from iterative bidirectional denoising, and (3) built-in Monte Carlo augmentation; input or parameter noise improves AR under data constraint but cannot close the gap. At scale, a 1.7B DLM trained with a ~1.5T-token compute budget on 10B unique Python tokens overtakes an AR coder trained with strictly matched settings. In addition, a 1B-parameter DLM achieves > 56% accuracy on HellaSwag and > 33% on MMLU using only 1B tokens, without any special tricks, just by repeating standard pre-training data. We also show that rising validation cross-entropy does not imply degraded downstream performance in this regime.",
+  "publishedAt": "2025-11-05T08:17:42Z",
+  "primaryArxivCategory": [
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 132,
+  "citationCount": 50,
+  "githubStars": 228,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2511.10629",
+  "slug": "one-small-step-in-latent-one-giant-leap-for-pixels-fast-latent-upscale-adapter",
+  "title": "One Small Step in Latent, One Giant Leap for Pixels: Fast Latent Upscale Adapter for Your Diffusion Models",
+  "authors": [
+   "Aleksandr Razin",
+   "Danil Kazantsev",
+   "Ilya Makarov"
+  ],
+  "abstract": "Diffusion models struggle to scale beyond their training resolutions, as direct high-resolution sampling is slow and costly, while post-hoc image super-resolution (ISR) introduces artifacts and additional latency by operating after decoding. We present the Latent Upscaler Adapter (LUA), a lightweight module that performs super-resolution directly on the generator's latent code before the final VAE decoding step. LUA integrates as a drop-in component, requiring no modifications to the base model or additional diffusion stages, and enables high-resolution synthesis through a single feed-forward pass in latent space. A shared Swin-style backbone with scale-specific pixel-shuffle heads supports 2x and 4x factors and remains compatible with image-space SR baselines, achieving comparable perceptual quality with nearly 3x lower decoding and upscaling time (adding only +0.42 s for 1024 px generation from 512 px, compared to 1.87 s for pixel-space SR using the same SwinIR architecture). Furthermore, LUA shows strong generalization across the latent spaces of different VAEs, making it easy to deploy without retraining from scratch for each new decoder. Extensive experiments demonstrate that LUA closely matches the fidelity of native high-resolution generation while offering a practical and efficient path to scalable, high-fidelity image synthesis in modern diffusion pipelines.",
+  "publishedAt": "2025-11-13T18:54:18Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 132,
+  "citationCount": 1,
+  "githubStars": 34,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2606.11176",
+  "slug": "data-journalist-agent-transforming-data-into-verifiable-multimodal-stories",
+  "title": "Data Journalist Agent: Transforming Data into Verifiable Multimodal Stories",
+  "authors": [
+   "Kevin Qinghong Lin",
+   "Batu EI",
+   "Yuhong Shi",
+   "Pan Lu",
+   "Philip Torr",
+   "James Zou"
+  ],
+  "abstract": "Data tells stories that shape society; the data journalist's job is to turn raw information into stories non-experts can trust. A high-quality news feature takes a newsroom team weeks: hunting for context, running statistics, choosing an angle, and designing visuals. Recent agents handle individual steps well: data-science agents close the analysis loop, while design agents synthesize beautiful websites. But can an agent serve as a data journalist end to end? We introduce Data Journalist Agent (Data2Story), a multi-agent framework that orchestrates specialized roles into a single virtual newsroom. Data2Story contributes two innovations. (i) Claims are evidence-grounded: an Inspector links every number, angle, and asset back to data, code, or an external reference. (ii) Articles are multimodally generative: rather than defaulting to plain text and static charts, Data2Story reasons about what readers will want to see, then deploys multimodal tools, such as interactive maps for geography and audio for music. We evaluate Data2Story on 18 articles, each paired with the originally published expert piece, along four axes: (a) human-agent angle coverage; (b) rubric evaluation with 53 participants across five dimensions; (c) computer-use agents as judges, a cost-saving proxy for how readers navigate interactive articles; and (d) verifiability, where a coding verifier re-executes statements against the data and checks claims against references. Data2Story produces competitive, evidence-traceable multimedia stories, with particular strength in transparency and auditability. Human articles retain an edge in editorial angle, creative design, and presentation. We position Data2Story as a collaborator for journalists, enabling more evidence-based, transparent, and verifiable reporting. Code and demos are available at https://data2story.github.io.",
+  "publishedAt": "2026-06-09T17:51:55Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.CL",
+   "cs.CY",
+   "cs.HC"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 132,
+  "citationCount": 0,
+  "githubStars": 149,
+  "pageCount": 32
+ },
+ {
+  "arxivId": "2605.18401",
+  "slug": "skillsvote-lifecycle-governance-of-agent-skills-from-collection-recommendation",
+  "title": "SkillsVote: Lifecycle Governance of Agent Skills from Collection, Recommendation to Evolution",
+  "authors": [
+   "Hongyi Liu",
+   "Haoyan Yang",
+   "Tao Jiang",
+   "Bo Tang",
+   "Feiyu Xiong",
+   "Yuyu Luo"
+  ],
+  "abstract": "Long-horizon LLM agents generate traces that could become reusable experience, but raw trajectories are noisy, local, and hard to govern. Agent Skills offer a structured artifact for combining procedural guidance, executable resources, and applicability boundaries. Yet open skill ecosystems contain redundant, uneven, environment-sensitive artifacts, and indiscriminate updates can pollute future context. We present SkillsVote, a lifecycle-governance framework for Agent Skills across collection, recommendation, attribution, and evolution. SkillsVote profiles a million-scale open source corpus for environment requirements, quality, and verifiability, and synthesizes tasks for verifiable skills. Before execution, it performs agentic library search over structured skill folders to expose instructional context. After execution, it decomposes trajectories into skill-linked subtasks, attributes outcomes to skill-guided execution, agent exploration, environment, and result signals, and admits only successful reusable discoveries to evidence-gated updates. Experiments on Terminal-Bench 2.0 and SWE-Bench Pro show that SkillsVote improves agent performance on challenging agentic coding benchmarks. The gains arise from two complementary pathways: online evolution over task streams at test time and offline transfer via frozen libraries built from either historical trajectories or curated open source skills.",
+  "publishedAt": "2026-05-18T13:44:19Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 131,
+  "citationCount": 14,
+  "githubStars": null,
+  "pageCount": 71
+ },
+ {
+  "arxivId": "2606.24775",
+  "slug": "are-we-ready-for-an-agent-native-memory-system",
+  "title": "Are We Ready For An Agent-Native Memory System?",
+  "authors": [
+   "Wei Zhou",
+   "Xuanhe Zhou",
+   "Shaokun Han",
+   "Hongming Xu",
+   "Guoliang Li",
+   "Zhiyu Li"
+  ],
+  "abstract": "Memory for large language model (LLM) agents has rapidly evolved from simple retrieval-augmented mechanisms into a data management system that supports persistent information storage, retrieval, update, consolidation, and dynamic lifecycle governance throughout agent execution. Despite this evolution, existing evaluations still benchmark agent memory mainly through end-to-end task success metrics (e.g., F1, BLEU), while treating the underlying system as a monolithic black box. As a result, critical system-level concerns, including operational costs, architectural trade-offs across memory modules, and robustness under dynamic knowledge updates, remain insufficiently explored. In this paper, we present a systematic experimental study of agent memory from a data management perspective. We propose an analytical framework that decomposes agent memory into four core modules: memory representation and storage, extraction, retrieval and routing, and maintenance. Under this framework, we evaluate 12 representative memory systems and two reference baselines across five benchmark workloads spanning 11 datasets. Our extensive end-to-end evaluation shows that no single architecture dominates across all scenarios; instead, effectiveness depends heavily on how well the memory structure aligns with the workload bottleneck. Furthermore, through fine-grained ablation studies, we quantify their individual effects on representation fidelity, retrieval precision, update correctness, and long-horizon stability. Finally, we reveal cost-performance trade-offs under realistic workloads, showing localized maintenance is more cost-efficient than global reorganization. Based on these findings, we identify promising directions towards building truly agent-native memory systems. The code is publicly available at https://github.com/OpenDataBox/MemoryData.",
+  "publishedAt": "2026-06-23T16:34:55Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.DB",
+   "cs.IR"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 131,
+  "citationCount": 7,
+  "githubStars": 129,
+  "pageCount": 14
+ },
+ {
+  "arxivId": "2509.08519",
+  "slug": "humo-human-centric-video-generation-via-collaborative-multi-modal-conditioning",
+  "title": "HuMo: Human-Centric Video Generation via Collaborative Multi-Modal Conditioning",
+  "authors": [
+   "Liyang Chen",
+   "Tianxiang Ma",
+   "Jiawei Liu",
+   "Bingchuan Li",
+   "Zhuowei Chen",
+   "Lijie Liu"
+  ],
+  "abstract": "Human-Centric Video Generation (HCVG) methods seek to synthesize human videos from multimodal inputs, including text, image, and audio. Existing methods struggle to effectively coordinate these heterogeneous modalities due to two challenges: the scarcity of training data with paired triplet conditions and the difficulty of collaborating the sub-tasks of subject preservation and audio-visual sync with multimodal inputs. In this work, we present HuMo, a unified HCVG framework for collaborative multimodal control. For the first challenge, we construct a high-quality dataset with diverse and paired text, reference images, and audio. For the second challenge, we propose a two-stage progressive multimodal training paradigm with task-specific strategies. For the subject preservation task, to maintain the prompt following and visual generation abilities of the foundation model, we adopt the minimal-invasive image injection strategy. For the audio-visual sync task, besides the commonly adopted audio cross-attention layer, we propose a focus-by-predicting strategy that implicitly guides the model to associate audio with facial regions. For joint learning of controllabilities across multimodal inputs, building on previously acquired capabilities, we progressively incorporate the audio-visual sync task. During inference, for flexible and fine-grained multimodal control, we design a time-adaptive Classifier-Free Guidance strategy that dynamically adjusts guidance weights across denoising steps. Extensive experimental results demonstrate that HuMo surpasses specialized state-of-the-art methods in sub-tasks, establishing a unified framework for collaborative multimodal-conditioned HCVG. Project Page: https://phantom-video.github.io/HuMo.",
+  "publishedAt": "2025-09-10T11:54:29Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.MM"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 130,
+  "citationCount": 45,
+  "githubStars": 1281,
+  "pageCount": 15
+ },
+ {
+  "arxivId": "2511.08923",
+  "slug": "tidar-think-in-diffusion-talk-in-autoregression",
+  "title": "TiDAR: Think in Diffusion, Talk in Autoregression",
+  "authors": [
+   "Jingyu Liu",
+   "Xin Dong",
+   "Zhifan Ye",
+   "Rishabh Mehta",
+   "Yonggan Fu",
+   "Vartika Singh"
+  ],
+  "abstract": "Diffusion language models hold the promise of fast parallel generation, while autoregressive (AR) models typically excel in quality due to their causal structure aligning naturally with language modeling. This raises a fundamental question: can we achieve a synergy with high throughput, higher GPU utilization, and AR level quality? Existing methods fail to effectively balance these two aspects, either prioritizing AR using a weaker model for sequential drafting (speculative decoding), leading to lower drafting efficiency, or using some form of left-to-right (AR-like) decoding logic for diffusion, which still suffers from quality degradation and forfeits its potential parallelizability. We introduce TiDAR, a sequence-level hybrid architecture that drafts tokens (Thinking) in Diffusion and samples final outputs (Talking) AutoRegressively - all within a single forward pass using specially designed structured attention masks. This design exploits the free GPU compute density, achieving a strong balance between drafting and verification capacity. Moreover, TiDAR is designed to be serving-friendly (low overhead) as a standalone model. We extensively evaluate TiDAR against AR models, speculative decoding, and diffusion variants across generative and likelihood tasks at 1.5B and 8B scales. Thanks to the parallel drafting and sampling as well as exact KV cache support, TiDAR outperforms speculative decoding in measured throughput and surpasses diffusion models like Dream and Llada in both efficiency and quality. Most notably, TiDAR is the first architecture to close the quality gap with AR models while delivering 4.71x to 5.91x more tokens per second.",
+  "publishedAt": "2025-11-12T02:59:33Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": "NVIDIA",
+  "hfUpvotes": 130,
+  "citationCount": 33,
+  "githubStars": null,
+  "pageCount": 17
+ },
+ {
+  "arxivId": "2511.20639",
+  "slug": "latent-collaboration-in-multi-agent-systems",
+  "title": "Latent Collaboration in Multi-Agent Systems",
+  "authors": [
+   "Jiaru Zou",
+   "Ruizhong Qiu",
+   "Gaotang Li",
+   "Xiyuan Yang",
+   "Katherine Tieu",
+   "Pan Lu"
+  ],
+  "abstract": "Multi-agent systems (MAS) extend large language models (LLMs) from independent single-model reasoning to coordinative system-level intelligence. While existing LLM agents depend on text-based mediation for reasoning and communication, we take a step forward by enabling models to collaborate directly within the continuous latent space. We introduce LatentMAS, an end-to-end training-free framework that enables pure latent collaboration among LLM agents. In LatentMAS, each agent first performs auto-regressive latent thoughts generation through last-layer hidden embeddings instead of text. Then, a shared latent working memory preserves and transfers each agent's internal representations and latent thoughts, ensuring lossless information exchange without re-encoding. We provide detailed theoretical analyses showing that LatentMAS achieves higher expressiveness and lossless information preservation with lower overall complexity than standard text-based MAS. In addition, empirical evaluations across 9 comprehensive benchmarks spanning math and science reasoning, commonsense understanding, and code generation show that LatentMAS outperforms advanced single agents and text-based MAS baselines, achieving up to 14.6% higher accuracy, reducing output token usage by 70.8%-83.7%, and providing 4$\\times$-4.3$\\times$ faster end-to-end inference. Code and data are fully open-sourced at https://github.com/Gen-Verse/LatentMAS.",
+  "publishedAt": "2025-11-25T18:56:57Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 130,
+  "citationCount": 35,
+  "githubStars": 1075,
+  "pageCount": 35
+ },
+ {
+  "arxivId": "2606.11926",
+  "slug": "toward-generalist-autonomous-research-via-hypothesis-tree-refinement",
+  "title": "Toward Generalist Autonomous Research via Hypothesis-Tree Refinement",
+  "authors": [
+   "Jiajie Jin",
+   "Yuyang Hu",
+   "Kai Qiu",
+   "Qi Dai",
+   "Chong Luo",
+   "Guanting Dong"
+  ],
+  "abstract": "Scientific progress depends on a repeated loop of exploration, experimentation, and abstraction. Researchers test candidate directions, interpret the evidence, and carry the resulting lessons into later attempts. We study how an AI agent can run this loop autonomously over long horizons. We introduce Arbor, a general framework for autonomous research that combines a long-lived coordinator, short-lived executors, and Hypothesis Tree Refinement (HTR), a persistent tree that links hypotheses, artifacts, evidence, and distilled insights across time. The coordinator manages global research strategy over the tree, while executors implement and test individual hypotheses in isolated worktrees. As results return, Arbor updates the tree, propagates reusable lessons, refines the search frontier, and admits verified improvements. This design turns autonomous research from a sequence of local attempts into a cumulative process in which strategy, execution, and evidence are carried across time. We evaluate Arbor under Autonomous Optimization (AO), an operational setting where an agent improves an initial research artifact through iterative experimentation without step-level human supervision. Across six real research tasks in model training, harness engineering, and data synthesis, Arbor achieves the best held-out result on all six tasks, attaining more than 2.5x the average relative held-out gain of Codex and Claude Code under the same task interface and resource budget. On MLE-Bench Lite, Arbor reaches 86.36% Any Medal with GPT-5.5, the strongest result in our comparison.",
+  "publishedAt": "2026-06-10T10:57:05Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 130,
+  "citationCount": 2,
+  "githubStars": 993,
+  "pageCount": 36
+ },
+ {
+  "arxivId": "2508.13167",
+  "slug": "chain-of-agents-end-to-end-agent-foundation-models-via-multi-agent",
+  "title": "Chain-of-Agents: End-to-End Agent Foundation Models via Multi-Agent Distillation and Agentic RL",
+  "authors": [
+   "Weizhen Li",
+   "Jianbo Lin",
+   "Zhuosong Jiang",
+   "Jingyi Cao",
+   "Xinpeng Liu",
+   "Jiayu Zhang"
+  ],
+  "abstract": "Recent advances in large language models (LLMs) and multi-agent systems have demonstrated remarkable capabilities in complex problem-solving tasks such as deep research, vibe coding, and mathematical reasoning. However, most existing multi-agent systems are built upon manual prompt/workflow engineering with sophisticated agent frameworks, making them computationally inefficient, less capable, and can not benefit from data-centric learning. In this work, we introduce Chain-of-Agents (CoA), a novel paradigm of LLM reasoning that enables native end-to-end complex problem-solving in the same way as a multi-agent system (i.e., multi-turn problem solving with multiple tools and multiple agents) within one model. In chain-of-agents problem-solving, the model dynamically activates different tool agents and role-playing agents to simulate multi-agent collaboration in an end-to-end fashion. To elicit end-to-end chain-of-agents problem-solving abilities in LLMs, we introduce a multi-agent distillation framework to distill state-of-the-art multi-agent systems into chain-of-agents trajectories for agentic supervised fine-tuning. We then use agentic reinforcement learning on verifiable agentic tasks to further improve the models' capabilities on chain-of-agents problem solving. We call the resulting models Agent Foundation Models (AFMs). Our empirical studies demonstrate that AFM establishes new state-of-the-art performance across diverse benchmarks in both web agent and code agent settings. We make the entire research, including the model weights, code for training and evaluation, and the training data, fully open-sourced, which offers a solid starting point for future research on agent models and agentic RL.",
+  "publishedAt": "2025-08-06T17:01:02Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 129,
+  "citationCount": 66,
+  "githubStars": 580,
+  "pageCount": 51
+ }
+]

@@ -1,0 +1,711 @@
+[
+ {
+  "arxivId": "2607.20145",
+  "slug": "slai-t-rex-full-parameter-post-training-of-the-deepseek-v4-family-on-ascend",
+  "title": "SLAI T-Rex: Full-Parameter Post-training of the DeepSeek-V4 Family on Ascend SuperPOD",
+  "authors": [
+   "Dongfang Li",
+   "Xiaodong Luo",
+   "Ruoyu Sun",
+   "Xuhui Chen",
+   "Linyuan Qiu",
+   "Jian Meng"
+  ],
+  "abstract": "Full-parameter post-training of trillion-parameter-scale MoE models introduces substantial system-level challenges for large-scale distributed training, including severe memory pressure, non-overlapped communication overhead, and inefficient kernel execution. While most large-scale LLM training systems are built around GPU-based clusters, this report presents an end-to-end optimization practice on the Ascend NPU SuperPOD. Using the DeepSeek-V4 model family as the target workload, we develop a hierarchical optimization framework spanning model-level parallelism, computation-communication orchestration, and low-level kernel execution. The resulting system achieves 34.22% Model FLOPs Utilization (MFU) with a 2.93x improvement over the open-source baseline recipe while maintaining training stability. Building on this optimized infrastructure, we further establish a CPT and SFT workflow for complex Operations Research (OR) tasks. We refer to the integrated framework as SLAI T-Rex. Using DeepSeek-V4-Flash, we develop OR-oriented CPT and SFT data pipelines that combine collected domain resources with solver-verified synthetic optimization documents. The resulting dataset contains 10K high-quality SFT samples spanning four task categories and three problem representations. The specialized model achieves the highest average zero-shot Pass@1 score among the evaluated models, reaching 71.81% and outperforming GPT-5.4-Mini and the base DeepSeek-V4-Flash model by 3.98 and 11.27 percentage points, respectively. Overall, this work demonstrates a full-stack pathway from efficient trillion-parameter model post-training on Ascend infra to domain-specialized Flash models for solver-grounded mathematical modeling, advancing frontier-model systems for complex reasoning.",
+  "publishedAt": "2026-07-22T13:49:17Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 74,
+  "citationCount": 0,
+  "githubStars": 32,
+  "pageCount": 75
+ },
+ {
+  "arxivId": "2508.05635",
+  "slug": "genie-envisioner-a-unified-world-foundation-platform-for-robotic-manipulation",
+  "title": "Genie Envisioner: A Unified World Foundation Platform for Robotic Manipulation",
+  "authors": [
+   "Yue Liao",
+   "Pengfei Zhou",
+   "Siyuan Huang",
+   "Donglin Yang",
+   "Shengcong Chen",
+   "Yuxin Jiang"
+  ],
+  "abstract": "We introduce Genie Envisioner (GE), a unified world foundation platform for robotic manipulation that integrates policy learning, evaluation, and simulation within a single video-generative framework. At its core, GE-Base is a large-scale, instruction-conditioned video diffusion model that captures the spatial, temporal, and semantic dynamics of real-world robotic interactions in a structured latent space. Built upon this foundation, GE-Act maps latent representations to executable action trajectories through a lightweight, flow-matching decoder, enabling precise and generalizable policy inference across diverse embodiments with minimal supervision. To support scalable evaluation and training, GE-Sim serves as an action-conditioned neural simulator, producing high-fidelity rollouts for closed-loop policy development. The platform is further equipped with EWMBench, a standardized benchmark suite measuring visual fidelity, physical consistency, and instruction-action alignment. Together, these components establish Genie Envisioner as a scalable and practical foundation for instruction-driven, general-purpose embodied intelligence. All code, models, and benchmarks will be released publicly.",
+  "publishedAt": "2025-08-07T17:59:44Z",
+  "primaryArxivCategory": [
+   "cs.RO",
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 73,
+  "citationCount": 113,
+  "githubStars": 568,
+  "pageCount": 26
+ },
+ {
+  "arxivId": "2508.11987",
+  "slug": "futurex-an-advanced-live-benchmark-for-llm-agents-in-future-prediction",
+  "title": "FutureX: An Advanced Live Benchmark for LLM Agents in Future Prediction",
+  "authors": [
+   "Zhiyuan Zeng",
+   "Jiashuo Liu",
+   "Siyuan Chen",
+   "Tianci He",
+   "Yali Liao",
+   "Yixiao Tian"
+  ],
+  "abstract": "Future prediction is a complex task for LLM agents, requiring a high level of analytical thinking, information gathering, contextual understanding, and decision-making under uncertainty. Agents must not only gather and interpret vast amounts of dynamic information but also integrate diverse data sources, weigh uncertainties, and adapt predictions based on emerging trends, just as human experts do in fields like politics, economics, and finance. Despite its importance, no large-scale benchmark exists for evaluating agents on future prediction, largely due to challenges in handling real-time updates and retrieving timely, accurate answers. To address this, we introduce $\\textbf{FutureX}$, a dynamic and live evaluation benchmark specifically designed for LLM agents performing future prediction tasks. FutureX is the largest and most diverse live benchmark for future prediction, supporting real-time daily updates and eliminating data contamination through an automated pipeline for question gathering and answer collection. We evaluate 25 LLM/agent models, including those with reasoning, search capabilities, and integration of external tools such as the open-source Deep Research Agent and closed-source Deep Research models. This comprehensive evaluation assesses agents' adaptive reasoning and performance in dynamic environments. Additionally, we provide in-depth analyses of agents' failure modes and performance pitfalls in future-oriented tasks, including the vulnerability to fake web pages and the temporal validity. Our goal is to establish a dynamic, contamination-free evaluation standard that drives the development of LLM agents capable of performing at the level of professional human analysts in complex reasoning and predictive thinking.",
+  "publishedAt": "2025-08-16T08:54:08Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 73,
+  "citationCount": 39,
+  "githubStars": null,
+  "pageCount": 51
+ },
+ {
+  "arxivId": "2509.08826",
+  "slug": "rewarddance-reward-scaling-in-visual-generation",
+  "title": "RewardDance: Reward Scaling in Visual Generation",
+  "authors": [
+   "Jie Wu",
+   "Yu Gao",
+   "Zilyu Ye",
+   "Ming Li",
+   "Liang Li",
+   "Hanzhong Guo"
+  ],
+  "abstract": "Reward Models (RMs) are critical for improving generation models via Reinforcement Learning (RL), yet the RM scaling paradigm in visual generation remains largely unexplored. It primarily due to fundamental limitations in existing approaches: CLIP-based RMs suffer from architectural and input modality constraints, while prevalent Bradley-Terry losses are fundamentally misaligned with the next-token prediction mechanism of Vision-Language Models (VLMs), hindering effective scaling. More critically, the RLHF optimization process is plagued by Reward Hacking issue, where models exploit flaws in the reward signal without improving true quality. To address these challenges, we introduce RewardDance, a scalable reward modeling framework that overcomes these barriers through a novel generative reward paradigm. By reformulating the reward score as the model's probability of predicting a \"yes\" token, indicating that the generated image outperforms a reference image according to specific criteria, RewardDance intrinsically aligns reward objectives with VLM architectures. This alignment unlocks scaling across two dimensions: (1) Model Scaling: Systematic scaling of RMs up to 26 billion parameters; (2) Context Scaling: Integration of task-specific instructions, reference examples, and chain-of-thought (CoT) reasoning. Extensive experiments demonstrate that RewardDance significantly surpasses state-of-the-art methods in text-to-image, text-to-video, and image-to-video generation. Crucially, we resolve the persistent challenge of \"reward hacking\": Our large-scale RMs exhibit and maintain high reward variance during RL fine-tuning, proving their resistance to hacking and ability to produce diverse, high-quality outputs. It greatly relieves the mode collapse problem that plagues smaller models.",
+  "publishedAt": "2025-09-10T17:59:31Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 73,
+  "citationCount": 58,
+  "githubStars": null,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2509.13311",
+  "slug": "towards-general-agentic-intelligence-via-environment-scaling",
+  "title": "Towards General Agentic Intelligence via Environment Scaling",
+  "authors": [
+   "Runnan Fang",
+   "Shihao Cai",
+   "Baixuan Li",
+   "Jialong Wu",
+   "Guangyu Li",
+   "Wenbiao Yin"
+  ],
+  "abstract": "Advanced agentic intelligence is a prerequisite for deploying Large Language Models in practical, real-world applications. Diverse real-world APIs demand precise, robust function-calling intelligence, which needs agents to develop these capabilities through interaction in varied environments. The breadth of function-calling competence is closely tied to the diversity of environments in which agents are trained. In this work, we scale up environments as a step towards advancing general agentic intelligence. This gives rise to two central challenges: (i) how to scale environments in a principled manner, and (ii) how to effectively train agentic capabilities from experiences derived through interactions with these environments. To address these, we design a scalable framework that automatically constructs heterogeneous environments that are fully simulated, systematically broadening the space of function-calling scenarios. We further adapt a two-phase agent fine-tuning strategy: first endowing agents with fundamental agentic capabilities, then specializing them for domain-specific contexts. Extensive experiments on agentic benchmarks, tau-bench, tau2-Bench, and ACEBench, demonstrate that our trained model, AgentScaler, significantly enhances the function-calling capability of models.",
+  "publishedAt": "2025-09-16T17:57:20Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 73,
+  "citationCount": 48,
+  "githubStars": null,
+  "pageCount": 14
+ },
+ {
+  "arxivId": "2510.18855",
+  "slug": "every-step-evolves-scaling-reinforcement-learning-for-trillion-scale-thinking",
+  "title": "Every Step Evolves: Scaling Reinforcement Learning for Trillion-Scale Thinking Model",
+  "authors": [
+   "Ling Team",
+   "Anqi Shen",
+   "Baihui Li",
+   "Bin Hu",
+   "Bin Jing",
+   "Cai Chen"
+  ],
+  "abstract": "We present Ring-1T, the first open-source, state-of-the-art thinking model with a trillion-scale parameter. It features 1 trillion total parameters and activates approximately 50 billion per token. Training such models at a trillion-parameter scale introduces unprecedented challenges, including train-inference misalignment, inefficiencies in rollout processing, and bottlenecks in the RL system. To address these, we pioneer three interconnected innovations: (1) IcePop stabilizes RL training via token-level discrepancy masking and clipping, resolving instability from training-inference mismatches; (2) C3PO++ improves resource utilization for long rollouts under a token budget by dynamically partitioning them, thereby obtaining high time efficiency; and (3) ASystem, a high-performance RL framework designed to overcome the systemic bottlenecks that impede trillion-parameter model training. Ring-1T delivers breakthrough results across critical benchmarks: 93.4 on AIME-2025, 86.72 on HMMT-2025, 2088 on CodeForces, and 55.94 on ARC-AGI-1. Notably, it attains a silver medal-level result on the IMO-2025, underscoring its exceptional reasoning capabilities. By releasing the complete 1T parameter MoE model to the community, we provide the research community with direct access to cutting-edge reasoning capabilities. This contribution marks a significant milestone in democratizing large-scale reasoning intelligence and establishes a new baseline for open-source model performance.",
+  "publishedAt": "2025-10-21T17:46:14Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 73,
+  "citationCount": 32,
+  "githubStars": null,
+  "pageCount": 31
+ },
+ {
+  "arxivId": "2510.24411",
+  "slug": "os-sentinel-towards-safety-enhanced-mobile-gui-agents-via-hybrid-validation-in",
+  "title": "OS-Sentinel: Towards Safety-Enhanced Mobile GUI Agents via Hybrid Validation in Realistic Workflows",
+  "authors": [
+   "Qiushi Sun",
+   "Mukai Li",
+   "Zhoumianze Liu",
+   "Zhihui Xie",
+   "Fangzhi Xu",
+   "Zhangyue Yin"
+  ],
+  "abstract": "Computer-using agents powered by Vision-Language Models (VLMs) have demonstrated human-like capabilities in operating digital environments like mobile platforms. While these agents hold great promise for advancing digital automation, their potential for unsafe operations, such as system compromise and privacy leakage, is raising significant concerns. Detecting these safety concerns across the vast and complex operational space of mobile environments presents a formidable challenge that remains critically underexplored. To establish a foundation for mobile agent safety research, we introduce MobileRisk-Live, a dynamic sandbox environment accompanied by a safety detection benchmark comprising realistic trajectories with fine-grained annotations. Built upon this, we propose OS-Sentinel, a novel hybrid safety detection framework that synergistically combines a Formal Verifier for detecting explicit system-level violations with a VLM-based Contextual Judge for assessing contextual risks and agent actions. Experiments show that OS-Sentinel achieves 10%-30% improvements over existing approaches across multiple metrics. Further analysis provides critical insights that foster the development of safer and more reliable autonomous mobile agents. Our code and data are available at https://qiushisun.github.io/OS-Sentinel-Home/.",
+  "publishedAt": "2025-10-28T13:22:39Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL",
+   "cs.CV",
+   "cs.HC"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 73,
+  "citationCount": 15,
+  "githubStars": 49,
+  "pageCount": 25
+ },
+ {
+  "arxivId": "2510.24699",
+  "slug": "agentfold-long-horizon-web-agents-with-proactive-context-management",
+  "title": "AgentFold: Long-Horizon Web Agents with Proactive Context Management",
+  "authors": [
+   "Rui Ye",
+   "Zhongwang Zhang",
+   "Kuan Li",
+   "Huifeng Yin",
+   "Zhengwei Tao",
+   "Yida Zhao"
+  ],
+  "abstract": "LLM-based web agents show immense promise for information seeking, yet their effectiveness on long-horizon tasks is hindered by a fundamental trade-off in context management. Prevailing ReAct-based agents suffer from context saturation as they accumulate noisy, raw histories, while methods that fixedly summarize the full history at each step risk the irreversible loss of critical details. Addressing these, we introduce AgentFold, a novel agent paradigm centered on proactive context management, inspired by the human cognitive process of retrospective consolidation. AgentFold treats its context as a dynamic cognitive workspace to be actively sculpted, rather than a passive log to be filled. At each step, it learns to execute a `folding' operation, which manages its historical trajectory at multiple scales: it can perform granular condensations to preserve vital, fine-grained details, or deep consolidations to abstract away entire multi-step sub-tasks. The results on prominent benchmarks are striking: with simple supervised fine-tuning (without continual pre-training or RL), our AgentFold-30B-A3B agent achieves 36.2% on BrowseComp and 47.3% on BrowseComp-ZH. Notably, this performance not only surpasses or matches open-source models of a dramatically larger scale, such as the DeepSeek-V3.1-671B-A37B, but also surpasses leading proprietary agents like OpenAI's o4-mini.",
+  "publishedAt": "2025-10-28T17:51:50Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 73,
+  "citationCount": 65,
+  "githubStars": null,
+  "pageCount": 26
+ },
+ {
+  "arxivId": "2512.02038",
+  "slug": "deep-research-a-systematic-survey",
+  "title": "Deep Research: A Systematic Survey",
+  "authors": [
+   "Zhengliang Shi",
+   "Yiqun Chen",
+   "Haitao Li",
+   "Weiwei Sun",
+   "Shiyu Ni",
+   "Yougang Lyu"
+  ],
+  "abstract": "Large language models (LLMs) have rapidly evolved from text generators into powerful problem solvers. Yet, many open tasks demand critical thinking, multi-source, and verifiable outputs, which are beyond single-shot prompting or standard retrieval-augmented generation. Recently, numerous studies have explored Deep Research (DR), which aims to combine the reasoning capabilities of LLMs with external tools, such as search engines, thereby empowering LLMs to act as research agents capable of completing complex, open-ended tasks. This survey presents a comprehensive and systematic overview of deep research systems, including a clear roadmap, foundational components, practical implementation techniques, important challenges, and future directions. Specifically, our main contributions are as follows: (i) we formalize a three-stage roadmap and distinguish deep research from related paradigms; (ii) we introduce four key components: query planning, information acquisition, memory management, and answer generation, each paired with fine-grained sub-taxonomies; (iii) we summarize optimization techniques, including prompting, supervised fine-tuning, and agentic reinforcement learning; and (iv) we consolidate evaluation criteria and open challenges, aiming to guide and facilitate future development. As the field of deep research continues to evolve rapidly, we are committed to continuously updating this survey to reflect the latest progress in this area.",
+  "publishedAt": "2025-11-24T15:28:28Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI",
+   "cs.IR"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 73,
+  "citationCount": 15,
+  "githubStars": 322,
+  "pageCount": 87
+ },
+ {
+  "arxivId": "2512.02589",
+  "slug": "paperdebugger-a-plugin-based-multi-agent-system-for-in-editor-academic-writing",
+  "title": "PaperDebugger: A Plugin-Based Multi-Agent System for In-Editor Academic Writing, Review, and Editing",
+  "authors": [
+   "Junyi Hou",
+   "Andre Lin Huikai",
+   "Nuo Chen",
+   "Yiwei Gong",
+   "Bingsheng He"
+  ],
+  "abstract": "Large language models are increasingly embedded into academic writing workflows, yet existing assistants remain external to the editor, preventing deep interaction with document state, structure, and revision history. This separation makes it impossible to support agentic, context-aware operations directly within LaTeX editors such as Overleaf. We present PaperDebugger, an in-editor, multi-agent, and plugin-based academic writing assistant that brings LLM-driven reasoning directly into the writing environment. Enabling such in-editor interaction is technically non-trivial: it requires reliable bidirectional synchronization with the editor, fine-grained version control and patching, secure state management, multi-agent scheduling, and extensible communication with external tools. PaperDebugger addresses these challenges through a Chrome-approved extension, a Kubernetes-native orchestration layer, and a Model Context Protocol (MCP) toolchain that integrates literature search, reference lookup, document scoring, and revision pipelines. Our demo showcases a fully integrated workflow, including localized edits, structured reviews, parallel agent execution, and diff-based updates, encapsulated within a minimal-intrusion user interface (UI). Early aggregated analytics demonstrate active user engagement and validate the practicality of an editor-native, agentic writing assistant. More details about this demo and video could be found at https://github.com/PaperDebugger/PaperDebugger.",
+  "publishedAt": "2025-12-02T10:00:37Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.SE"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 73,
+  "citationCount": 9,
+  "githubStars": 1522,
+  "pageCount": 4
+ },
+ {
+  "arxivId": "2601.20552",
+  "slug": "deepseek-ocr-2-visual-causal-flow",
+  "title": "DeepSeek-OCR 2: Visual Causal Flow",
+  "authors": [
+   "Haoran Wei",
+   "Yaofeng Sun",
+   "Yukun Li"
+  ],
+  "abstract": "We present DeepSeek-OCR 2 to investigate the feasibility of a novel encoder-DeepEncoder V2-capable of dynamically reordering visual tokens upon image semantics. Conventional vision-language models (VLMs) invariably process visual tokens in a rigid raster-scan order (top-left to bottom-right) with fixed positional encoding when fed into LLMs. However, this contradicts human visual perception, which follows flexible yet semantically coherent scanning patterns driven by inherent logical structures. Particularly for images with complex layouts, human vision exhibits causally-informed sequential processing. Inspired by this cognitive mechanism, DeepEncoder V2 is designed to endow the encoder with causal reasoning capabilities, enabling it to intelligently reorder visual tokens prior to LLM-based content interpretation. This work explores a novel paradigm: whether 2D image understanding can be effectively achieved through two-cascaded 1D causal reasoning structures, thereby offering a new architectural approach with the potential to achieve genuine 2D reasoning. Codes and model weights are publicly accessible at http://github.com/deepseek-ai/DeepSeek-OCR-2.",
+  "publishedAt": "2026-01-28T12:46:07Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": "DeepSeek",
+  "hfUpvotes": 73,
+  "citationCount": 53,
+  "githubStars": 3233,
+  "pageCount": 15
+ },
+ {
+  "arxivId": "2604.04746",
+  "slug": "think-in-strokes-not-pixels-process-driven-image-generation-via-interleaved",
+  "title": "Think in Strokes, Not Pixels: Process-Driven Image Generation via Interleaved Reasoning",
+  "authors": [
+   "Lei Zhang",
+   "Junjiao Tian",
+   "Zhipeng Fan",
+   "Kunpeng Li",
+   "Jialiang Wang",
+   "Weifeng Chen"
+  ],
+  "abstract": "Humans paint images incrementally: they plan a global layout, sketch a coarse draft, inspect, and refine details, and most importantly, each step is grounded in the evolving visual states. However, can unified multimodal models trained on text-image interleaved datasets also imagine the chain of intermediate states? In this paper, we introduce process-driven image generation, a multi-step paradigm that decomposes synthesis into an interleaved reasoning trajectory of thoughts and actions. Rather than generating images in a single step, our approach unfolds across multiple iterations, each consisting of 4 stages: textual planning, visual drafting, textual reflection, and visual refinement. The textual reasoning explicitly conditions how the visual state should evolve, while the generated visual intermediate in turn constrains and grounds the next round of textual reasoning. A core challenge of process-driven generation stems from the ambiguity of intermediate states: how can models evaluate each partially-complete image? We address this through dense, step-wise supervision that maintains two complementary constraints: for the visual intermediate states, we enforce the spatial and semantic consistency; for the textual intermediate states, we preserve the prior visual knowledge while enabling the model to identify and correct prompt-violating elements. This makes the generation process explicit, interpretable, and directly supervisable. To validate proposed method, we conduct experiments under various text-to-image generation benchmarks.",
+  "publishedAt": "2026-04-06T15:11:57Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": "Meta AI / FAIR",
+  "hfUpvotes": 73,
+  "citationCount": 3,
+  "githubStars": null,
+  "pageCount": 16
+ },
+ {
+  "arxivId": "2604.11804",
+  "slug": "omnishow-unifying-multimodal-conditions-for-human-object-interaction-video",
+  "title": "OmniShow: Unifying Multimodal Conditions for Human-Object Interaction Video Generation",
+  "authors": [
+   "Donghao Zhou",
+   "Guisheng Liu",
+   "Hao Yang",
+   "Jiatong Li",
+   "Jingyu Lin",
+   "Xiaohu Huang"
+  ],
+  "abstract": "In this work, we study Human-Object Interaction Video Generation (HOIVG), which aims to synthesize high-quality human-object interaction videos conditioned on text, reference images, audio, and pose. This task holds significant practical value for automating content creation in real-world applications, such as e-commerce demonstrations, short video production, and interactive entertainment. However, existing approaches fail to accommodate all these requisite conditions. We present OmniShow, an end-to-end framework tailored for this practical yet challenging task, capable of harmonizing multimodal conditions and delivering industry-grade performance. To overcome the trade-off between controllability and quality, we introduce Unified Channel-wise Conditioning for efficient image and pose injection, and Gated Local-Context Attention to ensure precise audio-visual synchronization. To effectively address data scarcity, we develop a Decoupled-Then-Joint Training strategy that leverages a multi-stage training process with model merging to efficiently harness heterogeneous sub-task datasets. Furthermore, to fill the evaluation gap in this field, we establish HOIVG-Bench, a dedicated and comprehensive benchmark for HOIVG. Extensive experiments demonstrate that OmniShow achieves overall state-of-the-art performance across various multimodal conditioning settings, setting a solid standard for the emerging HOIVG task.",
+  "publishedAt": "2026-04-13T17:59:12Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 73,
+  "citationCount": 3,
+  "githubStars": 464,
+  "pageCount": 24
+ },
+ {
+  "arxivId": "2604.16044",
+  "slug": "elucidating-the-snr-t-bias-of-diffusion-probabilistic-models",
+  "title": "Elucidating the SNR-t Bias of Diffusion Probabilistic Models",
+  "authors": [
+   "Meng Yu",
+   "Lei Sun",
+   "Jianhao Zeng",
+   "Xiangxiang Chu",
+   "Kun Zhan"
+  ],
+  "abstract": "Diffusion Probabilistic Models have demonstrated remarkable performance across a wide range of generative tasks. However, we have observed that these models often suffer from a Signal-to-Noise Ratio-timestep (SNR-t) bias. This bias refers to the misalignment between the SNR of the denoising sample and its corresponding timestep during the inference phase. Specifically, during training, the SNR of a sample is strictly coupled with its timestep. However, this correspondence is disrupted during inference, leading to error accumulation and impairing the generation quality. We provide comprehensive empirical evidence and theoretical analysis to substantiate this phenomenon and propose a simple yet effective differential correction method to mitigate the SNR-t bias. Recognizing that diffusion models typically reconstruct low-frequency components before focusing on high-frequency details during the reverse denoising process, we decompose samples into various frequency components and apply differential correction to each component individually. Extensive experiments show that our approach significantly improves the generation quality of various diffusion models (IDDPM, ADM, DDIM, A-DPM, EA-DPM, EDM, PFGM++, and FLUX) on datasets of various resolutions with negligible computational overhead. The code is at https://github.com/AMAP-ML/DCW.",
+  "publishedAt": "2026-04-17T13:16:15Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 73,
+  "citationCount": 2,
+  "githubStars": 120,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2605.04036",
+  "slug": "openseeker-v2-pushing-the-limits-of-search-agents-with-informative-and-high",
+  "title": "OpenSeeker-v2: Pushing the Limits of Search Agents with Informative and High-Difficulty Trajectories",
+  "authors": [
+   "Yuwen Du",
+   "Rui Ye",
+   "Shuo Tang",
+   "Keduan Huang",
+   "Xinyu Zhu",
+   "Yuzhu Cai"
+  ],
+  "abstract": "Deep search capabilities have become an indispensable competency for frontier Large Language Model (LLM) agents, yet their development remains dominated by industrial giants. The typical industry recipe involves a highly resource-intensive pipeline spanning pre-training, continual pre-training (CPT), supervised fine-tuning (SFT), and reinforcement learning (RL). In this report, we show that when fueled with informative and high-difficulty trajectories, a simple SFT approach could be surprisingly powerful for training frontier search agents. By introducing three simple data synthesis modifications: scaling knowledge graph size for richer exploration, expanding the tool set size for broader functionality, and strict low-step filtering, we establish a stronger baseline. Trained on merely 10.6k data points, our OpenSeeker-v2 achieves state-of-the-art performance across 4 benchmarks (30B-sized agents with ReAct paradigm): 46.0% on BrowseComp, 58.1% on BrowseComp-ZH, 34.6% on Humanity's Last Exam, and 78.0% on xbench, surpassing even Tongyi DeepResearch trained with heavy CPT+SFT+RL pipeline, which achieves 43.4%, 46.7%, 32.9%, and 75.0%, respectively. Notably, OpenSeeker-v2 represents the first state-of-the-art search agent within its model scale and paradigm to be developed by a purely academic team using only SFT. We are excited to open-source the OpenSeeker-v2 model weights and share our simple yet effective findings to make frontier search agent research more accessible to the community.",
+  "publishedAt": "2026-05-05T17:55:25Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 73,
+  "citationCount": 6,
+  "githubStars": 766,
+  "pageCount": 7
+ },
+ {
+  "arxivId": "2607.04425",
+  "slug": "ui-mopd-multi-platform-on-policy-distillation-for-continual-gui-agent-learning",
+  "title": "UI-MOPD: Multi-Platform On-Policy Distillation for Continual GUI Agent Learning",
+  "authors": [
+   "Niu Lian",
+   "Alan Chen",
+   "Zhehao Yu",
+   "Chengzhen Duan",
+   "Fazhan Liu",
+   "Hui Liu"
+  ],
+  "abstract": "Recent advances in multimodal foundation models and agent systems have driven GUI agents from single-platform task execution toward cross-platform interaction. However, building multi-platform GUI agents remains challenging. On one hand, high-quality and executable cross-platform interaction trajectories are still scarce, and existing data often suffer from limited platform coverage. On the other hand, different platforms exhibit distinct interaction conventions, making joint or continual training prone to behavioral pattern mixing, platform-specific capability degradation, and catastrophic forgetting. To address these challenges, we construct Uni-GUI, a high-quality cross-platform GUI interaction dataset, and propose UI-MOPD, the first method that incorporates multi-teacher on-policy distillation into continual learning for GUI agents. UI-MOPD dynamically selects a platform-specific teacher according to the current environment and transfers platform-specific behavioral priors to a shared policy through platform-conditioned distillation, enabling adaptation to new platforms while preserving capabilities on existing ones. Experiments on OSWorld and MobileWorld show that UI-MOPD achieves task success rates of 38.2% and 12.0%, respectively, demonstrating its effectiveness in balancing cross-platform capability retention and new-platform adaptation. Project page: https://elispectre.github.io/UI-MOPD/.",
+  "publishedAt": "2026-07-05T17:37:12Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI",
+   "cs.CV",
+   "cs.LG",
+   "cs.MM"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 73,
+  "citationCount": 1,
+  "githubStars": 56,
+  "pageCount": 25
+ },
+ {
+  "arxivId": "2511.09611",
+  "slug": "mmada-parallel-multimodal-large-diffusion-language-models-for-thinking-aware",
+  "title": "MMaDA-Parallel: Multimodal Large Diffusion Language Models for Thinking-Aware Editing and Generation",
+  "authors": [
+   "Ye Tian",
+   "Ling Yang",
+   "Jiongfan Yang",
+   "Anran Wang",
+   "Yu Tian",
+   "Jiani Zheng"
+  ],
+  "abstract": "While thinking-aware generation aims to improve performance on complex tasks, we identify a critical failure mode where existing sequential, autoregressive approaches can paradoxically degrade performance due to error propagation. To systematically analyze this issue, we propose ParaBench, a new benchmark designed to evaluate both text and image output modalities. Our analysis using ParaBench reveals that this performance degradation is strongly correlated with poor alignment between the generated reasoning and the final image. To resolve this, we propose a parallel multimodal diffusion framework, MMaDA-Parallel, that enables continuous, bidirectional interaction between text and images throughout the entire denoising trajectory. MMaDA-Parallel is trained with supervised finetuning and then further optimized by Parallel Reinforcement Learning (ParaRL), a novel strategy that applies semantic rewards along the trajectory to enforce cross-modal consistency. Experiments validate that our model significantly improves cross-modal alignment and semantic consistency, achieving a 6.9\\% improvement in Output Alignment on ParaBench compared to the state-of-the-art model, Bagel, establishing a more robust paradigm for thinking-aware image synthesis. Our code is open-sourced at https://github.com/tyfeld/MMaDA-Parallel",
+  "publishedAt": "2025-11-12T18:58:21Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 72,
+  "citationCount": 8,
+  "githubStars": 306,
+  "pageCount": 32
+ },
+ {
+  "arxivId": "2511.13647",
+  "slug": "part-x-mllm-part-aware-3d-multimodal-large-language-model",
+  "title": "Part-X-MLLM: Part-aware 3D Multimodal Large Language Model",
+  "authors": [
+   "Chunshi Wang",
+   "Junliang Ye",
+   "Yunhan Yang",
+   "Yang Li",
+   "Zizhuo Lin",
+   "Jun Zhu"
+  ],
+  "abstract": "We introduce Part-X-MLLM, a native 3D multimodal large language model that unifies diverse 3D tasks by formulating them as programs in a structured, executable grammar. Given an RGB point cloud and a natural language prompt, our model autoregressively generates a single, coherent token sequence encoding part-level bounding boxes, semantic descriptions, and edit commands. This structured output serves as a versatile interface to drive downstream geometry-aware modules for part-based generation and editing. By decoupling the symbolic planning from the geometric synthesis, our approach allows any compatible geometry engine to be controlled through a single, language-native frontend. We pre-train a dual-encoder architecture to disentangle structure from semantics and instruction-tune the model on a large-scale, part-centric dataset. Experiments demonstrate that our model excels at producing high-quality, structured plans, enabling state-of-the-art performance in grounded Q\\&A, compositional generation, and localized editing through one unified interface. Project page: https://chunshi.wang/Part-X-MLLM/",
+  "publishedAt": "2025-11-17T17:59:52Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 72,
+  "citationCount": 5,
+  "githubStars": 119,
+  "pageCount": 28
+ },
+ {
+  "arxivId": "2512.14614",
+  "slug": "worldplay-towards-long-term-geometric-consistency-for-real-time-interactive",
+  "title": "WorldPlay: Towards Long-Term Geometric Consistency for Real-Time Interactive World Modeling",
+  "authors": [
+   "Wenqiang Sun",
+   "Haiyu Zhang",
+   "Haoyuan Wang",
+   "Junta Wu",
+   "Zehan Wang",
+   "Zhenwei Wang"
+  ],
+  "abstract": "This paper presents WorldPlay, a streaming video diffusion model that enables real-time, interactive world modeling with long-term geometric consistency, resolving the trade-off between speed and memory that limits current methods. WorldPlay draws power from three key ingredients. 1) We use a Dual Action Representation to enable robust action control in response to the user's keyboard and mouse inputs. 2) To enforce long-term consistency, our Reconstituted Context Memory dynamically rebuilds context from past frames and uses temporal reframing to keep geometrically important but long-past frames accessible, effectively alleviating memory attenuation. 3) We also propose Context Forcing, a novel distillation method designed for memory-aware model. Aligning memory context between the teacher and student preserves the student's capacity to use long-range information, enabling real-time speeds while preventing error drift. Taken together, WorldPlay generates long-horizon streaming 720p video at 24 FPS with superior consistency, comparing favorably with existing techniques and showing strong generalization across diverse scenes. Project page and online demo can be found: https://3d-models.hunyuan.tencent.com/world/ and https://3d.hunyuan.tencent.com/sceneTo3D.",
+  "publishedAt": "2025-12-16T17:22:46Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.GR"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 72,
+  "citationCount": 97,
+  "githubStars": 1571,
+  "pageCount": 23
+ },
+ {
+  "arxivId": "2601.08828",
+  "slug": "motion-attribution-for-video-generation",
+  "title": "Motion Attribution for Video Generation",
+  "authors": [
+   "Xindi Wu",
+   "Despoina Paschalidou",
+   "Jun Gao",
+   "Antonio Torralba",
+   "Laura Leal-Taixé",
+   "Olga Russakovsky"
+  ],
+  "abstract": "Despite the rapid progress of video generation models, the role of data in influencing motion is poorly understood. We present Motive (MOTIon attribution for Video gEneration), a motion-centric, gradient-based data attribution framework that scales to modern, large, high-quality video datasets and models. We use this to study which fine-tuning clips improve or degrade temporal dynamics. Motive isolates temporal dynamics from static appearance via motion-weighted loss masks, yielding efficient and scalable motion-specific influence computation. On text-to-video models, Motive identifies clips that strongly affect motion and guides data curation that improves temporal consistency and physical plausibility. With Motive-selected high-influence data, our method improves both motion smoothness and dynamic degree on VBench, achieving a 74.1% human preference win rate compared with the pretrained base model. To our knowledge, this is the first framework to attribute motion rather than visual appearance in video generative models and to use it to curate fine-tuning data.",
+  "publishedAt": "2026-01-13T18:59:09Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI",
+   "cs.LG",
+   "cs.MM",
+   "cs.RO"
+  ],
+  "officialLab": "NVIDIA",
+  "hfUpvotes": 72,
+  "citationCount": 2,
+  "githubStars": null,
+  "pageCount": 26
+ },
+ {
+  "arxivId": "2603.27460",
+  "slug": "project-imaging-x-a-survey-of-1000-open-access-medical-imaging-datasets-for",
+  "title": "Project Imaging-X: A Survey of 1000+ Open-Access Medical Imaging Datasets for Foundation Model Development",
+  "authors": [
+   "Zhongying Deng",
+   "Cheng Tang",
+   "Ziyan Huang",
+   "Jiashi Lin",
+   "Ying Chen",
+   "Junzhi Ning"
+  ],
+  "abstract": "Foundation models have demonstrated remarkable success across diverse domains and tasks, primarily due to the thrive of large-scale, diverse, and high-quality datasets. However, in the field of medical imaging, the curation and assembling of such medical datasets are highly challenging due to the reliance on clinical expertise and strict ethical and privacy constraints, resulting in a scarcity of large-scale unified medical datasets and hindering the development of powerful medical foundation models. In this work, we present the largest survey to date of medical image datasets, covering over 1,000 open-access datasets with a systematic catalog of their modalities, tasks, anatomies, annotations, limitations, and potential for integration. Our analysis exposes a landscape that is modest in scale, fragmented across narrowly scoped tasks, and unevenly distributed across organs and modalities, which in turn limits the utility of existing medical image datasets for developing versatile and robust medical foundation models. To turn fragmentation into scale, we propose a metadata-driven fusion paradigm (MDFP) that integrates public datasets with shared modalities or tasks, thereby transforming multiple small data silos into larger, more coherent resources. Building on MDFP, we release an interactive discovery portal that enables end-to-end, automated medical image dataset integration, and compile all surveyed datasets into a unified, structured table that clearly summarizes their key characteristics and provides reference links, offering the community an accessible and comprehensive repository. By charting the current terrain and offering a principled path to dataset consolidation, our survey provides a practical roadmap for scaling medical imaging corpora, supporting faster data discovery, more principled dataset creation, and more capable medical foundation models.",
+  "publishedAt": "2026-03-29T00:46:53Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 72,
+  "citationCount": 2,
+  "githubStars": 472,
+  "pageCount": 157
+ },
+ {
+  "arxivId": "2603.28407",
+  "slug": "miroeval-benchmarking-multimodal-deep-research-agents-in-process-and-outcome",
+  "title": "MiroEval: Benchmarking Multimodal Deep Research Agents in Process and Outcome",
+  "authors": [
+   "Fangda Ye",
+   "Yuxin Hu",
+   "Pengxiang Zhu",
+   "Yibo Li",
+   "Ziqi Jin",
+   "Yao Xiao"
+  ],
+  "abstract": "Recent progress in deep research systems has been impressive, but evaluation still lags behind real user needs. Existing benchmarks predominantly assess final reports using fixed rubrics, failing to evaluate the underlying research process. Most also offer limited multimodal coverage, rely on synthetic tasks that do not reflect real-world query complexity, and cannot be refreshed as knowledge evolves. To address these gaps, we introduce MiroEval, a benchmark and evaluation framework for deep research systems. The benchmark comprises 100 tasks (70 text-only, 30 multimodal), all grounded in real user needs and constructed via a dual-path pipeline that supports periodic updates, enabling a live and evolving setting. The proposed evaluation suite assesses deep research systems along three complementary dimensions: adaptive synthesis quality evaluation with task-specific rubrics, agentic factuality verification via active retrieval and reasoning over both web sources and multimodal attachments, and process-centric evaluation audits how the system searches, reasons, and refines throughout its investigation. Evaluation across 13 systems yields three principal findings: the three evaluation dimensions capture complementary aspects of system capability, with each revealing distinct strengths and weaknesses across systems; process quality serves as a reliable predictor of overall outcome while revealing weaknesses invisible to output-level metrics; and multimodal tasks pose substantially greater challenges, with most systems declining by 3 to 10 points. The MiroThinker series achieves the most balanced performance, with MiroThinker-H1 ranking the highest overall in both settings. Human verification and robustness results confirm the reliability of the benchmark and evaluation framework. MiroEval provides a holistic diagnostic tool for the next generation of deep research agents.",
+  "publishedAt": "2026-03-30T13:16:03Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 72,
+  "citationCount": 4,
+  "githubStars": 46,
+  "pageCount": 40
+ },
+ {
+  "arxivId": "2604.04949",
+  "slug": "learning-to-retrieve-from-agent-trajectories",
+  "title": "Learning to Retrieve from Agent Trajectories",
+  "authors": [
+   "Yuqi Zhou",
+   "Sunhao Dai",
+   "Changle Qu",
+   "Liang Pang",
+   "Jun Xu",
+   "Ji-Rong Wen"
+  ],
+  "abstract": "Information retrieval (IR) systems have traditionally been designed and trained for human users, with learning-to-rank methods relying heavily on large-scale human interaction logs such as clicks and dwell time. With the rapid emergence of large language model (LLM) powered search agents, however, retrieval is increasingly consumed by agents rather than human beings, and is embedded as a core component within multi-turn reasoning and action loops. In this setting, retrieval models trained under human-centric assumptions exhibit a fundamental mismatch with the way agents issue queries and consume results. In this work, we argue that retrieval models for agentic search should be trained directly from agent interaction data. We introduce learning to retrieve from agent trajectories as a new training paradigm, where supervision is derived from multi-step agent interactions. Through a systematic analysis of search agent trajectories, we identify key behavioral signals that reveal document utility, including browsing actions, unbrowsed rejections, and post-browse reasoning traces. Guided by these insights, we propose LRAT, a simple yet effective framework that mines high-quality retrieval supervision from agent trajectories and incorporates relevance intensity through weighted optimization. Extensive experiments on both in-domain and out-of-domain deep research benchmarks demonstrate that retrievers trained with LRAT consistently improve evidence recall, end-to-end task success, and execution efficiency across diverse agent architectures and scales. Our results highlight agent trajectories as a practical and scalable supervision source, pointing to a promising direction for retrieval in the era of agentic search.",
+  "publishedAt": "2026-03-30T17:59:02Z",
+  "primaryArxivCategory": [
+   "cs.IR",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 72,
+  "citationCount": 2,
+  "githubStars": 56,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2605.27367",
+  "slug": "spatialbench-is-your-spatial-foundation-model-an-all-round-player",
+  "title": "SpatialBench: Is Your Spatial Foundation Model an All-Round Player?",
+  "authors": [
+   "Haosong Peng",
+   "Hao Li",
+   "Jiaqi Chen",
+   "Yuhao Pan",
+   "Runmao Yao",
+   "Yalun Dai"
+  ],
+  "abstract": "While spatial foundation models have demonstrated impressive performance on standard datasets, a critical question remains: are they truly all-round players capable of generalizing robustly across diverse downstream tasks, arbitrary viewpoints, shifting scene domains, varying input densities, and specific hardware constraints? Answering this overarching question requires a holistic assessment, yet current models are mainly evaluated on specific domains for which they were specifically designed or trained. Such evaluations are intrinsically limited by narrow paradigm coverage, limited scene domains, and arbitrary frame sampling, making it fundamentally difficult to assess their true generalization capabilities. To address this gap, we present SpatialBench, a cross-paradigm, domain-diverse benchmark for spatial foundation models with deterministic sampling. SpatialBench features unprecedented scale and rigorous deterministic design, comprising 19 datasets and 546 scenes across 5 diverse spatial domains. It comprehensively evaluates 41 models across 6 paradigms on 5 task suites under 4 different input density settings. Our extensive evaluation reveals that current models are not yet all-round players, and uncovers crucial insights for future advancement. Specifically, we demonstrate that full-context attention maximizes accuracy while bounded-memory strategies unlock long-sequence scalability. Moreover, our empirical evaluations in challenging embodied and egocentric tasks demonstrate that strict domain alignment and high data quality are far more critical to performance than simple dataset scaling. Furthermore, to address the largest data gap identified in our analysis, we go beyond evaluation by introducing a large-scale dataset, DA-Next-5M, and a strong baseline model, DA-Next, pushing the boundaries of spatial representation learning.",
+  "publishedAt": "2026-05-26T17:59:20Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 72,
+  "citationCount": 0,
+  "githubStars": 119,
+  "pageCount": 81
+ },
+ {
+  "arxivId": "2508.09848",
+  "slug": "prelude-a-benchmark-designed-to-require-global-comprehension-and-reasoning",
+  "title": "PRELUDE: A Benchmark Designed to Require Global Comprehension and Reasoning over Long Contexts",
+  "authors": [
+   "Mo Yu",
+   "Tsz Ting Chung",
+   "Chulun Zhou",
+   "Tong Li",
+   "Rui Lu",
+   "Jiangnan Li"
+  ],
+  "abstract": "We introduce PRELUDE, a benchmark for evaluating long-context understanding through the task of determining whether a character's prequel story is consistent with the canonical narrative of the original book. Our task poses a stronger demand for global comprehension and deep reasoning than existing benchmarks -- as the prequels are not part of the original story, assessing their plausibility typically requires searching and integrating information that is only indirectly related. Empirically, 88% of instances require evidence from multiple parts of the narrative. Experimental results highlight the challenge of our task: in-context learning, RAG and in-domain training with state-of-the-art LLMs, and commercial DeepResearch services, lag behind humans by >15%. A further human study reveals that models often produce correct answers with flawed reasoning, leading to an over 30% gap in reasoning accuracy compared to humans. These findings underscore the substantial room for improvement in long-context understanding and reasoning.",
+  "publishedAt": "2025-08-13T14:28:25Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 71,
+  "citationCount": 6,
+  "githubStars": null,
+  "pageCount": 24
+ },
+ {
+  "arxivId": "2511.13720",
+  "slug": "back-to-basics-let-denoising-generative-models-denoise",
+  "title": "Back to Basics: Let Denoising Generative Models Denoise",
+  "authors": [
+   "Tianhong Li",
+   "Kaiming He"
+  ],
+  "abstract": "Today's denoising diffusion models do not \"denoise\" in the classical sense, i.e., they do not directly predict clean images. Rather, the neural networks predict noise or a noised quantity. In this paper, we suggest that predicting clean data and predicting noised quantities are fundamentally different. According to the manifold assumption, natural data should lie on a low-dimensional manifold, whereas noised quantities do not. With this assumption, we advocate for models that directly predict clean data, which allows apparently under-capacity networks to operate effectively in very high-dimensional spaces. We show that simple, large-patch Transformers on pixels can be strong generative models: using no tokenizer, no pre-training, and no extra loss. Our approach is conceptually nothing more than \"Just image Transformers\", or JiT, as we call it. We report competitive results using JiT with large patch sizes of 16 and 32 on ImageNet at resolutions of 256 and 512, where predicting high-dimensional noised quantities can fail catastrophically. With our networks mapping back to the basics of the manifold, our research goes back to basics and pursues a self-contained paradigm for Transformer-based diffusion on raw natural data.",
+  "publishedAt": "2025-11-17T18:59:57Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 71,
+  "citationCount": 4,
+  "githubStars": 2485,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2512.15603",
+  "slug": "qwen-image-layered-towards-inherent-editability-via-layer-decomposition",
+  "title": "Qwen-Image-Layered: Towards Inherent Editability via Layer Decomposition",
+  "authors": [
+   "Shengming Yin",
+   "Zekai Zhang",
+   "Zecheng Tang",
+   "Kaiyuan Gao",
+   "Xiao Xu",
+   "Kun Yan"
+  ],
+  "abstract": "Recent visual generative models often struggle with consistency during image editing due to the entangled nature of raster images, where all visual content is fused into a single canvas. In contrast, professional design tools employ layered representations, allowing isolated edits while preserving consistency. Motivated by this, we propose \\textbf{Qwen-Image-Layered}, an end-to-end diffusion model that decomposes a single RGB image into multiple semantically disentangled RGBA layers, enabling \\textbf{inherent editability}, where each RGBA layer can be independently manipulated without affecting other content. To support variable-length decomposition, we introduce three key components: (1) an RGBA-VAE to unify the latent representations of RGB and RGBA images; (2) a VLD-MMDiT (Variable Layers Decomposition MMDiT) architecture capable of decomposing a variable number of image layers; and (3) a Multi-stage Training strategy to adapt a pretrained image generation model into a multilayer image decomposer. Furthermore, to address the scarcity of high-quality multilayer training images, we build a pipeline to extract and annotate multilayer images from Photoshop documents (PSD). Experiments demonstrate that our method significantly surpasses existing approaches in decomposition quality and establishes a new paradigm for consistent image editing. Our code and models are released on \\href{https://github.com/QwenLM/Qwen-Image-Layered}{https://github.com/QwenLM/Qwen-Image-Layered}",
+  "publishedAt": "2025-12-17T17:12:42Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": "Alibaba / Qwen",
+  "hfUpvotes": 71,
+  "citationCount": 24,
+  "githubStars": 2050,
+  "pageCount": 12
+ },
+ {
+  "arxivId": "2602.07845",
+  "slug": "recurrent-depth-vla-implicit-test-time-compute-scaling-of-vision-language",
+  "title": "Recurrent-Depth VLA: Implicit Test-Time Compute Scaling of Vision-Language-Action Models via Latent Iterative Reasoning",
+  "authors": [
+   "Yalcin Tur",
+   "Jalal Naghiyev",
+   "Haoquan Fang",
+   "Wei-Chuan Tsai",
+   "Jiafei Duan",
+   "Dieter Fox"
+  ],
+  "abstract": "Current Vision-Language-Action (VLA) models rely on fixed computational depth, expending the same amount of compute on simple adjustments and complex multi-step manipulation. While Chain-of-Thought (CoT) prompting enables variable computation, it scales memory linearly and is ill-suited for continuous action spaces. We introduce Recurrent-Depth VLA (RD-VLA), an architecture that achieves computational adaptivity via latent iterative refinement rather than explicit token generation. RD-VLA employs a recurrent, weight-tied action head that supports arbitrary inference depth with a constant memory footprint. The model is trained using truncated backpropagation through time (TBPTT) to efficiently supervise the refinement process. At inference, RD-VLA dynamically allocates compute using an adaptive stopping criterion based on latent convergence. Experiments on challenging manipulation tasks show that recurrent depth is critical: tasks that fail entirely (0 percent success) with single-iteration inference exceed 90 percent success with four iterations, while simpler tasks saturate rapidly. RD-VLA provides a scalable path to test-time compute in robotics, replacing token-based reasoning with latent reasoning to achieve constant memory usage and up to 80x inference speedup over prior reasoning-based VLA models. Project page: https://rd-vla.github.io/",
+  "publishedAt": "2026-02-08T07:21:01Z",
+  "primaryArxivCategory": [
+   "cs.RO"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 71,
+  "citationCount": 11,
+  "githubStars": 42,
+  "pageCount": 11
+ },
+ {
+  "arxivId": "2602.08676",
+  "slug": "llada2-1-speeding-up-text-diffusion-via-token-editing",
+  "title": "LLaDA2.1: Speeding Up Text Diffusion via Token Editing",
+  "authors": [
+   "Tiwei Bie",
+   "Maosong Cao",
+   "Xiang Cao",
+   "Bingsen Chen",
+   "Fuyuan Chen",
+   "Kun Chen"
+  ],
+  "abstract": "While LLaDA2.0 showcased the scaling potential of 100B-level block-diffusion models and their inherent parallelization, the delicate equilibrium between decoding speed and generation quality has remained an elusive frontier. Today, we unveil LLaDA2.1, a paradigm shift designed to transcend this trade-off. By seamlessly weaving Token-to-Token (T2T) editing into the conventional Mask-to-Token (M2T) scheme, we introduce a joint, configurable threshold-decoding scheme. This structural innovation gives rise to two distinct personas: the Speedy Mode (S Mode), which audaciously lowers the M2T threshold to bypass traditional constraints while relying on T2T to refine the output; and the Quality Mode (Q Mode), which leans into conservative thresholds to secure superior benchmark performances with manageable efficiency degrade. Furthering this evolution, underpinned by an expansive context window, we implement the first large-scale Reinforcement Learning (RL) framework specifically tailored for dLLMs, anchored by specialized techniques for stable gradient estimation. This alignment not only sharpens reasoning precision but also elevates instruction-following fidelity, bridging the chasm between diffusion dynamics and complex human intent. We culminate this work by releasing LLaDA2.1-Mini (16B) and LLaDA2.1-Flash (100B). Across 33 rigorous benchmarks, LLaDA2.1 delivers strong task performance and lightning-fast decoding speed. Despite its 100B volume, on coding tasks it attains an astounding 892 TPS on HumanEval+, 801 TPS on BigCodeBench, and 663 TPS on LiveCodeBench.",
+  "publishedAt": "2026-02-09T14:00:07Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 71,
+  "citationCount": 38,
+  "githubStars": 501,
+  "pageCount": 11
+ },
+ {
+  "arxivId": "2604.24763",
+  "slug": "tuna-2-pixel-embeddings-beat-vision-encoders-for-multimodal-understanding-and",
+  "title": "Tuna-2: Pixel Embeddings Beat Vision Encoders for Multimodal Understanding and Generation",
+  "authors": [
+   "Zhiheng Liu",
+   "Weiming Ren",
+   "Xiaoke Huang",
+   "Shoufa Chen",
+   "Tianhong Li",
+   "Mengzhao Chen"
+  ],
+  "abstract": "Unified multimodal models typically rely on pretrained vision encoders and use separate visual representations for understanding and generation, creating misalignment between the two tasks and preventing fully end-to-end optimization from raw pixels. We introduce Tuna-2, a native unified multimodal model that performs visual understanding and generation directly based on pixel embeddings. Tuna-2 drastically simplifies the model architecture by employing simple patch embedding layers to encode visual input, completely discarding the modular vision encoder designs such as the VAE or the representation encoder. Experiments show that Tuna-2 achieves state-of-the-art performance in multimodal benchmarks, demonstrating that unified pixel-space modelling can fully compete with latent-space approaches for high-quality image generation. Moreover, while the encoder-based variant converges faster in early pretraining, Tuna-2's encoder-free design achieves stronger multimodal understanding at scale, particularly on tasks requiring fine-grained visual perception. These results show that pretrained vision encoders are not necessary for multimodal modelling, and end-to-end pixel-space learning offers a scalable path toward stronger visual representations for both generation and perception.",
+  "publishedAt": "2026-04-27T17:59:56Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": "Meta AI / FAIR",
+  "hfUpvotes": 71,
+  "citationCount": 10,
+  "githubStars": 744,
+  "pageCount": 21
+ }
+]

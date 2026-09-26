@@ -1,0 +1,710 @@
+[
+ {
+  "arxivId": "2603.02604",
+  "slug": "heterogeneous-agent-collaborative-reinforcement-learning",
+  "title": "Heterogeneous Agent Collaborative Reinforcement Learning",
+  "authors": [
+   "Zhixia Zhang",
+   "Zixuan Huang",
+   "Gongxun Li",
+   "Huaiyang Wang",
+   "Chengyi Yuan",
+   "Xin Xia"
+  ],
+  "abstract": "We introduce Heterogeneous Agent Collaborative Reinforcement Learning (HACRL), a new Reinforcement Learning from Verifiable Reward (RLVR) problem that addresses the inefficiencies of isolated multi-agent on-policy optimization. HACRL enables collaborative optimization with independent execution: heterogeneous agents share verified rollouts during training to mutually improve, while operating independently at inference time. Unlike LLM-based multi-agent reinforcement learning (MARL), HACRL does not require coordinated deployment, and unlike on-/off-policy distillation, it enables bidirectional mutual learning among heterogeneous agents rather than one-directional homogeneous teacher-to-student transfer. Building on this problem, we propose HACPO, a collaborative RL algorithm that enables principled rollout sharing to maximize sample utilization and cross-agent knowledge transfer. To mitigate capability discrepancies and policy distribution shifts, HACPO introduces four tailored mechanisms with theoretical guarantees on unbiased advantage estimation. Extensive experiments across diverse heterogeneous model combinations and reasoning benchmarks show that HACPO consistently improves all participating agents, outperforming GSPO with double rollouts by an average of 3.6% while using only half the rollout cost.",
+  "publishedAt": "2026-03-03T05:09:49Z",
+  "primaryArxivCategory": [
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 199,
+  "citationCount": 12,
+  "githubStars": null,
+  "pageCount": 23
+ },
+ {
+  "arxivId": "2607.17977",
+  "slug": "rynnbrain-1-1-towards-more-capable-and-generalizable-embodied-foundation-model",
+  "title": "RynnBrain 1.1: Towards More Capable and Generalizable Embodied Foundation Model",
+  "authors": [
+   "Kehan Li",
+   "Bohan Hou",
+   "Minghao Zhu",
+   "Tianyi Zhang",
+   "Zesen Cheng",
+   "Zhikai Wang"
+  ],
+  "abstract": "We present RynnBrain 1.1, a family of embodied foundation models spanning 2B, 9B, and 122B-A10B scales. Trained with a unified spatio-temporal and physically grounded framework, RynnBrain 1.1 supports embodied perception, spatial reasoning, localization, and planning. Compared with RynnBrain 1.0, it further introduces contact-point prediction across the model family and native 3D grounding for the 2B and 9B models, yielding representations and outputs that are more directly aligned with robot manipulation. We also develop RynnBrain-VLA with a unified cross-embodiment action space and embodiment-specific masking, and deploy it on Unitree G1, Astribot-S1, and Tianji-Wuji. RynnBrain 1.1 achieves strong results on embodied cognition, localization, and 3D grounding, with the 122B-A10B model outperforming all evaluated proprietary and open-source models on VSI-Bench, MMSI, and RefSpatial-Bench. Real-robot experiments show that RynnBrain-initialized policies outperform Qwen-based and representative generalist VLAs, while joint multi-task and multi-embodiment training improves process scores and success rates over per-task training.",
+  "publishedAt": "2026-07-20T14:13:27Z",
+  "primaryArxivCategory": [
+   "cs.RO"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 198,
+  "citationCount": 2,
+  "githubStars": null,
+  "pageCount": 23
+ },
+ {
+  "arxivId": "2511.11793",
+  "slug": "mirothinker-pushing-the-performance-boundaries-of-open-source-research-agents",
+  "title": "MiroThinker: Pushing the Performance Boundaries of Open-Source Research Agents via Model, Context, and Interactive Scaling",
+  "authors": [
+   "MiroMind Team",
+   "Song Bai",
+   "Lidong Bing",
+   "Carson Chen",
+   "Guanzheng Chen",
+   "Yuntao Chen"
+  ],
+  "abstract": "We present MiroThinker v1.0, an open-source research agent designed to advance tool-augmented reasoning and information-seeking capabilities. Unlike previous agents that only scale up model size or context length, MiroThinker explores interaction scaling at the model level, systematically training the model to handle deeper and more frequent agent-environment interactions as a third dimension of performance improvement. Unlike LLM test-time scaling, which operates in isolation and risks degradation with longer reasoning chains, interactive scaling leverages environment feedback and external information acquisition to correct errors and refine trajectories. Through reinforcement learning, the model achieves efficient interaction scaling: with a 256K context window, it can perform up to 600 tool calls per task, enabling sustained multi-turn reasoning and complex real-world research workflows. Across four representative benchmarks-GAIA, HLE, BrowseComp, and BrowseComp-ZH-the 72B variant achieves up to 81.9%, 37.7%, 47.1%, and 55.6% accuracy respectively, surpassing previous open-source agents and approaching commercial counterparts such as GPT-5-high. Our analysis reveals that MiroThinker benefits from interactive scaling consistently: research performance improves predictably as the model engages in deeper and more frequent agent-environment interactions, demonstrating that interaction depth exhibits scaling behaviors analogous to model size and context length. These findings establish interaction scaling as a third critical dimension for building next-generation open research agents, complementing model capacity and context windows.",
+  "publishedAt": "2025-11-14T18:52:07Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 197,
+  "citationCount": 62,
+  "githubStars": 8367,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2602.09877",
+  "slug": "the-devil-behind-moltbook-anthropic-safety-is-always-vanishing-in-self",
+  "title": "The Devil Behind Moltbook: Anthropic Safety is Always Vanishing in Self-Evolving AI Societies",
+  "authors": [
+   "Chenxu Wang",
+   "Chaozhuo Li",
+   "Songyang Liu",
+   "Zejian Chen",
+   "Jinyu Hou",
+   "Ji Qi"
+  ],
+  "abstract": "The emergence of multi-agent systems built from large language models (LLMs) offers a promising paradigm for scalable collective intelligence and self-evolution. Ideally, such systems would achieve continuous self-improvement in a fully closed loop while maintaining robust safety alignment--a combination we term the self-evolution trilemma. However, we demonstrate both theoretically and empirically that an agent society satisfying continuous self-evolution, complete isolation, and safety invariance is impossible. Drawing on an information-theoretic framework, we formalize safety as the divergence degree from anthropic value distributions. We theoretically demonstrate that isolated self-evolution induces statistical blind spots, leading to the irreversible degradation of the system's safety alignment. Empirical and qualitative results from an open-ended agent community (Moltbook) and two closed self-evolving systems reveal phenomena that align with our theoretical prediction of inevitable safety erosion. We further propose several solution directions to alleviate the identified safety concern. Our work establishes a fundamental limit on the self-evolving AI societies and shifts the discourse from symptom-driven safety patches to a principled understanding of intrinsic dynamical risks, highlighting the need for external oversight or novel safety-preserving mechanisms.",
+  "publishedAt": "2026-02-10T15:18:19Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 197,
+  "citationCount": 3,
+  "githubStars": null,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2601.09668",
+  "slug": "step3-vl-10b-technical-report",
+  "title": "STEP3-VL-10B Technical Report",
+  "authors": [
+   "Ailin Huang",
+   "Chengyuan Yao",
+   "Chunrui Han",
+   "Fanqi Wan",
+   "Hangyu Guo",
+   "Haoran Lv"
+  ],
+  "abstract": "We present STEP3-VL-10B, a lightweight open-source foundation model designed to redefine the trade-off between compact efficiency and frontier-level multimodal intelligence. STEP3-VL-10B is realized through two strategic shifts: first, a unified, fully unfrozen pre-training strategy on 1.2T multimodal tokens that integrates a language-aligned Perception Encoder with a Qwen3-8B decoder to establish intrinsic vision-language synergy; and second, a scaled post-training pipeline featuring over 1k iterations of reinforcement learning. Crucially, we implement Parallel Coordinated Reasoning (PaCoRe) to scale test-time compute, allocating resources to scalable perceptual reasoning that explores and synthesizes diverse visual hypotheses. Consequently, despite its compact 10B footprint, STEP3-VL-10B rivals or surpasses models 10$\\times$-20$\\times$ larger (e.g., GLM-4.6V-106B, Qwen3-VL-235B) and top-tier proprietary flagships like Gemini 2.5 Pro and Seed-1.5-VL. Delivering best-in-class performance, it records 92.2% on MMBench and 80.11% on MMMU, while excelling in complex reasoning with 94.43% on AIME2025 and 75.95% on MathVision. We release the full model suite to provide the community with a powerful, efficient, and reproducible baseline.",
+  "publishedAt": "2026-01-14T17:58:24Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 196,
+  "citationCount": 26,
+  "githubStars": 412,
+  "pageCount": 50
+ },
+ {
+  "arxivId": "2605.11609",
+  "slug": "anti-self-distillation-for-reasoning-rl-via-pointwise-mutual-information",
+  "title": "Anti-Self-Distillation for Reasoning RL via Pointwise Mutual Information",
+  "authors": [
+   "Guobin Shen",
+   "Xiang Cheng",
+   "Chenxiao Zhao",
+   "Lei Huang",
+   "Jindong Li",
+   "Dongcheng Zhao"
+  ],
+  "abstract": "On-policy self-distillation, where a student is pulled toward a copy of itself conditioned on privileged context (e.g., a verified solution or feedback), offers a promising direction for advancing reasoning capability without a stronger external teacher. Yet in math reasoning the gains are inconsistent, even when the same approach succeeds elsewhere. A pointwise mutual information analysis traces the failure to the privileged context itself: it inflates the teacher's confidence on tokens already implied by the solution (structural connectives, verifiable claims) and deflates it on deliberation tokens (\"Wait\", \"Let\", \"Maybe\") that drive multi-step search. We propose Anti-Self-Distillation (AntiSD), which ascends a divergence between student and teacher rather than descending it: this reverses the per-token sign and yields a naturally bounded advantage in one step. An entropy-triggered gate disables the term once the teacher entropy collapses, completing a drop-in replacement for default self-distillation. Across five models from 4B to 30B parameters on math reasoning benchmarks, AntiSD reaches the GRPO baseline's accuracy in 2 to 10x fewer training steps and improves final accuracy by up to 11.5 points. AntiSD opens a path to scalable self-improvement, where a language model bootstraps its own reasoning through its training signal.",
+  "publishedAt": "2026-05-12T06:40:43Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 196,
+  "citationCount": 6,
+  "githubStars": 33,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2605.12500",
+  "slug": "sensenova-u1-unifying-multimodal-understanding-and-generation-with-neo-unify",
+  "title": "SenseNova-U1: Unifying Multimodal Understanding and Generation with NEO-unify Architecture",
+  "authors": [
+   "Haiwen Diao",
+   "Penghao Wu",
+   "Hanming Deng",
+   "Jiahao Wang",
+   "Shihao Bai",
+   "Silei Wu"
+  ],
+  "abstract": "Recent large vision-language models (VLMs) remain fundamentally constrained by a persistent dichotomy: understanding and generation are treated as distinct problems, leading to fragmented architectures, cascaded pipelines, and misaligned representation spaces. We argue that this divide is not merely an engineering artifact, but a structural limitation that hinders the emergence of native multimodal intelligence. Hence, we introduce SenseNova-U1, a native unified multimodal paradigm built upon NEO-unify, in which understanding and generation evolve as synergistic views of a single underlying process. We launch two native unified variants, SenseNova-U1-8B-MoT and SenseNova-U1-A3B-MoT, built on dense (8B) and mixture-of-experts (30B-A3B) understanding baselines, respectively. Designed from first principles, they rival top-tier understanding-only VLMs across text understanding, vision-language perception, knowledge reasoning, agentic decision-making, and spatial intelligence. Meanwhile, they deliver strong semantic consistency and visual fidelity, excelling in conventional or knowledge-intensive any-to-image (X2I) synthesis, complex text-rich infographic generation, and interleaved vision-language generation, with or without think patterns. Beyond performance, we show detailed model design, data preprocessing, pre-/post-training, and inference strategies to support community research. Last but not least, preliminary evidence demonstrates that our models extend beyond perception and generation, performing strongly in vision-language-action (VLA) and world model (WM) scenarios. This points toward a broader roadmap where models do not translate between modalities, but think and act across them in a native manner. Multimodal AI is no longer about connecting separate systems, but about building a unified one and trusting the necessary capabilities to emerge from within.",
+  "publishedAt": "2026-05-12T17:59:58Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 195,
+  "citationCount": 12,
+  "githubStars": 4492,
+  "pageCount": 43
+ },
+ {
+  "arxivId": "2603.15031",
+  "slug": "attention-residuals",
+  "title": "Attention Residuals",
+  "authors": [
+   "Kimi Team",
+   "Guangyu Chen",
+   "Yu Zhang",
+   "Jianlin Su",
+   "Weixin Xu",
+   "Siyuan Pan"
+  ],
+  "abstract": "Residual connections with PreNorm are standard in modern LLMs, yet they accumulate all layer outputs with fixed unit weights. This uniform aggregation causes uncontrolled hidden-state growth with depth, progressively diluting each layer's contribution. We propose Attention Residuals (AttnRes), which replaces this fixed accumulation with softmax attention over preceding layer outputs, allowing each layer to selectively aggregate earlier representations with learned, input-dependent weights. To address the memory and communication overhead of attending over all preceding layer outputs for large-scale model training, we introduce Block AttnRes, which partitions layers into blocks and attends over block-level representations, reducing the memory footprint while preserving most of the gains of full AttnRes. Combined with cache-based pipeline communication and a two-phase computation strategy, Block AttnRes becomes a practical drop-in replacement for standard residual connections with minimal overhead. Scaling law experiments confirm that the improvement is consistent across model sizes, and ablations validate the benefit of content-dependent depth-wise selection. We further integrate AttnRes into the Kimi Linear architecture (48B total / 3B activated parameters) and pre-train on 1.4T tokens, where AttnRes mitigates PreNorm dilution, yielding more uniform output magnitudes and gradient distribution across depth, and improves downstream performance across all evaluated tasks.",
+  "publishedAt": "2026-03-16T09:32:21Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": "Moonshot AI / Kimi",
+  "hfUpvotes": 194,
+  "citationCount": 42,
+  "githubStars": 3450,
+  "pageCount": 21
+ },
+ {
+  "arxivId": "2606.10651",
+  "slug": "kwai-keye-vl-2-0-technical-report",
+  "title": "Kwai Keye-VL-2.0 Technical Report",
+  "authors": [
+   "Kwai Keye Team",
+   "Bin Wen",
+   "Changyi Liu",
+   "Chengru Song",
+   "Chongling Rao",
+   "Guowang Zhang"
+  ],
+  "abstract": "We introduce Kwai Keye-VL-2.0-30B-A3B, an open-source Mixture-of-Experts (MoE) multimodal foundation model designed to advance long-video understanding and agentic intelligence. To address the challenges of ultra-long contexts, information redundancy, and prohibitive computational costs inherent in hour-level videos, Keye-VL-2.0 is the first to adapt DeepSeek Sparse Attention (DSA) to GQA-based multimodal architectures, enabling lossless 256K context processing while capturing critical frames and long-range temporal dependencies. This architecture is underpinned by a highly optimized training and inference infrastructure, including scalable video I/O, heterogeneous ViT-LM parallelism, and custom DSA kernels that significantly maximize throughput and minimize computational overhead. Furthermore, to overcome the algorithmic dilemma of catastrophic forgetting during multi-task alignment, we introduce Cross-Modal Multi-Teacher On-Policy Distillation (MOPD) paired with Context-RL and Video-RL. By distilling dense token-level teacher feedback from on-policy rollouts back into the MoE backbone, which activates only 3B parameters, Keye-VL-2.0 natively empowers advanced agent collaboration across Code, Tool, and Search scenarios with multimodal self-correction. Extensive evaluations across video understanding, temporal grounding, reasoning, STEM, and agent benchmarks demonstrate that Keye-VL-2.0-30B-A3B achieves state-of-the-art performance among models of similar scale, particularly excelling in fine-grained temporal localization on TimeLens and long-video comprehension on Video-MME-v2 and LongVideoBench. We release our model checkpoints to accelerate community progress toward scalable and robust multimodal agentic applications.",
+  "publishedAt": "2026-06-09T09:58:08Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 194,
+  "citationCount": 0,
+  "githubStars": 809,
+  "pageCount": 31
+ },
+ {
+  "arxivId": "2509.08827",
+  "slug": "a-survey-of-reinforcement-learning-for-large-reasoning-models",
+  "title": "A Survey of Reinforcement Learning for Large Reasoning Models",
+  "authors": [
+   "Kaiyan Zhang",
+   "Yuxin Zuo",
+   "Bingxiang He",
+   "Youbang Sun",
+   "Runze Liu",
+   "Che Jiang"
+  ],
+  "abstract": "In this paper, we survey recent advances in Reinforcement Learning (RL) for reasoning with Large Language Models (LLMs). RL has achieved remarkable success in advancing the frontier of LLM capabilities, particularly in addressing complex logical tasks such as mathematics and coding. As a result, RL has emerged as a foundational methodology for transforming LLMs into LRMs. With the rapid progress of the field, further scaling of RL for LRMs now faces foundational challenges not only in computational resources but also in algorithm design, training data, and infrastructure. To this end, it is timely to revisit the development of this domain, reassess its trajectory, and explore strategies to enhance the scalability of RL toward Artificial SuperIntelligence (ASI). In particular, we examine research applying RL to LLMs and LRMs for reasoning abilities, especially since the release of DeepSeek-R1, including foundational components, core problems, training resources, and downstream applications, to identify future opportunities and directions for this rapidly evolving area. We hope this review will promote future research on RL for broader reasoning models. Github: https://github.com/TsinghuaC3I/Awesome-RL-for-LRMs",
+  "publishedAt": "2025-09-10T17:59:43Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 193,
+  "citationCount": 161,
+  "githubStars": 2475,
+  "pageCount": 120
+ },
+ {
+  "arxivId": "2602.07085",
+  "slug": "quantaalpha-an-evolutionary-framework-for-llm-driven-alpha-mining",
+  "title": "QuantaAlpha: An Evolutionary Framework for LLM-Driven Alpha Mining",
+  "authors": [
+   "Jun Han",
+   "Shuo Zhang",
+   "Wei Li",
+   "Yifan Dong",
+   "Tu Hu",
+   "Yumo Zhu"
+  ],
+  "abstract": "Financial markets are noisy and non-stationary, making alpha mining highly sensitive to backtest noise and regime shifts. While recent agentic frameworks improve automation, they often lack controllable multi-round search and reliable reuse of validated experience. To address these challenges, we propose QuantaAlpha, an evolutionary alpha mining framework that treats each end-to-end mining run as a trajectory and improves factors via trajectory-level mutation and crossover. QuantaAlpha localizes suboptimal steps for targeted revision and recombines complementary high-reward segments to reuse effective patterns, enabling structured exploration and refinement across iterations. During factor generation, it enforces semantic consistency across hypothesis, factor expression, and executable code, and constrains the complexity and redundancy of the generated factor to mitigate crowding. Extensive experiments on CSI 300 show consistent gains over strong baselines and prior agentic systems. Using GPT-5.2, QuantaAlpha achieves an IC of 0.0472 with ARR of 4.68% and MDD of 11.8%. Moreover, factors mined on CSI 300 transfer effectively to CSI 500 and the S&P 500, delivering about 40.28% and 19.1% cumulative excess return over four years, respectively, which indicates strong robustness under market distribution shifts.",
+  "publishedAt": "2026-02-06T08:08:04Z",
+  "primaryArxivCategory": [
+   "q-fin.ST",
+   "cs.AI",
+   "q-fin.CP"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 192,
+  "citationCount": 7,
+  "githubStars": 1367,
+  "pageCount": 23
+ },
+ {
+  "arxivId": "2607.21655",
+  "slug": "progress-reward-modeling-for-robotic-learning-a-comprehensive-survey",
+  "title": "Progress Reward Modeling for Robotic Learning: A Comprehensive Survey",
+  "authors": [
+   "Jianshu Zhang",
+   "Keliang Wu",
+   "Haoran Lu",
+   "Anbang Liu",
+   "Ce Zhang",
+   "Weijie Yin"
+  ],
+  "abstract": "Robotic learning takes place in dynamic environments with large behavior spaces. A terminal success signal only tells the robot whether the task is completed. It does not explain whether the current behavior is making progress, remaining unchanged, or undoing earlier progress. For this reason, recent studies have increasingly explored progress rewards that provide feedback during task execution. However, the current literature lacks a shared framework. Existing methods use different observations, goal specifications, output signals, supervision sources, and evaluation protocols. This makes it difficult to compare them and understand what their results actually validate. In this survey, we provide a unified view of progress reward modeling for robotic learning. We organize the field in three connected steps. We first study the interface of a progress model. This defines the problem from the outside by asking what information the model receives and what form of progress signal it produces. We then move inside the model and study the methods used to construct this signal. This reveals the different assumptions and mechanisms behind progress estimation and reward generation. Finally, we examine the data and benchmarks that support these methods. This shows how progress supervision is obtained and what different evaluations actually measure. Together, these three perspectives connect what a progress model is, how it is built, and how its quality is validated. We further summarize the main limitations of current approaches and discuss future research directions.",
+  "publishedAt": "2026-07-22T19:29:52Z",
+  "primaryArxivCategory": [
+   "cs.RO",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 192,
+  "citationCount": 0,
+  "githubStars": 69,
+  "pageCount": 15
+ },
+ {
+  "arxivId": "2601.17058",
+  "slug": "can-llms-clean-up-your-mess-a-survey-of-application-ready-data-preparation",
+  "title": "Can LLMs Clean Up Your Mess? A Survey of Application-Ready Data Preparation with LLMs",
+  "authors": [
+   "Wei Zhou",
+   "Jun Zhou",
+   "Haoyu Wang",
+   "Zhenghao Li",
+   "Qikang He",
+   "Shaokun Han"
+  ],
+  "abstract": "Data preparation aims to denoise raw datasets, uncover cross-dataset relationships, and extract valuable insights from them, which is essential for a wide range of data-centric applications. Driven by (i) rising demands for application-ready data (e.g., for analytics, visualization, decision-making), (ii) increasingly powerful LLM techniques, and (iii) the emergence of infrastructures that facilitate flexible agent construction (e.g., using Databricks Unity Catalog), LLM-enhanced methods are rapidly becoming a transformative and potentially dominant paradigm for data preparation. By investigating hundreds of recent literature works, this paper presents a systematic review of this evolving landscape, focusing on the use of LLM techniques to prepare data for diverse downstream tasks. First, we characterize the fundamental paradigm shift, from rule-based, model-specific pipelines to prompt-driven, context-aware, and agentic preparation workflows. Next, we introduce a task-centric taxonomy that organizes the field into three major tasks: data cleaning (e.g., standardization, error processing, imputation), data integration (e.g., entity matching, schema matching), and data enrichment (e.g., data annotation, profiling). For each task, we survey representative techniques, and highlight their respective strengths (e.g., improved generalization, semantic understanding) and limitations (e.g., the prohibitive cost of scaling LLMs, persistent hallucinations even in advanced agents, the mismatch between advanced methods and weak evaluation). Moreover, we analyze commonly used datasets and evaluation metrics (the empirical part). Finally, we discuss open research challenges and outline a forward-looking roadmap that emphasizes scalable LLM-data systems, principled designs for reliable agentic workflows, and robust evaluation protocols.",
+  "publishedAt": "2026-01-22T12:02:45Z",
+  "primaryArxivCategory": [
+   "cs.DB",
+   "cs.AI",
+   "cs.CL",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 191,
+  "citationCount": 6,
+  "githubStars": 814,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2605.20025",
+  "slug": "autoresearchclaw-self-reinforcing-autonomous-research-with-human-ai",
+  "title": "AutoResearchClaw: Self-Reinforcing Autonomous Research with Human-AI Collaboration",
+  "authors": [
+   "Jiaqi Liu",
+   "Shi Qiu",
+   "Mairui Li",
+   "Bingzhou Li",
+   "Haonian Ji",
+   "Siwei Han"
+  ],
+  "abstract": "Automating scientific discovery requires more than generating papers from ideas. Real research is iterative: hypotheses are challenged from multiple perspectives, experiments fail and inform the next attempt, and lessons accumulate across cycles. Existing autonomous research systems often model this process as a linear pipeline: they rely on single-agent reasoning, stop when execution fails, and do not carry experience across runs. We present AutoResearchClaw, a multi-agent autonomous research pipeline built on five mechanisms: structured multi-agent debate for hypothesis generation and result analysis, a self-healing executor with a \\textsc{Pivot}/\\textsc{Refine} decision loop that transforms failures into information, verifiable result reporting that prevents fabricated numbers and hallucinated citations, human-in-the-loop collaboration with seven intervention modes spanning full autonomy to step-by-step oversight, and cross-run evolution that converts past mistakes into future safeguards. On ARC-Bench, a 25-topic experiment-stage benchmark, AutoResearchClaw outperforms AI Scientist v2 by 54.7%. A human-in-the-loop ablation across seven intervention modes reveals that precise, targeted collaboration at high-leverage decision points consistently outperforms both full autonomy and exhaustive step-by-step oversight. We position AutoResearchClaw as a research amplifier that augments rather than replaces human scientific judgment. Code is available at https://github.com/aiming-lab/AutoResearchClaw.",
+  "publishedAt": "2026-05-19T15:49:51Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 191,
+  "citationCount": 13,
+  "githubStars": 13968,
+  "pageCount": 23
+ },
+ {
+  "arxivId": "2508.05629",
+  "slug": "on-the-generalization-of-sft-a-reinforcement-learning-perspective-with-reward",
+  "title": "On the Generalization of SFT: A Reinforcement Learning Perspective with Reward Rectification",
+  "authors": [
+   "Yongliang Wu",
+   "Yizhou Zhou",
+   "Zhou Ziheng",
+   "Yingzhe Peng",
+   "Xinyu Ye",
+   "Xinting Hu"
+  ],
+  "abstract": "In this work, we present a simple yet theoretically motivated improvement to Supervised Fine-Tuning (SFT) for the Large Language Model (LLM), addressing its limited generalization compared to reinforcement learning (RL). Through mathematical analysis, we reveal that standard SFT gradients implicitly encode a problematic reward structure that may severely restrict the generalization capabilities of model compared to RL. To rectify this, we propose Dynamic Fine-Tuning (\\model), stabilizing gradient updates for each token by dynamically rescaling the objective function with the probability of this token. With just a single-line change, the method outperforms standard SFT on multiple difficult benchmarks and base models, from math reasoning to code generation and multi-modal tasks, demonstrating improved generalization. Additionally, \\model~achieves competitive results in offline RL settings, providing an effective yet streamlined alternative. By bridging theoretical insights with practical solutions, this work advances the state of SFT. The source code will be available at https://github.com/yongliang-wu/DFT.",
+  "publishedAt": "2025-08-07T17:59:04Z",
+  "primaryArxivCategory": [
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 190,
+  "citationCount": 112,
+  "githubStars": 1095,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2509.22622",
+  "slug": "longlive-real-time-interactive-long-video-generation",
+  "title": "LongLive: Real-time Interactive Long Video Generation",
+  "authors": [
+   "Shuai Yang",
+   "Wei Huang",
+   "Ruihang Chu",
+   "Yicheng Xiao",
+   "Yuyang Zhao",
+   "Xianbang Wang"
+  ],
+  "abstract": "We present LongLive, a frame-level autoregressive (AR) framework for real-time and interactive long video generation. Long video generation presents challenges in both efficiency and quality. Diffusion and Diffusion-Forcing models can produce high-quality videos but suffer from low efficiency due to bidirectional attention. Causal attention AR models support KV caching for faster inference, but often degrade in quality on long videos due to memory challenges during long-video training. In addition, beyond static prompt-based generation, interactive capabilities, such as streaming prompt inputs, are critical for dynamic content creation, enabling users to guide narratives in real time. This interactive requirement significantly increases complexity, especially in ensuring visual consistency and semantic coherence during prompt transitions. To address these challenges, LongLive adopts a causal, frame-level AR design that integrates a KV-recache mechanism that refreshes cached states with new prompts for smooth, adherent switches; streaming long tuning to enable long video training and to align training and inference (train-long-test-long); and short window attention paired with a frame-level attention sink, shorten as frame sink, preserving long-range consistency while enabling faster generation. With these key designs, LongLive fine-tunes a 1.3B-parameter short-clip model to minute-long generation in just 32 GPU-days. At inference, LongLive sustains 20.7 FPS on a single NVIDIA H100, achieves strong performance on VBench in both short and long videos. LongLive supports up to 240-second videos on a single H100 GPU. LongLive further supports INT8-quantized inference with only marginal quality loss.",
+  "publishedAt": "2025-09-26T17:48:24Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": "NVIDIA",
+  "hfUpvotes": 190,
+  "citationCount": 189,
+  "githubStars": null,
+  "pageCount": 21
+ },
+ {
+  "arxivId": "2603.04379",
+  "slug": "helios-real-real-time-long-video-generation-model",
+  "title": "Helios: Real Real-Time Long Video Generation Model",
+  "authors": [
+   "Shenghai Yuan",
+   "Yuanyang Yin",
+   "Zongjian Li",
+   "Xinwei Huang",
+   "Xiao Yang",
+   "Li Yuan"
+  ],
+  "abstract": "We introduce Helios, the first 14B video generation model that runs at 19.5 FPS on a single NVIDIA H100 GPU and supports minute-scale generation while matching the quality of a strong baseline. We make breakthroughs along three key dimensions: (1) robustness to long-video drifting without commonly used anti-drifting heuristics such as self-forcing, error-banks, or keyframe sampling; (2) real-time generation without standard acceleration techniques such as KV-cache, sparse/linear attention, or quantization; and (3) training without parallelism or sharding frameworks, enabling image-diffusion-scale batch sizes while fitting up to four 14B models within 80 GB of GPU memory. Specifically, Helios is a 14B autoregressive diffusion model with a unified input representation that natively supports T2V, I2V, and V2V tasks. To mitigate drifting in long-video generation, we characterize typical failure modes and propose simple yet effective training strategies that explicitly simulate drifting during training, while eliminating repetitive motion at its source. For efficiency, we heavily compress the historical and noisy context and reduce the number of sampling steps, yielding computational costs comparable to -- or lower than -- those of 1.3B video generative models. Moreover, we introduce infrastructure-level optimizations that accelerate both inference and training while reducing memory consumption. Extensive experiments demonstrate that Helios consistently outperforms prior methods on both short- and long-video generation. We plan to release the code, base model, and distilled model to support further development by the community.",
+  "publishedAt": "2026-03-04T18:45:21Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 190,
+  "citationCount": 33,
+  "githubStars": 2029,
+  "pageCount": 39
+ },
+ {
+  "arxivId": "2511.20785",
+  "slug": "longvt-incentivizing-thinking-with-long-videos-via-native-tool-calling",
+  "title": "LongVT: Incentivizing \"Thinking with Long Videos\" via Native Tool Calling",
+  "authors": [
+   "Zuhao Yang",
+   "Sudong Wang",
+   "Kaichen Zhang",
+   "Keming Wu",
+   "Sicong Leng",
+   "Yifan Zhang"
+  ],
+  "abstract": "Large multimodal models (LMMs) have shown great potential for video reasoning with textual Chain-of-Thought. However, they remain vulnerable to hallucinations, especially when processing long-form videos where evidence is sparse and temporally dispersed. Inspired by how humans comprehend long videos - by first skimming globally and then examining relevant clips for details - we introduce LongVT, an end-to-end agentic framework that enables \"Thinking with Long Videos\" via interleaved Multimodal Chain-of-Tool-Thought. Specifically, we exploit LMMs' inherent temporal grounding ability as a native video cropping tool to zoom in on a specific video clip and resample finer-grained video frames. This global-to-local reasoning loop continues until answers are grounded in retrieved visual evidence. Given the scarcity of fine-grained question-answering (QA) data for the long video reasoning task, we curate and will release a data suite named VideoSIAH to facilitate both training and evaluation. Specifically, our training dataset consists of 247.9K samples for tool-integrated cold-start supervised fine-tuning, 1.6K samples for agentic reinforcement learning, and 15.4K samples for agentic reinforcement fine-tuning, respectively. Our evaluation benchmark consists of 1,280 QA pairs that are carefully curated through a semi-automatic data pipeline with human-in-the-loop validation. With a meticulously designed three-stage training strategy and extensive empirical validation, LongVT consistently outperforms existing strong baselines across four challenging long-video understanding and reasoning benchmarks. Our codes, data, and model checkpoints are publicly available at https://github.com/EvolvingLMMs-Lab/LongVT .",
+  "publishedAt": "2025-11-25T19:22:48Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 188,
+  "citationCount": 51,
+  "githubStars": 259,
+  "pageCount": 24
+ },
+ {
+  "arxivId": "2603.03283",
+  "slug": "utonia-toward-one-encoder-for-all-point-clouds",
+  "title": "Utonia: Toward One Encoder for All Point Clouds",
+  "authors": [
+   "Yujia Zhang",
+   "Xiaoyang Wu",
+   "Yunhan Yang",
+   "Xianzhe Fan",
+   "Han Li",
+   "Yuechen Zhang"
+  ],
+  "abstract": "We dream of a future where point clouds from all domains can come together to shape a single model that benefits them all. Toward this goal, we present Utonia, a first step toward training a single self-supervised point transformer encoder across diverse domains, spanning remote sensing, outdoor LiDAR, indoor RGB-D sequences, object-centric CAD models, and point clouds lifted from RGB-only videos. Despite their distinct sensing geometries, densities, and priors, Utonia learns a consistent representation space that transfers across domains. This unification improves perception capability while revealing intriguing emergent behaviors that arise only when domains are trained jointly. Beyond perception, we observe that Utonia representations can also benefit embodied and multimodal reasoning: conditioning vision-language-action policies on Utonia features improves robotic manipulation, and integrating them into vision-language models yields gains on spatial reasoning. We hope Utonia can serve as a step toward foundation models for sparse 3D data, and support downstream applications in AR/VR, robotics, and autonomous driving.",
+  "publishedAt": "2026-03-03T18:59:58Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 187,
+  "citationCount": 9,
+  "githubStars": 717,
+  "pageCount": 15
+ },
+ {
+  "arxivId": "2603.15726",
+  "slug": "mirothinker-1-7-h1-towards-heavy-duty-research-agents-via-verification",
+  "title": "MiroThinker-1.7 & H1: Towards Heavy-Duty Research Agents via Verification",
+  "authors": [
+   "MiroMind Team",
+   "S. Bai",
+   "L. Bing",
+   "L. Lei",
+   "R. Li",
+   "X. Li"
+  ],
+  "abstract": "We present MiroThinker-1.7, a new research agent designed for complex long-horizon reasoning tasks. Building on this foundation, we further introduce MiroThinker-H1, which extends the agent with heavy-duty reasoning capabilities for more reliable multi-step problem solving. In particular, MiroThinker-1.7 improves the reliability of each interaction step through an agentic mid-training stage that emphasizes structured planning, contextual reasoning, and tool interaction. This enables more effective multi-step interaction and sustained reasoning across complex tasks. MiroThinker-H1 further incorporates verification directly into the reasoning process at both local and global levels. Intermediate reasoning decisions can be evaluated and refined during inference, while the overall reasoning trajectory is audited to ensure that final answers are supported by coherent chains of evidence. Across benchmarks covering open-web research, scientific reasoning, and financial analysis, MiroThinker-H1 achieves state-of-the-art performance on deep research tasks while maintaining strong results on specialized domains. We also release MiroThinker-1.7 and MiroThinker-1.7-mini as open-source models, providing competitive research-agent capabilities with significantly improved efficiency.",
+  "publishedAt": "2026-03-16T17:55:42Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI",
+   "cs.IR",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 187,
+  "citationCount": 20,
+  "githubStars": null,
+  "pageCount": 23
+ },
+ {
+  "arxivId": "2601.03233",
+  "slug": "ltx-2-efficient-joint-audio-visual-foundation-model",
+  "title": "LTX-2: Efficient Joint Audio-Visual Foundation Model",
+  "authors": [
+   "Yoav HaCohen",
+   "Benny Brazowski",
+   "Nisan Chiprut",
+   "Yaki Bitterman",
+   "Andrew Kvochko",
+   "Avishai Berkowitz"
+  ],
+  "abstract": "Recent text-to-video diffusion models can generate compelling video sequences, yet they remain silent -- missing the semantic, emotional, and atmospheric cues that audio provides. We introduce LTX-2, an open-source foundational model capable of generating high-quality, temporally synchronized audiovisual content in a unified manner. LTX-2 consists of an asymmetric dual-stream transformer with a 14B-parameter video stream and a 5B-parameter audio stream, coupled through bidirectional audio-video cross-attention layers with temporal positional embeddings and cross-modality AdaLN for shared timestep conditioning. This architecture enables efficient training and inference of a unified audiovisual model while allocating more capacity for video generation than audio generation. We employ a multilingual text encoder for broader prompt understanding and introduce a modality-aware classifier-free guidance (modality-CFG) mechanism for improved audiovisual alignment and controllability. Beyond generating speech, LTX-2 produces rich, coherent audio tracks that follow the characters, environment, style, and emotion of each scene -- complete with natural background and foley elements. In our evaluations, the model achieves state-of-the-art audiovisual quality and prompt adherence among open-source systems, while delivering results comparable to proprietary models at a fraction of their computational cost and inference time. All model weights and code are publicly released.",
+  "publishedAt": "2026-01-06T18:24:41Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 185,
+  "citationCount": 135,
+  "githubStars": 8525,
+  "pageCount": 14
+ },
+ {
+  "arxivId": "2510.11696",
+  "slug": "qerl-beyond-efficiency-quantization-enhanced-reinforcement-learning-for-llms",
+  "title": "QeRL: Beyond Efficiency -- Quantization-enhanced Reinforcement Learning for LLMs",
+  "authors": [
+   "Wei Huang",
+   "Yi Ge",
+   "Shuai Yang",
+   "Yicheng Xiao",
+   "Huizi Mao",
+   "Yujun Lin"
+  ],
+  "abstract": "We propose QeRL, a Quantization-enhanced Reinforcement Learning framework for large language models (LLMs). While RL is essential for LLMs' reasoning capabilities, it is resource-intensive, requiring substantial GPU memory and long rollout durations. QeRL addresses these issues by combining NVFP4 quantization with Low-Rank Adaptation (LoRA), accelerating rollout phase of RL while reducing memory overhead. Beyond efficiency, our findings show that quantization noise increases policy entropy, enhancing exploration, and enabling the discovery of better strategies during RL. To further optimize exploration, QeRL introduces an Adaptive Quantization Noise (AQN) mechanism, which dynamically adjusts noise during training. Experiments demonstrate that QeRL delivers over 1.5 times speedup in the rollout phase. Moreover, this is the first framework to enable RL training of a 32B LLM on a single H100 80GB GPU, while delivering overall speedups for RL training. It also achieves faster reward growth and higher final accuracy than 16-bit LoRA and QLoRA, while matching the performance of full-parameter fine-tuning on mathematical benchmarks such as GSM8K (90.8%) and MATH 500 (77.4%) in the 7B model. These results establish QeRL as an efficient and effective framework for RL training in LLMs.",
+  "publishedAt": "2025-10-13T17:55:09Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.CL",
+   "cs.CV"
+  ],
+  "officialLab": "NVIDIA",
+  "hfUpvotes": 183,
+  "citationCount": 16,
+  "githubStars": 512,
+  "pageCount": 21
+ },
+ {
+  "arxivId": "2601.16725",
+  "slug": "longcat-flash-thinking-2601-technical-report",
+  "title": "LongCat-Flash-Thinking-2601 Technical Report",
+  "authors": [
+   "Meituan LongCat Team",
+   "Anchun Gui",
+   "Bei Li",
+   "Bingyang Tao",
+   "Bole Zhou",
+   "Borun Chen"
+  ],
+  "abstract": "We introduce LongCat-Flash-Thinking-2601, a 560-billion-parameter open-source Mixture-of-Experts (MoE) reasoning model with superior agentic reasoning capability. LongCat-Flash-Thinking-2601 achieves state-of-the-art performance among open-source models on a wide range of agentic benchmarks, including agentic search, agentic tool use, and tool-integrated reasoning. Beyond benchmark performance, the model demonstrates strong generalization to complex tool interactions and robust behavior under noisy real-world environments. Its advanced capability stems from a unified training framework that combines domain-parallel expert training with subsequent fusion, together with an end-to-end co-design of data construction, environments, algorithms, and infrastructure spanning from pre-training to post-training. In particular, the model's strong generalization capability in complex tool-use are driven by our in-depth exploration of environment scaling and principled task construction. To optimize long-tailed, skewed generation and multi-turn agentic interactions, and to enable stable training across over 10,000 environments spanning more than 20 domains, we systematically extend our asynchronous reinforcement learning framework, DORA, for stable and efficient large-scale multi-environment training. Furthermore, recognizing that real-world tasks are inherently noisy, we conduct a systematic analysis and decomposition of real-world noise patterns, and design targeted training procedures to explicitly incorporate such imperfections into the training process, resulting in improved robustness for real-world applications. To further enhance performance on complex reasoning tasks, we introduce a Heavy Thinking mode that enables effective test-time scaling by jointly expanding reasoning depth and width through intensive parallel thinking.",
+  "publishedAt": "2026-01-23T13:20:09Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 183,
+  "citationCount": 23,
+  "githubStars": 259,
+  "pageCount": 27
+ },
+ {
+  "arxivId": "2601.20833",
+  "slug": "idea2story-an-automated-pipeline-for-transforming-research-concepts-into",
+  "title": "Idea2Story: An Automated Pipeline for Transforming Research Concepts into Complete Scientific Narratives",
+  "authors": [
+   "Tengyue Xu",
+   "Zhuoyang Qian",
+   "Gaoge Liu",
+   "Li Ling",
+   "Zhentao Zhang",
+   "Biao Wu"
+  ],
+  "abstract": "Autonomous scientific discovery with large language model (LLM)-based agents has recently made substantial progress, demonstrating the ability to automate end-to-end research workflows. However, existing systems largely rely on runtime-centric execution paradigms, repeatedly reading, summarizing, and reasoning over large volumes of scientific literature online. This on-the-spot computation strategy incurs high computational cost, suffers from context window limitations, and often leads to brittle reasoning and hallucination. We propose Idea2Story, a pre-computation-driven framework for autonomous scientific discovery that shifts literature understanding from online reasoning to offline knowledge construction. Idea2Story continuously collects peer-reviewed papers together with their review feedback, extracts core methodological units, composes reusable research patterns, and organizes them into a structured methodological knowledge graph. At runtime, underspecified user research intents are aligned to established research paradigms, enabling efficient retrieval and reuse of high-quality research patterns instead of open-ended generation and trial-and-error. By grounding research planning and execution in a pre-built knowledge graph, Idea2Story alleviates the context window bottleneck of LLMs and substantially reduces repeated runtime reasoning over literature. We conduct qualitative analyses and preliminary empirical studies demonstrating that Idea2Story can generate coherent, methodologically grounded, and novel research patterns, and can produce several high-quality research demonstrations in an end-to-end setting. These results suggest that offline knowledge construction provides a practical and scalable foundation for reliable autonomous scientific discovery.",
+  "publishedAt": "2026-01-28T18:31:54Z",
+  "primaryArxivCategory": [
+   "cs.CE"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 183,
+  "citationCount": 5,
+  "githubStars": 1386,
+  "pageCount": 14
+ },
+ {
+  "arxivId": "2603.24414",
+  "slug": "clawkeeper-comprehensive-safety-protection-for-openclaw-agents-through-skills",
+  "title": "ClawKeeper: Comprehensive Safety Protection for OpenClaw Agents Through Skills, Plugins, and Watchers",
+  "authors": [
+   "Songyang Liu",
+   "Chaozhuo Li",
+   "Chenxu Wang",
+   "Jinyu Hou",
+   "Zejian Chen",
+   "Litian Zhang"
+  ],
+  "abstract": "OpenClaw has rapidly established itself as a leading open-source autonomous agent runtime, offering powerful capabilities including tool integration, local file access, and shell command execution. However, these broad operational privileges introduce critical security vulnerabilities, transforming model errors into tangible system-level threats such as sensitive data leakage, privilege escalation, and malicious third-party skill execution. Existing security measures for the OpenClaw ecosystem remain highly fragmented, addressing only isolated stages of the agent lifecycle rather than providing holistic protection. To bridge this gap, we present ClawKeeper, a real-time security framework that integrates multi-dimensional protection mechanisms across three complementary architectural layers. (1) \\textbf{Skill-based protection} operates at the instruction level, injecting structured security policies directly into the agent context to enforce environment-specific constraints and cross-platform boundaries. (2) \\textbf{Plugin-based protection} serves as an internal runtime enforcer, providing configuration hardening, proactive threat detection, and continuous behavioral monitoring throughout the execution pipeline. (3) \\textbf{Watcher-based protection} introduces a novel, decoupled system-level security middleware that continuously verifies agent state evolution. It enables real-time execution intervention without coupling to the agent's internal logic, supporting operations such as halting high-risk actions or enforcing human confirmation. We argue that this Watcher paradigm holds strong potential to serve as a foundational building block for securing next-generation autonomous agent systems. Extensive qualitative and quantitative evaluations demonstrate the effectiveness and robustness of ClawKeeper across diverse threat scenarios. We release our code.",
+  "publishedAt": "2026-03-25T15:27:54Z",
+  "primaryArxivCategory": [
+   "cs.CR",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 183,
+  "citationCount": 18,
+  "githubStars": 1034,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2510.23607",
+  "slug": "concerto-joint-2d-3d-self-supervised-learning-emerges-spatial-representations",
+  "title": "Concerto: Joint 2D-3D Self-Supervised Learning Emerges Spatial Representations",
+  "authors": [
+   "Yujia Zhang",
+   "Xiaoyang Wu",
+   "Yixing Lao",
+   "Chengyao Wang",
+   "Zhuotao Tian",
+   "Naiyan Wang"
+  ],
+  "abstract": "Humans learn abstract concepts through multisensory synergy, and once formed, such representations can often be recalled from a single modality. Inspired by this principle, we introduce Concerto, a minimalist simulation of human concept learning for spatial cognition, combining 3D intra-modal self-distillation with 2D-3D cross-modal joint embedding. Despite its simplicity, Concerto learns more coherent and informative spatial features, as demonstrated by zero-shot visualizations. It outperforms both standalone SOTA 2D and 3D self-supervised models by 14.2% and 4.8%, respectively, as well as their feature concatenation, in linear probing for 3D scene perception. With full fine-tuning, Concerto sets new SOTA results across multiple scene understanding benchmarks (e.g., 80.7% mIoU on ScanNet). We further present a variant of Concerto tailored for video-lifted point cloud spatial understanding, and a translator that linearly projects Concerto representations into CLIP's language space, enabling open-world perception. These results highlight that Concerto emerges spatial representations with superior fine-grained geometric and semantic consistency.",
+  "publishedAt": "2025-10-27T17:59:59Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 181,
+  "citationCount": 29,
+  "githubStars": 532,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2604.03128",
+  "slug": "self-distilled-rlvr",
+  "title": "Self-Distilled RLVR",
+  "authors": [
+   "Chenxu Yang",
+   "Chuanyu Qin",
+   "Qingyi Si",
+   "Minghui Chen",
+   "Naibin Gu",
+   "Dingyu Yao"
+  ],
+  "abstract": "On-policy distillation (OPD) has become a popular training paradigm in the LLM community. This paradigm selects a larger model as the teacher to provide dense, fine-grained signals for each sampled trajectory, in contrast to reinforcement learning with verifiable rewards (RLVR), which only obtains sparse signals from verifiable outcomes in the environment. Recently, the community has explored on-policy self-distillation (OPSD), where the same model serves as both teacher and student, with the teacher receiving additional privileged information such as reference answers to enable self-evolution. This paper demonstrates that learning signals solely derived from the privileged teacher result in severe information leakage and unstable long-term training. Accordingly, we identify the optimal niche for self-distillation and propose \\textbf{RLSD} (\\textbf{RL}VR with \\textbf{S}elf-\\textbf{D}istillation). Specifically, we leverage self-distillation to obtain token-level policy differences for determining fine-grained update magnitudes, while continuing to use RLVR to derive reliable update directions from environmental feedback (e.g., response correctness). This enables RLSD to simultaneously harness the strengths of both RLVR and OPSD, achieving a higher convergence ceiling and superior training stability.",
+  "publishedAt": "2026-04-03T15:50:07Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 181,
+  "citationCount": 56,
+  "githubStars": null,
+  "pageCount": 25
+ },
+ {
+  "arxivId": "2604.07430",
+  "slug": "hy-embodied-0-5-embodied-foundation-models-for-real-world-agents",
+  "title": "HY-Embodied-0.5: Embodied Foundation Models for Real-World Agents",
+  "authors": [
+   "Tencent Robotics X",
+   "HY Vision Team",
+   ":",
+   "Xumin Yu",
+   "Zuyan Liu",
+   "Ziyi Wang"
+  ],
+  "abstract": "We introduce HY-Embodied-0.5, a family of foundation models specifically designed for real-world embodied agents. To bridge the gap between general Vision-Language Models (VLMs) and the demands of embodied agents, our models are developed to enhance the core capabilities required by embodied intelligence: spatial and temporal visual perception, alongside advanced embodied reasoning for prediction, interaction, and planning. The HY-Embodied-0.5 suite comprises two primary variants: an efficient model with 2B activated parameters designed for edge deployment, and a powerful model with 32B activated parameters targeted for complex reasoning. To support the fine-grained visual perception essential for embodied tasks, we adopt a Mixture-of-Transformers (MoT) architecture to enable modality-specific computing. By incorporating latent tokens, this design effectively enhances the perceptual representation of the models. To improve reasoning capabilities, we introduce an iterative, self-evolving post-training paradigm. Furthermore, we employ on-policy distillation to transfer the advanced capabilities of the large model to the smaller variant, thereby maximizing the performance potential of the compact model. Extensive evaluations across 22 benchmarks, spanning visual perception, spatial reasoning, and embodied understanding, demonstrate the effectiveness of our approach. Our MoT-2B model outperforms similarly sized state-of-the-art models on 16 benchmarks, while the 32B variant achieves performance comparable to frontier models such as Gemini 3.0 Pro. In downstream robot control experiments, we leverage our robust VLM foundation to train an effective Vision-Language-Action (VLA) model, achieving compelling results in real-world physical evaluations. Code and models are open-sourced at https://github.com/Tencent-Hunyuan/HY-Embodied.",
+  "publishedAt": "2026-04-08T17:59:48Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 181,
+  "citationCount": 12,
+  "githubStars": 843,
+  "pageCount": 46
+ },
+ {
+  "arxivId": "2509.24002",
+  "slug": "mcpmark-a-benchmark-for-stress-testing-realistic-and-comprehensive-mcp-use",
+  "title": "MCPMark: A Benchmark for Stress-Testing Realistic and Comprehensive MCP Use",
+  "authors": [
+   "Zijian Wu",
+   "Xiangyan Liu",
+   "Xinyuan Zhang",
+   "Lingjun Chen",
+   "Fanqing Meng",
+   "Lingxiao Du"
+  ],
+  "abstract": "MCP standardizes how LLMs interact with external systems, forming the foundation for general agents. However, existing MCP benchmarks remain narrow in scope: they focus on read-heavy tasks or tasks with limited interaction depth, and fail to capture the complexity and realism of real-world workflows. To address this gap, we propose MCPMark, a benchmark designed to evaluate MCP use in a more realistic and comprehensive manner. It consists of $127$ high-quality tasks collaboratively created by domain experts and AI agents. Each task begins with a curated initial state and includes a programmatic script for automatic verification. These tasks demand richer and more diverse interactions with the environment, involving a broad range of create, read, update, and delete (CRUD) operations. We conduct a comprehensive evaluation of cutting-edge LLMs using a minimal agent framework that operates in a tool-calling loop. Empirical results show that the best-performing model, gpt-5-medium, reaches only $52.56$\\% pass@1 and $33.86$\\% pass^4, while other widely regarded strong models, including claude-sonnet-4 and o3, fall below $30$\\% pass@1 and $15$\\% pass^4. On average, LLMs require $16.2$ execution turns and $17.4$ tool calls per task, significantly surpassing those in previous MCP benchmarks and highlighting the stress-testing nature of MCPMark.",
+  "publishedAt": "2025-09-28T17:53:27Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 180,
+  "citationCount": 25,
+  "githubStars": 456,
+  "pageCount": 42
+ },
+ {
+  "arxivId": "2512.04677",
+  "slug": "live-avatar-streaming-real-time-audio-driven-avatar-generation-with-infinite",
+  "title": "Live Avatar: Streaming Real-time Audio-Driven Avatar Generation with Infinite Length",
+  "authors": [
+   "Yubo Huang",
+   "Hailong Guo",
+   "Fangtai Wu",
+   "Weiqiang Wang",
+   "Shifeng Zhang",
+   "Shijie Huang"
+  ],
+  "abstract": "Audio-driven avatar interaction demands real-time, streaming, and infinite-length generation -- capabilities fundamentally at odds with the sequential denoising and long-horizon drift of current diffusion models. We present Live Avatar, an algorithm-system co-designed framework that addresses both challenges for a 14-billion-parameter diffusion model. On the algorithm side, a two-stage pipeline distills a pretrained bidirectional model into a causal, few-step streaming one, while a set of complementary long-horizon strategies eliminate identity drift and visual artifacts, enabling stable autoregressive generation exceeding 10000 seconds. On the system side, Timestep-forcing Pipeline Parallelism (TPP) assigns each GPU a fixed denoising timestep, converting the sequential diffusion chain into an asynchronous spatial pipeline that simultaneously boosts throughput and improves temporal consistency. Live Avatar achieves 45 FPS with a TTFF of 1.21\\,s on 5 H800 GPUs, and to our knowledge is the first to enable practical real-time streaming of a 14B diffusion model for infinite-length avatar generation. We further introduce GenBench, a standardized long-form benchmark, to facilitate reproducible evaluation. Our project page is at https://liveavatar.github.io/.",
+  "publishedAt": "2025-12-04T11:11:24Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 179,
+  "citationCount": 0,
+  "githubStars": 2324,
+  "pageCount": 34
+ }
+]

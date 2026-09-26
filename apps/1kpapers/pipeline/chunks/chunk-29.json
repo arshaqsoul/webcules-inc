@@ -1,0 +1,716 @@
+[
+ {
+  "arxivId": "2509.07996",
+  "slug": "3d-and-4d-world-modeling-a-survey",
+  "title": "3D and 4D World Modeling: A Survey",
+  "authors": [
+   "Lingdong Kong",
+   "Yu Yang",
+   "Jianbiao Mei",
+   "Youquan Liu",
+   "Ao Liang",
+   "Dekai Zhu"
+  ],
+  "abstract": "World modeling has become a cornerstone in AI research, enabling agents to understand, represent, and predict the dynamic environments they inhabit. While prior work largely emphasizes generative methods for 2D image and video data, they overlook the rapidly growing body of work that leverages native 3D and 4D representations such as RGB-D imagery, occupancy grids, and LiDAR point clouds for large-scale scene modeling. At the same time, the absence of a standardized definition and taxonomy for \"world models\" has led to fragmented and sometimes inconsistent claims in the literature. This survey addresses these gaps by presenting the first comprehensive review explicitly dedicated to 3D and 4D world modeling and generation. We establish precise definitions, introduce a structured taxonomy spanning video-based (VideoGen), occupancy-based (OccGen), and LiDAR-based (LiDARGen) approaches, and systematically summarize datasets and evaluation metrics tailored to 3D/4D settings. We further discuss practical applications, identify open challenges, and highlight promising research directions, aiming to provide a coherent and foundational reference for advancing the field. A systematic summary of existing literature is available at https://github.com/worldbench/awesome-3d-4d-world-models",
+  "publishedAt": "2025-09-04T17:59:58Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.RO"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 59,
+  "citationCount": 65,
+  "githubStars": 960,
+  "pageCount": 63
+ },
+ {
+  "arxivId": "2510.13554",
+  "slug": "attention-illuminates-llm-reasoning-the-preplan-and-anchor-rhythm-enables-fine",
+  "title": "Attention Illuminates LLM Reasoning: The Preplan-and-Anchor Rhythm Enables Fine-Grained Policy Optimization",
+  "authors": [
+   "Yang Li",
+   "Zhichen Dong",
+   "Yuhan Sun",
+   "Weixun Wang",
+   "Shaopan Xiong",
+   "Yijia Luo"
+  ],
+  "abstract": "The reasoning pattern of Large language models (LLMs) remains opaque, and reinforcement learning (RL) typically applies uniform credit across an entire generation, blurring the distinction between pivotal and routine steps. This work positions attention as a privileged substrate that renders the internal logic of LLMs legible, not merely as a byproduct of computation, but as a mechanistic blueprint of reasoning itself. We first distinguish attention heads between locally and globally focused information processing and reveal that locally focused heads produce a sawtooth pattern near the diagonal indicating phrasal chunks, while globally focused heads expose tokens that exert broad downstream influence over future tokens. We formalize these with two metrics: 1) Windowed Average Attention Distance, which measures the extent of backward attention within a clipped window; 2) Future Attention Influence, which quantifies a token's global importance as the average attention it receives from subsequent tokens. Taken together, these signals reveal a recurring preplan-and-anchor mechanism, where the model first performs a long-range contextual reference to generate an introductory token, which is immediately followed by or coincides with a semantic anchor token that organizes subsequent reasoning. Leveraging these insights, we introduce three novel RL strategies that dynamically perform targeted credit assignment to critical nodes (preplan tokens, anchor tokens, and their temporal coupling) and show consistent performance gains across various reasoning tasks. By aligning optimization with the model's intrinsic reasoning rhythm, we aim to transform opaque optimization into an actionable structure-aware process, hoping to offer a potential step toward more transparent and effective optimization of LLM reasoning.",
+  "publishedAt": "2025-10-15T13:49:51Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 59,
+  "citationCount": 25,
+  "githubStars": null,
+  "pageCount": 31
+ },
+ {
+  "arxivId": "2510.23588",
+  "slug": "farmer-flow-autoregressive-transformer-over-pixels",
+  "title": "FARMER: Flow AutoRegressive Transformer over Pixels",
+  "authors": [
+   "Guangting Zheng",
+   "Qinyu Zhao",
+   "Tao Yang",
+   "Fei Xiao",
+   "Zhijie Lin",
+   "Jie Wu"
+  ],
+  "abstract": "Directly modeling the explicit likelihood of the raw data distribution is key topic in the machine learning area, which achieves the scaling successes in Large Language Models by autoregressive modeling. However, continuous AR modeling over visual pixel data suffer from extremely long sequences and high-dimensional spaces. In this paper, we present FARMER, a novel end-to-end generative framework that unifies Normalizing Flows (NF) and Autoregressive (AR) models for tractable likelihood estimation and high-quality image synthesis directly from raw pixels. FARMER employs an invertible autoregressive flow to transform images into latent sequences, whose distribution is modeled implicitly by an autoregressive model. To address the redundancy and complexity in pixel-level modeling, we propose a self-supervised dimension reduction scheme that partitions NF latent channels into informative and redundant groups, enabling more effective and efficient AR modeling. Furthermore, we design a one-step distillation scheme to significantly accelerate inference speed and introduce a resampling-based classifier-free guidance algorithm to boost image generation quality. Extensive experiments demonstrate that FARMER achieves competitive performance compared to existing pixel-based generative models while providing exact likelihoods and scalable training.",
+  "publishedAt": "2025-10-27T17:54:08Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 59,
+  "citationCount": 13,
+  "githubStars": null,
+  "pageCount": 21
+ },
+ {
+  "arxivId": "2511.11653",
+  "slug": "grouprank-a-groupwise-paradigm-for-effective-and-efficient-passage-reranking",
+  "title": "GroupRank: A Groupwise Paradigm for Effective and Efficient Passage Reranking with LLMs",
+  "authors": [
+   "Meixiu Long",
+   "Duolin Sun",
+   "Dan Yang",
+   "Yihan Jiao",
+   "Lei Liu",
+   "Jiahai Wang"
+  ],
+  "abstract": "Large Language Models (LLMs) have emerged as powerful tools for passage reranking in information retrieval, leveraging their superior reasoning capabilities to address the limitations of conventional models on complex queries. However, current LLM-based reranking paradigms are fundamentally constrained by an efficiency-accuracy trade-off: (1) pointwise methods are efficient but ignore inter-document comparison, yielding suboptimal accuracy; (2) listwise methods capture global context but suffer from context-window constraints and prohibitive inference latency. To address these issues, we propose GroupRank, a novel paradigm that balances flexibility and context awareness. To unlock the full potential of groupwise reranking, we propose an answer-free data synthesis pipeline that fuses local pointwise signals with global listwise rankings. These samples facilitate supervised fine-tuning and reinforcement learning, with the latter guided by a specialized group-ranking reward comprising ranking-utility and group-alignment. These complementary components synergistically optimize document ordering and score calibration to reflect intrinsic query-document relevance. Experimental results show GroupRank achieves a state-of-the-art 65.2 NDCG@10 on BRIGHT and surpasses baselines by 2.1 points on R2MED, while delivering a 6.4$\\times$ inference speedup.",
+  "publishedAt": "2025-11-10T15:25:31Z",
+  "primaryArxivCategory": [
+   "cs.IR",
+   "cs.AI",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 59,
+  "citationCount": 3,
+  "githubStars": 259,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2511.15593",
+  "slug": "what-does-it-take-to-be-a-good-ai-research-agent-studying-the-role-of-ideation",
+  "title": "What Does It Take to Be a Good AI Research Agent? Studying the Role of Ideation Diversity",
+  "authors": [
+   "Alexis Audran-Reiss",
+   "Jordi Armengol-Estapé",
+   "Karen Hambardzumyan",
+   "Amar Budhiraja",
+   "Martin Josifoski",
+   "Edan Toledo"
+  ],
+  "abstract": "AI research agents offer the promise to accelerate scientific progress by automating the design, implementation, and training of machine learning models. However, the field is still in its infancy, and the key factors driving the success or failure of agent trajectories are not fully understood. We examine the role that ideation diversity plays in agent performance. First, we analyse agent trajectories on MLE-bench, a well-known benchmark to evaluate AI research agents, across different models and agent scaffolds. Our analysis reveals that different models and agent scaffolds yield varying degrees of ideation diversity, and that higher-performing agents tend to have increased ideation diversity. Further, we run a controlled experiment where we modify the degree of ideation diversity, demonstrating that higher ideation diversity results in stronger performance. Finally, we strengthen our results by examining additional evaluation metrics beyond the standard medal-based scoring of MLE-bench, showing that our findings still hold across other agent performance metrics.",
+  "publishedAt": "2025-11-19T16:32:18Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": "Meta AI / FAIR",
+  "hfUpvotes": 59,
+  "citationCount": 5,
+  "githubStars": null,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2601.04720",
+  "slug": "qwen3-vl-embedding-and-qwen3-vl-reranker-a-unified-framework-for-state-of-the",
+  "title": "Qwen3-VL-Embedding and Qwen3-VL-Reranker: A Unified Framework for State-of-the-Art Multimodal Retrieval and Ranking",
+  "authors": [
+   "Mingxin Li",
+   "Yanzhao Zhang",
+   "Dingkun Long",
+   "Keqin Chen",
+   "Sibo Song",
+   "Shuai Bai"
+  ],
+  "abstract": "In this report, we introduce the Qwen3-VL-Embedding and Qwen3-VL-Reranker model series, the latest extensions of the Qwen family built on the Qwen3-VL foundation model. Together, they provide an end-to-end pipeline for high-precision multimodal search by mapping diverse modalities, including text, images, document images, and video, into a unified representation space. The Qwen3-VL-Embedding model employs a multi-stage training paradigm, progressing from large-scale contrastive pre-training to reranking model distillation, to generate semantically rich high-dimensional vectors. It supports Matryoshka Representation Learning, enabling flexible embedding dimensions, and handles inputs up to 32k tokens. Complementing this, Qwen3-VL-Reranker performs fine-grained relevance estimation for query-document pairs using a cross-encoder architecture with cross-attention mechanisms. Both model series inherit the multilingual capabilities of Qwen3-VL, supporting more than 30 languages, and are released in $\\textbf{2B}$ and $\\textbf{8B}$ parameter sizes to accommodate diverse deployment requirements. Empirical evaluations demonstrate that the Qwen3-VL-Embedding series achieves state-of-the-art results across diverse multimodal embedding evaluation benchmarks. Specifically, Qwen3-VL-Embedding-8B attains an overall score of $\\textbf{77.8}$ on MMEB-V2, ranking first among all models (as of January 8, 2025). This report presents the architecture, training methodology, and practical capabilities of the series, demonstrating their effectiveness on various multimodal retrieval tasks, including image-text retrieval, visual question answering, and video-text matching.",
+  "publishedAt": "2026-01-08T08:36:06Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": "Alibaba / Qwen",
+  "hfUpvotes": 59,
+  "citationCount": 167,
+  "githubStars": 1348,
+  "pageCount": 23
+ },
+ {
+  "arxivId": "2601.04745",
+  "slug": "knowme-bench-benchmarking-person-understanding-for-lifelong-digital-companions",
+  "title": "KnowMe-Bench: Benchmarking Person Understanding for Lifelong Digital Companions",
+  "authors": [
+   "Tingyu Wu",
+   "Zhisheng Chen",
+   "Ziyan Weng",
+   "Shuhe Wang",
+   "Chenglong Li",
+   "Shuo Zhang"
+  ],
+  "abstract": "Existing long-horizon memory benchmarks mostly use multi-turn dialogues or synthetic user histories, which makes retrieval performance an imperfect proxy for person understanding. We present \\BenchName, a publicly releasable benchmark built from long-form autobiographical narratives, where actions, context, and inner thoughts provide dense evidence for inferring stable motivations and decision principles. \\BenchName~reconstructs each narrative into a flashback-aware, time-anchored stream and evaluates models with evidence-linked questions spanning factual recall, subjective state attribution, and principle-level reasoning. Across diverse narrative sources, retrieval-augmented systems mainly improve factual accuracy, while errors persist on temporally grounded explanations and higher-level inferences, highlighting the need for memory mechanisms beyond retrieval. Our data is in \\href{KnowMeBench}{https://github.com/QuantaAlpha/KnowMeBench}.",
+  "publishedAt": "2026-01-08T09:11:33Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.IR"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 59,
+  "citationCount": 8,
+  "githubStars": 133,
+  "pageCount": 25
+ },
+ {
+  "arxivId": "2602.03392",
+  "slug": "on-the-entropy-dynamics-in-reinforcement-fine-tuning-of-large-language-models",
+  "title": "On the Entropy Dynamics in Reinforcement Fine-Tuning of Large Language Models",
+  "authors": [
+   "Shumin Wang",
+   "Yuexiang Xie",
+   "Wenhao Zhang",
+   "Yuchang Sun",
+   "Yanxi Chen",
+   "Yaliang Li"
+  ],
+  "abstract": "Entropy serves as a critical metric for measuring the diversity of outputs generated by large language models (LLMs), providing valuable insights into their exploration capabilities. While recent studies increasingly focus on monitoring and adjusting entropy to better balance exploration and exploitation in reinforcement fine-tuning (RFT), a principled understanding of entropy dynamics during this process is yet to be thoroughly investigated. In this paper, we establish a theoretical framework for analyzing the entropy dynamics during the RFT process, which begins with a discriminant expression that quantifies entropy change under a single logit update. This foundation enables the derivation of a first-order expression for entropy change, which can be further extended to the update formula of Group Relative Policy Optimization (GRPO). The corollaries and insights drawn from the theoretical analysis inspire the design of entropy control methods, and also offer a unified lens for interpreting various entropy-based methods in existing studies. We provide empirical evidence to support the main conclusions of our analysis and demonstrate the effectiveness of the derived entropy-discriminator clipping methods. This study yields novel insights into RFT training dynamics, providing theoretical support and practical strategies for optimizing the exploration-exploitation balance during LLM fine-tuning.",
+  "publishedAt": "2026-02-03T11:14:58Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 59,
+  "citationCount": 7,
+  "githubStars": null,
+  "pageCount": 17
+ },
+ {
+  "arxivId": "2602.09443",
+  "slug": "p1-vl-bridging-visual-perception-and-scientific-reasoning-in-physics-olympiads",
+  "title": "P1-VL: Bridging Visual Perception and Scientific Reasoning in Physics Olympiads",
+  "authors": [
+   "Yun Luo",
+   "Futing Wang",
+   "Qianjia Cheng",
+   "Fangchen Yu",
+   "Haodi Lei",
+   "Jianhao Yan"
+  ],
+  "abstract": "The transition from symbolic manipulation to science-grade reasoning represents a pivotal frontier for Large Language Models (LLMs), with physics serving as the critical test anchor for binding abstract logic to physical reality. Physics demands that a model maintain physical consistency with the laws governing the universe, a task that fundamentally requires multimodal perception to ground abstract logic in reality. At the Olympiad level, diagrams are often constitutive rather than illustrative, containing essential constraints, such as boundary conditions and spatial symmetries, that are absent from the text. To bridge this visual-logical gap, we introduce P1-VL, a family of open-source vision-language models engineered for advanced scientific reasoning. Our method harmonizes Curriculum Reinforcement Learning, which employs progressive difficulty expansion to stabilize post-training, with Agentic Augmentation, enabling iterative self-verification at inference. Evaluated on HiPhO, a rigorous benchmark of 13 exams from 2024-2025, our flagship P1-VL-235B-A22B becomes the first open-source Vision-Language Model (VLM) to secure 12 gold medals and achieves the state-of-the-art performance in the open-source models. Our agent-augmented system achieves the No.2 overall rank globally, trailing only Gemini-3-Pro. Beyond physics, P1-VL demonstrates remarkable scientific reasoning capacity and generalizability, establishing significant leads over base models in STEM benchmarks. By open-sourcing P1-VL, we provide a foundational step toward general-purpose physical intelligence to better align visual perceptions with abstract physical laws for machine scientific discovery.",
+  "publishedAt": "2026-02-10T06:28:08Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 59,
+  "citationCount": 5,
+  "githubStars": 15,
+  "pageCount": 31
+ },
+ {
+  "arxivId": "2602.10809",
+  "slug": "deepimagesearch-benchmarking-multimodal-agents-for-context-aware-image",
+  "title": "DeepImageSearch: Benchmarking Multimodal Agents for Context-Aware Image Retrieval in Visual Histories",
+  "authors": [
+   "Chenlong Deng",
+   "Mengjie Deng",
+   "Junjie Wu",
+   "Dun Zeng",
+   "Teng Wang",
+   "Qingsong Xie"
+  ],
+  "abstract": "Existing multimodal retrieval systems excel at semantic matching but implicitly assume that query-image relevance can be measured in isolation. This paradigm overlooks the rich dependencies inherent in realistic visual streams, where information is distributed across temporal sequences rather than confined to single snapshots. To bridge this gap, we introduce DeepImageSearch, a novel agentic paradigm that reformulates image retrieval as an autonomous exploration task. Models must plan and perform multi-step reasoning over raw visual histories to locate targets based on implicit contextual cues. We construct DISBench, a challenging benchmark built on interconnected visual data. To address the scalability challenge of creating context-dependent queries, we propose a human-model collaborative pipeline that employs vision-language models to mine latent spatiotemporal associations, effectively offloading intensive context discovery before human verification. Furthermore, we build a robust baseline using a modular agent framework equipped with fine-grained tools and a dual-memory system for long-horizon navigation. Extensive experiments demonstrate that DISBench poses significant challenges to state-of-the-art models, highlighting the necessity of incorporating agentic reasoning into next-generation retrieval systems.",
+  "publishedAt": "2026-02-11T12:51:10Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.IR"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 59,
+  "citationCount": 3,
+  "githubStars": 87,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2602.12192",
+  "slug": "query-focused-and-memory-aware-reranker-for-long-context-processing",
+  "title": "Query-focused and Memory-aware Reranker for Long Context Processing",
+  "authors": [
+   "Yuqing Li",
+   "Jiangnan Li",
+   "Mo Yu",
+   "Guoxuan Ding",
+   "Yanyu Chen",
+   "Zheng Lin"
+  ],
+  "abstract": "Built upon the existing analysis of retrieval heads in large language models, we propose an alternative reranking framework that trains models to estimate passage-query relevance using the attention scores of selected heads. This approach provides a listwise solution that leverages the holistic information within the entire candidate shortlist during ranking. At the same time, it naturally produces continuous relevance scores, enabling training on arbitrary retrieval datasets without requiring Likert-scale supervision. Our framework is lightweight and effective, requiring only small-scale models, such as 3B parameters, to achieve strong performance. Extensive experiments demonstrate that our method outperforms existing state-of-the-art pointwise and listwise rerankers across multiple domains, including Wikipedia and long narrative datasets. It further establishes a new state-of-the-art on the LoCoMo benchmark, which assesses dialogue understanding and memory usage. We further demonstrate that our framework supports flexible extensions. For example, augmenting candidate passages with contextual information further improves ranking accuracy, while training attention heads from middle layers enhances efficiency without sacrificing performance.",
+  "publishedAt": "2026-02-12T17:23:38Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 59,
+  "citationCount": 5,
+  "githubStars": null,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2602.12675",
+  "slug": "sla2-sparse-linear-attention-with-learnable-routing-and-qat",
+  "title": "SLA2: Sparse-Linear Attention with Learnable Routing and QAT",
+  "authors": [
+   "Jintao Zhang",
+   "Haoxu Wang",
+   "Kai Jiang",
+   "Kaiwen Zheng",
+   "Youhe Jiang",
+   "Ion Stoica"
+  ],
+  "abstract": "Sparse-Linear Attention (SLA) combines sparse and linear attention to accelerate diffusion models and has shown strong performance in video generation. However, (i) SLA relies on a heuristic split that assigns computations to the sparse or linear branch based on attention-weight magnitude, which can be suboptimal. Additionally, (ii) after formally analyzing the attention error in SLA, we identify a mismatch between SLA and a direct decomposition into sparse and linear attention. We propose SLA2, which introduces (I) a learnable router that dynamically selects whether each attention computation should use sparse or linear attention, (II) a more faithful and direct sparse-linear attention formulation that uses a learnable ratio to combine the sparse and linear attention branches, and (III) a sparse + low-bit attention design, where low-bit attention is introduced via quantization-aware fine-tuning to reduce quantization error. Experiments show that on video diffusion models, SLA2 can achieve 97% attention sparsity and deliver an 18.6x attention speedup while preserving generation quality.",
+  "publishedAt": "2026-02-13T07:16:02Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 59,
+  "citationCount": 15,
+  "githubStars": 328,
+  "pageCount": 12
+ },
+ {
+  "arxivId": "2604.27505",
+  "slug": "leveraging-verifier-based-reinforcement-learning-in-image-editing",
+  "title": "Leveraging Verifier-Based Reinforcement Learning in Image Editing",
+  "authors": [
+   "Hanzhong Guo",
+   "Jie Wu",
+   "Jie Liu",
+   "Yu Gao",
+   "Zilyu Ye",
+   "Linxiao Yuan"
+  ],
+  "abstract": "While Reinforcement Learning from Human Feedback (RLHF) has become a pivotal paradigm for text-to-image generation, its application to image editing remains largely unexplored. A key bottleneck is the lack of a robust general reward model for all editing tasks. Existing edit reward models usually give overall scores without detailed checks, ignoring different instruction requirements and causing biased rewards. To address this, we argue that the key is to move from a simple scorer to a reasoning verifier. We introduce Edit-R1, a framework that builds a chain-of-thought (CoT) verifier-based reasoning reward model (RRM) and then leverages it for downstream image editing. The Edit-RRM breaks instructions into distinct principles, evaluates the edited image against each principle, and aggregates these checks into an interpretable, fine-grained reward. To build such an RRM, we first apply supervised fine-tuning (SFT) as a ``cold-start'' to generate CoT reward trajectories. Then, we introduce Group Contrastive Preference Optimization (GCPO), a reinforcement learning algorithm that leverages human pairwise preference data to reinforce our pointwise RRM. After building the RRM, we use GRPO to train editing models with this non-differentiable yet powerful reward model. Extensive experiments demonstrate that our Edit-RRM surpasses powerful VLMs such as Seed-1.5-VL and Seed-1.6-VL as an editing-specific reward model, and we observe a clear scaling trend, with performance consistently improving from 3B to 7B parameters. Moreover, Edit-R1 delivers gains to editing models like FLUX.1-kontext, highlighting its effectiveness in enhancing image editing.",
+  "publishedAt": "2026-04-30T06:54:39Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 59,
+  "citationCount": 5,
+  "githubStars": null,
+  "pageCount": 29
+ },
+ {
+  "arxivId": "2605.19577",
+  "slug": "golongrl-capability-oriented-long-context-reinforcement-learning-with",
+  "title": "GoLongRL: Capability-Oriented Long Context Reinforcement Learning with Multitask Alignment",
+  "authors": [
+   "Minxuan Lv",
+   "Tiehua Mei",
+   "Tanlong Du",
+   "Junmin Chen",
+   "Zhenpeng Su",
+   "Ziyang Chen"
+  ],
+  "abstract": "We present GoLongRL, a fully open-source, capability-oriented post-training recipe for long-context reinforcement learning with verifiable rewards (RLVR). Existing long-context RL methods often treat data construction as a matter of designing increasingly complex retrieval paths, leading to homogeneous task coverage and reward formulations that inadequately reflect practical long-context requirements. Our work offers two contributions. (1) Capability-oriented data construction with full open release. We openly release a dataset of 23K RLVR samples, the complete construction pipeline, and all training code. Guided by a taxonomy of long-context capabilities, the dataset spans 9 task types, each paired with its natural evaluation metric. It comprises curated open-source samples from established corpora and synthetic samples whose QA pairs are generated from real source documents such as books, academic papers, and multi-turn dialogues. Under the same vanilla GRPO setup, our dataset alone outperforms the closed-source QwenLong-L1.5 dataset. Moreover, our Qwen3-30B-A3B model trained on this data delivers long-context performance comparable to DeepSeek-R1-0528 and Qwen3-235B-A22B-Thinking-2507, suggesting that broader coverage and greater reward diversity substantially benefit long-context capability improvement. (2) TMN-Reweight for heterogeneous multitask optimization. To address optimization challenges from heterogeneous rewards, we propose TMN-Reweight, which combines task-level mean normalization for cross-task reward scale alignment with difficulty-adaptive weighting for more reliable advantage estimation. TMN-Reweight further improves average performance over vanilla GRPO, with general capabilities preserved or improved across reported evaluations.",
+  "publishedAt": "2026-05-19T09:21:09Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 59,
+  "citationCount": 2,
+  "githubStars": 75,
+  "pageCount": 39
+ },
+ {
+  "arxivId": "2605.30263",
+  "slug": "minwm-a-full-stack-open-source-framework-for-real-time-interactive-video-world",
+  "title": "minWM: A Full-Stack Open-Source Framework for Real-Time Interactive Video World Models",
+  "authors": [
+   "Min Zhao",
+   "Hongzhou Zhu",
+   "Bokai Yan",
+   "Zihan Zhou",
+   "Yimin Chen",
+   "Wenqiang Sun"
+  ],
+  "abstract": "Recent video diffusion foundation models have achieved remarkable progress in high-quality video generation, yet turning them into real-time interactive video world models remains challenging. Interactive world models require controllable, causal, and low-latency rollout, which in practice demands a full pipeline spanning data construction, controllable fine-tuning, autoregressive training, few-step distillation, and streaming inference. In this work, we present minWM, a full-stack open-source framework for building real-time interactive video world models. minWM provides an end-to-end pipeline that converts existing bidirectional T2V/TI2V video foundation models into camera-controllable few-step autoregressive world models. Specifically, minWM first fine-tunes a bidirectional video diffusion model with camera control, and then applies the Causal Forcing / Causal Forcing++ pipeline, including AR diffusion training, causal ODE or causal consistency distillation, and asymmetric DMD, to distill it into a few-step autoregressive generator for low-latency rollout. The framework is modular and architecture-extensible: we instantiate it on representative open backbones, including Wan2.1-T2V-1.3B and HY1.5-TI2V-8B, covering both cross-attention-based condition injection and MMDiT-style architectures. minWM also supports adapting existing video world models, such as HY-WorldPlay, to new data distributions, training recipes, and latency targets. Beyond releasing runnable scripts, checkpoints, documentation, and inference code, we provide practical ablations on camera trajectory quality, controllability training steps, and minimal batch-size requirements. We hope minWM serves as a reproducible and extensible recipe for building and adapting real-time interactive video world models. Project Page: [https://github.com/shengshu-ai/minWM](https://github.com/shengshu-ai/minWM)",
+  "publishedAt": "2026-05-28T17:27:03Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 59,
+  "citationCount": 6,
+  "githubStars": 766,
+  "pageCount": 13
+ },
+ {
+  "arxivId": "2605.31268",
+  "slug": "mellum2-technical-report",
+  "title": "Mellum2 Technical Report",
+  "authors": [
+   "Marko Kojic",
+   "Ivan Bondyrev",
+   "Aral de Moor",
+   "Joseph Shtok",
+   "Petr Borovlev",
+   "Kseniia Lysaniuk"
+  ],
+  "abstract": "We present Mellum 2, an open-weight 12B-parameter Mixture-of-Experts (MoE) language model with 2.5B active parameters per token. Mellum 2 is a general-purpose language model specialized in software engineering, spanning code generation and editing, debugging, multi-step reasoning, tool use and function calling, agentic coding, and conversational programming assistance, and it is the successor to the completion-focused 4B dense Mellum model. The architecture builds on the Mixture-of-Experts (64 experts, 8 active) and combines Grouped-Query Attention with 4 KV heads, Sliding Window Attention on three of every four layers, and a single Multi-Token Prediction head that doubles as both an auxiliary pre-training objective and a built-in draft model for speculative decoding; each choice was validated by ablation with inference efficiency on commodity GPUs as a design constraint. Pre-training spans approximately 10.6 trillion tokens through a three-phase curriculum that progressively shifts the mixture from diverse web data toward curated code and mathematical content, optimized with Muon under FP8 hybrid precision and a Warmup-Hold-Decay schedule with linear decay to zero. The pre-trained base is extended to a 128K context window via a layer-selective YaRN and then post-trained in two stages (supervised fine-tuning followed by RLVR), yielding two released variants: an Instruct model that answers directly and a Thinking model that emits an explicit reasoning trace before its final answer. Across code generation, math and reasoning, tool use, knowledge, and safety benchmarks, Mellum 2 is competitive with open-weight baselines in the 4B-14B range while running at the per-token compute of a 2.5B dense model. We release the base, instruct, and thinking checkpoints, together with this report on the architecture decisions, data pipeline, and training recipe behind them, under the Apache 2.0 license.",
+  "publishedAt": "2026-05-29T13:01:11Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 59,
+  "citationCount": 0,
+  "githubStars": null,
+  "pageCount": 34
+ },
+ {
+  "arxivId": "2606.02404",
+  "slug": "k-browsecomp-a-web-browsing-agent-benchmark-grounded-in-korean-contexts",
+  "title": "K-BrowseComp: A Web Browsing Agent Benchmark Grounded in Korean Contexts",
+  "authors": [
+   "Nahyun Lee",
+   "Dongkeun Yoon",
+   "Guijin Son",
+   "Geewook Kim",
+   "Dayoon Ko",
+   "Jeonghun Park"
+  ],
+  "abstract": "Frontier model evaluations are shifting from foundational capabilities (e.g., instruction following and reasoning) toward compositional, agentic ones, but Korean agentic benchmarks remain scarce. We introduce K-BrowseComp, a web-browsing agent benchmark grounded in Korean contexts, consisting of 400 problems. The 300-problem K-BrowseComp-Verified subset is manually constructed and validated by native Korean speakers. On this subset, frontier LLMs, including GPT-5.5, DeepSeek-V4-Pro, and GLM-5.1, reach only 30.00--45.67\\%, a substantial drop from BrowseComp, while Korean LLMs released through Korea's Proprietary AI Foundation Model program obtain only 0.00--10.33\\%. We further construct a 100-problem synthetic split using hard few-shot exemplars and failure-mode-targeted generation to exploit the asymmetry between solving and creating web browsing problems. On the adversarially filtered synthetic diagnostic split, the strongest model reaches only 26.00\\%, and we report this split separately as a targeted stress test. We publicly release our data and code.",
+  "publishedAt": "2026-06-01T15:50:03Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 59,
+  "citationCount": 1,
+  "githubStars": 14,
+  "pageCount": 27
+ },
+ {
+  "arxivId": "2606.13578",
+  "slug": "labvla-grounding-vision-language-action-models-in-scientific-laboratories",
+  "title": "LabVLA: Grounding Vision-Language-Action Models in Scientific Laboratories",
+  "authors": [
+   "Baochang Ren",
+   "Xinjie Liu",
+   "Xi Chen",
+   "Yanshuo Liu",
+   "Chenxi Li",
+   "Daqi Gao"
+  ],
+  "abstract": "Scientific laboratories increasingly rely on AI systems to reason about experiments, but the physical act of doing science remains largely outside their reach. AI can help read literature, generate hypotheses, and plan protocols, yet the execution of those protocols at the bench still requires a human operator. Vision-Language-Action (VLA) models provide one possible interface between written protocols and robot execution, but existing policies are trained mostly on household and tabletop demonstrations and rarely encounter the instruments, transparent liquids, or fixed protocol workflows found in scientific laboratories. Closing this gap requires both laboratory-specific supervision and a unified learning framework that can accommodate the diverse robot embodiments used to execute experimental protocols. We therefore identify data and embodiment as central bottlenecks alongside model design. To address the data side, we build RoboGenesis, a simulation-based workflow and data engine that composes configured laboratory workflows from atomic skills, validates and filters rollouts, and exports structured demonstrations across supported robot profiles. On the policy side, we present LabVLA, trained with a two-stage recipe: FAST action token pretraining first makes the Qwen3-VL-4B-Instruct backbone action aware before any continuous control is learned, and flow matching posttraining then attaches a DiT action expert under knowledge insulation. On the LabUtopia benchmark, LabVLA achieves the highest average success rate among all evaluated baselines under both in-distribution and out-of-distribution settings.",
+  "publishedAt": "2026-06-11T17:03:53Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI",
+   "cs.LG",
+   "cs.MM",
+   "cs.RO"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 59,
+  "citationCount": 0,
+  "githubStars": 93,
+  "pageCount": 23
+ },
+ {
+  "arxivId": "2606.17861",
+  "slug": "gamecraft-bench-can-agents-build-playable-games-end-to-end-in-a-real-game-engine",
+  "title": "GameCraft-Bench: Can Agents Build Playable Games End-to-End in a Real Game Engine?",
+  "authors": [
+   "Tongxu Luo",
+   "Rongsheng Wang",
+   "Jiaxi Bi",
+   "Chenming Xu",
+   "Zhengyang Tang",
+   "Jianlong Chen"
+  ],
+  "abstract": "Game generation is an emerging application of coding agents, requiring models to transform natural-language specifications into playable interactive systems. Unlike traditional coding tasks, game generation takes place within a game engine, where scripts, scenes, assets, rendering, and runtime interactions must jointly produce coherent gameplay. We formalize end-to-end game generation as the problem of producing a complete game artifact that realizes a specification through observable player-game interaction in a target environment. We argue that evaluating this setting requires three desiderata: Engine Grounding, Artifact Completeness, and Interactive Verification. We propose an interaction-grounded evaluation framework that assesses executable gameplay through replayed demonstrations and rubric-guided multimodal judging. We instantiate this framework as GameCraft-Bench, a benchmark comprising 140 Godot tasks across 15 game families. Evaluations of frontier coding agents show that end-to-end game generation remains highly challenging: the strongest agent achieves only 41.46%, and most agents score below 40%. Further analysis reveals that while agents often implement recognizable mechanics, they struggle to deliver complete games with sufficient content, functional visual feedback, and coherent presentation. See https://tongxuluo.github.io/gamecraft-bench-website for demos, code, and data.",
+  "publishedAt": "2026-06-16T12:34:39Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 59,
+  "citationCount": 1,
+  "githubStars": 191,
+  "pageCount": 25
+ },
+ {
+  "arxivId": "2607.02501",
+  "slug": "embodied-cpp-a-portable-inference-runtime-of-embodied-ai-models-on",
+  "title": "Embodied.cpp: A Portable Inference Runtime of Embodied AI Models on Heterogeneous Robots",
+  "authors": [
+   "Ling Xu",
+   "Chuyu Han",
+   "Borui Li",
+   "Hao Wu",
+   "Shiqi Jiang",
+   "Ting Cao"
+  ],
+  "abstract": "Embodied AI models now span vision-language-action (VLA) models and world-action models (WAMs), but practical deployment remains fragmented across model-specific Python stacks, backend assumptions, and robot-side glue code, especially on heterogeneous edge devices. Existing inference runtimes are designed mainly for request-response serving and therefore do not satisfy the runtime contract of embodied deployment: multi-rate execution inside closed-loop control, latency-first batch-1 inference on heterogeneous hardware, and extensible embodied interfaces beyond fixed token I/O. We present Embodied$.$cpp, a portable C++ inference runtime for embodied models. Based on an architectural analysis of representative VLA models and WAMs, Embodied$.$cpp captures a shared execution path and organizes it into five layers: input adapters, sequence builders, backbone execution, head plugins, and deployment adapters. The runtime provides modular multi-rate execution, latency-first fused inference, and extensible operator and I/O support, enabling deployment across heterogeneous devices, robots, and simulators through one backend abstraction. We evaluate Embodied$.$cpp on two VLA models, HY-VLA and pi0.5, and on a preliminary WAM benchmark using a LingBot-VA Transformer block. The VLA deployments achieve successful closed-loop execution with 100.0% and 91.0% task success rates, respectively. The WAM benchmark reduces block memory from 312.2 MiB to 88.1 MiB. These results show that Embodied$.$cpp improves deployment efficiency while preserving high accuracy across diverse embodied model architectures.",
+  "publishedAt": "2026-07-02T17:58:28Z",
+  "primaryArxivCategory": [
+   "cs.RO",
+   "cs.CV",
+   "cs.OS"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 59,
+  "citationCount": 1,
+  "githubStars": 121,
+  "pageCount": 12
+ },
+ {
+  "arxivId": "2607.18367",
+  "slug": "alayaworld-interactive-long-horizon-world-modeling-full-technical-report",
+  "title": "AlayaWorld: Interactive Long-Horizon World Modeling -- Full Technical Report",
+  "authors": [
+   "AlayaWorld Team",
+   "Kaipeng Zhang",
+   "Chuanhao Li",
+   "Yifan Zhan",
+   "Yongtao Ge",
+   "Yuanyang Yin"
+  ],
+  "abstract": "Unlike conventional video game development, which relies on labor-intensive pipelines for asset production, animation, physics, and programming, video world models generate interactive environments from user inputs instantly. It enable us to create customized, explorable, and continuously evolving virtual world from text, an image, or video. Realizing this vision requires four tightly coupled capabilities: interaction, persistent spatiotemporal consistency, stable long-horizon generation, and efficient response. We present AlayaWorld, an interactive long-horizon video world model that generates 24-fps video at 540p and 720p. Built on a 15B video diffusion transformer, AlayaWorld generates short latent chunks autoregressively under camera trajectories and switchable text prompts. Its bounded visual context combines a persistent sink frame, compressed temporal history, geometry-aligned spatial memory, and recent-frame conditioning. To reduce long-term drift, the model is trained with corrupted histories and prediction residuals collected from its own roll-outs. We further introduce a discrete autoregressive distillation formulation that combines distribution-matching distillation, self-forcing++, and consistency distillation, reducing inference from approximately 30 sampling steps to four steps per chunk. On iWorld-Bench, AlayaWorld achieves the best performance over long-horizon generation. Conceived as a full-stack, open-source, and long-term project, AlayaWorld is intended to provide an extensible foundation for future research on interactive video world models.",
+  "publishedAt": "2026-07-20T17:15:41Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 59,
+  "citationCount": 0,
+  "githubStars": 834,
+  "pageCount": 16
+ },
+ {
+  "arxivId": "2508.09736",
+  "slug": "seeing-listening-remembering-and-reasoning-a-multimodal-agent-with-long-term",
+  "title": "Seeing, Listening, Remembering, and Reasoning: A Multimodal Agent with Long-Term Memory",
+  "authors": [
+   "Lin Long",
+   "Yichen He",
+   "Wentao Ye",
+   "Yiyuan Pan",
+   "Yuan Lin",
+   "Hang Li"
+  ],
+  "abstract": "We introduce M3-Agent, a novel multimodal agent framework equipped with long-term memory. Like humans, M3-Agent can process real-time visual and auditory inputs to build and update episodic and semantic memories, gradually accumulating world knowledge. Its memory is organized in an entity-centric, multimodal manner, enabling deeper and more consistent understanding of the environment. Given an instruction, M3-Agent autonomously performs multi-turn reasoning and retrieves relevant memories to complete tasks. To evaluate memory effectiveness and memory-based reasoning in multimodal agents, we develop M3-Bench, a long-video question answering benchmark comprising 100 newly recorded robot-perspective videos (M3-Bench-robot) and 920 diverse web-sourced videos (M3-Bench-web). We annotate QA pairs designed to test capabilities essential for agent applications, such as person understanding, general knowledge extraction, and cross-modal reasoning. Experimental results show that M3-Agent, trained via reinforcement learning, outperforms the strongest baseline, a prompting agent using Gemini-1.5-pro and GPT-4o, achieving 6.7%, 7.7%, and 5.3% higher accuracy on M3-Bench-robot, M3-Bench-web and VideoMME-long, respectively. Our work advances multimodal agents toward more human-like long-term memory and provides insights for their practical design. Model, code and data are available at https://github.com/bytedance-seed/m3-agent.",
+  "publishedAt": "2025-08-13T12:03:03Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 58,
+  "citationCount": 64,
+  "githubStars": 1436,
+  "pageCount": 48
+ },
+ {
+  "arxivId": "2509.01396",
+  "slug": "deepresearch-arena-the-first-exam-of-llms-research-abilities-via-seminar",
+  "title": "DeepResearch Arena: The First Exam of LLMs' Research Abilities via Seminar-Grounded Tasks",
+  "authors": [
+   "Haiyuan Wan",
+   "Chen Yang",
+   "Junchi Yu",
+   "Meiqi Tu",
+   "Jiaxuan Lu",
+   "Di Yu"
+  ],
+  "abstract": "Deep research agents have attracted growing attention for their potential to orchestrate multi-stage research workflows, spanning literature synthesis, methodological design, and empirical verification. Despite these strides, evaluating their research capability faithfully is rather challenging due to the difficulty of collecting frontier research questions that genuinely capture researchers' attention and intellectual curiosity. To address this gap, we introduce DeepResearch Arena, a benchmark grounded in academic seminars that capture rich expert discourse and interaction, better reflecting real-world research environments and reducing the risk of data leakage. To automatically construct DeepResearch Arena, we propose a Multi-Agent Hierarchical Task Generation (MAHTG) system that extracts research-worthy inspirations from seminar transcripts. The MAHTG system further translates research-worthy inspirations into high-quality research tasks, ensuring the traceability of research task formulation while filtering noise. With the MAHTG system, we curate DeepResearch Arena with over 10,000 high-quality research tasks from over 200 academic seminars, spanning 12 disciplines, such as literature, history, and science. Our extensive evaluation shows that DeepResearch Arena presents substantial challenges for current state-of-the-art agents, with clear performance gaps observed across different models.",
+  "publishedAt": "2025-09-01T11:42:47Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 58,
+  "citationCount": 26,
+  "githubStars": null,
+  "pageCount": 23
+ },
+ {
+  "arxivId": "2509.04292",
+  "slug": "inverse-ifeval-can-llms-unlearn-stubborn-training-conventions-to-follow-real",
+  "title": "Inverse IFEval: Can LLMs Unlearn Stubborn Training Conventions to Follow Real Instructions?",
+  "authors": [
+   "Qinyan Zhang",
+   "Xinping Lei",
+   "Ruijie Miao",
+   "Yu Fu",
+   "Haojie Fan",
+   "Le Chang"
+  ],
+  "abstract": "Large Language Models (LLMs) achieve strong performance on diverse tasks but often exhibit cognitive inertia, struggling to follow instructions that conflict with the standardized patterns learned during supervised fine-tuning (SFT). To evaluate this limitation, we propose Inverse IFEval, a benchmark that measures models Counter-intuitive Abilitytheir capacity to override training-induced biases and comply with adversarial instructions. Inverse IFEval introduces eight types of such challenges, including Question Correction, Intentional Textual Flaws, Code without Comments, and Counterfactual Answering. Using a human-in-the-loop pipeline, we construct a dataset of 1012 high-quality Chinese and English questions across 23 domains, evaluated under an optimized LLM-as-a-Judge framework. Experiments on existing leading LLMs demonstrate the necessity of our proposed Inverse IFEval benchmark. Our findings emphasize that future alignment efforts should not only pursue fluency and factual correctness but also account for adaptability under unconventional contexts. We hope that Inverse IFEval serves as both a diagnostic tool and a foundation for developing methods that mitigate cognitive inertia, reduce overfitting to narrow patterns, and ultimately enhance the instruction-following reliability of LLMs in diverse and unpredictable real-world scenarios.",
+  "publishedAt": "2025-09-04T15:03:02Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 58,
+  "citationCount": 6,
+  "githubStars": null,
+  "pageCount": 24
+ },
+ {
+  "arxivId": "2509.16197",
+  "slug": "manzano-a-simple-and-scalable-unified-multimodal-model-with-a-hybrid-vision",
+  "title": "MANZANO: A Simple and Scalable Unified Multimodal Model with a Hybrid Vision Tokenizer",
+  "authors": [
+   "Yanghao Li",
+   "Rui Qian",
+   "Bowen Pan",
+   "Haotian Zhang",
+   "Haoshuo Huang",
+   "Bowen Zhang"
+  ],
+  "abstract": "Unified multimodal Large Language Models (LLMs) that can both understand and generate visual content hold immense potential. However, existing open-source models often suffer from a performance trade-off between these capabilities. We present Manzano, a simple and scalable unified framework that substantially reduces this tension by coupling a hybrid image tokenizer with a well-curated training recipe. A single shared vision encoder feeds two lightweight adapters that produce continuous embeddings for image-to-text understanding and discrete tokens for text-to-image generation within a common semantic space. A unified autoregressive LLM predicts high-level semantics in the form of text and image tokens, with an auxiliary diffusion decoder subsequently translating the image tokens into pixels. The architecture, together with a unified training recipe over understanding and generation data, enables scalable joint learning of both capabilities. Manzano achieves state-of-the-art results among unified models, and is competitive with specialist models, particularly on text-rich evaluation. Our studies show minimal task conflicts and consistent gains from scaling model size, validating our design choice of a hybrid tokenizer.",
+  "publishedAt": "2025-09-19T17:58:00Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.CL",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 58,
+  "citationCount": 15,
+  "githubStars": null,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2511.08633",
+  "slug": "time-to-move-training-free-motion-controlled-video-generation-via-dual-clock",
+  "title": "Time-to-Move: Training-Free Motion Controlled Video Generation via Dual-Clock Denoising",
+  "authors": [
+   "Assaf Singer",
+   "Noam Rotstein",
+   "Amir Mann",
+   "Ron Kimmel",
+   "Or Litany"
+  ],
+  "abstract": "Diffusion-based video generation can create realistic videos, yet existing image- and text-based conditioning fails to offer precise motion control. Prior methods for motion-conditioned synthesis typically require model-specific fine-tuning, which is computationally expensive and restrictive. We introduce Time-to-Move (TTM), a training-free, plug-and-play framework for motion- and appearance-controlled video generation with image-to-video (I2V) diffusion models. Our key insight is to use crude reference animations obtained through user-friendly manipulations such as cut-and-drag or depth-based reprojection. Motivated by SDEdit's use of coarse layout cues for image editing, we treat the crude animations as coarse motion cues and adapt the mechanism to the video domain. We preserve appearance with image conditioning and introduce dual-clock denoising, a region-dependent strategy that enforces strong alignment in motion-specified regions while allowing flexibility elsewhere, balancing fidelity to user intent with natural dynamics. This lightweight modification of the sampling process incurs no additional training or runtime cost and is compatible with any backbone. Extensive experiments on object and camera motion benchmarks show that TTM matches or exceeds existing training-based baselines in realism and motion control. Beyond this, TTM introduces a unique capability: precise appearance control through pixel-level conditioning, exceeding the limits of text-only prompting. Visit our project page for video examples and code: https://time-to-move.github.io/.",
+  "publishedAt": "2025-11-09T22:47:50Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI",
+   "cs.GR",
+   "cs.LG",
+   "cs.MM"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 58,
+  "citationCount": 11,
+  "githubStars": 370,
+  "pageCount": 21
+ },
+ {
+  "arxivId": "2512.01948",
+  "slug": "how-far-are-we-from-genuinely-useful-deep-research-agents",
+  "title": "How Far Are We from Genuinely Useful Deep Research Agents?",
+  "authors": [
+   "Dingling Zhang",
+   "He Zhu",
+   "Jincheng Ren",
+   "Kangqi Song",
+   "Xinran Zhou",
+   "Boyu Feng"
+  ],
+  "abstract": "Deep Research Agents (DRAs) aim to automatically produce analyst-level reports through iterative information retrieval and synthesis. However, most existing DRAs were validated on question-answering benchmarks, while research on generating comprehensive reports remains overlooked. Worse, current benchmarks for report synthesis suffer from task complexity and subjective metrics -- this fails to reflect user demands and limits the practical utility of generated reports. To address these gaps, we present Fine-grained DEepResearch bench (FINDER), an enhanced benchmark consisting of 100 human-curated research tasks with 419 structured checklist items that standardize report structure, analytical depth, and factual grounding. Based on approximately 1,000 reports produced by mainstream DRAs, we further propose Deep rEsearch Failure Taxonomy (DEFT), the first failure taxonomy for deep research agents. DEFT contains 14 fine-grained failure modes across reasoning, retrieval, and generation, and is built upon grounded theory with human-LLM co-annotating and inter-annotator reliability validation. Our experimental findings reveal that current DRAs struggle not with task comprehension but with evidence integration, verification, and reasoning-resilient planning.",
+  "publishedAt": "2025-12-01T17:58:59Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 58,
+  "citationCount": 9,
+  "githubStars": 66,
+  "pageCount": 34
+ },
+ {
+  "arxivId": "2601.00664",
+  "slug": "avatar-forcing-real-time-interactive-head-avatar-generation-for-natural",
+  "title": "Avatar Forcing: Real-Time Interactive Head Avatar Generation for Natural Conversation",
+  "authors": [
+   "Taekyung Ki",
+   "Sangwon Jang",
+   "Jaehyeong Jo",
+   "Jaehong Yoon",
+   "Sung Ju Hwang"
+  ],
+  "abstract": "Talking head generation creates lifelike avatars from static portraits for virtual communication and content creation. However, current models do not yet convey the feeling of truly interactive communication, often generating one-way responses that lack emotional engagement. We identify two key challenges toward truly interactive avatars: generating motion in real-time under causal constraints and learning expressive, vibrant reactions without additional labeled data. To address these challenges, we propose Avatar Forcing, a new framework for interactive head avatar generation that models real-time user-avatar interactions through diffusion forcing. This design allows the avatar to process real-time multimodal inputs, including the user's audio and motion, with low latency for instant reactions to both verbal and non-verbal cues such as speech, nods, and laughter. Furthermore, we introduce a direct preference optimization method that leverages synthetic losing samples constructed by dropping user conditions, enabling label-free learning of expressive interaction. Experimental results demonstrate that our framework enables real-time interaction with low latency (approximately 500ms), achieving 6.8X speedup compared to the baseline, and produces reactive and expressive avatar motion, which is preferred over 80% against the baseline.",
+  "publishedAt": "2026-01-02T11:58:48Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.CV",
+   "cs.HC",
+   "cs.MM"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 58,
+  "citationCount": 13,
+  "githubStars": 342,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2602.19672",
+  "slug": "skillorchestra-learning-to-route-agents-via-skill-transfer",
+  "title": "SkillOrchestra: Learning to Route Agents via Skill Transfer",
+  "authors": [
+   "Jiayu Wang",
+   "Yifei Ming",
+   "Zixuan Ke",
+   "Shafiq Joty",
+   "Aws Albarghouthi",
+   "Frederic Sala"
+  ],
+  "abstract": "Compound AI systems promise capabilities beyond those of individual models, yet their success depends critically on effective orchestration. Existing routing approaches face two limitations: (1) input-level routers make coarse query-level decisions that ignore evolving task requirements; (2) RL-trained orchestrators are expensive to adapt and often suffer from routing collapse, repeatedly invoking one strong but costly option in multi-turn scenarios. We introduce SkillOrchestra, a framework for skill-aware orchestration. Instead of directly learning a routing policy end-to-end, SkillOrchestra learns fine-grained skills from execution experience and models agent-specific competence and cost under those skills. At deployment, the orchestrator infers the skill demands of the current interaction and selects agents that best satisfy them under an explicit performance-cost trade-off. Extensive experiments across ten benchmarks demonstrate that SkillOrchestra outperforms SoTA RL-based orchestrators by up to 22.5% with 700x and 300x learning cost reduction compared to Router-R1 and ToolOrchestra, respectively. These results show that explicit skill modeling enables scalable, interpretable, and sample-efficient orchestration, offering a principled alternative to data-intensive RL-based approaches. The code is available at: https://github.com/jiayuww/SkillOrchestra.",
+  "publishedAt": "2026-02-23T10:17:25Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 58,
+  "citationCount": 16,
+  "githubStars": 71,
+  "pageCount": 42
+ },
+ {
+  "arxivId": "2603.16448",
+  "slug": "trust-sql-tool-integrated-multi-turn-reinforcement-learning-for-text-to-sql",
+  "title": "TRUST-SQL: Tool-Integrated Multi-Turn Reinforcement Learning for Text-to-SQL over Unknown Schemas",
+  "authors": [
+   "Ai Jian",
+   "Xiaoyun Zhang",
+   "Wanrou Du",
+   "Jingqing Ruan",
+   "Jiangbo Pei",
+   "Weipeng Zhang"
+  ],
+  "abstract": "Text-to-SQL parsing has achieved remarkable progress under the Full Schema Assumption. However, this premise fails in real-world enterprise environments where databases contain hundreds of tables with massive noisy metadata. Rather than injecting the full schema upfront, an agent must actively identify and verify only the relevant subset, giving rise to the Unknown Schema scenario we study in this work. To address this, we propose TRUST-SQL (Truthful Reasoning with Unknown Schema via Tools). We formulate the task as a Partially Observable Markov Decision Process where our autonomous agent employs a structured four-phase protocol to ground reasoning in verified metadata. Crucially, this protocol provides a structural boundary for our novel Dual-Track GRPO strategy. By applying token-level masked advantages, this strategy isolates exploration rewards from execution outcomes to resolve credit assignment, yielding a 9.9% relative improvement over standard GRPO. Extensive experiments across five benchmarks demonstrate that TRUST-SQL achieves an average absolute improvement of 30.6% and 16.6% for the 4B and 8B variants respectively over their base models. Remarkably, despite operating entirely without pre-loaded metadata, our framework consistently matches or surpasses strong baselines that rely on schema prefilling.",
+  "publishedAt": "2026-03-17T12:30:42Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 58,
+  "citationCount": 3,
+  "githubStars": null,
+  "pageCount": 19
+ }
+]

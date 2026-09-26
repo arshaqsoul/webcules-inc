@@ -1,0 +1,707 @@
+[
+ {
+  "arxivId": "2601.10103",
+  "slug": "flowact-r1-towards-interactive-humanoid-video-generation",
+  "title": "FlowAct-R1: Towards Interactive Humanoid Video Generation",
+  "authors": [
+   "Lizhen Wang",
+   "Yongming Zhu",
+   "Zhipeng Ge",
+   "Youwei Zheng",
+   "Longhao Zhang",
+   "Tianshu Hu"
+  ],
+  "abstract": "Interactive humanoid video generation aims to synthesize lifelike visual agents that can engage with humans through continuous and responsive video. Despite recent advances in video synthesis, existing methods often grapple with the trade-off between high-fidelity synthesis and real-time interaction requirements. In this paper, we propose FlowAct-R1, a framework specifically designed for real-time interactive humanoid video generation. Built upon a MMDiT architecture, FlowAct-R1 enables the streaming synthesis of video with arbitrary durations while maintaining low-latency responsiveness. We introduce a chunkwise diffusion forcing strategy, complemented by a novel self-forcing variant, to alleviate error accumulation and ensure long-term temporal consistency during continuous interaction. By leveraging efficient distillation and system-level optimizations, our framework achieves a stable 25fps at 480p resolution with a time-to-first-frame (TTFF) of only around 1.5 seconds. The proposed method provides holistic and fine-grained full-body control, enabling the agent to transition naturally between diverse behavioral states in interactive scenarios. Experimental results demonstrate that FlowAct-R1 achieves exceptional behavioral vividness and perceptual realism, while maintaining robust generalization across diverse character styles.",
+  "publishedAt": "2026-01-15T06:16:22Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 78,
+  "citationCount": 7,
+  "githubStars": null,
+  "pageCount": 9
+ },
+ {
+  "arxivId": "2603.21065",
+  "slug": "longcat-flash-prover-advancing-native-formal-reasoning-via-agentic-tool",
+  "title": "LongCat-Flash-Prover: Advancing Native Formal Reasoning via Agentic Tool-Integrated Reinforcement Learning",
+  "authors": [
+   "Jianing Wang",
+   "Jianfei Zhang",
+   "Qi Guo",
+   "Linsen Guo",
+   "Rumei Li",
+   "Chao Zhang"
+  ],
+  "abstract": "We introduce LongCat-Flash-Prover, a flagship 560-billion-parameter open-source Mixture-of- Experts (MoE) model that advances Native Formal Reasoning in Lean4 through agentic tool-integrated reasoning (TIR). We decompose the native formal reasoning task into three independent formal capabilities, i.e., auto-formalization, sketching, and proving. To facilitate these capabilities, we propose a Hybrid-Experts Iteration Framework to expand high-quality task trajectories, including generating a formal statement based on a given informal problem, producing a whole-proof directly from the statement, or a lemma-style sketch. During agentic RL, we present a Hierarchical Importance Sampling Policy Optimization (HisPO) algorithm, which aims to stabilize the MoE model training on such long-horizon tasks. It employs a gradient masking strategy that accounts for the policy staleness and the inherent train-inference engine discrepancies at both sequence and token levels. Additionally, we also incorporate theorem consistency and legality detection mechanisms to eliminate reward hacking issues. Extensive evaluations show that our LongCat-Flash-Prover sets a new state-of-the-art for open-weights models in both auto-formalization and theorem proving. Demonstrating remarkable sample efficiency, it achieves a 97.1% pass rate on MiniF2F-Test using only 72 inference budget per problem. On more challenging benchmarks, it solves 70.8% of ProverBench and 41.5% of PutnamBench with no more than 220 attempts per problem, significantly outperforming existing open-weights baselines.",
+  "publishedAt": "2026-03-22T05:16:09Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 78,
+  "citationCount": 5,
+  "githubStars": 93,
+  "pageCount": 43
+ },
+ {
+  "arxivId": "2606.19409",
+  "slug": "openrath-session-centered-runtime-state-for-agent-systems",
+  "title": "OpenRath: Session-Centered Runtime State for Agent Systems",
+  "authors": [
+   "Fukang Wen",
+   "Zhijie Wang",
+   "Ruilin Xu"
+  ],
+  "abstract": "Modern agent systems often suffer from fragmented runtime state: transcripts, tool effects, memory events, workspace placement, branch provenance, and replay evidence are recorded separately and become difficult to inspect or reproduce. OpenRath addresses this issue with a PyTorch-like programming model for multi-agent, multi-session systems. The analogy concerns the role of a central first-class runtime abstraction, not tensor computation. Its core abstraction is Session, the runtime value passed between agents and workflows. A Session is branchable, inspectable, replayable, backend-aware, and composable. It records conversation chunks, sandbox placement, lineage metadata, token usage, pending work, and tool evidence, while defining where memory interactions enter the runtime record. Since this state is carried by the same value used in program execution, fork, merge, and replay become explicit runtime operations rather than states reconstructed from external traces. OpenRath further defines Sandbox, Tool, Agent, Memory, Workflow, and Selector, with Selector turning control flow into runtime-routed decisions. This report presents the programming model, architecture, audited milestones, and evidence protocol. Its claims are limited to controlled runtime properties, while broad quantitative comparisons, live-provider quality, optional-backend availability, and memory quality are left for follow-on evaluation. The central thesis is that Session provides agent systems with a first-class runtime value for auditable composition.",
+  "publishedAt": "2026-06-17T15:19:19Z",
+  "primaryArxivCategory": [
+   "cs.SE",
+   "cs.PL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 78,
+  "citationCount": 0,
+  "githubStars": 1097,
+  "pageCount": 21
+ },
+ {
+  "arxivId": "2607.18213",
+  "slug": "swe-pruner-pro-the-coder-llm-already-knows-what-to-prune",
+  "title": "SWE-Pruner Pro: The Coder LLM Already Knows What to Prune",
+  "authors": [
+   "Yuhang Wang",
+   "Yuling Shi",
+   "Shaoqiu Zhang",
+   "Jialiang Liang",
+   "Shilin He",
+   "Siyu Ye"
+  ],
+  "abstract": "Pruning long context for coding agents has been a vital technology for efficient context management. While existing context pruning methods such as SWE-Pruner realize this by attaching a separate code classifier, we find the agent itself encodes internal representations indicating the relevance of code context when reading tool output. Based on this finding, we propose SWE-Pruner Pro, which prunes tool outputs directly inside the agent. Concretely, a small head turns the agent's own internal representations into a keep-or-prune label for each line, with a length-aware embedding keyed to each tool output's line count. Across two open-weight backbones and four multi-turn benchmarks, SWE-Pruner Pro saves up to 39% of prompt and completion tokens while preserving task quality, with bounded inference overhead. Notably, on MiMo-V2-Flash SWE-Pruner Pro additionally raises the SWE-Bench Verified resolve rate by +3.8% and the long-context Oolong accuracy by +2.2 points.",
+  "publishedAt": "2026-07-20T17:47:44Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.SE"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 78,
+  "citationCount": 0,
+  "githubStars": 16,
+  "pageCount": 28
+ },
+ {
+  "arxivId": "2509.04419",
+  "slug": "towards-a-unified-view-of-large-language-model-post-training",
+  "title": "Towards a Unified View of Large Language Model Post-Training",
+  "authors": [
+   "Xingtai Lv",
+   "Yuxin Zuo",
+   "Youbang Sun",
+   "Hongyi Liu",
+   "Yuntian Wei",
+   "Zhekai Chen"
+  ],
+  "abstract": "Two major sources of training data exist for post-training modern language models: online (model-generated rollouts) data, and offline (human or other-model demonstrations) data. These two types of data are typically used by approaches like Reinforcement Learning (RL) and Supervised Fine-Tuning (SFT), respectively. In this paper, we show that these approaches are not in contradiction, but are instances of a single optimization process. We derive a Unified Policy Gradient Estimator, and present the calculations of a wide spectrum of post-training approaches as the gradient of a common objective under different data distribution assumptions and various bias-variance tradeoffs. The gradient estimator is constructed with four interchangeable parts: stabilization mask, reference policy denominator, advantage estimate, and likelihood gradient. Motivated by our theoretical findings, we propose Hybrid Post-Training (HPT), an algorithm that dynamically selects different training signals. HPT is designed to yield both effective exploitation of demonstration and stable exploration without sacrificing learned reasoning patterns. We provide extensive experiments and ablation studies to verify the effectiveness of our unified theoretical framework and HPT. Across six mathematical reasoning benchmarks and two out-of-distribution suites, HPT consistently surpasses strong baselines across models of varying scales and families.",
+  "publishedAt": "2025-09-04T17:40:33Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 77,
+  "citationCount": 39,
+  "githubStars": 211,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2510.06590",
+  "slug": "ming-univision-joint-image-understanding-and-generation-with-a-unified",
+  "title": "Ming-UniVision: Joint Image Understanding and Generation with a Unified Continuous Tokenizer",
+  "authors": [
+   "Ziyuan Huang",
+   "DanDan Zheng",
+   "Cheng Zou",
+   "Rui Liu",
+   "Xiaolong Wang",
+   "Kaixiang Ji"
+  ],
+  "abstract": "Visual tokenization remains a core challenge in unifying visual understanding and generation within the autoregressive paradigm. Existing methods typically employ tokenizers in discrete latent spaces to align with the tokens from large language models, where the quantization errors can limit semantic expressiveness and degrade the capability of vision-language understanding. To address this, we introduce MingTok, a new family of visual tokenizers with a continuous latent space, for unified autoregressive generation and understanding. While understanding tasks favor discriminative high-dimensional features, generation tasks prefer compact low-level codes. Thus, to reconcile these competing demands, MingTok adopts a three-stage sequential architecture involving low-level encoding, semantic expansion, and visual reconstruction. Built on top of it, Ming-UniVision eliminates the need for task-specific visual representations, and unifies diverse vision-language tasks under a single autoregrsssive prediction paradigm. By formulating both understanding and generation as next-token prediction in a shared continuous space, it seamlessly supports multi-round, in-context tasks such as iterative understanding, generation and editing. Empirically, we find that using a unified continuous visual representation reconciles the competing requirements on the tokenizers by the understanding and generation tasks, thereby leading to state-of-the-art level performance across both domains. We hope our findings will facilitate unified visual tokenization in the continuous domain. Inference code and model weights are released to benefit community.",
+  "publishedAt": "2025-10-08T02:50:14Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 77,
+  "citationCount": 26,
+  "githubStars": 143,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2510.14359",
+  "slug": "ai-for-service-proactive-assistance-with-ai-glasses",
+  "title": "AI for Service: Proactive Assistance with AI Glasses",
+  "authors": [
+   "Zichen Wen",
+   "Yiyu Wang",
+   "Chenfei Liao",
+   "Boxue Yang",
+   "Junxian Li",
+   "Weifeng Liu"
+  ],
+  "abstract": "In an era where AI is evolving from a passive tool into an active and adaptive companion, we introduce AI for Service (AI4Service), a new paradigm that enables proactive and real-time assistance in daily life. Existing AI services remain largely reactive, responding only to explicit user commands. We argue that a truly intelligent and helpful assistant should be capable of anticipating user needs and taking actions proactively when appropriate. To realize this vision, we propose Alpha-Service, a unified framework that addresses two fundamental challenges: Know When to intervene by detecting service opportunities from egocentric video streams, and Know How to provide both generalized and personalized services. Inspired by the von Neumann computer architecture and based on AI glasses, Alpha-Service consists of five key components: an Input Unit for perception, a Central Processing Unit for task scheduling, an Arithmetic Logic Unit for tool utilization, a Memory Unit for long-term personalization, and an Output Unit for natural human interaction. As an initial exploration, we implement Alpha-Service through a multi-agent system deployed on AI glasses. Case studies, including a real-time Blackjack advisor, a museum tour guide, and a shopping fit assistant, demonstrate its ability to seamlessly perceive the environment, infer user intent, and provide timely and useful assistance without explicit prompts.",
+  "publishedAt": "2025-10-16T06:55:28Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL",
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 77,
+  "citationCount": 16,
+  "githubStars": null,
+  "pageCount": 24
+ },
+ {
+  "arxivId": "2512.08478",
+  "slug": "visionary-the-world-model-carrier-built-on-webgpu-powered-gaussian-splatting",
+  "title": "Visionary: The World Model Carrier Built on WebGPU-Powered Gaussian Splatting Platform",
+  "authors": [
+   "Yuning Gong",
+   "Yifei Liu",
+   "Yifan Zhan",
+   "Muyao Niu",
+   "Xueying Li",
+   "Yuanjun Liao"
+  ],
+  "abstract": "Neural rendering, particularly 3D Gaussian Splatting (3DGS), has evolved rapidly and become a key component for building world models. However, existing viewer solutions remain fragmented, heavy, or constrained by legacy pipelines, resulting in high deployment friction and limited support for dynamic content and generative models. In this work, we present Visionary, an open, web-native platform for real-time various Gaussian Splatting and meshes rendering. Built on an efficient WebGPU renderer with per-frame ONNX inference, Visionary enables dynamic neural processing while maintaining a lightweight, \"click-to-run\" browser experience. It introduces a standardized Gaussian Generator contract, which not only supports standard 3DGS rendering but also allows plug-and-play algorithms to generate or update Gaussians each frame. Such inference also enables us to apply feedforward generative post-processing. The platform further offers a plug in three.js library with a concise TypeScript API for seamless integration into existing web applications. Experiments show that, under identical 3DGS assets, Visionary achieves superior rendering efficiency compared to current Web viewers due to GPU-based primitive sorting. It already supports multiple variants, including MLP-based 3DGS, 4DGS, neural avatars, and style transformation or enhancement networks. By unifying inference and rendering directly in the browser, Visionary significantly lowers the barrier to reproduction, comparison, and deployment of 3DGS-family methods, serving as a unified World Model Carrier for both reconstructive and generative paradigms.",
+  "publishedAt": "2025-12-09T10:54:58Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI",
+   "cs.GR"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 77,
+  "citationCount": 2,
+  "githubStars": 517,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2601.12993",
+  "slug": "being-h0-5-scaling-human-centric-robot-learning-for-cross-embodiment",
+  "title": "Being-H0.5: Scaling Human-Centric Robot Learning for Cross-Embodiment Generalization",
+  "authors": [
+   "Hao Luo",
+   "Ye Wang",
+   "Wanpeng Zhang",
+   "Sipeng Zheng",
+   "Ziheng Xi",
+   "Chaoyi Xu"
+  ],
+  "abstract": "We introduce Being-H0.5, a foundational Vision-Language-Action (VLA) model designed for robust cross-embodiment generalization across diverse robotic platforms. While existing VLAs often struggle with morphological heterogeneity and data scarcity, we propose a human-centric learning paradigm that treats human interaction traces as a universal \"mother tongue\" for physical interaction. To support this, we present UniHand-2.0, the largest embodied pre-training recipe to date, comprising over 35,000 hours of multimodal data across 30 distinct robotic embodiments. Our approach introduces a Unified Action Space that maps heterogeneous robot controls into semantically aligned slots, enabling low-resource robots to bootstrap skills from human data and high-resource platforms. Built upon this human-centric foundation, we design a unified sequential modeling and multi-task pre-training paradigm to bridge human demonstrations and robotic execution. Architecturally, Being-H0.5 utilizes a Mixture-of-Transformers design featuring a novel Mixture-of-Flow (MoF) framework to decouple shared motor primitives from specialized embodiment-specific experts. Finally, to make cross-embodiment policies stable in the real world, we introduce Manifold-Preserving Gating for robustness under sensory shift and Universal Async Chunking to universalize chunked control across embodiments with different latency and control profiles. We empirically demonstrate that Being-H0.5 achieves state-of-the-art results on simulated benchmarks, such as LIBERO (98.9%) and RoboCasa (53.9%), while also exhibiting strong cross-embodiment capabilities on five robotic platforms.",
+  "publishedAt": "2026-01-19T12:20:38Z",
+  "primaryArxivCategory": [
+   "cs.RO"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 77,
+  "citationCount": 53,
+  "githubStars": 1116,
+  "pageCount": 44
+ },
+ {
+  "arxivId": "2601.15621",
+  "slug": "qwen3-tts-technical-report",
+  "title": "Qwen3-TTS Technical Report",
+  "authors": [
+   "Hangrui Hu",
+   "Xinfa Zhu",
+   "Ting He",
+   "Dake Guo",
+   "Bin Zhang",
+   "Xiong Wang"
+  ],
+  "abstract": "In this report, we present the Qwen3-TTS series, a family of advanced multilingual, controllable, robust, and streaming text-to-speech models. Qwen3-TTS supports state-of-the-art 3-second voice cloning and description-based control, allowing both the creation of entirely novel voices and fine-grained manipulation over the output speech. Trained on over 5 million hours of speech data spanning 10 languages, Qwen3-TTS adopts a dual-track LM architecture for real-time synthesis, coupled with two speech tokenizers: 1) Qwen-TTS-Tokenizer-25Hz is a single-codebook codec emphasizing semantic content, which offers seamlessly integration with Qwen-Audio and enables streaming waveform reconstruction via a block-wise DiT. 2) Qwen-TTS-Tokenizer-12Hz achieves extreme bitrate reduction and ultra-low-latency streaming, enabling immediate first-packet emission ($97\\,\\mathrm{ms}$) through its 12.5 Hz, 16-layer multi-codebook design and a lightweight causal ConvNet. Extensive experiments indicate state-of-the-art performance across diverse objective and subjective benchmark (e.g., TTS multilingual test set, InstructTTSEval, and our long speech test set). To facilitate community research and development, we release both tokenizers and models under the Apache 2.0 license.",
+  "publishedAt": "2026-01-22T03:51:43Z",
+  "primaryArxivCategory": [
+   "cs.SD",
+   "cs.CL",
+   "eess.AS"
+  ],
+  "officialLab": "Alibaba / Qwen",
+  "hfUpvotes": 77,
+  "citationCount": 88,
+  "githubStars": 12822,
+  "pageCount": 14
+ },
+ {
+  "arxivId": "2604.20733",
+  "slug": "near-future-policy-optimization",
+  "title": "Near-Future Policy Optimization",
+  "authors": [
+   "Chuanyu Qin",
+   "Chenxu Yang",
+   "Qingyi Si",
+   "Naibin Gu",
+   "Dingyu Yao",
+   "Zheng Lin"
+  ],
+  "abstract": "Reinforcement learning with verifiable rewards (RLVR) has become a core post-training recipe. Introducing suitable off-policy trajectories into on-policy exploration accelerates RLVR convergence and raises the performance ceiling, yet finding a source of such trajectories remains the key challenge. Existing mixed-policy methods either import trajectories from external teachers (high-quality but distributionally far) or replay past training trajectories (close but capped in quality), and neither simultaneously satisfies the strong enough (higher $Q$ , more new knowledge to learn) and close enough (lower $V$ , more readily absorbed) conditions required to maximize the effective learning signal $\\mathcal{S} = Q/V$. We propose \\textbf{N}ear-Future \\textbf{P}olicy \\textbf{O}ptimization (\\textbf{NPO}), a simple mixed-policy scheme that learns from a policy's own near-future self: a later checkpoint from the same training run is a natural source of auxiliary trajectories that is both stronger than the current policy and closer than any external source, directly balancing trajectory quality against variance cost. We validate NPO through two manual interventions, early-stage bootstrapping and late-stage plateau breakthrough, and further propose \\textbf{AutoNPO},an adaptive variant that automatically triggers interventions from online training signals and selects the guide checkpoint that maximizes $S$. On Qwen3-VL-8B-Instruct with GRPO, NPO improves average performance from 57.88 to 62.84, and AutoNPO pushes it to 63.15, raising the final performance ceiling while accelerating convergence.",
+  "publishedAt": "2026-04-22T16:20:41Z",
+  "primaryArxivCategory": [
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 77,
+  "citationCount": 2,
+  "githubStars": null,
+  "pageCount": 13
+ },
+ {
+  "arxivId": "2606.06036",
+  "slug": "memory-is-reconstructed-not-retrieved-graph-memory-for-llm-agents",
+  "title": "Memory is Reconstructed, Not Retrieved: Graph Memory for LLM Agents",
+  "authors": [
+   "Shuo Ji",
+   "Yibo Li",
+   "Bryan Hooi"
+  ],
+  "abstract": "Despite recent progress, LLM agents still struggle with reasoning over long interaction histories. While current memory-augmented agents rely on a static retrieve-then-reason paradigm, this rigid pipeline design prevents them from dynamically adapting memory access to intermediate evidence discovered during inference. To bridge this gap, we propose MRAgent, a framework that combines an associative memory graph with an active reconstruction mechanism. We represent memory as a Cue-Tag-Content graph, where associative tags serve as semantic bridges connecting fine-grained cues to memory contents. Operating on this structure, our active reconstruction mechanism integrates LLM reasoning directly into memory access, allowing the agent to iteratively explore and prune retrieval paths based on accumulated evidence. This ensures that memory retrieval is dynamically adapted to the reasoning context while avoiding combinatorial explosion caused by unconstrained expansion. Experiments on the LoCoMo benchmark and LongMemEval benchmark demonstrate significant improvements over strong baselines (up to 23%), while substantially reducing token and runtime cost, highlighting the effectiveness of active and associative reconstruction for long-horizon memory reasoning.",
+  "publishedAt": "2026-06-04T11:29:46Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.IR"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 77,
+  "citationCount": 2,
+  "githubStars": 233,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2606.10917",
+  "slug": "role-agent-bootstrapping-llm-agents-via-dual-role-evolution",
+  "title": "Role-Agent: Bootstrapping LLM Agents via Dual-Role Evolution",
+  "authors": [
+   "Xucong Wang",
+   "Ziyu Ma",
+   "Shidong Yang",
+   "Tongwen Huang",
+   "Pengkun Wang",
+   "Yong Wang"
+  ],
+  "abstract": "Although Large Language Model (LLM) agents have demonstrated strong performance on complex tasks, their learning is often limited by inefficient interaction feedback and static training environments, which hinder broader generalization. To address these limitations, this paper introduces Role-Agent, \\textcolor{black}{a framework} that harnesses a single LLM to function concurrently as both the agent and the environment, enabling a bootstrapped co-evolution. Role-Agent comprises two synergistic components: World-In-Agent (WIA) and Agent-In-World (AIW). In WIA, the LLM acts as the agent and predicts future states after each action; the alignment between predicted and actual states is then used as a process reward, encouraging environment-aware reasoning. In AIW, the LLM analyzes failure modes from failed trajectories and retrieves tasks with similar failure patterns, thereby reshaping the training data distribution for targeted practice. Experiments on multiple benchmarks show that Role-Agent consistently improves performance, yielding an average gain of over 4\\% over strong baselines.",
+  "publishedAt": "2026-06-09T14:28:07Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 77,
+  "citationCount": 0,
+  "githubStars": 79,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2606.18195",
+  "slug": "learning-from-the-self-future-on-policy-self-distillation-for-dllms",
+  "title": "Learning from the Self-future: On-policy Self-distillation for dLLMs",
+  "authors": [
+   "Yifu Luo",
+   "Zeyu Chen",
+   "Haoyu Wang",
+   "Xinhao Hu",
+   "Yuxuan Zhang",
+   "Zhizhou Sha"
+  ],
+  "abstract": "On-policy self-distillation (OPSD) has proven effective for post-training large language models (LLMs), yet its application to diffusion LLMs (dLLMs) remains unexplored. Existing OPSD methods are inherently autoregressive-centric. They inject privileged information via left-to-right prefix conditioning with token-level divergence supervision, a design that fundamentally conflicts with the arbitraryorder generation of dLLMs. We introduce d-OPSD, the first OPSD framework tailored for dLLMs. Our approach makes two core contributions. First, we reframe self-teacher construction by using self-generated answers as suffix conditioning, enabling the student model to learn from \"self future-experience\" rather than privileged prefixes. Second, we shift supervision from token-level to step-level, aligning training with the iterative denoising process of dLLMs. Experiments across four reasoning benchmarks show that d-OPSD consistently outperforms RLVR and SFT baselines with superior sample efficiency, requiring only around 10% of the optimization steps by RLVR and opening a promising pathway for dLLM posttraining. The code is available at https://github.com/xingzhejun/d-OPSD.",
+  "publishedAt": "2026-06-16T17:24:57Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 77,
+  "citationCount": 1,
+  "githubStars": 16,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2606.31315",
+  "slug": "blockpilot-instance-adaptive-policy-learning-for-diffusion-based-speculative",
+  "title": "BlockPilot: Instance-Adaptive Policy Learning for Diffusion-based Speculative Decoding",
+  "authors": [
+   "Hao Zhang",
+   "Yiming Hu",
+   "Yong Wang",
+   "Mingqiao Mo",
+   "Xin Xiao",
+   "Xiangxiang Chu"
+  ],
+  "abstract": "Speculative decoding accelerates inference by using a lightweight draft model to generate candidate tokens in parallel, and are then verified by the target model, enabling lossless acceleration. Recently, diffusion-based speculative decoding further improves parallelism by generating multiple tokens per forward pass via block-level diffusion, achieving state-of-the-art (SOTA) performance. However, existing methods adopt a fixed inference block size and assume a uniform optimal decoding strategy across all inputs. In this paper, we show that this assumption is suboptimal, as the optimal block size varies across samples and plays a critical role in speculative decoding performance. Moreover, these values exhibit a clear local structure, concentrating around the training block size, which reduces the problem to a low-dimensional and structured decision space. Based on these insights, we propose BlockPilot, a sample-adaptive policy that predicts the optimal block size from the prefilling representation. Specifically, we formulate block size selection as a lightweight policy learning problem and propose an instance-adaptive decision mechanism that predicts the optimal block size based on the representation of the prefilling stage. The prediction is performed only once after prefilling, allowing for seamless integration. Extensive experiments demonstrate that our method is plug-and-play, introduces minimal overhead, and consistently improves efficiency, achieving an acceptance length of 5.92 and a 4.20$\\times$ speedup on Qwen3-4B under temperature $T=1$.",
+  "publishedAt": "2026-06-30T08:24:05Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 77,
+  "citationCount": 0,
+  "githubStars": null,
+  "pageCount": 16
+ },
+ {
+  "arxivId": "2607.11562",
+  "slug": "monkeyocrv2-a-visual-text-foundation-model-for-document-ai",
+  "title": "MonkeyOCRv2: A Visual-Text Foundation Model for Document AI",
+  "authors": [
+   "Yuliang Liu",
+   "Zhang Li",
+   "Ziyang Zhang",
+   "Shuo Zhang",
+   "Qiang Liu",
+   "Jiajun Song"
+  ],
+  "abstract": "Mainstream visual encoders are pretrained on natural images and cannot be effectively applied to document images without document-oriented adaptation, as dense text and fine-grained character strokes demand character-level visual perception. We present MonkeyOCRv2, a visual-text pretrained model for document AI. First, we construct MonkeyDoc v2, to our knowledge the largest document-image pretraining corpus, comprising 113 million images spanning 17 languages. Second, we propose a pretraining strategy that jointly learns image-to-text generation and pixel-level document reconstruction: the former aligns visual representations with textual content, while the latter preserves character strokes and layout details. Extensive experiments are conducted on five representative document analysis tasks, including text recognition, formula recognition, text detection, document tampering detection, and overlapping text segmentation. Replacing the original encoders with MonkeyOCRv2 consistently improves performance across all five tasks. Finally, we validate its effectiveness as the vision encoder of multimodal large language models on the more challenging tasks of document parsing and document understanding. Kept frozen and paired with a lightweight language model, it yields a 0.7B document parsing model that sets a new open-source state-of-the-art on MDPBench, a recent benchmark spanning digital-born and photographed documents across 17 languages, surpassing the previous best 3B dots.mocr by 2.8% absolute with a vision encoder roughly 11$\\times$ smaller. The frozen encoder also powers a document understanding model that outperforms counterparts built on CLIP, DINO, and SAM across eight benchmarks under identical training settings. These results suggest that document-oriented visual pretraining can serve as a foundation for document intelligence in its own right.",
+  "publishedAt": "2026-07-13T13:43:39Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 77,
+  "citationCount": 0,
+  "githubStars": 598,
+  "pageCount": 35
+ },
+ {
+  "arxivId": "2508.08086",
+  "slug": "matrix-3d-omnidirectional-explorable-3d-world-generation",
+  "title": "Matrix-3D: Omnidirectional Explorable 3D World Generation",
+  "authors": [
+   "Zhongqi Yang",
+   "Wenhang Ge",
+   "Yuqi Li",
+   "Jiaqi Chen",
+   "Haoyuan Li",
+   "Mengyin An"
+  ],
+  "abstract": "Explorable 3D world generation from a single image or text prompt forms a cornerstone of spatial intelligence. Recent works utilize video model to achieve wide-scope and generalizable 3D world generation. However, existing approaches often suffer from a limited scope in the generated scenes. In this work, we propose Matrix-3D, a framework that utilize panoramic representation for wide-coverage omnidirectional explorable 3D world generation that combines conditional video generation and panoramic 3D reconstruction. We first train a trajectory-guided panoramic video diffusion model that employs scene mesh renders as condition, to enable high-quality and geometrically consistent scene video generation. To lift the panorama scene video to 3D world, we propose two separate methods: (1) a feed-forward large panorama reconstruction model for rapid 3D scene reconstruction and (2) an optimization-based pipeline for accurate and detailed 3D scene reconstruction. To facilitate effective training, we also introduce the Matrix-Pano dataset, the first large-scale synthetic collection comprising 116K high-quality static panoramic video sequences with depth and trajectory annotations. Extensive experiments demonstrate that our proposed framework achieves state-of-the-art performance in panoramic video generation and 3D world generation. See more in https://matrix-3d.github.io.",
+  "publishedAt": "2025-08-11T15:29:57Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.GR"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 76,
+  "citationCount": 28,
+  "githubStars": 777,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2510.03222",
+  "slug": "low-probability-tokens-sustain-exploration-in-reinforcement-learning-with",
+  "title": "Low-probability Tokens Sustain Exploration in Reinforcement Learning with Verifiable Reward",
+  "authors": [
+   "Guanhua Huang",
+   "Tingqiang Xu",
+   "Mingze Wang",
+   "Qi Yi",
+   "Xue Gong",
+   "Siheng Li"
+  ],
+  "abstract": "Reinforcement Learning with Verifiable Rewards (RLVR) has propelled Large Language Models in complex reasoning, yet its scalability is often hindered by a training bottleneck where performance plateaus as policy entropy collapses, signaling a loss of exploration. Previous methods typically address this by maintaining high policy entropy, yet the precise mechanisms that govern meaningful exploration have remained underexplored. Our analysis suggests that an unselective focus on entropy risks amplifying irrelevant tokens and destabilizing training. This paper investigates the exploration dynamics within RLVR and identifies a key issue: the gradual elimination of valuable low-probability exploratory tokens, which we term \\textbf{\\textit{reasoning sparks}}. We find that while abundant in pre-trained models, these sparks are systematically extinguished during RLVR due to over-penalization, leading to a degeneracy in exploration. To address this, we introduce Low-probability Regularization (Lp-Reg). Its core mechanism regularizes the policy towards a heuristic proxy distribution. This proxy is constructed by filtering out presumed noise tokens and re-normalizing the distribution over the remaining candidates. The result is a less-noisy proxy where the probability of \\textit{reasoning sparks} is amplified, which then serves as a soft regularization target to shield these valuable tokens from elimination via KL divergence. Experiments show that Lp-Reg enables stable on-policy RL, sustaining continuous scaling across $3,000$ training steps and $81,204$ GPU-hours, where baseline entropy-control methods collapse. This sustained exploration leads to state-of-the-art performance, achieving a $60.17\\%$ average accuracy on five math benchmarks, an improvement of $2.66\\%$ over prior methods. Code is available at https://github.com/CarlanLark/Lp-Reg.",
+  "publishedAt": "2025-10-03T17:56:13Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 76,
+  "citationCount": 23,
+  "githubStars": 44,
+  "pageCount": 24
+ },
+ {
+  "arxivId": "2512.05150",
+  "slug": "twinflow-realizing-one-step-generation-on-large-models-with-self-adversarial",
+  "title": "TwinFlow: Realizing One-step Generation on Large Models with Self-adversarial Flows",
+  "authors": [
+   "Zhenglin Cheng",
+   "Peng Sun",
+   "Jianguo Li",
+   "Tao Lin"
+  ],
+  "abstract": "Recent advances in large multi-modal generative models have demonstrated impressive capabilities in multi-modal generation, including image and video generation. These models are typically built upon multi-step frameworks like diffusion and flow matching, which inherently limits their inference efficiency (requiring 40-100 Number of Function Evaluations (NFEs)). While various few-step methods aim to accelerate the inference, existing solutions have clear limitations. Prominent distillation-based methods, such as progressive and consistency distillation, either require an iterative distillation procedure or show significant degradation at very few steps (< 4-NFE). Meanwhile, integrating adversarial training into distillation (e.g., DMD/DMD2 and SANA-Sprint) to enhance performance introduces training instability, added complexity, and high GPU memory overhead due to the auxiliary trained models. To this end, we propose TwinFlow, a simple yet effective framework for training 1-step generative models that bypasses the need of fixed pretrained teacher models and avoids standard adversarial networks during training, making it ideal for building large-scale, efficient models. On text-to-image tasks, our method achieves a GenEval score of 0.83 in 1-NFE, outperforming strong baselines like SANA-Sprint (a GAN loss-based framework) and RCGM (a consistency-based framework). Notably, we demonstrate the scalability of TwinFlow by full-parameter training on Qwen-Image-20B and transform it into an efficient few-step generator. With just 1-NFE, our approach matches the performance of the original 100-NFE model on both the GenEval and DPG-Bench benchmarks, reducing computational cost by $100\\times$ with minor quality degradation. Project page is available at https://zhenglin-cheng.com/twinflow.",
+  "publishedAt": "2025-12-03T07:45:46Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 76,
+  "citationCount": 16,
+  "githubStars": 537,
+  "pageCount": 30
+ },
+ {
+  "arxivId": "2512.13604",
+  "slug": "longvie-2-multimodal-controllable-ultra-long-video-world-model",
+  "title": "LongVie 2: Multimodal Controllable Ultra-Long Video World Model",
+  "authors": [
+   "Jianxiong Gao",
+   "Zhaoxi Chen",
+   "Xian Liu",
+   "Junhao Zhuang",
+   "Chengming Xu",
+   "Jianfeng Feng"
+  ],
+  "abstract": "Building video world models upon pretrained video generation systems represents an important yet challenging step toward general spatiotemporal intelligence. A world model should possess three essential properties: controllability, long-term visual quality, and temporal consistency. To this end, we take a progressive approach-first enhancing controllability and then extending toward long-term, high-quality generation. We present LongVie 2, an end-to-end autoregressive framework trained in three stages: (1) Multi-modal guidance, which integrates dense and sparse control signals to provide implicit world-level supervision and improve controllability; (2) Degradation-aware training on the input frame, bridging the gap between training and long-term inference to maintain high visual quality; and (3) History-context guidance, which aligns contextual information across adjacent clips to ensure temporal consistency. We further introduce LongVGenBench, a comprehensive benchmark comprising 100 high-resolution one-minute videos covering diverse real-world and synthetic environments. Extensive experiments demonstrate that LongVie 2 achieves state-of-the-art performance in long-range controllability, temporal coherence, and visual fidelity, and supports continuous video generation lasting up to five minutes, marking a significant step toward unified video world modeling.",
+  "publishedAt": "2025-12-15T17:59:58Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 76,
+  "citationCount": 6,
+  "githubStars": 335,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2512.16793",
+  "slug": "physbrain-human-egocentric-data-as-a-bridge-from-vision-language-models-to",
+  "title": "PhysBrain: Human Egocentric Data as a Bridge from Vision Language Models to Physical Intelligence",
+  "authors": [
+   "Xiaopeng Lin",
+   "Shijie Lian",
+   "Bin Yu",
+   "Ruoqi Yang",
+   "Zhaolong Shen",
+   "Changti Wu"
+  ],
+  "abstract": "Robotic generalization relies on physical intelligence: the ability to reason about state changes, contact-rich interactions, and long-horizon planning under egocentric perception and action. Vision Language Models (VLMs) are essential to Vision-Language-Action (VLA) systems, but the reliance on third-person training data creates a viewpoint gap for humanoid robots. Collecting massive robot-centric data is an ideal but impractical solution due to cost and diversity constraints. Conversely, human egocentric videos offer a highly scalable data source with rich interaction context, yet the embodiment mismatch prevents the direct application. To bridge this gap, we propose an Egocentric2Embodiment Translation Pipeline that transforms raw human egocentric videos into multi-level, schema-driven embodiment supervision with enforced evidence grounding and temporal consistency, enabling the construction of the Egocentric2Embodiment dataset (E2E-3M) at scale. An egocentric-aware embodied brain, termed PhysBrain, is obtained by training on the E2E-3M dataset. PhysBrain exhibits substantially improved egocentric understanding, particularly for planning. It provides an egocentric-aware initialization that enables more sample-efficient VLA fine-tuning and higher success rates, demonstrating effective transfer from human egocentric supervision to downstream robot control.",
+  "publishedAt": "2025-12-18T17:27:03Z",
+  "primaryArxivCategory": [
+   "cs.RO"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 76,
+  "citationCount": 8,
+  "githubStars": null,
+  "pageCount": 21
+ },
+ {
+  "arxivId": "2601.22153",
+  "slug": "dynamicvla-a-vision-language-action-model-for-dynamic-object-manipulation",
+  "title": "DynamicVLA: A Vision-Language-Action Model for Dynamic Object Manipulation",
+  "authors": [
+   "Haozhe Xie",
+   "Beichen Wen",
+   "Jiarui Zheng",
+   "Zhaoxi Chen",
+   "Fangzhou Hong",
+   "Haiwen Diao"
+  ],
+  "abstract": "Manipulating dynamic objects remains an open challenge for Vision-Language-Action (VLA) models, which, despite strong generalization in static manipulation, struggle in dynamic scenarios requiring rapid perception, temporal anticipation, and continuous control. We present DynamicVLA, a framework for dynamic object manipulation that integrates temporal reasoning and closed-loop adaptation through three key designs: 1) a compact 0.4B VLA using a convolutional vision encoder for spatially efficient, structurally faithful encoding, enabling fast multimodal inference; 2) Continuous Inference, enabling overlapping reasoning and execution for lower latency and timely adaptation to object motion; and 3) Latent-aware Action Streaming, which bridges the perception-execution gap by enforcing temporally aligned action execution. To fill the missing foundation of dynamic manipulation data, we introduce the Dynamic Object Manipulation (DOM) benchmark, built from scratch with an auto data collection pipeline that efficiently gathers 200K synthetic episodes across 2.8K scenes and 206 objects, and enables fast collection of 2K real-world episodes without teleoperation. Extensive evaluations demonstrate remarkable improvements in response speed, perception, and generalization, positioning DynamicVLA as a unified framework for general dynamic object manipulation across embodiments.",
+  "publishedAt": "2026-01-29T18:59:51Z",
+  "primaryArxivCategory": [
+   "cs.RO",
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 76,
+  "citationCount": 24,
+  "githubStars": 318,
+  "pageCount": 14
+ },
+ {
+  "arxivId": "2602.06717",
+  "slug": "f-grpo-dont-let-your-policy-learn-the-obvious-and-forget-the-rare",
+  "title": "F-GRPO: Don't Let Your Policy Learn the Obvious and Forget the Rare",
+  "authors": [
+   "Daniil Plyusov",
+   "Alexey Gorbatovski",
+   "Boris Shaposhnikov",
+   "Viacheslav Sinii",
+   "Alexey Malakhov",
+   "Daria Korotyshova"
+  ],
+  "abstract": "Reinforcement Learning with Verifiable Rewards (RLVR) is commonly based on group sampling to estimate advantages and stabilize policy updates. In practice, computational limits often rule out very large groups, so training proceeds with finite rollout sets that can reinforce only the correct behavior they expose. At practical group sizes, updates can miss rare-correct trajectories while still containing mixed rewards, concentrating probability on more common sampled solutions. We derive the probability of such prompt-local tail-miss events as a function of group size, showing non-monotonic behavior, and in the categorical abstraction characterize how unsampled-correct mass can shrink even as total correct mass grows. Motivated by this analysis, we propose a difficulty-aware scaling coefficient, inspired by Focal loss, that down-weights updates on high-success sampled groups. Empirically, categorical simulation illustrates the same effect in the categorical setting, Maze provides a single-solution test, and LLM experiments include a representative GRPO group-size sweep together with fixed-$N$ transfer across GRPO, DAPO, and CISPO. On Qwen2.5-7B at $N{=}8$, our method improves average math pass@256 from 64.1 $\\rightarrow$ 70.3 (GRPO), 69.3 $\\rightarrow$ 72.5 (DAPO), and 73.2 $\\rightarrow$ 76.8 (CISPO); OOD pass@256 also improves in all three cases, without increasing group size or computational cost.",
+  "publishedAt": "2026-02-06T14:07:30Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 76,
+  "citationCount": 8,
+  "githubStars": null,
+  "pageCount": 27
+ },
+ {
+  "arxivId": "2602.08234",
+  "slug": "skillrl-evolving-agents-via-recursive-skill-augmented-reinforcement-learning",
+  "title": "SkillRL: Evolving Agents via Recursive Skill-Augmented Reinforcement Learning",
+  "authors": [
+   "Peng Xia",
+   "Jianwen Chen",
+   "Hanyang Wang",
+   "Jiaqi Liu",
+   "Kaide Zeng",
+   "Yu Wang"
+  ],
+  "abstract": "Large Language Model (LLM) agents have shown stunning results in complex tasks, yet they often operate in isolation, failing to learn from past experiences. Existing memory-based methods primarily store raw trajectories, which are often redundant and noise-heavy. This prevents agents from extracting high-level, reusable behavioral patterns that are essential for generalization. In this paper, we propose SkillRL, a framework that bridges the gap between raw experience and policy improvement through automatic skill discovery and recursive evolution. Our approach introduces an experience-based distillation mechanism to build a hierarchical skill library SkillBank, an adaptive retrieval strategy for general and task-specific heuristics, and a recursive evolution mechanism that allows the skill library to co-evolve with the agent's policy during reinforcement learning. These innovations significantly reduce the token footprint while enhancing reasoning utility. Experimental results on ALFWorld, WebShop and seven search-augmented tasks demonstrate that SkillRL achieves state-of-the-art performance, outperforming strong baselines over 15.3% and maintaining robustness as task complexity increases. Code is available at this https://github.com/aiming-lab/SkillRL.",
+  "publishedAt": "2026-02-09T03:17:17Z",
+  "primaryArxivCategory": [
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 76,
+  "citationCount": 150,
+  "githubStars": 928,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2602.13949",
+  "slug": "experiential-reinforcement-learning",
+  "title": "Experiential Reinforcement Learning",
+  "authors": [
+   "Taiwei Shi",
+   "Sihao Chen",
+   "Bowen Jiang",
+   "Linxin Song",
+   "Longqi Yang",
+   "Jieyu Zhao"
+  ],
+  "abstract": "Reinforcement learning has become the central approach for language models (LMs) to learn from environmental reward or feedback. In practice, the environmental feedback is usually sparse and delayed. Learning from such signals is challenging, as LMs must implicitly infer how observed failures should translate into behavioral changes for future iterations. We introduce Experiential Reinforcement Learning (ERL), a training paradigm that embeds an explicit experience-reflection-consolidation loop into the reinforcement learning process. Given a task, the model generates an initial attempt, receives environmental feedback, and produces a reflection that guides a refined second attempt, whose success is reinforced and internalized into the base policy. This process converts feedback into structured behavioral revision, improving exploration and stabilizing optimization while preserving gains at deployment without additional inference cost. Across sparse-reward control environments and agentic reasoning benchmarks, ERL consistently improves learning efficiency and final performance over strong reinforcement learning baselines, achieving gains of up to +81% in complex multi-step environments and up to +11% in tool-using reasoning tasks. These results suggest that integrating explicit self-reflection into policy training provides a practical mechanism for transforming feedback into durable behavioral improvement.",
+  "publishedAt": "2026-02-15T01:23:48Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 76,
+  "citationCount": 12,
+  "githubStars": 76,
+  "pageCount": 26
+ },
+ {
+  "arxivId": "2603.09906",
+  "slug": "thinking-to-recall-how-reasoning-unlocks-parametric-knowledge-in-llms",
+  "title": "Thinking to Recall: How Reasoning Unlocks Parametric Knowledge in LLMs",
+  "authors": [
+   "Zorik Gekhman",
+   "Roee Aharoni",
+   "Eran Ofek",
+   "Mor Geva",
+   "Roi Reichart",
+   "Jonathan Herzig"
+  ],
+  "abstract": "While reasoning in LLMs plays a natural role in math, code generation, and multi-hop factual questions, its effect on simple, single-hop factual questions remains unclear. Such questions do not require step-by-step logical decomposition, making the utility of reasoning highly counterintuitive. Nevertheless, we find that enabling reasoning substantially expands the capability boundary of the model's parametric knowledge recall, unlocking correct answers that are otherwise effectively unreachable. Why does reasoning aid parametric knowledge recall when there are no complex reasoning steps to be done? To answer this, we design a series of hypothesis-driven controlled experiments, and identify two key driving mechanisms: (1) a computational buffer effect, where the model uses the generated reasoning tokens to perform latent computation independent of their semantic content; and (2) factual priming, where generating topically related facts acts as a semantic bridge that facilitates correct answer retrieval. Importantly, this latter generative self-retrieval mechanism carries inherent risks: we demonstrate that hallucinating intermediate facts during reasoning increases the likelihood of hallucinations in the final answer. Finally, we show that our insights can be harnessed to directly improve model accuracy by prioritizing reasoning trajectories that contain hallucination-free factual statements.",
+  "publishedAt": "2026-03-10T16:59:20Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": "Google DeepMind / Google",
+  "hfUpvotes": 76,
+  "citationCount": 9,
+  "githubStars": null,
+  "pageCount": 23
+ },
+ {
+  "arxivId": "2605.13841",
+  "slug": "eva-bench-a-new-end-to-end-framework-for-evaluating-voice-agents",
+  "title": "EVA-Bench: A New End-to-end Framework for Evaluating Voice Agents",
+  "authors": [
+   "Tara Bogavelli",
+   "Gabrielle Gauthier Melançon",
+   "Katrina Stankiewicz",
+   "Oluwanifemi Bamgbose",
+   "Fanny Riols",
+   "Hoang H. Nguyen"
+  ],
+  "abstract": "Voice agents, artificial intelligence systems that conduct spoken conversations to complete tasks, are increasingly deployed across enterprise applications. However, no existing benchmark jointly addresses two core evaluation challenges: generating realistic simulated conversations, and measuring quality across the full scope of voice-specific failure modes. We present EVA-Bench, an end-to-end evaluation framework that addresses both. On the simulation side, EVA-Bench orchestrates bot-to-bot audio conversations over dynamic multi-turn dialogues, with automatic simulation validation that detects user simulator error and appropriately regenerates conversations before scoring. On the measurement side, EVA-Bench introduces two composite metrics: EVA-A (Accuracy), capturing task completion, faithfulness, and audio-level speech fidelity; and EVA-X (Experience), capturing conversation progression, spoken conciseness, and turn-taking timing. Both metrics apply to all major agent architectures, enabling direct cross-architecture comparison. EVA-Bench includes 213 scenarios across three enterprise domains, a controlled perturbation suite for accent and noise robustness, and pass@1, pass@k, pass^k measurements that distinguish peak from reliable capability. Across 12 systems spanning all three architectures, we find: (1) no system simultaneously exceeds 0.5 on both EVA-A pass@1 and EVA-X pass@1; (2) peak and reliable performance diverge substantially (median pass@k--pass^k gap of 0.44 on EVA-A); and (3) accent and noise perturbations expose substantial robustness gaps, with effects varying across architectures, systems, and metrics (mean $Δ$ up to 0.314). We release the full framework, evaluation suite, and benchmark data under an open-source license.",
+  "publishedAt": "2026-05-13T17:58:52Z",
+  "primaryArxivCategory": [
+   "cs.SD",
+   "cs.AI",
+   "cs.CL",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 76,
+  "citationCount": 3,
+  "githubStars": 192,
+  "pageCount": 157
+ },
+ {
+  "arxivId": "2605.28820",
+  "slug": "from-pixels-to-words-towards-native-one-vision-models-at-scale",
+  "title": "From Pixels to Words -- Towards Native One-Vision Models at Scale",
+  "authors": [
+   "Haiwen Diao",
+   "Jiahao Wang",
+   "Penghao Wu",
+   "Yuhao Dong",
+   "Yuwei Niu",
+   "Yue Zhu"
+  ],
+  "abstract": "Current vision-language models (VLMs) typically stitch together separate image encoders and language decoders via multi-stage alignment, a modular framework that inevitably fragments pixel-level signals across frames and scatters early pixel-word interactions. In parallel, native VLMs, despite impressive performance on single images, remain largely unexplored in multi-image, video understanding, and spatial intelligence. Hence, we introduce NEO-ov, a native foundation model that learns cross-frame and pixel-word correspondence end-to-end, without any external encoders, auxiliary adapters, or post-hoc fusion. By eliminating module boundaries entirely, NEO-ov enables fine-grained and unified spatiotemporal modeling to emerge natively inside the model. Notably, NEO-ov largely narrows the gap to modular counterparts while excelling at fine-grained visual perception, validating that native \"one-vision\" architectures are not only feasible but competitive at scale. Beyond empirical performance, we unveil systematic architectural analyses and detailed training recipes to facilitate subsequent native multimodal modeling. Our code and models are publicly available at: https://github.com/EvolvingLMMs-Lab/NEO.",
+  "publishedAt": "2026-05-27T17:59:55Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 76,
+  "citationCount": 1,
+  "githubStars": 881,
+  "pageCount": 13
+ },
+ {
+  "arxivId": "2606.23050",
+  "slug": "unlimited-ocr-works",
+  "title": "Unlimited OCR Works",
+  "authors": [
+   "Youyang Yin",
+   "Huanhuan Liu",
+   "YY",
+   "Qunyi Xie",
+   "Chaorun Liu",
+   "Shiqi Yang"
+  ],
+  "abstract": "Recently, end-to-end OCR models, exemplified by DeepSeek OCR, have once again thrust OCR into the spotlight. A widely held view is that employing a large language model (LLM) as the decoder allows the model to leverage the prior distribution of language, leading to improved OCR performance. However, the downside is equally evident: as the output sequence lengthens, the accumulated KV cache drives up memory consumption and progressively slows down generation. This stands in stark contrast to humans, who exhibit no such decline in efficiency during long-horizon copying tasks. In this technical report, we propose Unlimited OCR, a model designed to emulate human parsing working memory. Taking DeepSeek OCR as the baseline, we replace all attention layers in the decoder with our proposed Reference Sliding Window Attention (R-SWA), which reduces attention computation costs while maintaining a constant KV cache throughout the entire decoding process. By combining the high compression rate of DeepSeek OCR's encoder with our constant KV cache design, Unlimited OCR can transcribe dozens of pages of documents in a single forward pass under a standard maximum length of 32K. More importantly, R-SWA is a general-purpose parsing attention mechanism - beyond OCR, it is equally applicable to tasks such as ASR, translation, etc. Codes and model weights are publicly available at http://github.com/baidu/Unlimited-OCR.",
+  "publishedAt": "2026-06-22T09:01:29Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 76,
+  "citationCount": 4,
+  "githubStars": 22283,
+  "pageCount": 14
+ },
+ {
+  "arxivId": "2607.04033",
+  "slug": "omniopt-taxonomy-geometry-and-benchmarking-of-modern-optimizers",
+  "title": "OmniOpt: Taxonomy, Geometry, and Benchmarking of Modern Optimizers",
+  "authors": [
+   "Siyuan Li",
+   "Jiabao Pan",
+   "Yumou Liu",
+   "Zhuoli Ouyang",
+   "Xin Jin",
+   "Xinglong Xu"
+  ],
+  "abstract": "Optimizer selection for large-scale model training has become a system-level design decision constrained jointly by compute, memory, tuning budget, and task diversity, yet the landscape of over one hundred methods remains fragmented. We therefore present OmniOpt, a unified survey and benchmark cookbook of optimizers for the research community. OmniOpt rests on four coupled components. First, we treat every optimizer update as a structured transformation through a five-stage meta-pipeline, and show that most methods engage only one or two of these stages. Second, we use norm-constrained linear minimization oracles (LMOs) to unify different optimizers. Third, these two views ground a dual-dimension taxonomy, one dimension assigning each method to a mechanism family and the other recording the measurable training objectives it aims to improve. Fourth, and at the core of this paper, we instantiate the full taxonomy in a unified cross-domain benchmark spanning representative optimizers, model scales, and training regimes from language model pretraining to image classification, systematically analyzing each method family across multiple effect objectives and laying out their trade-offs. OmniOpt thus supplies the research community with an operational coordinate system for selecting optimizers under explicit mechanism and objective assumptions, and charts a direction for the future development of the optimizer community.",
+  "publishedAt": "2026-07-04T21:27:05Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 76,
+  "citationCount": 0,
+  "githubStars": 36,
+  "pageCount": 91
+ }
+]

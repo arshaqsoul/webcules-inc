@@ -1,0 +1,712 @@
+[
+ {
+  "arxivId": "2605.14386",
+  "slug": "darwin-family-mri-trust-weighted-evolutionary-merging-for-training-free",
+  "title": "Darwin Family: MRI-Trust-Weighted Evolutionary Merging for Training-Free Scaling of Language-Model Reasoning",
+  "authors": [
+   "Taebong Kim",
+   "Youngsik Hong",
+   "Minsik Kim",
+   "Sunyoung Choi",
+   "Jaewon Jang",
+   "Junghoon Shin"
+  ],
+  "abstract": "We present Darwin Family, a framework for training-free evolutionary merging of large language models via gradient-free weight-space recombination. We ask whether frontier-level reasoning performance can be improved without additional training, by reorganizing latent capabilities already encoded in existing checkpoints. Darwin introduces three key ideas: (i) a 14-dimensional adaptive merge genome enabling fine-grained component- and block-level recombination; (ii) MRI-Trust Fusion, which adaptively balances diagnostic layer-importance signals with evolutionary search through a learnable trust parameter; and (iii) an Architecture Mapper that enables cross-architecture breeding between heterogeneous model families. Empirically, the flagship Darwin-27B-Opus achieves 86.9% on GPQA Diamond, ranking #6 among 1,252 evaluated models, and outperforming its fully trained foundation model without any gradient-based training. Across scales from 4B to 35B parameters, Darwin models consistently improve over their parents, support recursive multi-generation evolution, and enable a training-free evolutionary merge that combines Transformer- and Mamba-based components. Together, the Darwin Family demonstrates that diagnostic-guided evolutionary merging is a practical and reproducible alternative to costly post-training pipelines for reasoning-centric language models.",
+  "publishedAt": "2026-05-14T05:09:12Z",
+  "primaryArxivCategory": [
+   "cs.NE",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 69,
+  "citationCount": 0,
+  "githubStars": null,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2605.31159",
+  "slug": "trust-region-behavior-blending-for-on-policy-distillation",
+  "title": "Trust-Region Behavior Blending for On-Policy Distillation",
+  "authors": [
+   "Daniil Plyusov",
+   "Alexey Gorbatovski",
+   "Alexey Malakhov",
+   "Nikita Balagansky",
+   "Boris Shaposhnikov",
+   "Daria Korotyshova"
+  ],
+  "abstract": "On-policy distillation (OPD) trains a student on prefixes sampled from its own policy while matching a stronger teacher. This addresses the prefix mismatch of offline distillation, but early student rollouts can still be poor, placing teacher supervision on weak or low-quality prefixes. We propose Trust-Region behavior Blending (TRB), a warmup method that replaces the early rollout policy with the closest-to-teacher behavior policy inside a student-centered KL trust region, while keeping the per-prefix reverse-KL OPD loss unchanged. The KL budget is annealed to zero, so training returns to pure student rollouts after warmup. Across two math-reasoning distillation settings, TRB attains the strongest average among the compared methods.",
+  "publishedAt": "2026-05-29T11:06:06Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 69,
+  "citationCount": 0,
+  "githubStars": null,
+  "pageCount": 15
+ },
+ {
+  "arxivId": "2606.03458",
+  "slug": "kvarn-variance-normalized-kv-cache-quantization-mitigates-error-accumulation",
+  "title": "KVarN: Variance-Normalized KV-Cache Quantization Mitigates Error Accumulation in Reasoning Tasks",
+  "authors": [
+   "Lorenz K. Muller",
+   "Philippe Bich",
+   "Chiara Boretti",
+   "Hyun-Min Chang",
+   "Jiawei Zhuang",
+   "Lukas Cavigelli"
+  ],
+  "abstract": "Test-time scaling is a powerful approach to obtain better reasoning in large language models, but it becomes memory-bottlenecked during long-horizon decoding, as the KV-cache grows. KV-cache quantization can help improve this, but current methods are evaluated under prefill-like settings and errors behave differently under autoregressive decoding. We show that in the latter regime, quantization errors accumulate across timesteps, driven primarily by incorrect token scales. We introduce KVarN, a calibration-free KV-cache quantizer that applies a Hadamard rotation followed by a dual-scaling variance normalization across both axes of the K and V matrices. We find that this combination fixes outlying token-scale errors and substantially reduces error accumulation over existing baselines. KVarN establishes a new state-of-theart for KV-cache quantization on generative benchmarks, including MATH500, AIME24 and HumanEval, at 2-bit precision. A vLLM implementation of the KVarN method is available at https://github.com/huawei-csl/KVarN",
+  "publishedAt": "2026-06-02T10:34:56Z",
+  "primaryArxivCategory": [
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 69,
+  "citationCount": 3,
+  "githubStars": 452,
+  "pageCount": 17
+ },
+ {
+  "arxivId": "2508.16279",
+  "slug": "agentscope-1-0-a-developer-centric-framework-for-building-agentic-applications",
+  "title": "AgentScope 1.0: A Developer-Centric Framework for Building Agentic Applications",
+  "authors": [
+   "Dawei Gao",
+   "Zitao Li",
+   "Yuexiang Xie",
+   "Weirui Kuang",
+   "Liuyi Yao",
+   "Bingchen Qian"
+  ],
+  "abstract": "Driven by rapid advancements of Large Language Models (LLMs), agents are empowered to combine intrinsic knowledge with dynamic tool use, greatly enhancing their capacity to address real-world tasks. In line with such an evolution, AgentScope introduces major improvements in a new version (1.0), towards comprehensively supporting flexible and efficient tool-based agent-environment interactions for building agentic applications. Specifically, we abstract foundational components essential for agentic applications and provide unified interfaces and extensible modules, enabling developers to easily leverage the latest progress, such as new models and MCPs. Furthermore, we ground agent behaviors in the ReAct paradigm and offer advanced agent-level infrastructure based on a systematic asynchronous design, which enriches both human-agent and agent-agent interaction patterns while improving execution efficiency. Building on this foundation, we integrate several built-in agents tailored to specific practical scenarios. AgentScope also includes robust engineering support for developer-friendly experiences. We provide a scalable evaluation module with a visual studio interface, making the development of long-trajectory agentic applications more manageable and easier to trace. In addition, AgentScope offers a runtime sandbox to ensure safe agent execution and facilitates rapid deployment in production environments. With these enhancements, AgentScope provides a practical foundation for building scalable, adaptive, and effective agentic applications.",
+  "publishedAt": "2025-08-22T10:35:56Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 68,
+  "citationCount": 11,
+  "githubStars": 28647,
+  "pageCount": 25
+ },
+ {
+  "arxivId": "2509.13309",
+  "slug": "webresearcher-unleashing-unbounded-reasoning-capability-in-long-horizon-agents",
+  "title": "WebResearcher: Unleashing unbounded reasoning capability in Long-Horizon Agents",
+  "authors": [
+   "Zile Qiao",
+   "Guoxin Chen",
+   "Xuanzhong Chen",
+   "Donglei Yu",
+   "Wenbiao Yin",
+   "Xinyu Wang"
+  ],
+  "abstract": "Recent advances in deep-research systems have demonstrated the potential for AI agents to autonomously discover and synthesize knowledge from external sources. In this paper, we introduce WebResearcher, a novel framework for building such agents through two key components: (1) WebResearcher, an iterative deep-research paradigm that reformulates deep research as a Markov Decision Process, where agents periodically consolidate findings into evolving reports while maintaining focused workspaces, overcoming the context suffocation and noise contamination that plague existing mono-contextual approaches; and (2) WebFrontier, a scalable data synthesis engine that generates high-quality training data through tool-augmented complexity escalation, enabling systematic creation of research tasks that bridge the gap between passive knowledge recall and active knowledge construction. Notably, we find that the training data from our paradigm significantly enhances tool-use capabilities even for traditional mono-contextual methods. Furthermore, our paradigm naturally scales through parallel thinking, enabling concurrent multi-agent exploration for more comprehensive conclusions. Extensive experiments across 6 challenging benchmarks demonstrate that WebResearcher achieves state-of-the-art performance, even surpassing frontier proprietary systems.",
+  "publishedAt": "2025-09-16T17:57:17Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 68,
+  "citationCount": 66,
+  "githubStars": null,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2509.23873",
+  "slug": "winning-the-pruning-gamble-a-unified-approach-to-joint-sample-and-token",
+  "title": "Winning the Pruning Gamble: A Unified Approach to Joint Sample and Token Pruning for Efficient Supervised Fine-Tuning",
+  "authors": [
+   "Shaobo Wang",
+   "Jiaming Wang",
+   "Jiajun Zhang",
+   "Cong Wang",
+   "Yue Min",
+   "Zichen Wen"
+  ],
+  "abstract": "As supervised fine-tuning (SFT) evolves from a lightweight post-training step into a compute-intensive phase rivaling mid-training in scale, data efficiency has become critical for aligning large language models (LLMs) under tight budgets. Existing data pruning methods suffer from a fragmented design: they operate either at the sample level or the token level in isolation, failing to jointly optimize both dimensions. This disconnect leads to significant inefficiencies--high-value samples may still contain redundant tokens, while token-level pruning often discards crucial instructional or corrective signals embedded in individual examples. To address this bottleneck, we introduce the Error-Uncertainty (EU) Plane, a diagnostic framework that jointly characterizes the heterogeneous utility of training data across samples and tokens. Guided by this insight, we propose Quadrant-based Tuning (Q-Tuning), a unified framework that strategically coordinates sample pruning and token pruning. Q-Tuning employs a two-stage strategy: first, it performs sample-level triage to retain examples rich in informative misconceptions or calibration signals; second, it applies an asymmetric token-pruning policy, using a context-aware scoring mechanism to trim less salient tokens exclusively from misconception samples while preserving calibration samples in their entirety. Our method sets a new state of the art across five diverse benchmarks. Remarkably, on SmolLM2-1.7B, Q-Tuning achieves a +38\\% average improvement over the full-data SFT baseline using only 12.5\\% of the original training data. As the first dynamic pruning approach to consistently outperform full-data training, Q-Tuning provides a practical and scalable blueprint for maximizing data utilization in budget-constrained LLM SFT.",
+  "publishedAt": "2025-09-28T13:27:38Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 68,
+  "citationCount": 9,
+  "githubStars": 3,
+  "pageCount": 26
+ },
+ {
+  "arxivId": "2510.00406",
+  "slug": "vla-rft-vision-language-action-reinforcement-fine-tuning-with-verified-rewards",
+  "title": "VLA-RFT: Vision-Language-Action Reinforcement Fine-tuning with Verified Rewards in World Simulators",
+  "authors": [
+   "Hengtao Li",
+   "Pengxiang Ding",
+   "Runze Suo",
+   "Yihao Wang",
+   "Zirui Ge",
+   "Dongyuan Zang"
+  ],
+  "abstract": "Vision-Language-Action (VLA) models enable embodied decision-making but rely heavily on imitation learning, leading to compounding errors and poor robustness under distribution shift. Reinforcement learning (RL) can mitigate these issues yet typically demands costly real-world interactions or suffers from sim-to-real gaps. We introduce VLA-RFT, a reinforcement fine-tuning framework that leverages a data-driven world model as a controllable simulator. Trained from real interaction data, the simulator predicts future visual observations conditioned on actions, allowing policy rollouts with dense, trajectory-level rewards derived from goal-achieving references. This design delivers an efficient and action-aligned learning signal, drastically lowering sample requirements. With fewer than 400 fine-tuning steps, VLA-RFT surpasses strong supervised baselines and achieves greater efficiency than simulator-based RL. Moreover, it exhibits strong robustness under perturbed conditions, sustaining stable task execution. Our results establish world-model-based RFT as a practical post-training paradigm to enhance the generalization and robustness of VLA models. For more details, please refer to https://vla-rft.github.io/.",
+  "publishedAt": "2025-10-01T01:33:10Z",
+  "primaryArxivCategory": [
+   "cs.RO",
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 68,
+  "citationCount": 50,
+  "githubStars": 163,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2510.18701",
+  "slug": "unigenbench-a-unified-semantic-evaluation-benchmark-for-text-to-image-generation",
+  "title": "UniGenBench++: A Unified Semantic Evaluation Benchmark for Text-to-Image Generation",
+  "authors": [
+   "Yibin Wang",
+   "Zhimin Li",
+   "Yuhang Zang",
+   "Jiazi Bu",
+   "Yujie Zhou",
+   "Yi Xin"
+  ],
+  "abstract": "Recent progress in text-to-image (T2I) generation underscores the importance of reliable benchmarks in evaluating how accurately generated images reflect the semantics of their textual prompt. However, (1) existing benchmarks lack the diversity of prompt scenarios and multilingual support, both essential for real-world applicability; (2) they offer only coarse evaluations across primary dimensions, covering a narrow range of sub-dimensions, and fall short in fine-grained sub-dimension assessment. To address these limitations, we introduce UniGenBench++, a unified semantic assessment benchmark for T2I generation. Specifically, it comprises 600 prompts organized hierarchically to ensure both coverage and efficiency: (1) spans across diverse real-world scenarios, i.e., 5 main prompt themes and 20 subthemes; (2) comprehensively probes T2I models' semantic consistency over 10 primary and 27 sub evaluation criteria, with each prompt assessing multiple testpoints. To rigorously assess model robustness to variations in language and prompt length, we provide both English and Chinese versions of each prompt in short and long forms. Leveraging the general world knowledge and fine-grained image understanding capabilities of a closed-source Multi-modal Large Language Model (MLLM), i.e., Gemini-2.5-Pro, an effective pipeline is developed for reliable benchmark construction and streamlined model assessment. Moreover, to further facilitate community use, we train a robust evaluation model that enables offline assessment of T2I model outputs. Through comprehensive benchmarking of both open- and closed-sourced T2I models, we systematically reveal their strengths and weaknesses across various aspects.",
+  "publishedAt": "2025-10-21T14:56:46Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 68,
+  "citationCount": 20,
+  "githubStars": 139,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2512.17532",
+  "slug": "robust-r1-degradation-aware-reasoning-for-robust-visual-understanding",
+  "title": "Robust-R1: Degradation-Aware Reasoning for Robust Visual Understanding",
+  "authors": [
+   "Jiaqi Tang",
+   "Jianmin Chen",
+   "Wei Wei",
+   "Xiaogang Xu",
+   "Runtao Liu",
+   "Xiangyu Wu"
+  ],
+  "abstract": "Multimodal Large Language Models struggle to maintain reliable performance under extreme real-world visual degradations, which impede their practical robustness. Existing robust MLLMs predominantly rely on implicit training/adaptation that focuses solely on visual encoder generalization, suffering from limited interpretability and isolated optimization. To overcome these limitations, we propose Robust-R1, a novel framework that explicitly models visual degradations through structured reasoning chains. Our approach integrates: (i) supervised fine-tuning for degradation-aware reasoning foundations, (ii) reward-driven alignment for accurately perceiving degradation parameters, and (iii) dynamic reasoning depth scaling adapted to degradation intensity. To facilitate this approach, we introduce a specialized 11K dataset featuring realistic degradations synthesized across four critical real-world visual processing stages, each annotated with structured chains connecting degradation parameters, perceptual influence, pristine semantic reasoning chain, and conclusion. Comprehensive evaluations demonstrate state-of-the-art robustness: Robust-R1 outperforms all general and robust baselines on the real-world degradation benchmark R-Bench, while maintaining superior anti-degradation performance under multi-intensity adversarial degradations on MMMB, MMStar, and RealWorldQA.",
+  "publishedAt": "2025-12-19T12:56:17Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 68,
+  "citationCount": 8,
+  "githubStars": 530,
+  "pageCount": 9
+ },
+ {
+  "arxivId": "2512.19693",
+  "slug": "the-prism-hypothesis-harmonizing-semantic-and-pixel-representations-via",
+  "title": "The Prism Hypothesis: Harmonizing Semantic and Pixel Representations via Unified Autoencoding",
+  "authors": [
+   "Weichen Fan",
+   "Haiwen Diao",
+   "Quan Wang",
+   "Dahua Lin",
+   "Ziwei Liu"
+  ],
+  "abstract": "Deep representations across modalities are inherently intertwined. In this paper, we systematically analyze the spectral characteristics of various semantic and pixel encoders. Interestingly, our study uncovers a highly inspiring and rarely explored correspondence between an encoder's feature spectrum and its functional role: semantic encoders primarily capture low-frequency components that encode abstract meaning, whereas pixel encoders additionally retain high-frequency information that conveys fine-grained detail. This heuristic finding offers a unifying perspective that ties encoder behavior to its underlying spectral structure. We define it as the Prism Hypothesis, where each data modality can be viewed as a projection of the natural world onto a shared feature spectrum, just like the prism. Building on this insight, we propose Unified Autoencoding (UAE), a model that harmonizes semantic structure and pixel details via an innovative frequency-band modulator, enabling their seamless coexistence. Extensive experiments demonstrate that UAE effectively unifies semantic abstraction and pixel-level fidelity within a single latent space, achieving state-of-the-art performance. Moreover, we show that UAE can be directly applied to pixel-space modeling, significantly improving both FID and IS over the vanilla JIT baseline. Our code is avaliable at: https://github.com/WeichenFan/UAE.",
+  "publishedAt": "2025-12-22T18:59:57Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 68,
+  "citationCount": 15,
+  "githubStars": 209,
+  "pageCount": 12
+ },
+ {
+  "arxivId": "2602.12125",
+  "slug": "learning-beyond-teacher-generalized-on-policy-distillation-with-reward",
+  "title": "Learning beyond Teacher: Generalized On-Policy Distillation with Reward Extrapolation",
+  "authors": [
+   "Wenkai Yang",
+   "Weijie Liu",
+   "Ruobing Xie",
+   "Kai Yang",
+   "Saiyong Yang",
+   "Yankai Lin"
+  ],
+  "abstract": "On-policy distillation (OPD), which aligns the student with the teacher's logit distribution on student-generated trajectories, has demonstrated strong empirical gains in improving student performance and often outperforms off-policy distillation and reinforcement learning (RL) paradigms. In this work, we first theoretically show that OPD is a special case of dense KL-constrained RL where the reward function and the KL regularization are always weighted equally and the reference model can by any model. Then, we propose the Generalized On-Policy Distillation (G-OPD) framework, which extends the standard OPD objective by introducing a flexible reference model and a reward scaling factor that controls the relative weight of the reward term against the KL regularization. Through comprehensive experiments on math reasoning and code generation tasks, we derive two novel insights: (1) Setting the reward scaling factor to be greater than 1 (i.e., reward extrapolation), which we term ExOPD, consistently improves over standard OPD across a range of teacher-student size pairings. In particular, in the setting where we merge the knowledge from different domain experts, obtained by applying domain-specific RL to the same student model, back into the original student, ExOPD enables the student to even surpass the teacher's performance boundary and outperform the domain teachers. (2) Building on ExOPD, we further find that in the strong-to-weak distillation setting (i.e., distilling a smaller student from a larger teacher), performing reward correction by choosing the reference model as the teacher's base model before RL yields a more accurate reward signal and further improves distillation performance. However, this choice assumes access to the teacher's pre-RL variant and incurs more computational overhead. We hope our work offers new insights for future research on OPD.",
+  "publishedAt": "2026-02-12T16:14:29Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 68,
+  "citationCount": 87,
+  "githubStars": 278,
+  "pageCount": 17
+ },
+ {
+  "arxivId": "2602.12705",
+  "slug": "medxiaohe-a-comprehensive-recipe-for-building-medical-mllms",
+  "title": "MedXIAOHE: A Comprehensive Recipe for Building Medical MLLMs",
+  "authors": [
+   "Baorong Shi",
+   "Bo Cui",
+   "Boyuan Jiang",
+   "Deli Yu",
+   "Fang Qian",
+   "Haihua Yang"
+  ],
+  "abstract": "We present MedXIAOHE, a medical vision-language foundation model designed to advance general-purpose medical understanding and reasoning in real-world clinical applications. MedXIAOHE achieves state-of-the-art performance across diverse medical benchmarks and surpasses leading closed-source multimodal systems on multiple capabilities. To achieve this, we propose an entity-aware continual pretraining framework that organizes heterogeneous medical corpora to broaden knowledge coverage and reduce long-tail gaps (e.g., rare diseases). For medical expert-level reasoning and interaction, MedXIAOHE incorporates diverse medical reasoning patterns via reinforcement learning and tool-augmented agentic training, enabling multi-step diagnostic reasoning with verifiable decision traces. To improve reliability in real-world use, MedXIAOHE integrates user-preference rubrics, evidence-grounded reasoning, and low-hallucination long-form report generation, with improved adherence to medical instructions. We release this report to document our practical design choices, scaling insights, and evaluation framework, hoping to inspire further research.",
+  "publishedAt": "2026-02-13T08:19:38Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI",
+   "cs.CV",
+   "eess.IV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 68,
+  "citationCount": 3,
+  "githubStars": null,
+  "pageCount": 40
+ },
+ {
+  "arxivId": "2603.19228",
+  "slug": "sama-factorized-semantic-anchoring-and-motion-alignment-for-instruction-guided",
+  "title": "SAMA: Factorized Semantic Anchoring and Motion Alignment for Instruction-Guided Video Editing",
+  "authors": [
+   "Xinyao Zhang",
+   "Wenkai Dong",
+   "Yuxin Song",
+   "Bo Fang",
+   "Qi Zhang",
+   "Jing Wang"
+  ],
+  "abstract": "Current instruction-guided video editing models struggle to simultaneously balance precise semantic modifications with faithful motion preservation. While existing approaches rely on injecting explicit external priors (e.g., VLM features or structural conditions) to mitigate these issues, this reliance severely bottlenecks model robustness and generalization. To overcome this limitation, we present SAMA (factorized Semantic Anchoring and Motion Alignment), a framework that factorizes video editing into semantic anchoring and motion modeling. First, we introduce Semantic Anchoring, which establishes a reliable visual anchor by jointly predicting semantic tokens and video latents at sparse anchor frames, enabling purely instruction-aware structural planning. Second, Motion Alignment pre-trains the same backbone on motion-centric video restoration pretext tasks (cube inpainting, speed perturbation, and tube shuffle), enabling the model to internalize temporal dynamics directly from raw videos. SAMA is optimized with a two-stage pipeline: a factorized pre-training stage that learns inherent semantic-motion representations without paired video-instruction editing data, followed by supervised fine-tuning on paired editing data. Remarkably, the factorized pre-training alone already yields strong zero-shot video editing ability, validating the proposed factorization. SAMA achieves state-of-the-art performance among open-source models and is competitive with leading commercial systems (e.g., Kling-Omni). Code, models, and datasets will be released.",
+  "publishedAt": "2026-03-19T17:59:51Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 68,
+  "citationCount": 3,
+  "githubStars": 207,
+  "pageCount": 24
+ },
+ {
+  "arxivId": "2603.26599",
+  "slug": "vggrpo-towards-world-consistent-video-generation-with-4d-latent-reward",
+  "title": "VGGRPO: Towards World-Consistent Video Generation with 4D Latent Reward",
+  "authors": [
+   "Zhaochong An",
+   "Orest Kupyn",
+   "Théo Uscidda",
+   "Andrea Colaco",
+   "Karan Ahuja",
+   "Serge Belongie"
+  ],
+  "abstract": "Large-scale video diffusion models achieve impressive visual quality, yet often fail to preserve geometric consistency. Prior approaches improve consistency either by augmenting the generator with additional modules or applying geometry-aware alignment. However, architectural modifications can compromise the generalization of internet-scale pretrained models, while existing alignment methods are limited to static scenes and rely on RGB-space rewards that require repeated VAE decoding, incurring substantial compute overhead and failing to generalize to highly dynamic real-world scenes. To preserve the pretrained capacity while improving geometric consistency, we propose VGGRPO (Visual Geometry GRPO), a latent geometry-guided framework for geometry-aware video post-training. VGGRPO introduces a Latent Geometry Model (LGM) that stitches video diffusion latents to geometry foundation models, enabling direct decoding of scene geometry from the latent space. By constructing LGM from a geometry model with 4D reconstruction capability, VGGRPO naturally extends to dynamic scenes, overcoming the static-scene limitations of prior methods. Building on this, we perform latent-space Group Relative Policy Optimization with two complementary rewards: a camera motion smoothness reward that penalizes jittery trajectories, and a geometry reprojection consistency reward that enforces cross-view geometric coherence. Experiments on both static and dynamic benchmarks show that VGGRPO improves camera stability, geometry consistency, and overall quality while eliminating costly VAE decoding, making latent-space geometry-guided reinforcement an efficient and flexible approach to world-consistent video generation.",
+  "publishedAt": "2026-03-27T16:57:51Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": "Google DeepMind / Google",
+  "hfUpvotes": 68,
+  "citationCount": 14,
+  "githubStars": null,
+  "pageCount": 26
+ },
+ {
+  "arxivId": "2604.27083",
+  "slug": "co-evolving-policy-distillation",
+  "title": "Co-Evolving Policy Distillation",
+  "authors": [
+   "Naibin Gu",
+   "Chenxu Yang",
+   "Qingyi Si",
+   "Chuanyu Qin",
+   "Dingyu Yao",
+   "Peng Fu"
+  ],
+  "abstract": "RLVR and OPD have become standard paradigms for post-training. We provide a unified analysis of these two paradigms in consolidating multiple expert capabilities into a single model, identifying capability loss in different ways: mixed RLVR suffers from inter-capability divergence cost, while the pipeline of first training experts and then performing OPD, though avoiding divergence, fails to fully absorb teacher capabilities due to large behavioral pattern gaps between teacher and student. We propose Co-Evolving Policy Distillation (CoPD), which encourages parallel training of experts and introduces OPD during each expert's ongoing RLVR training rather than after complete expert training, with experts serving as mutual teachers (making OPD bidirectional) to co-evolve. This enables more consistent behavioral patterns among experts while maintaining sufficient complementary knowledge throughout. Experiments validate that CoPD achieves all-in-one integration of text, image, and video reasoning capabilities, significantly outperforming strong baselines such as mixed RLVR and MOPD, and even surpassing domain-specific experts. The model parallel training pattern offered by CoPD may inspire a novel training scaling paradigm.",
+  "publishedAt": "2026-04-29T18:24:11Z",
+  "primaryArxivCategory": [
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 68,
+  "citationCount": 3,
+  "githubStars": null,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2607.14183",
+  "slug": "open-aoe-an-open-egocentric-manipulation-dataset-and-toolchain-for-embodied",
+  "title": "Open-AoE: An Open Egocentric Manipulation Dataset and Toolchain for Embodied Learning",
+  "authors": [
+   "Zishuo Li",
+   "Bowen Yang",
+   "Changtao Miao",
+   "Kai Zhu",
+   "Hao Chen",
+   "Qingze Guan"
+  ],
+  "abstract": "Egocentric videos of human manipulation provide scalable supervision for embodied intelligence, yet existing resources rarely combine low-cost continuous capture, manipulation-level structured annotations, and reusable tools for robot learning. We present Open-AoE, an open, community-oriented egocentric manipulation dataset and toolchain spanning the full pipeline from smartphone capture to model training. Its first release contains approximately 2,000 hours of manipulation video collected in natural environments by 500+ contributors using 400+ smartphones. The dataset provides text annotations, MANO-based hand poses, camera trajectories, and temporally localized atomic actions. Open-AoE further includes a data processing pipeline that transforms raw recordings into structured samples through temporal action segmentation, semantic annotation, hand reconstruction, and camera trajectory reconstruction. Meanwhile, we provide a separate downstream toolchain supports visualization, cross-embodiment retargeting, model-specific data conversion, and training recipes for VLA policies, WAMs, and World Models. By integrating scalable capture, structured processing, and downstream adaptation, Open-AoE reduces the barriers to both data contribution and reuse, providing practical open infrastructure for embodied model training, human-to-robot transfer, and world modeling.",
+  "publishedAt": "2026-07-15T14:49:49Z",
+  "primaryArxivCategory": [
+   "cs.RO",
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 68,
+  "citationCount": 1,
+  "githubStars": 135,
+  "pageCount": 25
+ },
+ {
+  "arxivId": "2509.19249",
+  "slug": "reinforcement-learning-on-pre-training-data",
+  "title": "Reinforcement Learning on Pre-Training Data",
+  "authors": [
+   "Siheng Li",
+   "Kejiao Li",
+   "Zenan Xu",
+   "Guanhua Huang",
+   "Evander Yang",
+   "Kun Li"
+  ],
+  "abstract": "The growing disparity between the exponential scaling of computational resources and the finite growth of high-quality text data now constrains conventional scaling approaches for large language models (LLMs). To address this challenge, we introduce Reinforcement Learning on Pre-Training data (RLPT), a new training-time scaling paradigm for optimizing LLMs. In contrast to prior approaches that scale training primarily through supervised learning, RLPT enables the policy to autonomously explore meaningful trajectories to learn from pre-training data and improve its capability through reinforcement learning (RL). While existing RL strategies such as reinforcement learning from human feedback (RLHF) and reinforcement learning with verifiable rewards (RLVR) rely on human annotation for reward construction, RLPT eliminates this dependency by deriving reward signals directly from pre-training data. Specifically, it adopts a next-segment reasoning objective, rewarding the policy for accurately predicting subsequent text segments conditioned on the preceding context. This formulation allows RL to be scaled on pre-training data, encouraging the exploration of richer trajectories across broader contexts and thereby fostering more generalizable reasoning skills. Extensive experiments on both general-domain and mathematical reasoning benchmarks across multiple models validate the effectiveness of RLPT. For example, when applied to Qwen3-4B-Base, RLPT yields absolute improvements of $3.0$, $5.1$, $8.1$, $6.0$, $6.6$, and $5.3$ on MMLU, MMLU-Pro, GPQA-Diamond, KOR-Bench, AIME24, and AIME25, respectively. The results further demonstrate favorable scaling behavior, suggesting strong potential for continued gains with more compute. In addition, RLPT provides a solid foundation, extending the reasoning boundaries of LLMs and enhancing RLVR performance.",
+  "publishedAt": "2025-09-23T17:10:40Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 67,
+  "citationCount": 11,
+  "githubStars": null,
+  "pageCount": 11
+ },
+ {
+  "arxivId": "2510.06217",
+  "slug": "tattoo-tool-grounded-thinking-prm-for-test-time-scaling-in-tabular-reasoning",
+  "title": "TaTToo: Tool-Grounded Thinking PRM for Test-Time Scaling in Tabular Reasoning",
+  "authors": [
+   "Jiaru Zou",
+   "Soumya Roy",
+   "Vinay Kumar Verma",
+   "Ziyi Wang",
+   "David Wipf",
+   "Pan Lu"
+  ],
+  "abstract": "Process Reward Models (PRMs) have recently emerged as a powerful framework for enhancing the reasoning capabilities of large reasoning models (LRMs), particularly in the context of test-time scaling (TTS). However, their potential for supervising LRMs on tabular reasoning domains remains underexplored. Through detailed empirical analyses, we identify that existing PRMs, though widely adopted for supervising text-only reasoning steps, struggle with table-specific operations such as sub-table retrieval and schema interaction, leading to critical performance bottlenecks. To address this limitation, we propose TaTToo, a novel table-grounded PRM framework that (i) reasons explicitly over tabular reasoning steps and (ii) integrates tool-based verification to provide precise reward supervision. Concretely, we first design a scalable data curation pipeline that constructs over 60k high-quality step-level annotations by integrating table verification rationales with tool-based executions. Building on the collected data, we train TaTToo with a dual-stage paradigm: cold-start supervised fine-tuning to capture tool-use reasoning patterns, followed by reinforcement learning with tool-grounded reward shaping to align our model with table-based verification. We provide a comprehensive evaluation of the policy improvement induced by our newly designed PRM. Across 5 challenging tabular reasoning benchmarks covering numerical reasoning, fact-checking, and data analysis, TaTToo improves downstream policy LRMs by 30.9% at inference, surpasses strong PRM baselines such as Qwen-2.5-Math-PRM-72B with only 8B parameters, and demonstrates strong generalizability across diverse TTS strategies.",
+  "publishedAt": "2025-10-07T17:59:41Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 67,
+  "citationCount": 10,
+  "githubStars": null,
+  "pageCount": 25
+ },
+ {
+  "arxivId": "2510.23587",
+  "slug": "a-survey-of-data-agents-emerging-paradigm-or-overstated-hype",
+  "title": "A Survey of Data Agents: Emerging Paradigm or Overstated Hype?",
+  "authors": [
+   "Yizhang Zhu",
+   "Liangwei Wang",
+   "Chenyu Yang",
+   "Xiaotian Lin",
+   "Boyan Li",
+   "Wei Zhou"
+  ],
+  "abstract": "The rapid advancement of large language models (LLMs) has spurred the emergence of data agents, autonomous systems designed to orchestrate Data + AI ecosystems for tackling complex data-related tasks. However, the term \"data agent\" currently suffers from terminological ambiguity and inconsistent adoption, conflating simple query responders with sophisticated autonomous architectures. This terminological ambiguity fosters mismatched user expectations, accountability challenges, and barriers to industry growth. Inspired by the SAE J3016 standard for driving automation, this survey introduces the first systematic hierarchical taxonomy for data agents, comprising six levels that delineate and trace progressive shifts in autonomy, from manual operations (L0) to a vision of generative, fully autonomous data agents (L5), thereby clarifying capability boundaries and responsibility allocation. Through this lens, we offer a structured review of existing research arranged by increasing autonomy, encompassing specialized data agents for data management, preparation, and analysis, alongside emerging efforts toward versatile, comprehensive systems with enhanced autonomy. We further analyze critical evolutionary leaps and technical gaps for advancing data agents, especially the ongoing L2-to-L3 transition, where data agents evolve from procedural execution to autonomous orchestration. Finally, we conclude with a forward-looking roadmap, envisioning proactive, generative data agents.",
+  "publishedAt": "2025-10-27T17:54:07Z",
+  "primaryArxivCategory": [
+   "cs.DB",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 67,
+  "citationCount": 36,
+  "githubStars": 688,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2512.24617",
+  "slug": "dynamic-large-concept-models-latent-reasoning-in-an-adaptive-semantic-space",
+  "title": "Dynamic Large Concept Models: Latent Reasoning in an Adaptive Semantic Space",
+  "authors": [
+   "Xingwei Qu",
+   "Shaowen Wang",
+   "Zihao Huang",
+   "Kai Hua",
+   "Fan Yin",
+   "Rui-Jie Zhu"
+  ],
+  "abstract": "Large Language Models (LLMs) apply uniform computation to all tokens, despite language exhibiting highly non-uniform information density. This token-uniform regime wastes capacity on locally predictable spans while under-allocating computation to semantically critical transitions. We propose $\\textbf{Dynamic Large Concept Models (DLCM)}$, a hierarchical language modeling framework that learns semantic boundaries from latent representations and shifts computation from tokens to a compressed concept space where reasoning is more efficient. DLCM discovers variable-length concepts end-to-end without relying on predefined linguistic units. Hierarchical compression fundamentally changes scaling behavior. We introduce the first $\\textbf{compression-aware scaling law}$, which disentangles token-level capacity, concept-level reasoning capacity, and compression ratio, enabling principled compute allocation under fixed FLOPs. To stably train this heterogeneous architecture, we further develop a $\\textbf{decoupled $μ$P parametrization}$ that supports zero-shot hyperparameter transfer across widths and compression regimes. At a practical setting ($R=4$, corresponding to an average of four tokens per concept), DLCM reallocates roughly one-third of inference compute into a higher-capacity reasoning backbone, achieving a $\\textbf{+2.69$\\%$ average improvement}$ across 12 zero-shot benchmarks under matched inference FLOPs.",
+  "publishedAt": "2025-12-31T04:19:33Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 67,
+  "citationCount": 12,
+  "githubStars": null,
+  "pageCount": 24
+ },
+ {
+  "arxivId": "2601.07022",
+  "slug": "solar-open-technical-report",
+  "title": "Solar Open Technical Report",
+  "authors": [
+   "Sungrae Park",
+   "Sanghoon Kim",
+   "Jungho Cho",
+   "Gyoungjin Gim",
+   "Dawoon Jung",
+   "Mikyoung Cha"
+  ],
+  "abstract": "We introduce Solar Open, a 102B-parameter bilingual Mixture-of-Experts language model for underserved languages. Solar Open demonstrates a systematic methodology for building competitive LLMs by addressing three interconnected challenges. First, to train effectively despite data scarcity for underserved languages, we synthesize 4.5T tokens of high-quality, domain-specific, and RL-oriented data. Second, we coordinate this data through a progressive curriculum jointly optimizing composition, quality thresholds, and domain coverage across 20 trillion tokens. Third, to enable reasoning capabilities through scalable RL, we apply our proposed framework SnapPO for efficient optimization. Across benchmarks in English and Korean, Solar Open achieves competitive performance, demonstrating the effectiveness of this methodology for underserved language AI development.",
+  "publishedAt": "2026-01-11T18:33:09Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 67,
+  "citationCount": 2,
+  "githubStars": null,
+  "pageCount": 33
+ },
+ {
+  "arxivId": "2601.11077",
+  "slug": "abc-bench-benchmarking-agentic-backend-coding-in-real-world-development",
+  "title": "ABC-Bench: Benchmarking Agentic Backend Coding in Real-World Development",
+  "authors": [
+   "Jie Yang",
+   "Honglin Guo",
+   "Li Ji",
+   "Jiazheng Zhou",
+   "Rui Zheng",
+   "Zhikai Lei"
+  ],
+  "abstract": "The evolution of Large Language Models (LLMs) into autonomous agents has expanded the scope of AI coding from localized code generation to complex, repository-level, and execution-driven problem solving. However, current benchmarks predominantly evaluate code logic in static contexts, neglecting the dynamic, full-process requirements of real-world engineering, particularly in backend development which demands rigorous environment configuration and service deployment. To address this gap, we introduce ABC-Bench, a benchmark explicitly designed to evaluate agentic backend coding within a realistic, executable workflow. Using a scalable automated pipeline, we curated 224 practical tasks spanning 8 languages and 19 frameworks from open-source repositories. Distinct from previous evaluations, ABC-Bench require the agents to manage the entire development lifecycle from repository exploration to instantiating containerized services and pass the external end-to-end API tests. Our extensive evaluation reveals that even state-of-the-art models struggle to deliver reliable performance on these holistic tasks, highlighting a substantial disparity between current model capabilities and the demands of practical backend engineering. Our code is available at https://github.com/OpenMOSS/ABC-Bench.",
+  "publishedAt": "2026-01-16T08:23:52Z",
+  "primaryArxivCategory": [
+   "cs.SE",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 67,
+  "citationCount": 3,
+  "githubStars": 33,
+  "pageCount": 23
+ },
+ {
+  "arxivId": "2602.02660",
+  "slug": "mars-modular-agent-with-reflective-search-for-automated-ai-research",
+  "title": "MARS: Modular Agent with Reflective Search for Automated AI Research",
+  "authors": [
+   "Jiefeng Chen",
+   "Bhavana Dalvi Mishra",
+   "Jaehyun Nam",
+   "Rui Meng",
+   "Tomas Pfister",
+   "Jinsung Yoon"
+  ],
+  "abstract": "A critical bottleneck in automating AI research is the execution of complex machine learning engineering (MLE) tasks. MLE differs from general software engineering due to computationally expensive evaluation (e.g., model training) and opaque performance attribution. Current LLM-based agents struggle here, often generating monolithic scripts that ignore execution costs and causal factors. We introduce MARS (Modular Agent with Reflective Search), a framework optimized for autonomous AI research. MARS relies on three pillars: (1) Budget-Aware Planning via cost-constrained Monte Carlo Tree Search (MCTS) to explicitly balance performance with execution expense; (2) Modular Construction, employing a \"Design-Decompose-Implement\" pipeline to manage complex research repositories; and (3) Comparative Reflective Memory, which addresses credit assignment by analyzing solution differences to distill high-signal insights. MARS achieves state-of-the-art performance among open-source frameworks on MLE-Bench under comparable settings, maintaining competitiveness with the global leaderboard's top methods. Furthermore, the system exhibits qualitative \"Aha!\" moments, where 63% of all utilized lessons originate from cross-branch transfer, demonstrating that the agent effectively generalizes insights across search paths.",
+  "publishedAt": "2026-02-02T19:00:03Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": "Google DeepMind / Google",
+  "hfUpvotes": 67,
+  "citationCount": 12,
+  "githubStars": 39,
+  "pageCount": 66
+ },
+ {
+  "arxivId": "2605.15824",
+  "slug": "fashionchameleon-towards-real-time-and-interactive-human-garment-video",
+  "title": "FashionChameleon: Towards Real-Time and Interactive Human-Garment Video Customization",
+  "authors": [
+   "Quanjian Song",
+   "Yefeng Shen",
+   "Mengting Chen",
+   "Hao Sun",
+   "Jinsong Lan",
+   "Xiaoyong Zhu"
+  ],
+  "abstract": "Human-centric video customization, particularly at the garment level, has shown significant commercial value. However, existing approaches cannot support low-latency and interactive garment control, which is crucial for applications such as e-commerce and content creation. This paper studies how to achieve interactive multi-garment video customization while preserving motion coherence using only single-garment video data. We present FashionChameleon, a real-time and interactive framework for human-garment customization in autoregressive video generation, where users can interactively switch garment during generation. FashionChameleon consists of three key techniques: (i) Instead of training on multi-garment video data, we train a Teacher Model with In-Context Learning on a single reference-garment pair. By retaining the image-to-video training paradigm while enforcing a mismatch between the reference and garment image, the model is encouraged to implicitly preserve coherence during single-garment switching. (ii) To achieve consistency and efficiency during generation, we introduce Streaming Distillation with In-Context Learning, which fine-tunes the model with in-context teacher forcing and improves extrapolation consistency via gradient-reweighted distribution matching distillation. (iii) To extend the model for interactive multi-garment video customization, we propose Training-Free KV Cache Rescheduling, which includes garment KV refresh, historical KV withdraw, and reference KV disentangle to achieve garment switching while preserving motion coherence. Our FashionChameleon uniquely supports interactive customization and consistent long-video extrapolation, while achieving real-time generation at 23.8 FPS on a single GPU, 30-180$\\times$ faster than existing baselines.",
+  "publishedAt": "2026-05-15T10:25:06Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 67,
+  "citationCount": 3,
+  "githubStars": 256,
+  "pageCount": 28
+ },
+ {
+  "arxivId": "2606.06087",
+  "slug": "latentskill-from-in-context-textual-skills-to-in-weight-latent-skills-for-llm",
+  "title": "LatentSkill: From In-Context Textual Skills to In-Weight Latent Skills for LLM Agents",
+  "authors": [
+   "Aofan Yu",
+   "Chenyu Zhou",
+   "Tianyi Xu",
+   "Zihan Guo",
+   "Rong Shan",
+   "Zhihui Fu"
+  ],
+  "abstract": "Agent systems increasingly use textual skills to encode reusable task procedures, but injecting these skills into the prompt at every step incurs substantial context overhead and exposes skill content as plaintext. We present LatentSkill, a framework that converts textual skills into plug-and-play LoRA adapters through a pretrained hypernetwork. LatentSkill stores skill knowledge in weight space rather than context space, removing per-step skill tokens while preserving modular loading, scaling, and composition. On ALFWorld and Search-QA, LatentSkill outperforms the corresponding in-context skill baseline while using substantially fewer prefill tokens: it improves ALFWorld success by 21.4 and 13.4 points on the seen and unseen splits with 64.1% fewer prefill tokens, and improves Search-QA exact match by 3.0 points with 72.2% lower skill-token overhead. Further analysis shows that generated skill LoRAs form a structured semantic geometry, can be precisely controlled via the LoRA scaling coefficient, and can be composed through parameter-space arithmetic when skill components are aligned. These findings suggest that weight-space skills provide an efficient, modular, and less exposed substrate for extending LLM agents.",
+  "publishedAt": "2026-06-04T12:26:09Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 67,
+  "citationCount": 2,
+  "githubStars": 27,
+  "pageCount": 16
+ },
+ {
+  "arxivId": "2606.26058",
+  "slug": "domainshuttle-freeform-open-domain-subject-driven-text-to-video-generation",
+  "title": "DomainShuttle: Freeform Open Domain Subject-driven Text-to-video Generation",
+  "authors": [
+   "Nan Chen",
+   "Yiyang Cai",
+   "Rongchang Xie",
+   "Junwen Pan",
+   "Cheng Chen",
+   "Weinan Jia"
+  ],
+  "abstract": "Open domain subject-driven text-to-video (S2V) generation has drawn significant interest in academia and industry. Open domain S2V mainly involves two scenarios: in-domain, which requires retaining the reference subject features as much as possible, and cross-domain, which preserves the intrinsic features of the subject while allowing subject-irrelevant properties to vary flexibly according to the text prompt. Existing methods primarily focus on maximizing subject fidelity in in-domain scenarios, which limits their editability and adaptability in cross-domain scenarios, such as novel styles, semantic combinations, or domain attributes. In this study, we propose that an ideal S2V method should flexibly shuttle between different domains, achieving strong performance in both in-domain and cross-domain scenarios. To this end, we propose DomainShuttle, which could achieve high fidelity and generative flexibility for open domain video personalization. Specifically, we introduce Domain-MoT, which decouples videos and reference features and introduces the domain-aware AdaLN for domain-specific modeling of reference images. We then introduce the Video-Reference DualRoPE scheme, which places reference image tokens and video tokens in separate RoPE spaces to enable precise subject-level spatial modeling, and Cross-Pair Consistent Loss, which aims to extract intrinsic subject features unaffected by irrelevant features. Extensive experiments demonstrate that DomainShuttle achieves significant performance improvements over existing methods, exhibiting high subject fidelity and generative flexibility across diverse open domain application scenarios.",
+  "publishedAt": "2026-06-24T17:33:13Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 67,
+  "citationCount": 1,
+  "githubStars": 165,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2607.02255",
+  "slug": "agenticsts-a-bounded-memory-testbed-for-long-horizon-llm-agents",
+  "title": "AgenticSTS: A Bounded-Memory Testbed for Long-Horizon LLM Agents",
+  "authors": [
+   "Xiangchen Cheng",
+   "Yunwei Jiang",
+   "Jianwen Sun",
+   "Zizhen Li",
+   "Chuanhao Li",
+   "Xiangcheng Cao"
+  ],
+  "abstract": "Memory for a long-horizon LLM agent is a contract about what each future decision is allowed to see. The simplest contract appends past observations, tool calls, and reflections to every prompt, which makes prior context easy to access but also turns it into a jumbled mixture in which the effect of any single memory component is hard to isolate. We introduce and instrument an alternative bounded contract: every decision is made from a fresh user message assembled by typed retrieval, with no raw cross-decision transcript appended. The prompt thus stays bounded across runs of any length, and any single layer can be ablated in isolation. We instantiate the contract in Slay the Spire 2, a closed-rule stochastic deck-building game whose runs require hundreds of tactical and strategic decisions. A public online benchmark of frontier LLMs on the same game reports zero wins at the lowest difficulty across five configurations, and the developer-reported human win rate at the same difficulty is 16%; the task is hard but not saturated. Within our harness, a fixed-A0 ablation shows the largest observed difference when triggered strategic skills are enabled: the no-store baseline wins 3/10 games and adding the skill layer 6/10. At this sample size the comparison is directional rather than statistically decisive (Fisher exact p\\approx0.37); a cross-backbone probe and public accumulating-context baselines are reported as operational comparisons rather than controlled tests of the contract variable itself. We release a reproducible testbed: 298 completed trajectories with condition tags, frozen memory/skill snapshots, prompt records, and analysis scripts -- an agent design and a validated, reusable methodology for studying how explicit memory layers shape long-horizon LLM-agent decisions.",
+  "publishedAt": "2026-07-02T14:44:32Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 67,
+  "citationCount": 0,
+  "githubStars": 123,
+  "pageCount": 27
+ },
+ {
+  "arxivId": "2508.15144",
+  "slug": "mobile-agent-v3-fundamental-agents-for-gui-automation",
+  "title": "Mobile-Agent-v3: Fundamental Agents for GUI Automation",
+  "authors": [
+   "Jiabo Ye",
+   "Xi Zhang",
+   "Haiyang Xu",
+   "Haowei Liu",
+   "Junyang Wang",
+   "Zhaoqing Zhu"
+  ],
+  "abstract": "This paper introduces GUI-Owl, a foundational GUI agent model that achieves state-of-the-art performance among open-source end-to-end models on ten GUI benchmarks across desktop and mobile environments, covering grounding, question answering, planning, decision-making, and procedural knowledge. GUI-Owl-7B achieves 66.4 on AndroidWorld and 29.4 on OSWorld. Building on this, we propose Mobile-Agent-v3, a general-purpose GUI agent framework that further improves performance to 73.3 on AndroidWorld and 37.7 on OSWorld, setting a new state-of-the-art for open-source GUI agent frameworks. GUI-Owl incorporates three key innovations: (1) Large-scale Environment Infrastructure: a cloud-based virtual environment spanning Android, Ubuntu, macOS, and Windows, enabling our Self-Evolving GUI Trajectory Production framework. This generates high-quality interaction data via automated query generation and correctness validation, leveraging GUI-Owl to refine trajectories iteratively, forming a self-improving loop. It supports diverse data pipelines and reduces manual annotation. (2) Diverse Foundational Agent Capabilities: by integrating UI grounding, planning, action semantics, and reasoning patterns, GUI-Owl supports end-to-end decision-making and can act as a modular component in multi-agent systems. (3) Scalable Environment RL: we develop a scalable reinforcement learning framework with fully asynchronous training for real-world alignment. We also introduce Trajectory-aware Relative Policy Optimization (TRPO) for online RL, achieving 34.9 on OSWorld. GUI-Owl and Mobile-Agent-v3 are open-sourced at https://github.com/X-PLUG/MobileAgent.",
+  "publishedAt": "2025-08-21T00:39:12Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 66,
+  "citationCount": 150,
+  "githubStars": 9047,
+  "pageCount": 30
+ },
+ {
+  "arxivId": "2509.17627",
+  "slug": "omniinsert-mask-free-video-insertion-of-any-reference-via-diffusion",
+  "title": "OmniInsert: Mask-Free Video Insertion of Any Reference via Diffusion Transformer Models",
+  "authors": [
+   "Jinshu Chen",
+   "Xinghui Li",
+   "Xu Bai",
+   "Tianxiang Ma",
+   "Pengze Zhang",
+   "Zhuowei Chen"
+  ],
+  "abstract": "Recent advances in video insertion based on diffusion models are impressive. However, existing methods rely on complex control signals but struggle with subject consistency, limiting their practical applicability. In this paper, we focus on the task of Mask-free Video Insertion and aim to resolve three key challenges: data scarcity, subject-scene equilibrium, and insertion harmonization. To address the data scarcity, we propose a new data pipeline InsertPipe, constructing diverse cross-pair data automatically. Building upon our data pipeline, we develop OmniInsert, a novel unified framework for mask-free video insertion from both single and multiple subject references. Specifically, to maintain subject-scene equilibrium, we introduce a simple yet effective Condition-Specific Feature Injection mechanism to distinctly inject multi-source conditions and propose a novel Progressive Training strategy that enables the model to balance feature injection from subjects and source video. Meanwhile, we design the Subject-Focused Loss to improve the detailed appearance of the subjects. To further enhance insertion harmonization, we propose an Insertive Preference Optimization methodology to optimize the model by simulating human preferences, and incorporate a Context-Aware Rephraser module during reference to seamlessly integrate the subject into the original scenes. To address the lack of a benchmark for the field, we introduce InsertBench, a comprehensive benchmark comprising diverse scenes with meticulously selected subjects. Evaluation on InsertBench indicates OmniInsert outperforms state-of-the-art closed-source commercial solutions. The code will be released.",
+  "publishedAt": "2025-09-22T11:35:55Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 66,
+  "citationCount": 9,
+  "githubStars": 162,
+  "pageCount": 24
+ },
+ {
+  "arxivId": "2509.22220",
+  "slug": "stabletoken-a-noise-robust-semantic-speech-tokenizer-for-resilient-speechllms",
+  "title": "StableToken: A Noise-Robust Semantic Speech Tokenizer for Resilient SpeechLLMs",
+  "authors": [
+   "Yuhan Song",
+   "Linhao Zhang",
+   "Chuhan Wu",
+   "Aiwei Liu",
+   "Wei Jia",
+   "Houfeng Wang"
+  ],
+  "abstract": "Prevalent semantic speech tokenizers, designed to capture linguistic content, are surprisingly fragile. We find they are not robust to meaning-irrelevant acoustic perturbations; even at high Signal-to-Noise Ratios (SNRs) where speech is perfectly intelligible, their output token sequences can change drastically, increasing the learning burden for downstream LLMs. This instability stems from two flaws: a brittle single-path quantization architecture and a distant training signal indifferent to intermediate token stability. To address this, we introduce StableToken, a tokenizer that achieves stability through a consensus-driven mechanism. Its multi-branch architecture processes audio in parallel, and these representations are merged via a powerful bit-wise voting mechanism to form a single, stable token sequence. StableToken sets a new state-of-the-art in token stability, drastically reducing Unit Edit Distance (UED) under diverse noise conditions. This foundational stability translates directly to downstream benefits, significantly improving the robustness of SpeechLLMs on a variety of tasks. Our code and model are publicly available at https://github.com/Tencent/StableToken.",
+  "publishedAt": "2025-09-26T11:32:51Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.SD"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 66,
+  "citationCount": 4,
+  "githubStars": 33,
+  "pageCount": 27
+ }
+]

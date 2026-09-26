@@ -1,0 +1,703 @@
+[
+ {
+  "arxivId": "2607.07708",
+  "slug": "accurate-interdisciplinary-and-transparent-structure-property-understanding",
+  "title": "Accurate, Interdisciplinary and Transparent Structure-property Understanding with Deep Native Structural Reasoning",
+  "authors": [
+   "Chen Tang",
+   "Yizhou Wang",
+   "Jianyu Wu",
+   "Lintao Wang",
+   "Shixiang Tang",
+   "Pengze Li"
+  ],
+  "abstract": "Structure-property relationships are foundational to biology, chemistry and materials science, where function, reactivity and physical response emerge from spatial, chemical and periodic organization. Mechanistically explaining these relationships requires interpreting structural evidence through scientific principles and physical constraints, from stereochemistry and bonding to symmetry, energetics and periodic order. However, applying artificial intelligence to this process presents a joint challenge of representation and reasoning: models must preserve domain-native structural information while showing how specific evidence supports predictions under these constraints. Here we introduce SciReasoner, a multimodal scientific foundation model for native structural reasoning across proteins, small molecules and inorganic crystals. SciReasoner discretizes coordinates, topologies and periodic connectivities into a unified structure-aware vocabulary, treating structural tokens as addressable evidence units during reasoning. In homology-controlled Gene Ontology prediction, SciReasoner improves Cellular Component annotation for low-homology and orphan-like proteins, increasing $F_{\\max}$ from 0.42 to 0.55. In chemistry, it raises single-step retrosynthesis accuracy from 0.63 to 0.72 while generating fragment-level disconnection and precursor-verification traces. In materials science, its representations separate elemental and compound phases and resolve high- and low-band-gap regimes. Across 86 benchmarks, SciReasoner achieves state-of-the-art performance on 67 tasks. Double-blind expert evaluation rates its reasoning traces as preferred or at least comparable to those of a frontier large language model in 98% of cases. By making structure an inspectable substrate for reasoning under scientific constraints, SciReasoner connects accurate prediction with interpretable scientific inference.",
+  "publishedAt": "2026-07-08T17:59:59Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI",
+   "cs.CE",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 88,
+  "citationCount": 0,
+  "githubStars": 24,
+  "pageCount": 42
+ },
+ {
+  "arxivId": "2607.23802",
+  "slug": "from-rlvr-to-rlsvr-task-transformation-induces-self-verifiable-rewards-for",
+  "title": "From RLVR to RLSVR: Task Transformation Induces Self-Verifiable Rewards for Open-Ended LLM Self-Improvement",
+  "authors": [
+   "Qinsi Wang",
+   "Jing Shi",
+   "Huazheng Wang",
+   "Kun Wan",
+   "Yiran Wu",
+   "Bo Liu"
+  ],
+  "abstract": "Reinforcement Learning with Verifiable Rewards (RLVR) has driven recent progress in reasoning-oriented large language models (LLMs) by enabling large-scale optimization. However, its applicability remains largely limited to domains such as mathematics and coding, where correctness can be deterministically verifiable. Open-ended tasks instead often rely on human preferences, reward models, or LLM-based judges, introducing evaluation bias, judge capability bottlenecks, and additional inference costs. Drawing on the principle of self-supervised learning, which constructs pretext tasks to derive supervision from the data itself, we propose Reinforcement Learning with Self-Verifiable Rewards (RLSVR), a task-transformation-based training paradigm for extending RLVR to open-ended tasks. RLSVR transforms open-ended tasks into verifiable proxy environments whose internal rules and interaction outcomes automatically generate reward signals. We instantiate RLSVR with SpyRL, a Self-PlaY Reinforcement Learning method inspired by social deduction game Who Is the Spy?. Agents receive asymmetric information, complete the same target task, and vote to identify a designated spy. Because the spy identity is predetermined, voting outcomes provide fully verifiable rewards, while successful identification remains closely related to output quality. Experiments on text summarization, creative writing, and mathematical reasoning show that SpyRL outperforms existing self-improvement methods on non-verifiable tasks and yields consistent gains on verifiable reasoning tasks. These results demonstrate that task transformation can extend scalable RLVR-based self-improvement beyond inherently verifiable domains. Models and code have been released at https://github.com/wangqinsi1/RLSVR/tree/SpyRL.",
+  "publishedAt": "2026-07-26T19:04:33Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 88,
+  "citationCount": 0,
+  "githubStars": 165,
+  "pageCount": 31
+ },
+ {
+  "arxivId": "2510.09426",
+  "slug": "kormo-korean-open-reasoning-model-for-everyone",
+  "title": "KORMo: Korean Open Reasoning Model for Everyone",
+  "authors": [
+   "Minjun Kim",
+   "Hyeonseok Lim",
+   "Hangyeol Yoo",
+   "Inho Won",
+   "Seungwoo Song",
+   "Minkyung Cho"
+  ],
+  "abstract": "This work presents the first large-scale investigation into constructing a fully open bilingual large language model (LLM) for a non-English language, specifically Korean, trained predominantly on synthetic data. We introduce KORMo-10B, a 10.8B-parameter model trained from scratch on a Korean-English corpus in which 68.74% of the Korean portion is synthetic. Through systematic experimentation, we demonstrate that synthetic data, when carefully curated with balanced linguistic coverage and diverse instruction styles, does not cause instability or degradation during large-scale pretraining. Furthermore, the model achieves performance comparable to that of contemporary open-weight multilingual baselines across a wide range of reasoning, knowledge, and instruction-following benchmarks. Our experiments reveal two key findings: (1) synthetic data can reliably sustain long-horizon pretraining without model collapse, and (2) bilingual instruction tuning enables near-native reasoning and discourse coherence in Korean. By fully releasing all components including data, code, training recipes, and logs, this work establishes a transparent framework for developing synthetic data-driven fully open models (FOMs) in low-resource settings and sets a reproducible precedent for future multilingual LLM research.",
+  "publishedAt": "2025-10-10T14:31:25Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 87,
+  "citationCount": 4,
+  "githubStars": 119,
+  "pageCount": 45
+ },
+ {
+  "arxivId": "2510.23473",
+  "slug": "video-thinker-sparking-thinking-with-videos-via-reinforcement-learning",
+  "title": "Video-Thinker: Sparking \"Thinking with Videos\" via Reinforcement Learning",
+  "authors": [
+   "Shijian Wang",
+   "Jiarui Jin",
+   "Xingjian Wang",
+   "Linxin Song",
+   "Runhao Fu",
+   "Hecheng Wang"
+  ],
+  "abstract": "Recent advances in image reasoning methods, particularly \"Thinking with Images\", have demonstrated remarkable success in Multimodal Large Language Models (MLLMs); however, this dynamic reasoning paradigm has not yet been extended to video reasoning tasks. In this paper, we propose Video-Thinker, which empowers MLLMs to think with videos by autonomously leveraging their intrinsic \"grounding\" and \"captioning\" capabilities to generate reasoning clues throughout the inference process. To spark this capability, we construct Video-Thinker-10K, a curated dataset featuring autonomous tool usage within chain-of-thought reasoning sequences. Our training strategy begins with Supervised Fine-Tuning (SFT) to learn the reasoning format, followed by Group Relative Policy Optimization (GRPO) to strengthen this reasoning capability. Through this approach, Video-Thinker enables MLLMs to autonomously navigate grounding and captioning tasks for video reasoning, eliminating the need for constructing and calling external tools. Extensive experiments demonstrate that Video-Thinker achieves significant performance gains on both in-domain tasks and challenging out-of-domain video reasoning benchmarks, including Video-Holmes, CG-Bench-Reasoning, and VRBench. Our Video-Thinker-7B substantially outperforms existing baselines such as Video-R1 and establishes state-of-the-art performance among 7B-sized MLLMs.",
+  "publishedAt": "2025-10-27T16:10:45Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 87,
+  "citationCount": 21,
+  "githubStars": 160,
+  "pageCount": 31
+ },
+ {
+  "arxivId": "2512.20578",
+  "slug": "can-llms-predict-their-own-failures-self-awareness-via-internal-circuits",
+  "title": "Can LLMs Predict Their Own Failures? Self-Awareness via Internal Circuits",
+  "authors": [
+   "Amirhosein Ghasemabadi",
+   "Di Niu"
+  ],
+  "abstract": "Large language models (LLMs) generate fluent and complex outputs but often fail to recognize their own mistakes and hallucinations. Existing approaches typically rely on external judges, multi-sample consistency, or text-based self-critique, which incur additional compute or correlate weakly with true correctness. We ask: can LLMs predict their own failures by inspecting internal states during inference? We introduce Gnosis, a lightweight self-awareness mechanism that enables frozen LLMs to perform intrinsic self-verification by decoding signals from hidden states and attention patterns. Gnosis passively observes internal traces, compresses them into fixed-budget descriptors, and predicts correctness with negligible inference cost, adding only ~5M parameters and operating independently of sequence length. Across math reasoning, open-domain question answering, and academic knowledge benchmarks, and over frozen backbones ranging from 1.7B to 20B parameters, Gnosis consistently outperforms strong internal baselines and large external judges in both accuracy and calibration. Moreover, it generalizes zero-shot to partial generations, enabling early detection of failing trajectories and compute-aware control. These results show that reliable correctness cues are intrinsic to generation process and can be extracted efficiently without external supervision.",
+  "publishedAt": "2025-12-23T18:21:32Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 87,
+  "citationCount": 10,
+  "githubStars": 46,
+  "pageCount": 17
+ },
+ {
+  "arxivId": "2601.05593",
+  "slug": "pacore-learning-to-scale-test-time-compute-with-parallel-coordinated-reasoning",
+  "title": "PaCoRe: Learning to Scale Test-Time Compute with Parallel Coordinated Reasoning",
+  "authors": [
+   "Jingcheng Hu",
+   "Yinmin Zhang",
+   "Shijie Shang",
+   "Xiaobo Yang",
+   "Yue Peng",
+   "Zhewei Huang"
+  ],
+  "abstract": "We introduce Parallel Coordinated Reasoning (PaCoRe), a training-and-inference framework designed to overcome a central limitation of contemporary language models: their inability to scale test-time compute (TTC) far beyond sequential reasoning under a fixed context window. PaCoRe departs from the traditional sequential paradigm by driving TTC through massive parallel exploration coordinated via a message-passing architecture in multiple rounds. Each round launches many parallel reasoning trajectories, compacts their findings into context-bounded messages, and synthesizes these messages to guide the next round and ultimately produce the final answer. Trained end-to-end with large-scale, outcome-based reinforcement learning, the model masters the synthesis abilities required by PaCoRe and scales to multi-million-token effective TTC without exceeding context limits. The approach yields strong improvements across diverse domains, and notably pushes reasoning beyond frontier systems in mathematics: an 8B model reaches 94.5% on HMMT 2025, surpassing GPT-5's 93.2% by scaling effective TTC to roughly two million tokens. We open-source model checkpoints, training data, and the full inference pipeline to accelerate follow-up work.",
+  "publishedAt": "2026-01-09T07:24:43Z",
+  "primaryArxivCategory": [
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 87,
+  "citationCount": 16,
+  "githubStars": 338,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2601.16206",
+  "slug": "computer-environments-elicit-general-agentic-intelligence-in-llms",
+  "title": "Computer Environments Elicit General Agentic Intelligence in LLMs",
+  "authors": [
+   "Daixuan Cheng",
+   "Shaohan Huang",
+   "Yuxian Gu",
+   "Huatong Song",
+   "Guoxin Chen",
+   "Li Dong"
+  ],
+  "abstract": "Agentic intelligence in large language models (LLMs) requires not only model intrinsic capabilities but also interactions with external environments. Equipping LLMs with computers now represents a prevailing trend. However, the computer environment's intrinsic value has not been systematically investigated, particularly its potential to elicit general capabilities. Here we introduce LLM-in-Sandbox, which virtualizes the computer as a code sandbox with only basic functionalities, and demonstrate that this minimal setting elicits computer-based meta-capabilities for general task solving: external resource access, file management, and code execution. Without additional training, strong models achieve substantial gains (up to 15.5%) across mathematics, physics, chemistry, biomedicine, long-context understanding, and instruction following, while reducing token consumption by up to 8 times. Furthermore, we develop LLM-in-Sandbox-RL to train models exclusively on non-agentic data within the sandbox, empowering weaker models to harness the environment and internalize these interactions. Our results demonstrate that computer environments elicit general intelligence, yield efficiency gains, and can be harnessed through training, serving as a promising foundation for generalist agents.",
+  "publishedAt": "2026-01-22T18:57:09Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 87,
+  "citationCount": 5,
+  "githubStars": 241,
+  "pageCount": 23
+ },
+ {
+  "arxivId": "2603.07660",
+  "slug": "holi-spatial-evolving-video-streams-into-holistic-3d-spatial-intelligence",
+  "title": "Holi-Spatial: Evolving Video Streams into Holistic 3D Spatial Intelligence",
+  "authors": [
+   "Yuanyuan Gao",
+   "Hao Li",
+   "Yifei Liu",
+   "Xinhao Ji",
+   "Yuning Gong",
+   "Yuanjun Liao"
+  ],
+  "abstract": "The pursuit of spatial intelligence fundamentally relies on access to large-scale, fine-grained 3D data. However, existing approaches predominantly construct spatial understanding benchmarks by generating question-answer (QA) pairs from a limited number of manually annotated datasets, rather than systematically annotating new large-scale 3D scenes from raw web data. As a result, their scalability is severely constrained, and model performance is further hindered by domain gaps inherent in these narrowly curated datasets. In this work, we propose Holi-Spatial, the first fully automated, large-scale, spatially-aware multimodal dataset, constructed from raw video inputs without human intervention, using the proposed data curation pipeline. Holi-Spatial supports multi-level spatial supervision, ranging from geometrically accurate 3D Gaussian Splatting (3DGS) reconstructions with rendered depth maps to object-level and relational semantic annotations, together with corresponding spatial Question-Answer (QA) pairs. Following a principled and systematic pipeline, we further construct Holi-Spatial-4M, the first large-scale, high-quality 3D semantic dataset, containing 12K optimized 3DGS scenes, 1.3M 2D masks, 320K 3D bounding boxes, 320K instance captions, 1.2M 3D grounding instances, and 1.2M spatial QA pairs spanning diverse geometric, relational, and semantic reasoning tasks. Holi-Spatial demonstrates exceptional performance in data curation quality, significantly outperforming existing feed-forward and per-scene optimized methods on datasets such as ScanNet, ScanNet++, and DL3DV. Furthermore, fine-tuning Vision-Language Models (VLMs) on spatial reasoning tasks using this dataset has also led to substantial improvements in model performance.",
+  "publishedAt": "2026-03-08T14:49:20Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 87,
+  "citationCount": 5,
+  "githubStars": 373,
+  "pageCount": 23
+ },
+ {
+  "arxivId": "2605.06548",
+  "slug": "continuous-latent-diffusion-language-model",
+  "title": "Continuous Latent Diffusion Language Model",
+  "authors": [
+   "Hongcan Guo",
+   "Qinyu Zhao",
+   "Yian Zhao",
+   "Shen Nie",
+   "Rui Zhu",
+   "Qiushan Guo"
+  ],
+  "abstract": "Large language models have achieved remarkable success under the autoregressive paradigm, yet high-quality text generation need not be tied to a fixed left-to-right order. Existing alternatives still struggle to jointly achieve generation efficiency, scalable representation learning, and effective global semantic modeling. We propose Cola DLM, a hierarchical latent diffusion language model that frames text generation through hierarchical information decomposition. Cola DLM first learns a stable text-to-latent mapping with a Text VAE, then models a global semantic prior in continuous latent space with a block-causal DiT, and finally generates text through conditional decoding. From a unified Markov-path perspective, its diffusion process performs latent prior transport rather than token-level observation recovery, thereby separating global semantic organization from local textual realization. This design yields a more flexible non-autoregressive inductive bias, supports semantic compression and prior fitting in continuous space, and naturally extends to other continuous modalities. Through experiments spanning 4 research questions, 8 benchmarks, strictly matched ~2B-parameter autoregressive and LLaDA baselines, and scaling curves up to about 2000 EFLOPs, we identify an effective overall configuration of Cola DLM and verify its strong scaling behavior for text generation. Taken together, the results establish hierarchical continuous latent prior modeling as a principled alternative to strictly token-level language modeling, where generation quality and scaling behavior may better reflect model capability than likelihood, while also suggesting a concrete path toward unified modeling across discrete text and continuous modalities.",
+  "publishedAt": "2026-05-07T16:44:56Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI",
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 87,
+  "citationCount": 4,
+  "githubStars": 271,
+  "pageCount": 99
+ },
+ {
+  "arxivId": "2606.15079",
+  "slug": "ling-and-ring-2-6-technical-report-efficient-and-instant-agentic-intelligence",
+  "title": "Ling and Ring 2.6 Technical Report: Efficient and Instant Agentic Intelligence at Trillion-Parameter Scale",
+  "authors": [
+   "Ang Li",
+   "Ben Liu",
+   "Bin Han",
+   "Bin Hu",
+   "Bin Jing",
+   "Binbin Hu"
+  ],
+  "abstract": "Efficient and scalable agentic intelligence requires models that can deliver both low-latency responses and strong reasoning capabilities while remaining practical to train, serve, and deploy. In this report, we present Ling-2.6 and Ring-2.6, a family of models designed to address this challenge at scale. Ling-2.6 is optimized for instant response generation and high capability per output token, whereas Ring-2.6 is tailored for deeper reasoning and more advanced agentic workflows. Instead of training from scratch, we upgrade the Ling-2.0 base model through architectural migration pre-training and large-scale post-training. This upgrade is guided by a unified co-design of model architecture, optimization objectives, serving systems, and agent training environments, enabling improvements in both model capability and deployment efficiency. At the architectural level, we introduce a hybrid linear attention design that integrates Lightning Attention with MLA, improving the efficiency of long-context training and decoding. To further enhance token efficiency, we optimize capability per output token through Evolutionary Chain-of-Thought, Linguistic Unit Policy Optimization, bidirectional preference alignment, and shortest-correct-response distillation. For agentic capabilities, we propose KPop, a reinforcement learning framework designed to support stable training of Ring-2.6-1T on large-scale environment-grounded data. KPop improves training efficiency through asynchronous scheduling across coding, search, tool use, and workflow execution, enabling scalable learning from complex agent-environment interactions. Together, Ling-2.6 and Ring-2.6 provide a practical pathway toward efficient, scalable, and open agentic systems. We open-source all checkpoints in the 2.6 family to support further research and development in practical agentic intelligence.",
+  "publishedAt": "2026-06-13T03:21:49Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 87,
+  "citationCount": 2,
+  "githubStars": null,
+  "pageCount": 43
+ },
+ {
+  "arxivId": "2607.05382",
+  "slug": "search-beyond-what-can-be-taught-evolving-the-knowledge-boundary-in-agentic",
+  "title": "Search Beyond What Can Be Taught: Evolving the Knowledge Boundary in Agentic Visual Generation",
+  "authors": [
+   "Haozhe Wang",
+   "Weijia Feng",
+   "Jinpeng Yu",
+   "Che Liu",
+   "Ping Nie",
+   "Fangzhen Lin"
+  ],
+  "abstract": "Visual generators excel at rendering, but they confidently fabricate what they do not know. User requests are unbounded, evolving, and deeply long-tailed: new characters, trending entities, post-cutoff events, and more. This world-knowledge bottleneck is structural: generators are trained on fixed corpora, but the visual world is open-ended. We construct SearchGen-20K and SearchGen-Bench, with 20,839 prompts spanning twelve failure categories and twenty-two domains, paired with a pre-executed multimodal SearchGen-Corpus-1M to support offline, reproducible research. On SearchGen-Bench, frontier open generators score only 21 to 28 out of 100, a 40-point collapse invisible to existing benchmarks. The natural remedy is to employ search tools, enabling agentic visual generation. However, we find that naive search fails: it retrieves indiscriminately, injecting noise into prompts the generator already handles. We trace the root cause to a generator-specific, evolving knowledge boundary: the divide between what a generator can internalize through training and what must remain in external context. Although this boundary is hard to specify in advance, we show that it is discoverable through a teach-then-search co-training framework. Even a minimal version of this co-training recipe produces monotonic improvement, laying the foundation for recursive self-improvement in visual generation that can meet world-knowledge-grounded requests. We release the full dataset, co-training corpus, and search corpus as a replayable harness for tool-augmented, world-knowledge-grounded visual generation.",
+  "publishedAt": "2026-07-06T17:56:12Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 87,
+  "citationCount": 2,
+  "githubStars": 115,
+  "pageCount": 30
+ },
+ {
+  "arxivId": "2607.09024",
+  "slug": "video-generation-models-are-general-purpose-vision-learners",
+  "title": "Video Generation Models are General-Purpose Vision Learners",
+  "authors": [
+   "Letian Wang",
+   "Chuhan Zhang",
+   "Rishabh Kabra",
+   "Jasper Uijlings",
+   "Steven Waslander",
+   "Andrew Zisserman"
+  ],
+  "abstract": "Driven by next-token prediction, NLP shifted from task-specific models into powerful generalist foundation models. What, then, is the equivalent catalyst needed to achieve a general-purpose model in computer vision? In this paper, we contend that large-scale text-to-video generation serves as a strong pre-training paradigm for computer vision, providing the necessary spatiotemporal priors, vision-language alignment, and scalability required for general visual intelligence. We introduce GenCeption, which leverages a pre-trained video generative diffusion backbone to define a feed-forward perception model, capable of performing various vision tasks steered by text instructions. Empirical results demonstrate that GenCeption achieves state-of-the-art performance across a diverse suite of tasks, including depth, surface normal, and camera pose estimation, expression-referring segmentation, and 3D keypoint prediction, often matching or surpassing specialized models (e.g. DepthAnything3, SAM3, D4RT, VGGT-Omega, Sapiens, David, Genmo, and Lotus-2). Furthermore, the video generative pretrained backbone outperforms alternative pretraining paradigms (e.g., V-JEPA, and Video MAE) under comparable settings. Importantly, GenCeption exhibits preliminary data and model scaling properties along with exceptional data efficiency, where it achieves comparable performance with leading models like D4RT and VGGT-Omega with 7 to 500 less training data. Finally, GenCeption also exhibits intriguing emergent behaviors: a model trained exclusively on synthetic human videos generalizes to real-world footage and out-of-distribution object categories (e.g., animals and robots). These findings suggest that video generation is not merely a synthesis tool, but a foundational path toward generalist vision intelligence for the physical world. Project page: https://genception.github.io",
+  "publishedAt": "2026-07-10T01:09:06Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 87,
+  "citationCount": 1,
+  "githubStars": null,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2508.14460",
+  "slug": "dupo-enabling-reliable-llm-self-verification-via-dual-preference-optimization",
+  "title": "DuPO: Enabling Reliable LLM Self-Verification via Dual Preference Optimization",
+  "authors": [
+   "Shuaijie She",
+   "Yu Bao",
+   "Yu Lu",
+   "Lu Xu",
+   "Tao Li",
+   "Wenhao Zhu"
+  ],
+  "abstract": "We present DuPO, a dual learning-based preference optimization framework that generates annotation-free feedback via a generalized duality. DuPO addresses two key limitations: Reinforcement Learning with Verifiable Rewards (RLVR)'s reliance on costly labels and applicability restricted to verifiable tasks, and traditional dual learning's restriction to strictly dual task pairs (e.g., translation and back-translation). Specifically, DuPO decomposes a primal task's input into known and unknown components, then constructs its dual task to reconstruct the unknown part using the primal output and known information (e.g., reversing math solutions to recover hidden variables), broadening applicability to non-invertible tasks. The quality of this reconstruction serves as a self-supervised reward to optimize the primal task, synergizing with LLMs' ability to instantiate both tasks via a single model. Empirically, DuPO achieves substantial gains across diverse tasks: it enhances the average translation quality by 2.13 COMET over 756 directions, boosts the mathematical reasoning accuracy by an average of 6.4 points on three challenge benchmarks, and enhances performance by 9.3 points as an inference-time reranker (trading computation for accuracy). These results position DuPO as a scalable, general, and annotation-free paradigm for LLM optimization.",
+  "publishedAt": "2025-08-20T06:31:18Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 86,
+  "citationCount": 5,
+  "githubStars": null,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2510.14975",
+  "slug": "withanyone-towards-controllable-and-id-consistent-image-generation",
+  "title": "WithAnyone: Towards Controllable and ID Consistent Image Generation",
+  "authors": [
+   "Hengyuan Xu",
+   "Wei Cheng",
+   "Peng Xing",
+   "Yixiao Fang",
+   "Shuhan Wu",
+   "Rui Wang"
+  ],
+  "abstract": "Identity-consistent generation has become an important focus in text-to-image research, with recent models achieving notable success in producing images aligned with a reference identity. Yet, the scarcity of large-scale paired datasets containing multiple images of the same individual forces most approaches to adopt reconstruction-based training. This reliance often leads to a failure mode we term copy-paste, where the model directly replicates the reference face rather than preserving identity across natural variations in pose, expression, or lighting. Such over-similarity undermines controllability and limits the expressive power of generation. To address these limitations, we (1) construct a large-scale paired dataset MultiID-2M, tailored for multi-person scenarios, providing diverse references for each identity; (2) introduce a benchmark that quantifies both copy-paste artifacts and the trade-off between identity fidelity and variation; and (3) propose a novel training paradigm with a contrastive identity loss that leverages paired data to balance fidelity with diversity. These contributions culminate in WithAnyone, a diffusion-based model that effectively mitigates copy-paste while preserving high identity similarity. Extensive qualitative and quantitative experiments demonstrate that WithAnyone significantly reduces copy-paste artifacts, improves controllability over pose and expression, and maintains strong perceptual quality. User studies further validate that our method achieves high identity fidelity while enabling expressive controllable generation.",
+  "publishedAt": "2025-10-16T17:59:54Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 86,
+  "citationCount": 14,
+  "githubStars": 573,
+  "pageCount": 23
+ },
+ {
+  "arxivId": "2510.18927",
+  "slug": "bapo-stabilizing-off-policy-reinforcement-learning-for-llms-via-balanced",
+  "title": "BAPO: Stabilizing Off-Policy Reinforcement Learning for LLMs via Balanced Policy Optimization with Adaptive Clipping",
+  "authors": [
+   "Zhiheng Xi",
+   "Xin Guo",
+   "Yang Nan",
+   "Enyu Zhou",
+   "Junrui Shen",
+   "Wenxiang Chen"
+  ],
+  "abstract": "Reinforcement learning (RL) has recently become the core paradigm for aligning and strengthening large language models (LLMs). Yet, applying RL in off-policy settings--where stale data from past policies are used for training--improves sample efficiency, but remains challenging: policy entropy declines sharply, optimization often becomes unstable and may even collapse. Through theoretical and empirical analysis, we identify two key insights: (i) an imbalance in optimization, where negative-advantage samples dominate the policy gradient, suppressing useful behaviors and risking gradient explosions; and (ii) the derived Entropy-Clip Rule, which reveals that the fixed clipping mechanism in PPO-like objectives systematically blocks entropy-increasing updates, thereby driving the policy toward over-exploitation at the expense of exploration. Building on these insights, we propose BAlanced Policy Optimization with Adaptive Clipping (BAPO), a simple yet effective method that dynamically adjusts clipping bounds to adaptively re-balance positive and negative contributions, preserve entropy, and stabilize RL optimization. Across diverse off-policy scenarios--including sample replay and partial rollout--BAPO achieves fast, stable, and data-efficient training. On AIME 2024 and AIME 2025 benchmarks, our 7B BAPO model surpasses open-source counterparts such as SkyWork-OR1-7B, while our 32B BAPO model not only achieves state-of-the-art results among models of the same scale but also outperforms leading proprietary systems like o3-mini and Gemini-2.5-Flash-Thinking.",
+  "publishedAt": "2025-10-21T12:55:04Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 86,
+  "citationCount": 48,
+  "githubStars": 94,
+  "pageCount": 24
+ },
+ {
+  "arxivId": "2510.22115",
+  "slug": "every-activation-boosted-scaling-general-reasoner-to-1-trillion-open-language",
+  "title": "Every Activation Boosted: Scaling General Reasoner to 1 Trillion Open Language Foundation",
+  "authors": [
+   "Ling Team",
+   "Ang Li",
+   "Ben Liu",
+   "Binbin Hu",
+   "Bing Li",
+   "Bingwei Zeng"
+  ],
+  "abstract": "We introduce Ling 2.0, a series reasoning-oriented language foundation built upon the principle that every activation boosts reasoning capability. Designed to scale from tens of billions to one trillion parameters under a unified Mixture-of-Experts (MoE) paradigm, Ling 2.0 emphasizes high sparsity, cross-scale consistency, and efficiency guided by empirical scaling laws. The series includes three non-thinking (instruct) models - Ling-mini-2.0, Ling-flash-2.0, and Ling-1T - ranging from 16B to 1T total parameters and achieving up to 7-fold active-compute efficiency compared with dense counterparts. Ling 2.0 integrates coordinated innovations across model architecture, pre-training, post-training, and infrastructure: a high-sparsity MoE with MTP for efficient reasoning, reasoning-oriented data and mid-training CoT activation, reinforcement-based fine-tuning (DFT, Evo-CoT), and full-scale FP8 training with fine-grained heterogeneous pipelines. At the trillion scale, Ling-1T establishes a new Pareto frontier of reasoning accuracy versus computational efficiency, demonstrating that sparse activation, when properly aligned with reasoning objectives, enables scalable and efficient intelligence. Collectively, Ling 2.0 provides a coherent, open, and efficient foundation for advancing future reasoning and thinking models, including the Ring series built upon the same base.",
+  "publishedAt": "2025-10-25T01:51:37Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 86,
+  "citationCount": 30,
+  "githubStars": null,
+  "pageCount": 58
+ },
+ {
+  "arxivId": "2605.00658",
+  "slug": "unividx-a-unified-multimodal-framework-for-versatile-video-generation-via",
+  "title": "UniVidX: A Unified Multimodal Framework for Versatile Video Generation via Diffusion Priors",
+  "authors": [
+   "Houyuan Chen",
+   "Hong Li",
+   "Xianghao Kong",
+   "Tianrui Zhu",
+   "Shaocong Xu",
+   "Weiqing Xiao"
+  ],
+  "abstract": "Recent progress has shown that video diffusion models (VDMs) can be repurposed for diverse multimodal graphics tasks. However, existing methods often train separate models for each problem setting, which fixes the input-output mapping and limits the modeling of correlations across modalities. We present UniVidX, a unified multimodal framework that leverages VDM priors for versatile video generation. UniVidX formulates pixel-aligned tasks as conditional generation in a shared multimodal space, adapts to modality-specific distributions while preserving the backbone's native priors, and promotes cross-modal consistency during synthesis. It is built on three key designs. Stochastic Condition Masking (SCM) randomly partitions modalities into clean conditions and noisy targets during training, enabling omni-directional conditional generation instead of fixed mappings. Decoupled Gated LoRA (DGL) introduces per-modality LoRAs that are activated when a modality serves as the generation target, preserving the strong priors of the VDM. Cross-Modal Self-Attention (CMSA) shares keys and values across modalities while keeping modality-specific queries, facilitating information exchange and inter-modal alignment. We instantiate UniVidX in two domains: UniVid-Intrinsic, for RGB videos and intrinsic maps including albedo, irradiance, and normal; and UniVid-Alpha, for blended RGB videos and their constituent RGBA layers. Experiments show that both models achieve performance competitive with state-of-the-art methods across distinct tasks and generalize robustly to in-the-wild scenarios, even when trained on fewer than 1,000 videos. Project page: https://houyuanchen111.github.io/UniVidX.github.io/",
+  "publishedAt": "2026-05-01T13:40:56Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 86,
+  "citationCount": 0,
+  "githubStars": 249,
+  "pageCount": 17
+ },
+ {
+  "arxivId": "2605.20682",
+  "slug": "indusagent-reinforcing-open-vocabulary-industrial-anomaly-detection-with",
+  "title": "IndusAgent: Reinforcing Open-Vocabulary Industrial Anomaly Detection with Agentic Tools",
+  "authors": [
+   "Rongbin Tan",
+   "Fangfang Lin",
+   "Zhenlong Yuan",
+   "Min Qiu",
+   "Kejin Cui",
+   "Mengmeng Wang"
+  ],
+  "abstract": "Multimodal large language models (MLLMs) have shown remarkable capability in bridging visual perception and textual reasoning, enabling zero-shot understanding across diverse industrial scenarios. However, their performance in open-vocabulary industrial anomaly detection (IAD) is often limited by domain-misaligned reasoning and hallucinated structural inferences. To address these challenges, we propose \\textbf{IndusAgent}, a tool-augmented agentic framework for open-vocabulary IAD. Specifically, we first construct \\textbf{Indus-CoT}, a structured dataset that integrates global visual observations, high-resolution local patches, and expert normalcy priors, providing supervision for fine-tuning the model on rigorous industrial inspection trajectories. Building on this, IndusAgent dynamically orchestrates a set of external tools, including dynamic region cropping, high-frequency feature enhancement, and prior retrieval, thus enabling the agent to actively resolve visual ambiguities and disentangle subtle anomalies. Furthermore, we introduce a gated reinforcement learning objective that jointly optimizes anomaly classification, localization accuracy, anomaly type reasoning, and efficient tool usage, ensuring that tool invocation occurs only when beneficial. Extensive evaluations on five industrial anomaly benchmarks, including MVTec-AD, VisA, MPDD, DTD, and SDD, demonstrate that IndusAgent achieves state-of-the-art zero-shot performance among all existing methods, validating our robustness and generalization capacity.",
+  "publishedAt": "2026-05-20T03:52:21Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 86,
+  "citationCount": 0,
+  "githubStars": null,
+  "pageCount": 33
+ },
+ {
+  "arxivId": "2508.19652",
+  "slug": "self-rewarding-vision-language-model-via-reasoning-decomposition",
+  "title": "Self-Rewarding Vision-Language Model via Reasoning Decomposition",
+  "authors": [
+   "Zongxia Li",
+   "Wenhao Yu",
+   "Chengsong Huang",
+   "Zhenwen Liang",
+   "Rui Liu",
+   "Fuxiao Liu"
+  ],
+  "abstract": "Vision-Language Models (VLMs) often suffer from visual hallucinations: generating things that are not consistent with visual inputs and language shortcuts, where they skip the visual part and just rely on text priors. These issues arise because most post training methods for VLMs rely on simple verifiable answer matching and supervise only final outputs, leaving intermediate visual reasoning without explicit guidance. As a result, VLMs receive sparse visual signals and often learn to prioritize language based reasoning over visual perception. We introduce Vision SR1, a three stage self rewarding reinforcement learning method that improves visual reasoning without relying on external visual supervision. Vision SR1 decomposes VLM reasoning into two components: visual reasoning and language reasoning, where the model is first prompted to produce self-contained visual descriptions sufficient to answer the question without referring back to the input image, before jointly optimizing both visual and language reasoning through our multi reward loss objective. To validate this self containment, the same VLM model is reprompted to perform language reasoning using only the generated visual reasoning as input to compute visual reward. The final reward is computed through a decoupled reward-advantage framework, where visual reward and language reasoning reward each have their advantages calculated separately. Our experiments show that Vision SR1 improves visual reasoning, mitigates visual hallucinations, and reduces reliance on language shortcuts across diverse vision language tasks, while being more efficient than methods that rely on external visual reward models, which require additional GPUs to host. In contrast, Vision SR1 introduces no extra GPU overhead beyond that of standard training.",
+  "publishedAt": "2025-08-27T08:01:03Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 85,
+  "citationCount": 91,
+  "githubStars": 180,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2509.00676",
+  "slug": "llava-critic-r1-your-critic-model-is-secretly-a-strong-policy-model",
+  "title": "LLaVA-Critic-R1: Your Critic Model is Secretly a Strong Policy Model",
+  "authors": [
+   "Xiyao Wang",
+   "Chunyuan Li",
+   "Jianwei Yang",
+   "Kai Zhang",
+   "Bo Liu",
+   "Tianyi Xiong"
+  ],
+  "abstract": "In vision-language modeling, critic models are typically trained to evaluate outputs -- assigning scalar scores or pairwise preferences -- rather than to generate responses. This separation from policy models, which produce the responses, is so entrenched that critics are rarely considered for direct policy use. In this work, we challenge this convention. We propose to reorganize preference-labeled critic datasets into verifiable training signals and perform reinforcement learning directly on a base generative model, producing LLaVA-Critic-R1, a multimodal critic trained to optimize preference judgments while retaining full generation ability. Surprisingly, LLaVA-Critic-R1 emerges not only as a top-performing critic but also as a competitive policy model -- matching or surpassing specialized reasoning VLMs trained with in-domain data across 26 visual reasoning and understanding benchmarks, with an average gain of +5.7% over its base model (Qwen-2.5-VL-7B). Extending this approach to existing strong reasoning VLMs yields LLaVA-Critic-R1+, which further advances policy performance without sacrificing critic quality, achieving a SoTA performance of 71.9 on MMMU at the 7B scale. Finally, we show that the enhanced critic ability benefits inference: applying self-critique at test time yields an average +13.8% improvement on five representative reasoning tasks without additional training. Our results reveal that RL training on critic data can produce a unified model excelling at both evaluation and generation, offering a simple path toward scalable, self-improving multimodal systems.",
+  "publishedAt": "2025-08-31T03:08:02Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 85,
+  "citationCount": 30,
+  "githubStars": 4711,
+  "pageCount": 27
+ },
+ {
+  "arxivId": "2512.04987",
+  "slug": "nex-n1-agentic-models-trained-via-a-unified-ecosystem-for-large-scale",
+  "title": "Nex-N1: Agentic Models Trained via a Unified Ecosystem for Large-Scale Environment Construction",
+  "authors": [
+   "Nex-AGI Team",
+   ":",
+   "Yuxuan Cai",
+   "Lu Chen",
+   "Qiaoling Chen",
+   "Yuyang Ding"
+  ],
+  "abstract": "The evolution of Large Language Models (LLMs) from passive responders to autonomous agents necessitates a fundamental shift in learning paradigms -- from static imitation to incentive-driven decision making. However, this transition is significantly impeded by the lack of scalable infrastructure capable of constructing high-quality interaction signals for effective policy learning. To address this, we introduce a comprehensive method designed to systematically scale the diversity and complexity of interactive environments. Our method realizes this scaling by addressing three orthogonal dimensions: (1) Complexity: NexAU, a flexible agent framework that supports building complex agent hierarchies via simple configurations; (2) Diversity: NexA4A automatically generates diverse agent hierarchies from natural language to cover infinite domains; and (3) Fidelity: NexGAP bridges the simulation-reality gap by integrating dynamic real-world environment for grounded trajectories synthesis. We train Nex-N1 upon the diverse and complex interactive environments established by our infrastructure. Empirical results on benchmarks such as SWE-bench and tau2 demonstrate that Nex-N1 consistently outperforms SOTA open-source models and achieves competitive performance against frontier proprietary models on complex agentic tasks. We open-source the Nex ecosystem and model weights to facilitate further research.",
+  "publishedAt": "2025-12-04T16:57:02Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 85,
+  "citationCount": 15,
+  "githubStars": null,
+  "pageCount": 14
+ },
+ {
+  "arxivId": "2601.19325",
+  "slug": "innovator-vl-a-multimodal-large-language-model-for-scientific-discovery",
+  "title": "Innovator-VL: A Multimodal Large Language Model for Scientific Discovery",
+  "authors": [
+   "Zichen Wen",
+   "Boxue Yang",
+   "Shuang Chen",
+   "Yaojie Zhang",
+   "Yuhang Han",
+   "Junlong Ke"
+  ],
+  "abstract": "We present Innovator-VL, a scientific multimodal large language model designed to advance understanding and reasoning across diverse scientific domains while maintaining excellent performance on general vision tasks. Contrary to the trend of relying on massive domain-specific pretraining and opaque pipelines, our work demonstrates that principled training design and transparent methodology can yield strong scientific intelligence with substantially reduced data requirements. (i) First, we provide a fully transparent, end-to-end reproducible training pipeline, covering data collection, cleaning, preprocessing, supervised fine-tuning, reinforcement learning, and evaluation, along with detailed optimization recipes. This facilitates systematic extension by the community. (ii) Second, Innovator-VL exhibits remarkable data efficiency, achieving competitive performance on various scientific tasks using fewer than five million curated samples without large-scale pretraining. These results highlight that effective reasoning can be achieved through principled data selection rather than indiscriminate scaling. (iii) Third, Innovator-VL demonstrates strong generalization, achieving competitive performance on general vision, multimodal reasoning, and scientific benchmarks. This indicates that scientific alignment can be integrated into a unified model without compromising general-purpose capabilities. Our practices suggest that efficient, reproducible, and high-performing scientific multimodal models can be built even without large-scale data, providing a practical foundation for future research.",
+  "publishedAt": "2026-01-27T08:12:18Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 85,
+  "citationCount": 10,
+  "githubStars": 167,
+  "pageCount": 57
+ },
+ {
+  "arxivId": "2601.22027",
+  "slug": "car-bench-evaluating-the-consistency-and-limit-awareness-of-llm-agents-under",
+  "title": "CAR-bench: Evaluating the Consistency and Limit-Awareness of LLM Agents under Real-World Uncertainty",
+  "authors": [
+   "Johannes Kirmayr",
+   "Lukas Stappen",
+   "Elisabeth André"
+  ],
+  "abstract": "Existing benchmarks for Large Language Model (LLM) agents focus on task completion under idealistic settings but overlook reliability in real-world, user-facing applications. In domains, such as in-car voice assistants, users often issue incomplete or ambiguous requests, creating intrinsic uncertainty that agents must manage through dialogue, tool use, and policy adherence. We introduce CAR-bench, a benchmark for evaluating consistency, uncertainty handling, and capability awareness in multi-turn, tool-using LLM agents in an in-car assistant domain. The environment features an LLM-simulated user, domain policies, and 58 interconnected tools spanning navigation, productivity, charging, and vehicle control. Beyond standard task completion, CAR-bench introduces Hallucination tasks that test agents' limit-awareness under missing tools or information, and Disambiguation tasks that require resolving uncertainty through clarification or internal information gathering. Baseline results reveal large gaps between occasional and consistent success on all task types. Even frontier reasoning LLMs achieve less than 50% consistent pass rate on Disambiguation tasks due to premature actions, and frequently violate policies or fabricate information to satisfy user requests in Hallucination tasks, underscoring the need for more reliable and self-aware LLM agents in real-world settings.",
+  "publishedAt": "2026-01-29T17:33:42Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 85,
+  "citationCount": 6,
+  "githubStars": 33,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2602.02084",
+  "slug": "closing-the-loop-universal-repository-representation-with-rpg-encoder",
+  "title": "Closing the Loop: Universal Repository Representation with RPG-Encoder",
+  "authors": [
+   "Jane Luo",
+   "Chengyu Yin",
+   "Xin Zhang",
+   "Qingtao Li",
+   "Steven Liu",
+   "Yiming Huang"
+  ],
+  "abstract": "Current repository agents encounter a reasoning disconnect due to fragmented representations, as existing methods rely on isolated API documentation or dependency graphs that lack semantic depth. We consider repository comprehension and generation to be inverse processes within a unified cycle: generation expands intent into implementation, while comprehension compresses implementation back into intent. To address this, we propose RPG-Encoder, a framework that generalizes the Repository Planning Graph (RPG) from a static generative blueprint into a unified, high-fidelity representation. RPG-Encoder closes the reasoning loop through three mechanisms: (1) Encoding raw code into the RPG that combines lifted semantic features with code dependencies; (2) Evolving the topology incrementally to decouple maintenance costs from repository scale, reducing overhead by 95.7%; and (3) Operating as a unified interface for structure-aware navigation. In evaluations, RPG-Encoder establishes state-of-the-art localization performance on SWE-bench Verified with 93.7% Acc@5 and exceeds the best baseline by over 10% in localization accuracy on SWE-bench Live Lite. These results highlight our superior fine-grained precision in complex codebases. Furthermore, it achieves 98.5% reconstruction coverage on RepoCraft, confirming RPG's high-fidelity capacity to mirror the original codebase and closing the loop between intent and implementation.",
+  "publishedAt": "2026-02-02T13:30:00Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.SE"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 85,
+  "citationCount": 0,
+  "githubStars": 588,
+  "pageCount": 41
+ },
+ {
+  "arxivId": "2603.09229",
+  "slug": "flash-kmeans-fast-and-memory-efficient-exact-k-means",
+  "title": "Flash-KMeans: Fast and Memory-Efficient Exact K-Means",
+  "authors": [
+   "Shuo Yang",
+   "Haocheng Xi",
+   "Yilong Zhao",
+   "Muyang Li",
+   "Xiaoze Fan",
+   "Jintao Zhang"
+  ],
+  "abstract": "$k$-means has historically been positioned primarily as an offline processing primitive, typically used for dataset organization or embedding preprocessing rather than as a first-class component in online systems. In this work, we revisit this classical algorithm under the lens of modern AI system design and enable $k$-means as an online primitive. We point out that existing GPU implementations of $k$-means remain fundamentally bottlenecked by low-level system constraints rather than theoretical algorithmic complexity. Specifically, the assignment stage suffers from a severe IO bottleneck due to the massive explicit materialization of the $N \\times K$ distance matrix in High Bandwidth Memory (HBM). Simultaneously, the centroid update stage is heavily penalized by hardware-level atomic write contention caused by irregular, scatter-style token aggregations. To bridge this performance gap, we propose flash-kmeans, an IO-aware and contention-free $k$-means implementation for modern GPU workloads. Flash-kmeans introduces two core kernel-level innovations: (1) FlashAssign, which fuses distance computation with an online argmin to completely bypass intermediate memory materialization; (2) sort-inverse update, which explicitly constructs an inverse mapping to transform high-contention atomic scatters into high-bandwidth, segment-level localized reductions. Furthermore, we integrate algorithm-system co-designs, including chunked-stream overlap and cache-aware compile heuristics, to ensure practical deployability. Extensive evaluations on NVIDIA H200 GPUs demonstrate that flash-kmeans achieves up to 17.9$\\times$ end-to-end speedup over best baselines, while outperforming industry-standard libraries like cuML and FAISS by 33$\\times$ and over 200$\\times$, respectively. Our code is open-sourced at https://github.com/svg-project/flash-kmeans.",
+  "publishedAt": "2026-03-10T05:54:52Z",
+  "primaryArxivCategory": [
+   "cs.DC"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 85,
+  "citationCount": 5,
+  "githubStars": 704,
+  "pageCount": 12
+ },
+ {
+  "arxivId": "2604.18394",
+  "slug": "opengame-open-agentic-coding-for-games",
+  "title": "OpenGame: Open Agentic Coding for Games",
+  "authors": [
+   "Yilei Jiang",
+   "Jinyuan Hu",
+   "Qianyin Xiao",
+   "Yaozhi Zheng",
+   "Ruize Ma",
+   "Kaituo Feng"
+  ],
+  "abstract": "Game development sits at the intersection of creative design and intricate software engineering, demanding the joint orchestration of game engines, real-time loops, and tightly coupled state across many files. While Large Language Models (LLMs) and code agents now solve isolated programming tasks with ease, they consistently stumble when asked to produce a fully playable game from a high-level design, collapsing under cross-file inconsistencies, broken scene wiring, and logical incoherence. We bridge this gap with OpenGame, the first open-source agentic framework explicitly designed for end-to-end web game creation. At its core lies Game Skill, a reusable, evolving capability composed of a Template Skill that grows a library of project skeletons from experience and a Debug Skill that maintains a living protocol of verified fixes - together enabling the agent to scaffold stable architectures and systematically repair integration errors rather than patch isolated syntax bugs. Powering this framework is GameCoder-27B, a code LLM specialized for game engine mastery through a three-stage pipeline of continual pre-training, supervised fine-tuning, and execution-grounded reinforcement learning. Since verifying interactive playability is fundamentally harder than checking static code, we further introduce OpenGame-Bench, an evaluation pipeline that scores agentic game generation along Build Health, Visual Usability, and Intent Alignment via headless browser execution and VLM judging. Across 150 diverse game prompts, OpenGame establishes a new state-of-the-art. We hope OpenGame pushes code agents beyond discrete software engineering problems and toward building complex, interactive real-world applications. Our framework will be fully open-sourced.",
+  "publishedAt": "2026-04-20T15:17:03Z",
+  "primaryArxivCategory": [
+   "cs.SE"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 85,
+  "citationCount": 5,
+  "githubStars": 2783,
+  "pageCount": 23
+ },
+ {
+  "arxivId": "2607.10350",
+  "slug": "abot-agentos-a-general-robotic-agent-os-with-lifelong-multi-modal-memory",
+  "title": "ABot-AgentOS: A General Robotic Agent OS with Lifelong Multi-modal Memory",
+  "authors": [
+   "Jiayi Tian",
+   "Shiao Liu",
+   "Yuting Xu",
+   "Jia Lu",
+   "Zihao Guan",
+   "Honglin Han"
+  ],
+  "abstract": "Recent VLM and VLA systems have improved robotic perception and action prediction, yet long-horizon embodied agents still require a general runtime layer for reasoning, memory, tool use, verification, and cross-embodiment execution. We present ABot-AgentOS, a general robotic Agent Operating System that sits above low-level controllers and provides a deliberative agent layer for scene-conditioned planning, context-isolated skill execution, multi-stage verification, multi-modal memory, and edge-cloud collaboration. To evaluate such systems, we introduce EmbodiedWorldBench, an executable benchmark with 16 indoor, outdoor, and hybrid scenes, four difficulty levels, and over 200 tasks involving navigation, object search, NPC dialogue, dynamic events, and trace-grounded scoring. ABot-AgentOS further introduces Universal Multi-modal Graph Memory, a persistent source-grounded substrate that converts dialogue, visual observations, spatial context, temporal relations, and task traces into typed nodes and edges. A failure-driven self-evolution loop converts diagnosed memory failures into gated runtime evo-assets that are promoted only to later evaluation splits, preventing current-split ground-truth leakage while enabling continual improvement. On an initial EmbodiedWorldBench subset, ABot-AgentOS improves over a single-controller baseline in both task success and goal completion. Across memory benchmarks, ABot-AgentOS Static achieves 87.5 on LoCoMo, 59.9 on OpenEQA EM-EQA, 88.6 on Mem-Gallery, and 76.5 Acc@All on NExT-QA; self-evolution further improves LoCoMo to 88.7, OpenEQA to 60.4, and Mem-Gallery to 89.0. These results suggest that a general Agent OS layer can improve long-horizon embodied execution while providing persistent, auditable memory for continual interaction.",
+  "publishedAt": "2026-07-11T15:24:43Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.RO"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 85,
+  "citationCount": 0,
+  "githubStars": null,
+  "pageCount": 40
+ },
+ {
+  "arxivId": "2509.02479",
+  "slug": "simpletir-end-to-end-reinforcement-learning-for-multi-turn-tool-integrated",
+  "title": "SimpleTIR: End-to-End Reinforcement Learning for Multi-Turn Tool-Integrated Reasoning",
+  "authors": [
+   "Zhenghai Xue",
+   "Longtao Zheng",
+   "Qian Liu",
+   "Yingru Li",
+   "Xiaosen Zheng",
+   "Zejun Ma"
+  ],
+  "abstract": "Large Language Models (LLMs) can significantly improve their reasoning capabilities by interacting with external tools, a paradigm known as Tool-Integrated Reasoning (TIR). However, extending TIR to multi-turn scenarios using Reinforcement Learning (RL) is often hindered by training instability and performance collapse. We identify that such instability is primarily caused by a distributional drift from external tool feedback, leading to the generation of low-probability tokens. This issue compounds over successive turns, causing catastrophic gradient norm explosions that derail the training process. To address this challenge, we introduce SimpleTIR , a plug-and-play algorithm that stabilizes multi-turn TIR training. Its core strategy is to identify and filter out trajectories containing void turns, i.e., turns that yield neither a code block nor a final answer. By removing these problematic trajectories from the policy update, SimpleTIR effectively blocks the harmful, high-magnitude gradients, thus stabilizing the learning dynamics. Extensive experiments show that SimpleTIR achieves state-of-the-art performance on challenging math reasoning benchmarks, notably elevating the AIME24 score from a text-only baseline of 22.1 to 50.5 when starting from the Qwen2.5-7B base model. Furthermore, by avoiding the constraints of supervised fine-tuning, SimpleTIR encourages the model to discover diverse and sophisticated reasoning patterns, such as self-correction and cross-validation.",
+  "publishedAt": "2025-09-02T16:30:19Z",
+  "primaryArxivCategory": [
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 84,
+  "citationCount": 139,
+  "githubStars": 403,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2509.07979",
+  "slug": "visual-representation-alignment-for-multimodal-large-language-models",
+  "title": "Visual Representation Alignment for Multimodal Large Language Models",
+  "authors": [
+   "Heeji Yoon",
+   "Jaewoo Jung",
+   "Junwan Kim",
+   "Hyungyu Choi",
+   "Heeseong Shin",
+   "Sangbeom Lim"
+  ],
+  "abstract": "Multimodal large language models (MLLMs) trained with visual instruction tuning have achieved strong performance across diverse tasks, yet they remain limited in vision-centric tasks such as object counting or spatial reasoning. We attribute this gap to the prevailing text-only supervision paradigm, which provides only indirect guidance for the visual pathway and often leads MLLMs to discard fine-grained visual details during training. In this paper, we present VIsual Representation ALignment (VIRAL), a simple yet effective regularization strategy that aligns the internal visual representations of MLLMs with those of pre-trained vision foundation models (VFMs). By explicitly enforcing this alignment, VIRAL enables the model not only to retain critical visual details from the input vision encoder but also to complement additional visual knowledge from VFMs, thereby enhancing its ability to reason over complex visual inputs. Our experiments demonstrate consistent improvements across all tasks on widely adopted multimodal benchmarks. Furthermore, we conduct comprehensive ablation studies to validate the key design choices underlying our framework. We believe this simple finding opens up an important direction for the effective integration of visual information in training MLLMs.",
+  "publishedAt": "2025-09-09T17:59:14Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 84,
+  "citationCount": 35,
+  "githubStars": 162,
+  "pageCount": 21
+ },
+ {
+  "arxivId": "2601.09274",
+  "slug": "a-3-bench-benchmarking-memory-driven-scientific-reasoning-via-anchor-and",
+  "title": "$A^3$-Bench: Benchmarking Memory-Driven Scientific Reasoning via Anchor and Attractor Activation",
+  "authors": [
+   "Jian Zhang",
+   "Yu He",
+   "Zhiyuan Wang",
+   "Zhangqi Wang",
+   "Kai He",
+   "Fangzhi Xu"
+  ],
+  "abstract": "Scientific reasoning relies not only on logical inference but also on activating prior knowledge and experiential structures. Memory can efficiently reuse knowledge and enhance reasoning consistency and stability. However, existing benchmarks mainly evaluate final answers or step-by-step coherence, overlooking the \\textit{memory-driven} mechanisms that underlie human reasoning, which involves activating anchors and attractors, then integrating them into multi-step inference. To address this gap, we propose $A^3$-Bench~ https://a3-bench.github.io, a benchmark designed to evaluate scientific reasoning through dual-scale memory-driven activation, grounded in Anchor and Attractor Activation. First, we annotate 2,198 science reasoning problems across domains using the SAPM process(subject, anchor & attractor, problem, and memory developing). Second, we introduce a dual-scale memory evaluation framework utilizing anchors and attractors, along with the AAUI(Anchor--Attractor Utilization Index) metric to measure memory activation rates. Finally, through experiments with various base models and paradigms, we validate $A^3$-Bench and analyze how memory activation impacts reasoning performance, providing insights into memory-driven scientific reasoning.",
+  "publishedAt": "2026-01-14T08:17:41Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 84,
+  "citationCount": 1,
+  "githubStars": null,
+  "pageCount": 18
+ }
+]

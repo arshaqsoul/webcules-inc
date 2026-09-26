@@ -1,0 +1,712 @@
+[
+ {
+  "arxivId": "2511.14993",
+  "slug": "kandinsky-5-0-a-family-of-foundation-models-for-image-and-video-generation",
+  "title": "Kandinsky 5.0: A Family of Foundation Models for Image and Video Generation",
+  "authors": [
+   "Vladimir Arkhipkin",
+   "Vladimir Korviakov",
+   "Nikolai Gerasimenko",
+   "Denis Parkhomenko",
+   "Viacheslav Vasilev",
+   "Alexey Letunovskiy"
+  ],
+  "abstract": "This report introduces Kandinsky 5.0, a family of state-of-the-art foundation models for high-resolution image and 10-second video synthesis. The framework comprises three core line-up of models: Kandinsky 5.0 Image Lite - a line-up of 6B parameter image generation models, Kandinsky 5.0 Video Lite - a fast and lightweight 2B parameter text-to-video and image-to-video models, and Kandinsky 5.0 Video Pro - 19B parameter models that achieves superior video generation quality. We provide a comprehensive review of the data curation lifecycle - including collection, processing, filtering and clustering - for the multi-stage training pipeline that involves extensive pre-training and incorporates quality-enhancement techniques such as self-supervised fine-tuning (SFT) and reinforcement learning (RL)-based post-training. We also present novel architectural, training, and inference optimizations that enable Kandinsky 5.0 to achieve high generation speeds and state-of-the-art performance across various tasks, as demonstrated by human evaluation. As a large-scale, publicly available generative framework, Kandinsky 5.0 leverages the full potential of its pre-training and subsequent stages to be adapted for a wide range of generative applications. We hope that this report, together with the release of our open-source code and training checkpoints, will substantially advance the development and accessibility of high-quality generative models for the research community.",
+  "publishedAt": "2025-11-19T00:23:22Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 235,
+  "citationCount": 9,
+  "githubStars": 805,
+  "pageCount": 80
+ },
+ {
+  "arxivId": "2601.05242",
+  "slug": "gdpo-group-reward-decoupled-normalization-policy-optimization-for-multi-reward",
+  "title": "GDPO: Group reward-Decoupled Normalization Policy Optimization for Multi-reward RL Optimization",
+  "authors": [
+   "Shih-Yang Liu",
+   "Xin Dong",
+   "Ximing Lu",
+   "Shizhe Diao",
+   "Peter Belcak",
+   "Mingjie Liu"
+  ],
+  "abstract": "As language models become increasingly capable, users expect them to provide not only accurate responses but also behaviors aligned with diverse human preferences across a variety of scenarios. To achieve this, Reinforcement learning (RL) pipelines have begun incorporating multiple rewards, each capturing a distinct preference, to guide models toward these desired behaviors. However, recent work has defaulted to apply Group Relative Policy Optimization (GRPO) under multi-reward setting without examining its suitability. In this paper, we demonstrate that directly applying GRPO to normalize distinct rollout reward combinations causes them to collapse into identical advantage values, reducing the resolution of the training signal and resulting in suboptimal convergence and, in some cases, early training failure. We then introduce Group reward-Decoupled Normalization Policy Optimization (GDPO), a new policy optimization method to resolve these issues by decoupling the normalization of individual rewards, more faithfully preserving their relative differences and enabling more accurate multi-reward optimization, along with substantially improved training stability. We compare GDPO with GRPO across three tasks: tool calling, math reasoning, and coding reasoning, evaluating both correctness metrics (accuracy, bug ratio) and constraint adherence metrics (format, length). Across all settings, GDPO consistently outperforms GRPO, demonstrating its effectiveness and generalizability for multi-reward reinforcement learning optimization.",
+  "publishedAt": "2026-01-08T18:59:24Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI",
+   "cs.LG"
+  ],
+  "officialLab": "NVIDIA",
+  "hfUpvotes": 235,
+  "citationCount": 114,
+  "githubStars": 495,
+  "pageCount": 24
+ },
+ {
+  "arxivId": "2510.25741",
+  "slug": "scaling-latent-reasoning-via-looped-language-models",
+  "title": "Scaling Latent Reasoning via Looped Language Models",
+  "authors": [
+   "Rui-Jie Zhu",
+   "Zixuan Wang",
+   "Kai Hua",
+   "Tianyu Zhang",
+   "Ziniu Li",
+   "Haoran Que"
+  ],
+  "abstract": "Modern LLMs are trained to \"think\" primarily via explicit text generation, such as chain-of-thought (CoT), which defers reasoning to post-training and under-leverages pre-training data. We present and open-source Ouro, named after the recursive Ouroboros, a family of pre-trained Looped Language Models (LoopLM) that instead build reasoning into the pre-training phase through (i) iterative computation in latent space, (ii) an entropy-regularized objective for learned depth allocation, and (iii) scaling to 7.7T tokens. Ouro 1.4B and 2.6B models enjoy superior performance that match the results of up to 12B SOTA LLMs across a wide range of benchmarks. Through controlled experiments, we show this advantage stems not from increased knowledge capacity, but from superior knowledge manipulation capabilities. We also show that LoopLM yields reasoning traces more aligned with final outputs than explicit CoT. We hope our results show the potential of LoopLM as a novel scaling direction in the reasoning era. Our model is available here: http://ouro-llm.github.io.",
+  "publishedAt": "2025-10-29T17:45:42Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 234,
+  "citationCount": 104,
+  "githubStars": null,
+  "pageCount": 54
+ },
+ {
+  "arxivId": "2604.22748",
+  "slug": "agentic-world-modeling-foundations-capabilities-laws-and-beyond",
+  "title": "Agentic World Modeling: Foundations, Capabilities, Laws, and Beyond",
+  "authors": [
+   "Meng Chu",
+   "Xuan Billy Zhang",
+   "Kevin Qinghong Lin",
+   "Lingdong Kong",
+   "Jize Zhang",
+   "Teng Tu"
+  ],
+  "abstract": "As AI systems move from generating text to accomplishing goals through sustained interaction, the ability to model environment dynamics becomes a central bottleneck. Agents that manipulate objects, navigate software, coordinate with others, or design experiments require predictive environment models, yet the term world model carries different meanings across research communities. We introduce a \"levels x laws\" taxonomy organized along two axes. The first defines three capability levels: L1 Predictor, which learns one-step local transition operators; L2 Simulator, which composes them into multi-step, action-conditioned rollouts that respect domain laws; and L3 Evolver, which autonomously revises its own model when predictions fail against new evidence. The second identifies four governing-law regimes: physical, digital, social, and scientific. These regimes determine what constraints a world model must satisfy and where it is most likely to fail. Using this framework, we synthesize over 400 works and summarize more than 100 representative systems spanning model-based reinforcement learning, video generation, web and GUI agents, multi-agent social simulation, and AI-driven scientific discovery. We analyze methods, failure modes, and evaluation practices across level-regime pairs, propose decision-centric evaluation principles and a minimal reproducible evaluation package, and outline architectural guidance, open problems, and governance challenges. The resulting roadmap connects previously isolated communities and charts a path from passive next-step prediction toward world models that can simulate, and ultimately reshape, the environments in which agents operate. Code and resources are available at: https://github.com/matrix-agent/awesome-agentic-world-modeling.",
+  "publishedAt": "2026-04-24T17:48:47Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 232,
+  "citationCount": 10,
+  "githubStars": 295,
+  "pageCount": 92
+ },
+ {
+  "arxivId": "2607.13285",
+  "slug": "harness-handbook-making-evolving-agent-harnesses-readable-navigable-and-editable",
+  "title": "Harness Handbook: Making Evolving Agent Harnesses Readable,Navigable, and Editable",
+  "authors": [
+   "Ruhan Wang",
+   "Yucheng Shi",
+   "Zongxia Li",
+   "Zhongzhi Li",
+   "Yue Yu",
+   "Junyao Yang"
+  ],
+  "abstract": "The capability of a modern AI agent depends not only on its foundation model but also on its harness, which constructs prompts, manages state, invokes tools, and coordinates execution. As models, APIs, environments, and requirements evolve, the harness must be continually modified. Before such a change can be made, a developer or coding agent must identify all code locations that implement the target behavior. This is difficult because production harnesses are large, tightly coupled, and behaviorally distributed, while modification requests describe what the system should do and repositories are organized by files and modules. Code search, repository indexing, and long-context processing ease inspection, but still leave this behavior-to-code mapping to be recovered by hand. Behavior localization is therefore a central bottleneck in harness evolution. We introduce the Harness Handbook, a behavior-centric representation synthesized automatically from a harness codebase via static analysis and LLM-assisted structuring, linking each behavior to its corresponding source. We also introduce Behavior-Guided Progressive Disclosure (BGPD), which guides agents from high-level behaviors to relevant implementation details and verifies candidate locations against the current source. On diverse modification requests from two open-source harnesses, Handbook-Assisted planning improves behavior localization and edit-plan quality while using fewer planner tokens, with the largest gains on scattered sites, rarely executed paths, and cross-module interactions. Evolving complex agentic systems thus depends not only on generating edits, but also on determining where those edits should be made.",
+  "publishedAt": "2026-07-14T21:39:55Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.SE"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 232,
+  "citationCount": 1,
+  "githubStars": 292,
+  "pageCount": 29
+ },
+ {
+  "arxivId": "2601.23265",
+  "slug": "paperbanana-automating-academic-illustration-for-ai-scientists",
+  "title": "PaperBanana: Automating Academic Illustration for AI Scientists",
+  "authors": [
+   "Dawei Zhu",
+   "Rui Meng",
+   "Yale Song",
+   "Xiyu Wei",
+   "Sujian Li",
+   "Tomas Pfister"
+  ],
+  "abstract": "Despite rapid advances in autonomous AI scientists powered by language models, generating publication-ready illustrations remains a labor-intensive bottleneck in the research workflow. To lift this burden, we introduce PaperBanana, an agentic framework for automated generation of publication-ready academic illustrations. Powered by state-of-the-art VLMs and image generation models, PaperBanana orchestrates specialized agents to retrieve references, plan content and style, render images, and iteratively refine via self-critique. To rigorously evaluate our framework, we introduce PaperBananaBench, comprising 292 test cases for methodology diagrams curated from NeurIPS 2025 publications, covering diverse research domains and illustration styles. Comprehensive experiments demonstrate that PaperBanana consistently outperforms leading baselines in faithfulness, conciseness, readability, and aesthetics. We further show that our method effectively extends to the generation of high-quality statistical plots. Collectively, PaperBanana paves the way for the automated generation of publication-ready illustrations.",
+  "publishedAt": "2026-01-30T18:33:37Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.CV"
+  ],
+  "officialLab": "Google DeepMind / Google",
+  "hfUpvotes": 229,
+  "citationCount": 19,
+  "githubStars": 6893,
+  "pageCount": 49
+ },
+ {
+  "arxivId": "2512.16676",
+  "slug": "dataflow-an-llm-driven-framework-for-unified-data-preparation-and-workflow",
+  "title": "DataFlow: An LLM-Driven Framework for Unified Data Preparation and Workflow Automation in the Era of Data-Centric AI",
+  "authors": [
+   "Hao Liang",
+   "Xiaochen Ma",
+   "Zhou Liu",
+   "Zhen Hao Wong",
+   "Zhengyang Zhao",
+   "Zimo Meng"
+  ],
+  "abstract": "The rapidly growing demand for high-quality data in Large Language Models (LLMs) has intensified the need for scalable, reliable, and semantically rich data preparation pipelines. However, current practices remain dominated by ad-hoc scripts and loosely specified workflows, which lack principled abstractions, hinder reproducibility, and offer limited support for model-in-the-loop data generation. To address these challenges, we present DataFlow, a unified and extensible LLM-driven data preparation framework. DataFlow is designed with system-level abstractions that enable modular, reusable, and composable data transformations, and provides a PyTorch-style pipeline construction API for building debuggable and optimizable dataflows. The framework consists of nearly 200 reusable operators and six domain-general pipelines spanning text, mathematical reasoning, code, Text-to-SQL, agentic RAG, and large-scale knowledge extraction. To further improve usability, we introduce DataFlow-Agent, which automatically translates natural-language specifications into executable pipelines via operator synthesis, pipeline planning, and iterative verification. Across six representative use cases, DataFlow consistently improves downstream LLM performance. Our math, code, and text pipelines outperform curated human datasets and specialized synthetic baselines, achieving up to +3\\% execution accuracy in Text-to-SQL over SynSQL, +7\\% average improvements on code benchmarks, and 1--3 point gains on MATH, GSM8K, and AIME. Moreover, a unified 10K-sample dataset produced by DataFlow enables base models to surpass counterparts trained on 1M Infinity-Instruct data. These results demonstrate that DataFlow provides a practical and high-performance substrate for reliable, reproducible, and scalable LLM data preparation, and establishes a system-level foundation for future data-centric AI development.",
+  "publishedAt": "2025-12-18T15:46:15Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 226,
+  "citationCount": 19,
+  "githubStars": 7209,
+  "pageCount": 36
+ },
+ {
+  "arxivId": "2508.18265",
+  "slug": "internvl3-5-advancing-open-source-multimodal-models-in-versatility-reasoning",
+  "title": "InternVL3.5: Advancing Open-Source Multimodal Models in Versatility, Reasoning, and Efficiency",
+  "authors": [
+   "Weiyun Wang",
+   "Zhangwei Gao",
+   "Lixin Gu",
+   "Hengjun Pu",
+   "Long Cui",
+   "Xingguang Wei"
+  ],
+  "abstract": "We introduce InternVL 3.5, a new family of open-source multimodal models that significantly advances versatility, reasoning capability, and inference efficiency along the InternVL series. A key innovation is the Cascade Reinforcement Learning (Cascade RL) framework, which enhances reasoning through a two-stage process: offline RL for stable convergence and online RL for refined alignment. This coarse-to-fine training strategy leads to substantial improvements on downstream reasoning tasks, e.g., MMMU and MathVista. To optimize efficiency, we propose a Visual Resolution Router (ViR) that dynamically adjusts the resolution of visual tokens without compromising performance. Coupled with ViR, our Decoupled Vision-Language Deployment (DvD) strategy separates the vision encoder and language model across different GPUs, effectively balancing computational load. These contributions collectively enable InternVL3.5 to achieve up to a +16.0\\% gain in overall reasoning performance and a 4.05$\\times$ inference speedup compared to its predecessor, i.e., InternVL3. In addition, InternVL3.5 supports novel capabilities such as GUI interaction and embodied agency. Notably, our largest model, i.e., InternVL3.5-241B-A28B, attains state-of-the-art results among open-source MLLMs across general multimodal, reasoning, text, and agentic tasks -- narrowing the performance gap with leading commercial models like GPT-5. All models and code are publicly released.",
+  "publishedAt": "2025-08-25T17:58:17Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 225,
+  "citationCount": 1212,
+  "githubStars": null,
+  "pageCount": 34
+ },
+ {
+  "arxivId": "2605.13779",
+  "slug": "mint-managed-infrastructure-for-training-and-serving-millions-of-llms",
+  "title": "MinT: Managed Infrastructure for Training and Serving Millions of LLMs",
+  "authors": [
+   "Mind Lab",
+   ":",
+   "Song Cao",
+   "Vic Cao",
+   "Andrew Chen",
+   "Kaijie Chen"
+  ],
+  "abstract": "We present MindLab Toolkit (MinT), a managed infrastructure system for Low-Rank Adaptation (LoRA) post-training and online serving. MinT targets a setting where many trained policies are produced over a small number of expensive base-model deployments. Instead of materializing each policy as a merged full checkpoint, MinT keeps the base model resident and moves exported LoRA adapter revisions through rollout, update, export, evaluation, serving, and rollback, hiding distributed training, serving, scheduling, and data movement behind a service interface. MinT scales this path along three axes. Scale Up extends LoRA RL to frontier-scale dense and MoE architectures, including MLA and DSA attention paths, with training and serving validated beyond 1T total parameters. Scale Down moves only the exported LoRA adapter, which can be under 1% of base-model size in rank-1 settings; adapter-only handoff reduces the measured step by 18.3x on a 4B dense model and 2.85x on a 30B MoE, while concurrent multi-policy GRPO shortens wall time by 1.77x and 1.45x without raising peak memory. Scale Out separates durable policy addressability from CPU/GPU working sets: a tensor-parallel deployment supports 10^6-scale addressable catalogs (measured single-engine sweeps through 100K) and thousand-adapter active waves at cluster scale, with cold loading treated as scheduled service work and packed MoE LoRA tensors improving live engine loading by 8.5-8.7x. MinT thus manages million-scale LoRA policy catalogs while training and serving selected adapter revisions over shared 1T-class base models.",
+  "publishedAt": "2026-05-13T16:59:08Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.DC"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 225,
+  "citationCount": 1,
+  "githubStars": null,
+  "pageCount": 30
+ },
+ {
+  "arxivId": "2605.18747",
+  "slug": "code-as-agent-harness",
+  "title": "Code as Agent Harness",
+  "authors": [
+   "Xuying Ning",
+   "Katherine Tieu",
+   "Dongqi Fu",
+   "Tianxin Wei",
+   "Zihao Li",
+   "Yuanchen Bei"
+  ],
+  "abstract": "Recent large language models (LLMs) have demonstrated strong capabilities in understanding and generating code, from competitive programming to repository-level software engineering. In emerging agentic systems, code is no longer only a target output. It increasingly serves as an operational substrate for agent reasoning, acting, environment modeling, and execution-based verification. We frame this shift through the lens of agent harnesses and introduce code as agent harness: a unified view that centers code as the basis for agent infrastructure. To systematically study this perspective, we organize the survey around three connected layers. First, we study the harness interface, where code connects agents to reasoning, action, and environment modeling. Second, we examine harness mechanisms: planning, memory, and tool use for long-horizon execution, together with feedback-driven control and optimization that make harness reliable and adaptive. Third, we discuss scaling the harness from single-agent systems to multi-agent settings, where shared code artifacts support multi-agent coordination, review, and verification. Across these layers, we summarize representative methods and practical applications of code as agent harness, spanning coding assistants, GUI/OS automation, embodied agents, scientific discovery, personalization and recommendation, DevOps, and enterprise workflows. We further outline open challenges for harness engineering, including evaluation beyond final task success, verification under incomplete feedback, regression-free harness improvement, consistent shared state across multiple agents, human oversight for safety-critical actions, and extensions to multimodal environments. By centering code as the harness of agentic AI, this survey provides a unified roadmap toward executable, verifiable, and stateful AI agent systems.",
+  "publishedAt": "2026-05-18T17:59:03Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 225,
+  "citationCount": 12,
+  "githubStars": 623,
+  "pageCount": 102
+ },
+ {
+  "arxivId": "2604.27351",
+  "slug": "heterogeneous-scientific-foundation-model-collaboration",
+  "title": "Heterogeneous Scientific Foundation Model Collaboration",
+  "authors": [
+   "Zihao Li",
+   "Jiaru Zou",
+   "Feihao Fang",
+   "Xuying Ning",
+   "Mengting Ai",
+   "Tianxin Wei"
+  ],
+  "abstract": "Agentic large language model systems have demonstrated strong capabilities. However, their reliance on language as the universal interface fundamentally limits their applicability to many real-world problems, especially in scientific domains where domain-specific foundation models have been developed to address specialized tasks beyond natural language. In this work, we introduce Eywa, a heterogeneous agentic framework designed to extend language-centric systems to a broader class of scientific foundation models. The key idea of Eywa is to augment domain-specific foundation models with a language-model-based reasoning interface, enabling language models to guide inference over non-linguistic data modalities. This design allows predictive foundation models, which are typically optimized for specialized data and tasks, to participate in higher-level reasoning and decision-making processes within agentic systems. Eywa can serve as a drop-in replacement for a single-agent pipeline (EywaAgent) or be integrated into existing multi-agent systems by replacing traditional agents with specialized agents (EywaMAS). We further investigate a planning-based orchestration framework in which a planner dynamically coordinates traditional agents and Eywa agents to solve complex tasks across heterogeneous data modalities (EywaOrchestra). We evaluate Eywa across a diverse set of scientific domains spanning physical, life, and social sciences. Experimental results demonstrate that Eywa improves performance on tasks involving structured and domain-specific data, while reducing reliance on language-based reasoning through effective collaboration with specialized foundation models.",
+  "publishedAt": "2026-04-30T03:02:27Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 222,
+  "citationCount": 1,
+  "githubStars": 23,
+  "pageCount": 57
+ },
+ {
+  "arxivId": "2602.10693",
+  "slug": "vespo-variational-sequence-level-soft-policy-optimization-for-stable-off",
+  "title": "VESPO: Variational Sequence-Level Soft Policy Optimization for Stable Off-Policy LLM Training",
+  "authors": [
+   "Guobin Shen",
+   "Chenxiao Zhao",
+   "Xiang Cheng",
+   "Lei Huang",
+   "Xing Yu"
+  ],
+  "abstract": "Off-policy updates are inevitable in reinforcement learning (RL) for large language models (LLMs) due to rollout staleness from asynchronous training and mismatches between training and inference engines. Naive importance sampling gives an unbiased correction but suffers from high variance, which is amplified by unbounded ratios and autoregressive generation. Prior remedies either rely on scenario-specific engineering, or trade bias for variance via token-level clipping or sequence-level normalization, yet these approaches remain largely heuristic. We propose Variational sEquence-level Soft Policy Optimization (VESPO). By explicitly incorporating variance reduction into a variational formulation, we derive a principled closed-form reshaping kernel that operates directly on sequence-level importance weights, avoids token-level approximation and length normalization, and admits an explicit variance bound for the deployed kernel. Experiments on math reasoning and code generation show that VESPO maintains stable training under severe off-policy conditions (staleness up to 64x) and delivers consistent gains across both dense and Mixture-of-Experts (MoE) models, outperforming recent reshaping baselines under matched setup. Code is available at https://github.com/FloyedShen/VESPO.",
+  "publishedAt": "2026-02-11T09:48:08Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 221,
+  "citationCount": 7,
+  "githubStars": 35,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2511.08892",
+  "slug": "lumine-an-open-recipe-for-building-generalist-agents-in-3d-open-worlds",
+  "title": "Lumine: An Open Recipe for Building Generalist Agents in 3D Open Worlds",
+  "authors": [
+   "Weihao Tan",
+   "Xiangyang Li",
+   "Yunhao Fang",
+   "Heyuan Yao",
+   "Shi Yan",
+   "Hao Luo"
+  ],
+  "abstract": "We introduce Lumine, the first open recipe for developing generalist agents capable of completing hours-long complex missions in real time within challenging 3D open-world environments. Lumine adopts a human-like interaction paradigm that unifies perception, reasoning, and action in an end-to-end manner, powered by a vision-language model. It processes raw pixels at 5 Hz to produce precise 30 Hz keyboard-mouse actions and adaptively invokes reasoning only when necessary. Trained in Genshin Impact, Lumine successfully completes the entire five-hour Mondstadt main storyline on par with human-level efficiency and follows natural language instructions to perform a broad spectrum of tasks in both 3D open-world exploration and 2D GUI manipulation across collection, combat, puzzle-solving, and NPC interaction. In addition to its in-domain performance, Lumine demonstrates strong zero-shot cross-game generalization. Without any fine-tuning, it accomplishes 100-minute missions in Wuthering Waves and the full five-hour first chapter of Honkai: Star Rail. These promising results highlight Lumine's effectiveness across distinct worlds and interaction dynamics, marking a concrete step toward generalist agents in open-ended environments.",
+  "publishedAt": "2025-11-12T02:01:26Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 219,
+  "citationCount": 13,
+  "githubStars": null,
+  "pageCount": 51
+ },
+ {
+  "arxivId": "2606.14777",
+  "slug": "joyai-vl-interaction-real-time-vision-language-interaction-intelligence",
+  "title": "JoyAI-VL-Interaction: Real-Time Vision-Language Interaction Intelligence",
+  "authors": [
+   "Dingyu Yao",
+   "Junhao Zhou",
+   "Chenxu Yang",
+   "Chuanyu Qin",
+   "Haowen Hou",
+   "Zheming Liang"
+  ],
+  "abstract": "Many moments in the real world do not wait for a user to ask. A fire starts on a security monitor, an expression flickers across a video call, or a product a viewer wants flashes by in a livestream. Yet today's large models remain mostly turn-based by design: they answer only when addressed, and even video-call apps that appear interactive still operate as question-answer systems, reacting only when polled or prompted. We argue for a different paradigm: a model that is present in the world like a person. It continuously watches what is happening now, decides on its own whether to speak or stay silent, interacts in real time, and delegates to a background model when the problem is hard. To advance interaction models and their adoption across domains, we make two fully open-sourced contributions. First, we release JoyAI-VL-Interaction, an 8B-scale, vision-first VL-interaction model. The model makes the response decision internally, choosing each second to stay silent, respond, or delegate to a background model, and it excels at vision-triggered responsiveness and time awareness. We pair it with a transferable training recipe, from which capabilities we never trained for emerge, such as guiding a shopper through changing app screens or improvising a lecture from a slide deck. Second, we release a complete, deployable system built around that model. The system streams any ongoing video into the model, making it genuinely present in the world. All other components are pluggable, including ASR/TTS modules, memory, visualization UI, and a background brain that can connect to any API or agent. Across six real-world scenarios, human raters prefer JoyAI-VL-Interaction over the in-app video-call assistants of Doubao and Gemini by a wide margin. To our knowledge, this is the first open, vision-driven interaction model released together with its training recipe, data, and complete deployable system.",
+  "publishedAt": "2026-06-10T03:43:50Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 216,
+  "citationCount": 2,
+  "githubStars": 1658,
+  "pageCount": 21
+ },
+ {
+  "arxivId": "2601.06943",
+  "slug": "watching-reasoning-and-searching-a-video-deep-research-benchmark-on-open-web",
+  "title": "Watching, Reasoning, and Searching: A Video Deep Research Benchmark on Open Web for Agentic Video Reasoning",
+  "authors": [
+   "Chengwen Liu",
+   "Xiaomin Yu",
+   "Zhuoyue Chang",
+   "Zhe Huang",
+   "Shuo Zhang",
+   "Heng Lian"
+  ],
+  "abstract": "In real-world video question answering scenarios, videos often provide only localized visual cues, while verifiable answers are distributed across the open web; models therefore need to jointly perform cross-frame clue extraction, iterative retrieval, and multi-hop reasoning-based verification. To bridge this gap, we construct the first video deep research benchmark, VideoDR. VideoDR centers on video-conditioned open-domain video question answering, requiring cross-frame visual anchor extraction, interactive web retrieval, and multi-hop reasoning over joint video-web evidence; through rigorous human annotation and quality control, we obtain high-quality video deep research samples spanning six semantic domains. We evaluate multiple closed-source and open-source multimodal large language models under both the Workflow and Agentic paradigms, and the results show that Agentic is not consistently superior to Workflow: its gains depend on a model's ability to maintain the initial video anchors over long retrieval chains. Further analysis indicates that goal drift and long-horizon consistency are the core bottlenecks. In sum, VideoDR provides a systematic benchmark for studying video agents in open-web settings and reveals the key challenges for next-generation video deep research agents.",
+  "publishedAt": "2026-01-11T15:07:37Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 215,
+  "citationCount": 6,
+  "githubStars": 160,
+  "pageCount": 17
+ },
+ {
+  "arxivId": "2508.06471",
+  "slug": "glm-4-5-agentic-reasoning-and-coding-arc-foundation-models",
+  "title": "GLM-4.5: Agentic, Reasoning, and Coding (ARC) Foundation Models",
+  "authors": [
+   "GLM-4. 5 Team",
+   ":",
+   "Aohan Zeng",
+   "Xin Lv",
+   "Qinkai Zheng",
+   "Zhenyu Hou"
+  ],
+  "abstract": "We present GLM-4.5, an open-source Mixture-of-Experts (MoE) large language model with 355B total parameters and 32B activated parameters, featuring a hybrid reasoning method that supports both thinking and direct response modes. Through multi-stage training on 23T tokens and comprehensive post-training with expert model iteration and reinforcement learning, GLM-4.5 achieves strong performance across agentic, reasoning, and coding (ARC) tasks, scoring 70.1% on TAU-Bench, 91.0% on AIME 24, and 64.2% on SWE-bench Verified. With much fewer parameters than several competitors, GLM-4.5 ranks 3rd overall among all evaluated models and 2nd on agentic benchmarks. We release both GLM-4.5 (355B parameters) and a compact version, GLM-4.5-Air (106B parameters), to advance research in reasoning and agentic AI systems. Code, models, and more information are available at https://github.com/zai-org/GLM-4.5.",
+  "publishedAt": "2025-08-08T17:21:06Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": "Z.ai / Zhipu / GLM",
+  "hfUpvotes": 213,
+  "citationCount": 409,
+  "githubStars": 4409,
+  "pageCount": 26
+ },
+ {
+  "arxivId": "2509.03867",
+  "slug": "drivel-ology-challenging-llms-with-interpreting-nonsense-with-depth",
+  "title": "Drivel-ology: Challenging LLMs with Interpreting Nonsense with Depth",
+  "authors": [
+   "Yang Wang",
+   "Chenghao Xiao",
+   "Chia-Yi Hsiao",
+   "Zi Yan Chang",
+   "Chi-Li Chen",
+   "Tyler Loakman"
+  ],
+  "abstract": "We introduce Drivelology, a unique linguistic phenomenon characterised as \"nonsense with depth\" - utterances that are syntactically coherent yet pragmatically paradoxical, emotionally loaded, or rhetorically subversive. While such expressions may resemble surface-level nonsense, they encode implicit meaning requiring contextual inference, moral reasoning, or emotional interpretation. We find that current large language models (LLMs), despite excelling at many natural language processing (NLP) tasks, consistently fail to grasp the layered semantics of Drivelological text. To investigate this, we construct a benchmark dataset of over 1,200+ meticulously curated and diverse examples across English, Mandarin, Spanish, French, Japanese, and Korean. Each example underwent careful expert review to verify its Drivelological characteristics, involving multiple rounds of discussion and adjudication to address disagreements. Using this dataset, we evaluate a range of LLMs on classification, generation, and reasoning tasks. Our results reveal clear limitations of LLMs: models often confuse Drivelology with shallow nonsense, produce incoherent justifications, or miss implied rhetorical functions altogether. These findings highlight a deep representational gap in LLMs' pragmatic understanding and challenge the assumption that statistical fluency implies cognitive comprehension. We release our dataset and code to facilitate further research in modelling linguistic depth beyond surface-level coherence.",
+  "publishedAt": "2025-09-04T03:58:55Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 213,
+  "citationCount": 3,
+  "githubStars": 15,
+  "pageCount": 23
+ },
+ {
+  "arxivId": "2602.07274",
+  "slug": "termigen-high-fidelity-environment-and-robust-trajectory-synthesis-for",
+  "title": "TermiGen: High-Fidelity Environment and Robust Trajectory Synthesis for Terminal Agents",
+  "authors": [
+   "Kaijie Zhu",
+   "Yuzhou Nie",
+   "Yijiang Li",
+   "Yiming Huang",
+   "Jialian Wu",
+   "Jiang Liu"
+  ],
+  "abstract": "Executing complex terminal tasks remains a significant challenge for open-weight LLMs, constrained by two fundamental limitations. First, high-fidelity, executable training environments are scarce: environments synthesized from real-world repositories are not diverse and scalable, while trajectories synthesized by LLMs suffer from hallucinations. Second, standard instruction tuning uses expert trajectories that rarely exhibit simple mistakes common to smaller models. This creates a distributional mismatch, leaving student models ill-equipped to recover from their own runtime failures. To bridge these gaps, we introduce TermiGen, an end-to-end pipeline for synthesizing verifiable environments and resilient expert trajectories. Termi-Gen first generates functionally valid tasks and Docker containers via an iterative multi-agent refinement loop. Subsequently, we employ a Generator-Critic protocol that actively injects errors during trajectory collection, synthesizing data rich in error-correction cycles. Fine-tuned on this TermiGen-generated dataset, our TermiGen-Qwen2.5-Coder-32B achieves a 31.3% pass rate on TerminalBench. This establishes a new open-weights state-of-the-art, outperforming existing baselines and notably surpassing capable proprietary models such as o4-mini. Dataset is avaiable at https://github.com/ucsb-mlsec/terminal-bench-env.",
+  "publishedAt": "2026-02-06T23:56:50Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 212,
+  "citationCount": 13,
+  "githubStars": 73,
+  "pageCount": 15
+ },
+ {
+  "arxivId": "2603.04597",
+  "slug": "bootstrapping-exploration-with-group-level-natural-language-feedback-in",
+  "title": "Bootstrapping Exploration with Group-Level Natural Language Feedback in Reinforcement Learning",
+  "authors": [
+   "Lei Huang",
+   "Xiang Cheng",
+   "Chenxiao Zhao",
+   "Guobin Shen",
+   "Junjie Yang",
+   "Xiaocheng Feng"
+  ],
+  "abstract": "Large language models (LLMs) typically receive diverse natural language (NL) feedback through interaction with the environment. However, current reinforcement learning (RL) algorithms rely solely on scalar rewards, leaving the rich information in NL feedback underutilized and leading to inefficient exploration. In this work, we propose GOLF, an RL framework that explicitly exploits group-level language feedback to guide targeted exploration through actionable refinements. GOLF aggregates two complementary feedback sources: (i) external critiques that pinpoint errors or propose targeted fixes, and (ii) intra-group attempts that supply alternative partial ideas and diverse failure patterns. These group-level feedbacks are aggregated to produce high-quality refinements, which are adaptively injected into training as off-policy scaffolds to provide targeted guidance in sparse-reward regions. Meanwhile, GOLF jointly optimizes generation and refinement within a unified RL loop, creating a virtuous cycle that continuously improves both capabilities. Experiments on both verifiable and non-verifiable benchmarks show that GOLF achieves superior performance and exploration efficiency, achieving 2.2$\\times$ improvements in sample efficiency compared to RL methods trained solely on scalar rewards. Code is available at https://github.com/LuckyyySTA/GOLF.",
+  "publishedAt": "2026-03-04T20:53:17Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 211,
+  "citationCount": 2,
+  "githubStars": 18,
+  "pageCount": 26
+ },
+ {
+  "arxivId": "2606.18023",
+  "slug": "loopcoder-v2-only-loop-once-for-efficient-test-time-computation-scaling",
+  "title": "LoopCoder-v2: Only Loop Once for Efficient Test-Time Computation Scaling",
+  "authors": [
+   "Jian Yang",
+   "Shawn Guo",
+   "Wei Zhang",
+   "Tianyu Zheng",
+   "Yaxin Du",
+   "Haau-Sing Li"
+  ],
+  "abstract": "Looped Transformers scale latent computation by repeatedly applying shared blocks, but sequential looping increases latency and KV-cache memory with the loop count. Parallel loop Transformers (PLT) alleviate this cost through cross-loop position offsets (CLP) and shared-KV gated sliding-window attention, making loop count a practical design choice. We therefore study PLT loop-count selection through a gain--cost view: an extra loop may refine representations, but CLP also introduces a positional mismatch at each loop boundary. We instantiate this study by training LoopCoder-v2, a family of 7B PLT coders with different loop counts, from scratch on 18T tokens, followed by matched instruction tuning and evaluation. Empirically, the two-loop variant delivers broad gains over the non-looped baseline across code generation, code reasoning, agentic software engineering, and tool-use benchmarks, improving SWE-bench Verified from 43.0 to 64.4 points and Multi-SWE from 14.0 to 31.0 points. In contrast, variants with three or more loops regress, revealing a strongly non-monotonic loop-count effect. Our diagnostics show that loop 2 provides the main productive refinement, while later loops yield diminishing, oscillatory updates and reduced representational diversity. Because the CLP-induced mismatch remains roughly fixed as refinement gains shrink, the offset cost increasingly dominates. This gain--cost trade-off explains PLT's saturation at two loops and provides diagnostics for loop-count selection.",
+  "publishedAt": "2026-06-16T15:03:05Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 210,
+  "citationCount": 1,
+  "githubStars": null,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2601.12538",
+  "slug": "agentic-reasoning-for-large-language-models",
+  "title": "Agentic Reasoning for Large Language Models",
+  "authors": [
+   "Tianxin Wei",
+   "Ting-Wei Li",
+   "Zhining Liu",
+   "Xuying Ning",
+   "Ze Yang",
+   "Jiaru Zou"
+  ],
+  "abstract": "Reasoning is a fundamental cognitive process underlying inference, problem-solving, and decision-making. While large language models (LLMs) demonstrate strong reasoning capabilities in closed-world settings, they struggle in open-ended and dynamic environments. Agentic reasoning marks a paradigm shift by reframing LLMs as autonomous agents that plan, act, and learn through continual interaction. In this survey, we organize agentic reasoning along three complementary dimensions. First, we characterize environmental dynamics through three layers: foundational agentic reasoning, which establishes core single-agent capabilities including planning, tool use, and search in stable environments; self-evolving agentic reasoning, which studies how agents refine these capabilities through feedback, memory, and adaptation; and collective multi-agent reasoning, which extends intelligence to collaborative settings involving coordination, knowledge sharing, and shared goals. Across these layers, we distinguish in-context reasoning, which scales test-time interaction through structured orchestration, from post-training reasoning, which optimizes behaviors via reinforcement learning and supervised fine-tuning. We further review representative agentic reasoning frameworks across real-world applications and benchmarks, including science, robotics, healthcare, autonomous research, and mathematics. This survey synthesizes agentic reasoning methods into a unified roadmap bridging thought and action, and outlines open challenges and future directions, including personalization, long-horizon interaction, world modeling, scalable multi-agent training, and governance for real-world deployment.",
+  "publishedAt": "2026-01-18T18:58:23Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 207,
+  "citationCount": 34,
+  "githubStars": 1333,
+  "pageCount": 135
+ },
+ {
+  "arxivId": "2605.21467",
+  "slug": "delta-discriminative-token-credit-assignment-for-reinforcement-learning-from",
+  "title": "DelTA: Discriminative Token Credit Assignment for Reinforcement Learning from Verifiable Rewards",
+  "authors": [
+   "Kaiyi Zhang",
+   "Wei Wu",
+   "Yankai Lin"
+  ],
+  "abstract": "Reinforcement learning from verifiable rewards (RLVR) has emerged as a central technique for improving the reasoning capabilities of large language models. Despite its effectiveness, how response-level rewards translate into token-level probability changes remains poorly understood. We introduce a discriminator view of RLVR updates, showing that the policy-gradient update direction implicitly acts as a linear discriminator over token-gradient vectors and thereby determines which token probabilities are increased or decreased during learning. Under standard sequence-level RLVR, this discriminator is constructed from positive- and negative-side centroids formed by advantage-weighted averaging of token-gradient vectors. However, such centroid construction can be dominated by shared high-frequency patterns, such as formatting tokens, diluting sparse yet discriminative directions that better distinguish high-reward responses from low-reward ones. To address this limitation, we propose $\\textbf{DelTA}$, a discriminative token credit assignment method that estimates token coefficients to amplify side-specific token-gradient directions and downweight shared or weakly discriminative ones. These coefficients reweight a self-normalized RLVR surrogate, making the effective side-wise centroids more contrastive and thereby reshaping the RLVR update direction. On seven mathematical benchmarks, DelTA outperforms the strongest same-scale baselines by 3.26 and 2.62 average points on Qwen3-8B-Base and Qwen3-14B-Base, respectively. Additional results on code generation, a different backbone, and out-of-domain evaluations further demonstrate the generalization ability of DelTA.",
+  "publishedAt": "2026-05-20T17:53:09Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 207,
+  "citationCount": 0,
+  "githubStars": 17,
+  "pageCount": 27
+ },
+ {
+  "arxivId": "2607.14952",
+  "slug": "longstraw-long-context-rl-beyond-2m-tokens-under-a-fixed-gpu-budget",
+  "title": "LongStraw: Long-Context RL Beyond 2M Tokens under a Fixed GPU Budget",
+  "authors": [
+   "Changhai Zhou",
+   "Kieran Liu",
+   "Yuhua Zhou",
+   "Qian Qiao",
+   "Jun Gao",
+   "Harry Zhang"
+  ],
+  "abstract": "Long-context RL post-training is constrained by the lifetime of state and gradients, not attention cost alone. In GRPO, one multi-million-token prompt must serve old-policy and reference scoring plus multiple policy responses, while conventional autograd keeps the prompt graph and all response graphs live alongside model weights, caches, and distributed communication buffers. We present LongStraw, an objective-aware, architecture-aware system for resident-state virtualization, response replay, and distributed-gradient execution. Its transaction captures the shared prompt without autograd, retains only the architecture-required state on explicitly owned pages, restores that state for each group member, scores old/reference branches without a graph, replays one policy response at a time with autograd, and accumulates the resulting gradients before one distributed finalization and optimizer step. This schedule bounds the live training graph by the response suffix while reusing the expensive prompt computation across the complete GRPO group. We instantiate this design for two incompatible model structures. Qwen3.6-27B combines 48 recurrent GDN layers with 16 full-attention layers; LongStraw keeps the compact recurrent state and physically CP8-sharded KV pages, composes global attention through cross-rank LSE/output merging, and performs blockwise response replay. GLM-5.2 combines a 78-layer MLA/DSA attention stack with a 256-expert, top-8 MoE tail. Its implementation keeps CP-sharded MLA latent pages and DSA indexer-key pages in CPU memory, stages one layer at a time, reconstructs IndexShare-aware global sparse selection over CP32, and dispatches routed response tokens over EP32. The two paths share one transaction contract while specializing the retained state, replay operator, and collective communication to the architecture...",
+  "publishedAt": "2026-07-16T13:00:32Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.DC"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 206,
+  "citationCount": 0,
+  "githubStars": 43,
+  "pageCount": 44
+ },
+ {
+  "arxivId": "2602.15763",
+  "slug": "glm-5-from-vibe-coding-to-agentic-engineering",
+  "title": "GLM-5: from Vibe Coding to Agentic Engineering",
+  "authors": [
+   "GLM-5-Team",
+   ":",
+   "Aohan Zeng",
+   "Xin Lv",
+   "Zhenyu Hou",
+   "Zhengxiao Du"
+  ],
+  "abstract": "We present GLM-5, a next-generation foundation model designed to transition the paradigm of vibe coding to agentic engineering. Building upon the agentic, reasoning, and coding (ARC) capabilities of its predecessor, GLM-5 adopts DSA to significantly reduce training and inference costs while maintaining long-context fidelity. To advance model alignment and autonomy, we implement a new asynchronous reinforcement learning infrastructure that drastically improves post-training efficiency by decoupling generation from training. Furthermore, we propose novel asynchronous agent RL algorithms that further improve RL quality, enabling the model to learn from complex, long-horizon interactions more effectively. Through these innovations, GLM-5 achieves state-of-the-art performance on major open benchmarks. Most critically, GLM-5 demonstrates unprecedented capability in real-world coding tasks, surpassing previous baselines in handling end-to-end software engineering challenges. Code, models, and more information are available at https://github.com/zai-org/GLM-5.",
+  "publishedAt": "2026-02-17T17:50:56Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.CL"
+  ],
+  "officialLab": "Z.ai / Zhipu / GLM",
+  "hfUpvotes": 205,
+  "citationCount": 295,
+  "githubStars": 6895,
+  "pageCount": 40
+ },
+ {
+  "arxivId": "2602.23152",
+  "slug": "the-trinity-of-consistency-as-a-defining-principle-for-general-world-models",
+  "title": "The Trinity of Consistency as a Defining Principle for General World Models",
+  "authors": [
+   "Jingxuan Wei",
+   "Siyuan Li",
+   "Yuhang Xu",
+   "Zheng Sun",
+   "Junjie Jiang",
+   "Hexuan Jin"
+  ],
+  "abstract": "The construction of World Models capable of learning, simulating, and reasoning about objective physical laws constitutes a foundational challenge in the pursuit of Artificial General Intelligence. Recent advancements represented by video generation models like Sora have demonstrated the potential of data-driven scaling laws to approximate physical dynamics, while the emerging Unified Multimodal Model (UMM) offers a promising architectural paradigm for integrating perception, language, and reasoning. Despite these advances, the field still lacks a principled theoretical framework that defines the essential properties requisite for a General World Model. In this paper, we propose that a World Model must be grounded in the Trinity of Consistency: Modal Consistency as the semantic interface, Spatial Consistency as the geometric basis, and Temporal Consistency as the causal engine. Through this tripartite lens, we systematically review the evolution of multimodal learning, revealing a trajectory from loosely coupled specialized modules toward unified architectures that enable the synergistic emergence of internal world simulators. To complement this conceptual framework, we introduce CoW-Bench, a benchmark centered on multi-frame reasoning and generation scenarios. CoW-Bench evaluates both video generation models and UMMs under a unified evaluation protocol. Our work establishes a principled pathway toward general world models, clarifying both the limitations of current systems and the architectural requirements for future progress.",
+  "publishedAt": "2026-02-26T16:15:55Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 203,
+  "citationCount": 4,
+  "githubStars": null,
+  "pageCount": 119
+ },
+ {
+  "arxivId": "2604.04707",
+  "slug": "openworldlib-a-unified-codebase-and-definition-of-advanced-world-models",
+  "title": "OpenWorldLib: A Unified Codebase and Definition of Advanced World Models",
+  "authors": [
+   "DataFlow Team",
+   "Bohan Zeng",
+   "Daili Hua",
+   "Kaixin Zhu",
+   "Yifan Dai",
+   "Bozhou Li"
+  ],
+  "abstract": "World models have garnered significant attention as a promising research direction in artificial intelligence, yet a clear and unified definition remains lacking. In this paper, we introduce OpenWorldLib, a comprehensive and standardized inference framework for Advanced World Models. Drawing on the evolution of world models, we propose a clear definition: a world model is a model or framework centered on perception, equipped with interaction and long-term memory capabilities, for understanding and predicting the complex world. We further systematically categorize the essential capabilities of world models. Based on this definition, OpenWorldLib integrates models across different tasks within a unified framework, enabling efficient reuse and collaborative inference. Finally, we present additional reflections and analyses on potential future directions for world model research. Code link: https://github.com/OpenDCAI/OpenWorldLib",
+  "publishedAt": "2026-04-06T14:19:48Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 203,
+  "citationCount": 3,
+  "githubStars": 853,
+  "pageCount": 28
+ },
+ {
+  "arxivId": "2601.06521",
+  "slug": "babyvision-visual-reasoning-beyond-language",
+  "title": "BabyVision: Visual Reasoning Beyond Language",
+  "authors": [
+   "Liang Chen",
+   "Weichu Xie",
+   "Yiyan Liang",
+   "Hongfeng He",
+   "Hans Zhao",
+   "Zhibo Yang"
+  ],
+  "abstract": "While humans develop core visual skills long before acquiring language, contemporary Multimodal LLMs (MLLMs) still rely heavily on linguistic priors to compensate for their fragile visual understanding. We uncovered a crucial fact: state-of-the-art MLLMs consistently fail on basic visual tasks that humans, even 3-year-olds, can solve effortlessly. To systematically investigate this gap, we introduce BabyVision, a benchmark designed to assess core visual abilities independent of linguistic knowledge for MLLMs. BabyVision spans a wide range of tasks, with 388 items divided into 22 subclasses across four key categories. Empirical results and human evaluation reveal that leading MLLMs perform significantly below human baselines. Gemini3-Pro-Preview scores 49.7, lagging behind 6-year-old humans and falling well behind the average adult score of 94.1. These results show despite excelling in knowledge-heavy evaluations, current MLLMs still lack fundamental visual primitives. Progress in BabyVision represents a step toward human-level visual perception and reasoning capabilities. We also explore solving visual reasoning with generation models by proposing BabyVision-Gen and automatic evaluation toolkit. Our code and benchmark data are released at https://github.com/UniPat-AI/BabyVision for reproduction.",
+  "publishedAt": "2026-01-10T10:42:44Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 201,
+  "citationCount": 24,
+  "githubStars": 238,
+  "pageCount": 26
+ },
+ {
+  "arxivId": "2602.09856",
+  "slug": "code2world-a-gui-world-model-via-renderable-code-generation",
+  "title": "Code2World: A GUI World Model via Renderable Code Generation",
+  "authors": [
+   "Yuhao Zheng",
+   "Li'an Zhong",
+   "Yi Wang",
+   "Rui Dai",
+   "Kaikui Liu",
+   "Xiangxiang Chu"
+  ],
+  "abstract": "Autonomous GUI agents interact with environments by perceiving interfaces and executing actions. As a virtual sandbox, the GUI World model empowers agents with human-like foresight by enabling action-conditioned prediction. However, existing text- and pixel-based approaches struggle to simultaneously achieve high visual fidelity and fine-grained structural controllability. To this end, we propose Code2World, a vision-language coder that simulates the next visual state via renderable code generation. Specifically, to address the data scarcity problem, we construct AndroidCode by translating GUI trajectories into high-fidelity HTML and refining synthesized code through a visual-feedback revision mechanism, yielding a corpus of over 80K high-quality screen-action pairs. To adapt existing VLMs into code prediction, we first perform SFT as a cold start for format layout following, then further apply Render-Aware Reinforcement Learning which uses rendered outcome as the reward signal by enforcing visual semantic fidelity and action consistency. Extensive experiments demonstrate that Code2World-8B achieves the top-performing next UI prediction, rivaling the competitive GPT-5 and Gemini-3-Pro-Image. Notably, Code2World significantly enhances downstream navigation success rates in a flexible manner, boosting Gemini-2.5-Flash by +9.5% on AndroidWorld navigation. The code is available at https://github.com/AMAP-ML/Code2World.",
+  "publishedAt": "2026-02-10T14:56:19Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI",
+   "cs.CL",
+   "cs.HC"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 201,
+  "citationCount": 14,
+  "githubStars": 323,
+  "pageCount": 30
+ },
+ {
+  "arxivId": "2602.10604",
+  "slug": "step-3-5-flash-open-frontier-level-intelligence-with-11b-active-parameters",
+  "title": "Step 3.5 Flash: Open Frontier-Level Intelligence with 11B Active Parameters",
+  "authors": [
+   "Ailin Huang",
+   "Ang Li",
+   "Aobo Kong",
+   "Bin Wang",
+   "Binxing Jiao",
+   "Bo Dong"
+  ],
+  "abstract": "We introduce Step 3.5 Flash, a sparse Mixture-of-Experts (MoE) model that bridges frontier-level agentic intelligence and computational efficiency. We focus on what matters most when building agents: sharp reasoning and fast, reliable execution. Step 3.5 Flash pairs a 196B-parameter foundation with 11B active parameters for efficient inference. It is optimized with interleaved 3:1 sliding-window/full attention and Multi-Token Prediction (MTP-3) to reduce the latency and cost of multi-round agentic interactions. To reach frontier-level intelligence, we design a scalable reinforcement learning framework that combines verifiable signals with preference feedback, while remaining stable under large-scale off-policy training, enabling consistent self-improvement across mathematics, code, and tool use. Step 3.5 Flash demonstrates strong performance across agent, coding, and math tasks, achieving 85.4% on IMO-AnswerBench, 86.4% on LiveCodeBench-v6 (2024.08-2025.05), 88.2% on tau2-Bench, 69.0% on BrowseComp (with context management), and 51.0% on Terminal-Bench 2.0, comparable to frontier models such as GPT-5.2 xHigh and Gemini 3.0 Pro. By redefining the efficiency frontier, Step 3.5 Flash provides a high-density foundation for deploying sophisticated agents in real-world industrial environments.",
+  "publishedAt": "2026-02-11T07:53:51Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 201,
+  "citationCount": 25,
+  "githubStars": 2092,
+  "pageCount": 67
+ },
+ {
+  "arxivId": "2509.04664",
+  "slug": "why-language-models-hallucinate",
+  "title": "Why Language Models Hallucinate",
+  "authors": [
+   "Adam Tauman Kalai",
+   "Ofir Nachum",
+   "Santosh S. Vempala",
+   "Edwin Zhang"
+  ],
+  "abstract": "Like students facing hard exam questions, large language models sometimes guess when uncertain, producing plausible yet incorrect statements instead of admitting uncertainty. Such \"hallucinations\" persist even in state-of-the-art systems and undermine trust. We argue that language models hallucinate because the training and evaluation procedures reward guessing over acknowledging uncertainty, and we analyze the statistical causes of hallucinations in the modern training pipeline. Hallucinations need not be mysterious -- they originate simply as errors in binary classification. If incorrect statements cannot be distinguished from facts, then hallucinations in pretrained language models will arise through natural statistical pressures. We then argue that hallucinations persist due to the way most evaluations are graded -- language models are optimized to be good test-takers, and guessing when uncertain improves test performance. This \"epidemic\" of penalizing uncertain responses can only be addressed through a socio-technical mitigation: modifying the scoring of existing benchmarks that are misaligned but dominate leaderboards, rather than introducing additional hallucination evaluations. This change may steer the field toward more trustworthy AI systems.",
+  "publishedAt": "2025-09-04T21:26:31Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": "OpenAI",
+  "hfUpvotes": 200,
+  "citationCount": 282,
+  "githubStars": null,
+  "pageCount": 36
+ }
+]

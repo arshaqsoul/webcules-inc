@@ -1,0 +1,712 @@
+[
+ {
+  "arxivId": "2604.01658",
+  "slug": "coral-towards-autonomous-multi-agent-evolution-for-open-ended-discovery",
+  "title": "CORAL: Towards Autonomous Multi-Agent Evolution for Open-Ended Discovery",
+  "authors": [
+   "Ao Qu",
+   "Han Zheng",
+   "Zijian Zhou",
+   "Yihao Yan",
+   "Yihong Tang",
+   "Shao Yong Ong"
+  ],
+  "abstract": "Large language model (LLM)-based evolution is a promising approach for open-ended discovery, where progress requires sustained search and knowledge accumulation. Existing methods still rely heavily on fixed heuristics and hard-coded exploration rules, which limit the autonomy of LLM agents. We present CORAL, the first framework for autonomous multi-agent evolution on open-ended problems. CORAL replaces rigid control with long-running agents that explore, reflect, and collaborate through shared persistent memory, asynchronous multi-agent execution, and heartbeat-based interventions. It also provides practical safeguards, including isolated workspaces, evaluator separation, resource management, and agent session and health management. Evaluated on diverse mathematical, algorithmic, and systems optimization tasks, CORAL sets new state-of-the-art results on 10 tasks, achieving 3-10 times higher improvement rates with far fewer evaluations than fixed evolutionary search baselines across tasks. On Anthropic's kernel engineering task, four co-evolving agents improve the best known score from 1363 to 1103 cycles. Mechanistic analyses further show how these gains arise from knowledge reuse and multi-agent exploration and communication. Together, these results suggest that greater agent autonomy and multi-agent evolution can substantially improve open-ended discovery. Code is available at https://github.com/Human-Agent-Society/CORAL.",
+  "publishedAt": "2026-04-02T05:59:06Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 55,
+  "citationCount": 29,
+  "githubStars": 873,
+  "pageCount": 27
+ },
+ {
+  "arxivId": "2605.06747",
+  "slug": "humannet-scaling-human-centric-video-learning-to-one-million-hours",
+  "title": "HumanNet: Scaling Human-centric Video Learning to One Million Hours",
+  "authors": [
+   "Yufan Deng",
+   "Daquan Zhou"
+  ],
+  "abstract": "Progress in embodied intelligence increasingly depends on scalable data infrastructure. While vision and language have scaled with internet corpora, learning physical interaction remains constrained by the lack of large, diverse, and richly annotated human activity data. We present HumanNet, a one-million-hour human-centric video corpus that captures how humans interact with the physical world at scale. HumanNet spans both first-person and third-person perspectives and covers fine-grained activities, human-object interactions, tool use, and long-horizon behaviors across diverse real-world environments. Beyond raw video, the dataset provides interaction-centric annotations, including captions, motion descriptions, and hand and body-related signals, enabling motion-aware and interaction-aware learning. Beyond scale, HumanNet introduces a systematic data curation paradigm for embodied learning, where human-centric filtering, temporal structuring, viewpoint diversity, and annotation enrichment are treated as first-class design principles. This design transforms unstructured internet video into a scalable substrate for representation learning, activity understanding, motion generation, and human-to-robot transfer. We conduct a first-step validation on the value of this design through controlled vision-language-action ablation: under a fixed set of validation data, continued training from the Qwen VLM model with 1000 hours of egocentric video drawn from HumanNet surpasses the continued training with 100 hours of real-robot data from Magic Cobot, indicating that egocentric human video could be a scalable and cost-effective substitute for robot data. By building this project, we aim to explore the opportunity to scale embodied foundation models using human-centric videos, rather than relying solely on robot-specific data.",
+  "publishedAt": "2026-05-07T15:21:58Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.RO"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 55,
+  "citationCount": 6,
+  "githubStars": 281,
+  "pageCount": 14
+ },
+ {
+  "arxivId": "2605.14271",
+  "slug": "auditing-agent-harness-safety",
+  "title": "Auditing Agent Harness Safety",
+  "authors": [
+   "Chengzhi Liu",
+   "Yichen Guo",
+   "Yepeng Liu",
+   "Yuzhe Yang",
+   "Qianqi Yan",
+   "Xuandong Zhao"
+  ],
+  "abstract": "LLM agents increasingly run inside execution harnesses that dispatch tools, allocate resources, and route messages between specialized components. However, a harness can return a correct, benign answer over a trajectory that accesses unauthorized resources or leaks context to the wrong agent. Output-level evaluation cannot see these failures, yet most safety benchmarks score only final outputs or terminal states, even though many violations occur mid-trajectory rather than at termination. The central question is whether the harness respects user intent, permission boundaries, and information-flow constraints throughout execution. To address this gap, we propose HarnessAudit, a framework that audits full execution trajectories across boundary compliance, execution fidelity, and system stability, with a focus on multi-agent harnesses where these risks are most pronounced. We further introduce HarnessAudit-Bench, a benchmark of 210 tasks across eight real-world domains, instantiated in both single-agent and multi-agent configurations with embedded safety constraints. Evaluating ten harness configurations across frontier models and three multi-agent frameworks, we find that: (i) task completion is misaligned with safe execution, and violations accumulate with trajectory length; (ii) safety risks vary across domains, task types, and agent roles; (iii) most violations concentrate in resource access and inter-agent information transfer; and (iv) multi-agent collaboration expands the safety risk surface, while harness design sets the upper bound of safe deployment.",
+  "publishedAt": "2026-05-14T02:14:28Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.CY"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 55,
+  "citationCount": 1,
+  "githubStars": 51,
+  "pageCount": 34
+ },
+ {
+  "arxivId": "2605.16257",
+  "slug": "dexjoco-a-benchmark-and-toolkit-for-task-oriented-dexterous-manipulation-on",
+  "title": "DexJoCo: A Benchmark and Toolkit for Task-Oriented Dexterous Manipulation on MuJoCo",
+  "authors": [
+   "Hanwen Wang",
+   "Weizhi Zhao",
+   "Xiangyu Wang",
+   "Siyuan Huang",
+   "He Lin",
+   "Boyuan Zheng"
+  ],
+  "abstract": "Achieving human-level manipulation requires dexterous robotic hands capable of complex object interactions. Advancing such capabilities further demands standardized benchmarks for systematic evaluation. However, existing dexterous benchmarks lack tasks that reflect the unique manipulation capabilities of dexterous hands over parallel grippers, as well as comprehensive evaluation pipelines. In this paper, we present DexJoCo, a benchmark and toolkit for task-oriented dexterous manipulation, comprising 11 functionally grounded tasks that evaluate tool-use, bimanual coordination, long-horizon execution, and reasoning. We develop a low-cost data collection system and collect 1.1K trajectories across these tasks, with support for domain randomization to assess robustness. We benchmark modern models under diverse settings, including visual and dynamics randomization, multi-task training, and action-head adaptation. Through extensive empirical analysis, we identify several important insights and common limitations of current policies in dexterous manipulation, highlighting key challenges for future research in dexterous hand robot learning. Project page available at: https://dexjoco.github.io",
+  "publishedAt": "2026-05-15T17:59:51Z",
+  "primaryArxivCategory": [
+   "cs.RO"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 55,
+  "citationCount": 5,
+  "githubStars": 171,
+  "pageCount": 16
+ },
+ {
+  "arxivId": "2605.16679",
+  "slug": "chi-bench-can-ai-agents-automate-end-to-end-long-horizon-policy-rich",
+  "title": "CHI-Bench: Can AI Agents Automate End-to-End, Long-Horizon, Policy-Rich Healthcare Workflows?",
+  "authors": [
+   "Haolin Chen",
+   "Deon Metelski",
+   "Leon Qi",
+   "Tao Xia",
+   "Joonyul Lee",
+   "Steve Brown"
+  ],
+  "abstract": "End-to-end automation of realistic healthcare operations stresses three capabilities underrepresented in current benchmarks: policy density, decisions must be grounded in a large library of medical, insurance, and operational rules; Multi-role composition: a single task requires the agent to play multiple roles with handoffs; and multilateral interaction: intermediate workflow steps are multi-turn dialogs, such as peer-to-peer review and patient outreach. We introduce $χ$-Bench, a benchmark of long-horizon healthcare workflows across three domains: provider prior authorization, payer utilization management, and care management. Each task hands the agent a clinical case in a high-fidelity simulator of 20 healthcare apps exposed via 87 MCP tools, which it must drive to a terminal status through tool calls and writing the role's artifacts, guided by a 1,290+ document managed-care operations handbook skill. Across 30 agent harness/models configurations, the best agent resolves only 28.0% of tasks, no agent clears 20% on strict pass^3, and executing all tasks in a single session slumps the performance to 3.8%. These results raise the hypothesis that similar gaps are likely to surface in other policy-dense, role-composed, irreversible enterprise domains.",
+  "publishedAt": "2026-05-15T22:34:31Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 55,
+  "citationCount": 4,
+  "githubStars": 54,
+  "pageCount": 66
+ },
+ {
+  "arxivId": "2605.21572",
+  "slug": "physx-omni-unified-simulation-ready-physical-3d-generation-for-rigid",
+  "title": "PhysX-Omni: Unified Simulation-Ready Physical 3D Generation for Rigid, Deformable, and Articulated Objects",
+  "authors": [
+   "Ziang Cao",
+   "Yinghao Liu",
+   "Haitian Li",
+   "Runmao Yao",
+   "Fangzhou Hong",
+   "Zhaoxi Chen"
+  ],
+  "abstract": "Simulation-ready physical 3D assets have emerged as a promising direction owing to their broad applicability in downstream tasks. However, most existing 3D generation methods either neglect physical properties or are limited to a single asset category, e.g., rigid, deformable, or articulated objects. To address these limitations, we introduce PhysX-Omni, a unified framework for simulation-ready physical 3D generation across diverse asset types. Specifically, we develop a novel and efficient geometry representation tailored for Vision-Language Models, which directly encodes high-resolution 3D structures without compression, significantly improving generation performance. In addition, we construct the first general simulation-ready 3D dataset, PhysXVerse, covering diverse indoor and outdoor categories. Furthermore, to comprehensively and flexibly evaluate both generative and understanding capabilities in the wild, we propose PhysX-Bench, which encompasses six key attributes: geometry, absolute scale, material, affordance, kinematics, and function description. Extensive experiments with conventional metrics and PhysX-Bench show that PhysX-Omni performs strongly in both generation and understanding. Moreover, additional studies further validate the potential of PhysX-Omni for applications in simulation-ready scene generation and robotic policy learning. We believe PhysX-Omni can significantly advance a wide range of downstream applications, particularly in embodied AI and physics-based simulation.",
+  "publishedAt": "2026-05-20T17:59:01Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.RO"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 55,
+  "citationCount": 1,
+  "githubStars": 307,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2606.05563",
+  "slug": "socrates-towards-reliable-automated-evaluation-of-proactive-llm-mediation",
+  "title": "SoCRATES: Towards Reliable Automated Evaluation of Proactive LLM Mediation across Domains and Socio-cognitive Variations",
+  "authors": [
+   "Taewon Yun",
+   "Hyeonseong Park",
+   "Jeonghwan Choi",
+   "Hayoon Park",
+   "Yeeun Choi",
+   "Hwanjun Song"
+  ],
+  "abstract": "Evaluating LLM mediators remains challenging, as mediation unfolds as a real-time trajectory shaped by disputants' shifting emotions, intentions, and context. Existing testbeds rely on a few expert-authored domains, vary mainly strategic posture, and score every turn against every topic, introducing off-topic noise. We introduce SoCRATES, a benchmark for evaluating proactive LLM mediators in realistic, multi-domain testbeds. It constructs scenarios from real conflicts through an agentic pipeline across eight domains, probes five socio-cognitive adaptation axes (strategic posture, party composition, history length, emotional reactivity, and cultural identity), and scores each topic only on the turns that advance it via a topic-localized evaluator. The evaluator reaches 0.82 alignment with human experts, more than doubling a per-turn baseline. Benchmarking eight frontier LLMs, we find that even the strongest mediator closes only about a third of the unmediated consensus gap under diverse and realistic testbeds, with performance varying sharply by socio-cognitive axis, highlighting that progress lies in social adaptation to diverse conditions.",
+  "publishedAt": "2026-06-04T01:19:40Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 55,
+  "citationCount": 0,
+  "githubStars": 0,
+  "pageCount": 28
+ },
+ {
+  "arxivId": "2606.17200",
+  "slug": "ace-ego-0-unifying-egocentric-human-and-robotic-data-for-vla-pretraining",
+  "title": "ACE-Ego-0: Unifying Egocentric Human and Robotic Data for VLA Pretraining",
+  "authors": [
+   "Hao Li",
+   "Ganlong Zhao",
+   "Yufei Liu",
+   "Haotian Hou",
+   "Guoquan Ye",
+   "Tongyan Fang"
+  ],
+  "abstract": "Vision-Language-Action (VLA) models benefit from large-scale and diverse embodied data, yet scaling robot trajectory collection is costly and labor-intensive. Recent advances show that large-scale egocentric human videos provide complementary real-world supervision in pretraining. However, joint training on human and robot data remains challenging due to divergences in action spaces, embodiment structures, temporal dynamics, and supervision quality. We introduce ACE-EGO-0, a unified VLA pretraining framework jointly leveraging heterogeneous data sources. To extract large-scale pretraining supervision from egocentric human videos, we build a scalable egocentric video-to-action pipeline that converts raw human videos into robot-format pseudo-action trajectories. To make these labels comparable with robot demonstrations, ACE-EGO-0 uses a unified action representation based on camera-space actions, morphology conditioning, and time-aligned action chunking. To robustly leverage noisy pseudo-action supervision from egocentric human videos, we formulate a reliability-aware training objective with a human auxiliary loss that concentrates supervision on reliable signals. We instantiate ACE-EGO-0 on 4.53K hours of robot and simulation data, together with 1.48K hours of pseudo-action-labeled egocentric human data. Experiments show that incorporating large-scale human supervision under reliability-aware weighting consistently improves both unified joint pretraining and supervised fine-tuning. ACE-EGO-0 achieves state-of-the-art performance on RoboCasa GR1 TableTop and RoboTwin 2.0, while demonstrating strong transfer to real-world bimanual manipulation.",
+  "publishedAt": "2026-06-15T18:40:18Z",
+  "primaryArxivCategory": [
+   "cs.RO"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 55,
+  "citationCount": 1,
+  "githubStars": 37,
+  "pageCount": 27
+ },
+ {
+  "arxivId": "2607.13639",
+  "slug": "ovisocr2-technical-report",
+  "title": "OvisOCR2 Technical Report",
+  "authors": [
+   "Shiyin Lu",
+   "Yinglun Li",
+   "Yu Xia",
+   "Yuhui Chen",
+   "An-Yang Ji",
+   "Jun-Peng Jiang"
+  ],
+  "abstract": "We introduce OvisOCR2, a 0.8B document parsing model. OvisOCR2 is designed as an end-to-end parser: given a document page image, it generates a Markdown representation in natural reading order, covering text, formulas, tables, and visual regions. We build a data engine that combines filtered real-document annotations with synthetic pages whose rendered images and Markdown targets are derived from the same HTML source. The training recipe includes supervised fine-tuning, reinforcement learning on a 4B branch with a multi-component reward design, on-policy distillation into the 0.8B model, and model fusion. On OmniDocBench v1.6, OvisOCR2 achieves a state-of-the-art overall score of 96.58, placing an end-to-end model at the top of this leaderboard previously dominated by pipeline methods and highlighting the potential of end-to-end document parsing. On PureDocBench, OvisOCR2 also achieves the highest Avg3 score of 75.06. Beyond these two public benchmarks, we evaluate OvisOCR2 on an in-house benchmark designed to cover a broader set of long-tail and challenging scenarios. OvisOCR2 obtains the best overall performance among the compared methods, providing further evidence of its generalization and robustness. OvisOCR2 is available at https://huggingface.co/ATH-MaaS/OvisOCR2.",
+  "publishedAt": "2026-07-15T09:32:33Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 55,
+  "citationCount": 0,
+  "githubStars": null,
+  "pageCount": 29
+ },
+ {
+  "arxivId": "2607.20465",
+  "slug": "dataprep-bench-benchmarking-llms-as-training-data-preparators",
+  "title": "DataPrep-Bench: Benchmarking LLMs as Training Data Preparators",
+  "authors": [
+   "Hao Liang",
+   "Qifeng Cai",
+   "Yibo Lin",
+   "Jianzhuo Du",
+   "Qifeng Xia",
+   "Sizhe Qiu"
+  ],
+  "abstract": "The quality of training data fundamentally determines the capabilities of large language models (LLMs), yet no unified benchmark exists to measure how well LLMs, agents, and data-centric workflows actually prepare training data end to end. We view LLM-driven data preparation as comprising two complementary capabilities: data construction, which transforms raw sources into supervised training data, and data quality evaluation, which predicts the training value of candidate datasets before downstream training; throughout, \"quality\" refers to downstream training utility rather than surface-level textual properties. We introduce DataPrep-Bench, the first unified benchmark that jointly evaluates both capabilities under a shared downstream-grounded protocol over six domains and multiple base models. For data construction, methods consume identical raw sources and are scored by fine-tuning a base model on their outputs jointly with Dolly-15k; alongside this track we release Data-Construction-Skill, a skill-guided agent that lifts the Dolly-only baseline by nearly 20 points absolute on Llama-3.1-8B Finance and is competitive with the strongest agent- and DataFlow-based methods in knowledge-extraction-dense domains. For data quality evaluation, scoring functions are scored by Pearson correlation with downstream performance on a shared candidate pool; we release the Distributional Alignment Score (DAS), a distribution-based evaluator that uses MMD between a candidate dataset and a domain proxy. DAS attains the strongest cross-model correlation in four of six domains and is the only metric clearing r > 0.70 simultaneously in Math, Science, and Medical, outperforming existing quality-, diversity-, and heuristic-based evaluators. DataPrep-Bench provides a unified, downstream-grounded framework for measuring progress on both capabilities as co-equal targets of LLM-driven data preparation.",
+  "publishedAt": "2026-05-19T02:23:53Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 55,
+  "citationCount": 0,
+  "githubStars": null,
+  "pageCount": 28
+ },
+ {
+  "arxivId": "2508.10881",
+  "slug": "tooncomposer-streamlining-cartoon-production-with-generative-post-keyframing",
+  "title": "ToonComposer: Streamlining Cartoon Production with Generative Post-Keyframing",
+  "authors": [
+   "Lingen Li",
+   "Guangzhi Wang",
+   "Zhaoyang Zhang",
+   "Yaowei Li",
+   "Xiaoyu Li",
+   "Qi Dou"
+  ],
+  "abstract": "Traditional cartoon and anime production involves keyframing, inbetweening, and colorization stages, which require intensive manual effort. Despite recent advances in AI, existing methods often handle these stages separately, leading to error accumulation and artifacts. For instance, inbetweening approaches struggle with large motions, while colorization methods require dense per-frame sketches. To address this, we introduce ToonComposer, a generative model that unifies inbetweening and colorization into a single post-keyframing stage. ToonComposer employs a sparse sketch injection mechanism to provide precise control using keyframe sketches. Additionally, it uses a cartoon adaptation method with the spatial low-rank adapter to tailor a modern video foundation model to the cartoon domain while keeping its temporal prior intact. Requiring as few as a single sketch and a colored reference frame, ToonComposer excels with sparse inputs, while also supporting multiple sketches at any temporal location for more precise motion control. This dual capability reduces manual workload and improves flexibility, empowering artists in real-world scenarios. To evaluate our model, we further created PKBench, a benchmark featuring human-drawn sketches that simulate real-world use cases. Our evaluation demonstrates that ToonComposer outperforms existing methods in visual quality, motion consistency, and production efficiency, offering a superior and more flexible solution for AI-assisted cartoon production.",
+  "publishedAt": "2025-08-14T17:50:11Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 54,
+  "citationCount": 8,
+  "githubStars": 584,
+  "pageCount": 13
+ },
+ {
+  "arxivId": "2509.04185",
+  "slug": "set-block-decoding-is-a-language-model-inference-accelerator",
+  "title": "Set Block Decoding is a Language Model Inference Accelerator",
+  "authors": [
+   "Itai Gat",
+   "Heli Ben-Hamu",
+   "Marton Havasi",
+   "Daniel Haziza",
+   "Jeremy Reizenstein",
+   "Gabriel Synnaeve"
+  ],
+  "abstract": "Autoregressive next token prediction language models offer powerful capabilities but face significant challenges in practical deployment due to the high computational and memory costs of inference, particularly during the decoding stage. We introduce Set Block Decoding (SBD), a simple and flexible paradigm that accelerates generation by integrating standard next token prediction (NTP) and masked token prediction (MATP) within a single architecture. SBD allows the model to sample multiple, not necessarily consecutive, future tokens in parallel, a key distinction from previous acceleration methods. This flexibility allows the use of advanced solvers from the discrete diffusion literature, offering significant speedups without sacrificing accuracy. SBD requires no architectural changes or extra training hyperparameters, maintains compatibility with exact KV-caching, and can be implemented by fine-tuning existing next token prediction models. By fine-tuning Llama-3.1 8B and Qwen-3 8B, we demonstrate that SBD enables a 3-5x reduction in the number of forward passes required for generation while achieving same performance as equivalent NTP training.",
+  "publishedAt": "2025-09-04T13:02:39Z",
+  "primaryArxivCategory": [
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 54,
+  "citationCount": 18,
+  "githubStars": null,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2509.21880",
+  "slug": "no-prompt-left-behind-exploiting-zero-variance-prompts-in-llm-reinforcement",
+  "title": "No Prompt Left Behind: Exploiting Zero-Variance Prompts in LLM Reinforcement Learning via Entropy-Guided Advantage Shaping",
+  "authors": [
+   "Thanh-Long V. Le",
+   "Myeongho Jeon",
+   "Kim Vu",
+   "Viet Lai",
+   "Eunho Yang"
+  ],
+  "abstract": "Reinforcement Learning with Verifiable Rewards (RLVR) is a powerful framework for improving the reasoning abilities of Large Language Models (LLMs). However, current methods such as GRPO rely only on problems where the model responses to the same input differ in correctness, while ignoring those where all responses receive the same reward -- so-called zero-variance prompts. In this work, we argue that such prompts are not useless but can, in fact, provide meaningful feedback for policy optimization. To this end, we introduce Reinforcement Learning with Zero-Variance Prompts (RL-ZVP), a novel algorithm that extract learning signals from zero-variance prompts. RL-ZVP directly rewards correctness and penalizes errors even without contrasting responses, modulating feedback with token-level characteristics to preserve informative, nuanced signals. Across six math reasoning benchmarks, RL-ZVP achieves significant improvements of up to 8.61 points in accuracy and 7.77 points in pass rate over GRPO, while consistently outperforming other baselines that filter out zero-variance prompts. These results highlight the untapped potential of learning from zero-variance prompts in RLVR. The project page is available at https://bltnynk.github.io/publications/rl-zvp/.",
+  "publishedAt": "2025-09-26T05:03:54Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 54,
+  "citationCount": 41,
+  "githubStars": null,
+  "pageCount": 27
+ },
+ {
+  "arxivId": "2509.24695",
+  "slug": "sana-video-efficient-video-generation-with-block-linear-diffusion-transformer",
+  "title": "SANA-Video: Efficient Video Generation with Block Linear Diffusion Transformer",
+  "authors": [
+   "Junsong Chen",
+   "Yuyang Zhao",
+   "Jincheng Yu",
+   "Ruihang Chu",
+   "Junyu Chen",
+   "Shuai Yang"
+  ],
+  "abstract": "We introduce SANA-Video, a small diffusion model that can efficiently generate videos up to 720x1280 resolution and minute-length duration. SANA-Video synthesizes high-resolution, high-quality and long videos with strong text-video alignment at a remarkably fast speed, deployable on RTX 5090 GPU. Two core designs ensure our efficient, effective and long video generation: (1) Linear DiT: We leverage linear attention as the core operation, which is more efficient than vanilla attention given the large number of tokens processed in video generation. (2) Constant-Memory KV cache for Block Linear Attention: we design block-wise autoregressive approach for long video generation by employing a constant-memory state, derived from the cumulative properties of linear attention. This KV cache provides the Linear DiT with global context at a fixed memory cost, eliminating the need for a traditional KV cache and enabling efficient, minute-long video generation. In addition, we explore effective data filters and model training strategies, narrowing the training cost to 12 days on 64 H100 GPUs, which is only 1% of the cost of MovieGen. Given its low cost, SANA-Video achieves competitive performance compared to modern state-of-the-art small diffusion models (e.g., Wan 2.1-1.3B and SkyReel-V2-1.3B) while being 16x faster in measured latency. Moreover, SANA-Video can be deployed on RTX 5090 GPUs with NVFP4 precision, accelerating the inference speed of generating a 5-second 720p video from 71s to 29s (2.4x speedup). In summary, SANA-Video enables low-cost, high-quality video generation.",
+  "publishedAt": "2025-09-29T12:28:09Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": "NVIDIA",
+  "hfUpvotes": 54,
+  "citationCount": 82,
+  "githubStars": 8704,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2509.24900",
+  "slug": "opengpt-4o-image-a-comprehensive-dataset-for-advanced-image-generation-and",
+  "title": "OpenGPT-4o-Image: A Comprehensive Dataset for Advanced Image Generation and Editing",
+  "authors": [
+   "Zhihong Chen",
+   "Xuehai Bai",
+   "Yang Shi",
+   "Chaoyou Fu",
+   "Huanyu Zhang",
+   "Haotian Wang"
+  ],
+  "abstract": "The performance of unified multimodal models for image generation and editing is fundamentally constrained by the quality and comprehensiveness of their training data. While existing datasets have covered basic tasks like style transfer and simple object manipulation, they often lack the systematic structure and challenging scenarios required for real-world applications. To address this bottleneck, we introduce OpenGPT-4o-Image, a large-scale dataset constructed using a novel methodology that combines hierarchical task taxonomy with automated data generation. Our taxonomy not only includes fundamental capabilities such as text rendering and style control but also introduces highly practical yet challenging categories like scientific imagery for chemistry illustrations and complex instruction editing requiring simultaneous execution of multiple operations. Through an automated pipeline leveraging structured resource pools and GPT-4o, we generate 80k high-quality instruction-image pairs with controlled diversity, covering 11 major domains and 51 subtasks. Extensive experiments show that fine-tuning leading models on our dataset achieves significant performance gains across multiple benchmarks, with improvements of up to 18\\% on editing tasks (UniWorld-V1 on ImgEdit-Bench) and 13% on generation tasks (Harmon on GenEval). Our work demonstrates that systematic data construction is key to advancing multimodal AI capabilities.",
+  "publishedAt": "2025-09-29T15:11:09Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 54,
+  "citationCount": 24,
+  "githubStars": 33,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2510.19430",
+  "slug": "gigabrain-0-a-world-model-powered-vision-language-action-model",
+  "title": "GigaBrain-0: A World Model-Powered Vision-Language-Action Model",
+  "authors": [
+   "GigaBrain Team",
+   "Angen Ye",
+   "Boyuan Wang",
+   "Chaojun Ni",
+   "Guan Huang",
+   "Guosheng Zhao"
+  ],
+  "abstract": "Training Vision-Language-Action (VLA) models for generalist robots typically requires large-scale real-world robot data, which is expensive and time-consuming to collect. The inefficiency of physical data collection severely limits the scalability, and generalization capacity of current VLA systems. To address this challenge, we introduce GigaBrain-0, a novel VLA foundation model empowered by world model-generated data (e.g., video generation, real2real transfer, human transfer, view transfer, sim2real transfer data). By leveraging world models to generate diverse data at scale, GigaBrain-0 significantly reduces reliance on real robot data while improving cross-task generalization. Our approach further improves policy robustness through RGBD input modeling and embodied Chain-of-Thought (CoT) supervision, enabling the model to reason about spatial geometry, object states, and long-horizon dependencies during task execution. This leads to substantial gains in real-world performance on dexterous, long-horizon, and mobile manipulation tasks. Extensive experiments demonstrate that GigaBrain-0 achieves superior generalization across variations in appearances (e.g., textures, colors), object placements, and camera viewpoints. Additionally, we present GigaBrain-0-Small, an optimized lightweight variant designed to run efficiently on devices such as the NVIDIA Jetson AGX Orin.",
+  "publishedAt": "2025-10-22T09:57:13Z",
+  "primaryArxivCategory": [
+   "cs.RO",
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 54,
+  "citationCount": 42,
+  "githubStars": null,
+  "pageCount": 25
+ },
+ {
+  "arxivId": "2511.03334",
+  "slug": "uniavgen-unified-audio-and-video-generation-with-asymmetric-cross-modal",
+  "title": "UniAVGen: Unified Audio and Video Generation with Asymmetric Cross-Modal Interactions",
+  "authors": [
+   "Guozhen Zhang",
+   "Zixiang Zhou",
+   "Teng Hu",
+   "Ziqiao Peng",
+   "Youliang Zhang",
+   "Yi Chen"
+  ],
+  "abstract": "Due to the lack of effective cross-modal modeling, existing open-source audio-video generation methods often exhibit compromised lip synchronization and insufficient semantic consistency. To mitigate these drawbacks, we propose UniAVGen, a unified framework for joint audio and video generation. UniAVGen is anchored in a dual-branch joint synthesis architecture, incorporating two parallel Diffusion Transformers (DiTs) to build a cohesive cross-modal latent space. At its heart lies an Asymmetric Cross-Modal Interaction mechanism, which enables bidirectional, temporally aligned cross-attention, thus ensuring precise spatiotemporal synchronization and semantic consistency. Furthermore, this cross-modal interaction is augmented by a Face-Aware Modulation module, which dynamically prioritizes salient regions in the interaction process. To enhance generative fidelity during inference, we additionally introduce Modality-Aware Classifier-Free Guidance, a novel strategy that explicitly amplifies cross-modal correlation signals. Notably, UniAVGen's robust joint synthesis design enables seamless unification of pivotal audio-video tasks within a single model, such as joint audio-video generation and continuation, video-to-audio dubbing, and audio-driven video synthesis. Comprehensive experiments validate that, with far fewer training samples (1.3M vs. 30.1M), UniAVGen delivers overall advantages in audio-video synchronization, timbre consistency, and emotion consistency.",
+  "publishedAt": "2025-11-05T10:06:51Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 54,
+  "citationCount": 28,
+  "githubStars": 57,
+  "pageCount": 13
+ },
+ {
+  "arxivId": "2511.10643",
+  "slug": "black-box-on-policy-distillation-of-large-language-models",
+  "title": "Black-Box On-Policy Distillation of Large Language Models",
+  "authors": [
+   "Tianzhu Ye",
+   "Li Dong",
+   "Zewen Chi",
+   "Xun Wu",
+   "Shaohan Huang",
+   "Furu Wei"
+  ],
+  "abstract": "Black-box distillation creates student large language models (LLMs) by learning from a proprietary teacher model's text outputs alone, without access to its internal logits or parameters. In this work, we introduce Generative Adversarial Distillation (GAD), which enables on-policy and black-box distillation. GAD frames the student LLM as a generator and trains a discriminator to distinguish its responses from the teacher LLM's, creating a minimax game. The discriminator acts as an on-policy reward model that co-evolves with the student, providing stable, adaptive feedback. Experimental results show that GAD consistently surpasses the commonly used sequence-level knowledge distillation. In particular, Qwen2.5-14B-Instruct (student) trained with GAD becomes comparable to its teacher, GPT-5-Chat, on the LMSYS-Chat automatic evaluation. The results establish GAD as a promising and effective paradigm for black-box LLM distillation.",
+  "publishedAt": "2025-11-13T18:58:37Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 54,
+  "citationCount": 43,
+  "githubStars": null,
+  "pageCount": 15
+ },
+ {
+  "arxivId": "2511.15567",
+  "slug": "computer-use-agents-as-judges-for-generative-user-interface",
+  "title": "Computer-Use Agents as Judges for Generative User Interface",
+  "authors": [
+   "Kevin Qinghong Lin",
+   "Siyuan Hu",
+   "Linjie Li",
+   "Zhengyuan Yang",
+   "Lijuan Wang",
+   "Philip Torr"
+  ],
+  "abstract": "Computer-Use Agents (CUA) are becoming increasingly capable of autonomously operating digital environments through Graphical User Interfaces (GUI). Yet, most GUI remain designed primarily for humans--prioritizing aesthetics and usability--forcing agents to adopt human-oriented behaviors that are unnecessary for efficient task execution. At the same time, rapid advances in coding-oriented language models (Coder) have transformed automatic GUI design. This raises a fundamental question: Can CUA as judges to assist Coder for automatic GUI design? To investigate, we introduce AUI-Gym, a benchmark for Automatic GUI development spanning 52 applications across diverse domains. Using language models, we synthesize 1560 tasks that simulate real-world scenarios. To ensure task reliability, we further develop a verifier that programmatically checks whether each task is executable within its environment. Building on this, we propose a Coder-CUA in Collaboration framework: the Coder acts as Designer, generating and revising websites, while the CUA serves as Judge, evaluating functionality and refining designs. Success is measured not by visual appearance, but by task solvability and CUA navigation success rate. To turn CUA feedback into usable guidance, we design a CUA Dashboard that compresses multi-step navigation histories into concise visual summaries, offering interpretable guidance for iterative redesign. By positioning agents as both designers and judges, our framework shifts interface design toward agent-native efficiency and reliability. Our work takes a step toward shifting agents from passive use toward active participation in digital environments. Our code and dataset are available at https://github.com/showlab/AUI.",
+  "publishedAt": "2025-11-19T16:00:02Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.CL",
+   "cs.HC"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 54,
+  "citationCount": 6,
+  "githubStars": 45,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2511.15700",
+  "slug": "first-frame-is-the-place-to-go-for-video-content-customization",
+  "title": "First Frame Is the Place to Go for Video Content Customization",
+  "authors": [
+   "Jingxi Chen",
+   "Zongxia Li",
+   "Zhichao Liu",
+   "Guangyao Shi",
+   "Xiyang Wu",
+   "Fuxiao Liu"
+  ],
+  "abstract": "What role does the first frame play in video generation models? Traditionally, it's viewed as the spatial-temporal starting point of a video, merely a seed for subsequent animation. In this work, we reveal a fundamentally different perspective: video models implicitly treat the first frame as a conceptual memory buffer that stores visual entities for later reuse during generation. Leveraging this insight, we show that it's possible to achieve robust and generalized video content customization in diverse scenarios, using only 20-50 training examples without architectural changes or large-scale finetuning. This unveils a powerful, overlooked capability of video generation models for reference-based video customization.",
+  "publishedAt": "2025-11-19T18:56:50Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 54,
+  "citationCount": 8,
+  "githubStars": 194,
+  "pageCount": 16
+ },
+ {
+  "arxivId": "2512.00425",
+  "slug": "what-about-gravity-in-video-generation-post-training-newtons-laws-with",
+  "title": "What about gravity in video generation? Post-Training Newton's Laws with Verifiable Rewards",
+  "authors": [
+   "Minh-Quan Le",
+   "Yuanzhi Zhu",
+   "Vicky Kalogeiton",
+   "Dimitris Samaras"
+  ],
+  "abstract": "Recent video diffusion models can synthesize visually compelling clips, yet often violate basic physical laws-objects float, accelerations drift, and collisions behave inconsistently-revealing a persistent gap between visual realism and physical realism. We propose $\\texttt{NewtonRewards}$, the first physics-grounded post-training framework for video generation based on $\\textit{verifiable rewards}$. Instead of relying on human or VLM feedback, $\\texttt{NewtonRewards}$ extracts $\\textit{measurable proxies}$ from generated videos using frozen utility models: optical flow serves as a proxy for velocity, while high-level appearance features serve as a proxy for mass. These proxies enable explicit enforcement of Newtonian structure through two complementary rewards: a Newtonian kinematic constraint enforcing constant-acceleration dynamics, and a mass conservation reward preventing trivial, degenerate solutions. We evaluate $\\texttt{NewtonRewards}$ on five Newtonian Motion Primitives (free fall, horizontal/parabolic throw, and ramp sliding down/up) using our newly constructed large-scale benchmark, $\\texttt{NewtonBench-60K}$. Across all primitives in visual and physics metrics, $\\texttt{NewtonRewards}$ consistently improves physical plausibility, motion smoothness, and temporal coherence over prior post-training methods. It further maintains strong performance under out-of-distribution shifts in height, speed, and friction. Our results show that physics-grounded verifiable rewards offer a scalable path toward physics-aware video generation.",
+  "publishedAt": "2025-11-29T10:04:50Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 54,
+  "citationCount": 18,
+  "githubStars": 16,
+  "pageCount": 17
+ },
+ {
+  "arxivId": "2512.13168",
+  "slug": "finch-benchmarking-finance-accounting-across-spreadsheet-centric-enterprise",
+  "title": "Finch: Benchmarking Finance & Accounting across Spreadsheet-Centric Enterprise Workflows",
+  "authors": [
+   "Haoyu Dong",
+   "Pengkun Zhang",
+   "Yan Gao",
+   "Xuanyu Dong",
+   "Yilin Cheng",
+   "Mingzhe Lu"
+  ],
+  "abstract": "We introduce FinWorkBench (a.k.a. Finch) for evaluating AI agents on real-world, enterprise-grade finance and accounting workflows that interleave data entry, structuring, formatting, web search, cross-file retrieval, calculation, modeling, validation, translation, visualization, and reporting. Finch is sourced from authentic enterprise workspaces from Enron (15,000 files and 500,000 emails) and other financial institutions, covering the period 2000--2025 and preserving the in-the-wild messiness of multimodal artifacts such as tables and charts across diverse domains including budgeting, trading, asset management, and operational management. We propose a workflow construction process that combines LLM-assisted mining of workflows from authentic enterprise environments with expert annotation: (1) LLM-assisted, expert-verified derivation of workflows from real-world email threads and spreadsheet version histories, and (2) meticulous annotation requiring over 700 hours of expert effort. This yields 172 composite workflows with 384 tasks, involving 1,710 spreadsheets with 27 million cells, along with PDFs and other artifacts, capturing the intrinsically messy, long-horizon, knowledge-intensive, and collaborative nature of real-world enterprise work. We conduct both human and automated evaluations of frontier AI systems, including GPT-5.1, Claude Sonnet 4.5, Claude Opus 4.5, Gemini 3 Pro, Grok 4, and Qwen 3 Max. Under human evaluation, GPT-5.1 Pro spends an average of 16.8 minutes per workflow yet passes only 38.4% of workflows. Comprehensive case studies further surface the challenges that real-world enterprise workflows pose for AI agents.",
+  "publishedAt": "2025-12-15T10:28:45Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CE",
+   "cs.IR",
+   "cs.MA"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 54,
+  "citationCount": 5,
+  "githubStars": 13,
+  "pageCount": 32
+ },
+ {
+  "arxivId": "2601.03319",
+  "slug": "caricaturegs-exaggerating-3d-gaussian-splatting-faces-with-gaussian-curvature",
+  "title": "CaricatureGS: Exaggerating 3D Gaussian Splatting Faces With Gaussian Curvature",
+  "authors": [
+   "Eldad Matmon",
+   "Amit Bracha",
+   "Noam Rotstein",
+   "Ron Kimmel"
+  ],
+  "abstract": "A photorealistic and controllable 3D caricaturization framework for faces is introduced. We start with an intrinsic Gaussian curvature-based surface exaggeration technique, which, when coupled with texture, tends to produce over-smoothed renders. To address this, we resort to 3D Gaussian Splatting (3DGS), which has recently been shown to produce realistic free-viewpoint avatars. Given a multiview sequence, we extract a FLAME mesh, solve a curvature-weighted Poisson equation, and obtain its exaggerated form. However, directly deforming the Gaussians yields poor results, necessitating the synthesis of pseudo-ground-truth caricature images by warping each frame to its exaggerated 2D representation using local affine transformations. We then devise a training scheme that alternates real and synthesized supervision, enabling a single Gaussian collection to represent both natural and exaggerated avatars. This scheme improves fidelity, supports local edits, and allows continuous control over the intensity of the caricature. In order to achieve real-time deformations, an efficient interpolation between the original and exaggerated surfaces is introduced. We further analyze and show that it has a bounded deviation from closed-form solutions. In both quantitative and qualitative evaluations, our results outperform prior work, delivering photorealistic, geometry-controlled caricature avatars.",
+  "publishedAt": "2026-01-06T13:56:28Z",
+  "primaryArxivCategory": [
+   "cs.GR",
+   "cs.AI",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 54,
+  "citationCount": 0,
+  "githubStars": null,
+  "pageCount": 17
+ },
+ {
+  "arxivId": "2601.06487",
+  "slug": "arenarl-scaling-rl-for-open-ended-agents-via-tournament-based-relative-ranking",
+  "title": "ArenaRL: Scaling RL for Open-Ended Agents via Tournament-based Relative Ranking",
+  "authors": [
+   "Qiang Zhang",
+   "Boli Chen",
+   "Fanrui Zhang",
+   "Ruixue Ding",
+   "Shihang Wang",
+   "Qiuchen Wang"
+  ],
+  "abstract": "Reinforcement learning has substantially improved the performance of LLM agents on tasks with verifiable outcomes, but it still struggles on open-ended agent tasks with vast solution spaces (e.g., complex travel planning). Due to the absence of objective ground-truth for these tasks, current RL algorithms largely rely on reward models that assign scalar scores to individual responses. We contend that such pointwise scoring suffers from an inherent discrimination collapse: the reward model struggles to distinguish subtle advantages among different trajectories, resulting in scores within a group being compressed into a narrow range. Consequently, the effective reward signal becomes dominated by noise from the reward model, leading to optimization stagnation. To address this, we propose ArenaRL, a reinforcement learning paradigm that shifts from pointwise scalar scoring to intra-group relative ranking. ArenaRL introduces a process-aware pairwise evaluation mechanism, employing multi-level rubrics to assign fine-grained relative scores to trajectories. Additionally, we construct an intra-group adversarial arena and devise a tournament-based ranking scheme to obtain stable advantage signals. Empirical results confirm that the built seeded single-elimination scheme achieves nearly equivalent advantage estimation accuracy to full pairwise comparisons with O(N^2) complexity, while operating with only O(N) complexity, striking an optimal balance between efficiency and precision. Furthermore, to address the lack of full-cycle benchmarks for open-ended agents, we build Open-Travel and Open-DeepResearch, two high-quality benchmarks featuring a comprehensive pipeline covering SFT, RL training, and multi-dimensional evaluation. Extensive experiments show that ArenaRL substantially outperforms standard RL baselines, enabling LLM agents to generate more robust solutions for complex real-world tasks.",
+  "publishedAt": "2026-01-10T08:43:07Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI"
+  ],
+  "officialLab": "Alibaba / Qwen",
+  "hfUpvotes": 54,
+  "citationCount": 9,
+  "githubStars": 274,
+  "pageCount": 38
+ },
+ {
+  "arxivId": "2601.15197",
+  "slug": "langforce-bayesian-decomposition-of-vision-language-action-models-via-latent",
+  "title": "LangForce: Bayesian Decomposition of Vision Language Action Models via Latent Action Queries",
+  "authors": [
+   "Shijie Lian",
+   "Bin Yu",
+   "Xiaopeng Lin",
+   "Laurence T. Yang",
+   "Zhaolong Shen",
+   "Changti Wu"
+  ],
+  "abstract": "Vision-Language-Action (VLA) models have shown promise in robot manipulation but often struggle to generalize to new instructions or complex multi-task scenarios. We identify a critical pathology in current training paradigms where goal-driven data collection creates a dataset bias. In such datasets, language instructions are highly predictable from visual observations alone, causing the conditional mutual information between instructions and actions to vanish, a phenomenon we term Information Collapse. Consequently, models degenerate into vision-only policies that ignore language constraints and fail in out-of-distribution (OOD) settings. To address this, we propose LangForce, a novel framework that enforces instruction following via Bayesian decomposition. By introducing learnable Latent Action Queries, we construct a dual-branch architecture to estimate both a vision-only prior $p(a \\mid v)$ and a language-conditioned posterior $π(a \\mid v, \\ell)$. We then optimize the policy to maximize the conditional Pointwise Mutual Information (PMI) between actions and instructions. This objective effectively penalizes the vision shortcut and rewards actions that explicitly explain the language command. Without requiring new data, LangForce significantly improves generalization. Extensive experiments across on SimplerEnv and RoboCasa demonstrate substantial gains, including an 11.3% improvement on the challenging OOD SimplerEnv benchmark, validating the ability of our approach to robustly ground language in action.",
+  "publishedAt": "2026-01-21T17:15:22Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL",
+   "cs.CV",
+   "cs.RO"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 54,
+  "citationCount": 14,
+  "githubStars": 75,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2601.16211",
+  "slug": "why-cant-i-open-my-drawer-mitigating-object-driven-shortcuts-in-zero-shot",
+  "title": "Why Can't I Open My Drawer? Mitigating Object-Driven Shortcuts in Zero-Shot Compositional Action Recognition",
+  "authors": [
+   "Geo Ahn",
+   "Inwoong Lee",
+   "Taeoh Kim",
+   "Minho Shim",
+   "Dongyoon Wee",
+   "Jinwoo Choi"
+  ],
+  "abstract": "Zero-Shot Compositional Action Recognition (ZS-CAR) requires recognizing novel verb-object combinations composed of previously observed primitives. In this work, we tackle a key failure mode: models predict verbs via object-driven shortcuts (i.e., relying on the labeled object class) rather than temporal evidence. We argue that sparse compositional supervision and verb-object learning asymmetry can promote object-driven shortcut learning. Our analysis with proposed diagnostic metrics shows that existing methods overfit to training co-occurrence patterns and underuse temporal verb cues, resulting in weak generalization to unseen compositions. To address object-driven shortcuts, we propose Robust COmpositional REpresentations (RCORE) with two components. Co-occurrence Prior Regularization (CPR) adds explicit supervision for unseen compositions and regularizes the model against frequent co-occurrence priors by treating them as hard negatives. Temporal Order Regularization for Composition (TORC) enforces temporal-order sensitivity to learn temporally grounded verb representations. Across Sth-com and EK100-com, RCORE reduces shortcut diagnostics and consequently improves compositional generalization.",
+  "publishedAt": "2026-01-22T18:59:13Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 54,
+  "citationCount": 0,
+  "githubStars": 9,
+  "pageCount": 34
+ },
+ {
+  "arxivId": "2602.05261",
+  "slug": "length-unbiased-sequence-policy-optimization-revealing-and-controlling",
+  "title": "Length-Unbiased Sequence Policy Optimization: Revealing and Controlling Response Length Variation in RLVR",
+  "authors": [
+   "Fanfan Liu",
+   "Youyang Yin",
+   "Peng Shi",
+   "Siqi Yang",
+   "Zhixiong Zeng",
+   "Haibo Qiu"
+  ],
+  "abstract": "Recent applications of Reinforcement Learning with Verifiable Rewards (RLVR) to Large Language Models (LLMs) and Vision-Language Models (VLMs) have demonstrated significant success in enhancing reasoning capabilities for complex tasks. During RLVR training, an increase in response length is often regarded as a key factor contributing to the growth of reasoning ability. However, the patterns of change in response length vary significantly across different RLVR algorithms during the training process. To provide a fundamental explanation for these variations, this paper conducts an in-depth analysis of the components of mainstream RLVR algorithms. We present a theoretical analysis of the factors influencing response length and validate our theory through extensive experimentation. Building upon these theoretical findings, we propose the Length-Unbiased Sequence Policy Optimization (LUSPO) algorithm. Specifically, we rectify the length bias inherent in Group Sequence Policy Optimization (GSPO), rendering its loss function unbiased with respect to response length and thereby resolving the issue of response length collapse. We conduct extensive experiments across mathematical reasoning benchmarks and multimodal reasoning scenarios, where LUSPO consistently achieves superior performance. Empirical results demonstrate that LUSPO represents a novel, state-of-the-art optimization strategy compared to existing methods such as GRPO and GSPO.",
+  "publishedAt": "2026-02-05T03:35:38Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 54,
+  "citationCount": 6,
+  "githubStars": 8,
+  "pageCount": 14
+ },
+ {
+  "arxivId": "2603.04743",
+  "slug": "dare-aligning-llm-agents-with-the-r-statistical-ecosystem-via-distribution",
+  "title": "DARE: Aligning LLM Agents with the R Statistical Ecosystem via Distribution-Aware Retrieval",
+  "authors": [
+   "Maojun Sun",
+   "Yue Wu",
+   "Yifei Xie",
+   "Ruijian Han",
+   "Binyan Jiang",
+   "Defeng Sun"
+  ],
+  "abstract": "Large Language Model (LLM) agents can automate data-science workflows, but many rigorous statistical methods implemented in R remain underused because LLMs struggle with statistical knowledge and tool retrieval. Existing retrieval-augmented approaches focus on function-level semantics and ignore data distribution, producing suboptimal matches. We propose DARE (Distribution-Aware Retrieval Embedding), a lightweight, plug-and-play retrieval model that incorporates data distribution information into function representations for R package retrieval. Our main contributions are: (i) RPKB, a curated R Package Knowledge Base derived from 8,191 high-quality CRAN packages; (ii) DARE, an embedding model that fuses distributional features with function metadata to improve retrieval relevance; and (iii) RCodingAgent, an R-oriented LLM agent for reliable R code generation and a suite of statistical analysis tasks for systematically evaluating LLM agents in realistic analytical scenarios. Empirically, DARE achieves an NDCG at 10 of 93.47%, outperforming state-of-the-art open-source embedding models by up to 17% on package retrieval while using substantially fewer parameters. Integrating DARE into RCodingAgent yields significant gains on downstream analysis tasks. This work helps narrow the gap between LLM automation and the mature R statistical ecosystem.",
+  "publishedAt": "2026-03-05T02:29:54Z",
+  "primaryArxivCategory": [
+   "cs.IR",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 54,
+  "citationCount": 3,
+  "githubStars": 15,
+  "pageCount": 24
+ },
+ {
+  "arxivId": "2603.09206",
+  "slug": "mm-zero-self-evolving-multi-model-vision-language-models-from-zero-data",
+  "title": "MM-Zero: Self-Evolving Multi-Model Vision Language Models From Zero Data",
+  "authors": [
+   "Zongxia Li",
+   "Hongyang Du",
+   "Chengsong Huang",
+   "Xiyang Wu",
+   "Lantao Yu",
+   "Yicheng He"
+  ],
+  "abstract": "Self-evolving has emerged as a key paradigm for improving foundational models such as Large Language Models (LLMs) and Vision Language Models (VLMs) with minimal human intervention. While recent approaches have demonstrated that LLM agents can self-evolve from scratch with little to no data, VLMs introduce an additional visual modality that typically requires at least some seed data, such as images, to bootstrap the self-evolution process. In this work, we present Multi-model Multimodal Zero (MM-Zero), the first RL-based framework to achieve zero-data self-evolution for VLM reasoning. Moving beyond prior dual-role (Proposer and Solver) setups, MM-Zero introduces a multi-role self-evolving training framework comprising three specialized roles: a Proposer that generates abstract visual concepts and formulates questions; a Coder that translates these concepts into executable code (e.g., Python, SVG) to render visual images; and a Solver that performs multimodal reasoning over the generated visual content. All three roles are initialized from the same base model and trained using Group Relative Policy Optimization (GRPO), with carefully designed reward mechanisms that integrate execution feedback, visual verification, and difficulty balancing. Our experiments show that MM-Zero improves VLM reasoning performance across a wide range of multimodal benchmarks. MM-Zero establishes a scalable path toward self-evolving multi-model systems for multimodal models, extending the frontier of self-improvement beyond the conventional two-model paradigm.",
+  "publishedAt": "2026-03-10T05:23:26Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.LG"
+  ],
+  "officialLab": "NVIDIA",
+  "hfUpvotes": 54,
+  "citationCount": 12,
+  "githubStars": 79,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2604.08302",
+  "slug": "dmax-aggressive-parallel-decoding-for-dllms",
+  "title": "DMax: Aggressive Parallel Decoding for dLLMs",
+  "authors": [
+   "Zigeng Chen",
+   "Gongfan Fang",
+   "Xinyin Ma",
+   "Ruonan Yu",
+   "Xinchao Wang"
+  ],
+  "abstract": "We present DMax, a new paradigm for efficient diffusion language models (dLLMs). It mitigates error accumulation in parallel decoding, enabling aggressive decoding parallelism while preserving generation quality. Unlike conventional masked dLLMs that decode through a binary mask-to-token transition, DMax reformulates decoding as a progressive self-refinement from mask embeddings to token embeddings. At the core of our approach is On-Policy Uniform Training, a novel training strategy that efficiently unifies masked and uniform dLLMs, equipping the model to recover clean tokens from both masked inputs and its own erroneous predictions. Building on this foundation, we further propose Soft Parallel Decoding. We represent each intermediate decoding state as an interpolation between the predicted token embedding and the mask embedding, enabling iterative self-revising in embedding space. Extensive experiments across a variety of benchmarks demonstrate the effectiveness of DMax. Compared with the original LLaDA-2.0-mini, our method improves TPF on GSM8K from 2.04 to 5.47 while preserving accuracy. On MBPP, it increases TPF from 2.71 to 5.86 while maintaining comparable performance. On two H200 GPUs, our model achieves an average of 1,338 TPS at batch size 1. Code is available at: https://github.com/czg1225/DMax",
+  "publishedAt": "2026-04-09T14:35:42Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 54,
+  "citationCount": 8,
+  "githubStars": 128,
+  "pageCount": 16
+ }
+]

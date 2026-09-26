@@ -1,0 +1,709 @@
+[
+ {
+  "arxivId": "2510.20579",
+  "slug": "open-o3-video-grounded-video-reasoning-with-explicit-spatio-temporal-evidence",
+  "title": "Open-o3-Video: Grounded Video Reasoning with Explicit Spatio-Temporal Evidence",
+  "authors": [
+   "Jiahao Meng",
+   "Xiangtai Li",
+   "Haochen Wang",
+   "Yue Tan",
+   "Tao Zhang",
+   "Lingdong Kong"
+  ],
+  "abstract": "Most video reasoning models only generate textual reasoning traces without indicating when and where key evidence appears. Recent models such as OpenAI-o3 have sparked wide interest in evidence-centered reasoning for images, yet extending this ability to videos is more challenging due to the need for joint temporal tracking and spatial localization across dynamic scenes. We introduce Open-o3-Video, a non-agent framework that integrates explicit spatio-temporal evidence into video reasoning by highlighting key timestamps, objects, and bounding boxes, making the reasoning process traceable and verifiable. To enable this capability, we first construct high-quality datasets STGR that provide unified spatio-temporal supervision, which is absent in existing resources. We further adopt a cold-start reinforcement learning strategy with specially designed rewards that jointly encourage answer accuracy, temporal alignment, and spatial precision. On the V-STAR benchmark, Open-o3-Video achieves state-of-the-art performance, improving mAM by 14.4% and mLGM by 24.2% over the Qwen2.5-VL baseline, and shows consistent gains across a range of video understanding benchmarks. Beyond accuracy, the grounded reasoning traces produced by Open-o3-Video support confidence-aware test-time scaling, improving answer reliability.",
+  "publishedAt": "2025-10-23T14:05:56Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI",
+   "cs.MM"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 56,
+  "citationCount": 43,
+  "githubStars": 159,
+  "pageCount": 23
+ },
+ {
+  "arxivId": "2511.16668",
+  "slug": "v-reasonbench-toward-unified-reasoning-benchmark-suite-for-video-generation",
+  "title": "V-ReasonBench: Toward Unified Reasoning Benchmark Suite for Video Generation Models",
+  "authors": [
+   "Yang Luo",
+   "Xuanlei Zhao",
+   "Baijiong Lin",
+   "Lingting Zhu",
+   "Liyao Tang",
+   "Yuqi Liu"
+  ],
+  "abstract": "Recent progress in generative video models, such as Veo-3, has shown surprising zero-shot reasoning abilities, creating a growing need for systematic and reliable evaluation. We introduce V-ReasonBench, a benchmark designed to assess video reasoning across four key dimensions: structured problem-solving, spatial cognition, pattern-based inference, and physical dynamics. The benchmark is built from both synthetic and real-world image sequences and provides a diverse set of answer-verifiable tasks that are reproducible, scalable, and unambiguous. Evaluations of six state-of-the-art video models reveal clear dimension-wise differences, with strong variation in structured, spatial, pattern-based, and physical reasoning. We further compare video models with strong image models, analyze common hallucination behaviors, and study how video duration affects Chain-of-Frames reasoning. Overall, V-ReasonBench offers a unified and reproducible framework for measuring video reasoning and aims to support the development of models with more reliable, human-aligned reasoning skills.",
+  "publishedAt": "2025-11-20T18:59:42Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 56,
+  "citationCount": 17,
+  "githubStars": 36,
+  "pageCount": 21
+ },
+ {
+  "arxivId": "2511.19046",
+  "slug": "medsam3-delving-into-segment-anything-with-medical-concepts",
+  "title": "MedSAM3: Delving into Segment Anything with Medical Concepts",
+  "authors": [
+   "Anglin Liu",
+   "Rundong Xue",
+   "Xu R. Cao",
+   "Yifan Shen",
+   "Yi Lu",
+   "Xiang Li"
+  ],
+  "abstract": "Medical image segmentation is fundamental for biomedical discovery. Existing methods lack generalizability and demand extensive, time-consuming manual annotation for new clinical application. Here, we propose MedSAM-3, a text promptable medical segmentation model for medical image and video segmentation. By fine-tuning the Segment Anything Model (SAM) 3 architecture on medical images paired with semantic conceptual labels, our MedSAM-3 enables medical Promptable Concept Segmentation (PCS), allowing precise targeting of anatomical structures via open-vocabulary text descriptions rather than solely geometric prompts. We further introduce the MedSAM-3 Agent, a framework that integrates Multimodal Large Language Models (MLLMs) to perform complex reasoning and iterative refinement in an agent-in-the-loop workflow. Comprehensive experiments across diverse medical imaging modalities, including X-ray, MRI, Ultrasound, CT, and video, demonstrate that our approach significantly outperforms existing specialist and foundation models. We will release our code and model at https://github.com/Joey-S-Liu/MedSAM3.",
+  "publishedAt": "2025-11-24T12:34:38Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 56,
+  "citationCount": 28,
+  "githubStars": 315,
+  "pageCount": 12
+ },
+ {
+  "arxivId": "2512.20618",
+  "slug": "longvideoagent-multi-agent-reasoning-with-long-videos",
+  "title": "LongVideoAgent: Multi-Agent Reasoning with Long Videos",
+  "authors": [
+   "Runtao Liu",
+   "Ziyi Liu",
+   "Jiaqi Tang",
+   "Yue Ma",
+   "Renjie Pi",
+   "Jipeng Zhang"
+  ],
+  "abstract": "Recent advances in multimodal LLMs and systems that use tools for long-video QA point to the promise of reasoning over hour-long episodes. However, many methods still compress content into lossy summaries or rely on limited toolsets, weakening temporal grounding and missing fine-grained cues. We propose a multi-agent framework in which a master LLM coordinates a grounding agent to localize question-relevant segments and a vision agent to extract targeted textual observations. The master agent plans with a step limit, and is trained with reinforcement learning to encourage concise, correct, and efficient multi-agent cooperation. This design helps the master agent focus on relevant clips via grounding, complements subtitles with visual detail, and yields interpretable trajectories. On our proposed LongTVQA and LongTVQA+ which are episode-level datasets aggregated from TVQA/TVQA+, our multi-agent system significantly outperforms strong non-agent baselines. Experiments also show reinforcement learning further strengthens reasoning and planning for the trained agent. Code and data will be shared at https://longvideoagent.github.io/.",
+  "publishedAt": "2025-12-23T18:59:49Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CV",
+   "cs.LG",
+   "cs.MA"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 56,
+  "citationCount": 21,
+  "githubStars": 126,
+  "pageCount": 11
+ },
+ {
+  "arxivId": "2601.09708",
+  "slug": "fast-thinkact-efficient-vision-language-action-reasoning-via-verbalizable",
+  "title": "Fast-ThinkAct: Efficient Vision-Language-Action Reasoning via Verbalizable Latent Planning",
+  "authors": [
+   "Chi-Pin Huang",
+   "Yunze Man",
+   "Zhiding Yu",
+   "Min-Hung Chen",
+   "Jan Kautz",
+   "Yu-Chiang Frank Wang"
+  ],
+  "abstract": "Vision-Language-Action (VLA) tasks require reasoning over complex visual scenes and executing adaptive actions in dynamic environments. While recent studies on reasoning VLAs show that explicit chain-of-thought (CoT) can improve generalization, they suffer from high inference latency due to lengthy reasoning traces. We propose Fast-ThinkAct, an efficient reasoning framework that achieves compact yet performant planning through verbalizable latent reasoning. Fast-ThinkAct learns to reason efficiently with latent CoTs by distilling from a teacher, driven by a preference-guided objective to align manipulation trajectories that transfers both linguistic and visual planning capabilities for embodied control. This enables reasoning-enhanced policy learning that effectively connects compact reasoning to action execution. Extensive experiments across diverse embodied manipulation and reasoning benchmarks demonstrate that Fast-ThinkAct achieves strong performance with up to 89.3% reduced inference latency over state-of-the-art reasoning VLAs, while maintaining effective long-horizon planning, few-shot adaptation, and failure recovery.",
+  "publishedAt": "2026-01-14T18:59:59Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI",
+   "cs.LG",
+   "cs.RO"
+  ],
+  "officialLab": "NVIDIA",
+  "hfUpvotes": 56,
+  "citationCount": 17,
+  "githubStars": null,
+  "pageCount": 24
+ },
+ {
+  "arxivId": "2601.15892",
+  "slug": "stable-diffcoder-pushing-the-frontier-of-code-diffusion-large-language-model",
+  "title": "Stable-DiffCoder: Pushing the Frontier of Code Diffusion Large Language Model",
+  "authors": [
+   "Chenghao Fan",
+   "Wen Heng",
+   "Bo Li",
+   "Sichen Liu",
+   "Yuxuan Song",
+   "Jing Su"
+  ],
+  "abstract": "Diffusion-based language models (DLLMs) offer non-sequential, block-wise generation and richer data reuse compared to autoregressive (AR) models, but existing code DLLMs still lag behind strong AR baselines under comparable budgets. We revisit this setting in a controlled study and introduce Stable-DiffCoder, a block diffusion code model that reuses the Seed-Coder architecture, data, and training pipeline. To enable efficient knowledge learning and stable training, we incorporate a block diffusion continual pretraining (CPT) stage enhanced by a tailored warmup and block-wise clipped noise schedule. Under the same data and architecture, Stable-DiffCoder overall outperforms its AR counterpart on a broad suite of code benchmarks. Moreover, relying only on the CPT and supervised fine-tuning stages, Stable-DiffCoder achieves stronger performance than a wide range of \\~8B ARs and DLLMs, demonstrating that diffusion-based training can improve code modeling quality beyond AR training alone. Moreover, diffusion-based any-order modeling improves structured code modeling for editing and reasoning, and through data augmentation, benefits low-resource coding languages.",
+  "publishedAt": "2026-01-22T12:13:17Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 56,
+  "citationCount": 13,
+  "githubStars": 84,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2601.17737",
+  "slug": "the-script-is-all-you-need-an-agentic-framework-for-long-horizon-dialogue-to",
+  "title": "The Script is All You Need: An Agentic Framework for Long-Horizon Dialogue-to-Cinematic Video Generation",
+  "authors": [
+   "Chenyu Mu",
+   "Xin He",
+   "Qu Yang",
+   "Wanshun Chen",
+   "Jiadi Yao",
+   "Huang Liu"
+  ],
+  "abstract": "Recent advances in video generation have produced models capable of synthesizing stunning visual content from simple text prompts. However, these models struggle to generate long-form, coherent narratives from high-level concepts like dialogue, revealing a ``semantic gap'' between a creative idea and its cinematic execution. To bridge this gap, we introduce a novel, end-to-end agentic framework for dialogue-to-cinematic-video generation. Central to our framework is ScripterAgent, a model trained to translate coarse dialogue into a fine-grained, executable cinematic script. To enable this, we construct ScriptBench, a new large-scale benchmark with rich multimodal context, annotated via an expert-guided pipeline. The generated script then guides DirectorAgent, which orchestrates state-of-the-art video models using a cross-scene continuous generation strategy to ensure long-horizon coherence. Our comprehensive evaluation, featuring an AI-powered CriticAgent and a new Visual-Script Alignment (VSA) metric, shows our framework significantly improves script faithfulness and temporal fidelity across all tested video models. Furthermore, our analysis uncovers a crucial trade-off in current SOTA models between visual spectacle and strict script adherence, providing valuable insights for the future of automated filmmaking.",
+  "publishedAt": "2026-01-25T08:10:28Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 56,
+  "citationCount": 3,
+  "githubStars": null,
+  "pageCount": 25
+ },
+ {
+  "arxivId": "2602.14111",
+  "slug": "sanity-checks-for-sparse-autoencoders-do-saes-beat-random-baselines",
+  "title": "Sanity Checks for Sparse Autoencoders: Do SAEs Beat Random Baselines?",
+  "authors": [
+   "Anton Korznikov",
+   "Andrey Galichin",
+   "Alexey Dontsov",
+   "Oleg Rogov",
+   "Ivan Oseledets",
+   "Elena Tutubalina"
+  ],
+  "abstract": "Sparse Autoencoders (SAEs) have emerged as a promising tool for interpreting neural networks by decomposing their activations into sparse sets of human-interpretable features. Recent work has introduced multiple SAE variants and successfully scaled them to frontier models. Despite much excitement, a growing number of negative results in downstream tasks casts doubt on whether SAEs recover meaningful features. To directly investigate this, we perform two complementary evaluations. On a synthetic setup with known ground-truth features, we demonstrate that SAEs recover only $9\\%$ of true features despite achieving $71\\%$ explained variance, showing that they fail at their core task even when reconstruction is strong. To evaluate SAEs on real activations, we introduce three baselines that constrain SAE feature directions or their activation patterns to random values. Through extensive experiments across multiple SAE architectures, we show that our baselines match fully-trained SAEs in interpretability (0.87 vs 0.90), sparse probing (0.69 vs 0.72), and causal editing (0.73 vs 0.72). Together, these results suggest that SAEs in their current state do not reliably decompose models' internal mechanisms.",
+  "publishedAt": "2026-02-15T11:53:55Z",
+  "primaryArxivCategory": [
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 56,
+  "citationCount": 7,
+  "githubStars": null,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2602.17602",
+  "slug": "molhit-advancing-molecular-graph-generation-with-hierarchical-discrete",
+  "title": "MolHIT: Advancing Molecular-Graph Generation with Hierarchical Discrete Diffusion Models",
+  "authors": [
+   "Hojung Jung",
+   "Rodrigo Hormazabal",
+   "Jaehyeong Jo",
+   "Youngrok Park",
+   "Kyunggeun Roh",
+   "Se-Young Yun"
+  ],
+  "abstract": "Molecular generation with diffusion models has emerged as a promising direction for AI-driven drug discovery and materials science. While graph diffusion models have been widely adopted due to the discrete nature of 2D molecular graphs, existing models suffer from low chemical validity and struggle to meet the desired properties compared to 1D modeling. In this work, we introduce MolHIT, a powerful molecular graph generation framework that overcomes long-standing performance limitations in existing methods. MolHIT is based on the Hierarchical Discrete Diffusion Model, which generalizes discrete diffusion to additional categories that encode chemical priors, and decoupled atom encoding that splits the atom types according to their chemical roles. Overall, MolHIT achieves new state-of-the-art performance on the MOSES dataset with near-perfect validity for the first time in graph diffusion, surpassing strong 1D baselines across multiple metrics. We further demonstrate strong performance in downstream tasks, including multi-property guided generation and scaffold extension.",
+  "publishedAt": "2026-02-19T18:27:11Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 56,
+  "citationCount": 0,
+  "githubStars": null,
+  "pageCount": 23
+ },
+ {
+  "arxivId": "2602.21548",
+  "slug": "dualpath-breaking-the-storage-bandwidth-bottleneck-in-agentic-llm-inference",
+  "title": "DualPath: Breaking the Storage Bandwidth Bottleneck in Agentic LLM Inference",
+  "authors": [
+   "Yongtong Wu",
+   "Shaoyuan Chen",
+   "Yinmin Zhong",
+   "Rilin Huang",
+   "Yixuan Tan",
+   "Wentao Zhang"
+  ],
+  "abstract": "The performance of multi-turn, agentic LLM inference is increasingly dominated by KV-Cache storage I/O rather than computation. In prevalent disaggregated architectures, loading the massive KV-Cache from external storage creates a fundamental imbalance: storage NICs on prefill engines become bandwidth-saturated, while those on decoding engines remain idle. This asymmetry severely constrains overall system throughput. We present DualPath, an inference system that breaks this bottleneck by introducing dual-path KV-Cache loading. Beyond the traditional storage-to-prefill path, DualPath enables a novel storage-to-decode path, in which the KV-Cache is loaded into decoding engines and then efficiently transferred to prefill engines via RDMA over the compute network. DualPath combines this optimized data path -- which inherently avoids network congestion and avoids interference with latency-critical model execution communications -- with a global scheduler that dynamically balances load across prefill and decode engines. Our evaluation on three models with production agentic workloads demonstrates that DualPath improves offline inference throughput by up to 1.87$\\times$ on our in-house inference system. It can also improve online serving throughput by an average factor of 1.96$\\times$ without violating SLO.",
+  "publishedAt": "2026-02-25T04:10:58Z",
+  "primaryArxivCategory": [
+   "cs.DC"
+  ],
+  "officialLab": "DeepSeek",
+  "hfUpvotes": 56,
+  "citationCount": 10,
+  "githubStars": null,
+  "pageCount": 17
+ },
+ {
+  "arxivId": "2603.04918",
+  "slug": "bandpo-bridging-trust-regions-and-ratio-clipping-via-probability-aware-bounds",
+  "title": "BandPO: Bridging Trust Regions and Ratio Clipping via Probability-Aware Bounds for LLM Reinforcement Learning",
+  "authors": [
+   "Yuan Li",
+   "Bo Wang",
+   "Yufei Gao",
+   "Yuqian Yao",
+   "Xinyuan Wang",
+   "Zhangyue Yin"
+  ],
+  "abstract": "Proximal constraints are fundamental to the stability of the Large Language Model reinforcement learning. While the canonical clipping mechanism in PPO serves as an efficient surrogate for trust regions, we identify a critical bottleneck: fixed bounds strictly constrain the upward update margin of low-probability actions, disproportionately suppressing high-advantage tail strategies and inducing rapid entropy collapse. To address this, we introduce Band-constrained Policy Optimization (BandPO). BandPO replaces canonical clipping with Band, a unified theoretical operator that projects trust regions defined by f-divergences into dynamic, probability-aware clipping intervals. Theoretical analysis confirms that Band effectively resolves this exploration bottleneck. We formulate this mapping as a convex optimization problem, guaranteeing a globally optimal numerical solution while deriving closed-form solutions for specific divergences. Extensive experiments across diverse models and datasets demonstrate that BandPO consistently outperforms canonical clipping and Clip-Higher, while robustly mitigating entropy collapse.",
+  "publishedAt": "2026-03-05T08:03:05Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 56,
+  "citationCount": 2,
+  "githubStars": 49,
+  "pageCount": 23
+ },
+ {
+  "arxivId": "2603.25158",
+  "slug": "trace2skill-distill-trajectory-local-lessons-into-transferable-agent-skills",
+  "title": "Trace2Skill: Distill Trajectory-Local Lessons into Transferable Agent Skills",
+  "authors": [
+   "Jingwei Ni",
+   "Yihao Liu",
+   "Xinpeng Liu",
+   "Yutao Sun",
+   "Mengyu Zhou",
+   "Pengyu Cheng"
+  ],
+  "abstract": "Large Language Model (LLM) agents increasingly rely on domain-specific skills, yet manually authoring such skills does not scale, and skills generated purely from parametric knowledge often miss critical operational pitfalls. We introduce Trace2Skill, a framework that consolidates broad execution trajectories in parallel into a unified skill directory through inductive reasoning over agent experience. Trace2Skill supports both deepening existing human-written skills and creating useful skills from weak LLM-generated drafts. Experiments demonstrate the effectiveness of Trace2Skill across diverse domains, including office workflows, math reasoning, and vision QA. Importantly, the evolved skills are not merely memorized artifacts of the trajectories used to create them: they often transfer across model scales, across model families, and to out-of-distribution settings. For example, skills evolved from Qwen3.5-35B trajectories improve a Qwen3.5-122B agent by up to $57.65$ percentage points on WikiTableQuestions. Further analyses show that Trace2Skill outperforms sequential skill editing and ReasoningBank-style retrieval memories, compresses recurring failures and workarounds into standard operating procedures (SoPs), and yields portable skills that can be reused without parameter updates or test-time retrieval.",
+  "publishedAt": "2026-03-26T08:26:38Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 56,
+  "citationCount": 78,
+  "githubStars": null,
+  "pageCount": 25
+ },
+ {
+  "arxivId": "2604.01193",
+  "slug": "embarrassingly-simple-self-distillation-improves-code-generation",
+  "title": "Embarrassingly Simple Self-Distillation Improves Code Generation",
+  "authors": [
+   "Ruixiang Zhang",
+   "Richard He Bai",
+   "Huangjie Zheng",
+   "Navdeep Jaitly",
+   "Ronan Collobert",
+   "Yizhe Zhang"
+  ],
+  "abstract": "Can a large language model (LLM) improve at code generation using only its own raw outputs, without a verifier, a teacher model, or reinforcement learning? We answer in the affirmative with simple self-distillation (SSD): sample solutions from the model with certain temperature and truncation configurations, then fine-tune on those samples with standard supervised fine-tuning. SSD improves Qwen3-30B-Instruct from 42.4% to 55.3% pass@1 on LiveCodeBench v6, with gains concentrating on harder problems, and it generalizes across Qwen and Llama models at 4B, 8B, and 30B scale, including both instruct and thinking variants. To understand why such a simple method can work, we trace these gains to a precision-exploration conflict in LLM decoding and show that SSD reshapes token distributions in a context-dependent way, suppressing distractor tails where precision matters while preserving useful diversity where exploration matters. Taken together, SSD offers a complementary post-training direction for improving LLM code generation. Our code is available at https://github.com/apple/ml-ssd",
+  "publishedAt": "2026-04-01T17:39:50Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 56,
+  "citationCount": 28,
+  "githubStars": 798,
+  "pageCount": 37
+ },
+ {
+  "arxivId": "2604.09132",
+  "slug": "strips-as-tokens-artist-mesh-generation-with-native-uv-segmentation",
+  "title": "Strips as Tokens: Artist Mesh Generation with Native UV Segmentation",
+  "authors": [
+   "Rui Xu",
+   "Dafei Qin",
+   "Kaichun Qiao",
+   "Qiujie Dong",
+   "Huaijin Pi",
+   "Qixuan Zhang"
+  ],
+  "abstract": "Recent advancements in autoregressive transformers have demonstrated remarkable potential for generating artist-quality meshes. However, the token ordering strategies employed by existing methods typically fail to meet professional artist standards, where coordinate-based sorting yields inefficiently long sequences, and patch-based heuristics disrupt the continuous edge flow and structural regularity essential for high-quality modeling. To address these limitations, we propose Strips as Tokens (SATO), a novel framework with a token ordering strategy inspired by triangle strips. By constructing the sequence as a connected chain of faces that explicitly encodes UV boundaries, our method naturally preserves the organized edge flow and semantic layout characteristic of artist-created meshes. A key advantage of this formulation is its unified representation, enabling the same token sequence to be decoded into either a triangle or quadrilateral mesh. This flexibility facilitates joint training on both data types: large-scale triangle data provides fundamental structural priors, while high-quality quad data enhances the geometric regularity of the outputs. Extensive experiments demonstrate that SATO consistently outperforms prior methods in terms of geometric quality, structural coherence, and UV segmentation. Project page: https://ruixu.me/html/SATO/index.html",
+  "publishedAt": "2026-04-10T09:13:09Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.CG",
+   "cs.GR"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 56,
+  "citationCount": 2,
+  "githubStars": 181,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2605.20266",
+  "slug": "a-survey-of-large-audio-language-models-generalization-trustworthiness-and",
+  "title": "A Survey of Large Audio Language Models: Generalization, Trustworthiness, and Outlook",
+  "authors": [
+   "Kaiwen Luo",
+   "Zhenhong Zhou",
+   "Leyan Wang",
+   "Liang Lin",
+   "Tianyu Shao",
+   "Yuanhe Zhang"
+  ],
+  "abstract": "Advances in Large Language Models (LLMs) have paved the way for Multimodal Large Language Models (MLLMs). Among these, Large Audio Language Models (LALMs) are essential for realizing universal auditory intelligence. Despite their remarkable performance, the escalation of LALMs' capabilities has significantly outpaced the development of systemic frameworks to ensure their trustworthiness. This survey provides a comprehensive investigation into the endogenous mechanisms of LALMs, detailing the architectural innovations and alignment algorithms that facilitate emergent reasoning. Specifically, we analyze how the transition to unified end-to-end frameworks and the integration of continuous acoustic signals expand the attack surface. To rigorously evaluate the risks within these paradigms, we establish a comprehensive taxonomy of trustworthiness, categorizing critical vulnerabilities such as cross-modal jailbreaking, latent acoustic backdoors, and biometric privacy leakage. We review the state-of-the-art LALMs through six analytical pillars: hallucination, robustness, safety, privacy, fairness, and authentication. The pronounced imbalance between a mature offensive landscape and underdeveloped defenses highlights persistent trustworthiness gaps and multidimensional risks in audio-centric intelligence. Finally, we propose a roadmap advocating for ``Defense-in-Depth'' architectures, causal auditory world modeling, and intrinsic representation engineering to support the development of more reliable and trustworthy audio intelligence. Our project has been uploaded to GitHub https://github.com/Kwwwww74/Awesome-Trustworthy-AudioLLMs.",
+  "publishedAt": "2026-05-18T20:21:32Z",
+  "primaryArxivCategory": [
+   "cs.SD"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 56,
+  "citationCount": 4,
+  "githubStars": 258,
+  "pageCount": 45
+ },
+ {
+  "arxivId": "2605.30346",
+  "slug": "yocausal-how-far-is-video-generation-from-world-model-a-causality-perspective",
+  "title": "YoCausal: How Far is Video Generation from World Model? A Causality Perspective",
+  "authors": [
+   "You-Zhe Xie",
+   "Yu-Hsuan Li",
+   "Jie-Ying Lee",
+   "Kaipeng Zhang",
+   "Yu-Lun Liu",
+   "Zhixiang Wang"
+  ],
+  "abstract": "As video diffusion models (VDMs) advance toward world models, a key question arises: do they truly understand causality, or merely overfit to statistical temporal patterns? Existing benchmarks mostly rely on synthetic data, limiting real-world generalization due to the sim-to-real gap. We present YoCausal, a two-level benchmark inspired by the Violation of Expectation (VoE) paradigm from cognitive science. By temporally reversing real-world videos at zero cost as natural counterfactual samples, YoCausal establishes an arbitrarily extensible evaluation protocol. Level 1 introduces the Reverse Surprise Index (RSI), quantifying arrow-of-time perception via denoising loss. Level 2 introduces the Causality Cognition Index (CCI), which leverages a VLM to stratify datasets into causal and non-causal subsets, disentangling genuine causal reasoning from temporal bias. Evaluation of 13 state-of-the-art VDMs reveals that perceiving the arrow of time does not imply understanding causality, and a significant gap persists relative to human-level causal cognition.",
+  "publishedAt": "2026-05-28T17:59:51Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 56,
+  "citationCount": 1,
+  "githubStars": 36,
+  "pageCount": 29
+ },
+ {
+  "arxivId": "2606.09730",
+  "slug": "searchswarm-towards-delegation-intelligence-in-agentic-llms-for-long-horizon",
+  "title": "SearchSwarm: Towards Delegation Intelligence in Agentic LLMs for Long-Horizon Deep Research",
+  "authors": [
+   "Pu Ning",
+   "Quan Chen",
+   "Kun Tao",
+   "Xinyu Tang",
+   "Tianshu Wang",
+   "Qianggang Cao"
+  ],
+  "abstract": "Large language models are increasingly expected to handle complex, long-horizon real-world tasks whose context demands can grow without bound, yet model context windows remain inherently finite. Recent work explores a paradigm where a main agent decomposes tasks and dispatches subtasks to subagents, which execute and return only summarized results, conserving the main agent's context budget. However, performing this well requires delegation intelligence: the ability to decompose complex tasks, determine when and what to delegate, and integrate returned results into the ongoing workflow. Training data for this capability is scarce in naturally occurring text, and to our knowledge, how to synthesize such data and train models to acquire this capability remains largely unexplored in the open-source community. To bridge this gap, we present a preliminary exploration targeting deep research, a representative long-horizon agent task. Specifically, we design a harness that guides the model toward high-quality task decomposition and delegation, while constraining subagents to return results properly to support the main agent's workflow. The harness-guided trajectories naturally encode correct delegation decisions, which we use as supervised fine-tuning data to internalize delegation intelligence into model weights. Our resulting model, SearchSwarm-30B-A3B, achieves 68.1 on BrowseComp and 73.3 on BrowseComp-ZH, the best results among all models of comparable scale. We will release our harness, model weights, and training data to facilitate future research.",
+  "publishedAt": "2026-06-08T16:52:26Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 56,
+  "citationCount": 3,
+  "githubStars": 85,
+  "pageCount": 25
+ },
+ {
+  "arxivId": "2606.20781",
+  "slug": "world-action-models-a-survey",
+  "title": "World Action Models: A Survey",
+  "authors": [
+   "Qiuhong Shen",
+   "Shihua Zhang",
+   "Yue Liao",
+   "Qi Li",
+   "Zhenxiong Tan",
+   "Shizun Wang"
+  ],
+  "abstract": "World Action Models (WAMs) are embodied predictive-action models that make a forecast of the future available to action. Recent WAMs repurpose large video generation models, and a parallel line relies on language or vision-language backbones without a video-generation core. This rapid expansion has blurred the boundary among broad world models, video generation models, action-grounded video world models, Vision-Language-Action policies, and WAMs. This survey gives the field a common account. It first clarifies these boundaries, then organizes existing works through two complementary views. The first view asks what each method is required to generate, spanning rendered futures, latent futures, and video-generation-free action reasoning. The second view decomposes each method by predictive substrate, backbone, action coupling, and deployment regime. This anatomy supports a unified discussion of interactability, causality, persistence, physical plausibility, and generalization, followed by data, evaluation, and open challenges. Across these axes, a consistent design pattern emerges: WAMs are not simply video generators with action heads, but predictive-action methods whose design choices trade representational richness against compute, memory, latency, and action-label cost. The field is moving toward methods that generate less of the future while preserving what control requires. The survey homepage is available at https://world-action-models.github.io/.",
+  "publishedAt": "2026-06-18T17:05:19Z",
+  "primaryArxivCategory": [
+   "cs.RO",
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 56,
+  "citationCount": 1,
+  "githubStars": 308,
+  "pageCount": 57
+ },
+ {
+  "arxivId": "2607.14530",
+  "slug": "xhc-expanded-hyper-connections",
+  "title": "xHC: Expanded Hyper-Connections",
+  "authors": [
+   "Xiangdong Zhang",
+   "Xiaohan Qin",
+   "Sunan Zou",
+   "Tuo Dai",
+   "Xiaoming Shi",
+   "Huaijin Wu"
+  ],
+  "abstract": "Hyper-Connections (HC) expand the residual stream of Transformers into $N$ parallel streams, providing a form of memory scaling beyond model width and depth. Manifold-Constrained HC (mHC) stabilizes this formulation at scale. The large gains from $N{=}1$ to $N{=}4$ suggest residual-stream expansion as a promising scaling axis. However, existing HC-family methods typically stop at $N{=}4$. Our experiments reveal why: scaling mHC beyond this point yields diminishing performance gains and rapidly increasing training cost. We attribute this limitation to two bottlenecks: insufficient write-back information for an expanding number of streams and residual-mixing generation whose cost scales cubically with $N$. To address both bottlenecks, we propose xHC (Expanded Hyper-Connections), the first HC-family method to achieve meaningful expansion beyond $N{=}4$. xHC combines temporal feature augmentation for richer write-back with a sparse residual-stream architecture that updates only $k=4$ of the $N=16$ streams while retaining dense access to the full residual state. Across 18B and 28B MoE models, xHC delivers strong and consistent downstream improvements. On an 18B MoE model, xHC improves the average downstream score by 4.0 points over mHC, while adding only modest training FLOPs over the vanilla baseline. Scaling-law experiments show that the vanilla and mHC require $1.50\\times$ and $1.19\\times$ the compute of xHC, respectively, to reach the same loss. Practical large-$N$ training also requires controlling memory traffic from the expanded residual state. We therefore introduce xHC-Flash, which reduces the per-sublayer memory traffic from $73.5C$ to $40C$, comparable to the $34C$ required by mHC at $N{=}4$, while retaining the gains of full xHC. Together, xHC and xHC-Flash make large-$N$ residual-stream expansion effective and practical for LLM pre-training.",
+  "publishedAt": "2026-07-16T03:31:03Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 56,
+  "citationCount": 0,
+  "githubStars": 60,
+  "pageCount": 27
+ },
+ {
+  "arxivId": "2607.23782",
+  "slug": "n-0-vtla-scaling-vision-tactile-language-action-model-with-latent-tactile-tokens",
+  "title": "$N_0$-VTLA: Scaling Vision-Tactile-Language-Action Model with Latent Tactile Tokens",
+  "authors": [
+   "NeoteAI Team",
+   "Fudan TEAI Team"
+  ],
+  "abstract": "We present $N_0$-VTLA, a vision-tactile-language-action (VTLA) foundation model capable of (1) fine-grained contact-rich manipulation with tactile perception and tactile-feedback control, and (2) offline policy improvement from stored deployment data. Building on current vision-based backbones, we propose a training recipe for tactile integration consisting of visuo-tactile pre-training, staged tactile-pathway integration, and advantage-conditioned offline policy improvement. During pre-training, the policy learns broad contact priors from NeoData, our large-scale visuo-tactile robot dataset; to our knowledge, $N_0$-VTLA is the first VTLA model pretrained on tactile data at scale. During post-training, we augment the policy with a predictive tactile pathway that distills the contact patterns learned at scale into the fine motion adjustments required by downstream tactile-centric manipulation. For offline policy improvement, we introduce ALTER, an advantage-conditioned offline reinforcement learning method that converts relative progress and trajectory-event comparisons into binary advantage labels for policy training on a fixed deployment corpus, further improving task-specific learning on contact-rich skills such as deformable object manipulation. Across contact-rich benchmarks, $N_0$-VTLA outperforms strong baselines by wide margins: it wins all nine real-robot NeoReal tasks and reaches 63.8% mean success on a twenty-task simulation suite, against 44.0% for the strongest baseline. $N_0$-VTLA policies trained with ALTER reach 75-95% success on three long-horizon real-robot tasks. These results lay a foundation for versatile tactile-driven manipulation policies.",
+  "publishedAt": "2026-07-26T17:58:47Z",
+  "primaryArxivCategory": [
+   "cs.RO"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 56,
+  "citationCount": 1,
+  "githubStars": 51,
+  "pageCount": 29
+ },
+ {
+  "arxivId": "2607.27919",
+  "slug": "memory-decoder-at-scale-a-pretrained-parametric-long-term-memory",
+  "title": "Memory Decoder at Scale: A Pretrained, Parametric Long-Term Memory",
+  "authors": [
+   "Rubin Wei",
+   "Jiaqi Cao",
+   "Jiarui Wang",
+   "Junming Zhang",
+   "Qipeng Guo",
+   "Bowen Zhou"
+  ],
+  "abstract": "Decoder-only language models entangle long-term memory and reasoning in a single parameter set, making it difficult to scale memory capacity independently. Memory Decoder introduces a parametric long-term memory module but only studies it at a relatively small scale. In this work, we present Memory Decoder at Scale, scaling memory models up to 6.9B parameters and pretraining them on 300B tokens. At this data scale, the combined cost of indexing and search makes a standard Faiss pipeline infeasible. We address this bottleneck with a distributed pipeline for Faiss indexing and retrieval, together with sparse, batch-wise loading of kNN distributions. Across model scales, we find that allocating more parameters to memory yields a better parameter-performance tradeoff than scaling the base model alone. On 17 benchmarks, pairing a 6.9B general memory with Pythia-410M raises its average score from 29.86 to 37.34, surpassing Pythia-12B (37.24) with 39% fewer total parameters. For Qwen3 Base models ranging from 0.6B to 14B, 1.7B domain memories improve the average score across the three domains by more than 9 points at every scale. Overall, our results demonstrate that independently scaling pretrained memory offers a more parameter efficient path to improving language model performance.",
+  "publishedAt": "2026-07-30T09:30:03Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 56,
+  "citationCount": 0,
+  "githubStars": 13,
+  "pageCount": 51
+ },
+ {
+  "arxivId": "2508.21496",
+  "slug": "elv-halluc-benchmarking-semantic-aggregation-hallucinations-in-long-video",
+  "title": "ELV-Halluc: Benchmarking Semantic Aggregation Hallucinations in Long Video Understanding",
+  "authors": [
+   "Hao Lu",
+   "Jiahao Wang",
+   "Yaolun Zhang",
+   "Ruohui Wang",
+   "Xuanyu Zheng",
+   "Yepeng Tang"
+  ],
+  "abstract": "Video multimodal large language models (Video-MLLMs) have achieved remarkable progress in video understanding. However, they remain vulnerable to hallucination-producing content inconsistent with or unrelated to video inputs. Previous video hallucination benchmarks primarily focus on short-videos. They attribute hallucinations to factors such as strong language priors, missing frames, or vision-language biases introduced by the visual encoder. While these causes indeed account for most hallucinations in short videos, they still oversimplify the cause of hallucinations. Sometimes, models generate incorrect outputs but with correct frame-level semantics. We refer to this type of hallucination as Semantic Aggregation Hallucination (SAH), which arises during the process of aggregating frame-level semantics into event-level semantic groups. Given that SAH becomes particularly critical in long videos due to increased semantic complexity across multiple events, it is essential to separate and thoroughly investigate the causes of this type of hallucination. To address the above issues, we introduce ELV-Halluc, the first benchmark dedicated to long-video hallucination, enabling a systematic investigation of SAH. Our experiments confirm the existence of SAH and show that it increases with semantic complexity. Additionally, we find that models are more prone to SAH on rapidly changing semantics. Moreover, we discuss potential approaches to mitigate SAH. We demonstrate that positional encoding strategy contributes to alleviating SAH, and further adopt DPO strategy to enhance the model's ability to distinguish semantics within and across events. To support this, we curate a dataset of 8K adversarial data pairs and achieve improvements on both ELV-Halluc and Video-MME, including a substantial 27.7% reduction in SAH ratio.",
+  "publishedAt": "2025-08-29T10:25:03Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 55,
+  "citationCount": 10,
+  "githubStars": 11,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2510.06308",
+  "slug": "lumina-dimoo-an-omni-diffusion-large-language-model-for-multi-modal-generation",
+  "title": "Lumina-DiMOO: An Omni Diffusion Large Language Model for Multi-Modal Generation and Understanding",
+  "authors": [
+   "Yi Xin",
+   "Qi Qin",
+   "Siqi Luo",
+   "Kaiwen Zhu",
+   "Juncheng Yan",
+   "Yan Tai"
+  ],
+  "abstract": "We introduce Lumina-DiMOO, an open-source foundational model for seamless multi-modal generation and understanding. Lumina-DiMOO sets itself apart from prior unified models by utilizing a fully discrete diffusion modeling to handle inputs and outputs across various modalities. This innovative approach allows Lumina-DiMOO to achieve higher sampling efficiency compared to previous autoregressive (AR) or hybrid AR-Diffusion paradigms and adeptly support a broad spectrum of multi-modal tasks, including text-to-image generation, image-to-image generation (e.g., image editing, subject-driven generation, and image inpainting, etc.), as well as image understanding. Lumina-DiMOO achieves state-of-the-art performance on multiple benchmarks, surpassing existing open-source unified multi-modal models. To foster further advancements in multi-modal and discrete diffusion model research, we release our code and checkpoints to the community. Project Page: https://synbol.github.io/Lumina-DiMOO.",
+  "publishedAt": "2025-10-07T17:59:20Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 55,
+  "citationCount": 87,
+  "githubStars": 1004,
+  "pageCount": 33
+ },
+ {
+  "arxivId": "2512.02472",
+  "slug": "guided-self-evolving-llms-with-minimal-human-supervision",
+  "title": "Guided Self-Evolving LLMs with Minimal Human Supervision",
+  "authors": [
+   "Wenhao Yu",
+   "Zhenwen Liang",
+   "Chengsong Huang",
+   "Kishan Panaganti",
+   "Tianqing Fang",
+   "Haitao Mi"
+  ],
+  "abstract": "AI self-evolution has long been envisioned as a path toward superintelligence, where models autonomously acquire, refine, and internalize knowledge from their own learning experiences. Yet in practice, unguided self-evolving systems often plateau quickly or even degrade as training progresses. These failures arise from issues such as concept drift, diversity collapse, and mis-evolution, as models reinforce their own biases and converge toward low-entropy behaviors. To enable models to self-evolve in a stable and controllable manner while minimizing reliance on human supervision, we introduce R-Few, a guided Self-Play Challenger-Solver framework that incorporates lightweight human oversight through in-context grounding and mixed training. At each iteration, the Challenger samples a small set of human-labeled examples to guide synthetic question generation, while the Solver jointly trains on human and synthetic examples under an online, difficulty-based curriculum. Across math and general reasoning benchmarks, R-Few achieves consistent and iterative improvements. For example, Qwen3-8B-Base improves by +3.0 points over R-Zero on math tasks and achieves performance on par with General-Reasoner, despite the latter being trained on 20 times more human data. Ablation studies confirm the complementary contributions of grounded challenger training and curriculum-based solver training, and further analysis shows that R-Few mitigates drift, yielding more stable and controllable co-evolutionary dynamics.",
+  "publishedAt": "2025-12-02T07:06:11Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 55,
+  "citationCount": 31,
+  "githubStars": null,
+  "pageCount": 16
+ },
+ {
+  "arxivId": "2601.16208",
+  "slug": "scaling-text-to-image-diffusion-transformers-with-representation-autoencoders",
+  "title": "Scaling Text-to-Image Diffusion Transformers with Representation Autoencoders",
+  "authors": [
+   "Shengbang Tong",
+   "Boyang Zheng",
+   "Ziteng Wang",
+   "Bingda Tang",
+   "Nanye Ma",
+   "Ellis Brown"
+  ],
+  "abstract": "Representation Autoencoders (RAEs) have shown distinct advantages in diffusion modeling on ImageNet by training in high-dimensional semantic latent spaces. In this work, we investigate whether this framework can scale to large-scale, freeform text-to-image (T2I) generation. We first scale RAE decoders on the frozen representation encoder (SigLIP-2) beyond ImageNet by training on web, synthetic, and text-rendering data, finding that while scale improves general fidelity, targeted data composition is essential for specific domains like text. We then rigorously stress-test the RAE design choices originally proposed for ImageNet. Our analysis reveals that scaling simplifies the framework: while dimension-dependent noise scheduling remains critical, architectural complexities such as wide diffusion heads and noise-augmented decoding offer negligible benefits at scale Building on this simplified framework, we conduct a controlled comparison of RAE against the state-of-the-art FLUX VAE across diffusion transformer scales from 0.5B to 9.8B parameters. RAEs consistently outperform VAEs during pretraining across all model scales. Further, during finetuning on high-quality datasets, VAE-based models catastrophically overfit after 64 epochs, while RAE models remain stable through 256 epochs and achieve consistently better performance. Across all experiments, RAE-based diffusion models demonstrate faster convergence and better generation quality, establishing RAEs as a simpler and stronger foundation than VAEs for large-scale T2I generation. Additionally, because both visual understanding and generation can operate in a shared representation space, the multimodal model can directly reason over generated latents, opening new possibilities for unified models.",
+  "publishedAt": "2026-01-22T18:58:16Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 55,
+  "citationCount": 40,
+  "githubStars": 255,
+  "pageCount": 15
+ },
+ {
+  "arxivId": "2602.11124",
+  "slug": "phycritic-multimodal-critic-models-for-physical-ai",
+  "title": "PhyCritic: Multimodal Critic Models for Physical AI",
+  "authors": [
+   "Tianyi Xiong",
+   "Shihao Wang",
+   "Guilin Liu",
+   "Yi Dong",
+   "Ming Li",
+   "Heng Huang"
+  ],
+  "abstract": "With the rapid development of large multimodal models, reliable judge and critic models have become essential for open-ended evaluation and preference alignment, providing pairwise preferences, numerical scores, and explanatory justifications for assessing model-generated responses. However, existing critics are primarily trained in general visual domains such as captioning or image question answering, leaving physical AI tasks involving perception, causal reasoning, and planning largely underexplored. We introduce PhyCritic, a multimodal critic model optimized for physical AI through a two-stage RLVR pipeline: a physical skill warmup stage that enhances physically oriented perception and reasoning, followed by self-referential critic finetuning, where the critic generates its own prediction as an internal reference before judging candidate responses, improving judgment stability and physical correctness. Across both physical and general-purpose multimodal judge benchmarks, PhyCritic achieves strong performance gains over open-source baselines and, when applied as a policy model, further improves perception and reasoning in physically grounded tasks.",
+  "publishedAt": "2026-02-11T18:35:39Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": "NVIDIA",
+  "hfUpvotes": 55,
+  "citationCount": 9,
+  "githubStars": null,
+  "pageCount": 23
+ },
+ {
+  "arxivId": "2602.11144",
+  "slug": "genius-generative-fluid-intelligence-evaluation-suite",
+  "title": "GENIUS: Generative Fluid Intelligence Evaluation Suite",
+  "authors": [
+   "Ruichuan An",
+   "Sihan Yang",
+   "Ziyu Guo",
+   "Wei Dai",
+   "Zijun Shen",
+   "Haodong Li"
+  ],
+  "abstract": "Unified Multimodal Models (UMMs) have shown remarkable progress in visual generation. Yet, existing benchmarks predominantly assess $\\textit{Crystallized Intelligence}$, which relies on recalling accumulated knowledge and learned schemas. This focus overlooks $\\textit{Generative Fluid Intelligence (GFI)}$: the capacity to induce patterns, reason through constraints, and adapt to novel scenarios on the fly. To rigorously assess this capability, we introduce $\\textbf{GENIUS}$ ($\\textbf{GEN}$ Fluid $\\textbf{I}$ntelligence Eval$\\textbf{U}$ation $\\textbf{S}$uite). We formalize $\\textit{GFI}$ as a synthesis of three primitives. These include $\\textit{Inducing Implicit Patterns}$ (e.g., inferring personalized visual preferences), $\\textit{Executing Ad-hoc Constraints}$ (e.g., visualizing abstract metaphors), and $\\textit{Adapting to Contextual Knowledge}$ (e.g., simulating counter-intuitive physics). Collectively, these primitives challenge models to solve problems grounded entirely in the immediate context. Our systematic evaluation of 12 representative models reveals significant performance deficits in these tasks. Crucially, our diagnostic analysis disentangles these failure modes. It demonstrates that deficits stem from limited context comprehension rather than insufficient intrinsic generative capability. To bridge this gap, we propose a training-free attention intervention strategy. Ultimately, $\\textbf{GENIUS}$ establishes a rigorous standard for $\\textit{GFI}$, guiding the field beyond knowledge utilization toward dynamic, general-purpose reasoning. Our dataset and code will be released at: $\\href{https://github.com/arctanxarc/GENIUS}{https://github.com/arctanxarc/GENIUS}$.",
+  "publishedAt": "2026-02-11T18:55:54Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 55,
+  "citationCount": 12,
+  "githubStars": 43,
+  "pageCount": 23
+ },
+ {
+  "arxivId": "2602.13013",
+  "slug": "towards-universal-video-mllms-with-attribute-structured-and-quality-verified",
+  "title": "Towards Universal Video MLLMs with Attribute-Structured and Quality-Verified Instructions",
+  "authors": [
+   "Yunheng Li",
+   "Hengrui Zhang",
+   "Meng-Hao Guo",
+   "Wenzhao Gao",
+   "Shaoyong Jia",
+   "Shaohui Jiao"
+  ],
+  "abstract": "Universal video understanding requires modeling fine-grained visual and audio information over time in diverse real-world scenarios. However, the performance of existing models is primarily constrained by video-instruction data that represents complex audiovisual content as single, incomplete descriptions, lacking fine-grained organization and reliable annotation. To address this, we introduce: (i) ASID-1M, an open-source collection of one million structured, fine-grained audiovisual instruction annotations with single- and multi-attribute supervision; (ii) ASID-Verify, a scalable data curation pipeline for annotation, with automatic verification and refinement that enforces semantic and temporal consistency between descriptions and the corresponding audiovisual content; and (iii) ASID-Captioner, a video understanding model trained via Supervised Fine-Tuning (SFT) on the ASID-1M. Experiments across seven benchmarks covering audiovisual captioning, attribute-wise captioning, caption-based QA, and caption-based temporal grounding show that ASID-Captioner improves fine-grained caption quality while reducing hallucinations and improving instruction following. It achieves state-of-the-art performance among open-source models and is competitive with Gemini-3-Pro.",
+  "publishedAt": "2026-02-13T15:20:54Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 55,
+  "citationCount": 5,
+  "githubStars": 68,
+  "pageCount": 24
+ },
+ {
+  "arxivId": "2602.14041",
+  "slug": "bitdance-scaling-autoregressive-generative-models-with-binary-tokens",
+  "title": "BitDance: Scaling Autoregressive Generative Models with Binary Tokens",
+  "authors": [
+   "Yuang Ai",
+   "Jiaming Han",
+   "Shaobin Zhuang",
+   "Weijia Mao",
+   "Xuefeng Hu",
+   "Ziyan Yang"
+  ],
+  "abstract": "We present BitDance, a scalable autoregressive (AR) image generator that predicts binary visual tokens instead of codebook indices. With high-entropy binary latents, BitDance lets each token represent up to $2^{256}$ states, yielding a compact yet highly expressive discrete representation. Sampling from such a huge token space is difficult with standard classification. To resolve this, BitDance uses a binary diffusion head: instead of predicting an index with softmax, it employs continuous-space diffusion to generate the binary tokens. Furthermore, we propose next-patch diffusion, a new decoding method that predicts multiple tokens in parallel with high accuracy, greatly speeding up inference. On ImageNet 256x256, BitDance achieves an FID of 1.24, the best among AR models. With next-patch diffusion, BitDance beats state-of-the-art parallel AR models that use 1.4B parameters, while using 5.4x fewer parameters (260M) and achieving 8.7x speedup. For text-to-image generation, BitDance trains on large-scale multimodal tokens and generates high-resolution, photorealistic images efficiently, showing strong performance and favorable scaling. When generating 1024x1024 images, BitDance achieves a speedup of over 30x compared to prior AR models. We release code and models to facilitate further research on AR foundation models. Code and models are available at: https://github.com/shallowdream204/BitDance.",
+  "publishedAt": "2026-02-15T08:09:05Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 55,
+  "citationCount": 5,
+  "githubStars": 481,
+  "pageCount": 21
+ },
+ {
+  "arxivId": "2602.21818",
+  "slug": "skyreels-v4-multi-modal-video-audio-generation-inpainting-and-editing-model",
+  "title": "SkyReels-V4: Multi-modal Video-Audio Generation, Inpainting and Editing model",
+  "authors": [
+   "Guibin Chen",
+   "Dixuan Lin",
+   "Jiangping Yang",
+   "Youqiang Zhang",
+   "Zhengcong Fei",
+   "Debang Li"
+  ],
+  "abstract": "SkyReels V4 is a unified multi modal video foundation model for joint video audio generation, inpainting, and editing. The model adopts a dual stream Multimodal Diffusion Transformer (MMDiT) architecture, where one branch synthesizes video and the other generates temporally aligned audio, while sharing a powerful text encoder based on the Multimodal Large Language Models (MLLM). SkyReels V4 accepts rich multi modal instructions, including text, images, video clips, masks, and audio references. By combining the MLLMs multi modal instruction following capability with in context learning in the video branch MMDiT, the model can inject fine grained visual guidance under complex conditioning, while the audio branch MMDiT simultaneously leverages audio references to guide sound generation. On the video side, we adopt a channel concatenation formulation that unifies a wide range of inpainting style tasks, such as image to video, video extension, and video editing under a single interface, and naturally extends to vision referenced inpainting and editing via multi modal prompts. SkyReels V4 supports up to 1080p resolution, 32 FPS, and 15 second duration, enabling high fidelity, multi shot, cinema level video generation with synchronized audio. To make such high resolution, long-duration generation computationally feasible, we introduce an efficiency strategy: Joint generation of low resolution full sequences and high-resolution keyframes, followed by dedicated super-resolution and frame interpolation models. To our knowledge, SkyReels V4 is the first video foundation model that simultaneously supports multi-modal input, joint video audio generation, and a unified treatment of generation, inpainting, and editing, while maintaining strong efficiency and quality at cinematic resolutions and durations.",
+  "publishedAt": "2026-02-25T11:47:00Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 55,
+  "citationCount": 6,
+  "githubStars": null,
+  "pageCount": 32
+ }
+]

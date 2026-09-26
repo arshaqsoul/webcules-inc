@@ -1,0 +1,717 @@
+[
+ {
+  "arxivId": "2605.05185",
+  "slug": "opensearch-vl-an-open-recipe-for-frontier-multimodal-search-agents",
+  "title": "OpenSearch-VL: An Open Recipe for Frontier Multimodal Search Agents",
+  "authors": [
+   "Shuang Chen",
+   "Kaituo Feng",
+   "Hangting Chen",
+   "Wenxuan Huang",
+   "Dasen Dai",
+   "Quanxin Shou"
+  ],
+  "abstract": "Deep search has become a crucial capability for frontier multimodal agents, enabling models to solve complex questions through active search, evidence verification, and multi-step reasoning. Despite rapid progress, top-tier multimodal search agents remain difficult to reproduce, largely due to the absence of open high-quality training data, transparent trajectory synthesis pipelines, or detailed training recipes. To this end, we introduce OpenSearch-VL, a fully open-source recipe for training frontier multimodal deep search agents with agentic reinforcement learning. First, we curated a dedicated pipeline to construct high-quality training data through Wikipedia path sampling, fuzzy entity rewriting, and source-anchor visual grounding, which jointly reduce shortcuts and one-step retrieval collapse. Based on this pipeline, we curate two training datasets, SearchVL-SFT-36k for SFT and SearchVL-RL-8k for RL. Besides, we design a diverse tool environment that unifies text search, image search, OCR, cropping, sharpening, super-resolution, and perspective correction, enabling agents to combine active perception with external knowledge acquisition. Finally, we propose a multi-turn fatal-aware GRPO training algorithm that handles cascading tool failures by masking post-failure tokens while preserving useful pre-failure reasoning through one-sided advantage clamping. Built on this recipe, OpenSearch-VL delivers substantial performance gains, with over 10-point average improvements across seven benchmarks, and achieves results comparable to proprietary commercial models on several tasks. We will release all data, code, and models to support open research on multimodal deep search agents.",
+  "publishedAt": "2026-05-06T17:50:38Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 106,
+  "citationCount": 10,
+  "githubStars": 262,
+  "pageCount": 32
+ },
+ {
+  "arxivId": "2605.25874",
+  "slug": "wbench-a-comprehensive-multi-turn-benchmark-for-interactive-video-world-model",
+  "title": "WBench: A Comprehensive Multi-turn Benchmark for Interactive Video World Model Evaluation",
+  "authors": [
+   "Kaining Ying",
+   "Hengrui Hu",
+   "Siyu Ren",
+   "Jiamu Li",
+   "Fengjiao Chen",
+   "Ziwen Wang"
+  ],
+  "abstract": "Interactive world models are advancing rapidly, yet existing benchmarks cover only part of the required competencies, leaving no unified standard for systematic evaluation. To fill this gap, we introduce WBench, a comprehensive multi-turn benchmark for interactive world model evaluation along five dimensions, namely video quality, setting adherence, interaction adherence, consistency, and physics compliance. WBench contains 289 test cases and 1,058 interaction turns, where each case specifies a world setting and a multi-turn interaction sequence, covering diverse scenes, styles, subjects, and both first- and third-person perspectives, together with four interaction types, including navigation, subject action, event editing, and perspective switching. For navigation, WBench unifies text, 6-DoF pose, and discrete-action control, enabling evaluation of models with different native input interfaces. Evaluation uses 22 automatic sub-metrics that combine specialist vision models with large multimodal models, and all metrics are validated against human judgments. Across 20 state-of-the-art models, we find that no single model performs strongly across all dimensions. We provide detailed diagnostic insights into the characteristic strengths, weaknesses, and open challenges of each model. Code and data are available at https://github.com/meituan-longcat/WBench.",
+  "publishedAt": "2026-05-25T14:01:31Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 106,
+  "citationCount": 7,
+  "githubStars": 175,
+  "pageCount": 51
+ },
+ {
+  "arxivId": "2510.24701",
+  "slug": "tongyi-deepresearch-technical-report",
+  "title": "Tongyi DeepResearch Technical Report",
+  "authors": [
+   "Tongyi DeepResearch Team",
+   "Baixuan Li",
+   "Bo Zhang",
+   "Dingchu Zhang",
+   "Fei Huang",
+   "Guangyu Li"
+  ],
+  "abstract": "We present Tongyi DeepResearch, an agentic large language model, which is specifically designed for long-horizon, deep information-seeking research tasks. To incentivize autonomous deep research agency, Tongyi DeepResearch is developed through an end-to-end training framework that combines agentic mid-training and agentic post-training, enabling scalable reasoning and information seeking across complex tasks. We design a highly scalable data synthesis pipeline that is fully automatic, without relying on costly human annotation, and empowers all training stages. By constructing customized environments for each stage, our system enables stable and consistent interactions throughout. Tongyi DeepResearch, featuring 30.5 billion total parameters, with only 3.3 billion activated per token, achieves state-of-the-art performance across a range of agentic deep research benchmarks, including Humanity's Last Exam, BrowseComp, BrowseComp-ZH, WebWalkerQA, xbench-DeepSearch, FRAMES and xbench-DeepSearch-2510. We open-source the model, framework, and complete solutions to empower the community.",
+  "publishedAt": "2025-10-28T17:53:02Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI",
+   "cs.IR",
+   "cs.LG",
+   "cs.MA"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 105,
+  "citationCount": 18,
+  "githubStars": null,
+  "pageCount": 23
+ },
+ {
+  "arxivId": "2605.13724",
+  "slug": "anyflow-any-step-video-diffusion-model-with-on-policy-flow-map-distillation",
+  "title": "AnyFlow: Any-Step Video Diffusion Model with On-Policy Flow Map Distillation",
+  "authors": [
+   "Yuchao Gu",
+   "Guian Fang",
+   "Yuxin Jiang",
+   "Weijia Mao",
+   "Song Han",
+   "Han Cai"
+  ],
+  "abstract": "Few-step video generation has been significantly advanced by consistency distillation. However, the performance of consistency-distilled models often degrades as more sampling steps are allocated at test time, limiting their effectiveness for any-step video diffusion. This limitation arises because consistency distillation replaces the original probability-flow ODE trajectory with a consistency-sampling trajectory, weakening the desirable test-time scaling behavior of ODE sampling. To address this limitation, we introduce AnyFlow, the first any-step video diffusion distillation framework based on flow maps. Instead of distilling a model for only a few fixed sampling steps, AnyFlow optimizes the full ODE sampling trajectory. To this end, we shift the distillation target from endpoint consistency mapping $(z_{t}\\rightarrow z_{0})$ to flow-map transition learning $(z_{t}\\rightarrow z_{r})$ over arbitrary time intervals. We further propose Flow Map Backward Simulation, which decomposes a full Euler rollout into shortcut flow-map transitions, enabling efficient on-policy distillation that reduces test-time errors (i.e., discretization error in few-step sampling and exposure bias in causal generation). Extensive experiments across both bidirectional and causal architectures, at scales ranging from 1.3B to 14B parameters, demonstrate that AnyFlow achieves performance matches or surpasses consistency-based counterparts in the few-step regime, while scaling with sampling step budgets.",
+  "publishedAt": "2026-05-13T16:06:34Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": "NVIDIA",
+  "hfUpvotes": 105,
+  "citationCount": 6,
+  "githubStars": 406,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2509.17567",
+  "slug": "limi-less-is-more-for-agency",
+  "title": "LIMI: Less is More for Agency",
+  "authors": [
+   "Yang Xiao",
+   "Mohan Jiang",
+   "Jie Sun",
+   "Keyu Li",
+   "Jifan Lin",
+   "Yumin Zhuang"
+  ],
+  "abstract": "We define Agency as the emergent capacity of AI systems to function as autonomous agents actively discovering problems, formulating hypotheses, and executing solutions through self-directed engagement with environments and tools. This fundamental capability marks the dawn of the Age of AI Agency, driven by a critical industry shift: the urgent need for AI systems that don't just think, but work. While current AI excels at reasoning and generating responses, industries demand autonomous agents that can execute tasks, operate tools, and drive real-world outcomes. As agentic intelligence becomes the defining characteristic separating cognitive systems from productive workers, efficiently cultivating machine autonomy becomes paramount. Current approaches assume that more data yields better agency, following traditional scaling laws from language modeling. We fundamentally challenge this paradigm. LIMI (Less Is More for Intelligent Agency) demonstrates that agency follows radically different development principles. Through strategic focus on collaborative software development and scientific research workflows, we show that sophisticated agentic intelligence can emerge from minimal but strategically curated demonstrations of autonomous behavior. Using only 78 carefully designed training samples, LIMI achieves 73.5% on comprehensive agency benchmarks, dramatically outperforming state-of-the-art models: Kimi-K2-Instruct (24.1%), DeepSeek-V3.1 (11.9%), Qwen3-235B-A22B-Instruct (27.5%), and GLM-4.5 (45.1%). Most strikingly, LIMI demonstrates 53.7% improvement over models trained on 10,000 samples-achieving superior agentic intelligence with 128 times fewer samples. Our findings establish the Agency Efficiency Principle: machine autonomy emerges not from data abundance but from strategic curation of high-quality agentic demonstrations.",
+  "publishedAt": "2025-09-22T10:59:32Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 104,
+  "citationCount": 17,
+  "githubStars": 162,
+  "pageCount": 28
+ },
+ {
+  "arxivId": "2509.21268",
+  "slug": "mmr1-enhancing-multimodal-reasoning-with-variance-aware-sampling-and-open",
+  "title": "MMR1: Enhancing Multimodal Reasoning with Variance-Aware Sampling and Open Resources",
+  "authors": [
+   "Sicong Leng",
+   "Jing Wang",
+   "Jiaxi Li",
+   "Hao Zhang",
+   "Zhiqiang Hu",
+   "Boqiang Zhang"
+  ],
+  "abstract": "Large multimodal reasoning models have achieved rapid progress, but their advancement is constrained by two major limitations: the absence of open, large-scale, high-quality long chain-of-thought (CoT) data, and the instability of reinforcement learning (RL) algorithms in post-training. Group Relative Policy Optimization (GRPO), the standard framework for RL fine-tuning, is prone to gradient vanishing when reward variance is low, which weakens optimization signals and impairs convergence. This work makes three contributions: (1) We propose Variance-Aware Sampling (VAS), a data selection strategy guided by Variance Promotion Score (VPS) that combines outcome variance and trajectory diversity to promote reward variance and stabilize policy optimization. (2) We release large-scale, carefully curated resources containing ~1.6M long CoT cold-start data and ~15k RL QA pairs, designed to ensure quality, difficulty, and diversity, along with a fully reproducible end-to-end training codebase. (3) We open-source a family of multimodal reasoning models in multiple scales, establishing standardized baselines for the community. Experiments across mathematical reasoning benchmarks demonstrate the effectiveness of both the curated data and the proposed VAS. Comprehensive ablation studies and analyses provide further insight into the contributions of each component. In addition, we theoretically establish that reward variance lower-bounds the expected policy gradient magnitude, with VAS serving as a practical mechanism to realize this guarantee. Our code, data, and checkpoints are available at https://github.com/LengSicong/MMR1.",
+  "publishedAt": "2025-09-25T14:58:29Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 104,
+  "citationCount": 35,
+  "githubStars": 217,
+  "pageCount": 26
+ },
+ {
+  "arxivId": "2511.02778",
+  "slug": "vcode-a-multimodal-coding-benchmark-with-svg-as-symbolic-visual-representation",
+  "title": "VCode: a Multimodal Coding Benchmark with SVG as Symbolic Visual Representation",
+  "authors": [
+   "Kevin Qinghong Lin",
+   "Yuhao Zheng",
+   "Hangyu Ran",
+   "Dantong Zhu",
+   "Dongxing Mao",
+   "Linjie Li"
+  ],
+  "abstract": "Code has emerged as a precise and executable medium for reasoning and action in the agent era. Yet, progress has largely focused on language-centric tasks such as program synthesis and debugging, leaving visual-centric coding underexplored. Inspired by how humans reason over sketches, we advocate SVG code as a compact, interpretable, and executable visual representation. We introduce VCode, a benchmark that reframes multimodal understanding as code generation: given an image, a model must produce SVG that preserves symbolic meaning for downstream reasoning. VCode covers three domains - general commonsense (MM-Vet), professional disciplines (MMMU), and visual-centric perception (CV-Bench). To assess symbolic fidelity, we propose CodeVQA, a novel evaluation protocol in which a policy model answers questions over rendered SVGs; correct answers indicate faithful symbolic preservation. Empirically, frontier VLMs struggle to generate faithful SVGs, revealing a persistent gap between language-centric and visual-centric coding. To close this gap, we introduce VCoder, an agentic framework that augments VLMs along two axes: (i) Thinking with Revision, which iteratively analyzes discrepancies and refines SVG code; and (ii) Acting with Visual Tools, where detectors and parsers supply structured cues such as objects, shapes, and text beyond the model's intrinsic capacity. Across benchmarks, frontier VLMs with strong reasoning capabilities score well overall yet remain limited in professional knowledge and 3D reasoning. VCoder delivers a 12.3-point overall gain over the top-performing Claude-4-Opus. Human studies show that both humans and VLMs perform worse on rendered SVGs, their consistency reveals the promise of symbolic visual representation. The benchmark and code are available at https://github.com/CSU-JPG/VCode.",
+  "publishedAt": "2025-11-04T18:00:18Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 104,
+  "citationCount": 12,
+  "githubStars": 135,
+  "pageCount": 27
+ },
+ {
+  "arxivId": "2601.03252",
+  "slug": "infinidepth-arbitrary-resolution-and-fine-grained-depth-estimation-with-neural",
+  "title": "InfiniDepth: Arbitrary-Resolution and Fine-Grained Depth Estimation with Neural Implicit Fields",
+  "authors": [
+   "Hao Yu",
+   "Haotong Lin",
+   "Jiawei Wang",
+   "Jiaxin Li",
+   "Yida Wang",
+   "Xueyang Zhang"
+  ],
+  "abstract": "Existing depth estimation methods are fundamentally limited to predicting depth on discrete image grids. Such representations restrict their scalability to arbitrary output resolutions and hinder the geometric detail recovery. This paper introduces InfiniDepth, which represents depth as neural implicit fields. Through a simple yet effective local implicit decoder, we can query depth at continuous 2D coordinates, enabling arbitrary-resolution and fine-grained depth estimation. To better assess our method's capabilities, we curate a high-quality 4K synthetic benchmark from five different games, spanning diverse scenes with rich geometric and appearance details. Extensive experiments demonstrate that InfiniDepth achieves state-of-the-art performance on both synthetic and real-world benchmarks across relative and metric depth estimation tasks, particularly excelling in fine-detail regions. It also benefits the task of novel view synthesis under large viewpoint shifts, producing high-quality results with fewer holes and artifacts.",
+  "publishedAt": "2026-01-06T18:57:06Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 104,
+  "citationCount": 12,
+  "githubStars": 1059,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2510.21618",
+  "slug": "deepagent-a-general-reasoning-agent-with-scalable-toolsets",
+  "title": "DeepAgent: A General Reasoning Agent with Scalable Toolsets",
+  "authors": [
+   "Xiaoxi Li",
+   "Wenxiang Jiao",
+   "Jiarui Jin",
+   "Guanting Dong",
+   "Jiajie Jin",
+   "Yinuo Wang"
+  ],
+  "abstract": "Large reasoning models have demonstrated strong problem-solving abilities, yet real-world tasks often require external tools and long-horizon interactions. Existing agent frameworks typically follow predefined workflows, which limit autonomous and global task completion. In this paper, we introduce DeepAgent, an end-to-end deep reasoning agent that performs autonomous thinking, tool discovery, and action execution within a single, coherent reasoning process. To manage long-horizon interactions, we introduce an autonomous memory folding mechanism that compresses past interactions into structured episodic, working, and tool memories, reducing error accumulation while preserving critical information. To teach general-purpose tool use efficiently and stably, we develop an end-to-end reinforcement learning strategy, namely ToolPO, that leverages LLM-simulated APIs and applies tool-call advantage attribution to assign fine-grained credit to the tool invocation tokens. Extensive experiments on eight benchmarks, including general tool-use tasks (ToolBench, API-Bank, TMDB, Spotify, ToolHop) and downstream applications (ALFWorld, WebShop, GAIA, HLE), demonstrate that DeepAgent consistently outperforms baselines across both labeled-tool and open-set tool retrieval scenarios. The code and demo are available at https://github.com/RUC-NLPIR/DeepAgent.",
+  "publishedAt": "2025-10-24T16:24:01Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL",
+   "cs.IR",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 103,
+  "citationCount": 63,
+  "githubStars": 1122,
+  "pageCount": 12
+ },
+ {
+  "arxivId": "2511.10647",
+  "slug": "depth-anything-3-recovering-the-visual-space-from-any-views",
+  "title": "Depth Anything 3: Recovering the Visual Space from Any Views",
+  "authors": [
+   "Haotong Lin",
+   "Sili Chen",
+   "Junhao Liew",
+   "Donny Y. Chen",
+   "Zhenyu Li",
+   "Guang Shi"
+  ],
+  "abstract": "We present Depth Anything 3 (DA3), a model that predicts spatially consistent geometry from an arbitrary number of visual inputs, with or without known camera poses. In pursuit of minimal modeling, DA3 yields two key insights: a single plain transformer (e.g., vanilla DINO encoder) is sufficient as a backbone without architectural specialization, and a singular depth-ray prediction target obviates the need for complex multi-task learning. Through our teacher-student training paradigm, the model achieves a level of detail and generalization on par with Depth Anything 2 (DA2). We establish a new visual geometry benchmark covering camera pose estimation, any-view geometry and visual rendering. On this benchmark, DA3 sets a new state-of-the-art across all tasks, surpassing prior SOTA VGGT by an average of 44.3% in camera pose accuracy and 25.1% in geometric accuracy. Moreover, it outperforms DA2 in monocular depth estimation. All models are trained exclusively on public academic datasets.",
+  "publishedAt": "2025-11-13T18:59:53Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 103,
+  "citationCount": 499,
+  "githubStars": 6062,
+  "pageCount": 32
+ },
+ {
+  "arxivId": "2602.21193",
+  "slug": "on-data-engineering-for-scaling-llm-terminal-capabilities",
+  "title": "On Data Engineering for Scaling LLM Terminal Capabilities",
+  "authors": [
+   "Renjie Pi",
+   "Grace Lam",
+   "Mohammad Shoeybi",
+   "Pooya Jannaty",
+   "Bryan Catanzaro",
+   "Wei Ping"
+  ],
+  "abstract": "Despite rapid recent progress in the terminal capabilities of large language models, the training data strategies behind state-of-the-art terminal agents remain largely undisclosed. We address this gap through a systematic study of data engineering practices for terminal agents, making two key contributions: (1) Terminal-Task-Gen, a lightweight synthetic task generation pipeline that supports seed-based and skill-based task construction, and (2) a comprehensive analysis of data and training strategies, including filtering, curriculum learning, long context training, and scaling behavior. Our pipeline yields Terminal-Corpus, a large-scale open-source dataset for terminal tasks. Using this dataset, we train Nemotron-Terminal, a family of models initialized from Qwen3(8B, 14B, 32B) that achieve substantial gains on Terminal-Bench 2.0: Nemotron-Terminal-8B improves from 2.5% to 13.0% Nemotron-Terminal-14B improves from 4.0% to 20.2%, and Nemotron-Terminal-32B improves from 3.4% to 27.4%, matching the performance of significantly larger models. To accelerate research in this domain, we open-source our model checkpoints and most of our synthetic datasets at https://huggingface.co/collections/nvidia/nemotron-terminal.",
+  "publishedAt": "2026-02-24T18:51:04Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": "NVIDIA",
+  "hfUpvotes": 103,
+  "citationCount": 15,
+  "githubStars": null,
+  "pageCount": 24
+ },
+ {
+  "arxivId": "2604.02268",
+  "slug": "skill0-in-context-agentic-reinforcement-learning-for-skill-internalization",
+  "title": "SKILL0: In-Context Agentic Reinforcement Learning for Skill Internalization",
+  "authors": [
+   "Zhengxi Lu",
+   "Zhiyuan Yao",
+   "Jinyang Wu",
+   "Chengcheng Han",
+   "Qi Gu",
+   "Xunliang Cai"
+  ],
+  "abstract": "Agent skills, structured packages of procedural knowledge and executable resources that agents dynamically load at inference time, have become a reliable mechanism for augmenting LLM agents. Yet inference-time skill augmentation is fundamentally limited: retrieval noise introduces irrelevant guidance, injected skill content imposes substantial token overhead, and the model never truly acquires the knowledge it merely follows. We ask whether skills can instead be internalized into model parameters, enabling zero-shot autonomous behavior without any runtime skill retrieval. We introduce SKILL0, an in-context reinforcement learning framework designed for skill internalization. SKILL0 introduces a training-time curriculum that begins with full skill context and progressively withdraws it. Skills are grouped offline by category and rendered with interaction history into a compact visual context, teaching he model tool invocation and multi-turn task completion. A Dynamic Curriculum then evaluates each skill file's on-policy helpfulness, retaining only those from which the current policy still benefits within a linearly decaying budget, until the agent operates in a fully zero-shot setting. Extensive agentic experiments demonstrate that SKILL0 achieves substantial improvements over the standard RL baseline (+9.7\\% for ALFWorld, +6.6\\% for Search-QA, and+10.1\\% for WebShop), while maintaining a highly efficient context of fewer than 0.5k tokens per step. Our code is available at https://github.com/ZJU-REAL/SkillZero.",
+  "publishedAt": "2026-04-02T17:03:05Z",
+  "primaryArxivCategory": [
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 103,
+  "citationCount": 47,
+  "githubStars": 360,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2604.02329",
+  "slug": "generative-world-renderer",
+  "title": "Generative World Renderer",
+  "authors": [
+   "Zheng-Hui Huang",
+   "Zhixiang Wang",
+   "Jiaming Tan",
+   "Ruihan Yu",
+   "Yidan Zhang",
+   "Bo Zheng"
+  ],
+  "abstract": "Scaling generative inverse and forward rendering to real-world scenarios is bottlenecked by the limited realism and temporal coherence of existing synthetic datasets. To bridge this persistent domain gap, we introduce a large-scale, dynamic dataset curated from visually complex AAA games. Using a novel dual-screen stitched capture method, we extracted 4M continuous frames (720p/30 FPS) of synchronized RGB and five G-buffer channels across diverse scenes, visual effects, and environments, including adverse weather and motion-blur variants. This dataset uniquely advances bidirectional rendering: enabling robust in-the-wild geometry and material decomposition, and facilitating high-fidelity G-buffer-guided video generation. Furthermore, to evaluate the real-world performance of inverse rendering without ground truth, we propose a novel VLM-based assessment protocol measuring semantic, spatial, and temporal consistency. Experiments demonstrate that inverse renderers fine-tuned on our data achieve superior cross-dataset generalization and controllable generation, while our VLM evaluation strongly correlates with human judgment. Combined with our toolkit, our forward renderer enables users to edit styles of AAA games from G-buffers using text prompts.",
+  "publishedAt": "2026-04-02T17:59:53Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 103,
+  "citationCount": 1,
+  "githubStars": 709,
+  "pageCount": 24
+ },
+ {
+  "arxivId": "2604.08364",
+  "slug": "megastyle-constructing-diverse-and-scalable-style-dataset-via-consistent-text",
+  "title": "MegaStyle: Constructing Diverse and Scalable Style Dataset via Consistent Text-to-Image Style Mapping",
+  "authors": [
+   "Junyao Gao",
+   "Sibo Liu",
+   "Jiaxing Li",
+   "Yanan Sun",
+   "Yuanpeng Tu",
+   "Fei Shen"
+  ],
+  "abstract": "In this paper, we introduce MegaStyle, a novel and scalable data curation pipeline that constructs an intra-style consistent, inter-style diverse and high-quality style dataset. We achieve this by leveraging the consistent text-to-image style mapping capability of current large generative models, which can generate images in the same style from a given style description. Building on this foundation, we curate a diverse and balanced prompt gallery with 170K style prompts and 400K content prompts, and generate a large-scale style dataset MegaStyle-1.4M via content-style prompt combinations. With MegaStyle-1.4M, we propose style-supervised contrastive learning to fine-tune a style encoder MegaStyle-Encoder for extracting expressive, style-specific representations, and we also train a FLUX-based style transfer model MegaStyle-FLUX. Extensive experiments demonstrate the importance of maintaining intra-style consistency, inter-style diversity and high-quality for style dataset, as well as the effectiveness of the proposed MegaStyle-1.4M. Moreover, when trained on MegaStyle-1.4M, MegaStyle-Encoder and MegaStyle-FLUX provide reliable style similarity measurement and generalizable style transfer, making a significant contribution to the style transfer community. More results are available at our project website https://jeoyal.github.io/MegaStyle/.",
+  "publishedAt": "2026-04-09T15:29:08Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 103,
+  "citationCount": 2,
+  "githubStars": 131,
+  "pageCount": 25
+ },
+ {
+  "arxivId": "2604.11626",
+  "slug": "rationalrewards-reasoning-rewards-scale-visual-generation-both-training-and",
+  "title": "RationalRewards: Reasoning Rewards Scale Visual Generation Both Training and Test Time",
+  "authors": [
+   "Haozhe Wang",
+   "Cong Wei",
+   "Weiming Ren",
+   "Jiaming Liu",
+   "Fangzhen Lin",
+   "Wenhu Chen"
+  ],
+  "abstract": "Most reward models for visual generation reduce rich human judgments to a single unexplained score, discarding the reasoning that underlies preference. We show that teaching reward models to produce explicit, multi-dimensional critiques before scoring transforms them from passive evaluators into active optimization tools, improving generators in two complementary ways: at training time, structured rationales provide interpretable, fine-grained rewards for reinforcement learning; at test time, a Generate-Critique-Refine loop turns critiques into targeted prompt revisions that improve outputs without any parameter updates. To train such a reward model without costly rationale annotations, we introduce Preference-Anchored Rationalization (PARROT), a principled framework that recovers high-quality rationales from readily available preference data through anchored generation, consistency filtering, and distillation. The resulting model, RationalRewards (8B), achieves state-of-the-art preference prediction among open-source reward models, competitive with Gemini-2.5-Pro, while using 10-20x less training data than comparable baselines. As an RL reward, it consistently improves text-to-image and image-editing generators beyond scalar alternatives. Most strikingly, its test-time critique-and-refine loop matches or exceeds RL-based fine-tuning on several benchmarks, suggesting that structured reasoning can unlock latent capabilities in existing generators that suboptimal prompts fail to elicit.",
+  "publishedAt": "2026-04-13T15:38:09Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 103,
+  "citationCount": 7,
+  "githubStars": 56,
+  "pageCount": 31
+ },
+ {
+  "arxivId": "2606.30616",
+  "slug": "scaling-the-horizon-not-the-parameters-reaching-trillion-parameter-performance",
+  "title": "Scaling the Horizon, Not the Parameters: Reaching Trillion-Parameter Performance with a 35B Agent",
+  "authors": [
+   "Lei Bai",
+   "Zongsheng Cao",
+   "Yang Chen",
+   "Zhiyao Cui",
+   "Shangheng Du",
+   "Yue Fan"
+  ],
+  "abstract": "We introduce Agents-A1, a 35B Mixture-of-Experts Agentic Model that reaches trillion-parameter-level performance by scaling the agent horizon. We investigate agent-horizon scaling from two perspectives: scaling long-horizon trajectories and scaling heterogeneous agent abilities. To support this goal, we build a long-horizon knowledge-action infrastructure that connects external knowledge, actions, observations, and verifier outcomes, producing agentic trajectories with an average length of 45K tokens. Based on this, we train Agents-A1 with a three-stage recipe. First, we perform full-domain supervised fine-tuning to align the base model with broad agentic behaviors. Second, we train domain-level teacher models to capture specialized expertise in each domain. Third, we propose a multi-teacher domain-routed on-policy distillation with salient vocabulary alignment to improve knowledge transfer efficiency across different domains, unifying six heterogeneous domains into one deployable student model. Agents-A1 achieves strong and broad performance for long-horizon agent benchmarks. Compared with 1T-parameter model such as Kimi-K2.6 and DeepSeek-V4-pro, Agents-A1 achieves leading results on SEAL-0 (56.4), IFBench (80.6), HiPhO (46.4), FrontierScience-Olympiad (79.0), and MolBench-Bind (56.8), and remains highly competitive on SciCode (44.3), HLE (47.6) and BrowseComp (75.5). We hope this work provides the community with a practical path for scaling the horizon using a 35B agent that can reach or match the performance of 1T models on long-horizon tasks.",
+  "publishedAt": "2026-06-29T17:50:54Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 103,
+  "citationCount": 3,
+  "githubStars": 529,
+  "pageCount": 29
+ },
+ {
+  "arxivId": "2607.14777",
+  "slug": "seed-self-evolving-on-policy-distillation-for-agentic-reinforcement-learning",
+  "title": "SEED: Self-Evolving On-Policy Distillation for Agentic Reinforcement Learning",
+  "authors": [
+   "Jinyang Wu",
+   "Shuo Yang",
+   "Zhengxi Lu",
+   "Fan Zhang",
+   "Yuhao Shen",
+   "Lang Feng"
+  ],
+  "abstract": "Large language models are increasingly trained as interactive agents for long-horizon tasks involving multi-turn interaction, tool use, and environment feedback. Outcome-based reinforcement learning (RL) provides a practical optimization paradigm, but its sparse trajectory-level rewards offer limited guidance on intermediate decisions, leaving a supervision gap between episode-level outcomes and token-level policy learning. We propose SEED (SElf-Evolving On-Policy Distillation), a self-evolving framework that converts completed on-policy trajectories into training-time hindsight skills and distills their behavioral effect back into the policy model. SEED first fine-tunes the policy to analyze completed trajectories and generate natural-language skills that capture reusable workflows, decisive observations, or failure-avoidance rules. During RL, the current policy both collects trajectories and serves as the analyzer that extracts hindsight skills from them. Policy updates therefore improve subsequent decision making and skill analysis together, allowing hindsight supervision to evolve with the policy. SEED then re-scores the sampled actions under ordinary and skill-augmented contexts, converting the skill-induced probability shift into a dense token-level on-policy distillation signal. This signal is jointly optimized with outcome-based RL, keeping the auxiliary supervision aligned with the current trajectory distribution. Extensive experiments on text-based and vision-based agentic tasks show that SEED consistently improves performance and sample efficiency, exhibiting robust generalization to unseen scenarios. Our code is available at https://github.com/jinyangwu/SEED.",
+  "publishedAt": "2026-07-16T09:57:18Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 103,
+  "citationCount": 3,
+  "githubStars": 218,
+  "pageCount": 37
+ },
+ {
+  "arxivId": "2603.20278",
+  "slug": "openresearcher-a-fully-open-pipeline-for-long-horizon-deep-research-trajectory",
+  "title": "OpenResearcher: A Fully Open Pipeline for Long-Horizon Deep Research Trajectory Synthesis",
+  "authors": [
+   "Zhuofeng Li",
+   "Dongfu Jiang",
+   "Xueguang Ma",
+   "Haoxiang Zhang",
+   "Ping Nie",
+   "Yuyu Zhang"
+  ],
+  "abstract": "Training deep research agents requires long-horizon trajectories that interleave search, evidence aggregation, and multi-step reasoning. However, existing data collection pipelines typically rely on proprietary web APIs, making large-scale trajectory synthesis costly, unstable, and difficult to reproduce. We present OpenResearcher, a reproducible pipeline that decouples one-time corpus bootstrapping from multi-turn trajectory synthesis and executes the search-and-browse loop entirely offline using three explicit browser primitives: search, open, and find, over a 15M-document corpus. Using GPT-OSS-120B as the teacher model, we synthesize over 97K trajectories, including a substantial long-horizon tail with 100+ tool calls. Supervised fine-tuning a 30B-A3B backbone on these trajectories achieves 54.8\\% accuracy on BrowseComp-Plus, a +34.0 point improvement over the base model, while remaining competitive on BrowseComp, GAIA, and xbench-DeepSearch. Because the environment is offline and fully instrumented, it also enables controlled analysis, where our study reveals practical insights into deep research pipeline design, including data filtering strategies, agent configuration choices, and how retrieval success relates to final answer accuracy. We release the pipeline, synthesized trajectories, model checkpoints, and the offline search environment at https://github.com/TIGER-AI-Lab/OpenResearcher.",
+  "publishedAt": "2026-03-17T20:10:12Z",
+  "primaryArxivCategory": [
+   "cs.IR",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 102,
+  "citationCount": 20,
+  "githubStars": 1123,
+  "pageCount": 37
+ },
+ {
+  "arxivId": "2604.12627",
+  "slug": "knowrl-boosting-llm-reasoning-via-reinforcement-learning-with-minimal",
+  "title": "KnowRL: Boosting LLM Reasoning via Reinforcement Learning with Minimal-Sufficient Knowledge Guidance",
+  "authors": [
+   "Linhao Yu",
+   "Tianmeng Yang",
+   "Siyu Ding",
+   "Renren Jin",
+   "Naibin Gu",
+   "Xiangzhao Hao"
+  ],
+  "abstract": "RLVR improves reasoning in large language models, but its effectiveness is often limited by severe reward sparsity on hard problems. Recent hint-based RL methods mitigate sparsity by injecting partial solutions or abstract templates, yet they typically scale guidance by adding more tokens, which introduce redundancy, inconsistency, and extra training overhead. We propose \\textbf{KnowRL} (Knowledge-Guided Reinforcement Learning), an RL training framework that treats hint design as a minimal-sufficient guidance problem. During RL training, KnowRL decomposes guidance into atomic knowledge points (KPs) and uses Constrained Subset Search (CSS) to construct compact, interaction-aware subsets for training. We further identify a pruning interaction paradox -- removing one KP may help while removing multiple such KPs can hurt -- and explicitly optimize for robust subset curation under this dependency structure. We train KnowRL-Nemotron-1.5B from OpenMath-Nemotron-1.5B. Across eight reasoning benchmarks at the 1.5B scale, KnowRL-Nemotron-1.5B consistently outperforms strong RL and hinting baselines. Without KP hints at inference, KnowRL-Nemotron-1.5B reaches 70.08 average accuracy, already surpassing Nemotron-1.5B by +9.63 points; with selected KPs, performance improves to 74.16, establishing a new state of the art at this scale. The model, curated training data, and code are publicly available at https://github.com/Hasuer/KnowRL.",
+  "publishedAt": "2026-04-14T11:53:23Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 102,
+  "citationCount": 8,
+  "githubStars": 58,
+  "pageCount": 16
+ },
+ {
+  "arxivId": "2605.08063",
+  "slug": "flow-opd-on-policy-distillation-for-flow-matching-models",
+  "title": "Flow-OPD: On-Policy Distillation for Flow Matching Models",
+  "authors": [
+   "Zhen Fang",
+   "Wenxuan Huang",
+   "Yu Zeng",
+   "Yiming Zhao",
+   "Shuang Chen",
+   "Kaituo Feng"
+  ],
+  "abstract": "Existing Flow Matching (FM) text-to-image models suffer from two critical bottlenecks under multi-task alignment: the reward sparsity induced by scalar-valued rewards, and the gradient interference arising from jointly optimizing heterogeneous objectives, which together give rise to a 'seesaw effect' of competing metrics and pervasive reward hacking. Inspired by the success of On-Policy Distillation (OPD) in the large language model community, we propose Flow-OPD, the first unified post-training framework that integrates on-policy distillation into Flow Matching models. Flow-OPD adopts a two-stage alignment strategy: it first cultivates domain-specialized teacher models via single-reward GRPO fine-tuning, allowing each expert to reach its performance ceiling in isolation; it then establishes a robust initial policy through a Flow-based Cold-Start scheme and seamlessly consolidates heterogeneous expertise into a single student via a three-step orchestration of on-policy sampling, task-routing labeling, and dense trajectory-level supervision. We further introduce Manifold Anchor Regularization (MAR), which leverages a task-agnostic teacher to provide full-data supervision that anchors generation to a high-quality manifold, effectively mitigating the aesthetic degradation commonly observed in purely RL-driven alignment. Built upon Stable Diffusion 3.5 Medium, Flow-OPD raises the GenEval score from 63 to 92 and the OCR accuracy from 59 to 94, yielding an overall improvement of roughly 10 points over vanilla GRPO, while preserving image fidelity and human-preference alignment and exhibiting an emergent 'teacher-surpassing' effect. These results establish Flow-OPD as a scalable alignment paradigm for building generalist text-to-image models. The codes and weights will be released in: https://github.com/CostaliyA/Flow-OPD .",
+  "publishedAt": "2026-05-08T17:50:15Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 102,
+  "citationCount": 11,
+  "githubStars": 274,
+  "pageCount": 17
+ },
+ {
+  "arxivId": "2606.00683",
+  "slug": "occ-rag-optimal-cognitive-core-for-faithful-question-answering",
+  "title": "OCC-RAG: Optimal Cognitive Core for Faithful Question Answering",
+  "authors": [
+   "Maksim Savkin",
+   "Mikhail Goncharov",
+   "Alexander Gambashidze",
+   "Alla Chepurova",
+   "Dmitrii Tarasov",
+   "Nikita Andriianov"
+  ],
+  "abstract": "Recent progress in the development of language models has been defined by scale, with each generation absorbing more of the world's knowledge into its weights. However, many practical applications benefit more from robust reasoning than from extensive parametric knowledge. In this setting, task-specialized small language models (SLMs) offer a principled design choice. We introduce Optimal Cognitive Core (OCC), a family of SLMs built around this premise. As a variant of OCC, we present OCC-RAG, optimized for faithful question answering (QA) grounded in the provided context. This task directly aligns with the OCC design approach, requiring multi-hop reasoning over supplied passages while ignoring memorized knowledge. To train OCC-RAG, we implement a novel pipeline for synthesizing multi-context, multi-hop QA data at scale, producing a corpus of over three million examples targeting multi-hop reasoning, strict context faithfulness, and calibrated abstention. We release OCC-RAG-0.6B and OCC-RAG-1.7B, both mid-trained on this corpus. The models produce structured reasoning traces with source citations grounded in literal quotes from the context. Through OCC-RAG, we demonstrate that compact, task-specialized SLMs can match or exceed general-purpose models 2 -- 6x their size across multi-hop reasoning (HotpotQA, MuSiQue, TAT-QA), faithfulness (ConFiQA), and refusal (MuSiQue-Un) benchmarks.",
+  "publishedAt": "2026-05-30T11:42:19Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 102,
+  "citationCount": 0,
+  "githubStars": 43,
+  "pageCount": 17
+ },
+ {
+  "arxivId": "2606.07591",
+  "slug": "researchclawbench-a-benchmark-for-end-to-end-autonomous-scientific-research",
+  "title": "ResearchClawBench: A Benchmark for End-to-End Autonomous Scientific Research",
+  "authors": [
+   "Wanghan Xu",
+   "Shuo Li",
+   "Tianlin Ye",
+   "Qinglong Cao",
+   "Yixin Chen",
+   "Hengjian Gao"
+  ],
+  "abstract": "AI coding agents are increasingly used for scientific work, but their end-to-end autonomous research capability remains difficult to verify. We present ResearchClawBench, a benchmark for evaluating autonomous scientific research across 40 tasks from 10 scientific domains. Each task is grounded in a real published paper, provides related literature and raw data, and hides the target paper during evaluation. Expert-curated multimodal rubrics decompose the target scientific artifacts into weighted criteria, enabling evaluation of target-paper-level re-discovery while leaving room for new discovery. We evaluate seven autonomous research (auto-research) agents under a unified protocol and seventeen native LLMs through the lightweight ResearchHarness. Current systems remain far from reliable re-discovery: the strongest autonomous agent, Claude Code, averages 21.5, and the strongest ResearchHarness LLM, Claude-Opus-4.7, averages 20.7, with an LLM frontier mean of only 26.5. Error analysis shows that failures concentrate in experimental protocol mismatch, evidence mismatch, and missing scientific core. ResearchClawBench provides a reproducible evaluation frontier for measuring progress toward autonomous scientific research.",
+  "publishedAt": "2026-05-28T16:27:40Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 102,
+  "citationCount": 3,
+  "githubStars": 232,
+  "pageCount": 73
+ },
+ {
+  "arxivId": "2607.10383",
+  "slug": "abot-n1-toward-a-general-visual-language-navigation-foundation-model",
+  "title": "ABot-N1: Toward a General Visual Language Navigation Foundation Model",
+  "authors": [
+   "Ruiyan Gong",
+   "Yingnan Guo",
+   "Junjun Hu",
+   "Jintao Kong",
+   "Xiaoxu Leng",
+   "Tianlun Li"
+  ],
+  "abstract": "Visual Language Navigation foundation models aim to unify deep reasoning for grounded spatial decisions with broad versatility for diverse embodied tasks. Current approaches typically achieve this integration via monolithic policies that map observations directly to actions, yet they often suffer from coordinate drift and poor handling of long-tail semantics. Furthermore, these black-box mappings lack interpretability, hindering the simultaneous achievement of generality, robustness, and transparency. We present ABot-N1, a step toward a general Visual Language Navigation foundation model, that addresses these challenges by decoupling cognition from control via a slow-fast architecture guided by dual visual-language signals. More specifically, a slow vision-language reasoner performs explicit Chain-of-Thought reasoning while producing a pixel goal. This compact set of image-space anchor points serves as a universal interface for diverse tasks, including point-goal, object-goal, poi-goal, instruction-following, and person-following. Subsequently, a fast action expert leverages both the textual cues and the pixel guidance to generate continuous waypoints at the native control frequency. By bridging high-level intents and low-level control through pixel-grounded anchors paired with explicit linguistic traces, our approach ensures robust, generalizable, and interpretable navigation across simulation and real-world benchmarks. ABot-N1 establishes new state-of-the-art records, delivering massive gains specifically in urban-scale navigation: boosting POI arrival by 35.0% (to 77.3%) and achieving 95.4%/92.9% SR in complex indoor and outdoor scenes. It also maintains superior robustness across object-reaching, person-following, and instruction-following tasks. New Point-Goal/POI-Goal benchmarks are released as open source to advance the field of urban-scale navigation.",
+  "publishedAt": "2026-07-11T16:21:03Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI",
+   "cs.RO"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 102,
+  "citationCount": 0,
+  "githubStars": null,
+  "pageCount": 36
+ },
+ {
+  "arxivId": "2509.20328",
+  "slug": "video-models-are-zero-shot-learners-and-reasoners",
+  "title": "Video models are zero-shot learners and reasoners",
+  "authors": [
+   "Thaddäus Wiedemer",
+   "Yuxuan Li",
+   "Paul Vicol",
+   "Shixiang Shane Gu",
+   "Nick Matarese",
+   "Kevin Swersky"
+  ],
+  "abstract": "The remarkable zero-shot capabilities of Large Language Models (LLMs) have propelled natural language processing from task-specific models to unified, generalist foundation models. This transformation emerged from simple primitives: large, generative models trained on web-scale data. Curiously, the same primitives apply to today's generative video models. Could video models be on a trajectory towards general-purpose vision understanding, much like LLMs developed general-purpose language understanding? We demonstrate that Veo 3 can solve a broad variety of tasks it wasn't explicitly trained for: segmenting objects, detecting edges, editing images, understanding physical properties, recognizing object affordances, simulating tool use, and more. These abilities to perceive, model, and manipulate the visual world enable early forms of visual reasoning like maze and symmetry solving. Veo's emergent zero-shot capabilities indicate that video models are on a path to becoming unified, generalist vision foundation models.",
+  "publishedAt": "2025-09-24T17:17:27Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.CV",
+   "cs.RO"
+  ],
+  "officialLab": "Google DeepMind / Google",
+  "hfUpvotes": 101,
+  "citationCount": 194,
+  "githubStars": null,
+  "pageCount": 46
+ },
+ {
+  "arxivId": "2509.21320",
+  "slug": "scireasoner-laying-the-scientific-reasoning-ground-across-disciplines",
+  "title": "SciReasoner: Laying the Scientific Reasoning Ground Across Disciplines",
+  "authors": [
+   "Yizhou Wang",
+   "Chen Tang",
+   "Han Deng",
+   "Jiabei Xiao",
+   "Jiaqi Liu",
+   "Jianyu Wu"
+  ],
+  "abstract": "We present a scientific reasoning foundation model that aligns natural language with heterogeneous scientific representations. The model is pretrained on a 206B-token corpus spanning scientific text, pure sequences, and sequence-text pairs, then aligned via SFT on 40M instructions, annealed cold-start bootstrapping to elicit long-form chain-of-thought, and reinforcement learning with task-specific reward shaping, which instills deliberate scientific reasoning. It supports four capability families, covering up to 103 tasks across workflows: (i) faithful translation between text and scientific formats, (ii) text/knowledge extraction, (iii) property prediction, (iv) property classification, (v) unconditional and conditional sequence generation and design. Compared with specialist systems, our approach broadens instruction coverage, improves cross-domain generalization, and enhances fidelity. We detail data curation and training and show that cross-discipline learning strengthens transfer and downstream reliability. The model, instruct tuning datasets and the evaluation code are open-sourced at https://huggingface.co/SciReason and https://github.com/open-sciencelab/SciReason.",
+  "publishedAt": "2025-09-25T17:52:06Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 101,
+  "citationCount": 9,
+  "githubStars": 90,
+  "pageCount": 82
+ },
+ {
+  "arxivId": "2508.07407",
+  "slug": "a-comprehensive-survey-of-self-evolving-ai-agents-a-new-paradigm-bridging",
+  "title": "A Comprehensive Survey of Self-Evolving AI Agents: A New Paradigm Bridging Foundation Models and Lifelong Agentic Systems",
+  "authors": [
+   "Jinyuan Fang",
+   "Yanwen Peng",
+   "Xi Zhang",
+   "Yingxu Wang",
+   "Xinhao Yi",
+   "Guibin Zhang"
+  ],
+  "abstract": "Recent advances in large language models have sparked growing interest in AI agents capable of solving complex, real-world tasks. However, most existing agent systems rely on manually crafted configurations that remain static after deployment, limiting their ability to adapt to dynamic and evolving environments. To this end, recent research has explored agent evolution techniques that aim to automatically enhance agent systems based on interaction data and environmental feedback. This emerging direction lays the foundation for self-evolving AI agents, which bridge the static capabilities of foundation models with the continuous adaptability required by lifelong agentic systems. In this survey, we provide a comprehensive review of existing techniques for self-evolving agentic systems. Specifically, we first introduce a unified conceptual framework that abstracts the feedback loop underlying the design of self-evolving agentic systems. The framework highlights four key components: System Inputs, Agent System, Environment, and Optimisers, serving as a foundation for understanding and comparing different strategies. Based on this framework, we systematically review a wide range of self-evolving techniques that target different components of the agent system. We also investigate domain-specific evolution strategies developed for specialised fields such as biomedicine, programming, and finance, where optimisation objectives are tightly coupled with domain constraints. In addition, we provide a dedicated discussion on the evaluation, safety, and ethical considerations for self-evolving agentic systems, which are critical to ensuring their effectiveness and reliability. This survey aims to provide researchers and practitioners with a systematic understanding of self-evolving AI agents, laying the foundation for the development of more adaptive, autonomous, and lifelong agentic systems.",
+  "publishedAt": "2025-08-10T16:07:32Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL",
+   "cs.MA"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 100,
+  "citationCount": 154,
+  "githubStars": 2396,
+  "pageCount": 55
+ },
+ {
+  "arxivId": "2510.24668",
+  "slug": "interactcomp-evaluating-search-agents-with-ambiguous-queries",
+  "title": "InteractComp: Evaluating Search Agents With Ambiguous Queries",
+  "authors": [
+   "Mingyi Deng",
+   "Lijun Huang",
+   "Yani Fan",
+   "Fanqi Kong",
+   "Jiayi Zhang",
+   "Fashen Ren"
+  ],
+  "abstract": "Language agents have demonstrated remarkable potential in web search and information retrieval. However, many search-agent benchmarks assume that user queries are complete and unambiguous. This assumption leaves under-tested a practical failure mode: agents may face ambiguous requests where the intended target cannot be identified without clarification. Yet most agents lack interactive mechanisms during the search process, and existing benchmarks cannot assess this capability. To address this gap, we introduce InteractComp, a benchmark designed to evaluate whether search agents can recognize query ambiguity and actively interact to resolve it during search. Following the principle of easy to verify, interact to disambiguate, we construct 210 expert-curated questions across 9 domains through a target-distractor methodology that creates controlled ambiguity resolvable only through interaction. Evaluation of 17 models reveals striking failure: the best model achieves only 13.73% accuracy despite 71.50% with complete context, exposing systematic overconfidence rather than reasoning deficits. Forced interaction produces dramatic gains, demonstrating latent capability current strategies fail to engage. Longitudinal analysis shows interaction capabilities stagnated over 15 months while search performance improved seven-fold, revealing a critical blind spot. This stagnation, coupled with the immediate feedback inherent to search tasks, makes InteractComp a valuable resource for both evaluating and training interaction capabilities in search agents. The code is available at https://github.com/FoundationAgents/InteractComp.",
+  "publishedAt": "2025-10-28T17:35:54Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 100,
+  "citationCount": 11,
+  "githubStars": 22,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2512.23447",
+  "slug": "coupling-experts-and-routers-in-mixture-of-experts-via-an-auxiliary-loss",
+  "title": "Coupling Experts and Routers in Mixture-of-Experts via an Auxiliary Loss",
+  "authors": [
+   "Ang Lv",
+   "Jin Ma",
+   "Yiyuan Ma",
+   "Siyuan Qiao"
+  ],
+  "abstract": "Mixture-of-Experts (MoE) models lack explicit constraints to ensure the router's decisions align well with the experts' capabilities, which ultimately limits model performance. To address this, we propose expert-router coupling (ERC) loss, a lightweight auxiliary loss that tightly couples the router's decisions with expert capabilities. Our approach treats each expert's router embedding as a proxy token for the tokens assigned to that expert, and feeds perturbed router embeddings through the experts to obtain intermediate activations. The ERC loss enforces two constraints on these activations: (1) Each expert must exhibit higher activation for its own proxy token than for the proxy tokens of any other expert. (2) Each proxy token must elicit stronger activation from its corresponding expert than from any other expert. These constraints jointly ensure that each router embedding faithfully represents its corresponding expert's capability, while each expert specializes in processing the tokens actually routed to it. The ERC loss is computationally efficient, operating only on $n^2$ activations, where $n$ is the number of experts. This represents a fixed cost independent of batch size, unlike prior coupling methods that scale with the number of tokens (often millions per batch). Through pre-training MoE-LLMs ranging from 3B to 15B parameters and extensive analysis on trillions of tokens, we demonstrate the effectiveness of the ERC loss. Moreover, the ERC loss offers flexible control and quantitative tracking of expert specialization levels during training, providing valuable insights into MoEs.",
+  "publishedAt": "2025-12-29T13:03:18Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 100,
+  "citationCount": 9,
+  "githubStars": null,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2602.04634",
+  "slug": "wideseek-r1-exploring-width-scaling-for-broad-information-seeking-via-multi",
+  "title": "WideSeek-R1: Exploring Width Scaling for Broad Information Seeking via Multi-Agent Reinforcement Learning",
+  "authors": [
+   "Zelai Xu",
+   "Zhexuan Xu",
+   "Ruize Zhang",
+   "Chunyang Zhu",
+   "Shi Yu",
+   "Weilin Liu"
+  ],
+  "abstract": "Recent advancements in Large Language Models (LLMs) have largely focused on depth scaling, where a single agent solves long-horizon problems with multi-turn reasoning and tool use. However, as tasks grow broader, the key bottleneck shifts from individual competence to organizational capability. In this work, we explore a complementary dimension of width scaling with multi-agent systems to address broad information seeking. Existing multi-agent systems often rely on hand-crafted workflows and turn-taking interactions that fail to parallelize work effectively. To bridge this gap, we propose WideSeek-R1, a lead-agent-subagent framework trained via multi-agent reinforcement learning (MARL) to synergize scalable orchestration and parallel execution. By utilizing a shared LLM with isolated contexts and specialized tools, WideSeek-R1 jointly optimizes the lead agent and parallel subagents on a curated dataset of 20k broad information-seeking tasks. Extensive experiments show that WideSeek-R1-4B achieves an item F1 score of 40.0% on the WideSearch benchmark, which is comparable to the performance of single-agent DeepSeek-R1-671B. Furthermore, WideSeek-R1-4B exhibits consistent performance gains as the number of parallel subagents increases, highlighting the effectiveness of width scaling.",
+  "publishedAt": "2026-02-04T15:05:12Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.LG",
+   "cs.MA"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 100,
+  "citationCount": 6,
+  "githubStars": 4455,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2602.24286",
+  "slug": "cuda-agent-large-scale-agentic-rl-for-high-performance-cuda-kernel-generation",
+  "title": "CUDA Agent: Large-Scale Agentic RL for High-Performance CUDA Kernel Generation",
+  "authors": [
+   "Weinan Dai",
+   "Hanlin Wu",
+   "Qiying Yu",
+   "Huan-ang Gao",
+   "Jiahao Li",
+   "Chengquan Jiang"
+  ],
+  "abstract": "GPU kernel optimization is fundamental to modern deep learning but remains a highly specialized task requiring deep hardware expertise. Despite strong performance in general programming, large language models (LLMs) remain uncompetitive with compiler-based systems such as torch.compile for CUDA kernel generation. Existing CUDA code generation approaches either rely on training-free refinement or fine-tune models within fixed multi-turn execution-feedback loops, but both paradigms fail to fundamentally improve the model's intrinsic CUDA optimization ability, resulting in limited performance gains. We present CUDA Agent, a large-scale agentic reinforcement learning system that develops CUDA kernel expertise through three components: a scalable data synthesis pipeline, a skill-augmented CUDA development environment with automated verification and profiling to provide reliable reward signals, and reinforcement learning algorithmic techniques enabling stable training. CUDA Agent achieves state-of-the-art results on KernelBench, delivering 100\\%, 100\\%, and 92\\% faster rate over torch.compile on KernelBench Level-1, Level-2, and Level-3 splits, outperforming the strongest proprietary models such as Claude Opus 4.5 and Gemini 3 Pro by about 40\\% on the hardest Level-3 setting.",
+  "publishedAt": "2026-02-27T18:58:05Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 100,
+  "citationCount": 32,
+  "githubStars": 1127,
+  "pageCount": 32
+ }
+]

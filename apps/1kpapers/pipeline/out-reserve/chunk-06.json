@@ -1,0 +1,212 @@
+[
+ {
+  "slug": "youtu-llm-unlocking-the-native-agentic-potential-for-lightweight-large",
+  "summary": "Youtu-LLM is a 1.96B-parameter language model pre-trained from scratch to build reasoning and planning into a small model instead of relying on distillation. Its recipe combines a compact long-context architecture, a staged pre-training curriculum, and an agentic mid-training phase that synthesizes rich trajectories across domains.\n\n- **Compact architecture**: A dense Multi-Latent Attention design with a novel STEM-oriented vocabulary supports a 128k context window and robust long-context reasoning and state tracking within a minimal memory footprint.\n- **Curriculum pre-training**: A curated corpus of approximately 11T tokens shifts the data distribution progressively from general commonsense to complex STEM and agentic tasks in a multi-stage strategy.\n- **Agentic mid-training**: Diverse data construction schemes synthesize trajectories across math, coding, and tool-use so the model internalizes planning and reflection behaviors.\n- **Results**: Youtu-LLM sets a new state-of-the-art for sub-2B LLMs, competes with larger models on general benchmarks, and significantly surpasses existing baselines on agent-specific tasks.",
+  "primaryTopic": "agent-training",
+  "secondaryTopic": "model-architecture",
+  "confidence": 0.6
+ },
+ {
+  "slug": "urban-socio-semantic-segmentation-with-vision-language-reasoning",
+  "summary": "Urban socio-semantic segmentation targets socially defined categories such as schools and parks, which current segmentation models handle far less reliably than physically defined entities like buildings or water bodies. The work contributes the SocioSeg dataset and SocioReasoner, a vision-language reasoning framework that segments such entities from satellite imagery.\n\n- **SocioSeg dataset**: The resource pairs satellite imagery and digital maps with pixel-level labels of social semantic entities organized in a hierarchical structure.\n- **Cross-modal reasoning**: SocioReasoner simulates the human process of identifying and annotating social entities through cross-modal recognition and multi-stage reasoning.\n- **Reinforcement learning**: RL optimizes the non-differentiable reasoning process and elicits the vision-language model's reasoning capabilities.\n- **Results**: The approach delivers gains over state-of-the-art models with strong zero-shot generalization, and the dataset and code are open-sourced under the Apache License 2.0.",
+  "primaryTopic": "vlm-architectures",
+  "secondaryTopic": "rl-for-reasoning",
+  "confidence": 0.6
+ },
+ {
+  "slug": "vision-deepresearch-incentivizing-deepresearch-capability-in-multimodal-large",
+  "summary": "Vision-DeepResearch is a multimodal large language model built for deep research, performing multi-turn, multi-entity, and multi-scale visual and textual search against real-world engines under heavy noise. It moves beyond prior reasoning-then-tool-call designs that assume a single image query and a few text queries can retrieve the needed evidence.\n\n- **Deeper search loops**: The system supports dozens of reasoning steps and hundreds of engine interactions, aggregating evidence from diverse visual and textual sources.\n- **Internalized capability**: Cold-start supervision followed by RL training embeds the deep-research behavior into the MLLM itself rather than into an external workflow.\n- **Results**: It substantially outperforms existing multimodal deep-research MLLMs as well as workflows built on closed-source foundations such as GPT-5, Gemini-2.5-pro, and Claude-4-Sonnet.",
+  "primaryTopic": "search-agents",
+  "secondaryTopic": "rl-for-reasoning",
+  "confidence": 0.85
+ },
+ {
+  "slug": "qianfan-ocr-a-unified-end-to-end-model-for-document-intelligence",
+  "summary": "Qianfan-OCR is a 4B-parameter end-to-end vision-language model that unifies document parsing, layout analysis, and document understanding in a single architecture, performing direct image-to-Markdown conversion plus prompt-driven table extraction, chart understanding, document QA, and key information extraction.\n\n- **Layout-as-Thought**: Special think tokens trigger an optional thinking phase that generates structured layout representations such as bounding boxes, element types, and reading order before final outputs, restoring layout grounding in end-to-end OCR.\n- **Benchmark results**: The model ranks first among end-to-end models on OmniDocBench v1.5 (93.12) and OlmOCR Bench (79.8), and stays competitive on OCRBench, CCOCR, DocVQA, and ChartQA against general VLMs of comparable scale.\n- **Key information extraction**: It attains the highest average score on public KIE benchmarks, surpassing Gemini-3.1-Pro, Seed-2.0, and Qwen3-VL-235B.\n- **Availability**: The model is publicly accessible via the Baidu AI Cloud Qianfan platform.",
+  "primaryTopic": "document-ocr",
+  "secondaryTopic": "reasoning-methods",
+  "confidence": 0.85
+ },
+ {
+  "slug": "shotstream-streaming-multi-shot-video-generation-for-interactive-storytelling",
+  "summary": "ShotStream is a causal multi-shot video generation architecture for interactive storytelling, where users steer ongoing narratives through streaming prompts. It reformulates multi-shot generation as next-shot generation conditioned on historical context, first fine-tuning a text-to-video model into a bidirectional next-shot generator and then distilling it into a causal student via Distribution Matching Distillation.\n\n- **Dual-cache memory**: A global context cache retains conditional frames for inter-shot consistency while a local context cache holds frames within the current shot, with a RoPE discontinuity indicator separating the two.\n- **Two-stage distillation**: Intra-shot self-forcing on ground-truth historical shots progressively extends to inter-shot self-forcing on self-generated histories, bridging the train-test gap and curbing error accumulation.\n- **Results**: ShotStream generates coherent multi-shot videos with sub-second latency, achieving 16 FPS on a single GPU while matching or exceeding the quality of slower bidirectional models.",
+  "primaryTopic": "video-generation",
+  "secondaryTopic": null,
+  "confidence": 0.9
+ },
+ {
+  "slug": "qwen3-omni-technical-report",
+  "summary": "Qwen3-Omni from Alibaba / Qwen is a single multimodal model that maintains state-of-the-art performance across text, image, audio, and video without any degradation relative to single-modal counterparts. A Thinker-Talker MoE architecture unifies perception and generation, yielding fluent text and natural real-time speech.\n\n- **Audio results**: Across 36 audio and audio-visual benchmarks, the model achieves open-source SOTA on 32 and overall SOTA on 22, outperforming closed-source systems such as Gemini-2.5-Pro, Seed-ASR, and GPT-4o-Transcribe.\n- **Coverage**: It supports text interaction in 119 languages, speech understanding in 19 languages, and speech generation in 10 languages.\n- **Streaming latency**: The Talker autoregressively predicts discrete speech codecs with a multi-codebook scheme and replaces block-wise diffusion with a lightweight causal ConvNet, reaching a theoretical first-packet latency of 234 ms.\n- **Release**: Qwen3-Omni-30B-A3B, its Thinking variant, and the Qwen3-Omni-30B-A3B-Captioner for audio captioning are publicly released under the Apache 2.0 license.",
+  "primaryTopic": "audio-speech",
+  "secondaryTopic": "vlm-architectures",
+  "confidence": 0.9
+ },
+ {
+  "slug": "fasa-frequency-aware-sparse-attention",
+  "summary": "FASA is a sparse attention framework that reduces the KV-cache memory burden of long-input LLM inference through query-aware token eviction. Its starting point is a new observation about RoPE: functional sparsity at the frequency-chunk level, where a small identifiable set of dominant chunks consistently tracks the full attention head.\n\n- **Free importance proxy**: Dominant frequency chunks exhibit high contextual agreement with full attention, giving a computationally free signal for identifying salient tokens.\n- **Two-stage computation**: FASA first identifies a critical token set from the dominant chunks, then performs focused attention solely on that pruned subset.\n- **Results**: On LongBench-V1 it reaches nearly 100% of full-KV performance while keeping only 256 tokens, and it achieves a 2.56x speedup using just 18.9% of the cache on AIME24, holding up from sequence modeling to complex CoT reasoning.",
+  "primaryTopic": "long-context",
+  "secondaryTopic": "model-efficiency",
+  "confidence": 0.85
+ },
+ {
+  "slug": "dllm-simple-diffusion-language-modeling",
+  "summary": "dLLM is an open-source framework that unifies the core components of diffusion language modeling, covering training, inference, and evaluation behind one standardized and customizable pipeline. It responds to the spread of shared model components across ad-hoc research codebases that are hard to reproduce or extend.\n\n- **Unified pipeline**: Users can reproduce, finetune, deploy, and evaluate open-source large diffusion language models such as LLaDA and Dream through a single framework.\n- **Accessible recipes**: Minimal, reproducible recipes build small DLMs from scratch with accessible compute, including converting any BERT-style encoder or autoregressive LM into a DLM.\n- **Released artifacts**: Checkpoints of the small DLMs are released to make diffusion language models more accessible and to accelerate follow-up research.",
+  "primaryTopic": "diffusion-lms",
+  "secondaryTopic": null,
+  "confidence": 0.9
+ },
+ {
+  "slug": "grounding-world-simulation-models-in-a-real-world-metropolis",
+  "summary": "Seoul World Model (SWM) is a city-scale world simulation model grounded in the real city of Seoul, generating videos of an actual urban environment rather than an imagined one. It anchors autoregressive video generation through retrieval-augmented conditioning on nearby street-view images.\n\n- **Data machinery**: Cross-temporal pairing, a large-scale synthetic dataset, and a view interpolation pipeline address temporal misalignment, limited trajectory diversity, and sparse vehicle-mounted captures.\n- **Long-horizon stability**: A Virtual Lookahead Sink continuously re-grounds each generated chunk to a retrieved image at a future location, stabilizing long-horizon generation.\n- **Results**: Evaluated across Seoul, Busan, and Ann Arbor, SWM outperforms recent video world models on spatially faithful, temporally consistent long-horizon videos over trajectories reaching hundreds of meters, while supporting diverse camera movements and text-prompted scenario variations.",
+  "primaryTopic": "video-generation",
+  "secondaryTopic": null,
+  "confidence": 0.85
+ },
+ {
+  "slug": "minimax-sparse-attention",
+  "summary": "MiniMax introduces MiniMax Sparse Attention (MSA), a blockwise sparse attention scheme built on Grouped Query Attention that serves ultra-long-context workloads spanning agentic workflows, repository-scale code reasoning, and persistent memory. A lightweight Index Branch scores key-value blocks and independently selects a Top-k subset per GQA group, after which the Main Branch performs exact block-sparse attention over only the selected blocks.\n\n- **Deployment focus**: MSA is deliberately streamlined and co-designed with a GPU execution path using exp-free Top-k selection and KV-outer sparse attention to improve tensor-core utilization.\n- **Compute savings**: On a 109B-parameter model with native multimodal training, MSA performs on par with GQA while reducing per-token attention compute by 28.4x at 1M context.\n- **Wall-clock speedups**: Paired with the co-designed kernel, it achieves 14.2x prefill and 7.6x decoding speedups on H800, and powers the publicly released MiniMax-M3 model.",
+  "primaryTopic": "long-context",
+  "secondaryTopic": "model-efficiency",
+  "confidence": 0.9
+ },
+ {
+  "slug": "qwen-agentworld-language-world-models-for-general-agents",
+  "summary": "Qwen-AgentWorld from Alibaba / Qwen is a family of language world models, Qwen-AgentWorld-35B-A3B and Qwen-AgentWorld-397B-A17B, that simulate agentic environments covering 7 domains via long chain-of-thought reasoning. The models are trained on more than 10M environment interaction trajectories through a three-stage pipeline of CPT, SFT, and RL with hybrid rubric-and-rule rewards.\n\n- **Benchmark**: AgentWorldBench, constructed from real-world interactions of 5 frontier models on 9 established benchmarks, shows Qwen-AgentWorld significantly outperforming existing frontier models.\n- **Decoupled simulator**: As an environment simulator, it supports scalable and controllable simulation of thousands of real-world environments for agentic RL, with gains that surpass real-environment training alone.\n- **Unified foundation model**: World-model training acts as a warm-up that improves downstream performance across 7 agentic benchmarks.",
+  "primaryTopic": "agent-training",
+  "secondaryTopic": "agent-benchmarks",
+  "confidence": 0.8
+ },
+ {
+  "slug": "efficient-reasoning-with-balanced-thinking",
+  "summary": "ReBalance is a training-free framework that addresses two failure modes of large reasoning models: overthinking, which spends redundant steps on simple problems, and underthinking, which fails to explore enough reasoning paths. It reads confidence as a continuous indicator of reasoning dynamics, flagging overthinking via high confidence variance and underthinking via consistent overconfidence.\n\n- **Steering vectors**: Hidden states from a small-scale dataset form reasoning mode prototypes, and a steering vector computed from them guides the model's reasoning trajectories.\n- **Dynamic control**: A control function modulates the vector's strength and direction based on real-time confidence, pruning redundancy during overthinking and promoting exploration during underthinking.\n- **Results**: Across four models from 0.5B to 32B and nine benchmarks in math reasoning, general question answering, and coding, ReBalance reduces output redundancy while improving accuracy as a plug-and-play strategy.",
+  "primaryTopic": "reasoning-methods",
+  "secondaryTopic": null,
+  "confidence": 0.85
+ },
+ {
+  "slug": "hsimul3r-physics-in-the-loop-reconstruction-of-simulation-ready-human-scene",
+  "summary": "HSImul3R is a unified framework for simulation-ready 3D reconstruction of human-scene interactions from casual captures such as sparse-view images and monocular videos. It targets the perception-simulation gap in which visually plausible reconstructions violate physical constraints and destabilize physics engines.\n\n- **Physics in the loop**: A physically-grounded bi-directional optimization pipeline treats the physics simulator as an active supervisor that jointly refines human dynamics and scene geometry.\n- **Scene-targeted RL**: Reinforcement learning optimizes human motion under dual supervision of motion fidelity and contact stability.\n- **Geometry rewards**: Direct Simulation Reward Optimization leverages simulation feedback on gravitational stability and interaction success to refine scene geometry.\n- **Benchmark and deployment**: The paper introduces HSIBench with diverse objects and interaction scenarios and demonstrates the first stable, simulation-ready HSI reconstructions deployable on real-world humanoid robots.",
+  "primaryTopic": "spatial-3d",
+  "secondaryTopic": null,
+  "confidence": 0.85
+ },
+ {
+  "slug": "the-latent-space-foundation-evolution-mechanism-ability-and-outlook",
+  "summary": "The Latent Space is a survey that maps latent space as a native substrate for language-based models, arguing that many critical internal processes are more naturally carried out in continuous latent space than in human-readable verbal traces. It organizes the field through five sequential perspectives: Foundation, Evolution, Mechanism, Ability, and Outlook.\n\n- **Motivating limits**: Explicit-space computation suffers from structural drawbacks including linguistic redundancy, discretization bottlenecks, sequential inefficiency, and semantic loss.\n- **Mechanism view**: Existing work falls into four major development lines: Architecture, Representation, Computation, and Optimization.\n- **Ability view**: Latent space supports a capability spectrum spanning Reasoning, Planning, Modeling, Perception, Memory, Collaboration, and Embodiment.\n- **Outlook**: The survey consolidates open challenges and frames latent computation as a general computational and systems paradigm for next-generation intelligence.",
+  "primaryTopic": "reasoning-methods",
+  "secondaryTopic": "model-architecture",
+  "confidence": 0.5
+ },
+ {
+  "slug": "domino-decoupling-causal-modeling-from-autoregressive-drafting-in-speculative",
+  "summary": "Domino is a speculative decoding framework that decouples causal dependency modeling from expensive autoregressive draft execution. It targets the trade-off in which autoregressive drafters model dependencies among draft tokens but incur sequential overhead, while parallel drafters cut drafting cost but weaken intra-block dependency modeling.\n\n- **Draft-then-refine**: A parallel draft backbone produces preliminary draft distributions for the entire block, and a lightweight Domino head refines them with prefix-dependent causal information.\n- **Training curriculum**: A base-anchored curriculum first strengthens the parallel backbone, then gradually shifts optimization toward the causally corrected final distribution to stabilize teacher-forced causal encoding.\n- **Results**: On Qwen3 models, Domino achieves up to 5.49x end-to-end speedup under the Transformers backend and up to 5.8x throughput speedup under SGLang serving.",
+  "primaryTopic": "diffusion-lms",
+  "secondaryTopic": "model-efficiency",
+  "confidence": 0.8
+ },
+ {
+  "slug": "hifi-umi-learning-deployable-manipulation-policies-from-high-fidelity-umi-data",
+  "summary": "HiFi-UMI is a portable robot-free data-production system whose raised capture fidelity lets manipulation policies be post-trained without any real-robot anchor data. It is co-designed for trajectory accuracy, inter-gripper relative pose, synchronization, and field of view.\n\n- **Capture accuracy**: Head-mounted offline stereo-inertial SLAM, native inter-gripper relative pose, a shared microsecond GPIO trigger, and two wide-angle cameras per hand covering ~200 degrees reach 3 mm workspace-local end-effector accuracy without external tracking infrastructure.\n- **Zero-robot post-training**: Policies post-trained solely on HiFi-UMI demonstrations deploy directly on a real robot and match in-domain teleoperation across three backbones, with success-rate differences of -2.5, +3.1, and -0.6 percentage points on StarVLA-QwenPI, OpenPI-pi_0.5, and LingBot-VA; the strongest policy reaches 85% on a precision insertion task.\n- **Pre-training gains**: Pre-training on 4,000 hours from the corpus lowers action error on ten unseen tasks by 41% and raises real-robot success by a further 18.1 percentage points on StarVLA-QwenPI.\n- **Open resource**: The released HiFi-UMI-2K corpus contains 2,000 hours of microsecond-synchronized, ultra-wide-FoV demonstrations validated through simulation replay.",
+  "primaryTopic": "robot-policies",
+  "secondaryTopic": "data-curation",
+  "confidence": 0.8
+ },
+ {
+  "slug": "reverse-engineered-reasoning-for-open-ended-generation",
+  "summary": "REER (REverse-Engineered Reasoning) is a new paradigm for instilling deep reasoning in open-ended, creative generation by working backwards from known-good solutions to computationally discover the latent step-by-step reasoning process that could have produced them. It sidesteps the missing reward signals that hamper RL and the cost and teacher-imposed ceiling of instruction distillation via a scalable, gradient-free approach.\n\n- **Open dataset**: The method yields DeepWriting-20K, a large-scale dataset of 20,000 deep reasoning trajectories for open-ended tasks.\n- **Resulting model**: DeepWriter-8B, trained on this data, surpasses strong open-source baselines and achieves performance competitive with, and at times superior to, leading proprietary models like GPT-4o and Claude 3.5.",
+  "primaryTopic": "data-curation",
+  "secondaryTopic": "reasoning-methods",
+  "confidence": 0.7
+ },
+ {
+  "slug": "a-theoretical-study-on-bridging-internal-probability-and-self-consistency-for",
+  "summary": "RPC originates in the first theoretical framework for sampling-based test-time scaling, analyzing self-consistency and perplexity through the lens of confidence estimation. The analysis shows that self-consistency suffers high estimation error, while perplexity exhibits substantial modeling error and possible degradation of estimation-error convergence.\n\n- **Hybrid design**: Perplexity Consistency combines the strengths of both paradigms, boosting the convergence rate of estimation error from linear to exponential while preserving model error.\n- **Reasoning Pruning**: Eliminating low-probability reasoning paths prevents degradation of the estimate.\n- **Results**: Across seven benchmark datasets, RPC achieves reasoning performance comparable to self-consistency while enhancing confidence reliability and reducing sampling costs by 50%.",
+  "primaryTopic": "reasoning-methods",
+  "secondaryTopic": null,
+  "confidence": 0.8
+ },
+ {
+  "slug": "rewarding-the-rare-uniqueness-aware-rl-for-creative-problem-solving-in-llms",
+  "summary": "Uniqueness-Aware Reinforcement Learning targets exploration collapse in RL post-training of LLMs, where policies prematurely concentrate on a small set of dominant reasoning patterns and improve pass@1 while limiting rollout-level diversity and pass@k gains. The authors trace the failure to regularizing local token behavior rather than diversity over sets of solutions.\n\n- **Rollout-level objective**: An LLM-based judge clusters rollouts for the same problem by high-level solution strategy, ignoring superficial variation, and reweights policy advantages inversely with cluster size so correct but rare strategies receive higher rewards.\n- **Results**: Across mathematics, physics, and medical reasoning benchmarks, the method improves pass@k across large sampling budgets and increases the area under the pass@k curve (AUC@K) without sacrificing pass@1, sustaining exploration and uncovering more diverse solution strategies at scale.",
+  "primaryTopic": "rl-for-reasoning",
+  "secondaryTopic": null,
+  "confidence": 0.9
+ },
+ {
+  "slug": "omnilottie-generating-vector-animations-via-parameterized-lottie-tokens",
+  "summary": "OmniLottie is a framework that generates vector animations from multi-modal instructions by treating Lottie, a lightweight JSON format for shapes and animation behaviors, as the generation target. Raw Lottie files contain extensive invariant structural metadata, so the system learns over a compressed token representation instead.\n\n- **Lottie tokenizer**: A designed tokenizer transforms JSON files into structured sequences of commands and parameters representing shapes, animation functions, and control parameters.\n- **VLM backbone**: OmniLottie builds on pretrained vision language models to follow multi-modal interleaved instructions and produce semantically aligned vector animations.\n- **Dataset**: The curated MMLottie-2M provides a large-scale collection of professionally designed vector animations paired with textual and visual annotations to advance research in vector animation generation.",
+  "primaryTopic": "image-generation",
+  "secondaryTopic": "video-generation",
+  "confidence": 0.55
+ },
+ {
+  "slug": "arex-towards-a-recursively-self-improving-agent-for-deep-research",
+  "summary": "AREX is a family of Recursively Self-Improving deep research agents that alternate an inner research loop, which gathers evidence and constructs a provisional answer, with an outer self-improvement loop that audits the answer constraint-wise and launches targeted follow-up research. The design exploits the asymmetry that discovering answers is costly while verification decomposes into tractable constraint-wise checks.\n\n- **Context management**: An autonomous context-update tool compresses growing interaction history into a compact improvement state preserving verified evidence and unresolved constraints, without relying on an external model.\n- **Training**: AREX is trained on verified synthetic tasks and high-quality trajectories through agentic mid-training and long-horizon reinforcement learning, emphasizing key steps to mitigate sparse final rewards.\n- **Models and results**: A dense 4B model and a 122B-A10B Mixture-of-Experts model substantially outperform comparable-scale baselines on BrowseComp, WideSearch, DeepSearchQA, and Humanity's Last Exam, remaining competitive with models using substantially more activated parameters.",
+  "primaryTopic": "search-agents",
+  "secondaryTopic": "agent-training",
+  "confidence": 0.85
+ },
+ {
+  "slug": "from-blind-spots-to-gains-diagnostic-driven-iterative-training-for-large",
+  "summary": "Diagnostic-driven Progressive Evolution (DPE) is a spiral training loop for large multimodal models in which diagnosis steers data generation and reinforcement, and each iteration re-diagnoses the updated model to drive the next round of targeted improvement. It replaces static data and fixed recipes with test-driven error exposure and feedback-based correction.\n\n- **Agentic data engine**: Multiple agents annotate and quality-control massive unlabeled multimodal data, using tools such as web search and image editing to produce diverse, realistic samples.\n- **Targeted reinforcement**: DPE attributes failures to specific weaknesses, dynamically adjusts the data mixture, and guides agents to generate weakness-focused data.\n- **Results**: On Qwen3-VL-8B-Instruct and Qwen2.5-VL-7B-Instruct, DPE shows stable, continual gains across eleven benchmarks, indicating a scalable paradigm for continual LMM training under open task distributions.",
+  "primaryTopic": "agent-training",
+  "secondaryTopic": "data-curation",
+  "confidence": 0.55
+ },
+ {
+  "slug": "enterpriseops-gym-environments-and-evaluations-for-stateful-agentic-planning",
+  "summary": "EnterpriseOps-Gym is a benchmark for evaluating stateful agentic planning and tool use in realistic enterprise settings, where long-horizon planning must survive persistent state changes and strict access protocols. Agents operate in a containerized sandbox built to mimic real-world search friction.\n\n- **Environment scale**: The sandbox features 164 database tables and 512 functional tools, with 1,150 expert-curated tasks across eight mission-critical verticals including Customer Service, HR, and IT.\n- **Frontier model results**: Evaluations of 14 frontier models show the top performer, Claude Opus 4.5, achieving only 37.4% success.\n- **Diagnosis**: Providing oracle human plans improves performance by 14-35 percentage points, pinpointing strategic reasoning as the primary bottleneck, and agents frequently fail to refuse infeasible tasks, with the best model reaching only 53.9%.",
+  "primaryTopic": "agent-benchmarks",
+  "secondaryTopic": null,
+  "confidence": 0.9
+ },
+ {
+  "slug": "openseeker-democratizing-frontier-search-agents-by-fully-open-sourcing",
+  "summary": "OpenSeeker is the first fully open-source search agent, releasing model and training data together, that reaches frontier-level deep search performance. Its two core data innovations address the scarcity of transparent, high-quality training data that has kept such agents in industrial labs.\n\n- **Controllable QA synthesis**: Fact-grounded synthesis reverse-engineers the web graph via topological expansion and entity obfuscation to generate complex, multi-hop reasoning tasks with controllable coverage and complexity.\n- **Denoised trajectories**: A retrospective summarization mechanism denoises trajectories, promoting teacher LLMs to generate high-quality actions.\n- **Results**: Trained with simple SFT on only 11.7k synthesized samples, OpenSeeker achieves state-of-the-art across BrowseComp, BrowseComp-ZH, xbench-DeepSearch, and WideSearch, scoring 29.5% versus DeepDive's 15.3% on BrowseComp and 48.4% versus Tongyi DeepResearch's 46.7% on BrowseComp-ZH.",
+  "primaryTopic": "search-agents",
+  "secondaryTopic": "data-curation",
+  "confidence": 0.85
+ },
+ {
+  "slug": "longcat-next-lexicalizing-modalities-as-discrete-tokens",
+  "summary": "LongCat-Next, from the Meituan LongCat team, is a native multimodal model that processes text, vision, and audio under a single autoregressive objective with minimal modality-specific design. It builds on Discrete Native Autoregressive (DiNA), a framework that represents multimodal information within a shared discrete token space.\n\n- **Any-resolution tokenizer**: The Discrete Native Any-resolution Visual Transformer (dNaViT) performs tokenization and de-tokenization at arbitrary resolutions, turning continuous visual signals into hierarchical discrete tokens.\n- **Unified capabilities**: The model sees, paints, and talks within one framework, achieving strong performance across a wide range of multimodal benchmarks.\n- **Discrete vision ceiling**: LongCat-Next addresses the long-standing performance ceiling of discrete vision modeling on understanding tasks and provides a unified approach to reconciling understanding and generation, with the model and its tokenizers open-sourced.",
+  "primaryTopic": "vlm-architectures",
+  "secondaryTopic": "model-architecture",
+  "confidence": 0.7
+ },
+ {
+  "slug": "memprivacy-privacy-preserving-personalized-memory-management-for-edge-cloud",
+  "summary": "MemPrivacy is a privacy-preserving memory management scheme for LLM-powered agents in edge-cloud environments, where cloud-assisted memory exposes sensitive user information and existing masking methods remove task-relevant semantics. It decouples privacy protection from semantic destruction instead of trading one against the other.\n\n- **Placeholder pipeline**: Privacy-sensitive spans are identified on edge devices, replaced with semantically structured type-aware placeholders for cloud-side memory processing, and restored locally when needed.\n- **Evaluation suite**: MemPrivacy-Bench covers 200 users and over 155k privacy instances, with a four-level privacy taxonomy supporting configurable protection policies.\n- **Results**: MemPrivacy substantially surpasses strong general-purpose models such as GPT-5.2 and Gemini-3.1-Pro on privacy information extraction while reducing inference latency, and limits utility loss to within 1.6% across multiple widely used memory systems.",
+  "primaryTopic": "agent-skills",
+  "secondaryTopic": "safety-alignment",
+  "confidence": 0.65
+ },
+ {
+  "slug": "agentdog-1-5-a-lightweight-and-scalable-alignment-framework-for-ai-agent",
+  "summary": "AgentDoG 1.5 is a lightweight and scalable alignment framework for AI agent safety and security, built for open-world agents such as OpenClaw whose cross-environment execution introduces broad new risk sources. The work updates the agent safety taxonomy to accommodate emergent risks from Codex and OpenClaw execution scenarios.\n\n- **Data-efficient guardrails**: A taxonomy-guided data engine with influence-function purification trains variants at 0.8B, 2B, 4B, and 8B parameters using only around 1k samples, achieving performance comparable to leading closed-source models such as GPT-5.4.\n- **Training environment**: An agentic safety SFT and RL training environment reduces Docker-level deployment overhead by two orders of magnitude.\n- **Online moderation**: Deployed as a training-free online guardrail for real-time safety moderation, AgentDoG 1.5 achieves state-of-the-art performance in diverse, complex interactive agentic scenarios, with all models and datasets openly released.",
+  "primaryTopic": "safety-alignment",
+  "secondaryTopic": "agent-benchmarks",
+  "confidence": 0.8
+ },
+ {
+  "slug": "agentic-abstention-do-agents-know-when-to-stop-instead-of-act",
+  "summary": "Agentic Abstention names the problem of deciding when an LLM agent should stop acting under uncertainty instead of making further tool calls. Unlike single-turn answer-or-abstain settings, it is a sequential decision problem in which the agent can answer, abstain, or gather more information each turn, and the need to abstain may only become clear after interacting with the environment.\n\n- **Broad evaluation**: The study spans web shopping, terminal environments, and question answering, testing 13 LLM-as-agent systems and 2 agent scaffolds on more than 28,000 tasks.\n- **Findings**: Some agents never abstain when they should, others do so only after many unnecessary interactions, and larger or more capable models sometimes perform worse at timely abstention.\n- **CONVOLVE**: The proposed context engineering method distills full interaction trajectories into reusable stopping rules, raising Llama-3.3-70B's timely recall rate on WebShop from 26.7 to 57.4 without updating model parameters.",
+  "primaryTopic": "agent-benchmarks",
+  "secondaryTopic": "agent-skills",
+  "confidence": 0.7
+ },
+ {
+  "slug": "spatial-forcing-implicit-spatial-representation-alignment-for-vision-language",
+  "summary": "Spatial Forcing (SF) is an alignment strategy that gives vision-language-action models spatial comprehension without explicit 3D sensor inputs or depth estimators. Most VLAs rest on vision-language models pretrained solely on 2D data, and prior fixes built on depth maps or point clouds face sensor noise, hardware heterogeneity, and incomplete depth coverage.\n\n- **Implicit alignment**: SF aligns intermediate visual embeddings of VLAs with geometric representations produced by pretrained 3D foundation models, guiding the models to encode richer spatial representations.\n- **Results**: Experiments in simulation and real-world environments show state-of-the-art results, surpassing both 2D- and 3D-based VLAs on action precision.\n- **Efficiency**: SF accelerates training by up to 3.8x and improves data efficiency across diverse robotic tasks.",
+  "primaryTopic": "robot-policies",
+  "secondaryTopic": "spatial-3d",
+  "confidence": 0.85
+ },
+ {
+  "slug": "ragu-a-multi-step-graphrag-engine-with-a-compact-domain-adapted-llm",
+  "summary": "RAGU is an open-source modular GraphRAG engine that separates knowledge-graph extraction from consolidation, addressing the noisy entities and brittle retrieval produced by single-pass systems. Its pipeline passes entities and relations through two-stage typed extraction, DBSCAN-backed deduplication, LLM summarization, and Leiden community detection.\n\n- **Compact extractor**: The engine rests on the insight that the language skills an in-pipeline LLM needs grow only weakly with model size, so the authors train Meno-Lite-0.1, a 7B model that outperforms Qwen2.5-32B on knowledge-graph construction (+12.5% relative harmonic mean) and matches it on English GraphRAG tasks.\n- **Retrieval quality**: On GraphRAG-Bench (Medical), RAGU retrieves the most complete context at every factoid level, with evidence recall up to 0.84 vs. ≤0.76 for competitors, and overtakes HippoRAG2 on synthesis tasks.\n- **Practical deployment**: RAGU installs via pip, runs on a single GPU, and is released under MIT.",
+  "primaryTopic": "search-agents",
+  "secondaryTopic": null,
+  "confidence": 0.7
+ }
+]

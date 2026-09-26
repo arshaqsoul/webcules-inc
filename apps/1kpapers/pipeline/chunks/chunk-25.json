@@ -1,0 +1,713 @@
+[
+ {
+  "arxivId": "2510.25889",
+  "slug": "texttt-rl-online-rl-fine-tuning-for-flow-based-vision-language-action-models",
+  "title": "$π_\\texttt{RL}$: Online RL Fine-tuning for Flow-based Vision-Language-Action Models",
+  "authors": [
+   "Kang Chen",
+   "Zhihao Liu",
+   "Tonghe Zhang",
+   "Zhen Guo",
+   "Si Xu",
+   "Hao Lin"
+  ],
+  "abstract": "Vision-Language-Action (VLA) models enable robots to understand and perform complex tasks from multimodal input. Although recent work explores using reinforcement learning (RL) to automate the laborious data collection process in scaling supervised fine-tuning (SFT), applying RL to large-scale flow-based VLAs (\\eg, $π_0$, $π_{0.5}$) remains challenging due to intractable action log-likelihoods raised from flow matching. We address this challenge with $π_{\\texttt{RL}}$, featuring two technical approaches: (1) \\textbf{Flow-Noise} models the denoising process as a discrete-time MDP with a learnable noise network for exact log-likelihood computation. (2) \\textbf{Flow-SDE} integrates denoising with agent-environment interaction, formulating a two-layer MDP that employs ODE-to-SDE conversion for efficient RL exploration. We evaluate $π_{\\texttt{RL}}$ across various benchmarks, with experiments demonstrating that RL yields significant performance improvements in both in-distribution and out-of-distribution settings.",
+  "publishedAt": "2025-10-29T18:37:39Z",
+  "primaryArxivCategory": [
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 66,
+  "citationCount": 3,
+  "githubStars": null,
+  "pageCount": 24
+ },
+ {
+  "arxivId": "2511.19365",
+  "slug": "deco-frequency-decoupled-pixel-diffusion-for-end-to-end-image-generation",
+  "title": "DeCo: Frequency-Decoupled Pixel Diffusion for End-to-End Image Generation",
+  "authors": [
+   "Zehong Ma",
+   "Longhui Wei",
+   "Shuai Wang",
+   "Shiliang Zhang",
+   "Qi Tian"
+  ],
+  "abstract": "Pixel diffusion aims to generate images directly in pixel space in an end-to-end fashion. This approach avoids the limitations of VAE in the two-stage latent diffusion, offering higher model capacity. Existing pixel diffusion models suffer from slow training and inference, as they usually model both high-frequency signals and low-frequency semantics within a single diffusion transformer (DiT). To pursue a more efficient pixel diffusion paradigm, we propose the frequency-DeCoupled pixel diffusion framework. With the intuition to decouple the generation of high and low frequency components, we leverage a lightweight pixel decoder to generate high-frequency details conditioned on semantic guidance from the DiT. This thus frees the DiT to specialize in modeling low-frequency semantics. In addition, we introduce a frequency-aware flow-matching loss that emphasizes visually salient frequencies while suppressing insignificant ones. Extensive experiments show that DeCo achieves superior performance among pixel diffusion models, attaining FID of 1.62 (256x256) and 2.22 (512x512) on ImageNet, closing the gap with latent diffusion methods. Furthermore, our pretrained text-to-image model achieves a leading overall score of 0.86 on GenEval in system-level comparison. Codes are publicly available at https://github.com/Zehong-Ma/DeCo.",
+  "publishedAt": "2025-11-24T17:59:06Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 66,
+  "citationCount": 37,
+  "githubStars": 238,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2512.19673",
+  "slug": "bottom-up-policy-optimization-your-language-model-policy-secretly-contains",
+  "title": "Bottom-up Policy Optimization: Your Language Model Policy Secretly Contains Internal Policies",
+  "authors": [
+   "Yuqiao Tan",
+   "Minzheng Wang",
+   "Shizhu He",
+   "Huanxuan Liao",
+   "Chengfeng Zhao",
+   "Qiunan Lu"
+  ],
+  "abstract": "Existing reinforcement learning (RL) approaches treat large language models (LLMs) as a unified policy, overlooking their internal mechanisms. In this paper, we decompose the LLM-based policy into Internal Layer Policies and Internal Modular Policies via the Transformer's residual stream. Our entropy analysis of internal policy reveals distinct patterns: (1) universally, internal policies evolve from high-entropy exploration in early layers to deterministic refinement in the top layers; and (2) Qwen exhibits an explicit progressive reasoning structure, contrasting with the abrupt convergence in Llama. Furthermore, we discover that optimizing internal layers induces feature refinement, forcing lower layers to capture high-level reasoning representations early. Motivated by these findings, we propose Bottom-up Policy Optimization (BuPO), a novel RL paradigm that reconstructs the LLM's reasoning foundation from the bottom up by optimizing internal layers in early stages. Extensive experiments on complex reasoning benchmarks demonstrate the effectiveness of BuPO.",
+  "publishedAt": "2025-12-22T18:51:48Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 66,
+  "citationCount": 21,
+  "githubStars": 60,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2512.23576",
+  "slug": "livetalk-real-time-multimodal-interactive-video-diffusion-via-improved-on",
+  "title": "LiveTalk: Real-Time Multimodal Interactive Video Diffusion via Improved On-Policy Distillation",
+  "authors": [
+   "Ethan Chern",
+   "Zhulin Hu",
+   "Bohao Tang",
+   "Jiadi Su",
+   "Steffi Chern",
+   "Zhijie Deng"
+  ],
+  "abstract": "Real-time video generation via diffusion is essential for building general-purpose multimodal interactive AI systems. However, the simultaneous denoising of all video frames with bidirectional attention via an iterative process in diffusion models prevents real-time interaction. While existing distillation methods can make the model autoregressive and reduce sampling steps to mitigate this, they focus primarily on text-to-video generation, leaving the human-AI interaction unnatural and less efficient. This paper targets real-time interactive video diffusion conditioned on a multimodal context, including text, image, and audio, to bridge the gap. Given the observation that the leading on-policy distillation approach Self Forcing encounters challenges (visual artifacts like flickering, black frames, and quality degradation) with multimodal conditioning, we investigate an improved distillation recipe with emphasis on the quality of condition inputs as well as the initialization and schedule for the on-policy optimization. On benchmarks for multimodal-conditioned (audio, image, and text) avatar video generation including HDTF, AVSpeech, and CelebV-HQ, our distilled model matches the visual quality of the full-step, bidirectional baselines of similar or larger size with 20x less inference cost and latency. Further, we integrate our model with audio language models and long-form video inference technique Anchor-Heavy Identity Sinks to build LiveTalk, a real-time multimodal interactive avatar system. System-level evaluation on our curated multi-turn interaction benchmark shows LiveTalk outperforms state-of-the-art models (Sora2, Veo3) in multi-turn video coherence and content quality, while reducing response latency from 1 to 2 minutes to real-time generation, enabling seamless human-AI multimodal interaction.",
+  "publishedAt": "2025-12-29T16:17:36Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 66,
+  "citationCount": 7,
+  "githubStars": 331,
+  "pageCount": 16
+ },
+ {
+  "arxivId": "2605.17757",
+  "slug": "oscar-offline-spectral-covariance-aware-rotation-for-2-bit-kv-cache-quantization",
+  "title": "OSCAR: Offline Spectral Covariance-Aware Rotation for 2-bit KV Cache Quantization",
+  "authors": [
+   "Zhongzhu Zhou",
+   "Donglin Zhuang",
+   "Jisen Li",
+   "Ziyan Chen",
+   "Shuaiwen Leon Song",
+   "Ben Athiwaratkun"
+  ],
+  "abstract": "INT2 KV-cache quantization is attractive for long-context LLM serving, but it remains difficult to make both accurate and deployable. Simple rotations such as Hadamard transforms reduce outliers, but still degrade at INT2 because they are not aligned with downstream attention. We propose OSCAR, an Ultra-low-bit KV Cache quantization method that estimates attention-aware covariance structures offline and uses them to derive fixed rotations and clipping thresholds for quantization. In this way, it aligns KV quantization with the covariance structures that attention actually consumes. More importantly, we not only provide theoretical justification but also develop a fully deployable OSCAR system with a custom INT2 attention kernel that remains compatible with paged KV-cache serving and fused kernel pipelines, enabling seamless integration into modern LLM serving frameworks such as SGLang and vLLM. We evaluate our methods on recent reasoning models with reasoning traces of up to 32k tokens across 5 tasks. On Qwen3-4B-Thinking-2507 and Qwen3-8B, OSCAR reduces the BF16 accuracy gap to 3.78 and 1.42 points, respectively, while naive rotation INT2 collapses to nearly zero. We further scale OSCAR to Qwen3-32B and GLM-4.7 (358B params), where it remains effectively on par with BF16. On long context - RULER-NIAH up to 128K, OSCAR remains robust on both Qwen3 models, while naive rotation INT2 collapses. System-wise, OSCAR reduces KV-cache memory by approximately 8x, improves throughput by up to 7x at large batch sizes under the same memory budget, and accelerates batch-size-1 decoding by up to 3x over BF16 due to reduced memory bandwidth overhead.",
+  "publishedAt": "2026-05-18T02:24:29Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.DC",
+   "cs.PF"
+  ],
+  "officialLab": "Together AI",
+  "hfUpvotes": 66,
+  "citationCount": 2,
+  "githubStars": 555,
+  "pageCount": 35
+ },
+ {
+  "arxivId": "2605.26114",
+  "slug": "mobilegym-a-verifiable-and-highly-parallel-simulation-platform-for-mobile-gui",
+  "title": "MobileGym: A Verifiable and Highly Parallel Simulation Platform for Mobile GUI Agent Research",
+  "authors": [
+   "Dingbang Wu",
+   "Rui Hao",
+   "Haiyang Wang",
+   "Shuzhe Wu",
+   "Han Xiao",
+   "Zhenghong Li"
+  ],
+  "abstract": "We present MobileGym, a browser-hosted, lightweight, fully controllable environment for everyday mobile use, targeting interaction fidelity without replicating proprietary backends. It enables two capabilities previously out of reach for everyday apps: verifiable outcome signals through deterministic state-based judging over structured JSON state, and scalable online RL through low-cost parallel rollouts. The full environment state is captured, configured, forked, and compared as structured JSON, and a single server can host hundreds of parallel instances, with about 400 MB memory per instance and about 3 s cold start. A layered state model and a declarative task-definition framework keep state programmability and task creation practical at scale, and a single programmatic judging mechanism delivers both deterministic evaluation verdicts and dense RL rewards. The accompanying MobileGym-Bench provides 416 parameterized task templates, including 256 test and 160 train templates, over 28 apps, with deterministic judges and a structured AnswerSheet protocol that avoids free-text matching failures. In a Sim-to-Real case study, GRPO on Qwen3-VL-4B-Instruct gains +12.8 percentage points on the 256-task test set, and on a 59-task real-device signal subset, real-device execution retains 95.1% of the simulation-side training gain. Project page: https://mobilegym.github.io.",
+  "publishedAt": "2026-05-25T17:59:49Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 66,
+  "citationCount": 2,
+  "githubStars": 750,
+  "pageCount": 24
+ },
+ {
+  "arxivId": "2606.09076",
+  "slug": "z-reward-beyond-scalar-rewards-by-internalizing-reasoning-into-score",
+  "title": "Z-Reward: Beyond Scalar Rewards by Internalizing Reasoning into Score Distributions",
+  "authors": [
+   "Xin Jin",
+   "Huanqia Cai",
+   "Zhen Li",
+   "Zechao Zhan",
+   "Dengyang Jiang",
+   "Aiming Hao"
+  ],
+  "abstract": "Reward models are central to text-to-image post-training, but visual preference is subjective and better represented as a distribution over rubric scores than as a deterministic scalar. Existing scalar, score-token, and pairwise reward models over-compress uncertainty and fine-grained score differences, while reasoning-based generative rewards provide stronger judgments but are costly to deploy and difficult to use as direct optimization signals. We propose Z-Reward, a teacher-student reward modeling framework that decouples reasoning-heavy judgment from efficient reward deployment. The teacher is a large VLM that uses reasoning to infer rubric-aligned score distributions, and is trained with Group-wise Direct Score Optimization (GDSO), which combines policy-gradient rewards from distribution expectations with direct pointwise and pairwise supervision on score distributions and score gaps. The student is trained with Reasoning-Internalized Score Distillation (RISD), which transfers the teacher's reasoning-conditioned score distribution into a compact VLM without requiring explicit reasoning chains at inference time. On our internally annotated evaluation set, the 27B GDSO teacher reaches 89.6% human preference accuracy, outperforming SFT, RewardDance, and GRPO, while the 9B RISD student reaches 88.6%, outperforming the OPD baseline and closely matching the larger teacher. We further show that Z-Reward can serve as a differentiable reward signal for text-to-image optimization, yielding a 41.3% net human-preference improvement over the SFT baseline.",
+  "publishedAt": "2026-06-08T06:20:12Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 66,
+  "citationCount": 0,
+  "githubStars": null,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2606.09079",
+  "slug": "flashmemory-deepseek-v4-lightning-index-ultra-long-context-via-lookahead",
+  "title": "FlashMemory-DeepSeek-V4: Lightning Index Ultra-Long Context via Lookahead Sparse Attention",
+  "authors": [
+   "Yan Wang",
+   "Qifan Zhang",
+   "Jiachen Yu",
+   "Tian Liang",
+   "Dongyang Ma",
+   "Xiang Hu"
+  ],
+  "abstract": "Conventional LLMs keep the full KV cache loaded during decoding, causing a severe GPU memory bottleneck for ultra-long context serving. In this report, we propose \\textbf{Lookahead Sparse Attention (LSA)}, a novel inference paradigm powered by a Neural Memory Indexer built upon the DeepSeek-V4 architecture. Rather than passively attending to all historical tokens, LSA proactively predicts future context demands and preserves only the query-critical KV chunks in the GPU memory. Crucially, we instantiate this architecture via a \\textbf{backbone-free decoupled training} strategy. By formulating the indexer as a standard dual-encoder architecture, we train it independently using standard retrieval training frameworks without ever loading the massive backbone model into GPU memory. We demonstrate that this ``less is more'' paradigm significantly maximizes serving efficiency while acting as an effective attention denoiser in tasks that rely on long-term global memory. Across primary long-context evaluation suites (e.g., LongBench-v2, LongMemEval, and RULER), \\texttt{FM-DS-V4} compresses the average physical KV cache footprint down to merely 13.5\\% of the full-context baseline, while consistently preserving or slightly elevating downstream accuracy (+0.6\\% absolute margin on average). At 1M context, per-decode-token compute drops to 0.30$\\times$ of the baseline and GPU KV cache shrinks by 90\\% (3.73$\\to$0.37 GB), translating into \\textbf{2.8$\\times$ aggregate throughput and 2.7$\\times$ concurrency gains} in PD-disaggregated serving on 8$\\times$H20 GPUs.",
+  "publishedAt": "2026-06-08T06:25:54Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 66,
+  "citationCount": 2,
+  "githubStars": 101,
+  "pageCount": 12
+ },
+ {
+  "arxivId": "2607.05373",
+  "slug": "pixworld-unifying-3d-scene-generation-and-reconstruction-in-pixel-space",
+  "title": "PixWorld: Unifying 3D Scene Generation and Reconstruction in Pixel Space",
+  "authors": [
+   "Sensen Gao",
+   "Zhaoqing Wang",
+   "Qihang Cao",
+   "Dongdong Yu",
+   "Changhu Wang",
+   "Jia-Wang Bian"
+  ],
+  "abstract": "3D reconstruction and generation are commonly tackled by separate paradigms: pixel-based regression for reconstruction, and latent diffusion for generation. Recent works attempt to unify them in latent space, but with notable drawbacks: the diffusion objective is defined on latent features rather than the underlying 3D representation, and both branches suffer from information loss introduced by latent encoding, while requiring a pretrained Variational Autoencoder (VAE) or Representation Autoencoder (RAE). In this paper, we reformulate these two tasks under a unified pixel-space diffusion paradigm and introduce PixWorld, a single model that jointly addresses 3D reconstruction and generation. By supervising diffusion directly on rendered images, PixWorld removes the above limitations and aligns optimization with 3D scene fidelity. Beyond photometric and perceptual supervision that operates at the 2D image level and lacks 3D geometric awareness, we further introduce a geometry perception loss that aligns rendered views with their ground truth in the geometry-aware feature space of a pretrained 3D foundation model, providing 3D structural supervision. PixWorld consistently outperforms prior latent-space generation methods and matches state-of-the-art reconstruction methods, demonstrating the superiority of a unified pixel-space approach.",
+  "publishedAt": "2026-07-06T17:51:00Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 66,
+  "citationCount": 1,
+  "githubStars": 239,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2508.03320",
+  "slug": "skywork-unipic-unified-autoregressive-modeling-for-visual-understanding-and",
+  "title": "Skywork UniPic: Unified Autoregressive Modeling for Visual Understanding and Generation",
+  "authors": [
+   "Peiyu Wang",
+   "Yi Peng",
+   "Yimeng Gan",
+   "Liang Hu",
+   "Tianyidan Xie",
+   "Xiaokun Wang"
+  ],
+  "abstract": "We introduce Skywork UniPic, a 1.5 billion-parameter autoregressive model that unifies image understanding, text-to-image generation, and image editing within a single architecture-eliminating the need for task-specific adapters or inter-module connectors-and demonstrate that compact multimodal systems can achieve state-of-the-art performance on commodity hardware. Skywork UniPic achieves a GenEval score of 0.86, surpassing most existing unified models; sets a new DPG-Bench complex-generation record of 85.5; attains 5.83 on GEditBench-EN and 3.49 on ImgEdit-Bench for image editing; and generates 1024 x 1024 images with under 15 GB of GPU memory (e.g., RTX 4090). (1) a decoupled encoding strategy that leverages a masked autoregressive encoder for synthesis and a SigLIP2 encoder for understanding, all feeding a shared autoregressive decoder; (2) a progressive, resolution-aware training schedule scaling from 256 x 256 to 1024 x 1024 while dynamically unfreezing parameters to balance capacity and stability; and (3) meticulously curated, 100 million-scale datasets augmented with task-specific reward models to refine generation and editing objectives. By demonstrating that high-fidelity multimodal integration need not incur prohibitive resource demands, Skywork UniPic establishes a practical paradigm for deployable, high-fidelity multimodal AI. Code and weights are publicly available at https://huggingface.co/Skywork/Skywork-UniPic-1.5B.",
+  "publishedAt": "2025-08-05T10:59:01Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 65,
+  "citationCount": 17,
+  "githubStars": 871,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2508.05405",
+  "slug": "deepphy-benchmarking-agentic-vlms-on-physical-reasoning",
+  "title": "DeepPHY: Benchmarking Agentic VLMs on Physical Reasoning",
+  "authors": [
+   "Xinrun Xu",
+   "Pi Bu",
+   "Ye Wang",
+   "Börje F. Karlsson",
+   "Ziming Wang",
+   "Tengtao Song"
+  ],
+  "abstract": "Although Vision Language Models (VLMs) exhibit strong perceptual abilities and impressive visual reasoning, they struggle with attention to detail and precise action planning in complex, dynamic environments, leading to subpar performance. Real-world tasks typically require complex interactions, advanced spatial reasoning, long-term planning, and continuous strategy refinement, usually necessitating understanding the physics rules of the target scenario. However, evaluating these capabilities in real-world scenarios is often prohibitively expensive. To bridge this gap, we introduce DeepPHY, a novel benchmark framework designed to systematically evaluate VLMs' understanding and reasoning about fundamental physical principles through a series of challenging simulated environments. DeepPHY integrates multiple physical reasoning environments of varying difficulty levels and incorporates fine-grained evaluation metrics. Our evaluation finds that even state-of-the-art VLMs struggle to translate descriptive physical knowledge into precise, predictive control.",
+  "publishedAt": "2025-08-07T13:58:19Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 65,
+  "citationCount": 10,
+  "githubStars": 172,
+  "pageCount": 48
+ },
+ {
+  "arxivId": "2509.06806",
+  "slug": "machinelearninglm-scaling-many-shot-in-context-learning-via-continued",
+  "title": "MachineLearningLM: Scaling Many-shot In-context Learning via Continued Pretraining",
+  "authors": [
+   "Haoyu Dong",
+   "Pengkun Zhang",
+   "Mingzhe Lu",
+   "Yanzhen Shen",
+   "Guolin Ke"
+  ],
+  "abstract": "Large language models (LLMs) possess broad world knowledge and strong general-purpose reasoning ability, yet they struggle to learn from many in-context examples on standard machine learning (ML) tasks, that is, to leverage many-shot demonstrations purely via in-context learning (ICL) without gradient descent. We introduce MachineLearningLM, a portable continued-pretraining framework that equips a general-purpose LLM with robust in-context ML capability while preserving its general knowledge and reasoning for broader chat workflows. Our pretraining procedure synthesizes ML tasks from millions of structural causal models (SCMs), spanning shot counts up to 1,024. We begin with a random-forest teacher, distilling tree-based decision strategies into the LLM to strengthen robustness in numerical modeling. All tasks are serialized with a token-efficient prompt, enabling 3x to 6x more examples per context window and delivering up to 50x amortized throughput via batch inference. Despite a modest setup (Qwen-2.5-7B-Instruct with LoRA rank 8), MachineLearningLM outperforms strong LLM baselines (e.g., GPT-5-mini) by an average of about 15% on out-of-distribution tabular classification across finance, physics, biology, and healthcare domains. It exhibits a striking many-shot scaling law: accuracy increases monotonically as in-context demonstrations grow from 8 to 1,024. Without any task-specific training, it attains random-forest-level accuracy across hundreds of shots. General chat capabilities, including knowledge and reasoning, are preserved: it achieves 75.4% on MMLU.",
+  "publishedAt": "2025-09-08T15:38:31Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 65,
+  "citationCount": 4,
+  "githubStars": 59,
+  "pageCount": 38
+ },
+ {
+  "arxivId": "2510.08555",
+  "slug": "videocanvas-unified-video-completion-from-arbitrary-spatiotemporal-patches-via",
+  "title": "VideoCanvas: Unified Video Completion from Arbitrary Spatiotemporal Patches via In-Context Conditioning",
+  "authors": [
+   "Minghong Cai",
+   "Qiulin Wang",
+   "Zongli Ye",
+   "Wenze Liu",
+   "Quande Liu",
+   "Weicai Ye"
+  ],
+  "abstract": "Existing controllable video generation methods are typically designed for rigid, task-specific settings, such as first-frame image-to-video, inpainting, or interpolation, treating spatio-temporal control as a set of isolated problems. We formalize a unified task, arbitrary spatio-temporal video completion, where a model generates a coherent video from user-specified patches placed at any spatial location and timestamp. However, realizing such a unified framework within modern latent video diffusion models is non-trivial: causal video VAEs compress multiple frames into a single latent slot, making frame-level conditioning fundamentally ill-posed, and directly feeding sparsely populated, zero-padded video inputs into the VAE leads to severe out-of-distribution artifacts. To address these challenges, we propose VideoCanvas, a simple yet effective framework that adapts the In-Context Conditioning paradigm to arbitrary spatio-temporal completion without modifying or retraining the VAE. Our key idea is a hybrid conditioning strategy that decouples spatial and temporal control: spatially, we encode zero-padded full-frame canvases in image mode to keep VAE inputs in-distribution, and temporally we use Temporal RoPE Interpolation to assign each condition a continuous fractional index in the latent sequence for precise frame-level alignment. To evaluate this capability, we develop VideoCanvasBench, the first benchmark for arbitrary spatio-temporal video completion, covering both intra-scene fidelity and inter-scene creativity. Extensive experiments demonstrate that VideoCanvas achieves state-of-the-art performance across a diverse range of video generation tasks under a single, unified framework.",
+  "publishedAt": "2025-10-09T17:58:59Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 65,
+  "citationCount": 4,
+  "githubStars": 68,
+  "pageCount": 30
+ },
+ {
+  "arxivId": "2510.13344",
+  "slug": "unimoe-audio-unified-speech-and-music-generation-with-dynamic-capacity-moe",
+  "title": "UniMoE-Audio: Unified Speech and Music Generation with Dynamic-Capacity MoE",
+  "authors": [
+   "Zhenyu Liu",
+   "Yunxin Li",
+   "Xuanyu Zhang",
+   "Qixun Teng",
+   "Shenyuan Jiang",
+   "Xinyu Chen"
+  ],
+  "abstract": "Recent advances in unified multimodal models indicate a clear trend towards comprehensive content generation. However, the auditory domain remains a significant challenge, with music and speech often developed in isolation, hindering progress towards universal audio synthesis. This separation stems from inherent task conflicts and severe data imbalances, which impede the development of a truly unified audio generation model. To address this challenge, we propose UniMoE-Audio, a unified speech and music generation model within a novel Dynamic-Capacity Mixture-of-Experts (MoE) framework. Architecturally, UniMoE-Audio introduces a Top-P routing strategy for dynamic expert number allocation, and a hybrid expert design comprising routed experts for domain-specific knowledge, shared experts for domain-agnostic features, and null experts for adaptive computation skipping. To tackle data imbalance, we introduce a three-stage training curriculum: 1) Independent Specialist Training leverages original datasets to instill domain-specific knowledge into each \"proto-expert\" without interference; 2) MoE Integration and Warmup incorporates these specialists into the UniMoE-Audio architecture, warming up the gate module and shared expert using a subset of balanced dataset; and 3) Synergistic Joint Training trains the entire model end-to-end on the fully balanced dataset, fostering enhanced cross-domain synergy. Extensive experiments show that UniMoE-Audio not only achieves state-of-the-art performance on major speech and music generation benchmarks, but also demonstrates superior synergistic learning, mitigating the performance degradation typically seen in naive joint training. Our findings highlight the substantial potential of specialized MoE architecture and curated training strategies in advancing the field of universal audio generation. Homepage: https://mukioxun.github.io/Uni-MoE-site/home.html",
+  "publishedAt": "2025-10-15T09:30:25Z",
+  "primaryArxivCategory": [
+   "cs.SD",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 65,
+  "citationCount": 6,
+  "githubStars": null,
+  "pageCount": 11
+ },
+ {
+  "arxivId": "2510.15019",
+  "slug": "nano3d-a-training-free-approach-for-efficient-3d-editing-without-masks",
+  "title": "NANO3D: A Training-Free Approach for Efficient 3D Editing Without Masks",
+  "authors": [
+   "Junliang Ye",
+   "Shenghao Xie",
+   "Ruowen Zhao",
+   "Zhengyi Wang",
+   "Hongyu Yan",
+   "Wenqiang Zu"
+  ],
+  "abstract": "3D object editing is essential for interactive content creation in gaming, animation, and robotics, yet current approaches remain inefficient, inconsistent, and often fail to preserve unedited regions. Most methods rely on editing multi-view renderings followed by reconstruction, which introduces artifacts and limits practicality. To address these challenges, we propose Nano3D, a training-free framework for precise and coherent 3D object editing without masks. Nano3D integrates FlowEdit into TRELLIS to perform localized edits guided by front-view renderings, and further introduces region-aware merging strategies, Voxel/Slat-Merge, which adaptively preserve structural fidelity by ensuring consistency between edited and unedited areas. Experiments demonstrate that Nano3D achieves superior 3D consistency and visual quality compared with existing methods. Based on this framework, we construct the first large-scale 3D editing datasets Nano3D-Edit-100k, which contains over 100,000 high-quality 3D editing pairs. This work addresses long-standing challenges in both algorithm design and data availability, significantly improving the generality and reliability of 3D editing, and laying the groundwork for the development of feed-forward 3D editing models. Project Page:https://jamesyjl.github.io/Nano3D",
+  "publishedAt": "2025-10-16T17:51:50Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 65,
+  "citationCount": 27,
+  "githubStars": 179,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2510.17681",
+  "slug": "picabench-how-far-are-we-from-physically-realistic-image-editing",
+  "title": "PICABench: How Far Are We from Physically Realistic Image Editing?",
+  "authors": [
+   "Yuandong Pu",
+   "Le Zhuo",
+   "Songhao Han",
+   "Jinbo Xing",
+   "Kaiwen Zhu",
+   "Shuo Cao"
+  ],
+  "abstract": "Image editing has achieved remarkable progress recently. Modern editing models could already follow complex instructions to manipulate the original content. However, beyond completing the editing instructions, the accompanying physical effects are the key to the generation realism. For example, removing an object should also remove its shadow, reflections, and interactions with nearby objects. Unfortunately, existing models and benchmarks mainly focus on instruction completion but overlook these physical effects. So, at this moment, how far are we from physically realistic image editing? To answer this, we introduce PICABench, which systematically evaluates physical realism across eight sub-dimension (spanning optics, mechanics, and state transitions) for most of the common editing operations (add, remove, attribute change, etc.). We further propose the PICAEval, a reliable evaluation protocol that uses VLM-as-a-judge with per-case, region-level human annotations and questions. Beyond benchmarking, we also explore effective solutions by learning physics from videos and construct a training dataset PICA-100K. After evaluating most of the mainstream models, we observe that physical realism remains a challenging problem with large rooms to explore. We hope that our benchmark and proposed solutions can serve as a foundation for future work moving from naive content editing toward physically consistent realism.",
+  "publishedAt": "2025-10-20T15:53:57Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 65,
+  "citationCount": 10,
+  "githubStars": 39,
+  "pageCount": 30
+ },
+ {
+  "arxivId": "2511.23404",
+  "slug": "lfm2-technical-report",
+  "title": "LFM2 Technical Report",
+  "authors": [
+   "Alexander Amini",
+   "Anna Banaszak",
+   "Harold Benoit",
+   "Arthur Böök",
+   "Tarek Dakhran",
+   "Song Duong"
+  ],
+  "abstract": "We present LFM2, a family of Liquid Foundation Models designed for efficient on-device deployment and strong task capabilities. Using hardware-in-the-loop architecture search under edge latency and memory constraints, we obtain a compact hybrid backbone that combines gated short convolutions with a small number of grouped query attention blocks, delivering up to 2x faster prefill and decode on CPUs compared to similarly sized models. The LFM2 family covers 350M-8.3B parameters, including dense models (350M, 700M, 1.2B, 2.6B) and a mixture-of-experts variant (8.3B total, 1.5B active), all with 32K context length. LFM2's training pipeline includes a tempered, decoupled Top-K knowledge distillation objective that avoids support mismatch; curriculum learning with difficulty-ordered data; and a three-stage post-training recipe of supervised fine-tuning, length-normalized preference optimization, and model merging. Pre-trained on 10-12T tokens, LFM2 models achieve strong results across diverse benchmarks; for example, LFM2-2.6B reaches 79.56% on IFEval and 82.41% on GSM8K. We further build multimodal and retrieval variants: LFM2-VL for vision-language tasks, LFM2-Audio for speech, and LFM2-ColBERT for retrieval. LFM2-VL supports tunable accuracy-latency tradeoffs via token-efficient visual processing, while LFM2-Audio separates audio input and output pathways to enable real-time speech-to-speech interaction competitive with models 3x larger. LFM2-ColBERT provides a low-latency encoder for queries and documents, enabling high-performance retrieval across multiple languages. All models are released with open weights and deployment packages for ExecuTorch, llama.cpp, and vLLM, making LFM2 a practical base for edge applications that need fast, memory-efficient inference and strong task capabilities.",
+  "publishedAt": "2025-11-28T17:56:35Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 65,
+  "citationCount": 23,
+  "githubStars": null,
+  "pageCount": 51
+ },
+ {
+  "arxivId": "2512.03041",
+  "slug": "multishotmaster-a-controllable-multi-shot-video-generation-framework",
+  "title": "MultiShotMaster: A Controllable Multi-Shot Video Generation Framework",
+  "authors": [
+   "Qinghe Wang",
+   "Xiaoyu Shi",
+   "Baolu Li",
+   "Weikang Bian",
+   "Quande Liu",
+   "Huchuan Lu"
+  ],
+  "abstract": "Current video generation techniques excel at single-shot clips but struggle to produce narrative multi-shot videos, which require flexible shot arrangement, coherent narrative, and controllability beyond text prompts. To tackle these challenges, we propose MultiShotMaster, a framework for highly controllable multi-shot video generation. We extend a pretrained single-shot model by integrating two novel variants of RoPE. First, we introduce Multi-Shot Narrative RoPE, which applies explicit phase shift at shot transitions, enabling flexible shot arrangement while preserving the temporal narrative order. Second, we design Spatiotemporal Position-Aware RoPE to incorporate reference tokens and grounding signals, enabling spatiotemporal-grounded reference injection. In addition, to overcome data scarcity, we establish an automated data annotation pipeline to extract multi-shot videos, captions, cross-shot grounding signals and reference images. Our framework leverages the intrinsic architectural properties to support multi-shot video generation, featuring text-driven inter-shot consistency, customized subject with motion control, and background-driven customized scene. Both shot count and duration are flexibly configurable. Extensive experiments demonstrate the superior performance and outstanding controllability of our framework.",
+  "publishedAt": "2025-12-02T18:59:48Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 65,
+  "citationCount": 28,
+  "githubStars": 174,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2512.13281",
+  "slug": "videoasmr-bench-can-ai-generated-asmr-videos-fool-vlms-and-humans",
+  "title": "VideoASMR-Bench: Can AI-Generated ASMR Videos Fool VLMs and Humans?",
+  "authors": [
+   "Jiaqi Wang",
+   "Weijia Wu",
+   "Yi Zhan",
+   "Rui Zhao",
+   "Ming Hu",
+   "James Cheng"
+  ],
+  "abstract": "With AI-generated videos increasingly indistinguishable from reality, current benchmarks primarily focus on broad semantic alignment and basic physical consistency, offering limited discriminative power for evaluating them. To address this, we introduce VideoASMR-Bench, a benchmark based on Autonomous Sensory Meridian Response (ASMR) videos that emphasizes fine-grained audio-visual perception and sensory immersion. This benchmark aims to answer two key questions: (i) Are today's video understanding models (VLMs) sensitive enough to detect AI-generated ASMR videos by recognizing minor visual, physical, or auditory artifacts? (ii) Can today's video generation models (VGMs) produce convincing ASMR videos with immersive experiences? This benchmark comprises a diverse set of 1,500 high-quality real ASMR videos curated from social media, alongside 2,235 synthetic counterparts generated by nine VGMs. Additionally, we open-source an extensible suite of prompts and reference images, enabling the benchmark to scale dynamically with future video models. Moreover, we design an automatic understanding-generation evaluation framework between VGMs and VLMs, where VGMs aim to produce realistic fake videos to fool the VLMs, while the VLMs seek to detect them, forming an adversarial game between the two parties. Our evaluation on VideoASMR-Bench reveals that even state-of-the-art VLMs, such as Gemini-3-Pro, fail to reliably detect AI-generated ASMR videos. Meanwhile, current frontier video generation models can produce ASMR videos that are difficult for VLMs to distinguish from real ones, while humans can still identify them relatively easily.",
+  "publishedAt": "2025-12-15T12:41:23Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 65,
+  "citationCount": 2,
+  "githubStars": 23,
+  "pageCount": 28
+ },
+ {
+  "arxivId": "2601.01554",
+  "slug": "moss-transcribe-diarize-technical-report",
+  "title": "MOSS Transcribe Diarize Technical Report",
+  "authors": [
+   "MOSI. AI",
+   ":",
+   "Donghua Yu",
+   "Zhengyuan Lin",
+   "Hanfu Chen",
+   "Chen Yang"
+  ],
+  "abstract": "Speaker-Attributed, Time-Stamped Transcription (SATS) aims to transcribe what is said and to precisely determine the timing of each speaker, which is particularly valuable for meeting transcription. Existing SATS systems rarely adopt an end-to-end formulation and are further constrained by limited context windows, weak long-range speaker memory, and the inability to output timestamps. To address these limitations, we present MOSS Transcribe Diarize, a unified multimodal large language model that jointly performs Speaker-Attributed, Time-Stamped Transcription in an end-to-end paradigm. Trained on extensive real wild data and equipped with a 128k context window for up to 90-minute inputs, MOSS Transcribe Diarize scales well and generalizes robustly. Across comprehensive evaluations, it outperforms state-of-the-art commercial systems on multiple public and in-house benchmarks.",
+  "publishedAt": "2026-01-04T15:01:10Z",
+  "primaryArxivCategory": [
+   "cs.SD",
+   "cs.AI",
+   "eess.AS"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 65,
+  "citationCount": 5,
+  "githubStars": null,
+  "pageCount": 11
+ },
+ {
+  "arxivId": "2602.03796",
+  "slug": "3d-aware-implicit-motion-control-for-view-adaptive-human-video-generation",
+  "title": "3D-Aware Implicit Motion Control for View-Adaptive Human Video Generation",
+  "authors": [
+   "Zhixue Fang",
+   "Xu He",
+   "Songlin Tang",
+   "Haoxian Zhang",
+   "Qingfeng Li",
+   "Xiaoqiang Liu"
+  ],
+  "abstract": "Existing methods for human motion control in video generation typically rely on either 2D poses or explicit 3D parametric models (e.g., SMPL) as control signals. However, 2D poses rigidly bind motion to the driving viewpoint, precluding novel-view synthesis. Explicit 3D models, though structurally informative, suffer from inherent inaccuracies (e.g., depth ambiguity and inaccurate dynamics) which, when used as a strong constraint, override the powerful intrinsic 3D awareness of large-scale video generators. In this work, we revisit motion control from a 3D-aware perspective, advocating for an implicit, view-agnostic motion representation that naturally aligns with the generator's spatial priors rather than depending on externally reconstructed constraints. We introduce 3DiMo, which jointly trains a motion encoder with a pretrained video generator to distill driving frames into compact, view-agnostic motion tokens, injected semantically via cross-attention. To foster 3D awareness, we train with view-rich supervision (i.e., single-view, multi-view, and moving-camera videos), forcing motion consistency across diverse viewpoints. Additionally, we use auxiliary geometric supervision that leverages SMPL only for early initialization and is annealed to zero, enabling the model to transition from external 3D guidance to learning genuine 3D spatial motion understanding from the data and the generator's priors. Experiments confirm that 3DiMo faithfully reproduces driving motions with flexible, text-driven camera control, significantly surpassing existing methods in both motion fidelity and visual quality.",
+  "publishedAt": "2026-02-03T17:59:09Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 65,
+  "citationCount": 3,
+  "githubStars": null,
+  "pageCount": 12
+ },
+ {
+  "arxivId": "2602.12670",
+  "slug": "skillsbench-benchmarking-how-well-agent-skills-work-across-diverse-tasks",
+  "title": "SkillsBench: Benchmarking How Well Agent Skills Work Across Diverse Tasks",
+  "authors": [
+   "Xiangyi Li",
+   "Yimin Liu",
+   "Wenbo Chen",
+   "Bingran You",
+   "Zonglin Di",
+   "Yifeng He"
+  ],
+  "abstract": "Agent Skills are structured packages of procedural knowledge that augment large language model (LLM) agents at inference time. Despite rapid adoption, there is no standard way to measure whether they actually help. We present SkillsBench, a benchmark whose current inventory contains 87 tasks across 8 domains paired with curated Skills and deterministic verifiers. Our latest aggregate evaluation runs the 87-task benchmark under matched no-Skills and curated-Skills conditions for 18 model-harness configurations. Curated Skills raise the average pass rate from 33.9% to 50.5% (+16.6 percentage points; 25.5% normalized gain), with configuration-level gains ranging from +4.1 to +25.7 pp. Focused Skills with at most three modules outperform larger or exhaustive bundles, and smaller models with Skills can match larger models without them. SkillsBench establishes paired evaluation as the foundation for rigorous measurement of Skill efficacy on agentic, expertise-heavy work.",
+  "publishedAt": "2026-02-13T07:06:06Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 65,
+  "citationCount": 174,
+  "githubStars": null,
+  "pageCount": 42
+ },
+ {
+  "arxivId": "2603.00729",
+  "slug": "qwen3-coder-next-technical-report",
+  "title": "Qwen3-Coder-Next Technical Report",
+  "authors": [
+   "Ruisheng Cao",
+   "Mouxiang Chen",
+   "Jiawei Chen",
+   "Zeyu Cui",
+   "Yunlong Feng",
+   "Binyuan Hui"
+  ],
+  "abstract": "We present Qwen3-Coder-Next, an open-weight language model specialized for coding agents. Qwen3-Coder-Next is an 80-billion-parameter model that activates only 3 billion parameters during inference, enabling strong coding capability with efficient inference. In this work, we explore how far strong training recipes can push the capability limits of models with small parameter footprints. To achieve this, we perform agentic training through large-scale synthesis of verifiable coding tasks paired with executable environments, allowing learning directly from environment feedback via mid-training and reinforcement learning. Across agent-centric benchmarks including SWE-Bench and Terminal-Bench, Qwen3-Coder-Next achieves competitive performance relative to its active parameter count. We release both base and instruction-tuned open-weight versions to support research and real-world coding agent development.",
+  "publishedAt": "2026-02-28T16:25:04Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": "Alibaba / Qwen",
+  "hfUpvotes": 65,
+  "citationCount": 54,
+  "githubStars": 16773,
+  "pageCount": 23
+ },
+ {
+  "arxivId": "2603.12180",
+  "slug": "strategic-navigation-or-stochastic-search-how-agents-and-humans-reason-over",
+  "title": "Strategic Navigation or Stochastic Search? How Agents and Humans Reason Over Document Collections",
+  "authors": [
+   "Łukasz Borchmann",
+   "Jordy Van Landeghem",
+   "Michał Turski",
+   "Shreyansh Padarha",
+   "Ryan Othniel Kearns",
+   "Adam Mahdi"
+  ],
+  "abstract": "Multimodal agents offer a promising path to automating complex document-intensive workflows. Yet, a critical question remains: do these agents demonstrate genuine strategic reasoning, or merely stochastic trial-and-error search? To address this, we introduce MADQA, a benchmark of 2,250 human-authored questions grounded in 800 heterogeneous PDF documents. Guided by Classical Test Theory, we design it to maximize discriminative power across varying levels of agentic abilities. To evaluate agentic behaviour, we introduce a novel evaluation protocol measuring the accuracy-effort trade-off. Using this framework, we show that while the best agents can match human searchers in raw accuracy, they succeed on largely different questions and rely on brute-force search to compensate for weak strategic planning. They fail to close the nearly 20% gap to oracle performance, persisting in unproductive loops. We release the dataset and evaluation harness to help facilitate the transition from brute-force retrieval to calibrated, efficient reasoning.",
+  "publishedAt": "2026-03-12T17:11:22Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 65,
+  "citationCount": 1,
+  "githubStars": 39,
+  "pageCount": 58
+ },
+ {
+  "arxivId": "2603.29616",
+  "slug": "video-oasis-rethinking-evaluation-of-video-understanding",
+  "title": "Video-Oasis: Rethinking Evaluation of Video Understanding",
+  "authors": [
+   "Geuntaek Lim",
+   "Sungjune Park",
+   "Jaeyun Lee",
+   "Inwoong Lee",
+   "Taeoh Kim",
+   "Dongyoon Wee"
+  ],
+  "abstract": "The inherent complexity of video understanding makes it difficult to determine whether Video-LLM benchmark performance stems from visual perception, linguistic reasoning, or knowledge priors. While many benchmarks have emerged to assess high-level reasoning, shared criteria for evaluating video understanding remain largely overlooked. Instead of introducing yet another benchmark, we take a step back to re-examine the criteria for evaluating video understanding. In this work, we introduce Video-Oasis, a sustainable diagnostic suite for systematically auditing existing video understanding benchmarks. This audit reveals that 55\\% of existing benchmark samples are solvable without visual input or temporal context. After filtering these shortcuts, the remaining video-native challenges expose a substantial capability gap: state-of-the-art models perform only marginally above random guessing. Building on these findings, we use the distilled challenges as a testbed to investigate which algorithmic design choices contribute to robust video understanding. We hope our work provides a practical foundation for constructing rigorous video benchmarks and evaluating future Video-LLMs. Code is available at https://github.com/sejong-rcv/Video-Oasis.",
+  "publishedAt": "2026-03-31T11:37:42Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 65,
+  "citationCount": 1,
+  "githubStars": 34,
+  "pageCount": 35
+ },
+ {
+  "arxivId": "2605.12178",
+  "slug": "do-enterprise-systems-need-learned-world-models-the-importance-of-context-to",
+  "title": "Do Enterprise Systems Need Learned World Models? The Importance of Context to Infer Dynamics",
+  "authors": [
+   "Jishnu Sethumadhavan Nair",
+   "Patrice Bechard",
+   "Rishabh Maheshwary",
+   "Surajit Dasgupta",
+   "Sravan Ramachandran",
+   "Aakash Bhagat"
+  ],
+  "abstract": "World models enable agents to anticipate the effects of their actions by internalizing environment dynamics. In enterprise systems, however, these dynamics are often defined by tenant-specific business logic that varies across deployments and evolves over time, making models trained on historical transitions brittle under deployment shift. We ask a question the world-models literature has not addressed: when the rules can be read at inference time, does an agent still need to learn them? We argue, and demonstrate empirically, that in settings where transition dynamics are configurable and readable, runtime discovery complements offline training by grounding predictions in the active system instance. We propose enterprise discovery agents, which recover relevant transition dynamics at runtime by reading the system's configuration rather than relying solely on internalized representations. We introduce CascadeBench, a reasoning-focused benchmark for enterprise cascade prediction that adopts the evaluation methodology of World of Workflows on diverse synthetic environments, and use it together with deployment-shift evaluation to show that offline-trained world models can perform well in-distribution but degrade as dynamics change, whereas discovery-based agents are more robust under shift by grounding their predictions in the current instance. Our findings suggest that, in configurable enterprise environments, agents should not rely solely on fixed internalized dynamics, but should incorporate mechanisms for discovering relevant transition logic at runtime.",
+  "publishedAt": "2026-05-12T14:22:10Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 65,
+  "citationCount": 0,
+  "githubStars": null,
+  "pageCount": 23
+ },
+ {
+  "arxivId": "2605.15128",
+  "slug": "memeye-a-visual-centric-evaluation-framework-for-multimodal-agent-memory",
+  "title": "MemEye: A Visual-Centric Evaluation Framework for Multimodal Agent Memory",
+  "authors": [
+   "Minghao Guo",
+   "Qingyue Jiao",
+   "Zeru Shi",
+   "Yihao Quan",
+   "Boxuan Zhang",
+   "Danrui Li"
+  ],
+  "abstract": "Long-term agent memory is increasingly multimodal, yet existing evaluations rarely test whether agents preserve the visual evidence needed for later reasoning. In prior work, many visually grounded questions can be answered using only captions or textual traces, allowing answers to be inferred without preserving the fine-grained visual evidence. Meanwhile, harder cases that require reasoning over changing visual states are largely absent. Therefore, we introduce MemEye, a framework that evaluates memory capabilities from two dimensions: one measures the granularity of decisive visual evidence (from scene-level to pixel-level evidence), and the other measures how retrieved evidence must be used (from single evidence to evolutionary synthesis). Under this framework, we construct a new benchmark across 8 life-scenario tasks, with ablation-driven validation gates for assessing answerability, shortcut resistance, visual necessity, and reasoning structure. By evaluating 13 memory methods across 4 VLM backbones, we show that current architectures still struggle to preserve fine-grained visual details and reason about state changes over time. Our findings show that long-term multimodal memory depends on evidence routing, temporal tracking, and detail extraction.",
+  "publishedAt": "2026-05-14T17:37:52Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.CL",
+   "cs.IR"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 65,
+  "citationCount": 6,
+  "githubStars": 48,
+  "pageCount": 46
+ },
+ {
+  "arxivId": "2605.30993",
+  "slug": "swanvoice-expressive-long-form-zero-shot-speech-synthesis-for-both-monologue",
+  "title": "SwanVoice: Expressive Long-Form Zero-Shot Speech Synthesis for Both Monologue and Dialogue",
+  "authors": [
+   "Ruiqi Li",
+   "Yu Zhang",
+   "Changhao Pan",
+   "Ke Lei",
+   "Xiang Yin",
+   "Cheng Yang"
+  ],
+  "abstract": "Zero-shot text-to-speech (TTS) has improved substantially for single-speaker synthesis, yet expressive long-form multi-speaker dialogue remains difficult. A common workaround is to synthesize each turn with a monologue TTS model and stitch the outputs together. This adds inference cost and often breaks acoustic consistency, conversational coherence, and affective continuity across turns. Recent dialogue TTS systems have begun to address this setting, but they still struggle to keep expressive coherence, controllable speaker switching, and monologue quality at the same time. We present SwanData-Speech and SwanVoice. SwanData-Speech builds monologue and dialogue corpora from in-the-wild audio, using Swan Forced Aligner for pause-aware word-level alignment and RobustMegaTTS3 for pronunciation-hard cases. Built on these data, SwanVoice is a zero-shot TTS model for 1--4 speakers, combining a 25 Hz VAE, raw-text conditioning with pause-aware symbols and pinyin substitution, and a flow-matching DiT with speaker-turn conditioning. Training starts from monologue speech, moves through mixed and real dialogue data, and then uses DiffusionNFT post-training with phone-level and speaker-similarity rewards. On SwanBench-Speech, SwanVoice obtains higher richness and hierarchy scores than all evaluated open-source baselines in both monologue and dialogue settings, while content accuracy remains the main limitation. Audio demos are available at https://swanaigc.github.io//#swanvoice.",
+  "publishedAt": "2026-05-29T08:27:57Z",
+  "primaryArxivCategory": [
+   "eess.AS"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 65,
+  "citationCount": 2,
+  "githubStars": null,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2606.00408",
+  "slug": "masking-stale-observations-helps-search-agents-until-it-doesnt-a-regime-map",
+  "title": "Masking Stale Observations Helps Search Agents -- Until It Doesn't: A Regime Map and Its Mechanism",
+  "authors": [
+   "Haoxiang Zhang",
+   "Qixin Xu",
+   "Zhuofeng Li",
+   "Lei Zhang",
+   "Pengcheng Jiang",
+   "Yu Zhang"
+  ],
+  "abstract": "Long-horizon search agents accumulate large amounts of retrieved content across many tool calls, making context-budget efficiency increasingly important. A minimal intervention is to mask stale observations from the context as the trajectory progresses, but it remains unclear when this form of context management helps and why. We study observation masking through a systematic sweep over various agent backbones (4B to 284B parameters) and three retrievers on offline and live-web agentic search benchmarks. We find that the accuracy gain from masking follows an asymmetric inverted-U shape when plotted against the model's accuracy without context management: a plateau under weak retrievers, a peak when a strong retriever meets a mid-capacity model, and a sharp collapse when the model is saturated. This pattern reflects the interaction between retriever recall and the model's implicit filtering capacity, rather than either factor in isolation. Mechanistically, masking implements a token-for-turn trade-off: it removes observations the model has largely stopped attending to and pages the agent rarely re-opens. The added turns help when they convert failures into successes, but they fail when masking removes evidence the model would otherwise have used. We therefore reframe context management as a regime-dependent intervention and provide a holistic perspective for analyzing context use in agentic deep search. We release our scaffold and trajectories here (https://github.com/i-DeepSearch/observation-masking) to support future research.",
+  "publishedAt": "2026-05-29T22:51:58Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI",
+   "cs.IR"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 65,
+  "citationCount": 3,
+  "githubStars": 22,
+  "pageCount": 47
+ },
+ {
+  "arxivId": "2606.19534",
+  "slug": "perceptiondlm-parallel-region-perception-with-multimodal-diffusion-language",
+  "title": "PerceptionDLM: Parallel Region Perception with Multimodal Diffusion Language Models",
+  "authors": [
+   "Yueyi Sun",
+   "Yuhao Wang",
+   "Jason Li",
+   "Ye Tian",
+   "Tao Zhang",
+   "Jacky Mai"
+  ],
+  "abstract": "Multimodal large language models (MLLMs) have achieved remarkable progress in visual understanding tasks. However, most existing MLLMs rely on autoregressive generation, which limits their efficiency for perception tasks that require captioning multiple regions. In this work, we propose PerceptionDLM, a multimodal diffusion language model optimized for efficient parallel region perception. Built upon PerceptionDLM-Base, a strong foundational baseline that achieves state-of-the-art performance among open-source diffusion MLLMs, our architecture fully leverages the parallel decoding nature of DLMs. Specifically, we introduce efficient prompting and structured attention masking to enable simultaneous perception of multiple masked regions, allowing the model to generate region descriptions in parallel at both the sequence and token levels. This design significantly improves inference efficiency compared with existing approaches that process regions sequentially. To systematically evaluate the parallelism property of visual perception capability for DLMs, we construct a new Parallel Detailed Localized Captioning Benchmark (ParaDLC-Bench) by scaling the DLC-Bench to include multiple region masks per image, enabling joint evaluation of both caption quality and inference efficiency. Experiments demonstrate that PerceptionDLM maintains competitive performance in region captioning while achieving substantial speed improvements for multi-region perception tasks. Our results highlight the potential of multimodal diffusion language models for efficient, parallel visual perception. To the best of our knowledge, we are the first to achieve parallel region caption and perception by leveraging the advantages of diffusion language models. Code, models, and datasets are released.",
+  "publishedAt": "2026-06-17T19:27:55Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 65,
+  "citationCount": 0,
+  "githubStars": 77,
+  "pageCount": 29
+ }
+]

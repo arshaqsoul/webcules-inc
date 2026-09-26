@@ -1,0 +1,706 @@
+[
+ {
+  "arxivId": "2511.03506",
+  "slug": "halumem-evaluating-hallucinations-in-memory-systems-of-agents",
+  "title": "HaluMem: Evaluating Hallucinations in Memory Systems of Agents",
+  "authors": [
+   "Ding Chen",
+   "Simin Niu",
+   "Kehang Li",
+   "Peng Liu",
+   "Xiangping Zheng",
+   "Bo Tang"
+  ],
+  "abstract": "Memory systems are key components that enable AI systems such as LLMs and AI agents to achieve long-term learning and sustained interaction. However, during memory storage and retrieval, these systems frequently exhibit memory hallucinations, including fabrication, errors, conflicts, and omissions. Existing evaluations of memory hallucinations are primarily end-to-end question answering, which makes it difficult to localize the operational stage within the memory system where hallucinations arise. To address this, we introduce the Hallucination in Memory Benchmark (HaluMem), the first operation level hallucination evaluation benchmark tailored to memory systems. HaluMem defines three evaluation tasks (memory extraction, memory updating, and memory question answering) to comprehensively reveal hallucination behaviors across different operational stages of interaction. To support evaluation, we construct user-centric, multi-turn human-AI interaction datasets, HaluMem-Medium and HaluMem-Long. Both include about 15k memory points and 3.5k multi-type questions. The average dialogue length per user reaches 1.5k and 2.6k turns, with context lengths exceeding 1M tokens, enabling evaluation of hallucinations across different context scales and task complexities. Empirical studies based on HaluMem show that existing memory systems tend to generate and accumulate hallucinations during the extraction and updating stages, which subsequently propagate errors to the question answering stage. Future research should focus on developing interpretable and constrained memory operation mechanisms that systematically suppress hallucinations and improve memory reliability.",
+  "publishedAt": "2025-11-05T14:37:34Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 95,
+  "citationCount": 37,
+  "githubStars": 151,
+  "pageCount": 39
+ },
+ {
+  "arxivId": "2512.20619",
+  "slug": "semanticgen-video-generation-in-semantic-space",
+  "title": "SemanticGen: Video Generation in Semantic Space",
+  "authors": [
+   "Jianhong Bai",
+   "Xiaoshi Wu",
+   "Xintao Wang",
+   "Xiao Fu",
+   "Yuanxing Zhang",
+   "Qinghe Wang"
+  ],
+  "abstract": "State-of-the-art video generative models typically learn the distribution of video latents in the VAE space and map them to pixels using a VAE decoder. While this approach can generate high-quality videos, it suffers from slow convergence and is computationally expensive when generating long videos. In this paper, we introduce SemanticGen, a novel solution to address these limitations by generating videos in the semantic space. Our main insight is that, due to the inherent redundancy in videos, the generation process should begin in a compact, high-level semantic space for global planning, followed by the addition of high-frequency details, rather than directly modeling a vast set of low-level video tokens using bi-directional attention. SemanticGen adopts a two-stage generation process. In the first stage, a diffusion model generates compact semantic video features, which define the global layout of the video. In the second stage, another diffusion model generates VAE latents conditioned on these semantic features to produce the final output. We observe that generation in the semantic space leads to faster convergence compared to the VAE latent space. Our method is also effective and computationally efficient when extended to long video generation. Extensive experiments demonstrate that SemanticGen produces high-quality videos and outperforms state-of-the-art approaches and strong baselines.",
+  "publishedAt": "2025-12-23T18:59:56Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 95,
+  "citationCount": 7,
+  "githubStars": null,
+  "pageCount": 15
+ },
+ {
+  "arxivId": "2602.12036",
+  "slug": "composition-rl-compose-your-verifiable-prompts-for-reinforcement-learning-of",
+  "title": "Composition-RL: Compose Your Verifiable Prompts for Reinforcement Learning of Large Language Models",
+  "authors": [
+   "Xin Xu",
+   "Clive Bai",
+   "Kai Yang",
+   "Tianhao Chen",
+   "Yangkun Chen",
+   "Weijie Liu"
+  ],
+  "abstract": "Large-scale verifiable prompts underpin the success of Reinforcement Learning with Verifiable Rewards (RLVR), but they contain many uninformative examples and are costly to expand further. Recent studies focus on better exploiting limited training data by prioritizing hard prompts whose rollout pass rate is 0. However, easy prompts with a pass rate of 1 also become increasingly prevalent as training progresses, thereby reducing the effective data size. To mitigate this, we propose Composition-RL, a simple yet useful approach for better utilizing limited verifiable prompts targeting pass-rate-1 prompts. More specifically, Composition-RL automatically composes multiple problems into a new verifiable question and uses these compositional prompts for RL training. Extensive experiments across model sizes from 4B to 30B show that Composition-RL consistently improves reasoning capability over RL trained on the original dataset. Performance can be further boosted with a curriculum variant of Composition-RL that gradually increases compositional depth over training. Additionally, Composition-RL enables more effective cross-domain RL by composing prompts drawn from different domains. Codes, datasets, and models are available at https://github.com/XinXU-USTC/Composition-RL.",
+  "publishedAt": "2026-02-12T15:03:37Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 95,
+  "citationCount": 3,
+  "githubStars": 137,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2603.04448",
+  "slug": "skillnet-create-evaluate-and-connect-ai-skills",
+  "title": "SkillNet: Create, Evaluate, and Connect AI Skills",
+  "authors": [
+   "Yuan Liang",
+   "Ruobin Zhong",
+   "Haoming Xu",
+   "Chen Jiang",
+   "Yi Zhong",
+   "Runnan Fang"
+  ],
+  "abstract": "Current AI agents can flexibly invoke tools and execute complex tasks, yet their long-term advancement is hindered by the lack of systematic accumulation and transfer of skills. Without a unified mechanism for skill consolidation, agents frequently ``reinvent the wheel'', rediscovering solutions in isolated contexts without leveraging prior strategies. To overcome this limitation, we introduce SkillNet, an open infrastructure designed to create, evaluate, and organize AI skills at scale. SkillNet structures skills within a unified ontology that supports creating skills from heterogeneous sources, establishing rich relational connections, and performing multi-dimensional evaluation across Safety, Completeness, Executability, Maintainability, and Cost-awareness. Our infrastructure integrates a repository of over 200,000 skills, an interactive platform, and a versatile Python toolkit. Experimental evaluations on ALFWorld, WebShop, and ScienceWorld demonstrate that SkillNet significantly enhances agent performance, improving average rewards by 40% and reducing execution steps by 30% across multiple backbone models. By formalizing skills as evolving, composable assets, SkillNet provides a robust foundation for agents to move from transient experience to durable mastery.",
+  "publishedAt": "2026-02-26T14:24:02Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL",
+   "cs.CV",
+   "cs.LG",
+   "cs.MA"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 95,
+  "citationCount": 34,
+  "githubStars": 1117,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2603.13366",
+  "slug": "thinking-in-uncertainty-mitigating-hallucinations-in-mlrms-with-latent-entropy",
+  "title": "Thinking in Uncertainty: Mitigating Hallucinations in MLRMs with Latent Entropy-Aware Decoding",
+  "authors": [
+   "Zhongxing Xu",
+   "Zhonghua Wang",
+   "Zhe Qian",
+   "Dachuan Shi",
+   "Feilong Tang",
+   "Ming Hu"
+  ],
+  "abstract": "Recent advancements in multimodal large reasoning models (MLRMs) have significantly improved performance in visual question answering. However, we observe that transition words (e.g., because, however, and wait) are closely associated with hallucinations and tend to exhibit high-entropy states. We argue that adequate contextual reasoning information can be directly extracted from the token probability distribution. Inspired by superposed representation theory, we propose leveraging latent superposed reasoning to integrate multiple candidate semantics and maintain latent reasoning trajectories. The hypothesis is that reliance on discrete textual inputs may drive the model toward sequential explicit reasoning, underutilizing dense contextual cues during high-entropy reasoning stages. Therefore, we propose constructing rich semantic representations from the token probability distributions to enhance in-context reasoning. With this goal, we present Latent Entropy-Aware Decoding (LEAD), an efficient plug-and-play decoding strategy that leverages semantic context to achieve reliable reasoning. The heart of our method lies in entropy-aware reasoning mode switching. The model employs probability-weighted continuous embeddings under high-entropy states and transitions back to discrete token embeddings as entropy decreases. Moreover, we propose a prior-guided visual anchor injection strategy that encourages the model to focus on visual information. Extensive experiments show that LEAD effectively mitigates hallucinations across various MLRMs on multiple benchmarks.",
+  "publishedAt": "2026-03-09T12:47:54Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 95,
+  "citationCount": 10,
+  "githubStars": 94,
+  "pageCount": 12
+ },
+ {
+  "arxivId": "2603.19235",
+  "slug": "generation-models-know-space-unleashing-implicit-3d-priors-for-scene",
+  "title": "Generation Models Know Space: Unleashing Implicit 3D Priors for Scene Understanding",
+  "authors": [
+   "Xianjin Wu",
+   "Dingkang Liang",
+   "Tianrui Feng",
+   "Kui Xia",
+   "Yumeng Zhang",
+   "Xiaofan Li"
+  ],
+  "abstract": "While Multimodal Large Language Models demonstrate impressive semantic capabilities, they often suffer from spatial blindness, struggling with fine-grained geometric reasoning and physical dynamics. Existing solutions typically rely on explicit 3D modalities or complex geometric scaffolding, which are limited by data scarcity and generalization challenges. In this work, we propose a paradigm shift by leveraging the implicit spatial prior within large-scale video generation models. We posit that to synthesize temporally coherent videos, these models inherently learn robust 3D structural priors and physical laws. We introduce VEGA-3D (Video Extracted Generative Awareness), a plug-and-play framework that repurposes a pre-trained video diffusion model as a Latent World Simulator. By extracting spatiotemporal features from intermediate noise levels and integrating them with semantic representations via a token-level adaptive gated fusion mechanism, we enrich MLLMs with dense geometric cues without explicit 3D supervision. Extensive experiments across 3D scene understanding, spatial reasoning, and embodied manipulation benchmarks demonstrate that our method outperforms state-of-the-art baselines, validating that generative priors provide a scalable foundation for physical-world understanding. Code is publicly available at https://github.com/H-EmbodVis/VEGA-3D.",
+  "publishedAt": "2026-03-19T17:59:58Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.RO"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 95,
+  "citationCount": 10,
+  "githubStars": 421,
+  "pageCount": 32
+ },
+ {
+  "arxivId": "2607.06559",
+  "slug": "rynnworld-4d-4d-embodied-world-models-for-robotic-manipulation",
+  "title": "RynnWorld-4D: 4D Embodied World Models for Robotic Manipulation",
+  "authors": [
+   "Haoyu Zhao",
+   "Xingyue Zhao",
+   "Siteng Huang",
+   "Xin Li",
+   "Deli Zhao",
+   "Zhongyu Li"
+  ],
+  "abstract": "Robotic manipulation in the open world requires not only recognizing what a scene looks like, but also anticipating how its 3D structure moves under interaction. We argue that synchronized RGB, depth, and optical flow, namely RGB-DF, provide a physically grounded representation that captures the underlying 4D dynamics of a scene. Compared to 2D pixel videos, this multi-modal synergy aligns visual appearance with geometric structure and temporal motion, creating a representation space significantly closer to the low-level end-effector actions demanded by robotic systems, thereby narrowing the gap between world prediction and policy learning. Building on this insight, we introduce RynnWorld-4D, a generative model that co-produces future RGB frames, depth maps, and optical flow from a single RGB-D image and a language instruction within one unified diffusion process. This 4D world model features a tri-branch architecture that integrates cross-modal attention with frame-wise 3D RoPE, ensuring that appearance, geometry, and motion evolve consistently. To supply training data at scale, we curate Rynn4DDataset 1.0, a massive dataset of over 254.4 million frames across egocentric human and robotic manipulation videos with high-quality pseudo-labels for depth and optical flow. We further propose RynnWorld-4D-Policy, an inverse dynamics head that consumes the internal 4D representations of RynnWorld-4D in a single forward pass, bypassing expensive multi-step denoising, to output robot actions in a closed-loop manner. Experiments show that RynnWorld-4D produces temporally and spatially coherent 4D predictions, and that RynnWorld-4D-Policy achieves state-of-the-art performance on real-world dexterous bimanual manipulation tasks, particularly excelling in tasks demanding spatial precision and temporal coordination.",
+  "publishedAt": "2026-07-07T17:58:15Z",
+  "primaryArxivCategory": [
+   "cs.RO"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 95,
+  "citationCount": 1,
+  "githubStars": 79,
+  "pageCount": 26
+ },
+ {
+  "arxivId": "2512.01816",
+  "slug": "envision-benchmarking-unified-understanding-generation-for-causal-world",
+  "title": "Envision: Benchmarking Unified Understanding & Generation for Causal World Process Insights",
+  "authors": [
+   "Juanxi Tian",
+   "Siyuan Li",
+   "Conghui He",
+   "Lijun Wu",
+   "Cheng Tan"
+  ],
+  "abstract": "Current multimodal models aim to transcend the limitations of single-modality representations by unifying understanding and generation, often using text-to-image (T2I) tasks to calibrate semantic consistency. However, their reliance on static, single-image generation in training and evaluation leads to overfitting to static pattern matching and semantic fusion, while fundamentally hindering their ability to model dynamic processes that unfold over time. To address these constraints, we propose Envision-a causal event progression benchmark for chained text-to-multi-image generation. Grounded in world knowledge and structured by spatiotemporal causality, it reorganizes existing evaluation dimensions and includes 1,000 four-stage prompts spanning six scientific and humanities domains. To transition evaluation from single images to sequential frames and assess whether models truly internalize world knowledge while adhering to causal-temporal constraints, we introduce Envision-Score, a holistic metric integrating multi-dimensional consistency, physicality, and aesthetics. Comprehensive evaluation of 15 models (10 specialized T2I models, 5 unified models) uncovers: specialized T2I models demonstrate proficiency in aesthetic rendering yet lack intrinsic world knowledge. Unified multimodal models bridge this gap, consistently outperforming specialized counterparts in causal narrative coherence. However, even these unified architectures remain subordinate to closed-source models and struggle to overcome the core challenge of spatiotemporal consistency. This demonstrates that a focus on causally-isolated single images impedes multi-frame reasoning and generation, promoting static pattern matching over dynamic world modeling-ultimately limiting world knowledge internalization, generation.",
+  "publishedAt": "2025-12-01T15:52:31Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 94,
+  "citationCount": 1,
+  "githubStars": 32,
+  "pageCount": 35
+ },
+ {
+  "arxivId": "2601.16746",
+  "slug": "swe-pruner-self-adaptive-context-pruning-for-coding-agents",
+  "title": "SWE-Pruner: Self-Adaptive Context Pruning for Coding Agents",
+  "authors": [
+   "Yuhang Wang",
+   "Yuling Shi",
+   "Mo Yang",
+   "Rongrui Zhang",
+   "Shilin He",
+   "Heng Lian"
+  ],
+  "abstract": "LLM agents have demonstrated remarkable capabilities in software development, but their performance is hampered by long interaction contexts, which incur high API costs and latency. While various context compression approaches such as LongLLMLingua have emerged to tackle this challenge, they typically rely on fixed metrics such as PPL, ignoring the task-specific nature of code understanding. As a result, they frequently disrupt syntactic and logical structure and fail to retain critical implementation details. In this paper, we propose SWE-Pruner, a self-adaptive context pruning framework tailored for coding agents. Drawing inspiration from how human programmers \"selectively skim\" source code during development and debugging, SWE-Pruner performs task-aware adaptive pruning for long contexts. Given the current task, the agent formulates an explicit goal (e.g., \"focus on error handling\") as a hint to guide the pruning targets. A lightweight neural skimmer (0.6B parameters) is trained to dynamically select relevant lines from the surrounding context given the goal. Evaluations across four benchmarks and multiple models validate SWE-Pruner's effectiveness in various scenarios, achieving 23-54% token reduction on agent tasks like SWE-Bench Verified while even improving success rates, and up to 14.84x compression on single-turn tasks like LongCodeQA with minimal performance impact.",
+  "publishedAt": "2026-01-23T13:51:59Z",
+  "primaryArxivCategory": [
+   "cs.SE",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 94,
+  "citationCount": 26,
+  "githubStars": 304,
+  "pageCount": 30
+ },
+ {
+  "arxivId": "2606.13473",
+  "slug": "maxproof-scaling-mathematical-proof-with-generative-verifier-rl-and-population",
+  "title": "MaxProof: Scaling Mathematical Proof with Generative-Verifier RL and Population-Level Test-Time Scaling",
+  "authors": [
+   "Jiacheng Chen",
+   "Xinyu Zhang",
+   "Shunkai Zhang",
+   "Yanmohan Wang",
+   "Lin Li",
+   "Tiancheng Qin"
+  ],
+  "abstract": "We present MaxProof, a population-level test-time scaling framework for competition-level mathematical proof in the MiniMax-M3 series. M3 first trains three proof-oriented capabilities -- proof generation, proof verification, and critique-conditioned proof repair -- using a defense-in-depth generative verifier engineered for low false-positive rate. These capabilities are merged into a single released M3 model. At test time, MaxProof treats the model as a generator, verifier, refiner, and ranker, searches over a population of candidate proofs, and returns one final proof through tournament selection. With MaxProof test-time scaling, the M3 model reaches 35/42 on IMO 2025 and 36/42 on USAMO 2026, exceeding the human gold-medal threshold on both.",
+  "publishedAt": "2026-06-11T15:27:06Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": "MiniMax",
+  "hfUpvotes": 94,
+  "citationCount": 1,
+  "githubStars": null,
+  "pageCount": 71
+ },
+ {
+  "arxivId": "2509.13305",
+  "slug": "websailor-v2-bridging-the-chasm-to-proprietary-agents-via-synthetic-data-and",
+  "title": "WebSailor-V2: Bridging the Chasm to Proprietary Agents via Synthetic Data and Scalable Reinforcement Learning",
+  "authors": [
+   "Kuan Li",
+   "Zhongwang Zhang",
+   "Huifeng Yin",
+   "Rui Ye",
+   "Yida Zhao",
+   "Liwen Zhang"
+  ],
+  "abstract": "Transcending human cognitive limitations represents a critical frontier in LLM training. Proprietary agentic systems like DeepResearch have demonstrated superhuman capabilities on extremely complex information-seeking benchmarks such as BrowseComp, a feat previously unattainable. We posit that their success hinges on a sophisticated reasoning pattern absent in open-source models: the ability to systematically reduce extreme uncertainty when navigating vast information landscapes. Based on this insight, we introduce WebSailor, a complete post-training methodology designed to instill this crucial capability. Our approach involves generating novel, high-uncertainty tasks through structured sampling and information obfuscation, RFT cold start, and an efficient agentic RL training algorithm, Duplicating Sampling Policy Optimization (DUPO). With this integrated pipeline, WebSailor significantly outperforms all open-source agents in complex information-seeking tasks, matching proprietary agents' performance and closing the capability gap.",
+  "publishedAt": "2025-09-16T17:57:03Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 93,
+  "citationCount": 60,
+  "githubStars": null,
+  "pageCount": 32
+ },
+ {
+  "arxivId": "2510.15870",
+  "slug": "omnivinci-enhancing-architecture-and-data-for-omni-modal-understanding-llm",
+  "title": "OmniVinci: Enhancing Architecture and Data for Omni-Modal Understanding LLM",
+  "authors": [
+   "Hanrong Ye",
+   "Chao-Han Huck Yang",
+   "Arushi Goel",
+   "Wei Huang",
+   "Ligeng Zhu",
+   "Yuanhang Su"
+  ],
+  "abstract": "Advancing machine intelligence requires developing the ability to perceive across multiple modalities, much as humans sense the world. We introduce OmniVinci, an initiative to build a strong, open-source, omni-modal LLM. We carefully study the design choices across model architecture and data curation. For model architecture, we present three key innovations: (i) OmniAlignNet for strengthening alignment between vision and audio embeddings in a shared omni-modal latent space; (ii) Temporal Embedding Grouping for capturing relative temporal alignment between vision and audio signals; and (iii) Constrained Rotary Time Embedding for encoding absolute temporal information in omni-modal embeddings. We introduce a curation and synthesis pipeline that generates 24M single-modal and omni-modal conversations. We find that modalities reinforce one another in both perception and reasoning. Our model, OmniVinci, outperforms Qwen2.5-Omni with +19.05 on DailyOmni (cross-modal understanding), +1.7 on MMAR (audio), and +3.9 on Video-MME (vision), while using just 0.2T training tokens - a 6 times reduction compared to Qwen2.5-Omni's 1.2T. We finally demonstrate omni-modal advantages in downstream applications spanning robotics, medical AI, and smart factory.",
+  "publishedAt": "2025-10-17T17:59:59Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": "NVIDIA",
+  "hfUpvotes": 93,
+  "citationCount": 50,
+  "githubStars": 675,
+  "pageCount": 36
+ },
+ {
+  "arxivId": "2512.13586",
+  "slug": "refusion-a-diffusion-large-language-model-with-parallel-autoregressive-decoding",
+  "title": "ReFusion: A Diffusion Large Language Model with Parallel Autoregressive Decoding",
+  "authors": [
+   "Jia-Nan Li",
+   "Jian Guan",
+   "Wei Wu",
+   "Chongxuan Li"
+  ],
+  "abstract": "Autoregressive models (ARMs) are hindered by slow sequential inference. While masked diffusion models (MDMs) offer a parallel alternative, they suffer from critical drawbacks: high computational overhead from precluding Key-Value (KV) caching, and incoherent generation arising from learning dependencies over an intractable space of token combinations. To address these limitations, we introduce \\textsc{ReFusion}, a novel masked diffusion model that integrates sequence reorganization into the causal attention framework. By elevating parallel decoding from the token level to a higher slot level, \\textsc{ReFusion} interleaves inter-slot diffusion-based selection with intra-slot autoregressive infilling, while reordering newly generated slots ahead of the remaining masks after each iteration. Consequently, this design simultaneously unlocks full KV cache reuse and reduces learning complexity from an intractable token combination space to a manageable slot-level permutation space. Extensive experiments on seven diverse benchmarks show that \\textsc{ReFusion} not only overwhelmingly surpasses prior MDMs with a 34\\% performance gain and an over 18$\\times$ speedup on average, but also bridges the performance gap to strong ARMs while maintaining a 2.33$\\times$ average speedup.",
+  "publishedAt": "2025-12-15T17:41:19Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 93,
+  "citationCount": 14,
+  "githubStars": 63,
+  "pageCount": 24
+ },
+ {
+  "arxivId": "2603.05890",
+  "slug": "lost-in-stories-consistency-bugs-in-long-story-generation-by-llms",
+  "title": "Lost in Stories: Consistency Bugs in Long Story Generation by LLMs",
+  "authors": [
+   "Junjie Li",
+   "Xinrui Guo",
+   "Yuhao Wu",
+   "Roy Ka-Wei Lee",
+   "Hongzhi Li",
+   "Yutao Xie"
+  ],
+  "abstract": "What happens when a storyteller forgets its own story? Large Language Models (LLMs) can now generate narratives spanning tens of thousands of words, but they often fail to maintain consistency throughout. When generating long-form narratives, these models can contradict their own established facts, character traits, and world rules. Existing story generation benchmarks focus mainly on plot quality and fluency, leaving consistency errors largely unexplored. To address this gap, we present ConStory-Bench, a benchmark designed to evaluate narrative consistency in long-form story generation. It contains 2,000 prompts across four task scenarios and defines a taxonomy of five error categories with 19 fine-grained subtypes. We also develop ConStory-Checker, an automated pipeline that detects contradictions and grounds each judgment in explicit textual evidence. Evaluating a range of LLMs through five research questions, we find that consistency errors show clear tendencies: they are most common in factual and temporal dimensions, tend to appear around the middle of narratives, occur in text segments with higher token-level entropy, and certain error types tend to co-occur. These findings can inform future efforts to improve consistency in long-form narrative generation. Our project page is available at https://picrew.github.io/constory-bench.github.io/.",
+  "publishedAt": "2026-03-06T04:16:46Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 93,
+  "citationCount": 3,
+  "githubStars": 192,
+  "pageCount": 28
+ },
+ {
+  "arxivId": "2605.18233",
+  "slug": "enhancing-train-free-infinite-frame-generation-for-consistent-long-videos",
+  "title": "Enhancing Train-Free Infinite-Frame Generation for Consistent Long Videos",
+  "authors": [
+   "X. Feng",
+   "J. Zhu",
+   "M. Wu",
+   "C. Chen",
+   "F. Mao",
+   "H. Guo"
+  ],
+  "abstract": "Without incurring significant computational overhead, train-free long video generation aims to enable foundation video generation models to produce longer videos. Frame-level autoregressive frameworks, e.g., FIFO-diffusion, offer the advantage of generating infinitely long videos with constant memory consumption. However, the mismatch between training and inference, coupled with the challenge of maintaining long-term consistency, limits the effective utilization of foundation models. To mitigate these concerns, we propose \\textbf{MIGA}, a novel infinite-frame long video generation method. Firstly, we propose an effective two-stage alignment mechanism that mitigates the training-inference gap by reducing the excessive noise span fed to the model. We then introduce an innovative dual consistency enhancement mechanism, where the self-reflection approach corrects early high-noise frames and the long-range frame guidance approach leverages later low-noise frames with broad coverage to steer generation, jointly improving temporal consistency. Extensive experiments on VBench and NarrLV demonstrate the state-of-the-art performance of MIGA. Our project page is available at https://xiaokunfeng.github.io/miga_homepage/.",
+  "publishedAt": "2026-05-18T11:28:45Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 93,
+  "citationCount": 1,
+  "githubStars": null,
+  "pageCount": 28
+ },
+ {
+  "arxivId": "2605.28774",
+  "slug": "agent-explorative-policy-optimization-for-multimodal-agentic-reasoning",
+  "title": "Agent Explorative Policy Optimization for Multimodal Agentic Reasoning",
+  "authors": [
+   "Minki Kang",
+   "Shizhe Diao",
+   "Ryo Hachiuma",
+   "Sung Ju Hwang",
+   "Pavlo Molchanov",
+   "Yu-Chiang Frank Wang"
+  ],
+  "abstract": "Vision-language models with extended reasoning succeed on complex problems, but many real-world problems require external tools that internal reasoning alone often cannot resolve. Agentic reasoning therefore interleaves two behaviors with a structural asymmetry: thinking (the self-contained default) and tool use (a high-variance auxiliary acting). We refer to this asymmetry as the Thinking-Acting Gap. Under standard RL recipes like GRPO, the gap manifests as two diagnostic symptoms during training: tool use is attempted on only ~30% of rollouts, and when attempted, the tool-using rollouts within a group are all-wrong on ~40% of questions, suppressing the learning signal at the tool calls that needed it. We propose AXPO (Agent eXplorative Policy Optimization): for each all-wrong tool-using subgroup, AXPO fixes the thinking prefix and resamples the tool call and its continuation, paired with uncertainty-based prefix selection. Across nine multimodal benchmarks and three scales of Qwen3-VL-Thinking, SFT+AXPO outperforms SFT+GRPO at average (+1.8pp Pass@1 and +1.8pp Pass@4 at 8B on average) and 8B with SFT+AXPO surpasses the 32B Base on Pass@4 with 4 times fewer parameters.",
+  "publishedAt": "2026-05-27T17:36:39Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": "NVIDIA",
+  "hfUpvotes": 93,
+  "citationCount": 2,
+  "githubStars": null,
+  "pageCount": 41
+ },
+ {
+  "arxivId": "2607.24223",
+  "slug": "a-new-role-for-relevance-guiding-corpus-interaction-in-agentic-search",
+  "title": "A New Role for Relevance: Guiding Corpus Interaction in Agentic Search",
+  "authors": [
+   "Jiangnan Li",
+   "Yuqing Li",
+   "Mo Yu",
+   "Jinchao Zhang",
+   "Jie Zhou"
+  ],
+  "abstract": "Relevance is a query-dependent estimate of whether a document or excerpt contains useful evidence. Existing retrieval agents use relevance to select top-$k$ content, but document relevance alone cannot localize, compose, or verify the evidence required by complex questions. Direct Corpus Interaction (DCI) enables such fine-grained operations through grep-style exploration, but its relevance-agnostic search can expose useful clues late and delay convergence. Recent advances use relevance to narrow the corpus into a working space for interaction. Once interaction begins, however, relevance still does not directly guide which documents grep searches first or distinguish informative excerpts from a broad set of matches to let LLMs see them first. We introduce the Relevance-Aware RipGrep Search Agent (RARG), which turns relevance into an execution prior for corpus interaction. RARG provides coarse-to-fine relevance guidance: it orders documents for sequential 'ripgrep' traversal to expose globally relevant clues earlier, initializes promising entry points with query-relevant paragraphs, and reranks grep matches to surface informative excerpts that document-level ranking may otherwise obscure. Across challenging browse question answering and reasoning-intensive retrieval, RARG improves the accuracy--efficiency frontier over retrieval-based and direct-interaction agents. These results demonstrate that relevance-aware interaction enables faster and more reliable search convergence.",
+  "publishedAt": "2026-07-27T09:56:52Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 93,
+  "citationCount": 0,
+  "githubStars": 51,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2607.27201",
+  "slug": "mental-world-modeling",
+  "title": "Mental World Modeling",
+  "authors": [
+   "Hao Fei",
+   "Yiran Zhao"
+  ],
+  "abstract": "World models enable a predictive substrate for planning and action, yet existing formulations merely answer a physical question: what/where it is, and how will it evolve. Human behavior, however, is driven by hidden mental state (what a person believes, wants, intends, feels, and considers socially permissible), so a model that tracks the physical scene but not what each agent knows and believes about it predicts the wrong action for the right-looking scene. We formulate Mental World Modeling (MWM), a generic theoretical framework that makes mental variables core components of a world model rather than posthoc rationales: MWM aintains a coupled physical-mental world state, renders a target-specific partial observation, and simulates how candidate actions jointly update both components. We instantiate the framework in MENTIS, a training-free and fully inspectable baseline that decomposes the process into state parsing, target-observation generation, action decomposition, coupled physical and mental transition, and branch-level value evaluation. On a manually constructed, quality-controlled dataset of situated decision scenarios spanning text, image, and sounding-video stories, experiments with 8 modern LLM-based world models demonstrate that explicitly modeling the mental state is essential for predicting human decisions. Deeper analyses further expose the bottlenecks of current mental world modeling. We expect MWM as a next stage of world modeling, from simulating physical scenes to simulating the minds that act in them.",
+  "publishedAt": "2026-07-29T17:59:39Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 93,
+  "citationCount": 0,
+  "githubStars": 16,
+  "pageCount": 40
+ },
+ {
+  "arxivId": "2508.15260",
+  "slug": "deep-think-with-confidence",
+  "title": "Deep Think with Confidence",
+  "authors": [
+   "Yichao Fu",
+   "Xuewei Wang",
+   "Yuandong Tian",
+   "Jiawei Zhao"
+  ],
+  "abstract": "Large Language Models (LLMs) have shown great potential in reasoning tasks through test-time scaling methods like self-consistency with majority voting. However, this approach often leads to diminishing returns in accuracy and high computational overhead. To address these challenges, we introduce Deep Think with Confidence (DeepConf), a simple yet powerful method that enhances both reasoning efficiency and performance at test time. DeepConf leverages model-internal confidence signals to dynamically filter out low-quality reasoning traces during or after generation. It requires no additional model training or hyperparameter tuning and can be seamlessly integrated into existing serving frameworks. We evaluate DeepConf across a variety of reasoning tasks and the latest open-source models, including Qwen 3 and GPT-OSS series. Notably, on challenging benchmarks such as AIME 2025, DeepConf@512 achieves up to 99.9% accuracy and reduces generated tokens by up to 84.7% compared to full parallel thinking.",
+  "publishedAt": "2025-08-21T05:48:38Z",
+  "primaryArxivCategory": [
+   "cs.LG"
+  ],
+  "officialLab": "Meta AI / FAIR",
+  "hfUpvotes": 92,
+  "citationCount": 151,
+  "githubStars": 409,
+  "pageCount": 27
+ },
+ {
+  "arxivId": "2508.15882",
+  "slug": "beyond-transcription-mechanistic-interpretability-in-asr",
+  "title": "Beyond Transcription: Mechanistic Interpretability in ASR",
+  "authors": [
+   "Neta Glazer",
+   "Yael Segal-Feldman",
+   "Hilit Segev",
+   "Aviv Shamsian",
+   "Asaf Buchnick",
+   "Gill Hetz"
+  ],
+  "abstract": "Interpretability methods have recently gained significant attention, particularly in the context of large language models, enabling insights into linguistic representations, error detection, and model behaviors such as hallucinations and repetitions. However, these techniques remain underexplored in automatic speech recognition (ASR), despite their potential to advance both the performance and interpretability of ASR systems. In this work, we adapt and systematically apply established interpretability methods such as logit lens, linear probing, and activation patching, to examine how acoustic and semantic information evolves across layers in ASR systems. Our experiments reveal previously unknown internal dynamics, including specific encoder-decoder interactions responsible for repetition hallucinations and semantic biases encoded deep within acoustic representations. These insights demonstrate the benefits of extending and applying interpretability techniques to speech recognition, opening promising directions for future research on improving model transparency and robustness.",
+  "publishedAt": "2025-08-21T15:42:53Z",
+  "primaryArxivCategory": [
+   "cs.SD",
+   "cs.CL",
+   "cs.LG",
+   "eess.AS"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 92,
+  "citationCount": 11,
+  "githubStars": null,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2509.21240",
+  "slug": "tree-search-for-llm-agent-reinforcement-learning",
+  "title": "Tree Search for LLM Agent Reinforcement Learning",
+  "authors": [
+   "Yuxiang Ji",
+   "Ziyu Ma",
+   "Yong Wang",
+   "Guanhua Chen",
+   "Xiangxiang Chu",
+   "Liaoni Wu"
+  ],
+  "abstract": "Recent advances in reinforcement learning (RL) have significantly enhanced the agentic capabilities of large language models (LLMs). In long-term and multi-turn agent tasks, existing approaches driven solely by outcome rewards often suffer from the problem of sparse supervision. To address the challenge, we propose Tree-based Group Relative Policy Optimization (Tree-GRPO), a grouped agent RL method based on tree search, where each tree node represents the complete agent interaction step. By sharing common prefixes, the tree search sampling increases the number of rollouts achievable within a fixed budget of tokens or tool calls. Moreover, we find that the tree-structured trajectory naturally allows the construction of step-wise process supervised signals even using only the outcome reward. Based on this, Tree-GRPO estimates the grouped relative advantages both on intra-tree and inter-tree levels. Through theoretical analysis, we demonstrate that the objective of intra-tree level group relative policy optimization is equivalent to that of step-level direct preference learning. Experiments across 11 datasets and 3 types of QA tasks demonstrate the superiority of the proposed tree-based RL over the chain-based RL method.",
+  "publishedAt": "2025-09-25T14:37:09Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 92,
+  "citationCount": 52,
+  "githubStars": 392,
+  "pageCount": 27
+ },
+ {
+  "arxivId": "2510.01051",
+  "slug": "gem-a-gym-for-agentic-llms",
+  "title": "GEM: A Gym for Agentic LLMs",
+  "authors": [
+   "Zichen Liu",
+   "Anya Sims",
+   "Keyu Duan",
+   "Changyu Chen",
+   "Simon Yu",
+   "Xiangxin Zhou"
+  ],
+  "abstract": "The training paradigm for large language models (LLMs) is moving from static datasets to experience-based learning, where agents acquire skills via interacting with complex environments. To facilitate this transition we introduce GEM (General Experience Maker), an open-source environment simulator designed for the age of LLMs. Analogous to OpenAI-Gym for traditional reinforcement learning (RL), GEM provides a standardized framework for the environment-agent interface, including asynchronous vectorized execution for high throughput, and flexible wrappers for easy extensibility. GEM also features a diverse suite of environments, robust integrated tools, and single-file example scripts demonstrating using GEM with five popular RL training frameworks. Along with this, we also provide a set of baselines across 24 environments using REINFORCE with Return Batch Normalization (ReBN), which -- unlike GRPO -- is compatible with the full RL setting of dense per-turn rewards and offers better credit assignment. We further conduct apple-to-apple benchmarking of PPO, GRPO and REINFORCE in both single- and multi-turn settings using GEM to shed light on the algorithmic designs. Lastly, GEM also functions as a convenient evaluation toolkit besides a training environment. We hope this framework can help accelerate future agentic LLM research.",
+  "publishedAt": "2025-10-01T15:55:57Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 92,
+  "citationCount": 11,
+  "githubStars": 504,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2511.19304",
+  "slug": "autoenv-automated-environments-for-measuring-cross-environment-agent-learning",
+  "title": "AutoEnv: Automated Environments for Measuring Cross-Environment Agent Learning",
+  "authors": [
+   "Jiayi Zhang",
+   "Yiran Peng",
+   "Fanqi Kong",
+   "Cheng Yang",
+   "Yifan Wu",
+   "Zhaoyang Yu"
+  ],
+  "abstract": "Humans naturally adapt to diverse environments by learning underlying rules across worlds with different dynamics, observations, and reward structures. In contrast, existing agents typically demonstrate improvements via self-evolving within a single domain, implicitly assuming a fixed environment distribution. Cross-environment learning has remained largely unmeasured: there is no standard collection of controllable, heterogeneous environments, nor a unified way to represent how agents learn. We address these gaps in two steps. First, we propose AutoEnv, an automated framework that treats environments as factorizable distributions over transitions, observations, and rewards, enabling low-cost (4.12 USD on average) generation of heterogeneous worlds. Using AutoEnv, we construct AutoEnv-36, a dataset of 36 environments with 358 validated levels, on which seven language models achieve 12-49% normalized reward, demonstrating the challenge of AutoEnv-36. Second, we formalize agent learning as a component-centric process driven by three stages of Selection, Optimization, and Evaluation applied to an improvable agent component. Using this formulation, we design eight learning methods and evaluate them on AutoEnv-36. Empirically, the gain of any single learning method quickly decrease as the number of environments increases, revealing that fixed learning methods do not scale across heterogeneous environments. Environment-adaptive selection of learning methods substantially improves performance but exhibits diminishing returns as the method space expands. These results highlight both the necessity and the current limitations of agent learning for scalable cross-environment generalization, and position AutoEnv and AutoEnv-36 as a testbed for studying cross-environment agent learning. The code is avaiable at https://github.com/FoundationAgents/AutoEnv.",
+  "publishedAt": "2025-11-24T16:54:23Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 92,
+  "citationCount": 13,
+  "githubStars": 67,
+  "pageCount": 39
+ },
+ {
+  "arxivId": "2601.09667",
+  "slug": "collaborative-multi-agent-test-time-reinforcement-learning-for-reasoning",
+  "title": "Collaborative Multi-Agent Test-Time Reinforcement Learning for Reasoning",
+  "authors": [
+   "Zhiyuan Hu",
+   "Yunhai Hu",
+   "Juncheng Liu",
+   "Shuyue Stella Li",
+   "Yucheng Wang",
+   "Zhen Xu"
+  ],
+  "abstract": "Multi-agent systems have evolved into practical LLM-driven collaborators for many applications, gaining robustness from diversity and cross-checking. However, multi-agent RL (MARL) training is resource-intensive and unstable: co-adapting teammates induce non-stationarity, and rewards are often sparse and high-variance. Therefore, we introduce \\textbf{Multi-Agent Test-Time Reinforcement Learning (MATTRL)}, a framework that injects structured textual experience into multi-agent deliberation at inference time. MATTRL forms a multi-expert team of specialists for multi-turn discussions, retrieves and integrates test-time experiences, and reaches consensus for final decision-making. We also study credit assignment for constructing a turn-level experience pool, then reinjecting it into the dialogue. Across challenging benchmarks in medicine, math, and education, MATTRL improves accuracy by an average of 3.67\\% over a multi-agent baseline, and by 8.67\\% over comparable single-agent baselines. Ablation studies examine different credit-assignment schemes and provide a detailed comparison of how they affect training outcomes. MATTRL offers a stable, effective and efficient path to distribution-shift-robust multi-agent reasoning without tuning.",
+  "publishedAt": "2026-01-14T17:57:43Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 92,
+  "citationCount": 3,
+  "githubStars": null,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2601.15876",
+  "slug": "evocua-evolving-computer-use-agents-via-learning-from-scalable-synthetic",
+  "title": "EvoCUA: Evolving Computer Use Agents via Learning from Scalable Synthetic Experience",
+  "authors": [
+   "Taofeng Xue",
+   "Chong Peng",
+   "Mianqiu Huang",
+   "Linsen Guo",
+   "Tiancheng Han",
+   "Haozhe Wang"
+  ],
+  "abstract": "The development of native computer-use agents (CUA) represents a significant leap in multimodal AI. However, their potential is currently bottlenecked by the constraints of static data scaling. Existing paradigms relying primarily on passive imitation of static datasets struggle to capture the intricate causal dynamics inherent in long-horizon computer tasks. In this work, we introduce EvoCUA, a native computer use agentic model. Unlike static imitation, EvoCUA integrates data generation and policy optimization into a self-sustaining evolutionary cycle. To mitigate data scarcity, we develop a verifiable synthesis engine that autonomously generates diverse tasks coupled with executable validators. To enable large-scale experience acquisition, we design a scalable infrastructure orchestrating tens of thousands of asynchronous sandbox rollouts. Building on these massive trajectories, we propose an iterative evolving learning strategy to efficiently internalize this experience. This mechanism dynamically regulates policy updates by identifying capability boundaries -- reinforcing successful routines while transforming failure trajectories into rich supervision through error analysis and self-correction. Empirical evaluations on the OSWorld benchmark demonstrate that EvoCUA achieves a success rate of 56.7%, establishing a new open-source state-of-the-art. Notably, EvoCUA significantly outperforms the previous best open-source model, OpenCUA-72B (45.0%), and surpasses leading closed-weights models such as UI-TARS-2 (53.1%). Crucially, our results underscore the generalizability of this approach: the evolving paradigm driven by learning from experience yields consistent performance gains across foundation models of varying scales, establishing a robust and scalable path for advancing native agent capabilities.",
+  "publishedAt": "2026-01-22T11:36:43Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 92,
+  "citationCount": 31,
+  "githubStars": 336,
+  "pageCount": 26
+ },
+ {
+  "arxivId": "2602.23866",
+  "slug": "swe-rebench-v2-language-agnostic-swe-task-collection-at-scale",
+  "title": "SWE-rebench V2: Language-Agnostic SWE Task Collection at Scale",
+  "authors": [
+   "Ibragim Badertdinov",
+   "Maksim Nekrashevich",
+   "Anton Shevtsov",
+   "Alexander Golubev"
+  ],
+  "abstract": "Software engineering agents (SWE) are improving rapidly, with recent gains largely driven by reinforcement learning (RL). However, RL training is constrained by the scarcity of large-scale task collections with reproducible execution environments and reliable test suites. Although a growing number of benchmarks have emerged, datasets suitable for training remain limited in scale and diversity or often target a limited set of high-resource language ecosystems. We introduce SWE-rebench V2, a language-agnostic automated pipeline for harvesting executable real-world SWE tasks and constructing RL training environments at scale. The pipeline synthesizes repository-specific installation and test procedures via an interactive setup agent, and filters unsound instances using an ensemble of LLM judges, validated against human-verified SWE-bench annotations. Using this pipeline, we construct a dataset of 32,079 tasks spanning 20 languages and 3,617 repositories, with pre-built images for reproducible execution. To further scale training data, we additionally release 120,000+ tasks with installation instructions, fail-to-pass tests and rich metadata, where the problem statement is generated based on the original pull request description. We validate the collected instances through a diagnostic study that covers a subset of tasks in five programming languages across seven popular models, and provide instance-level metadata that flags common confounders such as overly restrictive tests and underspecified descriptions. We release the datasets, the collection and execution code, and associated artifacts to enable large-scale training of SWE agents across diverse languages and repositories.",
+  "publishedAt": "2026-02-27T10:06:10Z",
+  "primaryArxivCategory": [
+   "cs.SE",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 92,
+  "citationCount": 11,
+  "githubStars": 76,
+  "pageCount": 24
+ },
+ {
+  "arxivId": "2603.23497",
+  "slug": "wildworld-a-large-scale-dataset-for-dynamic-world-modeling-with-actions-and",
+  "title": "WildWorld: A Large-Scale Dataset for Dynamic World Modeling with Actions and Explicit State toward Generative ARPG",
+  "authors": [
+   "Zhen Li",
+   "Zian Meng",
+   "Shuwei Shi",
+   "Wenshuo Peng",
+   "Yuwei Wu",
+   "Bo Zheng"
+  ],
+  "abstract": "Dynamical systems theory and reinforcement learning view world evolution as latent-state dynamics driven by actions, with visual observations providing partial information about the state. Recent video world models attempt to learn this action-conditioned dynamics from data. However, existing datasets rarely match the requirement: they typically lack diverse and semantically meaningful action spaces, and actions are directly tied to visual observations rather than mediated by underlying states. As a result, actions are often entangled with pixel-level changes, making it difficult for models to learn structured world dynamics and maintain consistent evolution over long horizons. In this paper, we propose WildWorld, a large-scale action-conditioned world modeling dataset with explicit state annotations, automatically collected from a photorealistic AAA action role-playing game (Monster Hunter: Wilds). WildWorld contains over 108 million frames and features more than 450 actions, including movement, attacks, and skill casting, together with synchronized per-frame annotations of character skeletons, world states, camera poses, and depth maps. We further derive WildBench to evaluate models through Action Following and State Alignment. Extensive experiments reveal persistent challenges in modeling semantically rich actions and maintaining long-horizon state consistency, highlighting the need for state-aware video generation. The project page is https://shandaai.github.io/wildworld-project/.",
+  "publishedAt": "2026-03-24T17:58:25Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 92,
+  "citationCount": 6,
+  "githubStars": 420,
+  "pageCount": 13
+ },
+ {
+  "arxivId": "2603.28589",
+  "slug": "towards-a-medical-ai-scientist",
+  "title": "Towards a Medical AI Scientist",
+  "authors": [
+   "Hongtao Wu",
+   "Boyun Zheng",
+   "Dingjie Song",
+   "Yu Jiang",
+   "Jianfeng Gao",
+   "Lei Xing"
+  ],
+  "abstract": "Autonomous systems that generate scientific hypotheses, conduct experiments, and draft manuscripts have recently emerged as a promising paradigm for accelerating discovery. However, existing AI Scientists remain largely domain-agnostic, limiting their applicability to clinical medicine, where research is required to be grounded in medical evidence with specialized data modalities. In this work, we introduce Medical AI Scientist, the first autonomous research framework tailored to clinical autonomous research. It enables clinically grounded ideation by transforming extensively surveyed literature into actionable evidence through clinician-engineer co-reasoning mechanism, which improves the traceability of generated research ideas. It further facilitates evidence-grounded manuscript drafting guided by structured medical compositional conventions and ethical policies. The framework operates under 3 research modes, namely paper-based reproduction, literature-inspired innovation, and task-driven exploration, each corresponding to a distinct level of automated scientific inquiry with progressively increasing autonomy. Comprehensive evaluations by both large language models and human experts demonstrate that the ideas generated by the Medical AI Scientist are of substantially higher quality than those produced by commercial LLMs across 171 cases, 19 clinical tasks, and 6 data modalities. Meanwhile, our system achieves strong alignment between the proposed method and its implementation, while also demonstrating significantly higher success rates in executable experiments. Double-blind evaluations by human experts and the Stanford Agentic Reviewer suggest that the generated manuscripts approach MICCAI-level quality, while consistently surpassing those from ISBI and BIBM. The proposed Medical AI Scientist highlights the potential of leveraging AI for autonomous scientific discovery in healthcare.",
+  "publishedAt": "2026-03-30T15:37:25Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 92,
+  "citationCount": 4,
+  "githubStars": null,
+  "pageCount": 30
+ },
+ {
+  "arxivId": "2604.28185",
+  "slug": "visual-generation-in-the-new-era-an-evolution-from-atomic-mapping-to-agentic",
+  "title": "Visual Generation in the New Era: An Evolution from Atomic Mapping to Agentic World Modeling",
+  "authors": [
+   "Keming Wu",
+   "Zuhao Yang",
+   "Kaichen Zhang",
+   "Shizun Wang",
+   "Haowei Zhu",
+   "Sicong Leng"
+  ],
+  "abstract": "Recent visual generation models have made major progress in photorealism, typography, instruction following, and interactive editing, yet they still struggle with spatial reasoning, persistent state, long-horizon consistency, and causal understanding. We argue that the field should move beyond appearance synthesis toward intelligent visual generation: plausible visuals grounded in structure, dynamics, domain knowledge, and causal relations. To frame this shift, we introduce a five-level taxonomy: Atomic Generation, Conditional Generation, In-Context Generation, Agentic Generation, and World-Modeling Generation, progressing from passive renderers to interactive, agentic, world-aware generators. We analyze key technical drivers, including flow matching, unified understanding-and-generation models, improved visual representations, post-training, reward modeling, data curation, synthetic data distillation, and sampling acceleration. We further show that current evaluations often overestimate progress by emphasizing perceptual quality while missing structural, temporal, and causal failures. By combining benchmark review, in-the-wild stress tests, and expert-constrained case studies, this roadmap offers a capability-centered lens for understanding, evaluating, and advancing the next generation of intelligent visual generation systems.",
+  "publishedAt": "2026-04-30T17:59:02Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 92,
+  "citationCount": 4,
+  "githubStars": 128,
+  "pageCount": 129
+ },
+ {
+  "arxivId": "2607.17250",
+  "slug": "evolvingworld-an-open-schema-framework-for-co-evolving-role-play-agents-and",
+  "title": "EvolvingWorld: An Open-Schema Framework for Co-Evolving Role-Play Agents and World Model in Interactive Literary World",
+  "authors": [
+   "Qing Zong",
+   "Yue Guo",
+   "Mengxin Yang",
+   "Yiwen Guo",
+   "Yangqiu Song"
+  ],
+  "abstract": "This paper introduces EvolvingWorld, a framework and benchmark for character and world co-evolution in interactive literary worlds. Existing systems either treat interactive literary simulation as static persona imitation or isolated scene generation, failing to capture how characters and worlds evolve together over time. To address this, EvolvingWorld models literary simulation as a long-horizon process where characters interact, scenes progress, and character and world states are persistently updated. Unlike prior systems relying on fixed schemas, EvolvingWorld adopts an open-schema framework to support simulation across diverse literary worlds. The framework consists of two coupled modules: a Character Agent for multi-character role-play and persistent profile evolution, and an LLM-based World Model for global and location/entity-level state maintenance and scene progression. Based on this architecture, we formulate 7 trainable tasks for scene initialization, interaction generation, and state update. We construct a dataset from 57 books, producing 138,596 supervised training samples and 222 snapshots for testing. Furthermore, we introduce a trajectory-level LLM-as-Judge evaluation protocol spanning 10 dimensions and 20 metrics. Experiments show that EvolvingWorld can improve long-horizon simulation by effectively maintaining persistent, coherent character and world development.",
+  "publishedAt": "2026-07-19T13:40:34Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 92,
+  "citationCount": 0,
+  "githubStars": 18,
+  "pageCount": 51
+ }
+]

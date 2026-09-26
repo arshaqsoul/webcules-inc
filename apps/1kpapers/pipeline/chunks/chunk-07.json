@@ -1,0 +1,728 @@
+[
+ {
+  "arxivId": "2509.25454",
+  "slug": "deepsearch-overcome-the-bottleneck-of-reinforcement-learning-with-verifiable",
+  "title": "DeepSearch: Overcome the Bottleneck of Reinforcement Learning with Verifiable Rewards via Monte Carlo Tree Search",
+  "authors": [
+   "Fang Wu",
+   "Weihao Xuan",
+   "Heli Qi",
+   "Ximing Lu",
+   "Aaron Tu",
+   "Li Erran Li"
+  ],
+  "abstract": "Although RLVR has become an essential component for developing advanced reasoning skills in language models, contemporary studies have documented training plateaus after thousands of optimization steps, i.e., notable decreases in performance gains despite increased computational investment. This limitation stems from the sparse exploration patterns inherent in current RLVR practices, where models rely on limited rollouts that often miss critical reasoning paths and fail to provide systematic coverage of the solution space. We present DeepSearch, a framework that integrates Monte Carlo Tree Search (MCTS) directly into RLVR training. In contrast to existing methods that rely on tree search only at inference, DeepSearch embeds structured search into the training loop, enabling systematic exploration and fine-grained credit assignment across reasoning steps. Through training-time exploration, DeepSearch addresses the fundamental bottleneck of insufficient exploration, which leads to diminishing performance gains over prolonged training. Our contributions include: (1) a global frontier selection strategy that prioritizes promising nodes across the search tree, (2) selection with entropy-based guidance that identifies confident paths for supervision, and (3) adaptive replay buffer training with solution caching for efficiency. Experiments on mathematical reasoning benchmarks show that DeepSearch achieves an average accuracy of 62.95\\% and establishes a new state-of-the-art reasoning model, while using 5.7x fewer GPU hours than extended training approaches. These results highlight the importance of strategic exploration over brute-force scaling and demonstrate the promise of algorithmic innovation for advancing RLVR methodologies. DeepSearch establishes a new direction for scaling reasoning capabilities through systematic search rather than prolonged computation.",
+  "publishedAt": "2025-09-29T20:00:29Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 147,
+  "citationCount": 10,
+  "githubStars": 34,
+  "pageCount": 26
+ },
+ {
+  "arxivId": "2510.05684",
+  "slug": "d2e-scaling-vision-action-pretraining-on-desktop-data-for-transfer-to-embodied",
+  "title": "D2E: Scaling Vision-Action Pretraining on Desktop Data for Transfer to Embodied AI",
+  "authors": [
+   "Suhwan Choi",
+   "Jaeyoon Jung",
+   "Haebin Seong",
+   "Minchan Kim",
+   "Minyeong Kim",
+   "Yongjun Cho"
+  ],
+  "abstract": "Large language models leverage internet-scale text data, yet embodied AI remains constrained by the prohibitive costs of physical trajectory collection. Desktop environments -- particularly gaming -- offer a compelling alternative: they provide rich sensorimotor interactions at scale while maintaining the structured observation-action coupling essential for embodied learning. We present D2E (Desktop to Embodied AI), a framework that demonstrates desktop interactions can serve as an effective pretraining substrate for robotics embodied AI tasks. Unlike prior work that remained domain-specific (e.g., VPT for Minecraft) or kept data proprietary (e.g., SIMA), D2E establishes a complete pipeline from scalable desktop data collection to verified transfer in embodied domains. Our framework comprises three components: (1) the OWA Toolkit that unifies diverse desktop interactions into a standardized format with 152x compression, (2) the Generalist-IDM that achieves strong zero-shot generalization across unseen games through timestamp-based event prediction, enabling internet-scale pseudo-labeling, and (3) VAPT that transfers desktop-pretrained representations to physical manipulation and navigation. Using 1.3K+ hours of data (259 hours of human demonstrations and 1K+ hours of pseudo-labeled gameplay), our 1B-parameter model achieves 96.6% success on LIBERO manipulation and 83.3% on CANVAS navigation, matching or surpassing models up to 7x larger, such as π_{0} (3.3B) and OpenVLA (7B). These results demonstrate that sensorimotor primitives learned from digital interactions transfer effectively to real-world physical tasks, establishing desktop pretraining as a practical paradigm for embodied AI. All resources are publicly available at https://worv-ai.github.io/d2e.",
+  "publishedAt": "2025-10-07T08:40:33Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CV",
+   "cs.RO"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 147,
+  "citationCount": 0,
+  "githubStars": 90,
+  "pageCount": 30
+ },
+ {
+  "arxivId": "2603.27027",
+  "slug": "taps-task-aware-proposal-distributions-for-speculative-sampling",
+  "title": "TAPS: Task Aware Proposal Distributions for Speculative Sampling",
+  "authors": [
+   "Mohamad Zbib",
+   "Mohamad Bazzi",
+   "Ammar Mohanna",
+   "Hasan Abed Al Kader Hammoud",
+   "Bernard Ghanem"
+  ],
+  "abstract": "Speculative decoding accelerates autoregressive generation by letting a lightweight draft model propose future tokens that a larger target model then verifies in parallel. In practice, however, draft models are usually trained on broad generic corpora, which leaves it unclear how much speculative decoding quality depends on the draft training distribution. We study this question with lightweight HASS and EAGLE-2 drafters trained on MathInstruct, ShareGPT, and mixed-data variants, evaluated on MT-Bench, GSM8K, MATH-500, and SVAMP. Measured by acceptance length, task-specific training yields clear specialization: MathInstruct-trained drafts are strongest on reasoning benchmarks, while ShareGPT-trained drafts are strongest on MT-Bench. Mixed-data training improves robustness, but larger mixtures do not dominate across decoding temperatures. We also study how to combine specialized drafters at inference time. Naive checkpoint averaging performs poorly, whereas confidence-based routing improves over single-domain drafts and merged-tree verification yields the highest acceptance length overall for both backbones. Finally, confidence is a more useful routing signal than entropy: rejected tokens tend to have higher entropy, but confidence produces much clearer benchmark-level routing decisions. These results show that speculative decoding quality depends not only on draft architecture, but also on the match between draft training data and downstream workload, and that specialized drafters are better combined at inference time than in weight space.",
+  "publishedAt": "2026-03-27T22:34:20Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 147,
+  "citationCount": 0,
+  "githubStars": 8,
+  "pageCount": 21
+ },
+ {
+  "arxivId": "2605.14747",
+  "slug": "video2gui-synthesizing-large-scale-interaction-trajectories-for-generalized",
+  "title": "Video2GUI: Synthesizing Large-Scale Interaction Trajectories for Generalized GUI Agent Pretraining",
+  "authors": [
+   "Weimin Xiong",
+   "Shuhao Gu",
+   "Bowen Ye",
+   "Zihao Yue",
+   "Lei Li",
+   "Feifan Song"
+  ],
+  "abstract": "Recent advances in multimodal large language models have driven growing interest in graphical user interface (GUI) agents, yet their generalization remains constrained by the scarcity of large-scale training data spanning diverse real-world applications. Existing datasets rely heavily on costly manual annotations and are typically confined to narrow domains. To address this challenge, we propose Video2GUI, a fully automated framework that extracts grounded GUI interaction trajectories directly from unlabeled Internet videos. Video2GUI employs a coarse-to-fine filtering strategy to identify high-quality GUI tutorial videos and convert them into structured agent trajectories. Applying this pipeline to 500 million video metadata entries, we construct WildGUI, a large-scale dataset containing 12 million interaction trajectories spanning over 1,500 applications and websites. Pre-training Qwen2.5-VL and Mimo-VL on WildGUI yields consistent improvements of 5-20% across multiple GUI grounding and action benchmarks, matching or surpassing state-of-the-art performance. We will release both the WildGUI dataset and the Video2GUI pipeline to support future research of GUI agents.",
+  "publishedAt": "2026-05-14T12:14:24Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI",
+   "cs.CV",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 147,
+  "citationCount": 2,
+  "githubStars": 38,
+  "pageCount": 30
+ },
+ {
+  "arxivId": "2508.10433",
+  "slug": "we-math-2-0-a-versatile-mathbook-system-for-incentivizing-visual-mathematical",
+  "title": "We-Math 2.0: A Versatile MathBook System for Incentivizing Visual Mathematical Reasoning",
+  "authors": [
+   "Runqi Qiao",
+   "Qiuna Tan",
+   "Peiqing Yang",
+   "Yanzi Wang",
+   "Xiaowan Wang",
+   "Enhui Wan"
+  ],
+  "abstract": "Multimodal Large Language Models (MLLMs) have demonstrated impressive capabilities across various tasks, but still struggle with complex mathematical reasoning. Existing research primarily focuses on dataset construction and method optimization, often overlooking two critical aspects: comprehensive knowledge-driven design and model-centric data space modeling. In this paper, we introduce We-Math 2.0, a unified system that integrates a structured mathematical knowledge system, model-centric data space modeling, and a reinforcement learning (RL)-based training paradigm to comprehensively enhance the mathematical reasoning abilities of MLLMs. The key contributions of We-Math 2.0 are fourfold: (1) MathBook Knowledge System: We construct a five-level hierarchical system encompassing 491 knowledge points and 1,819 fundamental principles. (2) MathBook-Standard & Pro: We develop MathBook-Standard, a dataset that ensures broad conceptual coverage and flexibility through dual expansion. Additionally, we define a three-dimensional difficulty space and generate 7 progressive variants per problem to build MathBook-Pro, a challenging dataset for robust training. (3) MathBook-RL: We propose a two-stage RL framework comprising: (i) Cold-Start Fine-tuning, which aligns the model with knowledge-oriented chain-of-thought reasoning; and (ii) Progressive Alignment RL, leveraging average-reward learning and dynamic data scheduling to achieve progressive alignment across difficulty levels. (4) MathBookEval: We introduce a comprehensive benchmark covering all 491 knowledge points with diverse reasoning step distributions. Experimental results show that MathBook-RL performs competitively with existing baselines on four widely-used benchmarks and achieves strong results on MathBookEval, suggesting promising generalization in mathematical reasoning.",
+  "publishedAt": "2025-08-14T08:15:41Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CV",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 146,
+  "citationCount": 30,
+  "githubStars": 170,
+  "pageCount": 44
+ },
+ {
+  "arxivId": "2508.10711",
+  "slug": "nextstep-1-toward-autoregressive-image-generation-with-continuous-tokens-at",
+  "title": "NextStep-1: Toward Autoregressive Image Generation with Continuous Tokens at Scale",
+  "authors": [
+   "NextStep Team",
+   "Chunrui Han",
+   "Guopeng Li",
+   "Jingwei Wu",
+   "Quan Sun",
+   "Yan Cai"
+  ],
+  "abstract": "Prevailing autoregressive (AR) models for text-to-image generation either rely on heavy, computationally-intensive diffusion models to process continuous image tokens, or employ vector quantization (VQ) to obtain discrete tokens with quantization loss. In this paper, we push the autoregressive paradigm forward with NextStep-1, a 14B autoregressive model paired with a 157M flow matching head, training on discrete text tokens and continuous image tokens with next-token prediction objectives. NextStep-1 achieves state-of-the-art performance for autoregressive models in text-to-image generation tasks, exhibiting strong capabilities in high-fidelity image synthesis. Furthermore, our method shows strong performance in image editing, highlighting the power and versatility of our unified approach. To facilitate open research, we will release our code and models to the community.",
+  "publishedAt": "2025-08-14T14:54:22Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 146,
+  "citationCount": 52,
+  "githubStars": 694,
+  "pageCount": 25
+ },
+ {
+  "arxivId": "2605.27365",
+  "slug": "locateanything-fast-and-high-quality-vision-language-grounding-with-parallel",
+  "title": "LocateAnything: Fast and High-Quality Vision-Language Grounding with Parallel Box Decoding",
+  "authors": [
+   "Shihao Wang",
+   "Shilong Liu",
+   "Yuanguo Kuang",
+   "Xinyu Wei",
+   "Yangzhou Liu",
+   "Zhiqi Li"
+  ],
+  "abstract": "Vision-language models (VLMs) commonly formulate visual grounding and detection as a coordinate-token generation problem, serializing each 2D box into multiple 1D tokens that are learned and decoded largely independently. This token-by-token decoding mismatches the coupled structure of box geometry and creates a practical inference bottleneck due to strictly sequential generation. We introduce LocateAnything, a unified generative grounding and detection framework based on Parallel Box Decoding (PBD). By decoding geometric elements such as bounding boxes and points as atomic units in a single step, LocateAnything preserves intra-box geometric coherence and unlocks substantial parallelism. We show that PBD improves both decoding throughput and localization accuracy. We further develop a scalable data engine and curate LocateAnything-Data, a large-scale dataset with more than 138 million training samples, substantially increasing data diversity for high-precision localization. Extensive evaluations show that LocateAnything advances the speed-accuracy frontier, achieving significantly higher decoding throughput while improving high-IoU localization quality across diverse benchmarks. The results highlight the complementary benefits of Parallel Box Decoding and large-scale training data in enabling efficient and precise unified visual grounding and detection.",
+  "publishedAt": "2026-05-26T17:59:12Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI",
+   "cs.LG",
+   "cs.RO"
+  ],
+  "officialLab": "NVIDIA",
+  "hfUpvotes": 146,
+  "citationCount": 7,
+  "githubStars": null,
+  "pageCount": 42
+ },
+ {
+  "arxivId": "2605.30280",
+  "slug": "qwen-vla-unifying-vision-language-action-modeling-across-tasks-environments",
+  "title": "Qwen-VLA: Unifying Vision-Language-Action Modeling across Tasks, Environments, and Robot Embodiments",
+  "authors": [
+   "Qiuyue Wang",
+   "Mingsheng Li",
+   "Jian Guan",
+   "Jinhui Ye",
+   "Sicheng Xie",
+   "Yitao Liu"
+  ],
+  "abstract": "Embodied intelligence is often studied through specialized models for individual tasks such as manipulation or navigation, resulting in fragmented capabilities and limited generalization across tasks, environments, and robot embodiments. In this work, we study whether heterogeneous embodied decision-making problems can be unified within a single vision-language-action model. We present Qwen-VLA, a unified embodied foundation model that extends Qwen's vision-language modeling stack from perception, understanding, and reasoning to continuous action and trajectory generation through a DiT-based action decoder. Qwen-VLA is trained with a large-scale joint pretraining recipe over diverse data sources, including robotics manipulation trajectories, human egocentric demonstrations, synthetic simulation data, vision-and-language navigation data, trajectory-centric supervision, and auxiliary vision-language data. To support multiple robot platforms, we introduce embodiment-aware prompt conditioning, where robot-specific textual descriptions specify the current embodiment and control convention. We further cast manipulation, navigation, and trajectory prediction into a unified action-and-trajectory prediction framework, enabling transferable visual grounding, spatial reasoning, and continuous action generation across robot morphologies, task families, and environments. Experiments on manipulation, navigation, and trajectory-centric benchmarks show consistent multi-task performance and out-of-distribution generalization under variations in scene layout, background, lighting, object configuration, and robot embodiment. Qwen-VLA-Instruct achieves 97.9% on LIBERO, 73.7% on Simpler-WidowX, 86.1%/87.2% on RoboTwin-Easy/Hard, 69.0% OSR on R2R, 59.6% SR on RxR, 76.9% average OOD success in real-world ALOHA experiments, and 26.6% zero-shot success on DOMINO dynamic manipulation.",
+  "publishedAt": "2026-05-28T17:36:31Z",
+  "primaryArxivCategory": [
+   "cs.RO",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": "Alibaba / Qwen",
+  "hfUpvotes": 146,
+  "citationCount": 20,
+  "githubStars": null,
+  "pageCount": 34
+ },
+ {
+  "arxivId": "2603.03143",
+  "slug": "edit-in-2d-verify-in-3d-reinforcement-learning-for-multi-view-consistent-scene",
+  "title": "Edit in 2D, Verify in 3D: Reinforcement Learning for Multi-view Consistent Scene Editing",
+  "authors": [
+   "Jiyuan Wang",
+   "Chunyu Lin",
+   "Lei Sun",
+   "Zhi Cao",
+   "Yuyang Yin",
+   "Lang Nie"
+  ],
+  "abstract": "Leveraging the priors of 2D diffusion models for 3D editing has emerged as a promising paradigm. However, multi-view consistency remains challenging in edited results, and the extreme scarcity of paired 3D-consistent editing data makes supervised fine-tuning (SFT) impractical, despite its effectiveness for editing tasks. In this paper, we observe that, while generating multi-view consistent 3D content is highly challenging, verifying 3D consistency is tractable, naturally positioning reinforcement learning (RL) as a feasible solution. Motivated by this, we propose RL3DEdit, a single-pass framework driven by RL optimization with novel rewards derived from the 3D foundation model, VGGT. Specifically, we leverage VGGT's robust priors learned from massive real-world data, feed the edited images into it, and utilize the output confidence maps and pose estimation errors as reward signals, effectively anchoring the 2D editing priors onto a 3D-consistent manifold via RL. Extensive experiments demonstrate that RL3DEdit achieves stable multi-view consistency and outperforms state-of-the-art methods in editing quality with high efficiency. To promote the development of 3D editing, we will release the code and model.",
+  "publishedAt": "2026-03-03T16:31:10Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 145,
+  "citationCount": 7,
+  "githubStars": 203,
+  "pageCount": 32
+ },
+ {
+  "arxivId": "2605.15298",
+  "slug": "physbrain-1-0-technical-report",
+  "title": "PhysBrain 1.0 Technical Report",
+  "authors": [
+   "Shijie Lian",
+   "Bin Yu",
+   "Xiaopeng Lin",
+   "Changti Wu",
+   "Hang Yuan",
+   "Xiaolin Hu"
+  ],
+  "abstract": "Vision-language-action models have advanced rapidly, but robot trajectories alone provide limited coverage for learning broad physical understanding. PhysBrain 1.0 studies a complementary route: converting large-scale human egocentric video into structured physical commonsense supervision before robot adaptation. Our data engine extracts scene elements, spatial dynamics, action execution, and depth-aware relations, then turns them into question-answer supervision for training PhysBrain VLMs. The resulting physical priors are further transferred to VLA policies through a capability-preserving and language-sensitive adaptation design. Across multimodal QA benchmarks and embodied control benchmarks, including ERQA, PhysBench, SimplerEnv-WidowX, LIBERO, and RoboCasa, PhysBrain 1.0 achieves SOTA results and shows especially strong out-of-domain performance on SimplerEnv. These results suggest that scaling physical commonsense from human interaction video can provide an effective bridge from multimodal understanding to robot action.",
+  "publishedAt": "2026-05-14T18:11:47Z",
+  "primaryArxivCategory": [
+   "cs.RO",
+   "cs.AI",
+   "cs.CL",
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 145,
+  "citationCount": 0,
+  "githubStars": 37,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2508.05748",
+  "slug": "webwatcher-breaking-new-frontier-of-vision-language-deep-research-agent",
+  "title": "WebWatcher: Breaking New Frontier of Vision-Language Deep Research Agent",
+  "authors": [
+   "Xinyu Geng",
+   "Peng Xia",
+   "Zhen Zhang",
+   "Xinyu Wang",
+   "Qiuchen Wang",
+   "Ruixue Ding"
+  ],
+  "abstract": "Web agents such as Deep Research have demonstrated superhuman cognitive abilities, capable of solving highly challenging information-seeking problems. However, most research remains primarily text-centric, overlooking visual information in the real world. This makes multimodal Deep Research highly challenging, as such agents require much stronger reasoning abilities in perception, logic, knowledge, and the use of more sophisticated tools compared to text-based agents. To address this limitation, we introduce WebWatcher, a multi-modal Agent for Deep Research equipped with enhanced visual-language reasoning capabilities. It leverages high-quality synthetic multimodal trajectories for efficient cold start training, utilizes various tools for deep reasoning, and further enhances generalization through reinforcement learning. To better evaluate the capabilities of multimodal agents, we propose BrowseComp-VL, a benchmark with BrowseComp-style that requires complex information retrieval involving both visual and textual information. Experimental results show that WebWatcher significantly outperforms proprietary baseline, RAG workflow and open-source agents in four challenging VQA benchmarks, which paves the way for solving complex multimodal information-seeking tasks.",
+  "publishedAt": "2025-08-07T18:03:50Z",
+  "primaryArxivCategory": [
+   "cs.IR"
+  ],
+  "officialLab": "Alibaba / Qwen",
+  "hfUpvotes": 144,
+  "citationCount": 101,
+  "githubStars": 19791,
+  "pageCount": 27
+ },
+ {
+  "arxivId": "2508.21148",
+  "slug": "a-survey-of-scientific-large-language-models-from-data-foundations-to-agent",
+  "title": "A Survey of Scientific Large Language Models: From Data Foundations to Agent Frontiers",
+  "authors": [
+   "Ming Hu",
+   "Chenglong Ma",
+   "Wei Li",
+   "Wanghan Xu",
+   "Jiamin Wu",
+   "Jucheng Hu"
+  ],
+  "abstract": "Scientific Large Language Models (Sci-LLMs) are transforming how knowledge is represented, integrated, and applied in scientific research, yet their progress is shaped by the complex nature of scientific data. This survey presents a comprehensive, data-centric synthesis that reframes the development of Sci-LLMs as a co-evolution between models and their underlying data substrate. We formulate a unified taxonomy of scientific data and a hierarchical model of scientific knowledge, emphasizing the multimodal, cross-scale, and domain-specific challenges that differentiate scientific corpora from general natural language processing datasets. We systematically review recent Sci-LLMs, from general-purpose foundations to specialized models across diverse scientific disciplines, alongside an extensive analysis of over 270 pre-/post-training datasets, showing why Sci-LLMs pose distinct demands -- heterogeneous, multi-scale, uncertainty-laden corpora that require representations preserving domain invariance and enabling cross-modal reasoning. On evaluation, we examine over 190 benchmark datasets and trace a shift from static exams toward process- and discovery-oriented assessments with advanced evaluation protocols. These data-centric analyses highlight persistent issues in scientific data development and discuss emerging solutions involving semi-automated annotation pipelines and expert validation. Finally, we outline a paradigm shift toward closed-loop systems where autonomous agents based on Sci-LLMs actively experiment, validate, and contribute to a living, evolving knowledge base. Collectively, this work provides a roadmap for building trustworthy, continually evolving artificial intelligence (AI) systems that function as a true partner in accelerating scientific discovery.",
+  "publishedAt": "2025-08-28T18:30:52Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 144,
+  "citationCount": 26,
+  "githubStars": 458,
+  "pageCount": 95
+ },
+ {
+  "arxivId": "2604.11297",
+  "slug": "the-past-is-not-past-memory-enhanced-dynamic-reward-shaping",
+  "title": "The Past Is Not Past: Memory-Enhanced Dynamic Reward Shaping",
+  "authors": [
+   "Yang Liu",
+   "Enxi Wang",
+   "Yufei Gao",
+   "Weixin Zhang",
+   "Bo Wang",
+   "Zhiyuan Zeng"
+  ],
+  "abstract": "Despite the success of reinforcement learning for large language models, a common failure mode is reduced sampling diversity, where the policy repeatedly generates similar erroneous behaviors. Classical entropy regularization encourages randomness under the current policy, but does not explicitly discourage recurrent failure patterns across rollouts. We propose MEDS, a Memory-Enhanced Dynamic reward Shaping framework that incorporates historical behavioral signals into reward design. By storing and leveraging intermediate model representations, we capture features of past rollouts and use density-based clustering to identify frequently recurring error patterns. Rollouts assigned to more prevalent error clusters are penalized more heavily, encouraging broader exploration while reducing repeated mistakes. Across five datasets and three base models, MEDS consistently improves average performance over existing baselines, achieving gains of up to 4.13 pass@1 points and 4.37 pass@128 points. Additional analyses using both LLM-based annotations and quantitative diversity metrics show that MEDS increases behavioral diversity during sampling.",
+  "publishedAt": "2026-04-13T10:59:28Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 144,
+  "citationCount": 1,
+  "githubStars": 142,
+  "pageCount": 27
+ },
+ {
+  "arxivId": "2605.03042",
+  "slug": "aris-autonomous-research-via-adversarial-multi-agent-collaboration",
+  "title": "ARIS: Autonomous Research via Adversarial Multi-Agent Collaboration",
+  "authors": [
+   "Ruofeng Yang",
+   "Yongcan Li",
+   "Shuai Li"
+  ],
+  "abstract": "This report describes ARIS (Auto-Research-in-sleep), an open-source research harness for autonomous research, including its architecture, assurance mechanisms, and early deployment experience. The performance of agent systems built on LLMs depends on both the model weights and the harness around them, which governs what information to store, retrieve, and present to the model. For long-horizon research workflows, the central failure mode is not a visible breakdown but a plausible unsupported success: a long-running agent can produce claims whose evidential support is incomplete, misreported, or silently inherited from the executor's framing. Therefore, we present ARIS as a research harness that coordinates machine-learning research workflows through cross-model adversarial collaboration as a default configuration: an executor model drives forward progress while a reviewer from a different model family is recommended to critique intermediate artifacts and request revisions. ARIS has three architectural layers. The execution layer provides more than 65 reusable Markdown-defined skills, model integrations via MCP, a persistent research wiki for iterative reuse of prior findings, and deterministic figure generation. The orchestration layer coordinates five end-to-end workflows with adjustable effort settings and configurable routing to reviewer models. The assurance layer includes a three-stage process for checking whether experimental claims are supported by evidence: integrity verification, result-to-claim mapping, and claim auditing that cross-checks manuscript statements against the claim ledger and raw evidence, as well as a five-pass scientific-editing pipeline, mathematical-proof checks, and visual inspection of the rendered PDF. A prototype self-improvement loop records research traces and proposes harness improvements that are adopted only after reviewer approval.",
+  "publishedAt": "2026-05-04T18:10:15Z",
+  "primaryArxivCategory": [
+   "cs.SE",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 144,
+  "citationCount": 9,
+  "githubStars": 14322,
+  "pageCount": 21
+ },
+ {
+  "arxivId": "2607.03118",
+  "slug": "vidu-s1-a-real-time-interactive-video-generation-model",
+  "title": "Vidu S1: A Real-Time Interactive Video Generation Model",
+  "authors": [
+   "Jintao Zhang",
+   "Kai Jiang",
+   "Jintao Chen",
+   "Xu Wang",
+   "Yang Luo",
+   "Yuji Wang"
+  ],
+  "abstract": "We introduce Vidu S1, a real-time interactive video generation model supporting voice control of digital characters. Users can control video generation content at any moment through voice instructions. Vidu S1 supports infinite-length real-time video generation without blurring, drift, or visual distortion. Built with TurboDiffusion and TurboServe, Vidu S1 outputs 540p real-time videos at up to 42 FPS on regular consumer GPUs. Users can upload custom images of real people, anime, and pets, and choose different voice tones for personalized experiences. Experiments show that Vidu S1 achieves the best performance across all test metrics while fully meeting real-time inference requirements. A playable online demo is available at https://vidu.com/vidu-stream.",
+  "publishedAt": "2026-07-03T08:58:06Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 144,
+  "citationCount": 2,
+  "githubStars": 240,
+  "pageCount": 13
+ },
+ {
+  "arxivId": "2604.11784",
+  "slug": "clawgui-a-unified-framework-for-training-evaluating-and-deploying-gui-agents",
+  "title": "ClawGUI: A Unified Framework for Training, Evaluating, and Deploying GUI Agents",
+  "authors": [
+   "Fei Tang",
+   "Zhiqiong Lu",
+   "Boxuan Zhang",
+   "Weiming Lu",
+   "Jun Xiao",
+   "Yueting Zhuang"
+  ],
+  "abstract": "GUI agents drive applications through their visual interfaces instead of programmatic APIs, interacting with arbitrary software via taps, swipes, and keystrokes, reaching a long tail of applications that CLI-based agents cannot. Yet progress in this area is bottlenecked less by modeling capacity than by the absence of a coherent full-stack infrastructure: online RL training suffers from environment instability and closed pipelines, evaluation protocols drift silently across works, and trained agents rarely reach real users on real devices. We present \\textbf{ClawGUI}, an open-source framework addressing these three gaps within a single harness. \\textbf{ClawGUI-RL} provides the first open-source GUI agent RL infrastructure with validated support for both parallel virtual environments and real physical devices, integrating GiGPO with a Process Reward Model for dense step-level supervision. \\textbf{ClawGUI-Eval} enforces a fully standardized evaluation pipeline across 6 benchmarks and 11+ models, achieving 95.8\\% reproduction against official baselines. \\textbf{ClawGUI-Agent} brings trained agents to Android, HarmonyOS, and iOS through 12+ chat platforms with hybrid CLI-GUI control and persistent personalized memory. Trained end to end within this pipeline, \\textbf{ClawGUI-2B} achieves 17.1\\% Success Rate on MobileWorld GUI-Only, outperforming the same-scale MAI-UI-2B baseline by 6.0\\%.",
+  "publishedAt": "2026-04-13T17:52:04Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.CL",
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 143,
+  "citationCount": 10,
+  "githubStars": null,
+  "pageCount": 21
+ },
+ {
+  "arxivId": "2606.13681",
+  "slug": "evoarena-tracking-memory-evolution-for-robust-llm-agents-in-dynamic-environments",
+  "title": "EvoArena: Tracking Memory Evolution for Robust LLM Agents in Dynamic Environments",
+  "authors": [
+   "Jundong Xu",
+   "Qingchuan Li",
+   "Jiaying Wu",
+   "Yihuai Lan",
+   "Shuyue Stella Li",
+   "Huichi Zhou"
+  ],
+  "abstract": "Large language model (LLM) agents have achieved strong performance on a wide range of benchmarks, yet most evaluations assume static environments. In contrast, real-world deployment is inherently dynamic, requiring agents to continually align their knowledge, skills, and behavior with changing environments and updated task conditions. To address this gap, we introduce EvoArena, a benchmark suite that models environment changes as sequences of progressive updates across terminal, software, and social domains. We further propose EvoMem, a patch-based memory paradigm that records memory evolution as structured update histories, enabling agents to reason about environmental evolution through changes in their memory. Experiments show that current agents struggle on EvoArena, achieving an average accuracy of 39.6% across evolving terminal, software, and social-preference domains. EvoMem consistently improves performance, yielding an average gain of 1.5% on EvoArena and also improving standard benchmarks such as GAIA and LoCoMo by 6.1% and 4.8%. Beyond individual tasks, EvoMem further improves chain-level accuracy by 3.7% on EvoArena, where success requires completing a consecutive sequence of related evolutionary subtasks. Mechanistic analysis shows that EvoMem improves evidence capture in the memory, indicating better preservation of complete evolving environment states. Our results highlight the importance of modeling evolution in both evaluation and memory for reliable agent deployment.",
+  "publishedAt": "2026-06-11T17:59:59Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 143,
+  "citationCount": 0,
+  "githubStars": 21,
+  "pageCount": 49
+ },
+ {
+  "arxivId": "2509.25541",
+  "slug": "vision-zero-scalable-vlm-self-improvement-via-strategic-gamified-self-play",
+  "title": "Vision-Zero: Scalable VLM Self-Improvement via Strategic Gamified Self-Play",
+  "authors": [
+   "Qinsi Wang",
+   "Bo Liu",
+   "Tianyi Zhou",
+   "Jing Shi",
+   "Yueqian Lin",
+   "Yiran Chen"
+  ],
+  "abstract": "Although reinforcement learning (RL) has emerged as a promising approach for improving vision-language models (VLMs) and multimodal large language models (MLLMs), current methods rely heavily on manually curated datasets and costly human verification, which limits scalable self-improvement in multimodal systems. To address this challenge, we propose Vision-Zero, a label-free, domain-agnostic multi-agent self-play framework for self-evolving VLMs through competitive visual games generated from arbitrary image inputs. Specifically, Vision-Zero encompasses three main attributes: (1) Strategic Self-Play Framework: Vision-Zero trains VLMs in \"Who Is the Spy\"-style games, where the models engage in strategic reasoning and actions across multiple roles. Through interactive gameplay, models autonomously generate their training data without human annotation. (2) Gameplay from Arbitrary Images: Unlike existing gamified frameworks, Vision-Zero can generate games from arbitrary images, thereby enhancing the model's reasoning ability across diverse domains and showing strong generalization to different tasks. We demonstrate this versatility using three distinct types of image datasets: CLEVR-based synthetic scenes, charts, and real-world images. (3) Sustainable Performance Gain: We introduce Iterative Self-Play Policy Optimization (Iterative-SPO), a novel training algorithm that alternates between Self-Play and reinforcement learning with verifiable rewards (RLVR), mitigating the performance plateau often seen in self-play-only training and achieving sustained long-term improvements. Despite using label-free data, Vision-Zero achieves state-of-the-art performance on reasoning, chart question answering, and vision-centric understanding tasks, surpassing other annotation-based methods. Models and code have been released at https://github.com/wangqinsi1/Vision-Zero.",
+  "publishedAt": "2025-09-29T21:55:55Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 142,
+  "citationCount": 33,
+  "githubStars": 165,
+  "pageCount": 29
+ },
+ {
+  "arxivId": "2511.06221",
+  "slug": "tiny-model-big-logic-diversity-driven-optimization-elicits-large-model",
+  "title": "Tiny Model, Big Logic: Diversity-Driven Optimization Elicits Large-Model Reasoning Ability in VibeThinker-1.5B",
+  "authors": [
+   "Sen Xu",
+   "Yi Zhou",
+   "Wei Wang",
+   "Jixin Min",
+   "Zhibin Yin",
+   "Yingwei Dai"
+  ],
+  "abstract": "Challenging the prevailing consensus that small models inherently lack robust reasoning, this report introduces VibeThinker-1.5B, a 1.5B-parameter dense model developed via our Spectrum-to-Signal Principle (SSP). This challenges the prevailing approach of scaling model parameters to enhance capabilities, as seen in models like DeepSeek R1 (671B) and Kimi k2 (>1T). The SSP framework first employs a Two-Stage Diversity-Exploring Distillation (SFT) to generate a broad spectrum of solutions, followed by MaxEnt-Guided Policy Optimization (RL) to amplify the correct signal. With a total training cost of only $7,800, VibeThinker-1.5B demonstrates superior reasoning capabilities compared to closed-source models like Magistral Medium and Claude Opus 4, and performs on par with open-source models like GPT OSS-20B Medium. Remarkably, it surpasses the 400x larger DeepSeek R1 on three math benchmarks: AIME24 (80.3 vs. 79.8), AIME25 (74.4 vs. 70.0), and HMMT25 (50.4 vs. 41.7). This is a substantial improvement over its base model (6.7, 4.3, and 0.6, respectively). On LiveCodeBench V6, it scores 51.1, outperforming Magistral Medium's 50.3 and its base model's 0.0. These findings demonstrate that small models can achieve reasoning capabilities comparable to large models, drastically reducing training and inference costs and thereby democratizing advanced AI research.",
+  "publishedAt": "2025-11-09T04:37:36Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 142,
+  "citationCount": 8,
+  "githubStars": 1547,
+  "pageCount": 13
+ },
+ {
+  "arxivId": "2605.10616",
+  "slug": "multabench-benchmarking-multimodal-tabular-learning-with-text-and-image",
+  "title": "MulTaBench: Benchmarking Multimodal Tabular Learning with Text and Image",
+  "authors": [
+   "Alan Arazi",
+   "Eilam Shapira",
+   "Shoham Grunblat",
+   "Mor Ventura",
+   "Elad Hoffer",
+   "Gioia Blayer"
+  ],
+  "abstract": "Tabular Foundation Models have recently established the state of the art in supervised tabular learning, by leveraging pretraining to learn generalizable representations of numerical and categorical structured data. However, they lack native support for unstructured modalities such as text and image, and rely on frozen, pretrained embeddings to process them. On established Multimodal Tabular Learning benchmarks, we show that tuning the embeddings to the task improves performance. Existing benchmarks, however, often focus on the mere co-occurrence of modalities; this leads to high variance across datasets and masks the benefits of task-specific tuning. To address this gap, we introduce MulTaBench, a benchmark of 40 datasets, split equally between image-tabular and text-tabular tasks. We focus on predictive tasks where the modalities provide complementary predictive signal, and where generic embeddings lose critical information, necessitating Target-Aware Representations that are aligned with the task. Our experimental results demonstrate that the gains from target-aware representation tuning generalize across both text and image modalities, several tabular learners, encoder scales, and embedding dimensions. MulTaBench constitutes the largest image-tabular benchmarking effort to date, spanning high-impact domains such as healthcare and e-commerce. It is designed to enable the research of novel architectures which incorporate joint modeling and target-aware representations, paving the way for the development of novel Multimodal Tabular Foundation Models.",
+  "publishedAt": "2026-05-11T14:12:05Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.CL",
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 142,
+  "citationCount": 2,
+  "githubStars": null,
+  "pageCount": 45
+ },
+ {
+  "arxivId": "2606.02800",
+  "slug": "cosmos-3-omnimodal-world-models-for-physical-ai",
+  "title": "Cosmos 3: Omnimodal World Models for Physical AI",
+  "authors": [
+   "NVIDIA",
+   ":",
+   "Aditi",
+   "Niket Agarwal",
+   "Arslan Ali",
+   "Jon Allen"
+  ],
+  "abstract": "We introduce Cosmos 3, a family of omnimodal world models designed to jointly process and generate language, image, video, audio, and action sequences within a unified mixture-of-transformers architecture. By supporting highly flexible input-output configurations, Cosmos 3 seamlessly unifies critical modalities for Physical AI -- effectively subsuming vision-language models, video generators, world simulators, and world-action models into a single framework. Our evaluation demonstrates that Cosmos 3 establishes a new state-of-the-art across a diverse suite of understanding and generation tasks, demonstrating omnimodal world models as scalable, general-purpose backbones for embodied agents. Our post-trained Cosmos 3 models were ranked as the best open-source Text-to-Image and Image-to-Video models by Artificial Analysis, and the best policy model by RoboArena at the time the technical report was written. To accelerate open research and deployment in Physical AI, we make our code, model checkpoints, curated synthetic datasets, and evaluation benchmark available under the Linux Foundation's OpenMDW-1.1 License at https://github.com/nvidia/cosmos and https://huggingface.co/collections/nvidia/cosmos3. The project website is available at https://research.nvidia.com/labs/cosmos-lab/cosmos3.",
+  "publishedAt": "2026-06-01T19:12:30Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI",
+   "cs.LG",
+   "cs.MM",
+   "cs.RO"
+  ],
+  "officialLab": "NVIDIA",
+  "hfUpvotes": 142,
+  "citationCount": 36,
+  "githubStars": null,
+  "pageCount": 139
+ },
+ {
+  "arxivId": "2606.29538",
+  "slug": "resource2skill-distilling-executable-agent-skills-from-human-created",
+  "title": "RESOURCE2SKILL: Distilling Executable Agent Skills from Human-Created Multimodal Resources",
+  "authors": [
+   "Yijia Fan",
+   "Zonglin Di",
+   "Zimo Wen",
+   "Yifan Yang",
+   "Mingxi Cheng",
+   "Qi Dai"
+  ],
+  "abstract": "Skills are a useful abstraction for software agents, turning human and agent experience into reusable procedural knowledge. Yet existing skill libraries are mostly hand-written, text-centric, or derived from agent traces, leaving tutorial videos and other multimodal human resources largely underused. We present RESOURCE2SKILL, a framework that distills multimodal resources, including tutorial videos, repositories, articles, and reference artifacts, into executable skills for software agents. RESOURCE2SKILL organizes these skills as a hierarchical multimodal Skill Wiki, where each entry combines structured text, code, visual examples, metadata, and provenance. This design preserves complementary signals from different resources: videos capture temporal operations and visual effects, code captures executable tool patterns, and articles or artifacts provide conceptual and stylistic grounding. At inference time, agents retrieve and compose relevant skills from the wiki; when coverage is insufficient, the same construction operator can acquire new skills online. Across seven practical authoring domains, RESOURCE2SKILL improves average overall score by +11.9 percentage points over no-skill agents and outperforms strong harness baselines in 26 of 28 main-aggregate model-domain cells. Ablations confirm the value of multimodal skill format, hierarchical organization, source diversity, selection strategy, and online acquisition.",
+  "publishedAt": "2026-06-28T17:59:21Z",
+  "primaryArxivCategory": [
+   "cs.SE",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 142,
+  "citationCount": 0,
+  "githubStars": 368,
+  "pageCount": 31
+ },
+ {
+  "arxivId": "2508.03680",
+  "slug": "agent-lightning-train-any-ai-agents-with-reinforcement-learning",
+  "title": "Agent Lightning: Train ANY AI Agents with Reinforcement Learning",
+  "authors": [
+   "Xufang Luo",
+   "Yuge Zhang",
+   "Zhiyuan He",
+   "Zilong Wang",
+   "Siyun Zhao",
+   "Dongsheng Li"
+  ],
+  "abstract": "We present Agent Lightning, a flexible and extensible framework that enables Reinforcement Learning (RL)-based training of Large Language Models (LLMs) for any AI agent. Unlike existing methods that tightly couple RL training with agent or rely on sequence concatenation with masking, Agent Lightning achieves complete decoupling between agent execution and training, allowing seamless integration with existing agents developed via diverse ways (e.g., using frameworks like LangChain, OpenAI Agents SDK, AutoGen, and building from scratch) with almost ZERO code modifications. By formulating agent execution as Markov decision process, we define an unified data interface and propose a hierarchical RL algorithm, LightningRL, which contains a credit assignment module, allowing us to decompose trajectories generated by ANY agents into training transition. This enables RL to handle complex interaction logic, such as multi-agent scenarios and dynamic workflows. For the system design, we introduce a Training-Agent Disaggregation architecture, and brings agent observability frameworks into agent runtime, providing a standardized agent finetuning interface. Experiments across text-to-SQL, retrieval-augmented generation, and math tool-use tasks demonstrate stable, continuous improvements, showcasing the framework's potential for real-world agent training and deployment.",
+  "publishedAt": "2025-08-05T17:50:13Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 141,
+  "citationCount": 58,
+  "githubStars": 17456,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2510.12403",
+  "slug": "robot-learning-a-tutorial",
+  "title": "Robot Learning: A Tutorial",
+  "authors": [
+   "Francesco Capuano",
+   "Caroline Pascal",
+   "Adil Zouitine",
+   "Thomas Wolf",
+   "Michel Aractingi"
+  ],
+  "abstract": "Robot learning is at an inflection point, driven by rapid advancements in machine learning and the growing availability of large-scale robotics data. This shift from classical, model-based methods to data-driven, learning-based paradigms is unlocking unprecedented capabilities in autonomous systems. This tutorial navigates the landscape of modern robot learning, charting a course from the foundational principles of Reinforcement Learning and Behavioral Cloning to generalist, language-conditioned models capable of operating across diverse tasks and even robot embodiments. This work is intended as a guide for researchers and practitioners, and our goal is to equip the reader with the conceptual understanding and practical tools necessary to contribute to developments in robot learning, with ready-to-use examples implemented in $\\texttt{lerobot}$.",
+  "publishedAt": "2025-10-14T11:36:46Z",
+  "primaryArxivCategory": [
+   "cs.RO",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 141,
+  "citationCount": 5,
+  "githubStars": 563,
+  "pageCount": 76
+ },
+ {
+  "arxivId": "2602.07026",
+  "slug": "modality-gap-driven-subspace-alignment-training-paradigm-for-multimodal-large",
+  "title": "Modality Gap-Driven Subspace Alignment Training Paradigm For Multimodal Large Language Models",
+  "authors": [
+   "Xiaomin Yu",
+   "Yi Xin",
+   "Yuhui Zhang",
+   "Wenjie Zhang",
+   "Chonghan Liu",
+   "Hanzhen Zhao"
+  ],
+  "abstract": "Despite the success of multimodal contrastive learning in aligning visual and linguistic representations, a persistent geometric anomaly, the Modality Gap, remains: embeddings of distinct modalities expressing identical semantics occupy systematically offset regions. Prior approaches to bridge this gap are largely limited by oversimplified isotropic assumptions, hindering their application in large-scale scenarios. In this paper, we address these limitations by precisely characterizing the geometric shape of the modality gap and leveraging it for efficient model scaling. First, we propose the Fixed-frame Modality Gap Theory, which decomposes the modality gap within a frozen reference frame into stable biases and anisotropic residuals. Guided by this precise modeling, we introduce ReAlign, a training-free modality alignment strategy. Utilizing statistics from massive unpaired data, ReAlign aligns text representation into the image representation distribution via a three-step process comprising Anchor, Trace, and Centroid Alignment, thereby explicitly rectifying geometric misalignment. Building on ReAlign, we propose ReVision, a scalable training paradigm for Multimodal Large Language Models~(MLLMs). ReVision integrates ReAlign into the pretraining stage, enabling the model to learn the distribution of visual representations from unpaired text before visual instruction tuning, without the need for large-scale, high-quality image-text pairs. Our framework demonstrates that statistically aligned unpaired data can effectively substitute for expensive image-text pairs, offering a robust path for the efficient scaling of MLLMs.",
+  "publishedAt": "2026-02-02T13:59:39Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI",
+   "cs.MM"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 141,
+  "citationCount": 9,
+  "githubStars": 76,
+  "pageCount": 35
+ },
+ {
+  "arxivId": "2603.17187",
+  "slug": "metaclaw-just-talk-an-agent-that-meta-learns-and-evolves-in-the-wild",
+  "title": "MetaClaw: Just Talk -- An Agent That Meta-Learns and Evolves in the Wild",
+  "authors": [
+   "Peng Xia",
+   "Jianwen Chen",
+   "Xinyu Yang",
+   "Haoqin Tu",
+   "Jiaqi Liu",
+   "Kaiwen Xiong"
+  ],
+  "abstract": "Large language model (LLM) agents are increasingly used for complex tasks, yet deployed agents often remain static, failing to adapt as user needs evolve. This creates a tension between the need for continuous service and the necessity of updating capabilities to match shifting task distributions. On platforms like OpenClaw, which handle diverse workloads across 20+ channels, existing methods either store raw trajectories without distilling knowledge, maintain static skill libraries, or require disruptive downtime for retraining. We present MetaClaw, a continual meta-learning framework that jointly evolves a base LLM policy and a library of reusable behavioral skills. MetaClaw employs two complementary mechanisms. Skill-driven fast adaptation analyzes failure trajectories via an LLM evolver to synthesize new skills, enabling immediate improvement with zero downtime. Opportunistic policy optimization performs gradient-based updates via cloud LoRA fine-tuning and Reinforcement Learning with a Process Reward Model (RL-PRM). This is triggered during user-inactive windows by the Opportunistic Meta-Learning Scheduler (OMLS), which monitors system inactivity and calendar data. These mechanisms are mutually reinforcing: a refined policy generates better trajectories for skill synthesis, while richer skills provide higher-quality data for policy optimization. To prevent data contamination, a versioning mechanism separates support and query data. Built on a proxy-based architecture, MetaClaw scales to production-size LLMs without local GPUs. Experiments on MetaClaw-Bench and AutoResearchClaw show that skill-driven adaptation improves accuracy by up to 32% relative. The full pipeline advances Kimi-K2.5 accuracy from 21.4% to 40.6% and increases composite robustness by 18.3%. Code is available at https://github.com/aiming-lab/MetaClaw.",
+  "publishedAt": "2026-03-17T22:30:30Z",
+  "primaryArxivCategory": [
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 141,
+  "citationCount": 20,
+  "githubStars": 3516,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2606.19195",
+  "slug": "moebius-0-2b-lightweight-image-inpainting-framework-with-10b-level-performance",
+  "title": "Moebius: 0.2B Lightweight Image Inpainting Framework with 10B-Level Performance",
+  "authors": [
+   "Kangsheng Duan",
+   "Ziyang Xu",
+   "Wenyu Liu",
+   "Xiaohu Ruan",
+   "Xiaoxin Chen",
+   "Xinggang Wang"
+  ],
+  "abstract": "While 10B-level industrial foundation models have pushed the boundaries of image inpainting, their prohibitive computational costs severely hinder practical deployment. Constructing a highly optimized task-specific specialist offers a promising solution; however, extreme structural compression inevitably triggers a severe representation bottleneck. To conquer this, we propose Moebius, a highly efficient lightweight inpainting framework. We systematically reconstruct the diffusion backbone by introducing the Local-$λ$ Mix Interaction ($LλMI$) block. Comprising Local-$λ$ and Interactive-$λ$ modules, it elegantly summarizes spatial contexts and global semantic priors into fixed-size linear matrices, preserving complex latent interactions while drastically shedding parameters. Furthermore, to unlock the full representational capacity of this highly compact architecture, we synergistically pair it with an adaptive multi-granularity distillation strategy. Operating strictly within the latent space to avoid expensive pixel-space decoding, this strategy dynamically balances multiple gradient-based losses to achieve high-fidelity alignment. Extensive experiments across natural and portrait benchmarks demonstrate that this optimal synergy enables Moebius to rival or even surpass the generation quality of the 10B-level industrial generalist FLUX.1-Fill-Dev. Remarkably, Moebius achieves this using less than 2\\% of the parameters (0.22B vs. 11.9B) while delivering a $>15\\times$ acceleration in total inference time, setting a new efficiency standard for high-fidelity inpainting. Project page at https://hustvl.github.io/Moebius.",
+  "publishedAt": "2026-06-17T15:35:38Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 141,
+  "citationCount": 0,
+  "githubStars": 508,
+  "pageCount": 24
+ },
+ {
+  "arxivId": "2511.13254",
+  "slug": "souper-model-how-simple-arithmetic-unlocks-state-of-the-art-llm-performance",
+  "title": "Souper-Model: How Simple Arithmetic Unlocks State-of-the-Art LLM Performance",
+  "authors": [
+   "Shalini Maiti",
+   "Amar Budhiraja",
+   "Bhavul Gauri",
+   "Gaurav Chaurasia",
+   "Anton Protopopov",
+   "Alexis Audran-Reiss"
+  ],
+  "abstract": "Large Language Models (LLMs) have demonstrated remarkable capabilities across diverse domains, but their training remains resource- and time-intensive, requiring massive compute power and careful orchestration of training procedures. Model souping-the practice of averaging weights from multiple models of the same architecture-has emerged as a promising pre- and post-training technique that can enhance performance without expensive retraining. In this paper, we introduce Soup Of Category Experts (SoCE), a principled approach for model souping that utilizes benchmark composition to identify optimal model candidates and applies non-uniform weighted averaging to maximize performance. Contrary to previous uniform-averaging approaches, our method leverages the observation that benchmark categories often exhibit low inter-correlations in model performance. SoCE identifies \"expert\" models for each weakly-correlated category cluster and combines them using optimized weighted averaging rather than uniform weights. We demonstrate that the proposed method improves performance and robustness across multiple domains, including multilingual capabilities, tool calling, and math and achieves state-of-the-art results on the Berkeley Function Calling Leaderboard.",
+  "publishedAt": "2025-11-17T11:13:34Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": "Meta AI / FAIR",
+  "hfUpvotes": 140,
+  "citationCount": 4,
+  "githubStars": 73,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2607.16617",
+  "slug": "dataflow-harness-a-grounded-code-agent-platform-for-constructing-editable-llm",
+  "title": "DataFlow-Harness: A Grounded Code-Agent Platform for Constructing Editable LLM Data Pipelines",
+  "authors": [
+   "Runming He",
+   "Zhen Hao Wong",
+   "Hao Liang",
+   "Zimo Meng",
+   "Chengyu Shen",
+   "Xiaochen Ma"
+  ],
+  "abstract": "Large language models (LLMs) are increasingly used to automate data-processing workflows, yet coding agents typically produce scripts that are not automatically materialized as persistent, editable platform artifacts. We call this disconnect the \\textit{NL2Pipeline gap}. To bridge it, we introduce \\textsc{DataFlow-Harness}, a platform that guides an LLM agent to construct platform-native directed acyclic graphs (DAGs) through typed, incremental mutations rather than free-form scripts. The platform combines \\textsc{DataFlow-Skills} for procedural guidance, a Model Context Protocol (MCP) layer that exposes the live operator registry and current pipeline state, and \\textsc{DataFlow-WebUI}, which synchronizes conversational authoring with a visual DAG editor. On a 12-task data-engineering benchmark, \\textsc{DataFlow-Harness} achieves a 93.3\\% observed end-to-end pass rate. Relative to Vanilla Claude Code, it reduces measured monetary cost by 72.5\\% and generation latency by 49.9\\%; its observed pass rate is within 0.9 percentage points of the Context-Aware Claude Code baseline while its cost is 42.8\\% lower. Per-task analysis indicates that Skills are most useful when construction depends on implicit procedural knowledge. These results show that live platform grounding can produce persistent, editable workflow artifacts with an observed reliability close to script-generation baselines and with lower measured construction cost and latency.",
+  "publishedAt": "2026-07-18T03:30:19Z",
+  "primaryArxivCategory": [
+   "cs.SE",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 140,
+  "citationCount": 0,
+  "githubStars": null,
+  "pageCount": 13
+ },
+ {
+  "arxivId": "2508.02193",
+  "slug": "seed-diffusion-a-large-scale-diffusion-language-model-with-high-speed-inference",
+  "title": "Seed Diffusion: A Large-Scale Diffusion Language Model with High-Speed Inference",
+  "authors": [
+   "Yuxuan Song",
+   "Zheng Zhang",
+   "Cheng Luo",
+   "Pengyang Gao",
+   "Fan Xia",
+   "Hao Luo"
+  ],
+  "abstract": "We present Seed Diffusion Preview, a large-scale language model based on discrete-state diffusion, offering remarkably fast inference speed. Thanks to non-sequential, parallel generation, discrete diffusion models provide a notable speedup to mitigate the inherent latency of token-by-token decoding, as demonstrated recently (e.g., Mercury Coder, Gemini Diffusion). Seed Diffusion Preview achieves an inference speed of 2,146 token/s over H20 GPUs while maintaining competitive performance across a sweep of standard code evaluation benchmarks, significantly faster than contemporary Mercury and Gemini Diffusion, establishing new state of the art on the speed-quality Pareto frontier for code models.",
+  "publishedAt": "2025-08-04T08:43:01Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 139,
+  "citationCount": 163,
+  "githubStars": null,
+  "pageCount": 11
+ }
+]

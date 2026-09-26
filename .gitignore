@@ -47,3 +47,8 @@ apps/dashboard/data/*.db
 
 # detached landing dev server logs
 .dev-server*.log
+
+# 1kpapers: generated storage is build output; pipeline/out/ must not be
+# caught by the generic `out/` rule above (it holds the generated content)
+apps/1kpapers/public/storage/
+!apps/1kpapers/pipeline/out/

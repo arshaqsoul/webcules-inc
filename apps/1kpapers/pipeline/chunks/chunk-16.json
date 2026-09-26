@@ -1,0 +1,696 @@
+[
+ {
+  "arxivId": "2607.26811",
+  "slug": "distillalign-coordinating-mode-covering-and-mode-seeking-in-autoregressive",
+  "title": "DistillAlign: Coordinating Mode Covering and Mode Seeking in Autoregressive Video Distillation",
+  "authors": [
+   "Jiaxing Li",
+   "Kai Zou",
+   "Cindy Zhou",
+   "Kaichen Huang",
+   "Junyao Gao",
+   "Zile Wang"
+  ],
+  "abstract": "Existing autoregressive video distillation methods commonly adopt a Distribution Matching Distillation (DMD)-based multi-stage pipeline. However, they typically decouple the initialization and DMD stages -- which then pursue different target distributions -- and judge the intermediate student mainly by visual scores such as VBench. In this paper, we revisit this design from a distributional perspective. Given the mode-seeking nature of the distribution matching loss, a good initialization should match the mode coverage of the target DMD teacher, rather than merely pursuing high quality. To analyze this, we introduce a distributional evaluation protocol that measures precision and coverage between student and teacher distributions in a shared latent space. It exposes differences hidden by visual scores: some initializations reach high precision but low coverage, leading to suboptimal refinement, while mode-covering ones preserve broader support. Furthermore, even when the target distributions are aligned, DMD's reverse-KL objective can still drive the student toward high-probability teacher regions in late training, reducing coverage and diversity. To address this, we propose joint distillation, which combines DMD's mode-seeking objective with a Consistency Distillation-based mode-covering constraint. Experiments show that our method improves generation quality, coverage, and diversity; notably, even with a Wan-1.3B DMD teacher, it outperforms baselines refined with Wan-14B, underscoring the importance of distributional alignment in autoregressive video distillation.",
+  "publishedAt": "2026-07-29T11:58:47Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 92,
+  "citationCount": 0,
+  "githubStars": 97,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2508.20751",
+  "slug": "pref-grpo-pairwise-preference-reward-based-grpo-for-stable-text-to-image",
+  "title": "Pref-GRPO: Pairwise Preference Reward-based GRPO for Stable Text-to-Image Reinforcement Learning",
+  "authors": [
+   "Yibin Wang",
+   "Zhimin Li",
+   "Yuhang Zang",
+   "Yujie Zhou",
+   "Jiazi Bu",
+   "Chunyu Wang"
+  ],
+  "abstract": "Recent advancements highlight the importance of GRPO-based reinforcement learning methods and benchmarking in enhancing text-to-image (T2I) generation. However, current methods using pointwise reward models (RM) for scoring generated images are susceptible to reward hacking. We reveal that this happens when minimal score differences between images are amplified after normalization, creating illusory advantages that drive the model to over-optimize for trivial gains, ultimately destabilizing the image generation process. To address this, we propose Pref-GRPO, a pairwise preference reward-based GRPO method that shifts the optimization objective from score maximization to preference fitting, ensuring more stable training. In Pref-GRPO, images are pairwise compared within each group using preference RM, and the win rate is used as the reward signal. Extensive experiments demonstrate that PREF-GRPO differentiates subtle image quality differences, providing more stable advantages and mitigating reward hacking. Additionally, existing T2I benchmarks are limited by coarse evaluation criteria, hindering comprehensive model assessment. To solve this, we introduce UniGenBench, a unified T2I benchmark comprising 600 prompts across 5 main themes and 20 subthemes. It evaluates semantic consistency through 10 primary and 27 sub-criteria, leveraging MLLM for benchmark construction and evaluation. Our benchmarks uncover the strengths and weaknesses of both open and closed-source T2I models and validate the effectiveness of Pref-GRPO.",
+  "publishedAt": "2025-08-28T13:11:24Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 91,
+  "citationCount": 90,
+  "githubStars": 276,
+  "pageCount": 14
+ },
+ {
+  "arxivId": "2511.15210",
+  "slug": "unveiling-intrinsic-dimension-of-texts-from-academic-abstract-to-creative-story",
+  "title": "Unveiling Intrinsic Dimension of Texts: from Academic Abstract to Creative Story",
+  "authors": [
+   "Vladislav Pedashenko",
+   "Laida Kushnareva",
+   "Yana Khassan Nibal",
+   "Eduard Tulchinskii",
+   "Kristian Kuznetsov",
+   "Vladislav Zharchinskii"
+  ],
+  "abstract": "Intrinsic dimension (ID) is an important tool in modern LLM analysis, informing studies of training dynamics, scaling behavior, and dataset structure, yet its textual determinants remain underexplored. We provide the first comprehensive study grounding ID in interpretable text properties through cross-encoder analysis, linguistic features, and sparse autoencoders (SAEs). In this work, we establish three key findings. First, ID is complementary to entropy-based metrics: after controlling for length, the two are uncorrelated, with ID capturing geometric complexity orthogonal to prediction quality. Second, ID exhibits robust genre stratification: scientific prose shows low ID (~8), encyclopedic content medium ID (~9), and creative/opinion writing high ID (~10.5) across all models tested. This reveals that contemporary LLMs find scientific text \"representationally simple\" while fiction requires additional degrees of freedom. Third, using SAEs, we identify causal features: scientific signals (formal tone, report templates, statistics) reduce ID; humanized signals (personalization, emotion, narrative) increase it. Steering experiments confirm these effects are causal. Thus, for contemporary models, scientific writing appears comparatively \"easy\", whereas fiction, opinion, and affect add representational degrees of freedom. Our multi-faceted analysis provides practical guidance for the proper use of ID and the sound interpretation of ID-based results.",
+  "publishedAt": "2025-11-19T08:00:40Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 91,
+  "citationCount": 1,
+  "githubStars": null,
+  "pageCount": 26
+ },
+ {
+  "arxivId": "2512.16922",
+  "slug": "next-embedding-prediction-makes-strong-vision-learners",
+  "title": "Next-Embedding Prediction Makes Strong Vision Learners",
+  "authors": [
+   "Sihan Xu",
+   "Ziqiao Ma",
+   "Wenhao Chai",
+   "Xuweiyi Chen",
+   "Weiyang Jin",
+   "Joyce Chai"
+  ],
+  "abstract": "Inspired by the success of generative pretraining in natural language, we ask whether the same principles can yield strong self-supervised visual learners. Instead of training models to output features for downstream use, we train them to generate embeddings to perform predictive tasks directly. This work explores such a shift from learning representations to learning models. Specifically, models learn to predict future patch embeddings conditioned on past ones, using causal masking and stop gradient, which we refer to as Next-Embedding Predictive Autoregression (NEPA). We demonstrate that a simple Transformer pretrained on ImageNet-1k with next embedding prediction as its sole learning objective is effective - no pixel reconstruction, discrete tokens, contrastive loss, or task-specific heads. This formulation retains architectural simplicity and scalability, without requiring additional design complexity. NEPA achieves strong results across tasks, attaining 83.8% and 85.3% top-1 accuracy on ImageNet-1K with ViT-B and ViT-L backbones after fine-tuning, and transferring effectively to semantic segmentation on ADE20K. We believe generative pretraining from embeddings provides a simple, scalable, and potentially modality-agnostic alternative to visual self-supervised learning.",
+  "publishedAt": "2025-12-18T18:59:58Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 91,
+  "citationCount": 13,
+  "githubStars": 340,
+  "pageCount": 15
+ },
+ {
+  "arxivId": "2603.12255",
+  "slug": "spatial-ttt-streaming-visual-based-spatial-intelligence-with-test-time-training",
+  "title": "Spatial-TTT: Streaming Visual-based Spatial Intelligence with Test-Time Training",
+  "authors": [
+   "Fangfu Liu",
+   "Diankun Wu",
+   "Jiawei Chi",
+   "Yimo Cai",
+   "Yi-Hsin Hung",
+   "Xumin Yu"
+  ],
+  "abstract": "Humans perceive and understand real-world spaces through a stream of visual observations. Therefore, the ability to streamingly maintain and update spatial evidence from potentially unbounded video streams is essential for spatial intelligence. The core challenge is not simply longer context windows but how spatial information is selected, organized, and retained over time. In this paper, we propose Spatial-TTT towards streaming visual-based spatial intelligence with test-time training (TTT), which adapts a subset of parameters (fast weights) to capture and organize spatial evidence over long-horizon scene videos. Specifically, we design a hybrid architecture and adopt large-chunk updates parallel with sliding-window attention for efficient spatial video processing. To further promote spatial awareness, we introduce a spatial-predictive mechanism applied to TTT layers with 3D spatiotemporal convolution, which encourages the model to capture geometric correspondence and temporal continuity across frames. Beyond architecture design, we construct a dataset with dense 3D spatial descriptions, which guides the model to update its fast weights to memorize and organize global 3D spatial signals in a structured manner. Extensive experiments demonstrate that Spatial-TTT improves long-horizon spatial understanding and achieves state-of-the-art performance on video spatial benchmarks. Project page: https://liuff19.github.io/Spatial-TTT.",
+  "publishedAt": "2026-03-12T17:58:58Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 91,
+  "citationCount": 3,
+  "githubStars": 249,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2603.14935",
+  "slug": "video-coe-reinforcing-video-event-prediction-via-chain-of-events",
+  "title": "Video-CoE: Reinforcing Video Event Prediction via Chain of Events",
+  "authors": [
+   "Qile Su",
+   "Jing Tang",
+   "Rui Chen",
+   "Lei Sun",
+   "Xiangxiang Chu"
+  ],
+  "abstract": "Despite advances in the application of MLLMs for various video tasks, video event prediction (VEP) remains relatively underexplored. VEP requires the model to perform fine-grained temporal modeling of videos and establish logical relationships between videos and future events, which current MLLMs still struggle with. In this work, we first present a comprehensive evaluation of current leading MLLMs on the VEP task, revealing the reasons behind their inaccurate predictions, including lack of logical reasoning ability for future events prediction and insufficient utilization of visual information. To address these challenges, we propose \\textbf{C}hain \\textbf{o}f \\textbf{E}vents (\\textbf{CoE}) paradigm, which constructs temporal event chains to implicitly enforce MLLM focusing on the visual content and the logical connections between videos and future events, incentivizing model's reasoning capability with multiple training protocols. Experimental results on public benchmarks demonstrate that our method outperforms both leading open-source and commercial MLLMs, establishing a new state-of-the-art on the VEP task. Codes and models will be released soon.",
+  "publishedAt": "2026-03-16T07:38:15Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 91,
+  "citationCount": 2,
+  "githubStars": null,
+  "pageCount": 21
+ },
+ {
+  "arxivId": "2603.16932",
+  "slug": "look-where-it-matters-high-resolution-crops-retrieval-for-efficient-vlms",
+  "title": "Look Where It Matters: High-Resolution Crops Retrieval for Efficient VLMs",
+  "authors": [
+   "Nimrod Shabtay",
+   "Moshe Kimhi",
+   "Artem Spector",
+   "Sivan Haray",
+   "Ehud Rivlin",
+   "Chaim Baskin"
+  ],
+  "abstract": "Vision-language models (VLMs) typically process images at a native high-resolution, forcing a trade-off between accuracy and computational efficiency: high-resolution inputs capture fine details but incur significant computational costs, while low-resolution inputs advocate for efficiency, they potentially miss critical visual information, like small text. We present AwaRes, a spatial-on-demand framework that resolves this accuracy-efficiency trade-off by operating on a low-resolution global view and using tool-calling to retrieve only high-resolution segments needed for a given query. We construct supervised data automatically: a judge compares low- vs.\\ high-resolution answers to label whether cropping is needed, and an oracle grounding model localizes the evidence for the correct answer, which we map to a discrete crop set to form multi-turn tool-use trajectories. We train our framework with cold-start SFT followed by multi-turn GRPO with a composite reward that combines semantic answer correctness with explicit crop-cost penalties. Project page: https://nimrodshabtay.github.io/AwaRes",
+  "publishedAt": "2026-03-14T10:11:32Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 91,
+  "citationCount": 1,
+  "githubStars": 11,
+  "pageCount": 35
+ },
+ {
+  "arxivId": "2604.24819",
+  "slug": "programming-with-data-test-driven-data-engineering-for-self-improving-llms",
+  "title": "Programming with Data: Test-Driven Data Engineering for Self-Improving LLMs from Raw Corpora",
+  "authors": [
+   "Chenkai Pan",
+   "Xinglong Xu",
+   "Yuhang Xu",
+   "Yujun Wu",
+   "Siyuan Li",
+   "Jintao Chen"
+  ],
+  "abstract": "Reliably transferring specialized human knowledge from text into large language models remains a fundamental challenge in artificial intelligence. Fine-tuning on domain corpora has enabled substantial capability gains, but the process operates without feedback: when a model fails on a domain task, there is no method to diagnose what is deficient in the training data, and the only recourse is to add more data indiscriminately. Here we show that when a structured knowledge representation extracted from the source corpus serves as the shared foundation for both training data and evaluation, the complete data-engineering lifecycle maps onto the software development lifecycle in a precise and operative way: training data becomes source code specifying what the model should learn, model training becomes compilation, benchmarking becomes unit testing, and failure-driven data repair becomes debugging. Under this correspondence, model failures decompose into concept-level gaps and reasoning-chain breaks that can be traced back to specific deficiencies in the data and repaired through targeted patches, with each repair cycle producing consistent improvements across model scales and architectures without degrading general capabilities. We formalize this principle as Programming with Data and instantiate it across sixteen disciplines spanning the natural sciences, engineering, biomedicine, and the social sciences, releasing a structured knowledge base, benchmark suite, and training corpus as open resources. By demonstrating that the relationship between training data and model behaviour is structurally traceable and systematically repairable, this work establishes a principled foundation for the reliable engineering of human expertise into language models.",
+  "publishedAt": "2026-04-27T14:05:18Z",
+  "primaryArxivCategory": [
+   "cs.SE",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 91,
+  "citationCount": 1,
+  "githubStars": 162,
+  "pageCount": 57
+ },
+ {
+  "arxivId": "2605.15178",
+  "slug": "sana-wm-efficient-minute-scale-world-modeling-with-hybrid-linear-diffusion",
+  "title": "SANA-WM: Efficient Minute-Scale World Modeling with Hybrid Linear Diffusion Transformer",
+  "authors": [
+   "Haoyi Zhu",
+   "Haozhe Liu",
+   "Yuyang Zhao",
+   "Tian Ye",
+   "Junsong Chen",
+   "Jincheng Yu"
+  ],
+  "abstract": "We introduce SANA-WM, an efficient 2.6B-parameter open-source world model natively trained for one-minute generation, synthesizing high-fidelity, 720p, minute-scale videos with precise camera control. SANA-WM achieves visual quality comparable to large-scale industrial baselines such as LingBot-World and HY-WorldPlay, while significantly improving efficiency. Four core designs drive our architecture: (1) Hybrid Linear Attention combines frame-wise Gated DeltaNet (GDN) with softmax attention for memory-efficient long-context modeling. (2) Dual-Branch Camera Control ensures precise 6-DoF trajectory adherence. (3) Two-Stage Generation Pipeline applies a long-video refiner to stage-1 outputs, improving quality and consistency across sequences. (4) Robust Annotation Pipeline extracts accurate metric-scale 6-DoF camera poses from public videos to yield high-quality, spatiotemporally consistent action labels. Driven by these designs, SANA-WMdemonstrates remarkable efficiency across data, training compute, and inference hardware: it uses only $\\sim$213K public video clips with metric-scale pose supervision, completes training in 15 days on 64 H100s, and generates each 60s clip on a single GPU; its distilled variant can be deployed on a single RTX 5090 with NVFP4 quantization to denoise a 60s 720p clip in 34s. On our one-minute world-model benchmark, SANA-WM demonstrates stronger action-following accuracy than prior open-source baselines and achieves comparable visual quality at $36\\times$ higher throughput for scalable world modeling.",
+  "publishedAt": "2026-05-14T17:58:03Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": "NVIDIA",
+  "hfUpvotes": 91,
+  "citationCount": 13,
+  "githubStars": null,
+  "pageCount": 25
+ },
+ {
+  "arxivId": "2607.06291",
+  "slug": "alayaworld-long-horizon-and-playable-video-world-generation",
+  "title": "AlayaWorld: Long-Horizon and Playable Video World Generation",
+  "authors": [
+   "AlayaWorld Team",
+   "Kaipeng Zhang",
+   "Chuanhao Li",
+   "Yifan Zhan",
+   "Yongtao Ge",
+   "Yuanyang Yin"
+  ],
+  "abstract": "Game worlds have traditionally been built through labor-intensive production pipelines, making them costly to develop, difficult to customization, and expensive to modify after deployment. Recent advances in video world models offer a fundamentally different paradigm. Rather than explicitly authoring every component of a virtual environment, these models autoregressively synthesize future observations conditioned on the current world state and user interactions, enabling playable worlds to be generated online. Trained on both gameplay recordings and real-world videos, they can capture diverse visual appearances and physical dynamics, opening new opportunities for interactive applications beyond gaming, including embodied intelligence. In this paper, we present \\textbf{AlayaWorld}, a full-stack open-source framework for building interactive generative worlds. AlayaWorld enables open-ended real-time interaction, allowing users to freely navigate and perform diverse actions such as combat, spell casting, and monster summoning. The framework unifies the complete development-from data preparation model architecture, model training, inference acceleration, and deployment-within a modular and extensible architecture. Alongside the framework, we release reproducible pipelines, reference implementations, evaluation tools, and comprehensive documentation, establishing a practical foundation for future research and real-time applications of generative world models.",
+  "publishedAt": "2026-07-07T13:59:57Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.HC"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 91,
+  "citationCount": 1,
+  "githubStars": null,
+  "pageCount": 15
+ },
+ {
+  "arxivId": "2607.07820",
+  "slug": "deepsearch-world-self-distillation-for-deep-search-agents-in-a-verifiable",
+  "title": "DeepSearch-World: Self-Distillation for Deep Search Agents in a Verifiable Environment",
+  "authors": [
+   "Xinyu Geng",
+   "Xuanhua He",
+   "Sixiang Chen",
+   "Yanjing Xiao",
+   "Fan Zhang",
+   "Shijue Huang"
+  ],
+  "abstract": "Training tool-use agents to improve from their own experience remains challenging, as supervised fine-tuning relies on fixed teacher-distilled trajectories, while sparse-reward reinforcement learning provides weak supervision for long-horizon interactions. We present DeepSearch-Evolve, a self-distillation framework for web agents built on DeepSearch-World, a deterministic and verifiable environment with reproducible search and page-reading tools. DeepSearch-World contains 420K multi-hop QA tasks constructed from entity-level random walks and supports key agentic cognitive behaviors useful for self-evolving, including progress verification, grounded reflection, and failure recovery. DeepSearch-Evolve iteratively performs trajectory generation, filtering, data mixing, and fine-tuning to train stronger agents. Without distillation from more capable models, DeepSearch-World-9B achieves competitive performance compared with open-source agents, reaching 31.2% on BrowseComp, 61.5% on GAIA, and 93.4% on HotpotQA, showing that verifiable environments enable scalable self-evolution for long-horizon web agents. We will release the environment, 420K training pool, validation set, model, and code to facilitate future research on self-improving deep search agents.",
+  "publishedAt": "2026-07-08T18:03:41Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 91,
+  "citationCount": 1,
+  "githubStars": 8,
+  "pageCount": 26
+ },
+ {
+  "arxivId": "2509.14008",
+  "slug": "hala-technical-report-building-arabic-centric-instruction-translation-models",
+  "title": "Hala Technical Report: Building Arabic-Centric Instruction & Translation Models at Scale",
+  "authors": [
+   "Hasan Abed Al Kader Hammoud",
+   "Mohammad Zbeeb",
+   "Bernard Ghanem"
+  ],
+  "abstract": "We present Hala, a family of Arabic-centric instruction and translation models built with our translate-and-tune pipeline. We first compress a strong AR$\\leftrightarrow$EN teacher to FP8 (yielding $\\sim$2$\\times$ higher throughput with no quality loss) and use it to create high-fidelity bilingual supervision. A lightweight language model LFM2-1.2B is then fine-tuned on this data and used to translate high-quality English instruction sets into Arabic, producing a million-scale corpus tailored to instruction following. We train Hala models at 350M, 700M, 1.2B, and 9B parameters, and apply slerp merging to balance Arabic specialization with base-model strengths. On Arabic-centric benchmarks, Hala achieves state-of-the-art results within both the \"nano\" ($\\leq$2B) and \"small\" (7-9B) categories, outperforming their bases. We release models, data, evaluation, and recipes to accelerate research in Arabic NLP.",
+  "publishedAt": "2025-09-17T14:19:28Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 90,
+  "citationCount": 5,
+  "githubStars": 5,
+  "pageCount": 11
+ },
+ {
+  "arxivId": "2602.03786",
+  "slug": "aorchestra-automating-sub-agent-creation-for-agentic-orchestration",
+  "title": "AOrchestra: Automating Sub-Agent Creation for Agentic Orchestration",
+  "authors": [
+   "Jianhao Ruan",
+   "Zhihao Xu",
+   "Yiran Peng",
+   "Fashen Ren",
+   "Zhaoyang Yu",
+   "Xinbing Liang"
+  ],
+  "abstract": "Language agents have shown strong promise for task automation. Realizing this promise for increasingly complex, long-horizon tasks has driven the rise of a sub-agent-as-tools paradigm for multi-turn task solving. However, existing designs still lack a dynamic abstraction view of sub-agents, thereby hurting adaptability. We address this challenge with a unified, framework-agnostic agent abstraction that models any agent as a tuple Instruction, Context, Tools, Model. This tuple acts as a compositional recipe for capabilities, enabling the system to spawn specialized executors for each task on demand. Building on this abstraction, we introduce an agentic system AOrchestra, where the central orchestrator concretizes the tuple at each step: it curates task-relevant context, selects tools and models, and delegates execution via on-the-fly automatic agent creation. Such designs enable reducing human engineering efforts, and remain framework-agnostic with plug-and-play support for diverse agents as task executors. It also enables a controllable performance-cost trade-off, allowing the system to approach Pareto-efficient. Across three challenging benchmarks (GAIA, SWE-Bench, Terminal-Bench), AOrchestra achieves 16.28% relative improvement against the strongest baseline when paired with Gemini-3-Flash. The code is available at: https://github.com/FoundationAgents/AOrchestra",
+  "publishedAt": "2026-02-03T17:46:16Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 90,
+  "citationCount": 18,
+  "githubStars": 153,
+  "pageCount": 26
+ },
+ {
+  "arxivId": "2602.06036",
+  "slug": "dflash-block-diffusion-for-flash-speculative-decoding",
+  "title": "DFlash: Block Diffusion for Flash Speculative Decoding",
+  "authors": [
+   "Jian Chen",
+   "Yesheng Liang",
+   "Zhijian Liu"
+  ],
+  "abstract": "Autoregressive large language models (LLMs) deliver strong performance but require inherently sequential decoding, leading to high inference latency and poor GPU utilization. Speculative decoding mitigates this bottleneck by using a fast draft model whose outputs are verified in parallel by the target LLM; however, existing methods still rely on autoregressive drafting, which remains sequential and limits practical speedups. Diffusion LLMs offer a promising alternative by enabling parallel generation, but current diffusion models typically underperform compared with autoregressive models. In this paper, we introduce DFlash, a speculative decoding framework that employs a lightweight block diffusion model for parallel drafting. By generating draft tokens in a single forward pass and conditioning the draft model on context features extracted from the target model, DFlash enables efficient drafting with high-quality outputs and higher acceptance rates. Experiments show that DFlash achieves over 6x lossless acceleration across a range of models and tasks, delivering up to 2.5x higher speedup than the state-of-the-art speculative decoding method EAGLE-3.",
+  "publishedAt": "2026-02-05T18:59:30Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 90,
+  "citationCount": 63,
+  "githubStars": 5570,
+  "pageCount": 13
+ },
+ {
+  "arxivId": "2603.03756",
+  "slug": "moose-star-unlocking-tractable-training-for-scientific-discovery-by-breaking",
+  "title": "MOOSE-Star: Unlocking Tractable Training for Scientific Discovery by Breaking the Complexity Barrier",
+  "authors": [
+   "Zonglin Yang",
+   "Lidong Bing"
+  ],
+  "abstract": "While large language models (LLMs) show promise in scientific discovery, existing research focuses on inference or feedback-driven training, leaving the direct modeling of the generative reasoning process, $P(\\text{hypothesis}|\\text{background})$ ($P(h|b)$), unexplored. We demonstrate that directly training $P(h|b)$ is mathematically intractable due to the combinatorial complexity ($O(N^k)$) inherent in retrieving and composing inspirations from a vast knowledge base. To break this barrier, we introduce MOOSE-Star, a unified framework that enables tractable and scalable training of $P(h|b)$, while supporting more scalable inference. In the best case, MOOSE-Star reduces complexity from exponential to logarithmic ($O(\\log N)$) by (1) training on decomposed subtasks derived from the probabilistic equation of discovery, (2) employing motivation-guided hierarchical search to enable logarithmic retrieval and prune irrelevant subspaces, and (3) utilizing bounded composition for robustness against retrieval noise. To facilitate this, we release TOMATO-Star, a dataset of 108,717 decomposed papers (38,400 GPU hours) for training. Empirically, MOOSE-Star scales continuously with training data and inference budget, whereas direct brute-force sampling hits a complexity wall.",
+  "publishedAt": "2026-03-04T06:11:18Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.CE",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 90,
+  "citationCount": 3,
+  "githubStars": 90,
+  "pageCount": 26
+ },
+ {
+  "arxivId": "2605.13831",
+  "slug": "training-long-context-vision-language-models-effectively-with-generalization",
+  "title": "Training Long-Context Vision-Language Models Effectively with Generalization Beyond 128K Context",
+  "authors": [
+   "Zhaowei Wang",
+   "Lishu Luo",
+   "Haodong Duan",
+   "Weiwei Liu",
+   "Sijin Wu",
+   "Ji Luo"
+  ],
+  "abstract": "Long-context modeling is becoming a core capability of modern large vision-language models (LVLMs), enabling sustained context management across long-document understanding, video analysis, and multi-turn tool use in agentic workflows. Yet practical training recipes remain insufficiently explored, particularly for designing and balancing long-context data mixtures. In this work, we present a systematic study of long-context continued pre-training for LVLMs, extending a 7B model from 32K to 128K context with extensive ablations on long-document data. We first show that long-document VQA is substantially more effective than OCR transcription. Building on this observation, our ablations further yield three key findings: i) for sequence-length distribution, balanced data outperforms target-length-focused data (e.g., 128K), suggesting that long-context ability requires generalizable key-information retrieval across various lengths and positions; ii) retrieval remains the primary bottleneck, favoring retrieval-heavy mixtures with modest reasoning data for task diversity; and iii) pure long-document VQA largely preserves short-context capabilities, suggesting that instruction-formatted long data reduces the need for short-data mixing. Based on these findings, we introduce MMProLong, obtained by long-context continued pre-training from Qwen2.5-VL-7B with only a 5B-token budget. MMProLong improves long-document VQA scores by 7.1% and maintains strong performance at 256K and 512K contexts beyond its 128K training window, without additional training. It further generalizes to webpage-based multimodal needle retrieval, long-context vision-text compression, and long-video understanding without task-specific supervision. Overall, our study establishes a practical LongPT recipe and an empirical foundation for advancing long-context vision-language models.",
+  "publishedAt": "2026-05-13T17:52:53Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 90,
+  "citationCount": 0,
+  "githubStars": null,
+  "pageCount": 29
+ },
+ {
+  "arxivId": "2606.12397",
+  "slug": "redesign-mixture-of-experts-routers-with-manifold-power-iteration",
+  "title": "Redesign Mixture-of-Experts Routers with Manifold Power Iteration",
+  "authors": [
+   "Songhao Wu",
+   "Ang Lv",
+   "Ruobing Xie",
+   "Yankai Lin"
+  ],
+  "abstract": "Router is the cornerstone component to the Mixture-of-Experts models. Serving as expert proxies, the rows of the router matrix compute their similarity to the MoE inputs to determine which subset of experts is activated. Ideally, each router row is designed to encode the expert matrix into this representative vector, such that its dot-product with token can better reflect token-expert affinity. However, there exists no design principles to enforce this condensation. In this paper, we propose to align each router row with the principal singular direction of the associated expert, as this direction provides the most expressive mathematical description of a matrix. Based on this principle, we propose a router redesign with Manifold Power Iteration (MPI). Specifically, it introduces a \"Power-then-Retract\" paradigm, where a power iteration step is performed on the router weights, followed by a retraction to impose a norm constraint to ensure both efficiency and stability. Theoretically, we show that MPI drives router rows to converge toward the principal singular directions of associated experts. Empirically, we pretrain MoE model across scales from 1B to 11B parameters to confirm that this alignment facilitates more effective MoE models.",
+  "publishedAt": "2026-06-10T17:57:36Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 90,
+  "citationCount": 0,
+  "githubStars": null,
+  "pageCount": 14
+ },
+ {
+  "arxivId": "2512.15745",
+  "slug": "llada2-0-scaling-up-diffusion-language-models-to-100b",
+  "title": "LLaDA2.0: Scaling Up Diffusion Language Models to 100B",
+  "authors": [
+   "Tiwei Bie",
+   "Maosong Cao",
+   "Kun Chen",
+   "Lun Du",
+   "Mingliang Gong",
+   "Zhuochen Gong"
+  ],
+  "abstract": "This paper presents LLaDA2.0 -- a tuple of discrete diffusion large language models (dLLM) scaling up to 100B total parameters through systematic conversion from auto-regressive (AR) models -- establishing a new paradigm for frontier-scale deployment. Instead of costly training from scratch, LLaDA2.0 upholds knowledge inheritance, progressive adaption and efficiency-aware design principle, and seamless converts a pre-trained AR model into dLLM with a novel 3-phase block-level WSD based training scheme: progressive increasing block-size in block diffusion (warm-up), large-scale full-sequence diffusion (stable) and reverting back to compact-size block diffusion (decay). Along with post-training alignment with SFT and DPO, we obtain LLaDA2.0-mini (16B) and LLaDA2.0-flash (100B), two instruction-tuned Mixture-of-Experts (MoE) variants optimized for practical deployment. By preserving the advantages of parallel decoding, these models deliver superior performance and efficiency at the frontier scale. Both models were open-sourced.",
+  "publishedAt": "2025-12-10T09:26:18Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 89,
+  "citationCount": 123,
+  "githubStars": 501,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2512.20491",
+  "slug": "step-deepresearch-technical-report",
+  "title": "Step-DeepResearch Technical Report",
+  "authors": [
+   "Chen Hu",
+   "Haikuo Du",
+   "Heng Wang",
+   "Lin Lin",
+   "Mingrui Chen",
+   "Peng Liu"
+  ],
+  "abstract": "As LLMs shift toward autonomous agents, Deep Research has emerged as a pivotal metric. However, existing academic benchmarks like BrowseComp often fail to meet real-world demands for open-ended research, which requires robust skills in intent recognition, long-horizon decision-making, and cross-source verification. To address this, we introduce Step-DeepResearch, a cost-effective, end-to-end agent. We propose a Data Synthesis Strategy Based on Atomic Capabilities to reinforce planning and report writing, combined with a progressive training path from agentic mid-training to SFT and RL. Enhanced by a Checklist-style Judger, this approach significantly improves robustness. Furthermore, to bridge the evaluation gap in the Chinese domain, we establish ADR-Bench for realistic deep research scenarios. Experimental results show that Step-DeepResearch (32B) scores 61.4% on Scale AI Research Rubrics. On ADR-Bench, it significantly outperforms comparable models and rivals SOTA closed-source models like OpenAI and Gemini DeepResearch. These findings prove that refined training enables medium-sized models to achieve expert-level capabilities at industry-leading cost-efficiency.",
+  "publishedAt": "2025-12-23T16:32:27Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 89,
+  "citationCount": 11,
+  "githubStars": 569,
+  "pageCount": 27
+ },
+ {
+  "arxivId": "2603.17117",
+  "slug": "mosaicmem-hybrid-spatial-memory-for-controllable-video-world-models",
+  "title": "MosaicMem: Hybrid Spatial Memory for Controllable Video World Models",
+  "authors": [
+   "Wei Yu",
+   "Runjia Qian",
+   "Yumeng Li",
+   "Liquan Wang",
+   "Songheng Yin",
+   "Sri Siddarth Chakaravarthy P"
+  ],
+  "abstract": "Video diffusion models are moving beyond short, plausible clips toward world simulators that must remain consistent under camera motion, revisits, and intervention. Yet spatial memory remains a key bottleneck: explicit 3D structures can improve reprojection-based consistency but struggle to depict moving objects, while implicit memory often produces inaccurate camera motion even with correct poses. We propose Mosaic Memory (MosaicMem), a hybrid spatial memory that lifts patches into 3D for reliable localization and targeted retrieval, while exploiting the model's native conditioning to preserve prompt-following generation. MosaicMem composes spatially aligned patches in the queried view via a patch-and-compose interface, preserving what should persist while allowing the model to inpaint what should evolve. With PRoPE camera conditioning and two new memory alignment methods, experiments show improved pose adherence compared to implicit memory and stronger dynamic modeling than explicit baselines. MosaicMem further enables minute-level navigation, memory-based scene editing, and autoregressive rollout.",
+  "publishedAt": "2026-03-17T20:19:44Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 89,
+  "citationCount": 10,
+  "githubStars": null,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2604.18292",
+  "slug": "agent-world-scaling-real-world-environment-synthesis-for-evolving-general",
+  "title": "Agent-World: Scaling Real-World Environment Synthesis for Evolving General Agent Intelligence",
+  "authors": [
+   "Guanting Dong",
+   "Junting Lu",
+   "Junjie Huang",
+   "Wanjun Zhong",
+   "Longxiang Liu",
+   "Shijue Huang"
+  ],
+  "abstract": "Large language models are increasingly expected to serve as general-purpose agents that interact with external, stateful tool environments. The Model Context Protocol (MCP) and broader agent skills offer a unified interface for connecting agents with scalable real-world services, but training robust agents remains limited by the lack of realistic environments and principled mechanisms for life-long learning. In this paper, we present \\textbf{Agent-World}, a self-evolving training arena for advancing general agent intelligence through scalable environments. Agent-World has two main components: (1) Agentic Environment-Task Discovery, which autonomously explores topic-aligned databases and executable tool ecosystems from thousands of real-world environment themes and synthesizes verifiable tasks with controllable difficulty; and (2) Continuous Self-Evolving Agent Training, which combines multi-environment reinforcement learning with a self-evolving agent arena that automatically identifies capability gaps through dynamic task synthesis and drives targeted learning, enabling the co-evolution of agent policies and environments. Across 23 challenging agent benchmarks, Agent-World-8B and 14B consistently outperforms strong proprietary models and environment scaling baselines. Further analyses reveal scaling trends in relation to environment diversity and self-evolution rounds, offering insights for building general agent intelligence.",
+  "publishedAt": "2026-04-20T14:01:10Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 89,
+  "citationCount": 14,
+  "githubStars": null,
+  "pageCount": 48
+ },
+ {
+  "arxivId": "2509.20427",
+  "slug": "seedream-4-0-toward-next-generation-multimodal-image-generation",
+  "title": "Seedream 4.0: Toward Next-generation Multimodal Image Generation",
+  "authors": [
+   "Team Seedream",
+   ":",
+   "Yunpeng Chen",
+   "Yu Gao",
+   "Lixue Gong",
+   "Meng Guo"
+  ],
+  "abstract": "We introduce Seedream 4.0, an efficient and high-performance multimodal image generation system that unifies text-to-image (T2I) synthesis, image editing, and multi-image composition within a single framework. We develop a highly efficient diffusion transformer with a powerful VAE which also can reduce the number of image tokens considerably. This allows for efficient training of our model, and enables it to fast generate native high-resolution images (e.g., 1K-4K). Seedream 4.0 is pretrained on billions of text-image pairs spanning diverse taxonomies and knowledge-centric concepts. Comprehensive data collection across hundreds of vertical scenarios, coupled with optimized strategies, ensures stable and large-scale training, with strong generalization. By incorporating a carefully fine-tuned VLM model, we perform multi-modal post-training for training both T2I and image editing tasks jointly. For inference acceleration, we integrate adversarial distillation, distribution matching, and quantization, as well as speculative decoding. It achieves an inference time of up to 1.8 seconds for generating a 2K image (without a LLM/VLM as PE model). Comprehensive evaluations reveal that Seedream 4.0 can achieve state-of-the-art results on both T2I and multimodal image editing. In particular, it demonstrates exceptional multimodal capabilities in complex tasks, including precise image editing and in-context reasoning, and also allows for multi-image reference, and can generate multiple output images. This extends traditional T2I systems into an more interactive and multidimensional creative tool, pushing the boundary of generative AI for both creativity and professional applications. We further scale our model and data as Seedream 4.5. Seedream 4.0 and Seedream 4.5 are accessible on Volcano Engine https://www.volcengine.com/experience/ark?launch=seedream.",
+  "publishedAt": "2025-09-24T17:59:04Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 88,
+  "citationCount": 226,
+  "githubStars": null,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2510.27492",
+  "slug": "thinkmorph-emergent-properties-in-multimodal-interleaved-chain-of-thought",
+  "title": "ThinkMorph: Emergent Properties in Multimodal Interleaved Chain-of-Thought Reasoning",
+  "authors": [
+   "Jiawei Gu",
+   "Yunzhuo Hao",
+   "Huichen Will Wang",
+   "Linjie Li",
+   "Michael Qizhe Shieh",
+   "Yejin Choi"
+  ],
+  "abstract": "Multimodal reasoning requires iterative coordination between language and vision, yet it remains unclear what constitutes a meaningful interleaved chain of thought. We posit that text and image thoughts should function as complementary rather than isomorphic modalities that mutually advance reasoning. Guided by this principle, we build ThinkMorph, a unified model fine-tuned on approximately 24K high-quality interleaved reasoning traces spanning tasks with varying visual engagement. ThinkMorph learns to generate progressive text-image reasoning steps that concretely manipulate visual content while maintaining coherent verbal logic. It delivers large gains on vision-centric benchmarks (averaging 34.7 percent over the base model) and generalizes to out-of-domain tasks, matching or surpassing larger and proprietary VLMs. Beyond performance, ThinkMorph exhibits emergent multimodal intelligence, including unseen visual manipulation skills, adaptive switching between reasoning modes, and better test-time scaling through diversified multimodal thoughts. These findings suggest promising directions for characterizing the emergent capabilities of unified models for multimodal reasoning.",
+  "publishedAt": "2025-10-30T17:51:38Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 88,
+  "citationCount": 40,
+  "githubStars": 192,
+  "pageCount": 42
+ },
+ {
+  "arxivId": "2512.18181",
+  "slug": "mace-dance-motion-appearance-cascaded-experts-for-music-driven-dance-video",
+  "title": "MACE-Dance: Motion-Appearance Cascaded Experts for Music-Driven Dance Video Generation",
+  "authors": [
+   "Kaixing Yang",
+   "Jiashu Zhu",
+   "Xulong Tang",
+   "Ziqiao Peng",
+   "Xiangyue Zhang",
+   "Puwei Wang"
+  ],
+  "abstract": "With the rise of online dance-video platforms and rapid advances in AI-generated content (AIGC), music-driven dance generation has emerged as a compelling research direction. Despite substantial progress in related domains such as music-driven 3D dance generation, pose-driven image animation, and audio-driven talking-head synthesis, existing methods cannot be directly adapted to this task. Moreover, the limited studies in this area still struggle to jointly achieve high-quality visual appearance and realistic human motion. Accordingly, we present MACE-Dance, a music-driven dance video generation framework with cascaded Mixture-of-Experts (MoE). The Motion Expert performs music-to-3D motion generation while enforcing kinematic plausibility and artistic expressiveness, whereas the Appearance Expert carries out motion- and reference-conditioned video synthesis, preserving visual identity with spatiotemporal coherence. Specifically, the Motion Expert adopts a diffusion model with a BiMamba-Transformer hybrid architecture and a Guidance-Free Training (GFT) strategy, achieving state-of-the-art (SOTA) performance in 3D dance generation. The Appearance Expert employs a decoupled kinematic-aesthetic fine-tuning strategy, achieving state-of-the-art (SOTA) performance in pose-driven image animation. To better benchmark this task, we curate a large-scale and diverse dataset and design a motion-appearance evaluation protocol. Based on this protocol, MACE-Dance also achieves state-of-the-art performance. Code is available at https://github.com/AMAP-ML/MACE-Dance.",
+  "publishedAt": "2025-12-20T02:34:34Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 88,
+  "citationCount": 9,
+  "githubStars": 108,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2601.03509",
+  "slug": "evolving-programmatic-skill-networks",
+  "title": "Evolving Programmatic Skill Networks",
+  "authors": [
+   "Haochen Shi",
+   "Xingdi Yuan",
+   "Bang Liu"
+  ],
+  "abstract": "We study continual skill acquisition in open-ended embodied environments where an agent must construct, refine, and reuse an expanding library of executable skills. We introduce the Programmatic Skill Network (PSN), a framework in which skills are executable symbolic programs forming a compositional network that evolves through experience. PSN defines three core mechanisms instantiated via large language models: (1)~\\opreflect for structured fault localization over skill compositions, (2)~progressive optimization with maturity-aware update gating that stabilizes reliable skills while maintaining plasticity for uncertain ones, and (3)~canonical structural refactoring under rollback validation that maintains network compactness. We further show that PSN's learning dynamics exhibit structural parallels to neural network training. Experiments on MineDojo and Crafter demonstrate robust skill reuse, rapid adaptation, and strong generalization across open-ended task distributions.",
+  "publishedAt": "2026-01-07T01:43:25Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.NE"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 88,
+  "citationCount": 4,
+  "githubStars": 3,
+  "pageCount": 47
+ },
+ {
+  "arxivId": "2603.03241",
+  "slug": "unig2u-bench-do-unified-models-advance-multimodal-understanding",
+  "title": "UniG2U-Bench: Do Unified Models Advance Multimodal Understanding?",
+  "authors": [
+   "Zimo Wen",
+   "Boxiu Li",
+   "Wanbo Zhang",
+   "Junxiang Lei",
+   "Xiaoyu Chen",
+   "Yijia Fan"
+  ],
+  "abstract": "Unified multimodal models have recently demonstrated strong generative capabilities, yet whether and when generation improves understanding remains unclear. Existing benchmarks lack a systematic exploration of the specific tasks where generation facilitates understanding. To this end, we introduce UniG2U-Bench, a comprehensive benchmark categorizing generation-to-understanding (G2U) evaluation into 7 regimes and 30 subtasks, requiring varying degrees of implicit or explicit visual transformations. Extensive evaluation of over 30 models reveals three core findings: 1) Unified models generally underperform their base Vision-Language Models (VLMs), and Generate-then-Answer (GtA) inference typically degrades performance relative to direct inference. 2) Consistent enhancements emerge in spatial intelligence, visual illusions, or multi-round reasoning subtasks, where enhanced spatial and shape perception, as well as multi-step intermediate image states, prove beneficial. 3) Tasks with similar reasoning structures and models sharing architectures exhibit correlated behaviors, suggesting that generation-understanding coupling induces class-consistent inductive biases over tasks, pretraining data, and model architectures. These findings highlight the necessity for more diverse training data and novel paradigms to fully unlock the potential of unified multimodal modeling.",
+  "publishedAt": "2026-03-03T18:36:16Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 88,
+  "citationCount": 3,
+  "githubStars": null,
+  "pageCount": 56
+ },
+ {
+  "arxivId": "2603.28088",
+  "slug": "gems-agent-native-multimodal-generation-with-memory-and-skills",
+  "title": "GEMS: Agent-Native Multimodal Generation with Memory and Skills",
+  "authors": [
+   "Zefeng He",
+   "Siyuan Huang",
+   "Xiaoye Qu",
+   "Yafu Li",
+   "Tong Zhu",
+   "Yu Cheng"
+  ],
+  "abstract": "Recent multimodal generation models have achieved remarkable progress on general-purpose generation tasks, yet continue to struggle with complex instructions and specialized downstream tasks. Inspired by the success of advanced agent frameworks such as Claude Code, we propose \\textbf{GEMS} (Agent-Native Multimodal \\textbf{GE}neration with \\textbf{M}emory and \\textbf{S}kills), a framework that pushes beyond the inherent limitations of foundational models on both general and downstream tasks. GEMS is built upon three core components. Agent Loop introduces a structured multi-agent framework that iteratively improves generation quality through closed-loop optimization. Agent Memory provides a persistent, trajectory-level memory that hierarchically stores both factual states and compressed experiential summaries, enabling a global view of the optimization process while reducing redundancy. Agent Skill offers an extensible collection of domain-specific expertise with on-demand loading, allowing the system to effectively handle diverse downstream applications. Across five mainstream tasks and four downstream tasks, evaluated on multiple generative backends, GEMS consistently achieves significant performance gains. Most notably, it enables the lightweight 6B model Z-Image-Turbo to surpass the state-of-the-art Nano Banana 2 on GenEval2, demonstrating the effectiveness of agent harness in extending model capabilities beyond their original limits.",
+  "publishedAt": "2026-03-30T06:42:55Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 88,
+  "citationCount": 8,
+  "githubStars": 142,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2604.19636",
+  "slug": "cointeract-physically-consistent-human-object-interaction-video-synthesis-via",
+  "title": "CoInteract: Physically-Consistent Human-Object Interaction Video Synthesis via Spatially-Structured Co-Generation",
+  "authors": [
+   "Xiangyang Luo",
+   "Xiaozhe Xin",
+   "Tao Feng",
+   "Xu Guo",
+   "Meiguang Jin",
+   "Junfeng Ma"
+  ],
+  "abstract": "Synthesizing human--object interaction (HOI) videos has broad practical value in e-commerce, digital advertising, and virtual marketing. However, current diffusion models, despite their photorealistic rendering capability, still frequently fail on (i) the structural stability of sensitive regions such as hands and faces and (ii) physically plausible contact (e.g., avoiding hand--object interpenetration). We present CoInteract, an end-to-end framework for HOI video synthesis conditioned on a person reference image, a product reference image, text prompts, and speech audio. CoInteract introduces two complementary designs embedded into a Diffusion Transformer (DiT) backbone. First, we propose a Human-Aware Mixture-of-Experts (MoE) that routes tokens to lightweight, region-specialized experts via spatially supervised routing, improving fine-grained structural fidelity with minimal parameter overhead. Second, we propose Spatially-Structured Co-Generation, a dual-stream training paradigm that jointly models an RGB appearance stream and an auxiliary HOI structure stream to inject interaction geometry priors. During training, the HOI stream attends to RGB tokens and its supervision regularizes shared backbone weights; at inference, the HOI branch is removed for zero-overhead RGB generation. Experimental results demonstrate that CoInteract significantly outperforms existing methods in structural stability, logical consistency, and interaction realism.",
+  "publishedAt": "2026-04-21T16:25:43Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 88,
+  "citationCount": 0,
+  "githubStars": 165,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2605.19769",
+  "slug": "opencomputer-verifiable-software-worlds-for-computer-use-agents",
+  "title": "OpenComputer: Verifiable Software Worlds for Computer-Use Agents",
+  "authors": [
+   "Jinbiao Wei",
+   "Qianran Ma",
+   "Yilun Zhao",
+   "Xiao Zhou",
+   "Kangqi Ni",
+   "Guo Gan"
+  ],
+  "abstract": "We present OpenComputer, a verifier-grounded framework for constructing verifiable software worlds for computer-use agents. OpenComputer integrates four components: (1) app-specific state verifiers that expose structured inspection endpoints over real applications, (2) a self-evolving verification layer that improves verifier reliability using execution-grounded feedback, (3) a task-generation pipeline that synthesizes realistic and machine-checkable desktop tasks, and (4) an evaluation harness that records full trajectories and computes auditable partial-credit rewards. In its current form, OpenComputer covers 33 desktop applications and 1,000 finalized tasks spanning browsers, office tools, creative software, development environments, file managers, and communication applications. Experiments show that OpenComputer's hard-coded verifiers align more closely with human adjudication than LLM-as-judge evaluation, especially when success depends on fine-grained application state. Frontier agents struggle with end-to-end completion despite partial progress, and open-source models exhibit sharp drops from their OSWorld-Verified scores, exposing a persistent gap in robust computer automation.",
+  "publishedAt": "2026-05-19T12:40:29Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.SE"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 88,
+  "citationCount": 6,
+  "githubStars": 31,
+  "pageCount": 17
+ },
+ {
+  "arxivId": "2605.28293",
+  "slug": "prorl-effective-reinforcement-learning-for-proactive-recommendation-via",
+  "title": "ProRL: Effective Reinforcement Learning for Proactive Recommendation via Rectified Policy Gradient Estimation",
+  "authors": [
+   "Hongru Hou",
+   "Tiehua Mei",
+   "Denghui Geng",
+   "Jinhui Huang",
+   "Ao Xu",
+   "Hengrui Chen"
+  ],
+  "abstract": "Proactive Recommender Systems (PRSs) aim to guide user preference shift toward target items by generating paths of intermediate recommendations. Reinforcement learning (RL) provides a principled framework for optimizing such sequential decision tasks, as path rewards can naturally capture both short-term acceptance and long-term guidance effectiveness. However, naively applying policy gradients to PRS results in deficient gradient estimation. We identify two deficiencies: (1) path-level rewards decompose into step-level rewards with positive mean, creating a length-dependent bias that causes gradients to favor path extension over meaningful exploration; (2) weighting each step by the entire path-level reward ignores the decomposition structure, leading to high gradient variance. To rectify these two deficiencies, we propose an effective RL framework ProRL with two novel mechanisms for proactive recommendation. First, Stepwise Reward Centering subtracts expected rewards to neutralize length-dependent bias, ensuring that path extension yields zero expected gradient signal. Second, Position-Specific Advantage Estimation leverages the reward decomposition structure to compute step-dependent baselines, reducing gradient variance. Together, these mechanisms yield policy gradients that precisely target path quality. Our experiments on three real-world datasets demonstrate that ProRL significantly outperforms state-of-the-art PRSs. Our code is available at https://github.com/hongruhou89/ProRL.",
+  "publishedAt": "2026-05-27T10:43:37Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 88,
+  "citationCount": 0,
+  "githubStars": 46,
+  "pageCount": 27
+ }
+]

@@ -1,0 +1,713 @@
+[
+ {
+  "arxivId": "2510.03215",
+  "slug": "cache-to-cache-direct-semantic-communication-between-large-language-models",
+  "title": "Cache-to-Cache: Direct Semantic Communication Between Large Language Models",
+  "authors": [
+   "Tianyu Fu",
+   "Zihan Min",
+   "Hanling Zhang",
+   "Jichao Yan",
+   "Guohao Dai",
+   "Wanli Ouyang"
+  ],
+  "abstract": "Multi-LLM systems harness the complementary strengths of diverse Large Language Models, achieving performance and efficiency gains that are not attainable by a single model. In existing designs, LLMs communicate through text, forcing internal representations to be transformed into output token sequences. This process both loses rich semantic information and incurs token-by-token generation latency. Motivated by these limitations, we ask: Can LLMs communicate beyond text? Oracle experiments show that enriching the KV-Cache semantics can improve response quality without increasing cache size, supporting KV-Cache as an effective medium for inter-model communication. Thus, we propose Cache-to-Cache (C2C), a new paradigm for direct semantic communication between LLMs. C2C uses a neural network to project and fuse the source model's KV-cache with that of the target model to enable direct semantic transfer. A learnable gating mechanism selects the target layers that benefit from cache communication. Compared with text communication, C2C utilizes the deep, specialized semantics from both models, while avoiding explicit intermediate text generation. Experiments show that C2C achieves 6.4-14.2% higher average accuracy than individual models. It further outperforms the text communication paradigm by approximately 3.1-5.4%, while delivering an average 2.5x speedup in latency. Our code is available at https://github.com/thu-nics/C2C.",
+  "publishedAt": "2025-10-03T17:52:32Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 99,
+  "citationCount": 35,
+  "githubStars": 425,
+  "pageCount": 29
+ },
+ {
+  "arxivId": "2510.23538",
+  "slug": "januscoder-towards-a-foundational-visual-programmatic-interface-for-code",
+  "title": "JanusCoder: Towards a Foundational Visual-Programmatic Interface for Code Intelligence",
+  "authors": [
+   "Qiushi Sun",
+   "Jingyang Gong",
+   "Yang Liu",
+   "Qiaosheng Chen",
+   "Lei Li",
+   "Kai Chen"
+  ],
+  "abstract": "The scope of neural code intelligence is rapidly expanding beyond text-based source code to encompass the rich visual outputs that programs generate. This visual dimension is critical for advanced applications like flexible content generation and precise, program-driven editing of visualizations. However, progress has been impeded by the scarcity of high-quality multimodal code data, a bottleneck stemming from challenges in synthesis and quality assessment. To address these challenges, we make contributions from both a data and modeling perspective. We first introduce a complete synthesis toolkit that leverages reciprocal synergies between data modalities to efficiently produce a large-scale, high-quality corpus spanning from standard charts to complex interactive web UIs and code-driven animations. Leveraging this toolkit, we construct JanusCode-800K, the largest multimodal code corpus to date. This powers the training of our models, JanusCoder and JanusCoderV, which establish a visual-programmatic interface for generating code from textual instructions, visual inputs, or a combination of both. Our unified model is a departure from existing approaches that build specialized models for isolated tasks. Extensive experiments on both text-centric and vision-centric coding tasks demonstrate the superior performance of the JanusCoder series, with our 7B to 14B scale models approaching or even exceeding the performance of commercial models. Furthermore, extensive analysis provides key insights into harmonizing programmatic logic with its visual expression. Our code and checkpoints are available at https://github.com/InternLM/JanusCoder.",
+  "publishedAt": "2025-10-27T17:13:49Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL",
+   "cs.CV",
+   "cs.SE"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 99,
+  "citationCount": 7,
+  "githubStars": 78,
+  "pageCount": 41
+ },
+ {
+  "arxivId": "2512.17504",
+  "slug": "insertanywhere-geometrically-grounded-and-optics-aware-video-object-insertion",
+  "title": "InsertAnywhere: Geometrically Grounded and Optics-Aware Video Object Insertion",
+  "authors": [
+   "Hoiyeong Jin",
+   "Hyojin Jang",
+   "Junha Hyung",
+   "Jeongho Kim",
+   "Kinam Kim",
+   "Dongjin Kim"
+  ],
+  "abstract": "Recent advances in diffusion models have enabled impressive video editing capabilities, yet production-grade Video Object Insertion (VOI) remains challenging due to inadequate 4D scene understanding and a lack of proper optical interactions, such as shadows and reflections. To address these limitations, we present InsertAnywhere, a comprehensive VOI framework that achieves geometrically grounded object placement and optics-aware video synthesis. Our approach first leverages a 4D-aware mask generation module that allows users to anchor an object's 3D pose in a single frame. The framework automatically propagates this placement across the video, accurately handling local scene dynamics and occlusions. To synthesize realistic physical lighting interactions, we introduce Optics-Aware Representation Alignment, a novel strategy that utilizes an extended mask to guide feature extraction, enabling optical effects to seamlessly extend beyond the inserted object's boundary. Finally, to overcome the lack of training data for such phenomena, we construct and open-source ROSE++, a specialized quadruplet dataset tailored for the supervised learning of optical effects. Extensive experiments demonstrate that InsertAnywhere produces geometrically plausible and photometrically realistic insertions in complex real-world scenarios, significantly outperforming existing research and commercial generative tools.",
+  "publishedAt": "2025-12-19T12:14:36Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 99,
+  "citationCount": 0,
+  "githubStars": 89,
+  "pageCount": 26
+ },
+ {
+  "arxivId": "2512.24601",
+  "slug": "recursive-language-models",
+  "title": "Recursive Language Models",
+  "authors": [
+   "Alex L. Zhang",
+   "Tim Kraska",
+   "Omar Khattab"
+  ],
+  "abstract": "We study allowing large language models (LLMs) to process arbitrarily long prompts through the lens of inference-time scaling. We propose Recursive Language Models (RLMs), a general inference paradigm that treats long prompts as part of an external environment and allows the LLM to programmatically examine, decompose, and recursively call itself over snippets of the prompt. We find that RLMs can successfully process inputs up to two orders of magnitude beyond model context windows and, even for shorter prompts, dramatically outperform the quality of vanilla frontier LLMs and common long-context and coding scaffolds (e.g., on GPT-5 by a median across the evaluated benchmarks of $26\\%$ against compaction, $130\\%$ against CodeAct with sub-calls, and $13\\%$ against Claude Code) across four diverse long-context tasks while having comparable cost. At a small scale, we post-train the first model around the RLM. Our model, RLM-Qwen3-8B, outperforms the underlying Qwen3-8B model by $28.3\\%$ on average and even approaches the quality of vanilla GPT-5 on three long-context tasks. Code is available at https://github.com/alexzhang13/rlm.",
+  "publishedAt": "2025-12-31T03:43:41Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 99,
+  "citationCount": 64,
+  "githubStars": 5361,
+  "pageCount": 43
+ },
+ {
+  "arxivId": "2603.24440",
+  "slug": "cua-suite-massive-human-annotated-video-demonstrations-for-computer-use-agents",
+  "title": "CUA-Suite: Massive Human-annotated Video Demonstrations for Computer-Use Agents",
+  "authors": [
+   "Xiangru Jian",
+   "Shravan Nayak",
+   "Kevin Qinghong Lin",
+   "Aarash Feizi",
+   "Kaixin Li",
+   "Patrice Bechard"
+  ],
+  "abstract": "Computer-use agents (CUAs) hold great promise for automating complex desktop workflows, yet progress toward general-purpose agents is bottlenecked by the scarcity of continuous, high-quality human demonstration videos. Recent work emphasizes that continuous video, not sparse screenshots, is the critical missing ingredient for scaling these agents. However, the largest existing open dataset, ScaleCUA, contains only 2 million screenshots, equating to less than 20 hours of video. To address this bottleneck, we introduce CUA-Suite, a large-scale ecosystem of expert video demonstrations and dense annotations for professional desktop computer-use agents. At its core is VideoCUA, which provides approximately 10,000 human-demonstrated tasks across 87 diverse applications with continuous 30 fps screen recordings, kinematic cursor traces, and multi-layerfed reasoning annotations, totaling approximately 55 hours and 6 million frames of expert video. Unlike sparse datasets that capture only final click coordinates, these continuous video streams preserve the full temporal dynamics of human interaction, forming a superset of information that can be losslessly transformed into the formats required by existing agent frameworks. CUA-Suite further provides two complementary resources: UI-Vision, a rigorous benchmark for evaluating grounding and planning capabilities in CUAs, and GroundCUA, a large-scale grounding dataset with 56K annotated screenshots and over 3.6 million UI element annotations. Preliminary evaluation reveals that current foundation action models struggle substantially with professional desktop applications (~60% task failure rate). Beyond evaluation, CUA-Suite's rich multimodal corpus supports emerging research directions including generalist screen parsing, continuous spatial control, video-based reward modeling, and visual world models. All data and models are publicly released.",
+  "publishedAt": "2026-03-25T15:52:56Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 99,
+  "citationCount": 3,
+  "githubStars": null,
+  "pageCount": 66
+ },
+ {
+  "arxivId": "2605.16928",
+  "slug": "full-attention-strikes-back-transferring-full-attention-into-sparse-within",
+  "title": "Full Attention Strikes Back: Transferring Full Attention into Sparse within Hundred Training Steps",
+  "authors": [
+   "Yanke Zhou",
+   "Yiduo Li",
+   "Hanlin Tang",
+   "Maohua Li",
+   "Kan Liu",
+   "Tao Lan"
+  ],
+  "abstract": "Long-context inference in large language models is bottlenecked by the quadratic cost of full attention. Existing efficient alternatives often rely either on native sparse training or on heuristic token eviction, creating an undesirable trade-off among efficiency, training cost, and accuracy. In this work, we show that full-attention LLMs are already intrinsically sparse and can be transformed into highly sparse models with only minimal adaptation. Our approach is built on three observations: (1) only a small subset of attention heads truly requires full long-context processing; (2) long-range retrieval is governed primarily by a low-dimensional subspace, allowing relevant tokens to be retrieved efficiently with a 16-dimensional indexer; and (3) the useful token budget is strongly query-dependent, making dynamic top-$p$ selection more suitable than fixed top-$k$ sparsification. Based on these insights, we propose RTPurbo, which retains the full KV cache only for retrieval heads and introduces a lightweight token indexer for sparse attention. By exploiting the model's intrinsic sparsity, RTPurbo achieves sparsification with only a few hundred training steps. Experiments on long-context benchmarks and reasoning tasks show that RTPurbo preserves near-lossless accuracy while delivering substantial efficiency gains, including up to a 9.36$\\times$ prefill speedup at 1M context and about a 2.01$\\times$ decode speedup. These results suggest that strong sparse inference can be obtained from standard full-attention training without expensive native sparse pretraining.",
+  "publishedAt": "2026-05-16T10:51:58Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 99,
+  "citationCount": 1,
+  "githubStars": null,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2606.07502",
+  "slug": "your-unembedding-matrix-is-secretly-a-feature-lens-for-text-embeddings",
+  "title": "Your UnEmbedding Matrix is Secretly a Feature Lens for Text Embeddings",
+  "authors": [
+   "Songhao Wu",
+   "Zhongxin Chen",
+   "Yuxuan Liu",
+   "Heng Cui",
+   "Cong Li",
+   "Rui Yan"
+  ],
+  "abstract": "Large language models exhibit impressive zero-shot capabilities across a wide range of downstream tasks. However, they struggle to function as off-the-shelf embedding models, leading to suboptimal performance on massive text embedding benchmarks. In this paper, we identify a potential cause underlying this deficiency. Our motivation stems from an unexpected observation: text embeddings tend to align with frequent but uninformative tokens when projected onto the vocabulary space. We argue that this excessive expression of high-frequency tokens suppresses the model's ability to capture nuanced semantics. To address this, we introduce EmbedFilter, a simple linear transformation designed to refine text embeddings derived from LLMs directly. Specifically, we uncover that the unembedding matrix within LLMs encodes a latent space that is actively writing these frequent tokens into embedding space. By filtering out this subspace, EmbedFilter suppress the influence of high-frequency tokens, thereby enhancing semantic representations. As a compelling byproduct, this enables an inherent dimensionality reduction, lowering index storage and speedup retrieval while fully preserving the refined embedding quality. Our experiments across multiple LLM backbones demonstrate that LLMs equipped with EmbedFilter achieve superior zero-shot downstream performance even with significantly reduced embedding dimensions. We hope our findings provide deeper insights into the mechanisms of LLM-based representations and inspire more principled designs to improve text embeddings training. Our code is available at https://github.com/CentreChen/EmbFilter.",
+  "publishedAt": "2026-06-05T17:54:32Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.IR"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 99,
+  "citationCount": 0,
+  "githubStars": 25,
+  "pageCount": 10
+ },
+ {
+  "arxivId": "2607.12395",
+  "slug": "ring-zero-scaling-zero-rl-to-a-trillion-parameters-for-emergent-reasoning",
+  "title": "Ring-Zero: Scaling Zero RL to a Trillion Parameters for Emergent Reasoning",
+  "authors": [
+   "Xinyu Tang",
+   "Qianggang Cao",
+   "Yurou Liu",
+   "Yuliang Zhan",
+   "Xiaochong Lan",
+   "Yifan Li"
+  ],
+  "abstract": "Reinforcement learning with verifiable rewards without human-annotated data, often referred to as zero RL, has emerged as a powerful paradigm for eliciting chain-of-thought reasoning. However, due to computational constraints, existing studies are largely restricted to small models, leaving the training dynamics and emergent capabilities at a large scale unexplored. To meaningfully explore this frontier, we aim to elicit high-quality reasoning behaviors from the model. However, we find that naive scaling often suffers from poor readability, token redundancy, and a lack of adaptive reasoning depth. To address these challenges, we present a stable and efficient training pipeline, incorporating algorithmic and system optimizations such as clipped importance sampling, training-inference ratio correction, and mixed-precision control. Our experiments offer three key findings that validate the \"bitter lesson\" of scaling: (1) scaling to 1T parameters significantly enhances sample efficiency and performance ceilings; (2) the training process progresses sequentially through an initial discovery phase followed by a sharpening phase; and (3) the model spontaneously develops advanced cognitive behaviors, including anthropomorphism, structured formatting, self-verification, parallel reasoning, and context anxiety, rendering hand-crafted heuristics redundant. Evaluated on seven mathematical benchmarks, Ring-2.5-1T-Zero achieves competitive performance. Additionally, to assess CoT quality beyond final-answer correctness, we propose a structured evaluation framework across three dimensions: comprehensibility, reproducibility, and efficiency, where our model demonstrates clear advantages in producing structured and concise reasoning traces. By sharing our observed emergent phenomena, we hope to provide the community with deeper insights into scaling behaviors, particularly at the 1-trillion scale.",
+  "publishedAt": "2026-07-14T06:14:55Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 99,
+  "citationCount": 0,
+  "githubStars": null,
+  "pageCount": 33
+ },
+ {
+  "arxivId": "2510.02283",
+  "slug": "self-forcing-towards-minute-scale-high-quality-video-generation",
+  "title": "Self-Forcing++: Towards Minute-Scale High-Quality Video Generation",
+  "authors": [
+   "Justin Cui",
+   "Jie Wu",
+   "Ming Li",
+   "Tao Yang",
+   "Xiaojie Li",
+   "Rui Wang"
+  ],
+  "abstract": "Diffusion models have revolutionized image and video generation, achieving unprecedented visual quality. However, their reliance on transformer architectures incurs prohibitively high computational costs, particularly when extending generation to long videos. Recent work has explored autoregressive formulations for long video generation, typically by distilling from short-horizon bidirectional teachers. Nevertheless, given that teacher models cannot synthesize long videos, the extrapolation of student models beyond their training horizon often leads to pronounced quality degradation, arising from the compounding of errors within the continuous latent space. In this paper, we propose a simple yet effective approach to mitigate quality degradation in long-horizon video generation without requiring supervision from long-video teachers or retraining on long video datasets. Our approach centers on exploiting the rich knowledge of teacher models to provide guidance for the student model through sampled segments drawn from self-generated long videos. Our method maintains temporal consistency while scaling video length by up to 20x beyond teacher's capability, avoiding common issues such as over-exposure and error-accumulation without recomputing overlapping frames like previous methods. When scaling up the computation, our method shows the capability of generating videos up to 4 minutes and 15 seconds, equivalent to 99.9% of the maximum span supported by our base model's position embedding and more than 50x longer than that of our baseline model. Experiments on standard benchmarks and our proposed improved benchmark demonstrate that our approach substantially outperforms baseline methods in both fidelity and consistency. Our long-horizon videos demo can be found at https://self-forcing-plus-plus.github.io/",
+  "publishedAt": "2025-10-02T17:55:42Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 98,
+  "citationCount": 156,
+  "githubStars": 268,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2511.04460",
+  "slug": "v-thinker-interactive-thinking-with-images",
+  "title": "V-Thinker: Interactive Thinking with Images",
+  "authors": [
+   "Runqi Qiao",
+   "Qiuna Tan",
+   "Minghan Yang",
+   "Guanting Dong",
+   "Peiqing Yang",
+   "Shiqiang Lang"
+  ],
+  "abstract": "Empowering Large Multimodal Models (LMMs) to deeply integrate image interaction with long-horizon reasoning capabilities remains a long-standing challenge in this field. Recent advances in vision-centric reasoning explore a promising \"Thinking with Images\" paradigm for LMMs, marking a shift from image-assisted reasoning to image-interactive thinking. While this milestone enables models to focus on fine-grained image regions, progress remains constrained by limited visual tool spaces and task-specific workflow designs. To bridge this gap, we present V-Thinker, a general-purpose multimodal reasoning assistant that enables interactive, vision-centric thinking through end-to-end reinforcement learning. V-Thinker comprises two key components: (1) a Data Evolution Flywheel that automatically synthesizes, evolves, and verifies interactive reasoning datasets across three dimensions-diversity, quality, and difficulty; and (2) a Visual Progressive Training Curriculum that first aligns perception via point-level supervision, then integrates interactive reasoning through a two-stage reinforcement learning framework. Furthermore, we introduce VTBench, an expert-verified benchmark targeting vision-centric interactive reasoning tasks. Extensive experiments demonstrate that V-Thinker consistently outperforms strong LMM-based baselines in both general and interactive reasoning scenarios, providing valuable insights for advancing image-interactive reasoning applications.",
+  "publishedAt": "2025-11-06T15:32:29Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 98,
+  "citationCount": 19,
+  "githubStars": 177,
+  "pageCount": 36
+ },
+ {
+  "arxivId": "2511.09146",
+  "slug": "dope-denoising-rotary-position-embedding",
+  "title": "DoPE: Denoising Rotary Position Embedding",
+  "authors": [
+   "Jing Xiong",
+   "Liyang Fan",
+   "Hui Shen",
+   "Zunhai Su",
+   "Min Yang",
+   "Lingpeng Kong"
+  ],
+  "abstract": "Positional encoding is essential for large language models (LLMs) to represent sequence order, yet recent studies show that Rotary Position Embedding (RoPE) can induce massive activation. We investigate the source of these instabilities via a spectral analysis of RoPE, and show that its low-frequency components concentrate structured energy, producing low-rank, over-aligned attention patterns. We theoretically reveal that this low-frequency alignment manifests as activation noise, degrading stability during long-context extrapolation. To mitigate this effect, we introduce Denoising Rotary Position Embedding (DoPE), a training-free method that identifies and suppresses noisy attention heads using truncated matrix entropy, then reparameterizes their attention maps with an isotropic Gaussian distribution. Across a range of settings, DoPE improves length extrapolation performance without fine-tuning, increases robustness to perturbations, and boosts both needle-in-a-haystack and many-shot in-context learning tasks. These results suggest that selective positional encoding is key to robust extrapolation. Our project page is Project: https://The-physical-picture-of-LLMs.github.io",
+  "publishedAt": "2025-11-12T09:32:35Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 98,
+  "citationCount": 2,
+  "githubStars": null,
+  "pageCount": 14
+ },
+ {
+  "arxivId": "2511.15705",
+  "slug": "geovista-web-augmented-agentic-visual-reasoning-for-geolocalization",
+  "title": "GeoVista: Web-Augmented Agentic Visual Reasoning for Geolocalization",
+  "authors": [
+   "Yikun Wang",
+   "Zuyan Liu",
+   "Ziyi Wang",
+   "Han Hu",
+   "Pengfei Liu",
+   "Yongming Rao"
+  ],
+  "abstract": "Current research on agentic visual reasoning enables deep multimodal understanding but primarily focuses on image manipulation tools, leaving a gap toward more general-purpose agentic models. In this work, we revisit the geolocalization task, which requires not only nuanced visual grounding but also web search to confirm or refine hypotheses during reasoning. Since existing geolocalization benchmarks fail to meet the need for high-resolution imagery and the localization challenge for deep agentic reasoning, we curate GeoBench, a benchmark that includes photos and panoramas from around the world, along with a subset of satellite images of different cities to rigorously evaluate the geolocalization ability of agentic models. We also propose GeoVista, an agentic model that seamlessly integrates tool invocation within the reasoning loop, including an image-zoom-in tool to magnify regions of interest and a web-search tool to retrieve related web information. We develop a complete training pipeline for it, including a cold-start supervised fine-tuning (SFT) stage to learn reasoning patterns and tool-use priors, followed by a reinforcement learning (RL) stage to further enhance reasoning ability. We adopt a hierarchical reward to leverage multi-level geographical information and improve overall geolocalization performance. Experimental results show that GeoVista surpasses other open-source agentic models on the geolocalization task greatly and achieves performance comparable to closed-source models such as Gemini-2.5-flash and GPT-5 on most metrics.",
+  "publishedAt": "2025-11-19T18:59:22Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 98,
+  "citationCount": 8,
+  "githubStars": 277,
+  "pageCount": 17
+ },
+ {
+  "arxivId": "2604.00073",
+  "slug": "terminal-agents-suffice-for-enterprise-automation",
+  "title": "Terminal Agents Suffice for Enterprise Automation",
+  "authors": [
+   "Patrice Bechard",
+   "Orlando Marquez Ayala",
+   "Emily Chen",
+   "Jordan Skelton",
+   "Sagar Davasam",
+   "Srinivas Sunkara"
+  ],
+  "abstract": "There has been growing interest in building agents that can interact with digital platforms to execute meaningful enterprise tasks autonomously. Among the approaches explored are tool-augmented agents built on abstractions such as Model Context Protocol (MCP) and web agents that operate through graphical interfaces. Yet, it remains unclear whether such complex agentic systems are necessary given their cost and operational overhead. We argue that a coding agent equipped only with a terminal and a filesystem can solve many enterprise tasks more effectively by interacting directly with platform APIs. We evaluate this hypothesis across diverse real-world systems and show that these low-level terminal agents match or outperform more complex agent architectures. Our findings suggest that simple programmatic interfaces, combined with strong foundation models, are sufficient for practical enterprise automation.",
+  "publishedAt": "2026-03-31T14:14:47Z",
+  "primaryArxivCategory": [
+   "cs.SE",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 98,
+  "citationCount": 5,
+  "githubStars": null,
+  "pageCount": 43
+ },
+ {
+  "arxivId": "2604.07413",
+  "slug": "forge-fine-grained-multimodal-evaluation-for-manufacturing-scenarios",
+  "title": "FORGE: Fine-grained Multimodal Evaluation for Manufacturing Scenarios",
+  "authors": [
+   "Xiangru Jian",
+   "Hao Xu",
+   "Wei Pang",
+   "Xinjian Zhao",
+   "Chengyu Tao",
+   "Qixin Zhang"
+  ],
+  "abstract": "The manufacturing sector is increasingly adopting Multimodal Large Language Models (MLLMs) to transition from simple perception to autonomous execution, yet current evaluations fail to reflect the rigorous demands of real-world manufacturing environments. Progress is hindered by data scarcity and a lack of fine-grained domain semantics in existing datasets. To bridge this gap, we introduce FORGE. Wefirst construct a high-quality multimodal dataset that combines real-world 2D images and 3D point clouds, annotated with fine-grained domain semantics (e.g., exact model numbers). We then evaluate 18 state-of-the-art MLLMs across three manufacturing tasks, namely workpiece verification, structural surface inspection, and assembly verification, revealing significant performance gaps. Counter to conventional understanding, the bottleneck analysis shows that visual grounding is not the primary limiting factor. Instead, insufficient domain-specific knowledge is the key bottleneck, setting a clear direction for future research. Beyond evaluation, we show that our structured annotations can serve as an actionable training resource: supervised fine-tuning of a compact 3B-parameter model on our data yields up to 90.8% relative improvement in accuracy on held-out manufacturing scenarios, providing preliminary evidence for a practical pathway toward domain-adapted manufacturing MLLMs. The code and datasets are available at https://ai4manufacturing.github.io/forge-web.",
+  "publishedAt": "2026-04-08T12:23:27Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 98,
+  "citationCount": 2,
+  "githubStars": 13,
+  "pageCount": 88
+ },
+ {
+  "arxivId": "2605.14236",
+  "slug": "active-learners-as-efficient-prp-rerankers",
+  "title": "Active Learners as Efficient PRP Rerankers",
+  "authors": [
+   "Jeremías Figueiredo Paschmann",
+   "Juan Kaplan",
+   "Francisco Nattero",
+   "Santiago Barron",
+   "Juan Wisznia",
+   "Luciano del Corro"
+  ],
+  "abstract": "Pairwise Ranking Prompting (PRP) elicits pairwise preference judgments from an LLM, which are then aggregated into a ranking, usually via classical sorting algorithms. However, judgments are noisy, order-sensitive, and sometimes intransitive, so sorting assumptions do not match the setting. Because sorting aims to recover a full permutation, truncating it to meet a call budget does not produce a dependable top-K. We thus reframe PRP reranking as active learning from noisy pairwise comparisons and show that active rankers are drop-in replacements that improve NDCG@10 per call in the call-constrained regime. Our noise-robust framework also introduces a randomized-direction oracle that uses a single LLM call per pair. This approach converts systematic position bias into zero-mean noise, enabling unbiased aggregate ranking without the cost of bidirectional calls.",
+  "publishedAt": "2026-05-14T01:03:53Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 98,
+  "citationCount": 0,
+  "githubStars": 7,
+  "pageCount": 13
+ },
+ {
+  "arxivId": "2508.10874",
+  "slug": "ssrl-self-search-reinforcement-learning",
+  "title": "SSRL: Self-Search Reinforcement Learning",
+  "authors": [
+   "Yuchen Fan",
+   "Kaiyan Zhang",
+   "Heng Zhou",
+   "Yuxin Zuo",
+   "Yanxu Chen",
+   "Yu Fu"
+  ],
+  "abstract": "We investigate the potential of large language models (LLMs) to serve as efficient simulators for agentic search tasks in reinforcement learning (RL), thereby reducing dependence on costly interactions with external search engines. To this end, we first quantify the intrinsic search capability of LLMs via structured prompting and repeated sampling, which we term Self-Search. Our results reveal that LLMs exhibit strong scaling behavior with respect to the inference budget, achieving high pass@k on question-answering benchmarks, including the challenging BrowseComp task. Building on these observations, we introduce Self-Search RL (SSRL), which enhances LLMs' Self-Search capability through format-based and rule-based rewards. SSRL enables models to iteratively refine their knowledge utilization internally, without requiring access to external tools. Empirical evaluations demonstrate that SSRL-trained policy models provide a cost-effective and stable environment for search-driven RL training, reducing reliance on external search engines and facilitating robust sim-to-real transfer. We draw the following conclusions: 1) LLMs possess world knowledge that can be effectively elicited to achieve high performance; 2) SSRL demonstrates the potential of leveraging internal knowledge to reduce hallucination; 3) SSRL-trained models integrate seamlessly with external search engines without additional effort. Our findings highlight the potential of LLMs to support more scalable RL agent training.",
+  "publishedAt": "2025-08-14T17:46:01Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 97,
+  "citationCount": 11,
+  "githubStars": 210,
+  "pageCount": 39
+ },
+ {
+  "arxivId": "2510.09116",
+  "slug": "diting-a-multi-agent-evaluation-framework-for-benchmarking-web-novel-translation",
+  "title": "DITING: A Multi-Agent Evaluation Framework for Benchmarking Web Novel Translation",
+  "authors": [
+   "Enze Zhang",
+   "Jiaying Wang",
+   "Mengxi Xiao",
+   "Jifei Liu",
+   "Ziyan Kuang",
+   "Rui Dong"
+  ],
+  "abstract": "Large language models (LLMs) have substantially advanced machine translation (MT), yet their effectiveness in translating web novels remains unclear. Existing benchmarks rely on surface-level metrics that fail to capture the distinctive traits of this genre. To address these gaps, we introduce DITING, the first comprehensive evaluation framework for web novel translation, assessing narrative and cultural fidelity across six dimensions: idiom translation, lexical ambiguity, terminology localization, tense consistency, zero-pronoun resolution, and cultural safety, supported by over 18K expert-annotated Chinese-English sentence pairs. We further propose AgentEval, a reasoning-driven multi-agent evaluation framework that simulates expert deliberation to assess translation quality beyond lexical overlap, achieving the highest correlation with human judgments among seven tested automatic metrics. To enable metric comparison, we develop MetricAlign, a meta-evaluation dataset of 300 sentence pairs annotated with error labels and scalar quality scores. Comprehensive evaluation of fourteen open, closed, and commercial models reveals that Chinese-trained LLMs surpass larger foreign counterparts, and that DeepSeek-V3 delivers the most faithful and stylistically coherent translations. Our work establishes a new paradigm for exploring LLM-based web novel translation and provides public resources to advance future research.",
+  "publishedAt": "2025-10-10T08:10:10Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 97,
+  "citationCount": 4,
+  "githubStars": 12,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2601.01739",
+  "slug": "k-exaone-technical-report",
+  "title": "K-EXAONE Technical Report",
+  "authors": [
+   "Eunbi Choi",
+   "Kibong Choi",
+   "Seokhee Hong",
+   "Junwon Hwang",
+   "Hyojin Jeon",
+   "Hyunjik Jo"
+  ],
+  "abstract": "This technical report presents K-EXAONE, a large-scale multilingual language model developed by LG AI Research. K-EXAONE is built on a Mixture-of-Experts architecture with 236B total parameters, activating 23B parameters during inference. It supports a 256K-token context window and covers six languages: Korean, English, Spanish, German, Japanese, and Vietnamese. We evaluate K-EXAONE on a comprehensive benchmark suite spanning reasoning, agentic, general, Korean, and multilingual abilities. Across these evaluations, K-EXAONE demonstrates performance comparable to open-weight models of similar size. K-EXAONE, designed to advance AI for a better life, is positioned as a powerful proprietary AI foundation model for a wide range of industrial and research applications.",
+  "publishedAt": "2026-01-05T02:30:59Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 97,
+  "citationCount": 2,
+  "githubStars": 83,
+  "pageCount": 29
+ },
+ {
+  "arxivId": "2602.01785",
+  "slug": "codeocr-on-the-effectiveness-of-vision-language-models-in-code-understanding",
+  "title": "CodeOCR: On the Effectiveness of Vision Language Models in Code Understanding",
+  "authors": [
+   "Yuling Shi",
+   "Chaoxiang Xie",
+   "Zhensu Sun",
+   "Yeheng Chen",
+   "Chenxu Zhang",
+   "Longfei Yun"
+  ],
+  "abstract": "Large Language Models (LLMs) have achieved remarkable success in source code understanding, yet as software systems grow in scale, computational efficiency has become a critical bottleneck. Currently, these models rely on a text-based paradigm that treats source code as a linear sequence of tokens, which leads to a linear increase in context length and associated computational costs. The rapid advancement of Multimodal LLMs (MLLMs) introduces an opportunity to optimize efficiency by representing source code as rendered images. Unlike text, which is difficult to compress without losing semantic meaning, the image modality is inherently suitable for compression. By adjusting resolution, images can be scaled to a fraction of their original token cost while remaining recognizable to vision-capable models. To explore the feasibility of this approach, we conduct the first systematic study on the effectiveness of MLLMs for code understanding. Our experiments reveal that: (1) MLLMs can effectively understand code with substantial token reduction, achieving up to 8x compression; (2) MLLMs can effectively leverage visual cues such as syntax highlighting, improving code completion performance under 4x compression; and (3) Code-understanding tasks like clone detection exhibit exceptional resilience to visual compression, with some compression ratios even slightly outperforming raw text inputs. Our findings highlight both the potential and current limitations of MLLMs in code understanding, which points out a shift toward image-modality code representation as a pathway to more efficient inference.",
+  "publishedAt": "2026-02-02T08:10:21Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.SE"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 97,
+  "citationCount": 16,
+  "githubStars": 30,
+  "pageCount": 24
+ },
+ {
+  "arxivId": "2509.04338",
+  "slug": "from-editor-to-dense-geometry-estimator",
+  "title": "From Editor to Dense Geometry Estimator",
+  "authors": [
+   "JiYuan Wang",
+   "Chunyu Lin",
+   "Lei Sun",
+   "Rongying Liu",
+   "Lang Nie",
+   "Mingxing Li"
+  ],
+  "abstract": "Leveraging visual priors from pre-trained text-to-image (T2I) generative models has shown success in dense prediction. However, dense prediction is inherently an image-to-image task, suggesting that image editing models, rather than T2I generative models, may be a more suitable foundation for fine-tuning. Motivated by this, we conduct a systematic analysis of the fine-tuning behaviors of both editors and generators for dense geometry estimation. Our findings show that editing models possess inherent structural priors, which enable them to converge more stably by ``refining\" their innate features, and ultimately achieve higher performance than their generative counterparts. Based on these findings, we introduce \\textbf{FE2E}, a framework that pioneeringly adapts an advanced editing model based on Diffusion Transformer (DiT) architecture for dense geometry prediction. Specifically, to tailor the editor for this deterministic task, we reformulate the editor's original flow matching loss into the ``consistent velocity\" training objective. And we use logarithmic quantization to resolve the precision conflict between the editor's native BFloat16 format and the high precision demand of our tasks. Additionally, we leverage the DiT's global attention for a cost-free joint estimation of depth and normals in a single forward pass, enabling their supervisory signals to mutually enhance each other. Without scaling up the training data, FE2E achieves impressive performance improvements in zero-shot monocular depth and normal estimation across multiple datasets. Notably, it achieves over 35\\% performance gains on the ETH3D dataset and outperforms the DepthAnything series, which is trained on 100$\\times$ data. The project page can be accessed \\href{https://amap-ml.github.io/FE2E/}{here}.",
+  "publishedAt": "2025-09-04T15:58:50Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 96,
+  "citationCount": 25,
+  "githubStars": 243,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2511.16334",
+  "slug": "openmmreasoner-pushing-the-frontiers-for-multimodal-reasoning-with-an-open-and",
+  "title": "OpenMMReasoner: Pushing the Frontiers for Multimodal Reasoning with an Open and General Recipe",
+  "authors": [
+   "Kaichen Zhang",
+   "Keming Wu",
+   "Zuhao Yang",
+   "Bo Li",
+   "Kairui Hu",
+   "Bin Wang"
+  ],
+  "abstract": "Recent advancements in large reasoning models have fueled growing interest in extending such capabilities to multimodal domains. However, despite notable progress in visual reasoning, the lack of transparent and reproducible data curation and training strategies remains a major barrier to scalable research. In this work, we introduce OpenMMReasoner, a fully transparent two-stage recipe for multimodal reasoning spanning supervised fine-tuning (SFT) and reinforcement learning (RL). In the SFT stage, we construct an 874K-sample cold-start dataset with rigorous step-by-step validation, providing a strong foundation for reasoning capabilities. The subsequent RL stage leverages a 74K-sample dataset across diverse domains to further sharpen and stabilize these abilities, resulting in a more robust and efficient learning process. Extensive evaluations demonstrate that our training recipe not only surpasses strong baselines but also highlights the critical role of data quality and training design in shaping multimodal reasoning performance. Notably, our method achieves a 11.6% improvement over the Qwen2.5-VL-7B-Instruct baseline across nine multimodal reasoning benchmarks, establishing a solid empirical foundation for future large-scale multimodal reasoning research. We open-sourced all our codes, pipeline, and data at https://github.com/EvolvingLMMs-Lab/OpenMMReasoner.",
+  "publishedAt": "2025-11-20T13:11:45Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 96,
+  "citationCount": 31,
+  "githubStars": 165,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2511.22570",
+  "slug": "deepseekmath-v2-towards-self-verifiable-mathematical-reasoning",
+  "title": "DeepSeekMath-V2: Towards Self-Verifiable Mathematical Reasoning",
+  "authors": [
+   "Zhihong Shao",
+   "Yuxiang Luo",
+   "Chengda Lu",
+   "Z. Z. Ren",
+   "Jiewen Hu",
+   "Tian Ye"
+  ],
+  "abstract": "Large language models have made significant progress in mathematical reasoning, which serves as an important testbed for AI and could impact scientific research if further advanced. By scaling reasoning with reinforcement learning that rewards correct final answers, LLMs have improved from poor performance to saturating quantitative reasoning competitions like AIME and HMMT in one year. However, this approach faces fundamental limitations. Pursuing higher final answer accuracy doesn't address a key issue: correct answers don't guarantee correct reasoning. Moreover, many mathematical tasks like theorem proving require rigorous step-by-step derivation rather than numerical answers, making final answer rewards inapplicable. To push the limits of deep reasoning, we believe it is necessary to verify the comprehensiveness and rigor of mathematical reasoning. Self-verification is particularly important for scaling test-time compute, especially for open problems without known solutions. Towards self-verifiable mathematical reasoning, we investigate how to train an accurate and faithful LLM-based verifier for theorem proving. We then train a proof generator using the verifier as the reward model, and incentivize the generator to identify and resolve as many issues as possible in their own proofs before finalizing them. To maintain the generation-verification gap as the generator becomes stronger, we propose to scale verification compute to automatically label new hard-to-verify proofs, creating training data to further improve the verifier. Our resulting model, DeepSeekMath-V2, demonstrates strong theorem-proving capabilities, achieving gold-level scores on IMO 2025 and CMO 2024 and a near-perfect 118/120 on Putnam 2024 with scaled test-time compute.",
+  "publishedAt": "2025-11-27T16:01:22Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": "DeepSeek",
+  "hfUpvotes": 96,
+  "citationCount": 60,
+  "githubStars": 1594,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2512.16093",
+  "slug": "turbodiffusion-accelerating-video-diffusion-models-by-100-200-times",
+  "title": "TurboDiffusion: Accelerating Video Diffusion Models by 100-200 Times",
+  "authors": [
+   "Jintao Zhang",
+   "Kaiwen Zheng",
+   "Kai Jiang",
+   "Haoxu Wang",
+   "Ion Stoica",
+   "Joseph E. Gonzalez"
+  ],
+  "abstract": "We introduce TurboDiffusion, a video generation acceleration framework that can speed up end-to-end diffusion generation by 100-200x while maintaining video quality. TurboDiffusion mainly relies on several components for acceleration: (1) Attention acceleration: TurboDiffusion uses low-bit SageAttention and trainable Sparse-Linear Attention (SLA) to speed up attention computation. (2) Step distillation: TurboDiffusion adopts rCM for efficient step distillation. (3) W8A8 quantization: TurboDiffusion quantizes model parameters and activations to 8 bits to accelerate linear layers and compress the model. In addition, TurboDiffusion incorporates several other engineering optimizations. We conduct experiments on the Wan2.2-I2V-14B-720P, Wan2.1-T2V-1.3B-480P, Wan2.1-T2V-14B-720P, and Wan2.1-T2V-14B-480P models. Experimental results show that TurboDiffusion achieves 100-200x speedup for video generation even on a single RTX 5090 GPU, while maintaining comparable video quality. The GitHub repository, which includes model checkpoints and easy-to-use code, is available at https://github.com/thu-ml/TurboDiffusion.",
+  "publishedAt": "2025-12-18T02:21:30Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 96,
+  "citationCount": 28,
+  "githubStars": 3600,
+  "pageCount": 17
+ },
+ {
+  "arxivId": "2601.09259",
+  "slug": "maxs-meta-adaptive-exploration-with-llm-agents",
+  "title": "MAXS: Meta-Adaptive Exploration with LLM Agents",
+  "authors": [
+   "Jian Zhang",
+   "Zhiyuan Wang",
+   "Zhangqi Wang",
+   "Yu He",
+   "Haoran Luo",
+   "li yuan"
+  ],
+  "abstract": "Large Language Model (LLM) Agents exhibit inherent reasoning abilities through the collaboration of multiple tools. However, during agent inference, existing methods often suffer from (i) locally myopic generation, due to the absence of lookahead, and (ii) trajectory instability, where minor early errors can escalate into divergent reasoning paths. These issues make it difficult to balance global effectiveness and computational efficiency. To address these two issues, we propose meta-adaptive exploration with LLM agents https://github.com/exoskeletonzj/MAXS, a meta-adaptive reasoning framework based on LLM Agents that flexibly integrates tool execution and reasoning planning. MAXS employs a lookahead strategy to extend reasoning paths a few steps ahead, estimating the advantage value of tool usage, and combines step consistency variance and inter-step trend slopes to jointly select stable, consistent, and high-value reasoning steps. Additionally, we introduce a trajectory convergence mechanism that controls computational cost by halting further rollouts once path consistency is achieved, enabling a balance between resource efficiency and global effectiveness in multi-tool reasoning. We conduct extensive empirical studies across three base models (MiMo-VL-7B, Qwen2.5-VL-7B, Qwen2.5-VL-32B) and five datasets, demonstrating that MAXS consistently outperforms existing methods in both performance and inference efficiency. Further analysis confirms the effectiveness of our lookahead strategy and tool usage.",
+  "publishedAt": "2026-01-14T07:48:00Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 96,
+  "citationCount": 1,
+  "githubStars": null,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2604.18168",
+  "slug": "extending-one-step-image-generation-from-class-labels-to-text-via",
+  "title": "Extending One-Step Image Generation from Class Labels to Text via Discriminative Text Representation",
+  "authors": [
+   "Chenxi Zhao",
+   "Chen Zhu",
+   "Xiaokun Feng",
+   "Aiming Hao",
+   "Jiashu Zhu",
+   "Jiachen Lei"
+  ],
+  "abstract": "Few-step generation has been a long-standing goal, with recent one-step generation methods exemplified by MeanFlow achieving remarkable results. Existing research on MeanFlow primarily focuses on class-to-image generation. However, an intuitive yet unexplored direction is to extend the condition from fixed class labels to flexible text inputs, enabling richer content creation. Compared to the limited class labels, text conditions pose greater challenges to the model's understanding capability, necessitating the effective integration of powerful text encoders into the MeanFlow framework. Surprisingly, although incorporating text conditions appears straightforward, we find that integrating powerful LLM-based text encoders using conventional training strategies results in unsatisfactory performance. To uncover the underlying cause, we conduct detailed analyses and reveal that, due to the extremely limited number of refinement steps in the MeanFlow generation, such as only one step, the text feature representations are required to possess sufficiently high discriminability. This also explains why discrete and easily distinguishable class features perform well within the MeanFlow framework. Guided by these insights, we leverage a powerful LLM-based text encoder validated to possess the required semantic properties and adapt the MeanFlow generation process to this framework, resulting in efficient text-conditioned synthesis for the first time. Furthermore, we validate our approach on the widely used diffusion model, demonstrating significant generation performance improvements. We hope this work provides a general and practical reference for future research on text-conditioned MeanFlow generation. The code is available at https://github.com/AMAP-ML/EMF.",
+  "publishedAt": "2026-04-20T12:28:58Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 96,
+  "citationCount": 2,
+  "githubStars": 109,
+  "pageCount": 15
+ },
+ {
+  "arxivId": "2604.18486",
+  "slug": "xiaomi-onevl-one-step-latent-reasoning-and-planning-with-vision-language",
+  "title": "Xiaomi OneVL: One-Step Latent Reasoning and Planning with Vision-Language Explanation",
+  "authors": [
+   "Jinghui Lu",
+   "Jiayi Guan",
+   "Zhijian Huang",
+   "Jinlong Li",
+   "Guang Li",
+   "Lingdong Kong"
+  ],
+  "abstract": "Chain-of-Thought (CoT) reasoning has become a powerful driver of trajectory prediction in VLA-based autonomous driving, yet its autoregressive nature imposes a latency cost that is prohibitive for real-time deployment. Latent CoT methods attempt to close this gap by compressing reasoning into continuous hidden states, but consistently fall short of their explicit counterparts. We suggest that this is due to purely linguistic latent representations compressing a symbolic abstraction of the world, rather than the causal dynamics that actually govern driving. Thus, we present OneVL (One-step latent reasoning and planning with Vision-Language explanations), a unified VLA and World Model framework that routes reasoning through compact latent tokens supervised by dual auxiliary decoders. Alongside a language decoder that reconstructs text CoT, we introduce a visual world model decoder that predicts future-frame tokens, forcing the latent space to internalize the causal dynamics of road geometry, agent motion, and environmental change. A three-stage training pipeline progressively aligns these latents with trajectory, language, and visual objectives, ensuring stable joint optimization. In inference, the auxiliary decoders are discarded, and all latent tokens are prefilled in a single parallel pass, matching the speed of answer-only prediction. Across four benchmarks, OneVL becomes the first latent CoT method to surpass explicit CoT, delivering superior accuracy at answer-only latency. These results show that with world model supervision, latent CoT produces more generalizable representations than verbose token-by-token reasoning. Code has been open-sourced to the community. Project Page: https://xiaomi-embodied-intelligence.github.io/OneVL",
+  "publishedAt": "2026-04-20T16:37:22Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.CL",
+   "cs.RO"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 96,
+  "citationCount": 3,
+  "githubStars": 461,
+  "pageCount": 49
+ },
+ {
+  "arxivId": "2605.15141",
+  "slug": "causal-forcing-scalable-few-step-autoregressive-diffusion-distillation-for",
+  "title": "Causal Forcing++: Scalable Few-Step Autoregressive Diffusion Distillation for Real-Time Interactive Video Generation",
+  "authors": [
+   "Min Zhao",
+   "Hongzhou Zhu",
+   "Kaiwen Zheng",
+   "Zihan Zhou",
+   "Bokai Yan",
+   "Xinyuan Li"
+  ],
+  "abstract": "Real-time interactive video generation requires low-latency, streaming, and controllable rollout. Existing autoregressive (AR) diffusion distillation methods have achieved strong results in the chunk-wise 4-step regime by distilling bidirectional base models into few-step AR students, but they remain limited by coarse response granularity and non-negligible sampling latency. In this paper, we study a more aggressive setting: frame-wise autoregression with only 1--2 sampling steps. In this regime, we identify the initialization of a few-step AR student as the key bottleneck: existing strategies are either target-misaligned, incapable of few-step generation, or too costly to scale. We propose \\textbf{Causal Forcing++}, a principled and scalable pipeline that uses \\emph{causal consistency distillation} (causal CD) for few-step AR initialization. The core idea is that causal CD learns the same AR-conditional flow map as causal ODE distillation, but obtains supervision from a single online teacher ODE step between adjacent timesteps, avoiding the need to precompute and store full PF-ODE trajectories. This makes the initialization both more efficient and easier to optimize. The resulting pipeline, \\ours, surpasses the SOTA 4-step chunk-wise Causal Forcing under the \\textit{\\textbf{frame-wise 2-step setting}} by 0.1 in VBench Total, 0.3 in VBench Quality, and 0.335 in VisionReward, while reducing first-frame latency by 50\\% and Stage 2 training cost by $\\sim$$4\\times$. We further extend the pipeline to action-conditioned world model generation in the spirit of Genie3. Project Page: https://github.com/thu-ml/Causal-Forcing and https://github.com/shengshu-ai/minWM .",
+  "publishedAt": "2026-05-14T17:46:36Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 96,
+  "citationCount": 11,
+  "githubStars": 905,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2606.06492",
+  "slug": "code2lora-hypernetwork-generated-adapters-for-code-language-models-under",
+  "title": "Code2LoRA: Hypernetwork-Generated Adapters for Code Language Models under Software Evolution",
+  "authors": [
+   "Liliana Hotsko",
+   "Yinxi Li",
+   "Yuntian Deng",
+   "Pengyu Nie"
+  ],
+  "abstract": "Code language models need repository-level context to resolve imports, APIs, and project conventions. Existing methods inject this knowledge as long inputs (retrieved through RAG or dependency analysis) or through per-repository fine-tuning and LoRA -- costly at repository scale and brittle to evolving codebases. We introduce Code2LoRA, a hypernetwork framework that generates repository-specific LoRA adapters, effectively injecting repository knowledge with zero inference-time token overhead. Code2LoRA supports two usage scenarios: Code2LoRA-Static converts a single repository snapshot into an adapter, suitable for comprehension of stable codebases; while Code2LoRA-Evo maintains an adapter backed by a GRU hidden state updated per code diff, suitable for active development of evolving codebases. To evaluate Code2LoRA against parameter-efficient fine-tuning baselines, we build RepoPeftBench, a benchmark of 604 Python repositories with two tracks: a static track with 40K training and 12K test assertion-completion tasks, and an evolution track with 215K commit-derived training and 87K commit-derived test tasks. On the static track, Code2LoRA-Static achieves 63.8% cross-repo and 66.2% in-repo exact match, matching the per-repository LoRA upper bound; on the evolution track, Code2LoRA-Evo achieves 60.3% cross-repo exact match (+5.2 pp over a single shared LoRA). Code2LoRA's code can be found at https://anonymous.4open.science/r/code2lora-6857; the model checkpoints and RepoPeftBench datasets can be found at https://huggingface.co/code2lora.",
+  "publishedAt": "2026-06-04T17:59:46Z",
+  "primaryArxivCategory": [
+   "cs.SE",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 96,
+  "citationCount": 1,
+  "githubStars": null,
+  "pageCount": 28
+ },
+ {
+  "arxivId": "2606.22388",
+  "slug": "planbench-xl-evaluating-long-horizon-planning-of-llm-tool-use-agents-in-large",
+  "title": "PlanBench-XL: Evaluating Long-Horizon Planning of LLM Tool-Use Agents in Large-Scale Tool Ecosystems",
+  "authors": [
+   "Jiayu Liu",
+   "Qihan Lin",
+   "Cheng Qian",
+   "Rui Wang",
+   "Emre Can Acikgoz",
+   "Xiaocheng Yang"
+  ],
+  "abstract": "LLM agents increasingly operate in large tool ecosystems, where real-world tasks require discovering relevant tools, inferring implicit sub-goals, and adapting to dynamic environments over long horizons. However, existing benchmarks rarely evaluate planning under retrieval-limited tool visibility. To address this gap, we introduce PlanBench-XL, an interactive benchmark of 327 retail tasks over 1,665 tools that tests whether agents can iteratively retrieve usable tools, invoke them to uncover intermediate evidence for subsequent calls toward the final goal. PlanBench-XL further features an optional blocking mechanism that simulates real-world unpredictability through missing, failing, or distracting tool functions, forcing agents to detect disrupted paths and adapt at runtime. Experiments on ten leading LLMs show that massive-tool planning remains challenging: while GPT-5.4 achieves 51.90% accuracy in block-free settings, it collapses to 11.36% under the most severe blocking condition. Further analysis shows that agents are especially vulnerable when failures lack explicit error signals or when recovery requires longer alternative tool-use paths. These results establish PlanBench-XL as a testbed for diagnosing agentic planning failures and highlight the need for robust adaptive planning in long-horizon tasks with large, imperfect tool environments.",
+  "publishedAt": "2026-06-21T08:29:12Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 96,
+  "citationCount": 4,
+  "githubStars": 38,
+  "pageCount": 52
+ },
+ {
+  "arxivId": "2510.18234",
+  "slug": "deepseek-ocr-contexts-optical-compression",
+  "title": "DeepSeek-OCR: Contexts Optical Compression",
+  "authors": [
+   "Haoran Wei",
+   "Yaofeng Sun",
+   "Yukun Li"
+  ],
+  "abstract": "We present DeepSeek-OCR as an initial investigation into the feasibility of compressing long contexts via optical 2D mapping. DeepSeek-OCR consists of two components: DeepEncoder and DeepSeek3B-MoE-A570M as the decoder. Specifically, DeepEncoder serves as the core engine, designed to maintain low activations under high-resolution input while achieving high compression ratios to ensure an optimal and manageable number of vision tokens. Experiments show that when the number of text tokens is within 10 times that of vision tokens (i.e., a compression ratio < 10x), the model can achieve decoding (OCR) precision of 97%. Even at a compression ratio of 20x, the OCR accuracy still remains at about 60%. This shows considerable promise for research areas such as historical long-context compression and memory forgetting mechanisms in LLMs. Beyond this, DeepSeek-OCR also demonstrates high practical value. On OmniDocBench, it surpasses GOT-OCR2.0 (256 tokens/page) using only 100 vision tokens, and outperforms MinerU2.0 (6000+ tokens per page on average) while utilizing fewer than 800 vision tokens. In production, DeepSeek-OCR can generate training data for LLMs/VLMs at a scale of 200k+ pages per day (a single A100-40G). Codes and model weights are publicly accessible at http://github.com/deepseek-ai/DeepSeek-OCR.",
+  "publishedAt": "2025-10-21T02:41:44Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": "DeepSeek",
+  "hfUpvotes": 95,
+  "citationCount": 159,
+  "githubStars": 23749,
+  "pageCount": 22
+ }
+]

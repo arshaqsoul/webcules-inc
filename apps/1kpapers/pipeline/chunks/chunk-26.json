@@ -1,0 +1,711 @@
+[
+ {
+  "arxivId": "2606.24530",
+  "slug": "naturebench-can-coding-agents-match-the-published-sota-of-nature-family-papers",
+  "title": "NatureBench: Can Coding Agents Match the Published SOTA of Nature-Family Papers?",
+  "authors": [
+   "Yuru Wang",
+   "Lejun Cheng",
+   "Yuxin Zuo",
+   "Sihang Zeng",
+   "Bingxiang He",
+   "Che Jiang"
+  ],
+  "abstract": "We introduce NatureBench, a cross-discipline benchmark of 90 tasks distilled from peer-reviewed Nature-family publications, designed to evaluate whether AI coding agents can move beyond reproduction toward discovery on real scientific problems. NatureBench is built on NatureGym, an automated pipeline that constructs a standardized, per-task containerized environment from a source paper, addressing the environment-fragmentation problem that has limited the credibility of prior agent-on-research benchmarks. Evaluating ten frontier agent configurations under a strict web-search-disabled protocol, we find that the strongest model surpasses SOTA on only 17.8% of tasks under the g>0.1 criterion. Analysis of method pathways reveals that agents succeed primarily through methodological translation, converting scientific tasks into familiar supervised prediction problems, rather than through genuine scientific invention. Failures are dominated by wrong method choice and insufficient compute budget, not by task misunderstanding. We release the benchmark, the NatureGym pipeline, and a public leaderboard with maintainer-side reproduction. Code: https://github.com/FrontisAI/NatureBench",
+  "publishedAt": "2026-06-23T12:58:23Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 65,
+  "citationCount": 1,
+  "githubStars": 89,
+  "pageCount": 35
+ },
+ {
+  "arxivId": "2607.25565",
+  "slug": "redesign-recovering-editable-design-structures-from-images-via-agentic",
+  "title": "ReDesign: Recovering Editable Design Structures from Images via Agentic Decomposition",
+  "authors": [
+   "Jooyeol Yun",
+   "Jintae Park",
+   "Hyesu Lim",
+   "Junha Hyung",
+   "Hyungjin Chung",
+   "Jaegul Choo"
+  ],
+  "abstract": "Recovering an editable design file from a raster image is a common and costly bottleneck in modern design workflows, yet remains challenging since editability depends on recovering multi-modal attributes, such as typography, vector geometry, colors, grouping, and layer ordering. We present ReDesign, an agentic framework that grows an editable layer hierarchy by selecting and composing specialized tools across modalities. To keep this long decision process reliable despite imperfect tool outputs, we introduce graceful verification at each expansion, which provides local accept, prune, or retry feedback that prevents error accumulation and avoids large scale reruns. To evaluate editability at scale, we introduce the Figma Edit Replay Benchmark, consisting of 909 raw Figma files and 14,796 controlled edit instructions that replay edits on reconstructed outputs. Across this benchmark and standard reconstruction metrics, ReDesign achieves strong visual fidelity while delivering the highest editability across layout, color, and text edits, outperforming layered decomposition baselines and serial tool use pipelines.",
+  "publishedAt": "2026-07-28T10:53:33Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 65,
+  "citationCount": 1,
+  "githubStars": 177,
+  "pageCount": 30
+ },
+ {
+  "arxivId": "2607.25675",
+  "slug": "decoevo-score-decoupled-co-evolution-of-solver-and-rubric-generator-skills-in",
+  "title": "DecoEvo: Score-Decoupled Co-Evolution of Solver and Rubric-Generator Skills in Text Space",
+  "authors": [
+   "Jiangwang Chen",
+   "Zixin Song",
+   "Junlin Liu",
+   "Shuaiyu Zhou",
+   "Haiyan Wu",
+   "Haihan Shi"
+  ],
+  "abstract": "Text-space optimization adapts large language models (LLMs) by editing external natural-language artifacts rather than model weights, so the optimized artifacts remain inspectable and the model can be treated as a black box. However, most existing text-space methods keep evaluation fixed. On open-ended tasks, this can become a bottleneck: once the solver improves on the criteria a rubric measures, omitted dimensions remain invisible to the optimization signal. Simply evolving the rubric is also unreliable when updates are selected by the current solver's score, because apparent progress can come from making the rubric easier to satisfy. We introduce DecoEvo (Decoupled Co-Evolution), which co-evolves a solver skill and a rubric-generator skill under decoupled objectives without using gold rubrics during optimization. The solver skill is updated using criterion-level feedback, while the rubric-generator skill is revised through complementary audits of requirement coverage and response discrimination that are independent of aggregate solver score. This separation focuses generator updates on newly exposed solver weaknesses, reducing repeated emphasis on criteria the solver already satisfies. Under each benchmark's official evaluation, DecoEvo outperforms all compared methods across five benchmarks and three LLM backbones, yielding 2.8--5.0\\% relative gains over SkillOpt in the five-benchmark average.",
+  "publishedAt": "2026-07-28T12:53:30Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 65,
+  "citationCount": 2,
+  "githubStars": null,
+  "pageCount": 13
+ },
+ {
+  "arxivId": "2509.21679",
+  "slug": "reviewscore-misinformed-peer-review-detection-with-large-language-models",
+  "title": "ReviewScore: Misinformed Peer Review Detection with Large Language Models",
+  "authors": [
+   "Hyun Ryu",
+   "Doohyuk Jang",
+   "Hyemin S. Lee",
+   "Joonhyun Jeong",
+   "Gyeongman Kim",
+   "Donghyeon Cho"
+  ],
+  "abstract": "Peer review serves as a backbone of academic research, but in most AI conferences, the review quality is degrading as the number of submissions explodes. To reliably detect low-quality reviews, we define misinformed review points as either \"weaknesses\" in a review that contain incorrect premises, or \"questions\" in a review that can be already answered by the paper. We verify that 15.2% of weaknesses and 26.4% of questions are misinformed and introduce ReviewScore indicating if a review point is misinformed. To evaluate the factuality of each premise of weaknesses, we propose an automated engine that reconstructs every explicit and implicit premise from a weakness. We build a human expert-annotated ReviewScore dataset to check the ability of LLMs to automate ReviewScore evaluation. Then, we measure human-model agreements on ReviewScore using eight current state-of-the-art LLMs. The models show F1 scores of 0.4--0.5 and kappa scores of 0.3--0.4, indicating moderate agreement but also suggesting that fully automating the evaluation remains challenging. A thorough disagreement analysis reveals that most errors are due to models' incorrect reasoning. We also prove that evaluating premise-level factuality shows significantly higher agreements than evaluating weakness-level factuality.",
+  "publishedAt": "2025-09-25T22:55:05Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 64,
+  "citationCount": 2,
+  "githubStars": 0,
+  "pageCount": 35
+ },
+ {
+  "arxivId": "2510.21890",
+  "slug": "the-principles-of-diffusion-models",
+  "title": "The Principles of Diffusion Models",
+  "authors": [
+   "Chieh-Hsin Lai",
+   "Yang Song",
+   "Dongjun Kim",
+   "Yuki Mitsufuji",
+   "Stefano Ermon"
+  ],
+  "abstract": "This book presents the core principles that have guided the development of diffusion models, tracing their origins and showing how diverse formulations arise from shared mathematical ideas. Diffusion modeling starts by defining a forward process that gradually corrupts data into noise, linking the data distribution to a simple prior through a continuum of intermediate distributions. The goal is to learn a reverse process that transforms noise back into data while recovering the same intermediates. We describe three complementary views. The variational view, inspired by variational autoencoders, sees diffusion as learning to remove noise step by step. The score-based view, rooted in energy-based modeling, learns the gradient of the evolving data distribution, indicating how to nudge samples toward more likely regions. The flow-based view, related to normalizing flows, treats generation as following a smooth path that moves samples from noise to data under a learned velocity field. These perspectives share a common backbone: a time-dependent velocity field whose flow transports a simple prior to the data. Sampling then amounts to solving a differential equation that evolves noise into data along a continuous trajectory. On this foundation, the book discusses guidance for controllable generation, efficient numerical solvers, and diffusion-motivated flow-map models that learn direct mappings between arbitrary times. It provides a conceptual and mathematically grounded understanding of diffusion models for readers with basic deep-learning knowledge.",
+  "publishedAt": "2025-10-24T02:29:02Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.GR"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 64,
+  "citationCount": 69,
+  "githubStars": null,
+  "pageCount": 488
+ },
+ {
+  "arxivId": "2511.19399",
+  "slug": "dr-tulu-reinforcement-learning-with-evolving-rubrics-for-deep-research",
+  "title": "DR Tulu: Reinforcement Learning with Evolving Rubrics for Deep Research",
+  "authors": [
+   "Rulin Shao",
+   "Akari Asai",
+   "Shannon Zejiang Shen",
+   "Hamish Ivison",
+   "Varsha Kishore",
+   "Jingming Zhuo"
+  ],
+  "abstract": "Deep research agents perform multi-step research to produce long-form, well-attributed answers. However, most open deep research agents are trained on easily verifiable short-form QA tasks via reinforcement learning with verifiable rewards, which does not extend to realistic long-form tasks. We address this with Reinforcement Learning with Evolving Rubrics (RLER), where rubrics are constructed and maintained to co-evolve with the policy model during training. This allows the rubrics to incorporate newly explored information from search and contrasting model responses, enabling better fact checking and more discriminative on-policy feedback. Using RLER, we develop Deep Research Tulu (DR Tulu-8B), the first fully open model that is directly trained for open-ended, long-form deep research. Across four long-form deep research benchmarks in science, healthcare, and general domains, DR Tulu substantially outperforms existing open deep research agents (by 15.6% over Tongyi DR on average) and matches or exceeds proprietary deep research agents (by 0.7% over OpenAI DR on average), while being significantly smaller and cheaper per query (1000x cheaper than OpenAI DR per query).",
+  "publishedAt": "2025-11-24T18:35:54Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 64,
+  "citationCount": 75,
+  "githubStars": 692,
+  "pageCount": 56
+ },
+ {
+  "arxivId": "2601.02204",
+  "slug": "nextflow-unified-sequential-modeling-activates-multimodal-understanding-and",
+  "title": "NextFlow: Unified Sequential Modeling Activates Multimodal Understanding and Generation",
+  "authors": [
+   "Huichao Zhang",
+   "Liao Qu",
+   "Yiheng Liu",
+   "Hang Chen",
+   "Yangyang Song",
+   "Yongsheng Dong"
+  ],
+  "abstract": "We present NextFlow, a unified decoder-only autoregressive transformer trained on 6 trillion interleaved text-image discrete tokens. By leveraging a unified vision representation within a unified autoregressive architecture, NextFlow natively activates multimodal understanding and generation capabilities, unlocking abilities of image editing, interleaved content and video generation. Motivated by the distinct nature of modalities - where text is strictly sequential and images are inherently hierarchical - we retain next-token prediction for text but adopt next-scale prediction for visual generation. This departs from traditional raster-scan methods, enabling the generation of 1024x1024 images in just 5 seconds - orders of magnitude faster than comparable AR models. We address the instabilities of multi-scale generation through a robust training recipe. Furthermore, we introduce a prefix-tuning strategy for reinforcement learning. Experiments demonstrate that NextFlow achieves state-of-the-art performance among unified models and rivals specialized diffusion baselines in visual quality.",
+  "publishedAt": "2026-01-05T15:27:04Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 64,
+  "citationCount": 12,
+  "githubStars": 331,
+  "pageCount": 41
+ },
+ {
+  "arxivId": "2601.02242",
+  "slug": "vibe-visual-instruction-based-editor",
+  "title": "VIBE: Visual Instruction Based Editor",
+  "authors": [
+   "Grigorii Alekseenko",
+   "Aleksandr Gordeev",
+   "Irina Tolstykh",
+   "Bulat Suleimanov",
+   "Vladimir Dokholyan",
+   "Georgii Fedorov"
+  ],
+  "abstract": "Instruction-based image editing is among the fastest developing areas in generative AI. Over the past year, the field has reached a new level, with dozens of open-source models released alongside highly capable commercial systems. However, only a limited number of open-source approaches currently achieve real-world quality. In addition, diffusion backbones, the dominant choice for these pipelines, are often large and computationally expensive for many deployments and research settings, with widely used variants typically containing 6B to 20B parameters. This paper presents a compact, high-throughput instruction-based image editing pipeline that uses a modern 2B-parameter Qwen3-VL model to guide the editing process and the 1.6B-parameter diffusion model Sana1.5 for image generation. Our design decisions across architecture, data processing, training configuration, and evaluation target low-cost inference and strict source consistency while maintaining high quality across the major edit categories feasible at this scale. Evaluated on the ImgEdit and GEdit benchmarks, the proposed method matches or exceeds the performance of substantially heavier baselines, including models with several times as many parameters and higher inference cost, and is particularly strong on edits that require preserving the input image, such as an attribute adjustment, object removal, background edits, and targeted replacement. The model fits within 24 GB of GPU memory and generates edited images at up to 2K resolution in approximately 4 seconds on an NVIDIA H100 in BF16, without additional inference optimizations or distillation.",
+  "publishedAt": "2026-01-05T16:17:20Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 64,
+  "citationCount": 2,
+  "githubStars": 55,
+  "pageCount": 25
+ },
+ {
+  "arxivId": "2601.08584",
+  "slug": "ministral-3",
+  "title": "Ministral 3",
+  "authors": [
+   "Alexander H. Liu",
+   "Kartik Khandelwal",
+   "Sandeep Subramanian",
+   "Victor Jouault",
+   "Abhinav Rastogi",
+   "Adrien Sadé"
+  ],
+  "abstract": "We introduce the Ministral 3 series, a family of parameter-efficient dense language models designed for compute and memory constrained applications, available in three model sizes: 3B, 8B, and 14B parameters. For each model size, we release three variants: a pretrained base model for general-purpose use, an instruction finetuned, and a reasoning model for complex problem-solving. In addition, we present our recipe to derive the Ministral 3 models through Cascade Distillation, an iterative pruning and continued training with distillation technique. Each model comes with image understanding capabilities, all under the Apache 2.0 license.",
+  "publishedAt": "2026-01-13T14:06:03Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": "Mistral AI",
+  "hfUpvotes": 64,
+  "citationCount": 53,
+  "githubStars": null,
+  "pageCount": 14
+ },
+ {
+  "arxivId": "2601.09088",
+  "slug": "distribution-aligned-sequence-distillation-for-superior-long-cot-reasoning",
+  "title": "Distribution-Aligned Sequence Distillation for Superior Long-CoT Reasoning",
+  "authors": [
+   "Shaotian Yan",
+   "Kaiyuan Liu",
+   "Chen Shen",
+   "Bing Wang",
+   "Sinan Fan",
+   "Jun Zhang"
+  ],
+  "abstract": "In this report, we introduce DASD-4B-Thinking, a lightweight yet highly capable, fully open-source reasoning model. It achieves SOTA performance among open-source models of comparable scale across challenging benchmarks in mathematics, scientific reasoning, and code generation -- even outperforming several larger models. We begin by critically reexamining a widely adopted distillation paradigm in the community: SFT on teacher-generated responses, also known as sequence-level distillation. Although a series of recent works following this scheme have demonstrated remarkable efficiency and strong empirical performance, they are primarily grounded in the SFT perspective. Consequently, these approaches focus predominantly on designing heuristic rules for SFT data filtering, while largely overlooking the core principle of distillation itself -- enabling the student model to learn the teacher's full output distribution so as to inherit its generalization capability. Specifically, we identify three critical limitations in current practice: i) Inadequate representation of the teacher's sequence-level distribution; ii) Misalignment between the teacher's output distribution and the student's learning capacity; and iii) Exposure bias arising from teacher-forced training versus autoregressive inference. In summary, these shortcomings reflect a systemic absence of explicit teacher-student interaction throughout the distillation process, leaving the essence of distillation underexploited. To address these issues, we propose several methodological innovations that collectively form an enhanced sequence-level distillation training pipeline. Remarkably, DASD-4B-Thinking obtains competitive results using only 448K training samples -- an order of magnitude fewer than those employed by most existing open-source efforts. To support community research, we publicly release our models and the training dataset.",
+  "publishedAt": "2026-01-14T02:43:17Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 64,
+  "citationCount": 13,
+  "githubStars": 105,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2603.01562",
+  "slug": "rubricbench-aligning-model-generated-rubrics-with-human-standards",
+  "title": "RubricBench: Aligning Model-Generated Rubrics with Human Standards",
+  "authors": [
+   "Qiyuan Zhang",
+   "Junyi Zhou",
+   "Yufei Wang",
+   "Fuyuan Lyu",
+   "Yidong Ming",
+   "Can Xu"
+  ],
+  "abstract": "As Large Language Model (LLM) alignment evolves from simple completions to complex, highly sophisticated generation, Reward Models are increasingly shifting toward rubric-guided evaluation to mitigate surface-level biases. However, the community lacks a unified benchmark to assess this evaluation paradigm, as existing benchmarks lack both the discriminative complexity and the ground-truth rubric annotations required for rigorous analysis. To bridge this gap, we introduce RubricBench, a curated benchmark with 1,147 pairwise comparisons specifically designed to assess the reliability of rubric-based evaluation. Our construction employs a multi-dimensional filtration pipeline to target hard samples featuring nuanced input complexity and misleading surface bias, augmenting each with expert-annotated, atomic rubrics derived strictly from instructions. Comprehensive experiments reveal a substantial capability gap between human-annotated and model-generated rubrics, indicating that even state-of-the-art models struggle to autonomously specify valid evaluation criteria, lagging considerably behind human-guided performance.",
+  "publishedAt": "2026-03-02T07:39:49Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 64,
+  "citationCount": 10,
+  "githubStars": 31,
+  "pageCount": 23
+ },
+ {
+  "arxivId": "2603.12201",
+  "slug": "indexcache-accelerating-sparse-attention-via-cross-layer-index-reuse",
+  "title": "IndexCache: Accelerating Sparse Attention via Cross-Layer Index Reuse",
+  "authors": [
+   "Yushi Bai",
+   "Qian Dong",
+   "Ting Jiang",
+   "Xin Lv",
+   "Zhengxiao Du",
+   "Aohan Zeng"
+  ],
+  "abstract": "Long-context agentic workflows have emerged as a defining use case for large language models, making attention efficiency critical for both inference speed and serving cost. Sparse attention addresses this challenge effectively, and DeepSeek Sparse Attention (DSA) is a representative production-grade solution: a lightweight lightning indexer selects the top-k most relevant tokens per query, reducing core attention from $O(L^2)$ to $O(Lk)$. However, the indexer itself retains $O(L^2)$ complexity and must run independently at every layer, despite the fact that the resulting top-k selections are highly similar across consecutive layers. We present IndexCache, which exploits this cross-layer redundancy by partitioning layers into a small set of Full layers that run their own indexers and a majority of Shared layers that simply reuse the nearest Full layer's top-k indices. We propose two complementary approaches to determine and optimize this configuration. Training-free IndexCache applies a greedy search algorithm that selects which layers to retain indexers by directly minimizing language modeling loss on a calibration set, requiring no weight updates. Training-aware IndexCache introduces a multi-layer distillation loss that trains each retained indexer against the averaged attention distributions of all layers it serves, enabling even simple interleaved patterns to match full-indexer accuracy. Experimental results on a 30B DSA model show that IndexCache can remove 75% of indexer computations with negligible quality degradation, achieving up to 1.82$\\times$ prefill speedup and 1.48$\\times$ decode speedup compared to standard DSA. These positive results are further confirmed by our preliminary experiments on the production-scale GLM-5 model (Figure 1).",
+  "publishedAt": "2026-03-12T17:27:21Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.LG"
+  ],
+  "officialLab": "Z.ai / Zhipu / GLM",
+  "hfUpvotes": 64,
+  "citationCount": 16,
+  "githubStars": 131,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2604.22554",
+  "slug": "video-analysis-and-generation-via-a-semantic-progress-function",
+  "title": "Video Analysis and Generation via a Semantic Progress Function",
+  "authors": [
+   "Gal Metzer",
+   "Sagi Polaczek",
+   "Ali Mahdavi-Amiri",
+   "Raja Giryes",
+   "Daniel Cohen-Or"
+  ],
+  "abstract": "Transformations produced by image and video generation models often evolve in a highly non-linear manner: long stretches where the content barely changes are followed by sudden, abrupt semantic jumps. To analyze and correct this behavior, we introduce a Semantic Progress Function, a one-dimensional representation that captures how the meaning of a given sequence evolves over time. For each frame, we compute distances between semantic embeddings and fit a smooth curve that reflects the cumulative semantic shift across the sequence. Departures of this curve from a straight line reveal uneven semantic pacing. Building on this insight, we propose a semantic linearization procedure that reparameterizes (or retimes) the sequence so that semantic change unfolds at a constant rate, yielding smoother and more coherent transitions. Beyond linearization, our framework provides a model-agnostic foundation for identifying temporal irregularities, comparing semantic pacing across different generators, and steering both generated and real-world video sequences toward arbitrary target pacing.",
+  "publishedAt": "2026-04-24T13:48:51Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 64,
+  "citationCount": 1,
+  "githubStars": 38,
+  "pageCount": 11
+ },
+ {
+  "arxivId": "2605.09635",
+  "slug": "k12-kgraph-a-curriculum-aligned-knowledge-graph-for-benchmarking-and-training",
+  "title": "K12-KGraph: A Curriculum-Aligned Knowledge Graph for Benchmarking and Training Educational LLMs",
+  "authors": [
+   "Hao Liang",
+   "Qihan Lin",
+   "Zhaoyang Han",
+   "Xiaochen Ma",
+   "Zhen Hao Wong",
+   "Meiyi Qiang"
+  ],
+  "abstract": "Large language models are increasingly used in K-12 education, but existing benchmarks mainly test exam question answering rather than understanding how curriculum knowledge is structured and visually presented. We call this capability curriculum cognition. It covers prerequisite chains, concept taxonomies, experiment-concept links, pedagogical sequencing, and visual grounding. We introduce K12-KGraph, a curriculum-aligned knowledge graph extracted from official People's Education Press textbooks in mathematics, physics, chemistry, and biology across primary, middle, and high school. It contains nine node types and fourteen relation types covering curriculum structure and visual grounding. From this graph, we derive K12-Bench, a 23,640-question multi-select benchmark with five task families: Ground, Prereq, Neighbor, Evidence, and Locate. We also build K12-Train, a graph-guided supervised fine-tuning corpus of 7,335 samples, including 2,267 text-only QA pairs and 5,068 multimodal VQA pairs. On K12-Bench, Gemini-3-Flash achieves only 57 percent exact match and Gemma-4-31B-IT reaches 46 percent, with Prereq and Neighbor being the hardest tasks. Our training experiments show that domain-specific supervision can reduce this gap. Under a matched 2,300-sample budget, K12-Train-Text consistently outperforms equally sized subsets of eight mainstream instruction-tuning corpora on GaokaoBench and EduEval. For vision-language models, K12-Train-Full achieves the best overall results on Gaokao-MM, MDK12-medium, and K12Vista among all compared training configurations, despite using fewer samples than the full DataFlow and WizardLM baselines. It also surpasses both text-only and multimodal-only variants, showing that textual and visual supervision are complementary. We release the graph, benchmark, training data, and complete construction pipeline.",
+  "publishedAt": "2026-05-10T16:24:26Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 64,
+  "citationCount": 0,
+  "githubStars": 314,
+  "pageCount": 35
+ },
+ {
+  "arxivId": "2606.18216",
+  "slug": "zone-of-proximal-policy-optimization-teacher-in-prompts-not-gradients",
+  "title": "Zone of Proximal Policy Optimization: Teacher in Prompts, Not Gradients",
+  "authors": [
+   "Byung-Kwan Lee",
+   "Ximing Lu",
+   "Shizhe Diao",
+   "Minki Kang",
+   "Saurav Muralidharan",
+   "Karan Sapra"
+  ],
+  "abstract": "Knowledge distillation transfers a teacher's competence to a small student but is brittle in the small-student regime: forcing the student to imitate logits from a much larger teacher concentrates it on the teacher's sharpest modes, hurting generalization on benchmark families beyond the training corpus. Reinforcement learning (RL) avoids logit imitation by training on the student's own rollouts. However, on questions where every rollout fails-yielding zero advantage and being silently discarded-injecting a stronger teacher's response into the policy gradient breaks the on-policy assumption and induces drift. We introduce Zone of Proximal Policy Optimization (ZPPO), inspired by Vygotsky's zone of proximal development, which keeps the teacher inside the prompt rather than the policy gradient. On hard questions, ZPPO constructs two reformulated prompts: a Binary Candidate-included Question (BCQ) pairs one correct teacher response with one incorrect student response as anonymized candidates the student must discriminate, and a Negative Candidate-included Question (NCQ) aggregates the student's wrong rollouts into a single prompt to surface their shared failure modes. A prompt replay buffer recirculates each hard question until it either graduates-the student's mean rollout accuracy on it reaches half- or is FIFO-evicted under finite capacity, amplifying BCQ and NCQ inside the student's current zone of proximal development. On the Qwen3.5 family at four student scales (0.8B-9B) with a 27B teacher, post-trained as vision-language models and evaluated on a 31-benchmark suite (16 VLM, 10 LLM, 5 Video), ZPPO outperforms off/on-policy distillation and GRPO, with the largest gains at the smallest scale.",
+  "publishedAt": "2026-06-16T17:46:02Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": "NVIDIA",
+  "hfUpvotes": 64,
+  "citationCount": 2,
+  "githubStars": null,
+  "pageCount": 70
+ },
+ {
+  "arxivId": "2607.04438",
+  "slug": "researchstudio-reel-automate-the-last-mile-of-research-from-paper-to-poster",
+  "title": "ResearchStudio-Reel: Automate the Last Mile of Research from Paper to Poster, Video, and Blog",
+  "authors": [
+   "Lingao Xiao",
+   "Yalun Dai",
+   "Yangyu Huang",
+   "Qihao Zhao",
+   "Wenshan Wu",
+   "Hugo He"
+  ],
+  "abstract": "Despite growing automation, turning a paper into a coherent poster, talk video, and blog piece often remains a labor-intensive last mile. Recent systems increasingly generate multiple dissemination formats, but a practical workflow must also keep the outputs editable in native tools and bound into one navigable deliverable for revision and reuse. We present ResearchStudio-Reel, a native-editable dissemination workspace that binds its three artifacts into one interactive deliverable at the experience level, implemented as five skills executable in Claude Code and Codex: one shared extractor, three editable artifact generators, and one interactive convergence layer. A shared asset bundle feeds a PowerPoint poster and video deck, plus a bilingual Word blog; rather than re-rendering the paper into a fourth format, Paper2Reel converges these already-produced artifacts at the experience level, binding poster regions, video segments, and blog passages into one interactive viewer. Artifact-specific release checks make this delivery contract testable, and Paper2Poster additionally uses a measured-fill loop. On the Paper2Poster benchmark, our Claude Code configuration achieves the best scores among automated systems on all three aesthetic sub-criteria and the best or tied-best scores on two of three information sub-criteria. Under two VLMjudges, it exceeds the authors' posters in average aesthetics (3.56 vs. 3.03) and wins on overall quality on 74 and 95 of the 100 papers under the two judges. The full pipeline additionally packages the native-editable source artifacts and their aligned viewer. Project is available at https://aka.ms/ResearchStudio",
+  "publishedAt": "2026-07-05T17:59:33Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI",
+   "cs.HC",
+   "cs.MA",
+   "cs.MM"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 64,
+  "citationCount": 1,
+  "githubStars": null,
+  "pageCount": 25
+ },
+ {
+  "arxivId": "2607.07675",
+  "slug": "scaling-mixture-of-experts-video-pretraining-for-embodied-intelligence",
+  "title": "Scaling Mixture-of-Experts Video Pretraining for Embodied Intelligence",
+  "authors": [
+   "Shuailei Ma",
+   "Jiaqi Liao",
+   "Xinyang Wang",
+   "Jingjing Wang",
+   "Chaoran Feng",
+   "Zijing Hu"
+  ],
+  "abstract": "Despite the recent promise in robot control, video generative models suffer from a domain mismatch due to their primary focus on content creation. For example, their design inherently prioritizes visual fidelity and creativity over computational efficiency and physical realism. In this work, we present LingBot-Video, a DiT-based video pretraining paradigm specifically tailored for embodied intelligence. From the architecture perspective, we adopt the Mixture-of-Experts (MoE), instead of dense, framework to achieve a better trade-off between modeling capacity and inference efficiency, and manage to scale it up from scratch. From the data perspective, we construct a data profiling engine that augments standard internet videos with extensive robot-oriented footage, encompassing manipulation, navigation, and egocentric perspectives, to equip the base model with an intrinsic understanding of actions and world dynamics. From the training perspective, we develop a multi-dimensional reward system to enforce the alignment regarding physical rationality and task completion, going beyond standard criteria such as aesthetics, prompt-following, and motion consistency. Comprehensive evaluations validate its performance and efficiency as a video foundation model. We contribute LingBot-Video as the inaugural large-scale, open-source MoE video foundation model to the community, in a pioneering effort to bridge digital creativity and physical actuation.",
+  "publishedAt": "2026-07-08T17:33:40Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 64,
+  "citationCount": 3,
+  "githubStars": 908,
+  "pageCount": 51
+ },
+ {
+  "arxivId": "2508.07981",
+  "slug": "omni-effects-unified-and-spatially-controllable-visual-effects-generation",
+  "title": "Omni-Effects: Unified and Spatially-Controllable Visual Effects Generation",
+  "authors": [
+   "Fangyuan Mao",
+   "Aiming Hao",
+   "Jintao Chen",
+   "Dongxia Liu",
+   "Xiaokun Feng",
+   "Jiashu Zhu"
+  ],
+  "abstract": "Visual effects (VFX) are essential visual enhancements fundamental to modern cinematic production. Although video generation models offer cost-efficient solutions for VFX production, current methods are constrained by per-effect LoRA training, which limits generation to single effects. This fundamental limitation impedes applications that require spatially controllable composite effects, i.e., the concurrent generation of multiple effects at designated locations. However, integrating diverse effects into a unified framework faces major challenges: interference from effect variations and spatial uncontrollability during multi-VFX joint training. To tackle these challenges, we propose Omni-Effects, a first unified framework capable of generating prompt-guided effects and spatially controllable composite effects. The core of our framework comprises two key innovations: (1) LoRA-based Mixture of Experts (LoRA-MoE), which employs a group of expert LoRAs, integrating diverse effects within a unified model while effectively mitigating cross-task interference. (2) Spatial-Aware Prompt (SAP) incorporates spatial mask information into the text token, enabling precise spatial control. Furthermore, we introduce an Independent-Information Flow (IIF) module integrated within the SAP, isolating the control signals corresponding to individual effects to prevent any unwanted blending. To facilitate this research, we construct a comprehensive VFX dataset Omni-VFX via a novel data collection pipeline combining image editing and First-Last Frame-to-Video (FLF2V) synthesis, and introduce a dedicated VFX evaluation framework for validating model performance. Extensive experiments demonstrate that Omni-Effects achieves precise spatial control and diverse effect generation, enabling users to specify both the category and location of desired effects.",
+  "publishedAt": "2025-08-11T13:41:24Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 63,
+  "citationCount": 28,
+  "githubStars": 175,
+  "pageCount": 16
+ },
+ {
+  "arxivId": "2508.20453",
+  "slug": "mcp-bench-benchmarking-tool-using-llm-agents-with-complex-real-world-tasks-via",
+  "title": "MCP-Bench: Benchmarking Tool-Using LLM Agents with Complex Real-World Tasks via MCP Servers",
+  "authors": [
+   "Zhenting Wang",
+   "Qi Chang",
+   "Hemani Patel",
+   "Shashank Biju",
+   "Cheng-En Wu",
+   "Quan Liu"
+  ],
+  "abstract": "We introduce MCP-Bench, a benchmark for evaluating large language models (LLMs) on realistic, multi-step tasks that demand tool use, cross-tool coordination, precise parameter control, and planning/reasoning for solving tasks. Built on the Model Context Protocol (MCP), MCP-Bench connects LLMs to 28 representative live MCP servers spanning 250 tools across domains such as finance, traveling, scientific computing, and academic search. Unlike prior API-based benchmarks, each MCP server provides a set of complementary tools designed to work together, enabling the construction of authentic, multi-step tasks with rich input-output coupling. Tasks in MCP-Bench test agents' ability to retrieve relevant tools from fuzzy instructions without explicit tool names, plan multi-hop execution trajectories for complex objectives, ground responses in intermediate tool outputs, and orchestrate cross-domain workflows - capabilities not adequately evaluated by existing benchmarks that rely on explicit tool specifications, shallow few-step workflows, and isolated domain operations. We propose a multi-faceted evaluation framework covering tool-level schema understanding and usage, trajectory-level planning, and task completion. Experiments on 20 advanced LLMs reveal persistent challenges in MCP-Bench. Code and data: https://github.com/Accenture/mcp-bench.",
+  "publishedAt": "2025-08-28T05:58:57Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 63,
+  "citationCount": 90,
+  "githubStars": 496,
+  "pageCount": 52
+ },
+ {
+  "arxivId": "2509.18154",
+  "slug": "minicpm-v-4-5-cooking-efficient-mllms-via-architecture-data-and-training-recipe",
+  "title": "MiniCPM-V 4.5: Cooking Efficient MLLMs via Architecture, Data, and Training Recipe",
+  "authors": [
+   "Tianyu Yu",
+   "Zefan Wang",
+   "Chongyi Wang",
+   "Fuwei Huang",
+   "Wenshuo Ma",
+   "Zhihui He"
+  ],
+  "abstract": "Multimodal Large Language Models (MLLMs) are undergoing rapid progress and represent the frontier of AI development. However, their training and inference efficiency have emerged as a core bottleneck in making MLLMs more accessible and scalable. To address the challenges, we present MiniCPM-V 4.5, an 8B parameter model designed for high efficiency and strong performance. We introduce three core improvements in model architecture, data strategy and training method: a unified 3D-Resampler model architecture for highly compact encoding over images and videos, a unified learning paradigm for document knowledge and text recognition without heavy data engineering, and a hybrid reinforcement learning strategy for proficiency in both short and long reasoning modes. Comprehensive experimental results in OpenCompass evaluation show that MiniCPM-V 4.5 surpasses widely used proprietary models such as GPT-4o-latest, and significantly larger open-source models such as Qwen2.5-VL 72B. Notably, the strong performance is achieved with remarkable efficiency. For example, on the widely adopted VideoMME benchmark, MiniCPM-V 4.5 achieves state-of-the-art performance among models under 30B size, using just 46.7\\% GPU memory cost and 8.7\\% inference time of Qwen2.5-VL 7B.",
+  "publishedAt": "2025-09-16T19:41:48Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 63,
+  "citationCount": 124,
+  "githubStars": 26107,
+  "pageCount": 25
+ },
+ {
+  "arxivId": "2510.13998",
+  "slug": "bitnet-distillation",
+  "title": "BitNet Distillation",
+  "authors": [
+   "Xun Wu",
+   "Shaohan Huang",
+   "Wenhui Wang",
+   "Ting Song",
+   "Li Dong",
+   "Yan Xia"
+  ],
+  "abstract": "In this paper, we present BitNet Distillation (BitDistill), a lightweight pipeline that fine-tunes off-the-shelf full-precision LLMs (e.g., Qwen) into 1.58-bit precision (i.e., ternary weights {-1, 0, 1}) for specific downstream tasks, achieving strong task-specific performance with minimal computational cost. Specifically, BitDistill incorporates three key techniques: the SubLN module, as introduced in BitNet; multi-head attention distillation, based on MiniLM; and continual pre-training, which serves as a crucial warm-up step to mitigate the scalability issue of the performance gap between finetuned full-precision and 1.58-bit LLMs on specific tasks. Experimental results show that BitDistill achieves performance comparable to the full-precision counterpart models across model size, while enabling up to 10x memory savings and 2.65x faster inference on CPUs. Code is available at https://github.com/microsoft/BitNet.",
+  "publishedAt": "2025-10-15T18:28:12Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 63,
+  "citationCount": 2,
+  "githubStars": null,
+  "pageCount": 12
+ },
+ {
+  "arxivId": "2510.19363",
+  "slug": "loongrl-reinforcement-learning-for-advanced-reasoning-over-long-contexts",
+  "title": "LoongRL: Reinforcement Learning for Advanced Reasoning over Long Contexts",
+  "authors": [
+   "Siyuan Wang",
+   "Gaokai Zhang",
+   "Li Lyna Zhang",
+   "Ning Shang",
+   "Fan Yang",
+   "Dongyao Chen"
+  ],
+  "abstract": "Reasoning over long contexts is essential for large language models. While reinforcement learning (RL) enhances short-context reasoning by inducing \"Aha\" moments in chain-of-thought, the advanced thinking patterns required for long-context reasoning remain largely unexplored, and high-difficulty RL data are scarce. In this paper, we introduce LoongRL, a data-driven RL method for advanced long-context reasoning. Central to LoongRL is KeyChain, a synthesis approach that transforms short multi-hop QA into high-difficulty long-context tasks by inserting UUID chains that hide the true question among large collections of distracting documents. Solving these tasks requires the model to trace the correct chain step-by-step, identify the true question, retrieve relevant facts and reason over them to answer correctly. RL training on KeyChain data induces an emergent plan-retrieve-reason-recheck reasoning pattern that generalizes far beyond training length. Models trained at 16K effectively solve 128K tasks without prohibitive full-length RL rollout costs. On Qwen2.5-7B and 14B, LoongRL substantially improves long-context multi-hop QA accuracy by +23.5% and +21.1% absolute gains. The resulting LoongRL-14B reaches a score of 74.2, rivaling much larger frontier models such as o3-mini (74.5) and DeepSeek-R1 (74.9). It also improves long-context retrieval, passes all 128K needle-in-a-haystack stress tests, and preserves short-context reasoning capabilities.",
+  "publishedAt": "2025-10-22T08:35:28Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 63,
+  "citationCount": 21,
+  "githubStars": null,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2511.10555",
+  "slug": "a-style-is-worth-one-code-unlocking-code-to-style-image-generation-with",
+  "title": "A Style is Worth One Code: Unlocking Code-to-Style Image Generation with Discrete Style Space",
+  "authors": [
+   "Huijie Liu",
+   "Shuhao Cui",
+   "Haoxiang Cao",
+   "Shuai Ma",
+   "Kai Wu",
+   "Guoliang Kang"
+  ],
+  "abstract": "Innovative visual stylization is a cornerstone of artistic creation, yet generating novel and consistent visual styles remains a significant challenge. Existing generative approaches typically rely on lengthy textual prompts, reference images, or parameter-efficient fine-tuning to guide style-aware image generation, but often struggle with style consistency, limited creativity, and complex style representations. In this paper, we affirm that a style is worth one numerical code by introducing the novel task, code-to-style image generation, which produces images with novel, consistent visual styles conditioned solely on a numerical style code. To date, this field has only been primarily explored by the industry (e.g., Midjourney), with no open-source research from the academic community. To fill this gap, we propose CoTyle, the first open-source method for this task. Specifically, we first train a discrete style codebook from a collection of images to extract style embeddings. These embeddings serve as conditions for a text-to-image diffusion model (T2I-DM) to generate stylistic images. Subsequently, we train an autoregressive style generator on the discrete style embeddings to model their distribution, allowing the synthesis of novel style embeddings. During inference, a numerical style code is mapped to a unique style embedding by the style generator, and this embedding guides the T2I-DM to generate images in the corresponding style. Unlike existing methods, our method offers unparalleled simplicity and diversity, unlocking a vast space of reproducible styles from minimal input. Extensive experiments validate that CoTyle effectively turns a numerical code into a style controller, demonstrating a style is worth one code.",
+  "publishedAt": "2025-11-13T17:56:10Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 63,
+  "citationCount": 0,
+  "githubStars": 222,
+  "pageCount": 17
+ },
+ {
+  "arxivId": "2512.24271",
+  "slug": "taming-hallucinations-boosting-mllms-video-understanding-via-counterfactual",
+  "title": "Taming Hallucinations: Boosting MLLMs' Video Understanding via Counterfactual Video Generation",
+  "authors": [
+   "Zhe Huang",
+   "Hao Wen",
+   "Aiming Hao",
+   "Bingze Song",
+   "Meiqi Wu",
+   "Jiahong Wu"
+  ],
+  "abstract": "Multimodal Large Language Models (MLLMs) have made remarkable progress in video understanding. However, they suffer from a critical vulnerability: an over-reliance on language priors, which can lead to visual ungrounded hallucinations, especially when processing counterfactual videos that defy common sense. This limitation, stemming from the intrinsic data imbalance between text and video, is challenging to address due to the substantial cost of collecting and annotating counterfactual data. To address this, we introduce DualityForge, a novel counterfactual data synthesis framework that employs controllable, diffusion-based video editing to transform real-world videos into counterfactual scenarios. By embedding structured contextual information into the video editing and QA generation processes, the framework automatically produces high-quality QA pairs together with original-edited video pairs for contrastive training. Based on this, we build DualityVidQA, a large-scale video dataset designed to reduce MLLM hallucinations. In addition, to fully exploit the contrastive nature of our paired data, we propose Duality-Normalized Advantage Training (DNA-Train), a two-stage SFT-RL training regime where the RL phase applies pair-wise $\\ell_1$ advantage normalization, thereby enabling a more stable and efficient policy optimization. Experiments on DualityVidQA-Test demonstrate that our method substantially reduces model hallucinations on counterfactual videos, yielding a relative improvement of 24.0% over the Qwen2.5-VL-7B baseline. Moreover, our approach achieves significant gains across both hallucination and general-purpose benchmarks, indicating strong generalization capability. We will open-source our dataset and code.",
+  "publishedAt": "2025-12-30T14:53:33Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 63,
+  "citationCount": 6,
+  "githubStars": 55,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2601.11655",
+  "slug": "advances-and-frontiers-of-llm-based-issue-resolution-in-software-engineering-a",
+  "title": "Advances and Frontiers of LLM-based Issue Resolution in Software Engineering: A Comprehensive Survey",
+  "authors": [
+   "Caihua Li",
+   "Lianghong Guo",
+   "Yanlin Wang",
+   "Daya Guo",
+   "Wei Tao",
+   "Zhenyu Shan"
+  ],
+  "abstract": "Issue resolution, a complex Software Engineering (SWE) task integral to real-world development, has emerged as a compelling challenge for artificial intelligence. The establishment of benchmarks like SWE-bench revealed this task as profoundly difficult for large language models, thereby significantly accelerating the evolution of autonomous coding agents. This paper presents a systematic survey of this emerging domain. We begin by examining data construction pipelines, covering automated collection and synthesis approaches. We then provide a comprehensive analysis of methodologies, spanning training-free frameworks with their modular components to training-based techniques, including supervised fine-tuning and reinforcement learning. Subsequently, we discuss critical analyses of data quality and agent behavior, alongside practical applications. Finally, we identify key challenges and outline promising directions for future research. An open-source repository is maintained at https://github.com/DeepSoftwareAnalytics/Awesome-Issue-Resolution to serve as a dynamic resource in this field.",
+  "publishedAt": "2026-01-15T18:55:03Z",
+  "primaryArxivCategory": [
+   "cs.SE",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 63,
+  "citationCount": 7,
+  "githubStars": 86,
+  "pageCount": 26
+ },
+ {
+  "arxivId": "2601.22813",
+  "slug": "quartet-ii-accurate-llm-pre-training-in-nvfp4-by-improved-unbiased-gradient",
+  "title": "Quartet II: Accurate LLM Pre-Training in NVFP4 by Improved Unbiased Gradient Estimation",
+  "authors": [
+   "Andrei Panferov",
+   "Erik Schultheis",
+   "Soroush Tabesh",
+   "Dan Alistarh"
+  ],
+  "abstract": "The NVFP4 lower-precision format, supported in hardware by NVIDIA Blackwell GPUs, promises to allow, for the first time, end-to-end fully-quantized pre-training of massive models such as LLMs. Yet, existing quantized training methods still sacrifice some of the representation capacity of this format in favor of more accurate unbiased quantized gradient estimation by stochastic rounding (SR), losing noticeable accuracy relative to standard FP16 and FP8 training. In this paper, improve the state of the art for quantized training in NVFP4 via a novel unbiased quantization routine for micro-scaled formats, called MS-EDEN, that has more than 2x lower quantization error than SR. We integrate it into a novel fully-NVFP4 quantization scheme for linear layers, called Quartet II. We show analytically that Quartet II achieves consistently better gradient estimation across all major matrix multiplications, both on the forward and on the backward passes. In addition, our proposal synergizes well with recent training improvements aimed specifically at NVFP4. We further validate Quartet II on end-to-end LLM training with up to 1.9B parameters on 38B tokens. We provide kernels for execution on NVIDIA Blackwell GPUs with up to 4.2x speedup over BF16. Our code is available at https://github.com/IST-DASLab/Quartet-II .",
+  "publishedAt": "2026-01-30T10:39:11Z",
+  "primaryArxivCategory": [
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 63,
+  "citationCount": 11,
+  "githubStars": 80,
+  "pageCount": 16
+ },
+ {
+  "arxivId": "2602.02474",
+  "slug": "memskill-learning-and-evolving-memory-skills-for-self-evolving-agents",
+  "title": "MemSkill: Learning and Evolving Memory Skills for Self-Evolving Agents",
+  "authors": [
+   "Haozhen Zhang",
+   "Quanyu Long",
+   "Jianzhu Bao",
+   "Tao Feng",
+   "Weizhi Zhang",
+   "Haodong Yue"
+  ],
+  "abstract": "Most Large Language Model (LLM) agent memory systems rely on a small set of static, hand-designed operations for extracting memory. These fixed procedures hard-code human priors about what to store and how to revise memory, making them rigid under diverse interaction patterns and inefficient on long histories. To this end, we present \\textbf{MemSkill}, which reframes these operations as learnable and evolvable memory skills, structured and reusable routines for extracting, consolidating, and pruning information from interaction traces. Inspired by the design philosophy of agent skills, MemSkill employs a \\emph{controller} that learns to select a small set of relevant skills, paired with an LLM-based \\emph{executor} that produces skill-guided memories. Beyond learning skill selection, MemSkill introduces a \\emph{designer} that periodically reviews hard cases where selected skills yield incorrect or incomplete memories, and evolves the skill set by proposing refinements and new skills. Together, MemSkill forms a closed-loop procedure that improves both the skill-selection policy and the skill set itself. Experiments on LoCoMo, LongMemEval, HotpotQA, and ALFWorld demonstrate that MemSkill improves task performance over strong baselines and generalizes well across settings. Further analyses shed light on how skills evolve, offering insights toward more adaptive, self-evolving memory management for LLM agents.",
+  "publishedAt": "2026-02-02T18:53:28Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 63,
+  "citationCount": 92,
+  "githubStars": 556,
+  "pageCount": 33
+ },
+ {
+  "arxivId": "2602.05027",
+  "slug": "audiosae-towards-understanding-of-audio-processing-models-with-sparse",
+  "title": "AudioSAE: Towards Understanding of Audio-Processing Models with Sparse AutoEncoders",
+  "authors": [
+   "Georgii Aparin",
+   "Tasnima Sadekova",
+   "Alexey Rukhovich",
+   "Assel Yermekova",
+   "Laida Kushnareva",
+   "Vadim Popov"
+  ],
+  "abstract": "Sparse Autoencoders (SAEs) are powerful tools for interpreting neural representations, yet their use in audio remains underexplored. We train SAEs across all encoder layers of Whisper and HuBERT, provide an extensive evaluation of their stability, interpretability, and show their practical utility. Over 50% of the features remain consistent across random seeds, and reconstruction quality is preserved. SAE features capture general acoustic and semantic information as well as specific events, including environmental noises and paralinguistic sounds (e.g. laughter, whispering) and disentangle them effectively, requiring removal of only 19-27% of features to erase a concept. Feature steering reduces Whisper's false speech detections by 70% with negligible WER increase, demonstrating real-world applicability. Finally, we find SAE features correlated with human EEG activity during speech perception, indicating alignment with human neural processing. The code and checkpoints are available at https://github.com/audiosae/audiosae_demo.",
+  "publishedAt": "2026-02-04T20:29:16Z",
+  "primaryArxivCategory": [
+   "cs.SD",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 63,
+  "citationCount": 5,
+  "githubStars": 15,
+  "pageCount": 34
+ },
+ {
+  "arxivId": "2603.03269",
+  "slug": "loger-long-context-geometric-reconstruction-with-hybrid-memory",
+  "title": "LoGeR: Long-Context Geometric Reconstruction with Hybrid Memory",
+  "authors": [
+   "Junyi Zhang",
+   "Charles Herrmann",
+   "Junhwa Hur",
+   "Chen Sun",
+   "Ming-Hsuan Yang",
+   "Forrester Cole"
+  ],
+  "abstract": "Feedforward geometric foundation models achieve strong short-window reconstruction, yet scaling them to minutes-long videos is bottlenecked by quadratic attention complexity or limited effective memory in recurrent designs. We present LoGeR (Long-context Geometric Reconstruction), a novel architecture that scales dense 3D reconstruction to extremely long sequences without post-optimization. LoGeR processes video streams in chunks, leveraging strong bidirectional priors for high-fidelity intra-chunk reasoning. To manage the critical challenge of coherence across chunk boundaries, we propose a learning-based hybrid memory module. This dual-component system combines a parametric Test-Time Training (TTT) memory to anchor the global coordinate frame and prevent scale drift, alongside a non-parametric Sliding Window Attention (SWA) mechanism to preserve uncompressed context for high-precision adjacent alignment. Remarkably, this memory architecture enables LoGeR to be trained on sequences of 128 frames, and generalize up to thousands of frames during inference. Evaluated across standard benchmarks and a newly repurposed VBR dataset with sequences of up to 19k frames, LoGeR substantially outperforms prior state-of-the-art feedforward methods--reducing ATE on KITTI by over 74%--and achieves robust, globally consistent reconstruction over unprecedented horizons.",
+  "publishedAt": "2026-03-03T18:55:37Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.LG"
+  ],
+  "officialLab": "Google DeepMind / Google",
+  "hfUpvotes": 63,
+  "citationCount": 22,
+  "githubStars": 609,
+  "pageCount": 17
+ },
+ {
+  "arxivId": "2603.25551",
+  "slug": "voxtral-tts",
+  "title": "Voxtral TTS",
+  "authors": [
+   "Mistral-AI",
+   ":",
+   "Alexander H. Liu",
+   "Alexis Tacnet",
+   "Andy Ehrenberg",
+   "Andy Lo"
+  ],
+  "abstract": "We introduce Voxtral TTS, an expressive multilingual text-to-speech model that generates natural speech from as little as 3 seconds of reference audio. Voxtral TTS adopts a hybrid architecture that combines auto-regressive generation of semantic speech tokens with flow-matching for acoustic tokens. These tokens are encoded and decoded with Voxtral Codec, a speech tokenizer trained from scratch with a hybrid VQ-FSQ quantization scheme. In human evaluations conducted by native speakers, Voxtral TTS is preferred for multilingual voice cloning due to its naturalness and expressivity, achieving a 68.4\\% win rate over ElevenLabs Flash v2.5. We release the model weights under a CC BY-NC license.",
+  "publishedAt": "2026-03-26T15:23:34Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": "Mistral AI",
+  "hfUpvotes": 63,
+  "citationCount": 0,
+  "githubStars": null,
+  "pageCount": 16
+ }
+]

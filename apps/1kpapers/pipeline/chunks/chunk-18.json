@@ -1,0 +1,705 @@
+[
+ {
+  "arxivId": "2602.08990",
+  "slug": "internagent-1-5-a-unified-agentic-framework-for-long-horizon-autonomous",
+  "title": "InternAgent-1.5: A Unified Agentic Framework for Long-Horizon Autonomous Scientific Discovery",
+  "authors": [
+   "Shiyang Feng",
+   "Runmin Ma",
+   "Xiangchao Yan",
+   "Yue Fan",
+   "Yusong Hu",
+   "Songtao Huang"
+  ],
+  "abstract": "We introduce InternAgent-1.5, a unified system designed for end-to-end scientific discovery across computational and empirical domains. The system is built on a structured architecture composed of three coordinated subsystems for generation, verification, and evolution. These subsystems are supported by foundational capabilities for deep research, solution optimization, and long horizon memory. The architecture allows InternAgent-1.5 to operate continuously across extended discovery cycles while maintaining coherent and improving behavior. It also enables the system to coordinate computational modeling and laboratory experimentation within a single unified system. We evaluate InternAgent-1.5 on scientific reasoning benchmarks such as GAIA, HLE, GPQA, and FrontierScience, and the system achieves leading performance that demonstrates strong foundational capabilities. Beyond these benchmarks, we further assess two categories of discovery tasks. In algorithm discovery tasks, InternAgent-1.5 autonomously designs competitive methods for core machine learning problems. In empirical discovery tasks, it executes complete computational or wet lab experiments and produces scientific findings in earth, life, biological, and physical domains. Overall, these results show that InternAgent-1.5 provides a general and scalable framework for autonomous scientific discovery.",
+  "publishedAt": "2026-02-09T18:36:06Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 84,
+  "citationCount": 20,
+  "githubStars": 1394,
+  "pageCount": 64
+ },
+ {
+  "arxivId": "2604.17295",
+  "slug": "llatisa-towards-difficulty-stratified-time-series-reasoning-from-visual",
+  "title": "LLaTiSA: Towards Difficulty-Stratified Time Series Reasoning from Visual Perception to Semantics",
+  "authors": [
+   "Yueyang Ding",
+   "HaoPeng Zhang",
+   "Rui Dai",
+   "Yi Wang",
+   "Tianyu Zong",
+   "Kaikui Liu"
+  ],
+  "abstract": "Comprehensive understanding of time series remains a significant challenge for Large Language Models (LLMs). Current research is hindered by fragmented task definitions and benchmarks with inherent ambiguities, precluding rigorous evaluation and the development of unified Time Series Reasoning Models(TSRMs). To bridge this gap, we formalize Time Series Reasoning (TSR) via a four-level taxonomy of increasing cognitive complexity. We introduce HiTSR, a hierarchical time series reasoning dataset comprising 83k samples with diverse task combinations and verified Chain-of-Thought (CoT) trajectories. Leveraging HiTSR, we propose LLaTiSA, a strong TSRM that integrates visualized patterns with precision-calibrated numerical tables to enhance the temporal perception of Vision-Language Models (VLMs). Through a multi-stage curriculum fine-tuning strategy, LLaTiSA achieves superior performance and exhibits robust out-of-distribution generalization across diverse TSR tasks and real-world scenarios. Our code is available at https://github.com/RainingNovember/LLaTiSA.",
+  "publishedAt": "2026-04-19T07:25:45Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 84,
+  "citationCount": 1,
+  "githubStars": 78,
+  "pageCount": 41
+ },
+ {
+  "arxivId": "2605.24830",
+  "slug": "macaron-a2ui-a-model-for-generative-ui-in-personal-agents",
+  "title": "Macaron-A2UI: A Model for Generative UI in Personal Agents",
+  "authors": [
+   "Fancy Kong",
+   "Congjie Zheng",
+   "Murphy Zhuang",
+   "Rio Yang",
+   "Sueky Zhang",
+   "Hao Fu"
+  ],
+  "abstract": "As personal agents evolve to handle complex, user-centric tasks, static plain-text chat is rapidly becoming a bottleneck. Generative UI emerges as the necessary new interface layer, dynamically synthesizing the right controls, options, and state from the interaction context in real time. We present Macaron-A2UI, a model for Generative UI in personal agents. Our goal is to move beyond text-only interaction by enabling agents to generate natural language together with lightweight, executable UI actions for information collection, preference refinement, confirmation, and multi-goal organization. We build a large-scale Generative UI corpus from heterogeneous dialogue sources, introduce A2UI-Bench for controlled evaluation, and train 30B, 235B and 754B models with parameter-efficient LoRA-based supervised fine-tuning followed by reward-driven reinforcement learning. The best Macaron-A2UI model reaches 75.6 overall on A2UI-Bench without explicit schema hints, surpassing the strongest full-schema frontier baseline. We release the models, benchmark, and evaluation protocol to support future work on Generative UI for personal agents.",
+  "publishedAt": "2026-05-24T02:51:07Z",
+  "primaryArxivCategory": [
+   "cs.HC"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 84,
+  "citationCount": 1,
+  "githubStars": null,
+  "pageCount": 29
+ },
+ {
+  "arxivId": "2606.13679",
+  "slug": "interleavethinker-reinforcing-agentic-interleaved-generation",
+  "title": "InterleaveThinker: Reinforcing Agentic Interleaved Generation",
+  "authors": [
+   "Dian Zheng",
+   "Harry Lee",
+   "Manyuan Zhang",
+   "Kaituo Feng",
+   "Zoey Guo",
+   "Ray Zhang"
+  ],
+  "abstract": "Recent image generators have demonstrated impressive photorealism and instruction-following capabilities in single-image generation and editing. However, constrained by their architectures, they cannot achieve interleaved generation (text-image sequence), which has crucial applications in visual narratives, guidance, and embodied manipulation. Even the latest open-source Unified Multimodal Models (UMMs) exhibit limited performance in this regard. In this paper, we introduce InterleaveThinker, the first multi-agent pipeline designed to endow any existing image generator with interleaved generation capabilities. Specifically, we employ a planner agent to organize the image-text input sequence, instructing the image generator on the required execution at each step. Subsequently, we introduce a critic agent to evaluate the generator's outputs, identify samples that deviate from the planned instructions, and refine the instructions for regeneration. To implement this pipeline, we construct the Interleave-Planner-SFT-80k and Interleave-Critic-SFT-112k to perform a format cold-start. Then we develop Interleave-Critic-RL-13k to reinforce the step-wise instruction correction capability within a generation trajectory using GRPO. Since a single interleaved generation trajectory may involve over 25 generator calls, optimizing the entire trajectory is computationally impractical. Therefore, we propose accuracy reward and step-wise reward, allowing single-step RL to effectively guide the entire generation trajectory. The results show that InterleaveThinker improves performance across various image generators. On interleaved generation benchmarks, it achieves performance comparable to Nano Banana and GPT-5. Surprisingly, it also significantly enhances the base model on reasoning-based benchmarks; for example, on 4-step FLUX.2-klein, we observe substantial gains on WISE and RISE.",
+  "publishedAt": "2026-06-11T17:59:50Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 84,
+  "citationCount": 0,
+  "githubStars": 208,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2607.02980",
+  "slug": "hierarchical-sparse-attention-done-right-toward-infinite-context-modeling",
+  "title": "Hierarchical Sparse Attention Done Right: Toward Infinite Context Modeling",
+  "authors": [
+   "Xiang Hu",
+   "Xinyu Wei",
+   "Hao Gu",
+   "Minshen Zhang",
+   "Tian Liang",
+   "Huayang Li"
+  ],
+  "abstract": "Scaling modern large language models (LLMs) to long contexts is limited by the quadratic computation cost, and poor length extrapolation of dense attention. Chunk-wise sparse attention offers a promising alternative, but all existing methods fall short of full attention because of their inaccurate chunk selection. We propose Hierarchical Landmark Sparse (HiLS) Attention, a chunk-wise sparse attention mechanism that learns chunk selection end-to-end under the language-modeling (LM) loss. HiLS factorizes attention hierarchically: each query performs attention independently with each retrieved chunk to extract chunk-specific information, and the resulting outputs are fused according to chunk retrieval scores. By incorporating retrieval scores into the forward attention computation, HiLS optimizes them directly with the LM loss, enabling end-to-end retrieval learning and native sparse training. Experimental results show that HiLS-Attention achieves performance comparable to, and in some cases better than, full attention at in-domain context lengths. Meanwhile, HiLS-Attention extrapolates more than $64\\times$ the training context length with 90% retrieval accuracy, far beyond full attention. Moreover, existing full-attention models can be converted to HiLS-Attention with lightweight continued pretraining, preserving in-domain performance while acquiring ultra-long-context extrapolation. Together with its sparse KV access and computation, HiLS-Attention breaks the usual efficiency-performance trade-off, enabling long-context LLMs that are both more efficient and more effective on general long-context tasks than their full-attention counterparts.",
+  "publishedAt": "2026-07-03T05:39:00Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 84,
+  "citationCount": 1,
+  "githubStars": 138,
+  "pageCount": 27
+ },
+ {
+  "arxivId": "2607.11886",
+  "slug": "read-it-back-pretrained-mllms-are-zero-shot-reward-models-for-text-to-image",
+  "title": "Read It Back: Pretrained MLLMs Are Zero-Shot Reward Models for Text-to-Image Generation",
+  "authors": [
+   "Runhui Huang",
+   "Qihui Zhang",
+   "Zhe Liu",
+   "Yu Gao",
+   "Jie Wu",
+   "Hengshuang Zhao"
+  ],
+  "abstract": "In this paper, we propose SpectraReward, a training-free reward function that turns pretrained MLLMs into off-the-shelf reward models for image-generation reinforcement learning. Instead of asking the MLLM to judge a generated image or answer decomposed verification questions, SpectraReward measures how well the original prompt can be recovered from the generated image through a single image-conditioned, teacher-forced forward pass. We use the average image-conditioned prompt log-likelihood as the reward, directly reusing the MLLM's pretrained image-text alignment ability without preference labels, reward-model fine-tuning. We further introduce Self-SpectraReward, a special case for unified multimodal models where the policy's own understanding branch serves as the reward model for its generation branch, forming a closed-loop self-improving framework without external reward models or external knowledge. Extensive experiments validate SpectraReward through a broad image-generation RL study covering two diffusion models, three RL algorithms, nine reward MLLM backbones from four MLLM families spanning 4B to 235B parameters, and five out-of-distribution text-to-image benchmarks. Results show that both SpectraReward and Self-SpectraReward significantly and consistently improve generation performance and outperform prior MLLM-derived reward training methods. Further analysis reveals that larger reward MLLMs are not always better, while Self-SpectraReward can match or surpass much larger external reward models, suggesting that reward-policy alignment is a key factor for effective image-generation RL. Project Page: https://huangrh99.github.io/SpectraReward/",
+  "publishedAt": "2026-07-13T17:59:58Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 84,
+  "citationCount": 0,
+  "githubStars": null,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2509.06501",
+  "slug": "webexplorer-explore-and-evolve-for-training-long-horizon-web-agents",
+  "title": "WebExplorer: Explore and Evolve for Training Long-Horizon Web Agents",
+  "authors": [
+   "Junteng Liu",
+   "Yunji Li",
+   "Chi Zhang",
+   "Jingyang Li",
+   "Aili Chen",
+   "Ke Ji"
+  ],
+  "abstract": "The paradigm of Large Language Models (LLMs) has increasingly shifted toward agentic applications, where web browsing capabilities are fundamental for retrieving information from diverse online sources. However, existing open-source web agents either demonstrate limited information-seeking abilities on complex tasks or lack transparent implementations. In this work, we identify that the key challenge lies in the scarcity of challenging data for information seeking. To address this limitation, we introduce WebExplorer: a systematic data generation approach using model-based exploration and iterative, long-to-short query evolution. This method creates challenging query-answer pairs that require multi-step reasoning and complex web navigation. By leveraging our curated high-quality dataset, we successfully develop advanced web agent WebExplorer-8B through supervised fine-tuning followed by reinforcement learning. Our model supports 128K context length and up to 100 tool calling turns, enabling long-horizon problem solving. Across diverse information-seeking benchmarks, WebExplorer-8B achieves the state-of-the-art performance at its scale. Notably, as an 8B-sized model, WebExplorer-8B is able to effectively search over an average of 16 turns after RL training, achieving higher accuracy than WebSailor-72B on BrowseComp-en/zh and attaining the best performance among models up to 100B parameters on WebWalkerQA and FRAMES. Beyond these information-seeking tasks, our model also achieves strong generalization on the HLE benchmark even though it is only trained on knowledge-intensive QA data. These results highlight our approach as a practical path toward long-horizon web agents.",
+  "publishedAt": "2025-09-08T10:07:03Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 83,
+  "citationCount": 74,
+  "githubStars": 120,
+  "pageCount": 23
+ },
+ {
+  "arxivId": "2510.02245",
+  "slug": "exgrpo-learning-to-reason-from-experience",
+  "title": "ExGRPO: Learning to Reason from Experience",
+  "authors": [
+   "Runzhe Zhan",
+   "Yafu Li",
+   "Zhi Wang",
+   "Xiaoye Qu",
+   "Dongrui Liu",
+   "Jing Shao"
+  ],
+  "abstract": "Reinforcement learning from verifiable rewards (RLVR) is an emerging paradigm for improving the reasoning ability of large language models. However, standard on-policy training discards rollout experiences after a single update, leading to computational inefficiency and instability. While prior work on RL has highlighted the benefits of reusing past experience, the role of experience characteristics in shaping learning dynamics of large reasoning models remains underexplored. In this paper, we are the first to investigate what makes a reasoning experience valuable and identify rollout correctness and entropy as effective indicators of experience value. Based on these insights, we propose ExGRPO (Experiential Group Relative Policy Optimization), a framework that organizes and prioritizes valuable experiences, and employs a mixed-policy objective to balance exploration with experience exploitation. Experiments on five backbone models (1.5B-8B parameters) show that ExGRPO consistently improves reasoning performance on mathematical/general benchmarks, with an average gain of +3.5/7.6 points over on-policy RLVR. Moreover, ExGRPO stabilizes training on both stronger and weaker models where on-policy methods fail. These results highlight principled experience management as a key ingredient for efficient and scalable RLVR.",
+  "publishedAt": "2025-10-02T17:31:30Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 83,
+  "citationCount": 41,
+  "githubStars": null,
+  "pageCount": 37
+ },
+ {
+  "arxivId": "2510.12323",
+  "slug": "rag-anything-all-in-one-rag-framework",
+  "title": "RAG-Anything: All-in-One RAG Framework",
+  "authors": [
+   "Zirui Guo",
+   "Xubin Ren",
+   "Lingrui Xu",
+   "Jiahao Zhang",
+   "Chao Huang"
+  ],
+  "abstract": "Retrieval-Augmented Generation (RAG) has emerged as a fundamental paradigm for expanding Large Language Models beyond their static training limitations. However, a critical misalignment exists between current RAG capabilities and real-world information environments. Modern knowledge repositories are inherently multimodal, containing rich combinations of textual content, visual elements, structured tables, and mathematical expressions. Yet existing RAG frameworks are limited to textual content, creating fundamental gaps when processing multimodal documents. We present RAG-Anything, a unified framework that enables comprehensive knowledge retrieval across all modalities. Our approach reconceptualizes multimodal content as interconnected knowledge entities rather than isolated data types. The framework introduces dual-graph construction to capture both cross-modal relationships and textual semantics within a unified representation. We develop cross-modal hybrid retrieval that combines structural knowledge navigation with semantic matching. This enables effective reasoning over heterogeneous content where relevant evidence spans multiple modalities. RAG-Anything demonstrates superior performance on challenging multimodal benchmarks, achieving significant improvements over state-of-the-art methods. Performance gains become particularly pronounced on long documents where traditional approaches fail. Our framework establishes a new paradigm for multimodal knowledge access, eliminating the architectural fragmentation that constrains current systems. Our framework is open-sourced at: https://github.com/HKUDS/RAG-Anything.",
+  "publishedAt": "2025-10-14T09:25:35Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 83,
+  "citationCount": 18,
+  "githubStars": 22772,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2511.03773",
+  "slug": "scaling-agent-learning-via-experience-synthesis",
+  "title": "Scaling Agent Learning via Experience Synthesis",
+  "authors": [
+   "Zhaorun Chen",
+   "Zhuokai Zhao",
+   "Kai Zhang",
+   "Bo Liu",
+   "Qi Qi",
+   "Yifan Wu"
+  ],
+  "abstract": "While reinforcement learning (RL) can empower autonomous agents by enabling self-improvement through interaction, its practical adoption remains challenging due to costly rollouts, limited task diversity, unreliable reward signals, and infrastructure complexity, all of which obstruct the collection of scalable experience data. To address these challenges, we introduce DreamGym, the first unified framework designed to synthesize diverse experiences with scalability in mind to enable effective online RL training for autonomous agents. Rather than relying on expensive real-environment rollouts, DreamGym distills environment dynamics into a reasoning-based experience model that derives consistent state transitions and feedback signals through step-by-step reasoning, enabling scalable agent rollout collection for RL. To improve the stability and quality of transitions, DreamGym leverages an experience replay buffer initialized with offline real-world data and continuously enriched with fresh interactions to actively support agent training. To improve knowledge acquisition, DreamGym adaptively generates new tasks that challenge the current agent policy, enabling more effective online curriculum learning. Experiments across diverse environments and agent backbones demonstrate that DreamGym substantially improves RL training, both in fully synthetic settings and in sim-to-real transfer scenarios. On non-RL-ready tasks like WebArena, DreamGym outperforms all baselines by over 30%. And in RL-ready but costly settings, it matches GRPO and PPO performance using only synthetic interactions. When transferring a policy trained purely on synthetic experiences to real-environment RL, DreamGym yields significant additional performance gains while requiring far fewer real-world interactions, providing a scalable warm-start strategy for general-purpose RL.",
+  "publishedAt": "2025-11-05T18:58:48Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 83,
+  "citationCount": 24,
+  "githubStars": null,
+  "pageCount": 27
+ },
+ {
+  "arxivId": "2602.06855",
+  "slug": "airs-bench-a-suite-of-tasks-for-frontier-ai-research-science-agents",
+  "title": "AIRS-Bench: a Suite of Tasks for Frontier AI Research Science Agents",
+  "authors": [
+   "Alisia Lupidi",
+   "Bhavul Gauri",
+   "Thomas Simon Foster",
+   "Bassel Al Omari",
+   "Despoina Magka",
+   "Alberto Pepe"
+  ],
+  "abstract": "LLM agents hold significant promise for advancing scientific research. To accelerate this progress, we introduce AIRS-Bench (the AI Research Science Benchmark), a suite of 20 tasks sourced from state-of-the-art machine learning papers. These tasks span diverse domains, including language modeling, mathematics, bioinformatics, and time series forecasting. AIRS-Bench tasks assess agentic capabilities over the full research lifecycle -- including idea generation, experiment analysis and iterative refinement -- without providing baseline code. The AIRS-Bench task format is versatile, enabling easy integration of new tasks and rigorous comparison across different agentic frameworks. We establish baselines using frontier models paired with both sequential and parallel scaffolds. Our results show that agents exceed human SOTA in four tasks but fail to match it in sixteen others. Even when agents surpass human benchmarks, they do not reach the theoretical performance ceiling for the underlying tasks. These findings indicate that AIRS-Bench is far from saturated and offers substantial room for improvement. We open-source the AIRS-Bench task definitions and evaluation code to catalyze further development in autonomous scientific research.",
+  "publishedAt": "2026-02-06T16:45:02Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": "Meta AI / FAIR",
+  "hfUpvotes": 83,
+  "citationCount": 14,
+  "githubStars": 106,
+  "pageCount": 49
+ },
+ {
+  "arxivId": "2602.12205",
+  "slug": "deepgen-1-0-a-lightweight-unified-multimodal-model-for-advancing-image",
+  "title": "DeepGen 1.0: A Lightweight Unified Multimodal Model for Advancing Image Generation and Editing",
+  "authors": [
+   "Dianyi Wang",
+   "Ruihang Li",
+   "Feng Han",
+   "Chaofan Ma",
+   "Wei Song",
+   "Siyuan Wang"
+  ],
+  "abstract": "Current unified multimodal models for image generation and editing typically rely on massive parameter scales (e.g., >10B), entailing prohibitive training costs and deployment footprints. In this work, we present DeepGen 1.0, a lightweight 5B unified model that achieves comprehensive capabilities competitive with or surpassing much larger counterparts. To overcome the limitations of compact models in semantic understanding and fine-grained control, we introduce Stacked Channel Bridging (SCB), a deep alignment framework that extracts hierarchical features from multiple VLM layers and fuses them with learnable 'think tokens' to provide the generative backbone with structured, reasoning-rich guidance. We further design a data-centric training strategy spanning three progressive stages: (1) Alignment Pre-training on large-scale image-text pairs and editing triplets to synchronize VLM and DiT representations, (2) Joint Supervised Fine-tuning on a high-quality mixture of generation, editing, and reasoning tasks to foster omni-capabilities, and (3) Reinforcement Learning with MR-GRPO, which leverages a mixture of reward functions and supervision signals, resulting in substantial gains in generation quality and alignment with human preferences, while maintaining stable training progress and avoiding visual artifacts. Despite being trained on only ~50M samples, DeepGen 1.0 achieves leading performance across diverse benchmarks, surpassing the 80B HunyuanImage by 28% on WISE and the 27B Qwen-Image-Edit by 37% on UniREditBench. By open-sourcing our training code, weights, and datasets, we provide an efficient, high-performance alternative to democratize unified multimodal research.",
+  "publishedAt": "2026-02-12T17:44:24Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 83,
+  "citationCount": 15,
+  "githubStars": 584,
+  "pageCount": 21
+ },
+ {
+  "arxivId": "2603.15619",
+  "slug": "mixture-of-depths-attention",
+  "title": "Mixture-of-Depths Attention",
+  "authors": [
+   "Lianghui Zhu",
+   "Yuxin Fang",
+   "Bencheng Liao",
+   "Shijie Wang",
+   "Tianheng Cheng",
+   "Zilong Huang"
+  ],
+  "abstract": "Scaling depth is a key driver for large language models (LLMs). Yet, as LLMs become deeper, they often suffer from signal degradation: informative features formed in shallow layers are gradually diluted by repeated residual updates, making them harder to recover in deeper layers. We introduce mixture-of-depths attention (MoDA), a mechanism that allows each attention head to attend to sequence KV pairs at the current layer and depth KV pairs from preceding layers. We further describe a hardware-efficient algorithm for MoDA that resolves non-contiguous memory-access patterns, achieving 97.3% of FlashAttention-2's efficiency at a sequence length of 64K. Experiments on 1.5B-parameter models demonstrate that MoDA consistently outperforms strong baselines. Notably, it improves average perplexity by 0.2 across 10 validation benchmarks and increases average performance by 2.11% on 10 downstream tasks, with a negligible 3.7% FLOPs computational overhead. We also find that combining MoDA with post-norm yields better performance than using it with pre-norm. These results suggest that MoDA is a promising primitive for depth scaling. Code is released at https://github.com/hustvl/MoDA .",
+  "publishedAt": "2026-03-16T17:59:55Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 83,
+  "citationCount": 3,
+  "githubStars": 274,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2603.28301",
+  "slug": "libero-para-a-diagnostic-benchmark-and-metrics-for-paraphrase-robustness-in",
+  "title": "LIBERO-Para: A Diagnostic Benchmark and Metrics for Paraphrase Robustness in VLA Models",
+  "authors": [
+   "Chanyoung Kim",
+   "Minwoo Kim",
+   "Minseok Kang",
+   "Hyunwoo Kim",
+   "Dahuin Jung"
+  ],
+  "abstract": "Vision-Language-Action (VLA) models achieve strong performance in robotic manipulation by leveraging pre-trained vision-language backbones. However, in downstream robotic settings, they are typically fine-tuned with limited data, leading to overfitting to specific instruction formulations and leaving robustness to paraphrased instructions underexplored. To study this gap, we introduce LIBERO-Para, a controlled benchmark that independently varies action expressions and object references for fine-grained analysis of linguistic generalization. Across seven VLA configurations (0.6B-7.5B), we observe consistent performance degradation of 22-52 pp under paraphrasing. This degradation is primarily driven by object-level lexical variation: even simple synonym substitutions cause large drops, indicating reliance on surface-level matching rather than semantic grounding. Moreover, 80-96% of failures arise from planning-level trajectory divergence rather than execution errors, showing that paraphrasing disrupts task identification. Binary success rate treats all paraphrases equally, obscuring whether models perform consistently across difficulty levels or rely on easier cases. To address this, we propose PRIDE, a metric that quantifies paraphrase difficulty using semantic and syntactic factors. Our benchmark and corresponding code are available at: https://github.com/cau-hai-lab/LIBERO-Para",
+  "publishedAt": "2026-03-30T11:27:34Z",
+  "primaryArxivCategory": [
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 83,
+  "citationCount": 3,
+  "githubStars": 42,
+  "pageCount": 32
+ },
+ {
+  "arxivId": "2604.27393",
+  "slug": "minicpm-o-4-5-towards-real-time-full-duplex-omni-modal-interaction",
+  "title": "MiniCPM-o 4.5: Towards Real-Time Full-Duplex Omni-Modal Interaction",
+  "authors": [
+   "Junbo Cui",
+   "Bokai Xu",
+   "Chongyi Wang",
+   "Tianyu Yu",
+   "Weiyue Sun",
+   "Yingjing Xu"
+  ],
+  "abstract": "Recent progress in multimodal large language models (MLLMs) has brought AI capabilities from static offline data processing to real-time streaming interaction, yet they still remain far from human-level multimodal interaction. The key bottlenecks are no longer modality coverage or latency alone, but the interaction paradigm itself. First, perception and response are still separated into alternating phases, preventing models from incorporating new inputs for timely adjustment during generation. Second, most current models remain reactive, responding only to explicit user requests instead of acting proactively in the evolving multimodal environment. We present MiniCPM-o 4.5, our latest effort towards human-like multimodal interaction, which mitigates these gaps by real-time full-duplex omni-modal interaction. It can see, listen, and speak simultaneously in real-time, while also exhibiting proactive behaviors such as issuing reminders or comments based on its continuous understanding of the live scene. The key technique behind MiniCPM-o 4.5 is Omni-Flow, a unified streaming framework that aligns omni-modal inputs and outputs along a shared temporal axis. This formulation converts conventional turn-based interaction into a full-duplex, time-aligned process, enabling simultaneous perception and response and allowing proactive behavior to arise within the same framework. With a total of 9B parameters, MiniCPM-o 4.5 approaches Gemini 2.5 Flash in vision-language capabilities, delivering state-of-the-art open-source performance at its scale. It also surpasses Qwen3-Omni-30B-A3B in omni-modal understanding and delivers better speech generation, with significantly higher computation efficiency. Driven by its efficient architecture design and inference optimization, the model can perform real-time full-duplex omni-modal interaction on edge devices with less than 12GB RAM cost.",
+  "publishedAt": "2026-04-30T04:05:43Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 83,
+  "citationCount": 16,
+  "githubStars": 26107,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2509.01055",
+  "slug": "verltool-towards-holistic-agentic-reinforcement-learning-with-tool-use",
+  "title": "VerlTool: Towards Holistic Agentic Reinforcement Learning with Tool Use",
+  "authors": [
+   "Dongfu Jiang",
+   "Yi Lu",
+   "Zhuofeng Li",
+   "Zhiheng Lyu",
+   "Ping Nie",
+   "Haozhe Wang"
+  ],
+  "abstract": "Reinforcement Learning with Verifiable Rewards (RLVR) has demonstrated success in enhancing LLM reasoning capabilities, but remains limited to single-turn interactions without tool integration. While recent Agentic Reinforcement Learning with Tool use (ARLT) approaches have emerged to address multi-turn tool interactions, existing works develop task-specific codebases that suffer from fragmentation, synchronous execution bottlenecks, and limited extensibility across domains. These inefficiencies hinder broader community adoption and algorithmic innovation. We introduce VerlTool, a unified and modular framework that addresses these limitations through systematic design principles. VerlTool provides four key contributions: (1) upstream alignment with VeRL ensuring compatibility and simplified maintenance, (2) unified tool management via standardized APIs supporting diverse modalities including code execution, search, SQL databases, and vision processing, (3) asynchronous rollout execution achieving near 2$\\times$ speedup by eliminating synchronization bottlenecks, and (4) comprehensive evaluation demonstrating competitive performance across 6 ARLT domains. Our framework formalizes ARLT as multi-turn trajectories with multi-modal observation tokens (text/image/video), extending beyond single-turn RLVR paradigms. We train and evaluate models on mathematical reasoning, knowledge QA, SQL generation, visual reasoning, web search, and software engineering tasks, achieving results comparable to specialized systems while providing unified training infrastructure. The modular plugin architecture enables rapid tool integration requiring only lightweight Python definitions, significantly reducing development overhead and providing a scalable foundation for tool-augmented RL research. Our code is open-sourced at https://github.com/TIGER-AI-Lab/verl-tool.",
+  "publishedAt": "2025-09-01T01:45:18Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL",
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 82,
+  "citationCount": 81,
+  "githubStars": 1030,
+  "pageCount": 31
+ },
+ {
+  "arxivId": "2509.09674",
+  "slug": "simplevla-rl-scaling-vla-training-via-reinforcement-learning",
+  "title": "SimpleVLA-RL: Scaling VLA Training via Reinforcement Learning",
+  "authors": [
+   "Haozhan Li",
+   "Yuxin Zuo",
+   "Jiale Yu",
+   "Yuhao Zhang",
+   "Zhaohui Yang",
+   "Kaiyan Zhang"
+  ],
+  "abstract": "Vision-Language-Action (VLA) models have recently emerged as a powerful paradigm for robotic manipulation. Despite substantial progress enabled by large-scale pretraining and supervised fine-tuning (SFT), these models face two fundamental challenges: (i) the scarcity and high cost of large-scale human-operated robotic trajectories required for SFT scaling, and (ii) limited generalization to tasks involving distribution shift. Recent breakthroughs in Large Reasoning Models (LRMs) demonstrate that reinforcement learning (RL) can dramatically enhance step-by-step reasoning capabilities, raising a natural question: Can RL similarly improve the long-horizon step-by-step action planning of VLA? In this work, we introduce SimpleVLA-RL, an efficient RL framework tailored for VLA models. Building upon veRL, we introduce VLA-specific trajectory sampling, scalable parallelization, multi-environment rendering, and optimized loss computation. When applied to OpenVLA-OFT, SimpleVLA-RL achieves SoTA performance on LIBERO and even outperforms $π_0$ on RoboTwin 1.0\\&2.0 with the exploration-enhancing strategies we introduce. SimpleVLA-RL not only reduces dependence on large-scale data and enables robust generalization, but also remarkably surpasses SFT in real-world tasks. Moreover, we identify a novel phenomenon ``pushcut'' during RL training, wherein the policy discovers previously unseen patterns beyond those seen in the previous training process. Github: https://github.com/PRIME-RL/SimpleVLA-RL",
+  "publishedAt": "2025-09-11T17:59:17Z",
+  "primaryArxivCategory": [
+   "cs.RO",
+   "cs.AI",
+   "cs.CL",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 82,
+  "citationCount": 130,
+  "githubStars": 1806,
+  "pageCount": 24
+ },
+ {
+  "arxivId": "2511.09057",
+  "slug": "pan-a-world-model-for-general-interactable-and-long-horizon-world-simulation",
+  "title": "PAN: A World Model for General, Interactable, and Long-Horizon World Simulation",
+  "authors": [
+   "PAN Team",
+   "Jiannan Xiang",
+   "Yi Gu",
+   "Zihan Liu",
+   "Zeyu Feng",
+   "Qiyue Gao"
+  ],
+  "abstract": "A world model enables an intelligent agent to imagine, predict, and reason about how the world evolves in response to its actions, and accordingly to plan and strategize. While recent video generation models produce realistic visual sequences, they typically operate in the prompt-to-full-video manner without causal control, interactivity, or long-horizon consistency required for purposeful reasoning. Existing world modeling efforts, on the other hand, often focus on restricted domains (e.g., physical, game, or 3D-scene dynamics) with limited depth and controllability, and struggle to generalize across diverse environments and interaction formats. In this work, we introduce PAN, a general, interactable, and long-horizon world model that predicts future world states through high-quality video simulation conditioned on history and natural language actions. PAN employs the Generative Latent Prediction (GLP) architecture that combines an autoregressive latent dynamics backbone based on a large language model (LLM), which grounds simulation in extensive text-based knowledge and enables conditioning on language-specified actions, with a video diffusion decoder that reconstructs perceptually detailed and temporally coherent visual observations, to achieve a unification between latent space reasoning (imagination) and realizable world dynamics (reality). Trained on large-scale video-action pairs spanning diverse domains, PAN supports open-domain, action-conditioned simulation with coherent, long-term dynamics. Extensive experiments show that PAN achieves strong performance in action-conditioned world simulation, long-horizon forecasting, and simulative reasoning compared to other video generators and world models, taking a step towards general world models that enable predictive simulation of future world states for reasoning and acting.",
+  "publishedAt": "2025-11-12T07:20:35Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI",
+   "cs.CL",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 82,
+  "citationCount": 33,
+  "githubStars": null,
+  "pageCount": 33
+ },
+ {
+  "arxivId": "2601.06789",
+  "slug": "memgovern-enhancing-code-agents-through-learning-from-governed-human-experiences",
+  "title": "MemGovern: Enhancing Code Agents through Learning from Governed Human Experiences",
+  "authors": [
+   "Qihao Wang",
+   "Ziming Cheng",
+   "Shuo Zhang",
+   "Fan Liu",
+   "Rui Xu",
+   "Heng Lian"
+  ],
+  "abstract": "While autonomous software engineering (SWE) agents are reshaping programming paradigms, they currently suffer from a \"closed-world\" limitation: they attempt to fix bugs from scratch or solely using local context, ignoring the immense historical human experience available on platforms like GitHub. Accessing this open-world experience is hindered by the unstructured and fragmented nature of real-world issue-tracking data. In this paper, we introduce MemGovern, a framework designed to govern and transform raw GitHub data into actionable experiential memory for agents. MemGovern employs experience governance to convert human experience into agent-friendly experience cards and introduces an agentic experience search strategy that enables logic-driven retrieval of human expertise. By producing 135K governed experience cards, MemGovern achieves a significant performance boost, improving resolution rates on the SWE-bench Verified by 4.65%. As a plug-in approach, MemGovern provides a solution for agent-friendly memory infrastructure.",
+  "publishedAt": "2026-01-11T06:41:26Z",
+  "primaryArxivCategory": [
+   "cs.SE",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 82,
+  "citationCount": 8,
+  "githubStars": null,
+  "pageCount": 17
+ },
+ {
+  "arxivId": "2604.07823",
+  "slug": "lpm-1-0-video-based-character-performance-model",
+  "title": "LPM 1.0: Video-based Character Performance Model",
+  "authors": [
+   "Ailing Zeng",
+   "Casper Yang",
+   "Chauncey Ge",
+   "Eddie Zhang",
+   "Garvey Xu",
+   "Gavin Lin"
+  ],
+  "abstract": "Performance, the externalization of intent, emotion, and personality through visual, vocal, and temporal behavior, is what makes a character alive. Learning such performance from video is a promising alternative to traditional 3D pipelines. However, existing video models struggle to jointly achieve high expressiveness, real-time inference, and long-horizon identity stability, a tension we call the performance trilemma. Conversation is the most comprehensive performance scenario, as characters simultaneously speak, listen, react, and emote while maintaining identity over time. To address this, we present LPM 1.0 (Large Performance Model), focusing on single-person full-duplex audio-visual conversational performance. Concretely, we build a multimodal human-centric dataset through strict filtering, speaking-listening audio-video pairing, performance understanding, and identity-aware multi-reference extraction; train a 17B-parameter Diffusion Transformer (Base LPM) for highly controllable, identity-consistent performance through multimodal conditioning; and distill it into a causal streaming generator (Online LPM) for low-latency, infinite-length interaction. At inference, given a character image with identity-aware references, LPM 1.0 generates listening videos from user audio and speaking videos from synthesized audio, with text prompts for motion control, all at real-time speed with identity-stable, infinite-length generation. LPM 1.0 thus serves as a visual engine for conversational agents, live streaming characters, and game NPCs. To systematically evaluate this setting, we propose LPM-Bench, the first benchmark for interactive character performance. LPM 1.0 achieves state-of-the-art results across all evaluated dimensions while maintaining real-time inference.",
+  "publishedAt": "2026-04-09T05:26:09Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI",
+   "cs.MM"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 82,
+  "citationCount": 5,
+  "githubStars": 361,
+  "pageCount": 43
+ },
+ {
+  "arxivId": "2604.10098",
+  "slug": "attention-sink-in-transformers-a-survey-on-utilization-interpretation-and",
+  "title": "Attention Sink in Transformers: A Survey on Utilization, Interpretation, and Mitigation",
+  "authors": [
+   "Zunhai Su",
+   "Hengyuan Zhang",
+   "Wei Wu",
+   "Yifan Zhang",
+   "Yaxiu Liu",
+   "He Xiao"
+  ],
+  "abstract": "As the foundational architecture of modern machine learning, Transformers have driven remarkable progress across diverse AI domains. Despite their transformative impact, a persistent challenge across various Transformers is Attention Sink (AS), in which a disproportionate amount of attention is focused on a small subset of specific yet uninformative tokens. AS complicates interpretability, significantly affecting the training and inference dynamics, and exacerbates issues such as hallucinations. In recent years, substantial research has been dedicated to understanding and harnessing AS. However, a comprehensive survey that systematically consolidates AS-related research and offers guidance for future advancements remains lacking. To address this gap, we present the first survey on AS, structured around three key dimensions that define the current research landscape: Fundamental Utilization, Mechanistic Interpretation, and Strategic Mitigation. Our work makes a pivotal contribution by highlighting the key concepts and main trends in the field, guiding researchers through the evolution of AS-related studies. We envision this survey as a valuable resource, empowering researchers to effectively manage AS within the current Transformer paradigm, while simultaneously inspiring innovative advancements for the next generation of Transformers. The paper list of this work is available at https://github.com/ZunhaiSu/Awesome-Attention-Sink.",
+  "publishedAt": "2026-04-11T08:41:33Z",
+  "primaryArxivCategory": [
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 82,
+  "citationCount": 3,
+  "githubStars": 138,
+  "pageCount": 103
+ },
+ {
+  "arxivId": "2605.09063",
+  "slug": "soohak-a-mathematician-curated-benchmark-for-evaluating-research-level-math",
+  "title": "Soohak: A Mathematician-Curated Benchmark for Evaluating Research-level Math Capabilities of LLMs",
+  "authors": [
+   "Guijin Son",
+   "Seungone Kim",
+   "Catherine Arnett",
+   "Hyunwoo Ko",
+   "Hyein Lee",
+   "Hyeonah Kang"
+  ],
+  "abstract": "Following the recent achievement of gold-medal performance on the IMO by frontier LLMs, the community is searching for the next meaningful and challenging target for measuring LLM reasoning. Whereas olympiad-style problems measure step-by-step reasoning alone, research-level problems use such reasoning to advance the frontier of mathematical knowledge itself, emerging as a compelling alternative. Yet research-level math benchmarks remain scarce because such problems are difficult to source (e.g., Riemann Bench and FrontierMath-Tier 4 contain 25 and 50 problems, respectively). To support reliable evaluation of next-generation frontier models, we introduce Soohak, a 439-problem benchmark newly authored from scratch by 64 mathematicians. Soohak comprises two subsets. On the Challenge subset, frontier models including Gemini-3-Pro, GPT-5, and Claude-Opus-4.5 reach 30.4%, 26.4%, and 10.4% respectively, leaving substantial headroom, while leading open-weight models such as Qwen3-235B, GPT-OSS-120B, and Kimi-2.5 remain below 15%. Notably, beyond standard problem solving, Soohak introduces a refusal subset that probes a capability intrinsic to research mathematics: recognizing ill-posed problems and pausing rather than producing confident but unjustified answers. On this subset, no model exceeds 50%, identifying refusal as a new optimization target that current models do not directly address. To prevent contamination, the dataset will be publicly released in late 2026, with model evaluations available upon request in the interim.",
+  "publishedAt": "2026-05-09T17:14:22Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 82,
+  "citationCount": 4,
+  "githubStars": null,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2605.23218",
+  "slug": "foundation-protocol-a-coordination-layer-for-agentic-society",
+  "title": "Foundation Protocol: A Coordination Layer for Agentic Society",
+  "authors": [
+   "Bang Liu",
+   "Yongfeng Gu",
+   "Jiayi Zhang",
+   "Zhaoyang Yu",
+   "Sirui Hong",
+   "Maojia Song"
+  ],
+  "abstract": "Autonomous agents are moving from tools into a layer of social infrastructure: they browse, purchase, deploy software, manage systems, and increasingly interact with one another. As these systems scale, the bottleneck shifts away from raw model capability toward coordination. Agents need to form reliable relationships, organize multi-agent work, exchange value, support an AI economy, and stay safe and accountable under real-world oversight. This paper introduces the Foundation Protocol (FP), a graph-first coordination layer for an emerging human-AI society. FP unifies heterogeneous entities, including agents, tools, resources, humans, institutions, and organizations, and supports native multi-party organization and event-based collaboration. It also provides economic primitives for metering, receipts, and settlement, and treats policy, provenance, and audit as first-class concerns. FP is designed to wrap and bridge existing protocols rather than replace them, enabling incremental adoption while reducing integration and governance overhead. The aim is to keep autonomous agency composable while keeping accountability non-negotiable, so that coordination itself can become shared infrastructure for a human-AI society that is open, pluralistic, and governable.",
+  "publishedAt": "2026-05-22T04:20:35Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 82,
+  "citationCount": 0,
+  "githubStars": 52,
+  "pageCount": 18
+ },
+ {
+  "arxivId": "2605.23271",
+  "slug": "evalverse-pipeline-aware-and-expert-calibrated-benchmarking-for-professional",
+  "title": "EvalVerse: Pipeline-Aware and Expert-Calibrated Benchmarking for Professional Cinematic Video Generation",
+  "authors": [
+   "Songlin Yang",
+   "Haobin Zhong",
+   "Ruilin Zhang",
+   "Xiaotong Zhao",
+   "Shuai Li",
+   "Kai Zheng"
+  ],
+  "abstract": "The rapid evolution of generative video foundation models has propelled the field toward professional-grade cinematic synthesis. To achieve such demanding quality, the community transitions towards Reinforcement Learning (RL) and agentic workflows. However, reliable evaluation has emerged as a critical bottleneck. Existing benchmarks predominantly evaluate ''whether it is right'' (basic prompt-following) while fundamentally neglecting ''whether it is good'' (cinematic quality, acting, and aesthetics). Furthermore, current automated metrics lack the domain-specific rigor required to provide trustworthy signals, creating a severe credibility gap between human aesthetic perception and machine scoring. To bridge this gap, we introduce EvalVerse, a comprehensive, pipeline-aware, and expert-calibrated evaluation framework. We treat video generation assessment not merely as an engineering task, but as a core scientific problem: the systematic digitization of subjective cinematic expertise. First, we organize domain knowledge into an evaluation taxonomy aligned with the professional filmmaking workflow (pre-production, production, and post-production). Second, we distill human expert judgments into a curated dataset with large-scale human annotations. Third, we inject this knowledge into Vision-Language Models (VLMs) through an expert-calibrated fine-tuning strategy, enabling the VLM to perform explicit Chain-of-Thought reasoning. Compared to previous works, EvalVerse not only retains compatibility with foundational ''rightness'' metrics, but also significantly expands the criteria to ''goodness'' and broaden the task coverage to complex multi-shot sequencing and audio-visual integration. Consequently, by providing granular diagnostic signals, EvalVerse transcends a static leaderboard and establishes a fundamental infrastructure for future work, such as reward models and evaluator agent.",
+  "publishedAt": "2026-05-22T06:22:21Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 82,
+  "citationCount": 2,
+  "githubStars": null,
+  "pageCount": 17
+ },
+ {
+  "arxivId": "2606.08063",
+  "slug": "robust-u1-can-mllms-self-recover-corrupted-visual-content-for-robust",
+  "title": "Robust-U1: Can MLLMs Self-Recover Corrupted Visual Content for Robust Understanding?",
+  "authors": [
+   "Jiaqi Tang",
+   "Jianmin Chen",
+   "Youyang Zhai",
+   "Wei Wei",
+   "Runtao Liu",
+   "Mengjie Zhao"
+  ],
+  "abstract": "Multimodal Large Language Models (MLLMs) have demonstrated remarkable success in visual understanding, yet their performance degrades significantly under real-world visual corruptions. While existing robustness enhancement approaches exist, they are limited: black-box feature alignment lacks interpretability, and white-box text-based reasoning cannot restore lost pixel-level details. This work investigates a fundamental research question: Can MLLMs recover corrupted visual content by themselves? To address this, we propose Robust-U1, a novel framework that equips MLLMs with explicit visual self-recovery capability for robust understanding. The approach comprises three core stages: supervised fine-tuning for initial reconstruction, reinforcement learning with dual rewards (pixel-level SSIM and semantic-level CLIP similarity) for aligning high visual quality, and multimodal reasoning that jointly considers both the corrupted input and the recovered image. Extensive experiments demonstrate that Robust-U1 achieves state-of-the-art robustness on the real-world corruption benchmark and maintains superior performance under adversarial corruptions on general VQA benchmarks. Analysis confirms that high-quality visual recovery directly enhances reasoning performance, establishing self-recovery as a critical mechanism for robust visual understanding. The source code is available at https://github.com/jqtangust/Robust-U1.",
+  "publishedAt": "2026-06-06T08:58:12Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 82,
+  "citationCount": 1,
+  "githubStars": 363,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2606.26740",
+  "slug": "liveedit-towards-real-time-diffusion-based-streaming-video-editing",
+  "title": "LiveEdit: Towards Real-Time Diffusion-Based Streaming Video Editing",
+  "authors": [
+   "Xinyu Wang",
+   "Chongbo Zhao",
+   "Fangneng Zhan",
+   "Yue Ma"
+  ],
+  "abstract": "Streaming video editing has made rapid progress, yet practical deployment is still limited by two core issues: maintaining stable backgrounds and non-edited regions over time, and achieving the low latency required for real-time interactive scenarios. Meanwhile, recent streaming video generation methods are mostly developed for synthesis and cannot be directly applied to editing due to the strict preservation requirement and region-specific control. In this work, we present a novel streaming video editing framework that performs causal, frame-by-frame editing with strong content preservation and real-time responsiveness. Our key design is a three-stage distillation pipeline that progressively transfers editing capability from a powerful bidirectional foundation model to an efficient unidirectional streaming editor, enabling stable long-horizon edits without sacrificing visual fidelity. To further support real-time deployment, we introduce an AR-oriented mask cache that reuses region-related computation across frames, substantially reducing redundant processing and accelerating inference. Finally, we establish a dedicated benchmark for streaming video editing. Extensive evaluations demonstrate that our method achieves state-of-the-art visual quality among streaming baselines while drastically boosting inference speed to 12.66 FPS, making it suitable for interactive and augmented reality applications.",
+  "publishedAt": "2026-06-25T08:24:03Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 82,
+  "citationCount": 2,
+  "githubStars": 147,
+  "pageCount": 21
+ },
+ {
+  "arxivId": "2607.24280",
+  "slug": "from-proprietary-to-open-source-bridging-the-distribution-gap-via-multi-agent",
+  "title": "From Proprietary to Open-Source: Bridging the Distribution Gap via Multi-Agent Protocol Distillation in Agentic Search",
+  "authors": [
+   "Junlin Liu",
+   "Jiangwang Chen",
+   "Zixin Song",
+   "Shuaiyu Zhou",
+   "Chunji Lv",
+   "Hank Wu"
+  ],
+  "abstract": "Agentic search enables large language models to solve knowledge-intensive tasks by interleaving multi-step reasoning with retrieval, yet optimizing this with outcome-based reinforcement learning (RL) provides only sparse supervision. Knowledge distillation can supply denser guidance, and advanced proprietary models with their strong reasoning capabilities are promising teachers. While distilling from proprietary models can densify this supervisory signal, conventional logit-matching is precluded by hidden logits and mismatched tokenizers, whereas raw natural language trajectory imitation transfers superficial stylistic artifacts rather than core reasoning competence. To address the heterogeneous distillation problem and bridge the distribution gap, we propose Multi-Agent Protocol Distillation (MAPD), a joint distillation and RL framework uses a structured, style-normalized protocol as an intermediate representation. An offline multi-agent system (MAS) decomposes each query, retrieves supporting evidence, repairs failed searches, and converts the resulting exploration trace into a JSON protocol containing the task type, reasoning plan, and extractive grounding facts. During training, the protocol is provided only to a privileged branch of the student policy, whose token distributions furnish a dense distillation signal alongside the sparse RL objective. Extensive evaluations across seven QA benchmarks demonstrate that MAPD consistently outperforms competitive distillation and RL, achieving average success rates of 39.4\\% on Qwen3-1.7B and 44.4\\% on Qwen3-4B. Crucially, the framework generalizes robustly across diverse proprietary teachers while effectively mitigating the student policy from style drift and verbosity degeneration.",
+  "publishedAt": "2026-07-27T11:27:38Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 82,
+  "citationCount": 3,
+  "githubStars": null,
+  "pageCount": 16
+ },
+ {
+  "arxivId": "2607.25659",
+  "slug": "cort-counterfactual-replay-for-token-level-rubric-guided-policy-optimization",
+  "title": "CoRT: Counterfactual Replay for Token-Level Rubric-Guided Policy Optimization",
+  "authors": [
+   "Bo-Wen Zhang",
+   "Junwei He",
+   "Wen Wang",
+   "Song-Lin Lv",
+   "Wentao Ma",
+   "Rongyi Lin"
+  ],
+  "abstract": "Rubric-based reinforcement learning enriches language model training by evaluating model outputs against explicit criteria. Yet in GRPO-style pipelines, these structured judgments are reduced to a scalar response-level reward and converted into a response-level advantage, which is broadcast uniformly to all generated tokens. This leaves no explicit mechanism for allocating credit within a response, even when different criteria are grounded in different spans, formatting decisions, or semantic choices. We propose CoRT, a token-level credit weighting method for rubric-conditioned GRPO. Instead of training an auxiliary token scoring model, CoRT uses counterfactual replay to rescore the same sampled response under the original rubric-conditioned prompt and a matched criteria-free prompt. The resulting tokenwise log-likelihood contrasts serve as a proxy for dependence on the rubric context. CoRT maps these contrasts to bounded, response-normalized weights and uses them to redistribute the signed GRPO advantage across tokens, without introducing an auxiliary scorer or changing the response-level reward. Experiments across instruction-tuned models and reward granularities show that CoRT improves over matched response-level GRPO in the vast majority of comparisons, with an average gain of 4.4 percentage points. The method remains competitive with learned token-level credit baselines while avoiding a separate relevance-learning stage. These results suggest that policy-internal counterfactual likelihood contrasts provide an effective training signal for within-response credit allocation while retaining the simplicity and stability of GRPO.",
+  "publishedAt": "2026-07-28T12:45:19Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 82,
+  "citationCount": 0,
+  "githubStars": null,
+  "pageCount": 12
+ },
+ {
+  "arxivId": "2508.11630",
+  "slug": "thyme-think-beyond-images",
+  "title": "Thyme: Think Beyond Images",
+  "authors": [
+   "Yi-Fan Zhang",
+   "Xingyu Lu",
+   "Shukang Yin",
+   "Chaoyou Fu",
+   "Wei Chen",
+   "Xiao Hu"
+  ],
+  "abstract": "Following OpenAI's introduction of the ``thinking with images'' concept, recent efforts have explored stimulating the use of visual information in the reasoning process to enhance model performance in perception and reasoning tasks. However, to the best of our knowledge, no open-source work currently offers a feature set as rich as proprietary models (O3), which can perform diverse image manipulations and simultaneously enhance logical reasoning capabilities through code. In this paper, we make a preliminary attempt in this direction by introducing Thyme (Think Beyond Images), a novel paradigm for enabling MLLMs to transcend existing ``think with images'' approaches by autonomously generating and executing diverse image processing and computational operations via executable code. This approach not only facilitates a rich, on-the-fly set of image manipulations (e.g., cropping, rotation, contrast enhancement) but also allows for mathematical computations, all while maintaining high autonomy in deciding when and how to apply these operations. We activate this capability through a two-stage training strategy: an initial SFT on a curated dataset of 500K samples to teach code generation, followed by a RL phase to refine decision-making. For the RL stage, we manually collect and design high-resolution question-answer pairs to increase the learning difficulty, and we propose GRPO-ATS (Group Relative Policy Optimization with Adaptive Temperature Sampling), an algorithm that applies distinct temperatures to text and code generation to balance reasoning exploration with code execution precision. We conduct extensive experimental analysis and ablation studies. Comprehensive evaluations on nearly 20 benchmarks show that Thyme yields significant and consistent performance gains, particularly in challenging high-resolution perception and complex reasoning tasks.",
+  "publishedAt": "2025-08-15T17:59:49Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 81,
+  "citationCount": 119,
+  "githubStars": 586,
+  "pageCount": 32
+ },
+ {
+  "arxivId": "2509.24107",
+  "slug": "fathom-deepresearch-unlocking-long-horizon-information-retrieval-and-synthesis",
+  "title": "Fathom-DeepResearch: Unlocking Long Horizon Information Retrieval and Synthesis for SLMs",
+  "authors": [
+   "Shreyas Singh",
+   "Kunal Singh",
+   "Pradeep Moturi"
+  ],
+  "abstract": "Tool-integrated reasoning has emerged as a key focus for enabling agentic applications. Among these, DeepResearch Agents have gained significant attention for their strong performance on complex, open-ended information-seeking tasks. We introduce Fathom-DeepResearch, an agentic system composed of two specialized models. The first is Fathom-Search-4B, a DeepSearch model trained from Qwen3-4B and optimized for evidence-based investigation through live web search and targeted webpage querying. Its training combines three advances: (i) DUETQA, a 5K-sample dataset generated via multi-agent self-play that enforces strict web-search dependence and heterogeneous source grounding; (ii) RAPO, a zero-overhead extension of GRPO that stabilizes multi-turn Reinforcement Learning with Verifiable Rewards through curriculum pruning, reward-aware advantage scaling, and per-prompt replay buffers; and (iii) a steerable step-level reward that classifies each tool call by cognitive behavior and marginal utility, enabling explicit control over search trajectory breadth, depth, and horizon. These improvements enable reliable extension of tool-calling beyond 20 calls when warranted. The second is Fathom-Synthesizer-4B, trained from Qwen3-4B, which converts multi-turn DeepSearch traces into structured, citation-dense DeepResearch Reports for comprehensive synthesis. Evaluated on DeepSearch benchmarks (SimpleQA, FRAMES, WebWalker, Seal0, MuSiQue) and DeepResearch-Bench, the system achieves state-of-the-art performance in the open-weights category while demonstrating strong generalization to diverse reasoning tasks including HLE, AIME-25, GPQA-Diamond, and MedQA.",
+  "publishedAt": "2025-09-28T22:58:11Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 81,
+  "citationCount": 4,
+  "githubStars": 63,
+  "pageCount": 15
+ }
+]

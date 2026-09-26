@@ -1,0 +1,714 @@
+[
+ {
+  "arxivId": "2509.08721",
+  "slug": "sharing-is-caring-efficient-lm-post-training-with-collective-rl-experience",
+  "title": "Sharing is Caring: Efficient LM Post-Training with Collective RL Experience Sharing",
+  "authors": [
+   "Jeffrey Amico",
+   "Gabriel Passamani Andrade",
+   "John Donaghy",
+   "Ben Fielding",
+   "Tristin Forbus",
+   "Harry Grieve"
+  ],
+  "abstract": "Post-training language models (LMs) with reinforcement learning (RL) can enhance their complex reasoning capabilities without supervised fine-tuning, as demonstrated by DeepSeek-R1-Zero. However, effectively utilizing RL for LMs requires significant parallelization to scale-up inference, which introduces non-trivial technical challenges (e.g. latency, memory, and reliability) alongside ever-growing financial costs. We present Swarm sAmpling Policy Optimization (SAPO), a fully decentralized and asynchronous RL post-training algorithm. SAPO is designed for decentralized networks of heterogenous compute nodes, where each node manages its own policy model(s) while \"sharing\" rollouts with others in the network; no explicit assumptions about latency, model homogeneity, or hardware are required and nodes can operate in silo if desired. As a result, the algorithm avoids common bottlenecks in scaling RL post-training while also allowing (and even encouraging) new possibilities. By sampling rollouts \"shared\" across the network, it enables \"Aha moments\" to propagate, thereby bootstrapping the learning process. In this paper we show SAPO achieved cumulative reward gains of up to 94% in controlled experiments. We also share insights from tests on a network with thousands of nodes contributed by Gensyn community members running the algorithm on diverse hardware and models during an open-source demo.",
+  "publishedAt": "2025-09-10T16:14:20Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.MA"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 665,
+  "citationCount": 3,
+  "githubStars": null,
+  "pageCount": 14
+ },
+ {
+  "arxivId": "2604.02721",
+  "slug": "grandcode-achieving-grandmaster-level-in-competitive-programming-via-agentic",
+  "title": "GrandCode: Achieving Grandmaster Level in Competitive Programming via Agentic Reinforcement Learning",
+  "authors": [
+   "DeepReinforce Team",
+   "Xiaoya Li",
+   "Guoyin Wang",
+   "Songqiao Su",
+   "Chris Shum",
+   "Jiwei Li"
+  ],
+  "abstract": "Competitive programming remains one of the last few human strongholds in coding against AI. The best AI system to date still underperforms the best humans competitive programming: the most recent best result, Google's Gemini~3 Deep Think, attained 8th place even not being evaluated under live competition conditions. In this work, we introduce GrandCode, a multi-agent RL system designed for competitive programming. The capability of GrandCode is attributed to two key factors: (1) It orchestrates a variety of agentic modules (hypothesis proposal, solver, test generator, summarization, etc) and jointly improves them through post-training and online test-time RL; (2) We introduce Agentic GRPO specifically designed for multi-stage agent rollouts with delayed rewards and the severe off-policy drift that is prevalent in agentic RL. GrandCode is the first AI system that consistently beats all human participants in live contests of competitive programming: in the most recent three Codeforces live competitions, i.e., Round~1087 (Mar 21, 2026), Round~1088 (Mar 28, 2026), and Round~1089 (Mar 29, 2026), GrandCode placed first in all of them, beating all human participants, including legendary grandmasters. GrandCode shows that AI systems have reached a point where they surpass the strongest human programmers on the most competitive coding tasks.",
+  "publishedAt": "2026-04-03T04:26:56Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 639,
+  "citationCount": 3,
+  "githubStars": null,
+  "pageCount": 31
+ },
+ {
+  "arxivId": "2509.26507",
+  "slug": "the-dragon-hatchling-the-missing-link-between-the-transformer-and-models-of",
+  "title": "The Dragon Hatchling: The Missing Link between the Transformer and Models of the Brain",
+  "authors": [
+   "Adrian Kosowski",
+   "Przemysław Uznański",
+   "Jan Chorowski",
+   "Zuzanna Stamirowska",
+   "Michał Bartoszkiewicz"
+  ],
+  "abstract": "The relationship between computing systems and the brain has served as motivation for pioneering theoreticians since John von Neumann and Alan Turing. Uniform, scale-free biological networks, such as the brain, have powerful properties, including generalizing over time, which is the main barrier for Machine Learning on the path to Universal Reasoning Models. We introduce `Dragon Hatchling' (BDH), a new Large Language Model architecture based on a scale-free biologically inspired network of \\$n\\$ locally-interacting neuron particles. BDH couples strong theoretical foundations and inherent interpretability without sacrificing Transformer-like performance. BDH is a practical, performant state-of-the-art attention-based state space sequence learning architecture. In addition to being a graph model, BDH admits a GPU-friendly formulation. It exhibits Transformer-like scaling laws: empirically BDH rivals GPT2 performance on language and translation tasks, at the same number of parameters (10M to 1B), for the same training data. BDH can be represented as a brain model. The working memory of BDH during inference entirely relies on synaptic plasticity with Hebbian learning using spiking neurons. We confirm empirically that specific, individual synapses strengthen connection whenever BDH hears or reasons about a specific concept while processing language inputs. The neuron interaction network of BDH is a graph of high modularity with heavy-tailed degree distribution. The BDH model is biologically plausible, explaining one possible mechanism which human neurons could use to achieve speech. BDH is designed for interpretability. Activation vectors of BDH are sparse and positive. We demonstrate monosemanticity in BDH on language tasks. Interpretability of state, which goes beyond interpretability of neurons and model parameters, is an inherent feature of the BDH architecture.",
+  "publishedAt": "2025-09-30T16:49:01Z",
+  "primaryArxivCategory": [
+   "cs.NE",
+   "cs.AI",
+   "cs.LG",
+   "stat.ML"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 551,
+  "citationCount": 5,
+  "githubStars": 3448,
+  "pageCount": 62
+ },
+ {
+  "arxivId": "2602.20159",
+  "slug": "a-very-big-video-reasoning-suite",
+  "title": "A Very Big Video Reasoning Suite",
+  "authors": [
+   "Maijunxian Wang",
+   "Ruisi Wang",
+   "Juyi Lin",
+   "Ran Ji",
+   "Thaddäus Wiedemer",
+   "Qingying Gao"
+  ],
+  "abstract": "Rapid progress in video models has largely focused on visual quality, leaving their reasoning capabilities underexplored. Video reasoning grounds intelligence in spatiotemporally consistent visual environments that go beyond what text can naturally capture, enabling intuitive reasoning over spatiotemporal structure such as continuity, interaction, and causality. However, systematically studying video reasoning and its scaling behavior is hindered by the lack of large-scale training data. To address this gap, we introduce the Very Big Video Reasoning (VBVR) Dataset, an unprecedentedly large-scale resource spanning 200 curated reasoning tasks following a principled taxonomy and over one million video clips, approximately three orders of magnitude larger than existing datasets. We further present VBVR-Bench, a verifiable evaluation framework that moves beyond model-based judging by incorporating rule-based, human-aligned scorers, enabling reproducible and interpretable diagnosis of video reasoning capabilities. Leveraging the VBVR suite, we conduct one of the first large-scale scaling studies of video reasoning and observe early signs of emergent generalization to unseen reasoning tasks. Together, VBVR lays a foundation for the next stage of research in generalizable video reasoning. The data, benchmark toolkit, and models are publicly available at https://video-reason.com/ .",
+  "publishedAt": "2026-02-23T18:59:41Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI",
+   "cs.LG",
+   "cs.MM",
+   "cs.RO"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 526,
+  "citationCount": 19,
+  "githubStars": 225,
+  "pageCount": 42
+ },
+ {
+  "arxivId": "2510.04871",
+  "slug": "less-is-more-recursive-reasoning-with-tiny-networks",
+  "title": "Less is More: Recursive Reasoning with Tiny Networks",
+  "authors": [
+   "Alexia Jolicoeur-Martineau"
+  ],
+  "abstract": "Hierarchical Reasoning Model (HRM) is a novel approach using two small neural networks recursing at different frequencies. This biologically inspired method beats Large Language models (LLMs) on hard puzzle tasks such as Sudoku, Maze, and ARC-AGI while trained with small models (27M parameters) on small data (around 1000 examples). HRM holds great promise for solving hard problems with small networks, but it is not yet well understood and may be suboptimal. We propose Tiny Recursive Model (TRM), a much simpler recursive reasoning approach that achieves significantly higher generalization than HRM, while using a single tiny network with only 2 layers. With only 7M parameters, TRM obtains 45% test-accuracy on ARC-AGI-1 and 8% on ARC-AGI-2, higher than most LLMs (e.g., Deepseek R1, o3-mini, Gemini 2.5 Pro) with less than 0.01% of the parameters.",
+  "publishedAt": "2025-10-06T14:58:08Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 518,
+  "citationCount": 4,
+  "githubStars": 6569,
+  "pageCount": 12
+ },
+ {
+  "arxivId": "2604.02176",
+  "slug": "adams-law-textual-frequency-law-on-large-language-models",
+  "title": "Adam's Law: Textual Frequency Law on Large Language Models",
+  "authors": [
+   "Hongyuan Adam Lu",
+   "Z. L.",
+   "Victor Wei",
+   "Zefan Zhang",
+   "Zhao Hong",
+   "Qiqi Xiang"
+  ],
+  "abstract": "While textual frequency has been validated as relevant to human cognition in reading speed, its relatedness to Large Language Models (LLMs) is seldom studied. We propose a novel research direction in terms of textual data frequency, which is an understudied topic, to the best of our knowledge. Our framework is composed of three units. First, this paper proposes Textual Frequency Law (TFL), which indicates that frequent textual data should be preferred for LLMs for both prompting and fine-tuning. Since many LLMs are closed-source in their training data, we propose using online resources to estimate the sentence-level frequency. We then utilize an input paraphraser to paraphrase the input into a more frequent textual expression. Next, we propose Textual Frequency Distillation (TFD) by querying LLMs to conduct story completion by further extending the sentences in the datasets, and the resulting corpora are used to adjust the initial estimation. Finally, we propose Curriculum Textual Frequency Training (CTFT) that fine-tunes LLMs in an increasing order of sentence-level frequency. Experiments are conducted on our curated dataset Textual Frequency Paired Dataset (TFPD) on math reasoning, machine translation, commonsense reasoning and agentic tool calling. Results show the effectiveness of our framework.",
+  "publishedAt": "2026-04-02T15:39:25Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 510,
+  "citationCount": 3,
+  "githubStars": null,
+  "pageCount": 27
+ },
+ {
+  "arxivId": "2606.09967",
+  "slug": "abot-earth-0-5-generative-3d-earth-model",
+  "title": "ABot-Earth 0.5: Generative 3D Earth Model",
+  "authors": [
+   "Ming Qian",
+   "Tianjian Ouyang",
+   "Mingchao Sun",
+   "Zijian Wang",
+   "Jincheng Xiong",
+   "Jiarong Han"
+  ],
+  "abstract": "We present ABot-Earth 0.5, a generative 3D framework designed to synthesize vast, seamless 3D environments from ubiquitous, geospatially referenced satellite imagery. To achieve this, we propose a novel generative model formulated directly with the 3D Gaussian Splatting (3DGS) representation. The model is trained on a diverse corpus of existing real-world urban reconstructions, learning to generate realistic geometry and textures. At inference, it synthesizes novel 3D scenes conditioned solely on satellite imagery at a scalable rate of under 10 minutes per square kilometer, while demonstrating exceptional realism. The framework is designed for accessibility, with integrated hierarchical level-of-detail (LOD) structures that permit real-time, interactive visualization on web-based map engines. This high-fidelity simulation sandbox effectively mitigates the sim-to-real domain gap, enabling critical downstream Embodied AI applications like closed-loop UAV navigation. By providing an ultra-low-cost and high-efficiency solution, ABot-Earth 0.5 significantly lowers the technical and financial barriers to large-scale 3D reconstruction and empowers the future of global digital earth visualization.",
+  "publishedAt": "2026-06-08T17:58:02Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 488,
+  "citationCount": 1,
+  "githubStars": 192,
+  "pageCount": 17
+ },
+ {
+  "arxivId": "2606.18208",
+  "slug": "looped-world-models",
+  "title": "Looped World Models",
+  "authors": [
+   "Hongyuan Adam Lu",
+   "Z. L. Victor Wei",
+   "Qun Zhang",
+   "Jinrui Zeng",
+   "Bowen Cao",
+   "Lingwei Meng"
+  ],
+  "abstract": "Current world models face a fundamental tension: faithful long-horizon simulation demands deep computation, but deeper models are expensive to deploy and prone to compounding errors. We resolve this by introducing Looped World Models (LoopWM), which are the first looped architectures for world modelling. Our method iteratively refines latent environment states through a parameter-shared transformer block. This yield up to 100x parameter efficiency over conventional approaches with adaptive computation that automatically scales depth to match the complexity of each prediction step. Orthogonal to scaling model size and training data, LoopWM establishes iterative latent depth as a new scaling axis for world simulation, which might significantly push the community forward.",
+  "publishedAt": "2026-06-16T17:37:27Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.CL",
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 484,
+  "citationCount": 1,
+  "githubStars": null,
+  "pageCount": 34
+ },
+ {
+  "arxivId": "2606.30534",
+  "slug": "orca-the-world-is-in-your-mind",
+  "title": "Orca: The World is in Your Mind",
+  "authors": [
+   "Yihao Wang",
+   "Yuheng Ji",
+   "Mingyu Cao",
+   "Yanqing Shen",
+   "Runze Xiao",
+   "Huaihai Lyu"
+  ],
+  "abstract": "We introduce Orca, an initial instantiation of a general world foundation model. Orca learns a unified world latent space from multimodal world signals and exposes it through multimodal readout interfaces. Rather than optimizing isolated next-token, next-frame, or next-action prediction, we are centered on Next-State-Prediction modeling, offering a unified state-transition modeling route toward understanding, predicting, and acting upon the world. Orca learns through two complementary paradigms: unconscious learning captures dense natural state transitions from continuous videos, and conscious learning models sparse meaningful state transitions by language-described events and VQA supervision. For pre-training, we construct a large-scale world-learning inventory data, including 125K hours of video data and 160M event annotations. After pre-training, Orca learns a unified world latent space. To examine whether the learned latent supports downstream, we evaluate it by three representative downstream readouts: text generation, image prediction, and embodied action generation. Orca's backbone is frozen, and only the lightweight modality-specific decoders are trainable. Experiments show the scalability of the proposed paradigm and verify that stronger world latent enables stronger downstream readouts. Orca outperforms similar-sized specialized baselines. These results show that Orca, as a general world foundation model, presents a promising approach to understanding, predicting, and acting upon the world. Finally, we discuss the current limitations, aiming to provide useful insights and inspiration for the community.",
+  "publishedAt": "2026-06-29T16:36:10Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 474,
+  "citationCount": 0,
+  "githubStars": 906,
+  "pageCount": 40
+ },
+ {
+  "arxivId": "2607.24653",
+  "slug": "kimi-k3-open-frontier-intelligence",
+  "title": "Kimi K3: Open Frontier Intelligence",
+  "authors": [
+   "Kimi Team",
+   "Tongtong Bai",
+   "Yifan Bai",
+   "Yiping Bao",
+   "M. C.",
+   "Jianfeng Cai"
+  ],
+  "abstract": "We introduce Kimi K3, a 2.8T parameter Mixture-of-Experts model with 104 billion activated parameters, native vision capabilities, and a 1-million-token context window. Kimi K3 is built on Kimi Delta Attention and Attention Residuals, which improve information flow across sequence length and model depth. Together with Stable LatentMoE, which effectively activates 16 of 896 routed experts per token, and refined training and data recipes, these advances yield an approximately 2.5x improvement in overall scaling efficiency over Kimi K2. Post-training highlights reinforcement learning across general, agentic, and coding domains and multiple reasoning-effort levels, enabling compositional generalization and robust long-horizon execution. At 2.8T scale, Kimi K3 is supported by infrastructure advances in multiple areas: algorithm-system co-design for KDA, perfectly balanced expert-parallel training with efficient memory management, million-token agentic RL with persistent rollout and sandbox states, and deployment innovations. Extensive evaluations show that Kimi K3 achieves frontier-level performance across long-horizon coding, agentic, knowledge, reasoning, and vision tasks. While its overall performance still trails the most powerful proprietary models, namely Claude Fable 5 and GPT-5.6 Sol, Kimi K3 consistently outperforms other open and proprietary models evaluated in our suite. We release the full Kimi K3 model weights to facilitate future research and accelerate the broader deployment and adoption of frontier intelligence.",
+  "publishedAt": "2026-07-27T16:49:54Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.LG"
+  ],
+  "officialLab": "Moonshot AI / Kimi",
+  "hfUpvotes": 457,
+  "citationCount": 2,
+  "githubStars": 8124,
+  "pageCount": 47
+ },
+ {
+  "arxivId": "2605.28816",
+  "slug": "gamma-world-generative-multi-agent-world-modeling-beyond-two-players",
+  "title": "Gamma-World: Generative Multi-Agent World Modeling Beyond Two Players",
+  "authors": [
+   "Fangfu Liu",
+   "Kai He",
+   "Tianchang Shen",
+   "Tianshi Cao",
+   "Sanja Fidler",
+   "Yueqi Duan"
+  ],
+  "abstract": "World models for interactive video generation have largely focused on single-agent settings, where future observations are generated from a single control signal. However, many generated environments require multi-agent interaction: multiple players, robots, or embodied agents act simultaneously within a shared space. Scaling world models to such settings requires a principled multi-agent design: agents should remain independently controllable, permutation-symmetric, and support efficient inference while maintaining consistency across time and perspectives. In this paper, we present our generative multi-agent world model for interactive simulation. It introduces Simplex Rotary Agent Encoding, a parameter-free extension of 3D RoPE that represents agents as vertices of a regular simplex in rotary angle space. This gives each agent a distinct phase while making all agents permutation-equivalent, enabling scalable agent identity without learned per-slot identities or a fixed agent ordering. To avoid dense all-to-all attention across agents, we further propose Sparse Hub Attention, where learnable hub tokens mediate token interaction across agents, reducing cross-agent attention cost from quadratic to linear in the number of agents. For real-time rollout, we distill a full-context diffusion teacher into a causal student that generates temporal blocks sequentially with KV caching, enabling action-responsive generation at 24 FPS. Experiments in multiplayer virtual environments show that our model improves video fidelity, action controllability, and inter-agent consistency over slot-based and dense-attention baselines, while generalizing from two to four players without additional training.",
+  "publishedAt": "2026-05-27T17:59:31Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": "NVIDIA",
+  "hfUpvotes": 433,
+  "citationCount": 2,
+  "githubStars": null,
+  "pageCount": 21
+ },
+ {
+  "arxivId": "2603.14473",
+  "slug": "ai-can-learn-scientific-taste",
+  "title": "AI Can Learn Scientific Taste",
+  "authors": [
+   "Jingqi Tong",
+   "Mingzhe Li",
+   "Hangcheng Li",
+   "Yongzhuo Yang",
+   "Yurong Mou",
+   "Weijie Ma"
+  ],
+  "abstract": "Scientific discovery depends on expert judgement and foresight, which we call scientific taste: the ability to judge and propose research ideas with potential for long-term scientific impact. Whether AI can learn this ability remains an open question. Here we provide evidence that artificial intelligence can learn judgement and ideation. We introduce Reinforcement Learning from Community Feedback (RLCF), a training paradigm that uses large-scale signals from scientific community as supervision. We first train Scientific Judge on field- and time-matched pairs of high- vs. low-citation papers to judge ideas. We then train a Scientific Thinker, to propose research ideas with high potential impact. Experiments show that the 30B Scientific Judge variant outperforms strong LLM baselines (e.g., GPT-5.4 Thinking), while Scientific Judge generalizes across future-year papers, unseen fields, and other community metrics. Furthermore, Scientific Thinker proposes research ideas with higher potential impact than baselines. These results suggest that AI can learn scientific taste, marking an important step towards AI systems that could help accelerate scientific discovery.",
+  "publishedAt": "2026-03-15T16:31:51Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 432,
+  "citationCount": 4,
+  "githubStars": 428,
+  "pageCount": 46
+ },
+ {
+  "arxivId": "2606.05405",
+  "slug": "agents-last-exam",
+  "title": "Agents' Last Exam",
+  "authors": [
+   "Yiyou Sun",
+   "Xinyang Han",
+   "Weichen Zhang",
+   "Yuanbo Pang",
+   "Tianyu Wang",
+   "Yuhan Cao"
+  ],
+  "abstract": "Recent AI systems have achieved strong results on a wide range of benchmarks, yet these gains have not translated into economically meaningful deployment across many professional domains. We argue that this gap is largely an evaluation problem: widely used benchmarks lack sustained performance measurement on real and economically valuable workflows. This paper introduces Agents' Last Exam (ALE), a benchmark designed to evaluate AI agents on long horizon, economically valuable, real world tasks with verifiable outcomes. Developed in collaboration with 250+ industry experts, ALE covers non-physical industries defined with reference to O*NET / SOC 2018 (the U.S. federal occupational taxonomy). It is organized around a task taxonomy with 55 sub fields grouped into 13 industry clusters covering 1K+ tasks. Current results show that the hardest tier remains far from saturated: across mainstream harness and backbone configurations, the average full pass rate is below 1%. ALE is designed as a living benchmark: its task pool grows continuously as new workflows and industries are onboarded. More broadly, ALE is intended not merely as another leaderboard, but as an instrument for closing the gap between benchmark success and GDP relevant impact.",
+  "publishedAt": "2026-06-03T20:20:46Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 387,
+  "citationCount": 5,
+  "githubStars": 936,
+  "pageCount": 40
+ },
+ {
+  "arxivId": "2603.16870",
+  "slug": "demystifying-video-reasoning",
+  "title": "Demystifying Video Reasoning",
+  "authors": [
+   "Ruisi Wang",
+   "Zhongang Cai",
+   "Fanyi Pu",
+   "Junxiang Xu",
+   "Wanqi Yin",
+   "Maijunxian Wang"
+  ],
+  "abstract": "Recent advances in video generation have revealed an unexpected phenomenon: diffusion-based video models exhibit non-trivial reasoning capabilities. Prior work attributes this to a Chain-of-Frames (CoF) mechanism, where reasoning is assumed to unfold sequentially across video frames. In this work, we challenge this assumption and uncover a fundamentally different mechanism. We show that reasoning in video models instead primarily emerges along the diffusion denoising steps. Through qualitative analysis and targeted probing experiments, we find that models explore multiple candidate solutions in early denoising steps and progressively converge to a final answer, a process we term Chain-of-Steps (CoS). Beyond this core mechanism, we identify several emergent reasoning behaviors critical to model performance: (1) working memory that supports tasks requiring consistent reference, such as object permanence; (2) self-correction and enhancement, allowing recovery from incorrect intermediate solutions; and (3) perception before action, where early steps establish semantic grounding and later steps perform structured manipulation. Moreover, analysis of Diffusion Transformer layers shows that middle layers conduct key reasoning procedures. Motivated by these insights, we present a simple Training-Free Ensemble (TFE) as a proof-of-concept, demonstrating how reasoning can be improved by ensembling latent trajectories from identical models with different random seeds. Overall, our work provides the first systematic dissection of the mechanisms underlying video reasoning, offering a foundation to guide future research in better exploiting the inherent reasoning dynamics of video models as a new substrate for intelligence.",
+  "publishedAt": "2026-03-17T17:59:55Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 373,
+  "citationCount": 6,
+  "githubStars": 47,
+  "pageCount": 33
+ },
+ {
+  "arxivId": "2603.26164",
+  "slug": "dataflex-a-unified-framework-for-data-centric-dynamic-training-of-large",
+  "title": "DataFlex: A Unified Framework for Data-Centric Dynamic Training of Large Language Models",
+  "authors": [
+   "Hao Liang",
+   "Zhengyang Zhao",
+   "Meiyi Qiang",
+   "Mingrui Chen",
+   "Lu Ma",
+   "Rongyi Yu"
+  ],
+  "abstract": "Data-centric training has emerged as a promising direction for improving large language models (LLMs) by optimizing not only model parameters but also the selection, composition, and weighting of training data during optimization. However, existing approaches to data selection, data mixture optimization, and data reweighting are often developed in isolated codebases with inconsistent interfaces, hindering reproducibility, fair comparison, and practical integration. In this paper, we present DataFlex, a unified data-centric dynamic training framework built upon LLaMA-Factory. DataFlex supports three major paradigms of dynamic data optimization: sample selection, domain mixture adjustment, and sample reweighting, while remaining fully compatible with the original training workflow. It provides extensible trainer abstractions and modular components, enabling a drop-in replacement for standard LLM training, and unifies key model-dependent operations such as embedding extraction, inference, and gradient computation, with support for large-scale settings including DeepSpeed ZeRO-3. We conduct comprehensive experiments across multiple data-centric methods. Dynamic data selection consistently outperforms static full-data training on MMLU across both Mistral-7B and Llama-3.2-3B. For data mixture, DoReMi and ODM improve both MMLU accuracy and corpus-level perplexity over default proportions when pretraining Qwen2.5-1.5B on SlimPajama at 6B and 30B token scales. DataFlex also achieves consistent runtime improvements over original implementations. These results demonstrate that DataFlex provides an effective, efficient, and reproducible infrastructure for data-centric dynamic training of LLMs.",
+  "publishedAt": "2026-03-27T08:28:02Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 365,
+  "citationCount": 3,
+  "githubStars": 1913,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2605.02881",
+  "slug": "molmoact2-action-reasoning-models-for-real-world-deployment",
+  "title": "MolmoAct2: Action Reasoning Models for Real-world Deployment",
+  "authors": [
+   "Haoquan Fang",
+   "Jiafei Duan",
+   "Donovan Clay",
+   "Sam Wang",
+   "Shuo Liu",
+   "Weikai Huang"
+  ],
+  "abstract": "Vision-Language-Action (VLA) models aim to provide a single generalist controller for robots, but today's systems fall short on the criteria that matter for real-world deployment. Frontier models are closed, open-weight alternatives are tied to expensive hardware, reasoning-augmented policies pay prohibitive latency for their grounding, and fine-tuned success rates remain below the threshold for dependable use. We present MolmoAct2, a fully open action reasoning model built for practical deployment, advancing its predecessor along five axes. We introduce MolmoER, a VLM backbone specialized for spatial and embodied reasoning, trained on a 3.3M-sample corpus with a specialize-then-rehearse recipe. We release three new datasets spanning low-to-medium cost platforms, including MolmoAct2-BimanualYAM, 720 hours of teleoperated bimanual trajectories that constitute the largest open bimanual dataset to date, together with quality-filtered Franka (DROID) and SO100/101 subsets. We provide OpenFAST, an open-weight, open-data action tokenizer trained on millions of trajectories across five embodiments. We redesign the architecture to graft a flow-matching continuous-action expert onto a discrete-token VLM via per-layer KV-cache conditioning. Finally, we propose MolmoThink, an adaptive-depth reasoning variant that re-predicts depth tokens only for scene regions that change between timesteps, retaining geometric grounding at a fraction of prior latency. In the most extensive empirical study of any open VLA to date, spanning 7 simulation and real-world benchmarks, MolmoAct2 outperforms strong baselines including Pi-05, while MolmoER surpasses GPT-5 and Gemini Robotics ER-1.5 across 13 embodied-reasoning benchmarks. We release model weights, training code, and complete training data. Project page: https://allenai.org/blog/molmoact2",
+  "publishedAt": "2026-05-04T17:51:21Z",
+  "primaryArxivCategory": [
+   "cs.RO"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 356,
+  "citationCount": 23,
+  "githubStars": 697,
+  "pageCount": 51
+ },
+ {
+  "arxivId": "2602.05400",
+  "slug": "opus-towards-efficient-and-principled-data-selection-in-large-language-model",
+  "title": "OPUS: Towards Efficient and Principled Data Selection in Large Language Model Pre-training in Every Iteration",
+  "authors": [
+   "Shaobo Wang",
+   "Xuan Ouyang",
+   "Tianyi Xu",
+   "Yuzheng Hu",
+   "Jialin Liu",
+   "Guo Chen"
+  ],
+  "abstract": "As high-quality public text approaches exhaustion, a phenomenon known as the Data Wall, pre-training is shifting from more tokens to better tokens. However, existing methods either rely on heuristic static filters that ignore training dynamics, or use dynamic yet optimizer-agnostic criteria based on raw gradients. We propose OPUS (Optimizer-induced Projected Utility Selection), a dynamic data selection framework that defines utility in the optimizer-induced update space. OPUS scores candidates by projecting their effective updates, shaped by modern optimizers, onto a target direction derived from a stable, in-distribution proxy. To ensure scalability, we employ Ghost technique with CountSketch for computational efficiency, and Boltzmann sampling for data diversity, incurring only 4.7\\% additional compute overhead. OPUS achieves remarkable results across diverse corpora, quality tiers, optimizers, and model scales. In pre-training of GPT-2 Large/XL on FineWeb and FineWeb-Edu with 30B tokens, OPUS outperforms industrial-level baselines and even full 200B-token training. Moreover, when combined with industrial-level static filters, OPUS further improves pre-training efficiency, even with lower-quality data. Furthermore, in continued pre-training of Qwen3-8B-Base on SciencePedia, OPUS achieves superior performance using only 0.5B tokens compared to full training with 3B tokens, demonstrating significant data efficiency gains in specialized domains.",
+  "publishedAt": "2026-02-05T07:34:23Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": "Alibaba / Qwen",
+  "hfUpvotes": 354,
+  "citationCount": 10,
+  "githubStars": null,
+  "pageCount": 45
+ },
+ {
+  "arxivId": "2603.19835",
+  "slug": "fipo-eliciting-deep-reasoning-with-future-kl-influenced-policy-optimization",
+  "title": "FIPO: Eliciting Deep Reasoning with Future-KL Influenced Policy Optimization",
+  "authors": [
+   "Chiyu Ma",
+   "Shuo Yang",
+   "Kexin Huang",
+   "Jinda Lu",
+   "Haoming Meng",
+   "Shangshang Wang"
+  ],
+  "abstract": "We present Future-KL Influenced Policy Optimization (FIPO), a reinforcement learning algorithm designed to overcome reasoning bottlenecks in large language models. While GRPO style training scales effectively, it typically relies on outcome-based rewards (ORM) that distribute a global advantage uniformly across every token in a trajectory. We argue that this coarse-grained credit assignment imposes a performance ceiling by failing to distinguish critical logical pivots from trivial tokens. FIPO addresses this by incorporating discounted future-KL divergence into the policy update, creating a dense advantage formulation that re-weights tokens based on their influence on subsequent trajectory behavior. Empirically, FIPO enables models to break through the length stagnation seen in standard baselines. Evaluated on Qwen2.5-32B, FIPO extends the average chain-of-thought length from roughly 4,000 to over 10,000 tokens and increases AIME 2024 Pass@1 accuracy from 50.0% to a peak of 58.0% (converging at approximately 56.0\\%). This outperforms both DeepSeek-R1-Zero-Math-32B (around 47.0%) and o1-mini (approximately 56.0%). Our results suggest that establishing dense advantage formulations is a vital path for evolving ORM-based algorithms to unlock the full reasoning potential of base models. We open-source our training system, built on the verl framework.",
+  "publishedAt": "2026-03-20T10:24:50Z",
+  "primaryArxivCategory": [
+   "cs.LG"
+  ],
+  "officialLab": "Alibaba / Qwen",
+  "hfUpvotes": 353,
+  "citationCount": 18,
+  "githubStars": 130,
+  "pageCount": 35
+ },
+ {
+  "arxivId": "2508.18106",
+  "slug": "a-s-e-a-repository-level-benchmark-for-evaluating-security-in-ai-generated-code",
+  "title": "A.S.E: A Repository-Level Benchmark for Evaluating Security in AI-Generated Code",
+  "authors": [
+   "Keke Lian",
+   "Bin Wang",
+   "Lei Zhang",
+   "Libo Chen",
+   "Junjie Wang",
+   "Ziming Zhao"
+  ],
+  "abstract": "The increasing adoption of large language models (LLMs) in software engineering necessitates rigorous security evaluation of their generated code. However, existing benchmarks often lack relevance to real-world AI-assisted programming scenarios, making them inadequate for assessing the practical security risks associated with AI-generated code in production environments. To address this gap, we introduce A.S.E (AI Code Generation Security Evaluation), a repository-level evaluation benchmark designed to closely mirror real-world AI programming tasks, offering a comprehensive and reliable framework for assessing the security of AI-generated code. Our evaluation of leading LLMs on A.S.E reveals several key findings. In particular, current LLMs still struggle with secure coding. The complexity in repository-level scenarios presents challenges for LLMs that typically perform well on snippet-level tasks. Moreover, a larger reasoning budget does not necessarily lead to better code generation. These observations offer valuable insights into the current state of AI code generation and help developers identify the most suitable models for practical tasks. They also lay the groundwork for refining LLMs to generate secure and efficient code in real-world applications.",
+  "publishedAt": "2025-08-25T15:11:11Z",
+  "primaryArxivCategory": [
+   "cs.SE",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 350,
+  "citationCount": 15,
+  "githubStars": 647,
+  "pageCount": 23
+ },
+ {
+  "arxivId": "2603.28032",
+  "slug": "carla-air-fly-drones-inside-a-carla-world-a-unified-infrastructure-for-air",
+  "title": "CARLA-Air: Fly Drones Inside a CARLA World -- A Unified Infrastructure for Air-Ground Embodied Intelligence",
+  "authors": [
+   "Tianle Zeng",
+   "Yanci Wen",
+   "Hong Zhang"
+  ],
+  "abstract": "The convergence of low-altitude economies, embodied intelligence, and air-ground cooperative systems creates growing demand for simulation infrastructure capable of jointly modeling aerial and ground agents within a single physically coherent environment. Existing open-source platforms remain domain-segregated: driving simulators lack aerial dynamics, while multirotor simulators lack realistic ground scenes. Bridge-based co-simulation introduces synchronization overhead and cannot guarantee strict spatial-temporal consistency. We present CARLA-Air, an open-source infrastructure that unifies high-fidelity urban driving and physics-accurate multirotor flight within a single Unreal Engine process. The platform preserves both CARLA and AirSim native Python APIs and ROS 2 interfaces, enabling zero-modification code reuse. Within a shared physics tick and rendering pipeline, CARLA-Air delivers photorealistic environments with rule-compliant traffic, socially-aware pedestrians, and aerodynamically consistent UAV dynamics, synchronously capturing up to 18 sensor modalities across all platforms at each tick. The platform supports representative air-ground embodied intelligence workloads spanning cooperation, embodied navigation and vision-language action, multi-modal perception and dataset construction, and reinforcement-learning-based policy training. An extensible asset pipeline allows integration of custom robot platforms into the shared world. By inheriting AirSim's aerial capabilities -- whose upstream development has been archived -- CARLA-Air ensures this widely adopted flight stack continues to evolve within a modern infrastructure. Released with prebuilt binaries and full source: https://github.com/louiszengCN/CarlaAir",
+  "publishedAt": "2026-03-30T04:49:29Z",
+  "primaryArxivCategory": [
+   "cs.RO",
+   "cs.AI",
+   "cs.CV",
+   "cs.HC"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 344,
+  "citationCount": 2,
+  "githubStars": 1061,
+  "pageCount": 17
+ },
+ {
+  "arxivId": "2512.24880",
+  "slug": "mhc-manifold-constrained-hyper-connections",
+  "title": "mHC: Manifold-Constrained Hyper-Connections",
+  "authors": [
+   "Zhenda Xie",
+   "Yixuan Wei",
+   "Huanqi Cao",
+   "Chenggang Zhao",
+   "Chengqi Deng",
+   "Jiashi Li"
+  ],
+  "abstract": "Recently, studies exemplified by Hyper-Connections (HC) have extended the ubiquitous residual connection paradigm established over the past decade by expanding the residual stream width and diversifying connectivity patterns. While yielding substantial performance gains, this diversification fundamentally compromises the identity mapping property intrinsic to the residual connection, which causes severe training instability and restricted scalability, and additionally incurs notable memory access overhead. To address these challenges, we propose Manifold-Constrained Hyper-Connections (mHC), a general framework that projects the residual connection space of HC onto a specific manifold to restore the identity mapping property, while incorporating rigorous infrastructure optimization to ensure efficiency. Empirical experiments demonstrate that mHC is effective for training at scale, offering tangible performance improvements and superior scalability. We anticipate that mHC, as a flexible and practical extension of HC, will contribute to a deeper understanding of topological architecture design and suggest promising directions for the evolution of foundational models.",
+  "publishedAt": "2025-12-31T14:16:26Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI",
+   "cs.LG"
+  ],
+  "officialLab": "DeepSeek",
+  "hfUpvotes": 331,
+  "citationCount": 65,
+  "githubStars": null,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2604.06628",
+  "slug": "rethinking-generalization-in-reasoning-sft-a-conditional-analysis-on",
+  "title": "Rethinking Generalization in Reasoning SFT: A Conditional Analysis on Optimization, Data, and Model Capability",
+  "authors": [
+   "Qihan Ren",
+   "Peng Wang",
+   "Ruikun Cai",
+   "Shuai Shao",
+   "Dadi Guo",
+   "Yuejin Xie"
+  ],
+  "abstract": "A prevailing narrative in LLM post-training holds that supervised finetuning (SFT) memorizes while reinforcement learning (RL) generalizes. We revisit this claim for reasoning SFT with long chain-of-thought (CoT) supervision and find that cross-domain generalization is not absent but conditional, jointly shaped by optimization dynamics, training data, and base-model capability. Some reported failures are under-optimization artifacts: cross-domain performance first degrades before recovering and improving with extended training (a dip-and-recovery pattern), so shorttraining checkpoints can underestimate generalization. Data quality and structure both matter: low-quality solutions broadly hurt generalization,while verified long-CoT traces yield consistent cross-domain gains. Model capability is essential: stronger models internalize transferable procedural patterns (e.g., backtracking) even from a toy arithmetic game, while weaker ones imitate surface verbosity. This generalization is asymmetric, however: reasoning improves while safety degrades, reframing the question from whether reasoning SFT generalizes to under what conditions and at what cost.",
+  "publishedAt": "2026-04-08T03:11:16Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 330,
+  "citationCount": 3,
+  "githubStars": 109,
+  "pageCount": 41
+ },
+ {
+  "arxivId": "2605.20613",
+  "slug": "hrm-text-efficient-pretraining-beyond-scaling",
+  "title": "HRM-Text: Efficient Pretraining Beyond Scaling",
+  "authors": [
+   "Guan Wang",
+   "Changling Liu",
+   "Chenyu Wang",
+   "Cai Zhou",
+   "Yuhao Sun",
+   "Yifei Wu"
+  ],
+  "abstract": "The current pretraining paradigm for large language models relies on massive compute and internet-scale raw text, creating a significant barrier to foundational research. In contrast, biological systems demonstrate highly sample-efficient learning through multi-timescale processing, such as the functional organization of the frontoparietal loop. Taking this as inspiration, we introduce HRM-Text, which replaces standard Transformers with a Hierarchical Recurrent Model (HRM) that decouples computation into slow-evolving strategic and fast-evolving execution layers. To stabilize this deep recurrence for language modeling, we introduce MagicNorm and warmup deep credit assignment. Furthermore, instead of standard raw-text pretraining, we train exclusively on instruction-response pairs using a task-completion objective and PrefixLM masking. Serving as an empirical existence proof of efficient pretraining, a 1B-parameter HRM-Text model trained from scratch on only 40 billion unique tokens and $1,500 budget achieves 60.7% on MMLU, 81.9% on ARC-C, 82.2% on DROP, 84.5% on GSM8K, and 56.2% on MATH. Despite utilizing roughly 100-900x fewer training tokens and 96-432x less estimated compute than standard baselines, HRM-Text performs competitively with 2-7B parameter open models. These results demonstrate that co-designing architectures and objectives can radically reduce the compute-to-performance ratio, making pretraining from scratch accessible to the broader research community.",
+  "publishedAt": "2026-05-20T01:59:50Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 323,
+  "citationCount": 3,
+  "githubStars": 1792,
+  "pageCount": 26
+ },
+ {
+  "arxivId": "2602.00919",
+  "slug": "green-vla-staged-vision-language-action-model-for-generalist-robots",
+  "title": "Green-VLA: Staged Vision-Language-Action Model for Generalist Robots",
+  "authors": [
+   "I. Apanasevich",
+   "M. Artemyev",
+   "R. Babakyan",
+   "P. Fedotova",
+   "D. Grankin",
+   "E. Kupryashin"
+  ],
+  "abstract": "We introduce Green-VLA, a staged Vision-Language-Action (VLA) framework for real-world deployment on the Green humanoid robot while maintaining generalization across diverse embodiments. Green-VLA follows a five stage curriculum: (L0) foundational VLMs, (L1) multimodal grounding, (R0) multi-embodiment pretraining, (R1) embodiment-specific adaptation, and (R2) reinforcement-learning (RL) policy alignment. We couple a scalable data-processing pipeline (3,000 hours of demonstrations) with temporal alignment and quality filtering, and use a unified, embodiment-aware action interface enabling a single policy to control humanoids, mobile manipulators, and fixed-base arms. At inference, the VLA controller is enhanced with episode-progress prediction, out-of-distribution detection, and joint-prediction-based guidance to improve safety and precise target selection. Experiments on Simpler BRIDGE WidowX and CALVIN ABC-D, as well as real-robot evaluations, show strong generalization and performance gains from RL alignment in success rate, robustness, and long-horizon efficiency.",
+  "publishedAt": "2026-01-31T22:13:23Z",
+  "primaryArxivCategory": [
+   "cs.RO"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 322,
+  "citationCount": 4,
+  "githubStars": 138,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2508.10104",
+  "slug": "dinov3",
+  "title": "DINOv3",
+  "authors": [
+   "Oriane Siméoni",
+   "Huy V. Vo",
+   "Maximilian Seitzer",
+   "Federico Baldassarre",
+   "Maxime Oquab",
+   "Cijo Jose"
+  ],
+  "abstract": "Self-supervised learning holds the promise of eliminating the need for manual data annotation, enabling models to scale effortlessly to massive datasets and larger architectures. By not being tailored to specific tasks or domains, this training paradigm has the potential to learn visual representations from diverse sources, ranging from natural to aerial images -- using a single algorithm. This technical report introduces DINOv3, a major milestone toward realizing this vision by leveraging simple yet effective strategies. First, we leverage the benefit of scaling both dataset and model size by careful data preparation, design, and optimization. Second, we introduce a new method called Gram anchoring, which effectively addresses the known yet unsolved issue of dense feature maps degrading during long training schedules. Finally, we apply post-hoc strategies that further enhance our models' flexibility with respect to resolution, model size, and alignment with text. As a result, we present a versatile vision foundation model that outperforms the specialized state of the art across a broad range of settings, without fine-tuning. DINOv3 produces high-quality dense features that achieve outstanding performance on various vision tasks, significantly surpassing previous self- and weakly-supervised foundation models. We also share the DINOv3 suite of vision models, designed to advance the state of the art on a wide spectrum of tasks and data by providing scalable solutions for diverse resource constraints and deployment scenarios.",
+  "publishedAt": "2025-08-13T18:00:55Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.LG"
+  ],
+  "officialLab": "Meta AI / FAIR",
+  "hfUpvotes": 315,
+  "citationCount": 1216,
+  "githubStars": 11112,
+  "pageCount": 67
+ },
+ {
+  "arxivId": "2603.16790",
+  "slug": "incoder-32b-code-foundation-model-for-industrial-scenarios",
+  "title": "InCoder-32B: Code Foundation Model for Industrial Scenarios",
+  "authors": [
+   "Jian Yang",
+   "Wei Zhang",
+   "Jiajun Wu",
+   "Junhang Cheng",
+   "Shawn Guo",
+   "Haowen Wang"
+  ],
+  "abstract": "Recent code large language models have achieved remarkable progress on general programming tasks. Nevertheless, their performance degrades significantly in industrial scenarios that require reasoning about hardware semantics, specialized language constructs, and strict resource constraints. To address these challenges, we introduce InCoder-32B (Industrial-Coder-32B), the first 32B-parameter code foundation model unifying code intelligence across chip design, GPU kernel optimization, embedded systems, compiler optimization, and 3D modeling. By adopting an efficient architecture, we train InCoder-32B from scratch with general code pre-training, curated industrial code annealing, mid-training that progressively extends context from 8K to 128K tokens with synthetic industrial reasoning data, and post-training with execution-grounded verification. We conduct extensive evaluation on 14 mainstream general code benchmarks and 9 industrial benchmarks spanning 4 specialized domains. Results show InCoder-32B achieves highly competitive performance on general tasks while establishing strong open-source baselines across industrial domains.",
+  "publishedAt": "2026-03-17T17:01:35Z",
+  "primaryArxivCategory": [
+   "cs.SE",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 312,
+  "citationCount": 6,
+  "githubStars": null,
+  "pageCount": 68
+ },
+ {
+  "arxivId": "2607.02512",
+  "slug": "program-as-weights-a-programming-paradigm-for-fuzzy-functions",
+  "title": "Program-as-Weights: A Programming Paradigm for Fuzzy Functions",
+  "authors": [
+   "Wentao Zhang",
+   "Liliana Hotsko",
+   "Woojeong Kim",
+   "Pengyu Nie",
+   "Stuart Shieber",
+   "Yuntian Deng"
+  ],
+  "abstract": "Many everyday programming tasks resist clean rule-based implementation, such as alerting on important log lines, repairing malformed JSON, or ranking search results by intent, and are increasingly outsourced to large language model APIs at the cost of locality, reproducibility, and price. We propose fuzzy-function programming: compiling such a function from a natural-language specification into a compact, locally-executable neural artifact. We instantiate this paradigm with Program-as-Weights (PAW), in which a 4B compiler trained on FuzzyBench, a 10M-example dataset we release, emits parameter-efficient adapters for a frozen, lightweight interpreter. A 0.6B Qwen3 interpreter executing PAW programs matches the performance of direct prompting of Qwen3-32B, while using roughly one fiftieth of the inference memory and running at 30 tokens/s on a MacBook M3. PAW reframes the foundation model from a per-input problem solver into a tool builder: invoked once per function definition, it produces a small reusable artifact whose subsequent calls per function application are cheap and offline.",
+  "publishedAt": "2026-07-02T17:59:50Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 309,
+  "citationCount": 0,
+  "githubStars": null,
+  "pageCount": 28
+ },
+ {
+  "arxivId": "2607.19191",
+  "slug": "abot-world-0-infinite-interactive-world-rollout-on-a-single-desktop-gpu",
+  "title": "ABot-World-0: Infinite Interactive World Rollout on a Single Desktop GPU",
+  "authors": [
+   "Fan Jiang",
+   "Zhaoxu Sun",
+   "Mengchao Wang",
+   "Ziyu Zhu",
+   "Chiyu Wang",
+   "Yunpeng Zhang"
+  ],
+  "abstract": "We present ABot-World-0, an action-conditioned video world model for real-time, long-horizon closed-loop interaction, supported by a multi-source data infrastructure spanning AAA games, simulation engines, and internet videos to learn controllable world dynamics. WorldExplorer performs agent-driven collection guided by training feedback, while a unified pipeline applies 14 deterministic quality checks, VLM-based assessment, and synchronized action and text annotation. We progressively distill a bidirectional action-conditioned teacher into a causal student through teacher forcing and ODE distillation, and introduce LongForcing to align long student self-rollouts with an extended-horizon teacher, mitigating accumulated distribution shift and autoregressive drift. Raw keyboard actions provide a unified control interface for scene roaming and third-person character interaction, while reference-character memory provides persistent appearance cues for identity consistency during third-person rollouts. For deployment, we co-design a streaming inference stack with a lightweight VAE decoder, efficient attention, memory-aware scheduling, and low-bit DiT inference. Across optimized low-bit configurations, ABot-World-0 streams 720P video at up to 16 FPS on a single NVIDIA RTX 5090 desktop GPU, with 1.2s action-to-first-frame latency and approximately 19GiB peak VRAM. Experiments on WorldRoamBench and extended interactive rollouts demonstrate competitive controllability and coherent long-horizon world evolution.",
+  "publishedAt": "2026-07-21T15:26:50Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 308,
+  "citationCount": 0,
+  "githubStars": 1775,
+  "pageCount": 33
+ },
+ {
+  "arxivId": "2511.18538",
+  "slug": "from-code-foundation-models-to-agents-and-applications-a-comprehensive-survey",
+  "title": "From Code Foundation Models to Agents and Applications: A Comprehensive Survey and Practical Guide to Code Intelligence",
+  "authors": [
+   "Jian Yang",
+   "Xianglong Liu",
+   "Weifeng Lv",
+   "Ken Deng",
+   "Shawn Guo",
+   "Lin Jing"
+  ],
+  "abstract": "Large language models (LLMs) have fundamentally transformed automated software development by enabling direct translation of natural language descriptions into functional code, driving commercial adoption through tools like Github Copilot (Microsoft), Cursor (Anysphere), Trae (ByteDance), and Claude Code (Anthropic). While the field has evolved dramatically from rule-based systems to Transformer-based architectures, achieving performance improvements from single-digit to over 95\\% success rates on benchmarks like HumanEval. In this work, we provide a comprehensive synthesis and practical guide (a series of analytic and probing experiments) about code LLMs, systematically examining the complete model life cycle from data curation to post-training through advanced prompting paradigms, code pre-training, supervised fine-tuning, reinforcement learning, and autonomous coding agents. We analyze the code capability of the general LLMs (GPT-4, Claude, LLaMA) and code-specialized LLMs (StarCoder, Code LLaMA, DeepSeek-Coder, and QwenCoder), critically examining the techniques, design decisions, and trade-offs. Further, we articulate the research-practice gap between academic research (e.g., benchmarks and tasks) and real-world deployment (e.g., software-related code tasks), including code correctness, security, contextual awareness of large codebases, and integration with development workflows, and map promising research directions to practical needs. Last, we conduct a series of experiments to provide a comprehensive analysis of code pre-training, supervised fine-tuning, and reinforcement learning, covering scaling law, framework selection, hyperparameter sensitivity, model architectures, and dataset comparisons.",
+  "publishedAt": "2025-11-23T17:09:34Z",
+  "primaryArxivCategory": [
+   "cs.SE",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 306,
+  "citationCount": 12,
+  "githubStars": null,
+  "pageCount": 303
+ },
+ {
+  "arxivId": "2607.28227",
+  "slug": "qwen-ui-agent-technical-report-toward-next-generation-real-world-centric",
+  "title": "Qwen-UI-Agent Technical Report: Toward Next-Generation Real-World Centric Foundation GUI Agents",
+  "authors": [
+   "Hanzhang Zhou",
+   "Panrong Tong",
+   "Xu Zhang",
+   "Quyu Kong",
+   "Chenglin Cai",
+   "Tianyu Xia"
+  ],
+  "abstract": "GUI agents have the potential to become a general purpose executor over existing digital devices. To advance them toward real-world use, we envision agents that operate reliably on real devices, execute workflows across platforms, combine GUI interaction with CLI execution, complete long-horizon tasks, proactively initiate useful services, and autonomously improve their capabilities with minimal human effort. Guided by this vision, we present Qwen-UI-Agent, a real-world centric foundation GUI agent spanning mobile, computer-use, web, and DeepSearch environments. Qwen-UI-Agent combines diverse sandbox environments with a large-scale real-device mobile runtime. Its unified action space interleaves GUI operations with CLI execution and generates batched actions in a single model turn. An AutoResearch-style data flywheel uses agents to construct tasks and environments, diagnose failures, and plan subsequent iterations. Online RL supports training on trajectories exceeding 100 turns, with over 10,000 concurrent environments accelerating rollout. A lightweight harness layer supports proactive service initiation and stateful workflows across mobile and computer. Across a broad suite of evaluations, Qwen-UI-Agent sets state-of-the-art performance on mobile-use benchmarks while delivering competitive performance on computer- and browser-use tasks against frontier models, including Opus 4.8, Gemini 3.1 Pro, and GPT-5.6 Sol. On mobile use, it achieves 82.1% on MobileWorld, 92.2% on MobileWorld-Real, and 97.5% on AndroidDaily. On computer use, it achieves 79.5% on OSWorld-Verified and a 40.0% partial-progress score on OSWorld-v2. On browser use and GUI grounding, it achieves 73.6% on WebArena and 81.5% on ScreenSpot-Pro, respectively.",
+  "publishedAt": "2026-07-30T13:58:41Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 298,
+  "citationCount": 0,
+  "githubStars": null,
+  "pageCount": 56
+ }
+]

@@ -1,0 +1,719 @@
+[
+ {
+  "arxivId": "2509.16198",
+  "slug": "rpg-a-repository-planning-graph-for-unified-and-scalable-codebase-generation",
+  "title": "RPG: A Repository Planning Graph for Unified and Scalable Codebase Generation",
+  "authors": [
+   "Jane Luo",
+   "Xin Zhang",
+   "Steven Liu",
+   "Jie Wu",
+   "Jianfeng Liu",
+   "Yiming Huang"
+  ],
+  "abstract": "Large language models excel at generating individual functions or single files of code, yet generating complete repositories from scratch remains a fundamental challenge. This capability is key to building coherent software systems from high-level specifications and realizing the full potential of automated code generation. The process requires planning at two levels: deciding what features and modules to build (proposal stage) and defining their implementation details (implementation stage). Current approaches rely on natural language planning, which often produces unclear specifications, misaligned components, and brittle designs due to its inherent ambiguity and lack of structure. To address these limitations, we introduce the Repository Planning Graph (RPG), a structured representation that encodes capabilities, file structures, data flows, and functions in a unified graph. By replacing free-form natural language with an explicit blueprint, RPG enables consistent long-horizon planning for repository generation. Building on RPG, we develop ZeroRepo, a graph-driven framework that operates in three stages: proposal-level planning, implementation-level construction, and graph-guided code generation with test validation. To evaluate, we construct RepoCraft, a benchmark of six real-world projects with 1,052 tasks. On RepoCraft, ZeroRepo produces nearly 36K Code Lines and 445K Code Tokens, on average 3.9$\\times$ larger than the strongest baseline (Claude Code), and 68$\\times$ larger than other baselines. It achieves 81.5% coverage and 69.7% test accuracy, improving over Claude Code by 27.3 and 35.8 points. Further analysis shows that RPG models complex dependencies, enables more sophisticated planning through near-linear scaling, and improves agent understanding of repositories, thus accelerating localization. Our data and code are available at https://github.com/microsoft/RPG-ZeroRepo.",
+  "publishedAt": "2025-09-19T17:58:14Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI",
+   "cs.SE"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 129,
+  "citationCount": 12,
+  "githubStars": null,
+  "pageCount": 54
+ },
+ {
+  "arxivId": "2510.14528",
+  "slug": "paddleocr-vl-boosting-multilingual-document-parsing-via-a-0-9b-ultra-compact",
+  "title": "PaddleOCR-VL: Boosting Multilingual Document Parsing via a 0.9B Ultra-Compact Vision-Language Model",
+  "authors": [
+   "Cheng Cui",
+   "Ting Sun",
+   "Suyin Liang",
+   "Tingquan Gao",
+   "Zelun Zhang",
+   "Jiaxuan Liu"
+  ],
+  "abstract": "In this report, we propose PaddleOCR-VL, a SOTA and resource-efficient model tailored for document parsing. Its core component is PaddleOCR-VL-0.9B, a compact yet powerful vision-language model (VLM) that integrates a NaViT-style dynamic resolution visual encoder with the ERNIE-4.5-0.3B language model to enable accurate element recognition. This innovative model efficiently supports 109 languages and excels in recognizing complex elements (e.g., text, tables, formulas, and charts), while maintaining minimal resource consumption. Through comprehensive evaluations on widely used public benchmarks and in-house benchmarks, PaddleOCR-VL achieves SOTA performance in both page-level document parsing and element-level recognition. It significantly outperforms existing solutions, exhibits strong competitiveness against top-tier VLMs, and delivers fast inference speeds. These strengths make it highly suitable for practical deployment in real-world scenarios. Code is available at https://github.com/PaddlePaddle/PaddleOCR .",
+  "publishedAt": "2025-10-16T10:18:48Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 129,
+  "citationCount": 69,
+  "githubStars": null,
+  "pageCount": 71
+ },
+ {
+  "arxivId": "2511.21689",
+  "slug": "toolorchestra-elevating-intelligence-via-efficient-model-and-tool-orchestration",
+  "title": "ToolOrchestra: Elevating Intelligence via Efficient Model and Tool Orchestration",
+  "authors": [
+   "Hongjin Su",
+   "Shizhe Diao",
+   "Ximing Lu",
+   "Mingjie Liu",
+   "Jiacheng Xu",
+   "Xin Dong"
+  ],
+  "abstract": "Large language models are powerful generalists, yet solving deep and complex problems such as those of the Humanity's Last Exam (HLE) remains both conceptually challenging and computationally expensive. We show that small orchestrators managing other models and a variety of tools can both push the upper bound of intelligence and improve efficiency in solving difficult agentic tasks. We introduce ToolOrchestra, a method for training small orchestrators that coordinate intelligent tools. ToolOrchestra explicitly uses reinforcement learning with outcome-, efficiency-, and user-preference-aware rewards. Using ToolOrchestra, we produce Orchestrator, an 8B model that achieves higher accuracy at lower cost than previous tool-use agents while aligning with user preferences on which tools are to be used for a given query. On HLE, Orchestrator achieves a score of 37.1%, outperforming GPT-5 (35.1%) while being 2.5x more efficient. On tau2-Bench and FRAMES, Orchestrator surpasses GPT-5 by a wide margin while using only about 30% of the cost. Extensive analysis shows that Orchestrator achieves the best trade-off between performance and cost under multiple metrics, and generalizes robustly to unseen tools. These results demonstrate that composing diverse tools with a lightweight orchestration model is both more efficient and more effective than existing methods, paving the way for practical and scalable tool-augmented reasoning systems.",
+  "publishedAt": "2025-11-26T18:59:46Z",
+  "primaryArxivCategory": [
+   "cs.CL",
+   "cs.AI",
+   "cs.LG",
+   "cs.MA"
+  ],
+  "officialLab": "NVIDIA",
+  "hfUpvotes": 129,
+  "citationCount": 32,
+  "githubStars": 752,
+  "pageCount": 21
+ },
+ {
+  "arxivId": "2605.03849",
+  "slug": "stream-r1-reliability-perplexity-aware-reward-distillation-for-streaming-video",
+  "title": "Stream-R1: Reliability-Perplexity Aware Reward Distillation for Streaming Video Generation",
+  "authors": [
+   "Bin Wu",
+   "Mengqi Huang",
+   "Shaojin Wu",
+   "Weinan Jia",
+   "Yuxin Wang",
+   "Zhendong Mao"
+  ],
+  "abstract": "Distillation-based acceleration has become foundational for making autoregressive streaming video diffusion models practical, with distribution matching distillation (DMD) as the de facto choice. Existing methods, however, train the student to match the teacher's output indiscriminately, treating every rollout, frame, and pixel as equally reliable supervision. We argue that this caps distilled quality, since it overlooks two complementary axes of variance in DMD supervision: Inter-Reliability across student rollouts whose supervision varies in reliability, and Intra-Perplexity across spatial regions and temporal frames that contribute unequally to where quality can still be improved. The objective thus conflates two questions under a uniform weight: whether to learn from each rollout, and where to concentrate optimization within it. To address this, we propose Stream-R1, a Reliability-Perplexity Aware Reward Distillation framework that adaptively reweights the distillation objective at both rollout and spatiotemporal-element levels through a single shared reward-guided mechanism. At the Inter-Reliability level, Stream-R1 rescales each rollout's loss by an exponential of a pretrained video reward score, so that rollouts with reliable supervision dominate optimization. At the Intra-Perplexity level, it back-propagates the same reward model to extract per-pixel gradient saliency, which is factored into spatial and temporal weights that concentrate optimization pressure on regions and frames where refinement yields the largest expected gain. An adaptive balancing mechanism prevents any single quality axis from dominating across visual quality, motion quality, and text alignment. Stream-R1 attains consistent improvements on all three dimensions over distillation baselines on standard streaming video generation benchmarks, without architectural modification or additional inference cost.",
+  "publishedAt": "2026-05-05T15:15:30Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 129,
+  "citationCount": 2,
+  "githubStars": 54,
+  "pageCount": 16
+ },
+ {
+  "arxivId": "2509.02544",
+  "slug": "ui-tars-2-technical-report-advancing-gui-agent-with-multi-turn-reinforcement",
+  "title": "UI-TARS-2 Technical Report: Advancing GUI Agent with Multi-Turn Reinforcement Learning",
+  "authors": [
+   "Haoming Wang",
+   "Haoyang Zou",
+   "Huatong Song",
+   "Jiazhan Feng",
+   "Junjie Fang",
+   "Junting Lu"
+  ],
+  "abstract": "The development of autonomous agents for graphical user interfaces (GUIs) presents major challenges in artificial intelligence. While recent advances in native agent models have shown promise by unifying perception, reasoning, action, and memory through end-to-end learning, open problems remain in data scalability, multi-turn reinforcement learning (RL), the limitations of GUI-only operation, and environment stability. In this technical report, we present UI-TARS-2, a native GUI-centered agent model that addresses these challenges through a systematic training methodology: a data flywheel for scalable data generation, a stabilized multi-turn RL framework, a hybrid GUI environment that integrates file systems and terminals, and a unified sandbox platform for large-scale rollouts. Empirical evaluation demonstrates that UI-TARS-2 achieves significant improvements over its predecessor UI-TARS-1.5. On GUI benchmarks, it reaches 88.2 on Online-Mind2Web, 47.5 on OSWorld, 50.6 on WindowsAgentArena, and 73.3 on AndroidWorld, outperforming strong baselines such as Claude and OpenAI agents. In game environments, it attains a mean normalized score of 59.8 across a 15-game suite-roughly 60% of human-level performance-and remains competitive with frontier proprietary models (e.g., OpenAI o3) on LMGame-Bench. Additionally, the model can generalize to long-horizon information-seeking tasks and software engineering benchmarks, highlighting its robustness across diverse agent tasks. Detailed analyses of training dynamics further provide insights into achieving stability and efficiency in large-scale agent RL. These results underscore UI-TARS-2's potential to advance the state of GUI agents and exhibit strong generalization to real-world interactive scenarios.",
+  "publishedAt": "2025-09-02T17:44:45Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL",
+   "cs.CV",
+   "cs.HC"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 128,
+  "citationCount": 163,
+  "githubStars": 11276,
+  "pageCount": 30
+ },
+ {
+  "arxivId": "2510.08673",
+  "slug": "thinking-with-camera-a-unified-multimodal-model-for-camera-centric",
+  "title": "Thinking with Camera: A Unified Multimodal Model for Camera-Centric Understanding and Generation",
+  "authors": [
+   "Kang Liao",
+   "Size Wu",
+   "Zhonghua Wu",
+   "Linyi Jin",
+   "Chao Wang",
+   "Yikai Wang"
+  ],
+  "abstract": "Camera-centric understanding and generation are two cornerstones of spatial intelligence, yet they are typically studied in isolation. We present Puffin, a unified camera-centric multimodal model that extends spatial awareness along the camera dimension. Puffin integrates language regression and diffusion-based generation to interpret and create scenes from arbitrary viewpoints. To bridge the modality gap between cameras and vision-language, we introduce a novel paradigm that treats camera as language, enabling thinking with camera. This guides the model to align spatially grounded visual cues with photographic terminology while reasoning across geometric context. Puffin is trained on Puffin-4M, a large-scale dataset of 4 million vision-language-camera triplets. We incorporate both global camera parameters and pixel-wise camera maps, yielding flexible and reliable spatial generation. Experiments demonstrate Puffin superior performance over specialized models for camera-centric generation and understanding. With instruction tuning, Puffin generalizes to diverse cross-view tasks such as spatial imagination, world exploration, and photography guidance. We will release the code, models, dataset pipeline, and benchmark to advance multimodal spatial intelligence research.",
+  "publishedAt": "2025-10-09T17:59:29Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 128,
+  "citationCount": 15,
+  "githubStars": 420,
+  "pageCount": 35
+ },
+ {
+  "arxivId": "2601.09688",
+  "slug": "deepresearcheval-an-automated-framework-for-deep-research-task-construction",
+  "title": "DeepResearchEval: An Automated Framework for Deep Research Task Construction and Agentic Evaluation",
+  "authors": [
+   "Yibo Wang",
+   "Lei Wang",
+   "Yue Deng",
+   "Keming Wu",
+   "Yao Xiao",
+   "Huanjin Yao"
+  ],
+  "abstract": "Deep research systems are widely used for multi-step web research, analysis, and cross-source synthesis, yet their evaluation remains challenging. Existing benchmarks often require annotation-intensive task construction, rely on static evaluation dimensions, or fail to reliably verify facts when citations are missing. To bridge these gaps, we introduce DeepResearchEval, an automated framework for deep research task construction and agentic evaluation. For task construction, we propose a persona-driven pipeline generating realistic, complex research tasks anchored in diverse user profiles, applying a two-stage filter Task Qualification and Search Necessity to retain only tasks requiring multi-source evidence integration and external retrieval. For evaluation, we propose an agentic pipeline with two components: an Adaptive Point-wise Quality Evaluation that dynamically derives task-specific evaluation dimensions, criteria, and weights conditioned on each generated task, and an Active Fact-Checking that autonomously extracts and verifies report statements via web search, even when citations are missing.",
+  "publishedAt": "2026-01-14T18:38:31Z",
+  "primaryArxivCategory": [
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 128,
+  "citationCount": 12,
+  "githubStars": 142,
+  "pageCount": 22
+ },
+ {
+  "arxivId": "2605.03269",
+  "slug": "rldx-1-technical-report",
+  "title": "RLDX-1 Technical Report",
+  "authors": [
+   "Dongyoung Kim",
+   "Huiwon Jang",
+   "Myungkyu Koo",
+   "Suhyeok Jang",
+   "Taeyoung Kim",
+   "Beomjun Kim"
+  ],
+  "abstract": "While Vision-Language-Action models (VLAs) have shown remarkable progress toward human-like generalist robotic policies through the versatile intelligence (i.e. broad scene understanding and language-conditioned generalization) inherited from pre-trained Vision-Language Models, they still struggle with complex real-world tasks requiring broader functional capabilities (e.g. motion awareness, long-term memory, and physical sensing). To address this, we introduce RLDX-1, a general-purpose robotic policy for dexterous manipulation built on the Multi-Stream Action Transformer (MSAT), an architecture that unifies these capabilities by integrating heterogeneous modalities through modality-specific streams with cross-modal joint self-attention. RLDX-1 further combines this architecture with system-level design choices, including data synthesis for rare manipulation scenarios, learning procedures specialized for human-like manipulation, and inference optimizations for real-time deployment. Through empirical evaluation, we show that RLDX-1 consistently outperforms recent frontier VLAs (e.g. $π_{0.5}$ and GR00T N1.6) across both simulation benchmarks and real-world tasks that require broad functional capabilities beyond general versatility. In particular, RLDX-1 shows superiority in ALLEX humanoid tasks by achieving success rates of 86.8% while $π_{0.5}$ and GR00T N1.6 achieve around 40%, highlighting the ability of RLDX-1 to control a high-DoF humanoid robot under diverse functional demands. Together, these results position RLDX-1 as a promising step toward reliable VLAs for complex, contact-rich, and dynamic real-world dexterous manipulation.",
+  "publishedAt": "2026-05-05T01:40:15Z",
+  "primaryArxivCategory": [
+   "cs.RO",
+   "cs.AI",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 128,
+  "citationCount": 11,
+  "githubStars": 326,
+  "pageCount": 55
+ },
+ {
+  "arxivId": "2603.22212",
+  "slug": "omni-worldbench-towards-a-comprehensive-interaction-centric-evaluation-for",
+  "title": "Omni-WorldBench: Towards a Comprehensive Interaction-Centric Evaluation for World Models",
+  "authors": [
+   "Meiqi Wu",
+   "Zhixin Cai",
+   "Fufangchen Zhao",
+   "Xiaokun Feng",
+   "Rujing Dang",
+   "Bingze Song"
+  ],
+  "abstract": "Video--based world models have emerged along two dominant paradigms: video generation and 3D reconstruction. However, existing evaluation benchmarks either focus narrowly on visual fidelity and text--video alignment for generative models, or rely on static 3D reconstruction metrics that fundamentally neglect temporal dynamics. We argue that the future of world modeling lies in 4D generation, which jointly models spatial structure and temporal evolution. In this paradigm, the core capability is interactive response: the ability to faithfully reflect how interaction actions drive state transitions across space and time. Yet no existing benchmark systematically evaluates this critical dimension. To address this gap, we propose Omni--WorldBench, a comprehensive benchmark specifically designed to evaluate the interactive response capabilities of world models in 4D settings. Omni--WorldBench comprises two key components: Omni--WorldSuite, a systematic prompt suite spanning diverse interaction levels and scene types; and Omni--Metrics, an agent-based evaluation framework that quantifies world modeling capabilities by measuring the causal impact of interaction actions on both final outcomes and intermediate state evolution trajectories. We conduct extensive evaluations of 18 representative world models across multiple paradigms. Our analysis reveals critical limitations of current world models in interactive response, providing actionable insights for future research. Omni-WorldBench will be publicly released to foster progress in interactive 4D world modeling.",
+  "publishedAt": "2026-03-23T17:10:29Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 127,
+  "citationCount": 5,
+  "githubStars": 107,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2604.14268",
+  "slug": "hy-world-2-0-a-multi-modal-world-model-for-reconstructing-generating-and",
+  "title": "HY-World 2.0: A Multi-Modal World Model for Reconstructing, Generating, and Simulating 3D Worlds",
+  "authors": [
+   "Team HY-World",
+   "Chenjie Cao",
+   "Xuhui Zuo",
+   "Zhenwei Wang",
+   "Yisu Zhang",
+   "Junta Wu"
+  ],
+  "abstract": "We introduce HY-World 2.0, a multi-modal world model framework that advances our prior project HY-World 1.0. HY-World 2.0 accommodates diverse input modalities, including text prompts, single-view images, multi-view images, and videos, and produces 3D world representations. With text or single-view image inputs, the model performs world generation, synthesizing high-fidelity, navigable 3D Gaussian Splatting (3DGS) scenes. This is achieved through a four-stage method: a) Panorama Generation with HY-Pano 2.0, b) Trajectory Planning with WorldNav, c) World Expansion with WorldStereo 2.0, and d) World Composition with WorldMirror 2.0. Specifically, we introduce key innovations to enhance panorama fidelity, enable 3D scene understanding and planning, and upgrade WorldStereo, our keyframe-based view generation model with consistent memory. We also upgrade WorldMirror, a feed-forward model for universal 3D prediction, by refining model architecture and learning strategy, enabling world reconstruction from multi-view images or videos. Also, we introduce WorldLens, a high-performance 3DGS rendering platform featuring a flexible engine-agnostic architecture, automatic IBL lighting, efficient collision detection, and training-rendering co-design, enabling interactive exploration of 3D worlds with character support. Extensive experiments demonstrate that HY-World 2.0 achieves state-of-the-art performance on several benchmarks among open-source approaches, delivering results comparable to the closed-source model Marble. We release all model weights, code, and technical details to facilitate reproducibility and support further research on 3D world models.",
+  "publishedAt": "2026-04-15T17:59:17Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 127,
+  "citationCount": 19,
+  "githubStars": 2486,
+  "pageCount": 44
+ },
+ {
+  "arxivId": "2605.05242",
+  "slug": "beyond-semantic-similarity-rethinking-retrieval-for-agentic-search-via-direct",
+  "title": "Beyond Semantic Similarity: Rethinking Retrieval for Agentic Search via Direct Corpus Interaction",
+  "authors": [
+   "Zhuofeng Li",
+   "Haoxiang Zhang",
+   "Cong Wei",
+   "Pan Lu",
+   "Ping Nie",
+   "Yi Lu"
+  ],
+  "abstract": "Modern retrieval systems, whether lexical or semantic, expose a corpus through a fixed similarity interface that compresses access into a single top-k retrieval step before reasoning. This abstraction is efficient, but for agentic search, it becomes a bottleneck: exact lexical constraints, sparse clue conjunctions, local context checks, and multi-step hypothesis refinement are difficult to implement by calling a conventional off-the-shelf retriever, and evidence filtered out early cannot be recovered by stronger downstream reasoning. Agentic tasks further exacerbate this limitation because they require agents to orchestrate multiple steps, including discovering intermediate entities, combining weak clues, and revising the plan after observing partial evidence. To tackle the limitation, we study direct corpus interaction (DCI), where an agent searches the raw corpus directly with general-purpose terminal tools (e.g., grep, file reads, shell commands, lightweight scripts), without any embedding model, vector index, or retrieval API. This approach requires no offline indexing and adapts naturally to evolving local corpora. Across IR benchmarks and end-to-end agentic search tasks, this simple setup substantially outperforms strong sparse, dense, and reranking baselines on several BRIGHT and BEIR datasets, and attains strong accuracy on BrowseComp-Plus and multi-hop QA without relying on any conventional semantic retriever. Our results indicate that as language agents become stronger, retrieval quality depends not only on reasoning ability but also on the resolution of the interface through which the model interacts with the corpus, with which DCI opens a broader interface-design space for agentic search.",
+  "publishedAt": "2026-05-03T19:13:11Z",
+  "primaryArxivCategory": [
+   "cs.IR",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 127,
+  "citationCount": 21,
+  "githubStars": 382,
+  "pageCount": 51
+ },
+ {
+  "arxivId": "2601.18418",
+  "slug": "davinci-dev-agent-native-mid-training-for-software-engineering",
+  "title": "daVinci-Dev: Agent-native Mid-training for Software Engineering",
+  "authors": [
+   "Ji Zeng",
+   "Dayuan Fu",
+   "Tiantian Mi",
+   "Yumin Zhuang",
+   "Yaxing Huang",
+   "Xuefeng Li"
+  ],
+  "abstract": "Recently, the frontier of Large Language Model (LLM) capabilities has shifted from single-turn code generation to agentic software engineering-a paradigm where models autonomously navigate, edit, and test complex repositories. While post-training methods have become the de facto approach for code agents, **agentic mid-training**-mid-training (MT) on large-scale data that mirrors authentic agentic workflows-remains critically underexplored due to substantial resource requirements, despite offering a more scalable path to instilling foundational agentic behaviors than relying solely on expensive reinforcement learning. A central challenge in realizing effective agentic mid-training is the distribution mismatch between static training data and the dynamic, feedback-rich environment of real development. To address this, we present a systematic study of agentic mid-training, establishing both the data synthesis principles and training methodology for effective agent development at scale. Central to our approach is **agent-native data**-supervision comprising two complementary types of trajectories: **contextually-native trajectories** that preserve the complete information flow an agent experiences, offering broad coverage and diversity; and **environmentally-native trajectories** collected from executable repositories where observations stem from actual tool invocations and test executions, providing depth and interaction authenticity. We verify the model's agentic capabilities on `SWE-Bench Verified`. We demonstrate our superiority over the previous open software engineering mid-training recipe `Kimi-Dev` under two post-training settings with an aligned base model and agentic scaffold, while using less than half mid-training tokens (73.1B). Besides relative advantage, our best performing 32B and 72B models achieve **56.1%** and **58.5%** resolution rates, respectively, which are ...",
+  "publishedAt": "2026-01-26T12:20:18Z",
+  "primaryArxivCategory": [
+   "cs.SE",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 126,
+  "citationCount": 10,
+  "githubStars": 73,
+  "pageCount": 19
+ },
+ {
+  "arxivId": "2601.18491",
+  "slug": "agentdog-a-diagnostic-guardrail-framework-for-ai-agent-safety-and-security",
+  "title": "AgentDoG: A Diagnostic Guardrail Framework for AI Agent Safety and Security",
+  "authors": [
+   "Dongrui Liu",
+   "Qihan Ren",
+   "Chen Qian",
+   "Shuai Shao",
+   "Yuejin Xie",
+   "Yu Li"
+  ],
+  "abstract": "The rise of AI agents introduces complex safety and security challenges arising from autonomous tool use and environmental interactions. Current guardrail models lack agentic risk awareness and transparency in risk diagnosis. To introduce an agentic guardrail that covers complex and numerous risky behaviors, we first propose a unified three-dimensional taxonomy that orthogonally categorizes agentic risks by their source (where), failure mode (how), and consequence (what). Guided by this structured and hierarchical taxonomy, we introduce a new fine-grained agentic safety benchmark (ATBench) and a Diagnostic Guardrail framework for agent safety and security (AgentDoG). AgentDoG provides fine-grained and contextual monitoring across agent trajectories. More Crucially, AgentDoG can diagnose the root causes of unsafe actions and seemingly safe but unreasonable actions, offering provenance and transparency beyond binary labels to facilitate effective agent alignment. AgentDoG variants are available in three sizes (4B, 7B, and 8B parameters) across Qwen and Llama model families. Extensive experimental results demonstrate that AgentDoG achieves state-of-the-art performance in agentic safety moderation in diverse and complex interactive scenarios. All models and datasets are openly released.",
+  "publishedAt": "2026-01-26T13:45:41Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CC",
+   "cs.CL",
+   "cs.CV",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 126,
+  "citationCount": 24,
+  "githubStars": 680,
+  "pageCount": 40
+ },
+ {
+  "arxivId": "2604.08570",
+  "slug": "quanbench-a-unified-multi-framework-benchmark-for-llm-based-quantum-code",
+  "title": "QuanBench+: A Unified Multi-Framework Benchmark for LLM-Based Quantum Code Generation",
+  "authors": [
+   "Ali Slim",
+   "Haydar Hamieh",
+   "Jawad Kotaich",
+   "Yehya Ghosn",
+   "Mahdi Chehimi",
+   "Ammar Mohanna"
+  ],
+  "abstract": "Large Language Models (LLMs) are increasingly used for code generation, yet quantum code generation is still evaluated mostly within single frameworks, making it difficult to separate quantum reasoning from framework familiarity. We introduce QuanBench+, a unified benchmark spanning Qiskit, PennyLane, and Cirq, with 42 aligned tasks covering quantum algorithms, gate decomposition, and state preparation. We evaluate models with executable functional tests, report Pass@1 and Pass@5, and use KL-divergence-based acceptance for probabilistic outputs. We additionally study Pass@1 after feedback-based repair, where a model may revise code after a runtime error or wrong answer. Across frameworks, the strongest one-shot scores reach 59.5% in Qiskit, 54.8% in Cirq, and 42.9% in PennyLane; with feedback-based repair, the best scores rise to 83.3%, 76.2%, and 66.7%, respectively. These results show clear progress, but also that reliable multi-framework quantum code generation remains unsolved and still depends strongly on framework-specific knowledge.",
+  "publishedAt": "2026-03-25T20:51:21Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.AI",
+   "cs.PL",
+   "cs.SE",
+   "quant-ph"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 126,
+  "citationCount": 1,
+  "githubStars": 6,
+  "pageCount": 24
+ },
+ {
+  "arxivId": "2606.03988",
+  "slug": "imaginative-perception-tokens-enhance-spatial-reasoning-in-multimodal-language",
+  "title": "Imaginative Perception Tokens Enhance Spatial Reasoning in Multimodal Language Models",
+  "authors": [
+   "Mahtab Bigverdi",
+   "Linjie Li",
+   "Weikai Huang",
+   "Yiming Liu",
+   "Jaemin Cho",
+   "Jieyu Zhang"
+  ],
+  "abstract": "Vision language models (VLMs) excel at many tasks but still struggle with spatial reasoning when critical information is not directly observable. Many such problems require imaginative perception: inferring what would be seen from an unseen viewpoint, tracing paths through occluded spaces, or integrating partial observations into a coherent spatial representation. We introduce Imaginative Perception Tokens (IPT), intermediate perceptual representations that externalize what a VLM would perceive under alternative spatial configurations while remaining consistent with the observed input. To study this capability, we formulate three tasks, Perspective Taking (PET), Path Tracing (PT), and Multiview Counting (MVC), and construct datasets of approximately 20K examples with ground truth imaginations, answers, and evaluation benchmarks. Using the unified VLM BAGEL as the backbone, IPT supervision consistently improves spatial reasoning and often outperforms textual chain of thought training, even without generating images at inference time. On MVC, IPT improves accuracy by 3.4% and achieves competitive performance with strong closed-source models on PT. We further find that combining IPT and label-only supervision yields additional gains, whereas textual chain of thought can substantially degrade performance, suggesting a modality mismatch when spatial computation is forced through language. Overall, IPT provides a principled supervision signal for reasoning about unobserved spatial structure, improving generalization while producing interpretable intermediate representations.",
+  "publishedAt": "2026-06-02T17:59:17Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 126,
+  "citationCount": 0,
+  "githubStars": 102,
+  "pageCount": 29
+ },
+ {
+  "arxivId": "2510.01141",
+  "slug": "apriel-1-5-15b-thinker",
+  "title": "Apriel-1.5-15b-Thinker",
+  "authors": [
+   "Shruthan Radhakrishna",
+   "Aman Tiwari",
+   "Aanjaneya Shukla",
+   "Masoud Hashemi",
+   "Rishabh Maheshwary",
+   "Shiva Krishna Reddy Malay"
+  ],
+  "abstract": "We present Apriel-1.5-15B-Thinker, a 15-billion parameter open-weights multimodal reasoning model that achieves frontier-level performance through training design rather than sheer scale. Starting from Pixtral-12B, we apply a progressive three-stage methodology: (1) depth upscaling to expand reasoning capacity without pretraining from scratch, (2) staged continual pre-training that first develops foundational text and vision understanding, then enhances visual reasoning through targeted synthetic data generation addressing spatial structure, compositional understanding, and fine-grained perception, and (3) high-quality text-only supervised fine-tuning on curated instruction-response pairs with explicit reasoning traces spanning mathematics, coding, science, and tool use. Notably, our model achieves competitive results without reinforcement learning or preference optimization, isolating the contribution of our data-centric continual pre-training approach. On the Artificial Analysis Intelligence Index, Apriel-1.5-15B-Thinker attains a score of 52, matching DeepSeek-R1-0528 despite requiring significantly fewer computational resources. Across ten image benchmarks, its performance is on average within five points of Gemini-2.5-Flash and Claude Sonnet-3.7, a key achievement for a model operating within single-GPU deployment constraints. Our results demonstrate that thoughtful mid-training 2 design can close substantial capability gaps without massive scale, making frontier-level multimodal reasoning accessible to organizations with limited infrastructure. We release the model checkpoint, all training recipes, and evaluation protocols under the MIT license to to advance open-source research.",
+  "publishedAt": "2025-10-01T17:29:35Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 125,
+  "citationCount": 2,
+  "githubStars": null,
+  "pageCount": 13
+ },
+ {
+  "arxivId": "2602.08099",
+  "slug": "vidvec-unlocking-video-mllm-embeddings-for-video-text-retrieval",
+  "title": "VidVec: Unlocking Video MLLM Embeddings for Video-Text Retrieval",
+  "authors": [
+   "Issar Tzachor",
+   "Dvir Samuel",
+   "Rami Ben-Ari"
+  ],
+  "abstract": "Recent studies have adapted generative Multimodal Large Language Models (MLLMs) into embedding extractors for vision tasks, typically through fine-tuning to produce universal representations. However, their performance on video remains inferior to Video Foundation Models (VFMs). In this paper, we focus on leveraging MLLMs for video-text embedding and retrieval. We first conduct a systematic layer-wise analysis, showing that intermediate (pre-trained) MLLM layers already encode substantial task-relevant information. Leveraging this insight, we demonstrate that combining intermediate-layer embeddings with a calibrated MLLM head yields strong zero-shot retrieval performance without any training. Building on these findings, we introduce a lightweight text-based alignment strategy which maps dense video captions to short summaries and enables task-related video-text embedding learning without visual supervision. Remarkably, without any fine-tuning beyond text, our method outperforms current methods, often by a substantial margin, achieving state-of-the-art results across common video retrieval benchmarks.",
+  "publishedAt": "2026-02-08T19:39:32Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 125,
+  "citationCount": 3,
+  "githubStars": null,
+  "pageCount": 14
+ },
+ {
+  "arxivId": "2603.21986",
+  "slug": "speed-by-simplicity-a-single-stream-architecture-for-fast-audio-video",
+  "title": "Speed by Simplicity: A Single-Stream Architecture for Fast Audio-Video Generative Foundation Model",
+  "authors": [
+   "SII-GAIR",
+   "Sand. ai",
+   ":",
+   "Ethan Chern",
+   "Hansi Teng",
+   "Hanwen Sun"
+  ],
+  "abstract": "We present daVinci-MagiHuman, an open-source audio-video generative foundation model for human-centric generation. daVinci-MagiHuman jointly generates synchronized video and audio using a single-stream Transformer that processes text, video, and audio within a unified token sequence via self-attention only. This single-stream design avoids the complexity of multi-stream or cross-attention architectures while remaining easy to optimize with standard training and inference infrastructure. The model is particularly strong in human-centric scenarios, producing expressive facial performance, natural speech-expression coordination, realistic body motion, and precise audio-video synchronization. It supports multilingual spoken generation across Chinese (Mandarin and Cantonese), English, Japanese, Korean, German, and French. For efficient inference, we combine the single-stream backbone with model distillation, latent-space super-resolution, and a Turbo VAE decoder, enabling generation of a 5-second 256p video in 2 seconds on a single H100 GPU. In automatic evaluation, daVinci-MagiHuman achieves the highest visual quality and text alignment among leading open models, along with the lowest word error rate (14.60%) for speech intelligibility. In pairwise human evaluation, it achieves win rates of 80.0% against Ovi 1.1 and 60.9% against LTX 2.3 over 2000 comparisons. We open-source the complete model stack, including the base model, the distilled model, the super-resolution model, and the inference codebase.",
+  "publishedAt": "2026-03-23T13:49:06Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 125,
+  "citationCount": 12,
+  "githubStars": 2110,
+  "pageCount": 7
+ },
+ {
+  "arxivId": "2604.04771",
+  "slug": "mineru2-5-pro-pushing-the-limits-of-data-centric-document-parsing-at-scale",
+  "title": "MinerU2.5-Pro: Pushing the Limits of Data-Centric Document Parsing at Scale",
+  "authors": [
+   "Bin Wang",
+   "Tianyao He",
+   "Linke Ouyang",
+   "Fan Wu",
+   "Zhiyuan Zhao",
+   "Tao Chu"
+  ],
+  "abstract": "Current document parsing methods advance primarily through model architecture innovation, while systematic engineering of training data remains underexplored. Yet state-of-the-art models spanning diverse architectures and parameter scales exhibit highly consistent failure patterns on the same set of hard samples, suggesting that the performance bottleneck stems from shared deficiencies in training data rather than from architectural differences. Building on this finding, we present MinerU2.5-Pro, which advances the state of the art purely through data engineering and training strategy design while retaining the 1.2B-parameter architecture of MinerU2.5 unchanged. At its core is a Data Engine co-designed around coverage, informativeness, and annotation accuracy: Diversity-and-Difficulty-Aware Sampling expands training data from under 10M to 65.5M samples while mitigating distribution shift; Cross-Model Consistency Verification leverages output consensus among heterogeneous models to assess sample difficulty and generate reliable annotations; the Judge-and-Refine pipeline improves annotation quality for hard samples through render-then-verify iterative correction. A three-stage progressive training strategy--large-scale pre-training, hard sample fine-tuning, and GRPO alignment--sequentially exploits these data at different quality tiers. On the evaluation front, we rectify element-matching biases in OmniDocBench v1.5 and introduce a Hard subset, establishing the more discriminative OmniDocBench v1.6 protocol. Without any architectural modification, MinerU2.5-Pro achieves 95.69 on OmniDocBench v1.6, improving over the same-architecture baseline by 2.71 points and surpassing all existing methods, including those based on models with over 200x more parameters.",
+  "publishedAt": "2026-04-06T15:44:18Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 125,
+  "citationCount": 14,
+  "githubStars": null,
+  "pageCount": 43
+ },
+ {
+  "arxivId": "2604.22446",
+  "slug": "from-skills-to-talent-organising-heterogeneous-agents-as-a-real-world-company",
+  "title": "From Skills to Talent: Organising Heterogeneous Agents as a Real-World Company",
+  "authors": [
+   "Zhengxu Yu",
+   "Yu Fu",
+   "Zhiyuan He",
+   "Yuxuan Huang",
+   "Lee Ka Yiu",
+   "Meng Fang"
+  ],
+  "abstract": "Individual agent capabilities have advanced rapidly through modular skills and tool integrations, yet multi-agent systems remain constrained by fixed team structures, tightly coupled coordination logic, and session-bound learning. We argue that this reflects a deeper absence: a principled organisational layer that governs how a workforce of agents is assembled, governed, and improved over time, decoupled from what individual agents know. To fill this gap, we introduce \\emph{OneManCompany (OMC)}, a framework that elevates multi-agent systems to the organisational level. OMC encapsulates skills, tools, and runtime configurations into portable agent identities called \\emph{Talents}, orchestrated through typed organisational interfaces that abstract over heterogeneous backends. A community-driven \\emph{Talent Market} enables on-demand recruitment, allowing the organisation to close capability gaps and reconfigure itself dynamically during execution. Organisational decision-making is operationalised through an \\emph{Explore-Execute-Review} ($\\text{E}^2$R) tree search, which unifies planning, execution, and evaluation in a single hierarchical loop: tasks are decomposed top-down into accountable units and execution outcomes are aggregated bottom-up to drive systematic review and refinement. This loop provides formal guarantees on termination and deadlock freedom while mirroring the feedback mechanisms of human enterprises. Together, these contributions transform multi-agent systems from static, pre-configured pipelines into self-organising and self-improving AI organisations capable of adapting to open-ended tasks across diverse domains. Empirical evaluation on PRDBench shows that OMC achieves an $84.67\\%$ success rate, surpassing the state of the art by $15.48$ percentage points, with cross-domain case studies further demonstrating its generality.",
+  "publishedAt": "2026-04-24T11:02:44Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 125,
+  "citationCount": 0,
+  "githubStars": 376,
+  "pageCount": 33
+ },
+ {
+  "arxivId": "2606.16140",
+  "slug": "vibethinker-3b-exploring-the-frontier-of-verifiable-reasoning-in-small",
+  "title": "VibeThinker-3B: Exploring the Frontier of Verifiable Reasoning in Small Language Models",
+  "authors": [
+   "Sen Xu",
+   "Shixi Liu",
+   "Wei Wang",
+   "Jixin Min",
+   "Yingwei Dai",
+   "Zhibin Yin"
+  ],
+  "abstract": "This technical report introduces VibeThinker-3B, a compact dense model with 3B parameters developed to investigate how far verifiable reasoning can be pushed within a strictly small-model regime. Building upon the Spectrum-to-Signal post-training paradigm, we systematically enhance the model through an optimized pipeline that includes curriculum-based supervised fine-tuning, multi-domain reinforcement learning, and offline self-distillation. Experimental evaluations demonstrate that VibeThinker-3B achieves frontier-level performance on highly demanding verifiable tasks. Specifically, it attains a score of 94.3 on AIME26 (improving to 97.1 with claim-level test-time scaling), an 80.2 Pass@1 on LiveCodeBench v6, and exhibits strong out-of-distribution generalization with a 96.1\\% acceptance rate on recent unseen LeetCode contests. This effectively places it in the performance band of first-tier reasoning systems, matching or exceeding flagship models that are orders of magnitude larger, such as DeepSeek V3.2, GLM-5, and Gemini 3 Pro. Furthermore, a score of 93.4 on IFEval confirms that this extreme reasoning enhancement does not compromise strict instruction controllability. Extending our previous 1.5B work, these findings motivate the Parametric Compression-Coverage Hypothesis, which views verifiable reasoning as compressible into compact reasoning cores, while open-domain knowledge and general-purpose competence require broad parameter coverage over facts, concepts, and long-tail scenarios. This perspective suggests that compact models are not merely deployment-efficient substitutes, but a complementary path toward frontier-level performance in parameter-dense capability regimes.",
+  "publishedAt": "2026-06-15T02:57:19Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 125,
+  "citationCount": 1,
+  "githubStars": 1547,
+  "pageCount": 14
+ },
+ {
+  "arxivId": "2510.18121",
+  "slug": "efficient-long-context-language-model-training-by-core-attention-disaggregation",
+  "title": "Efficient Long-context Language Model Training by Core Attention Disaggregation",
+  "authors": [
+   "Yonghao Zhuang",
+   "Junda Chen",
+   "Bo Pang",
+   "Yi Gu",
+   "Yibo Zhu",
+   "Yimin Jiang"
+  ],
+  "abstract": "We present core attention disaggregation (CAD), a technique that improves long-context large language model training by decoupling the core attention computation, softmax(QK^T)V, from the rest of the model and executing it on a separate pool of devices. In existing systems, core attention is colocated with other layers; at long context lengths, its quadratic compute growth compared to the near-linear growth of other components causes load imbalance and stragglers across data and pipeline parallel groups. CAD is enabled by two observations. First, core attention is stateless: it has no trainable parameters and only minimal transient data, so balancing reduces to scheduling compute-bound tasks. Second, it is composable: modern attention kernels retain high efficiency when processing fused batches of token-level shards with arbitrary lengths. CAD partitions core attention into token-level tasks and dispatches them to dedicated attention servers, which dynamically rebatch tasks to equalize compute without sacrificing kernel efficiency. We implement CAD in a system called DistCA, which uses a ping-pong execution scheme to fully overlap communication with computation and in-place execution on attention servers to reduce memory use. On 512 H200 GPUs and context lengths up to 512k tokens, DistCA improves end-to-end training throughput by up to 1.35x, eliminates data and pipeline parallel stragglers, and achieves near-perfect compute and memory balance.",
+  "publishedAt": "2025-10-20T21:40:51Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.DC"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 124,
+  "citationCount": 3,
+  "githubStars": null,
+  "pageCount": 14
+ },
+ {
+  "arxivId": "2510.23564",
+  "slug": "recode-unify-plan-and-action-for-universal-granularity-control",
+  "title": "ReCode: Unify Plan and Action for Universal Granularity Control",
+  "authors": [
+   "Zhaoyang Yu",
+   "Jiayi Zhang",
+   "Huixue Su",
+   "Yufan Zhao",
+   "Yifan Wu",
+   "Mingyi Deng"
+  ],
+  "abstract": "Real-world tasks require decisions at varying granularities, and humans excel at this by leveraging a unified cognitive representation where planning is fundamentally understood as a high-level form of action. However, current Large Language Model (LLM)-based agents lack this crucial capability to operate fluidly across decision granularities. This limitation stems from existing paradigms that enforce a rigid separation between high-level planning and low-level action, which impairs dynamic adaptability and limits generalization. We propose ReCode (Recursive Code Generation), a novel paradigm that addresses this limitation by unifying planning and action within a single code representation. In this representation, ReCode treats high-level plans as abstract placeholder functions, which the agent then recursively decomposes into finer-grained sub-functions until reaching primitive actions. This recursive approach dissolves the rigid boundary between plan and action, enabling the agent to dynamically control its decision granularity. Furthermore, the recursive structure inherently generates rich, multi-granularity training data, enabling models to learn hierarchical decision-making processes. Extensive experiments show ReCode significantly surpasses advanced baselines in inference performance and demonstrates exceptional data efficiency in training, validating our core insight that unifying planning and action through recursive code generation is a powerful and effective approach to achieving universal granularity control. The code is available at https://github.com/FoundationAgents/ReCode.",
+  "publishedAt": "2025-10-27T17:35:15Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 124,
+  "citationCount": 11,
+  "githubStars": 561,
+  "pageCount": 27
+ },
+ {
+  "arxivId": "2512.08269",
+  "slug": "egox-egocentric-video-generation-from-a-single-exocentric-video",
+  "title": "EgoX: Egocentric Video Generation from a Single Exocentric Video",
+  "authors": [
+   "Taewoong Kang",
+   "Kinam Kim",
+   "Dohyeon Kim",
+   "Minho Park",
+   "Junha Hyung",
+   "Jaegul Choo"
+  ],
+  "abstract": "Egocentric perception enables humans to experience and understand the world directly from their own point of view. Translating exocentric (third-person) videos into egocentric (first-person) videos opens up new possibilities for immersive understanding but remains highly challenging due to extreme camera pose variations and minimal view overlap. This task requires faithfully preserving visible content while synthesizing unseen regions in a geometrically consistent manner. To achieve this, we present EgoX, a novel framework for generating egocentric videos from a single exocentric input. EgoX leverages the pretrained spatio temporal knowledge of large-scale video diffusion models through lightweight LoRA adaptation and introduces a unified conditioning strategy that combines exocentric and egocentric priors via width and channel wise concatenation. Additionally, a geometry-guided self-attention mechanism selectively attends to spatially relevant regions, ensuring geometric coherence and high visual fidelity. Our approach achieves coherent and realistic egocentric video generation while demonstrating strong scalability and robustness across unseen and in-the-wild videos.",
+  "publishedAt": "2025-12-09T05:53:39Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 124,
+  "citationCount": 6,
+  "githubStars": 741,
+  "pageCount": 21
+ },
+ {
+  "arxivId": "2605.31264",
+  "slug": "colleague-skill-automated-ai-skill-generation-via-expert-knowledge-distillation",
+  "title": "COLLEAGUE.SKILL: Automated AI Skill Generation via Expert Knowledge Distillation",
+  "authors": [
+   "Tianyi Zhou",
+   "Dongrui Liu",
+   "Leitao Yuan",
+   "Jing Shao",
+   "Xia Hu"
+  ],
+  "abstract": "LLM agents are increasingly expected not only to complete isolated tasks, but also to carry bounded representations of human expertise, judgment, and interaction style. Building such person-grounded agents remains difficult because actionable knowledge associated with a person or role is usually embedded in heterogeneous traces rather than written as clean instructions. Existing memory and persona systems capture fragments of this evidence, while skill frameworks provide portable packaging formats; however, there is no end-to-end workflow for distilling these traces into inspectable, correctable, and agent-usable skills. We present an automated trace-to-skill distillation system for generating person-grounded AI skills via expert knowledge distillation. Given materials from a target person or role, COLLEAGUE.SKILL produces a versioned skill package with two coordinated tracks: a capability track for practices, mental models, and decision heuristics, and a bounded behavior track for communication style, interaction rules, and correction history. The package can be inspected, invoked, updated through natural-language feedback, rolled back, installed across agent hosts, and optionally prepared for controlled distribution. We describe the artifact contract, generation workflow, correction lifecycle, deployment surface, and domain presets implemented in the open-source system. At the time of writing, the public repository has approximately 18.5k GitHub stars; the gallery lists 215 skills from 165 contributors and more than 100k cumulative stars across listed skill cards. The system illustrates how person-grounded skills can be represented as portable, correctable packages rather than opaque prompts or hidden memories.",
+  "publishedAt": "2026-05-29T12:59:08Z",
+  "primaryArxivCategory": [
+   "cs.AI",
+   "cs.CL",
+   "cs.LG"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 124,
+  "citationCount": 3,
+  "githubStars": 20726,
+  "pageCount": 12
+ },
+ {
+  "arxivId": "2607.23588",
+  "slug": "jarvishub-an-open-harness-for-canvas-native-multimodal-creative-agents",
+  "title": "JarvisHub: An Open Harness for Canvas-Native Multimodal Creative Agents",
+  "authors": [
+   "Yunlong Lin",
+   "Zixu Lin",
+   "Zhaohu Xing",
+   "Biqiang Li",
+   "Chenxin Li",
+   "Haonan Wang"
+  ],
+  "abstract": "Creative AI is moving from single-step asset generation toward long-horizon multimodal production. Although recent generative models can synthesize high-quality images, videos, audio clips, UI elements, storyboards, slides, and other creative assets, real-world creative work requires more than isolated prompt-output interactions. It involves references, drafts, alternatives, edits, failed attempts, version relations, tool actions, evaluation signals, and human feedback, which together form an evolving project state. Existing prompt-based, chat-based, and node-based generation systems only partially support this state, as they often discard intermediate context, rely on linear conversations, or require manually specified workflows. Recent commercial systems indicate a shift toward agent-assisted creative production, but their closed architectures make it difficult to study how agents represent context, choose tools, revise artifacts, recover from failures, and maintain consistency over time. To address this gap, we introduce JarvisHub, a canvas-native creative agent harness for long-horizon multimodal creation. JarvisHub treats an editable canvas as the user workspace, the agent's external memory, action space, and shared project state, representing multimodal artifacts, dependencies, versions, and feedback as typed canvas nodes and links. Through a three-layer architecture of canvas state, protocol bridge, and agent runtime, JarvisHub enables agents to act within an inspectable and editable creative state. This design moves creative agents beyond isolated tool use toward sustained, human-steerable creative automation, where agents can progressively plan, generate, revise, and organize multimodal projects while users remain able to inspect, guide, and intervene throughout the process.",
+  "publishedAt": "2026-07-26T10:36:24Z",
+  "primaryArxivCategory": [
+   "cs.CV"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 124,
+  "citationCount": 0,
+  "githubStars": 277,
+  "pageCount": 15
+ },
+ {
+  "arxivId": "2604.07429",
+  "slug": "gameworld-towards-standardized-and-verifiable-evaluation-of-multimodal-game",
+  "title": "GameWorld: Towards Standardized and Verifiable Evaluation of Multimodal Game Agents",
+  "authors": [
+   "Mingyu Ouyang",
+   "Siyuan Hu",
+   "Kevin Qinghong Lin",
+   "Hwee Tou Ng",
+   "Mike Zheng Shou"
+  ],
+  "abstract": "Towards an embodied generalist for real-world interaction, Multimodal Large Language Model (MLLM) agents still suffer from challenging latency, sparse feedback, and irreversible mistakes. Video games offer an ideal testbed with rich visual observations and closed-loop interaction, demanding fine-grained perception, long-horizon planning, and precise control. However, systematically evaluating these capabilities is currently hindered by heterogeneous action interfaces and heuristic verification. To this end, we introduce GameWorld, a benchmark designed for standardized and verifiable evaluation of MLLMs as generalist game agents in browser environments. Two game agent interfaces are studied: (i) computer-use agents that directly emit keyboard and mouse controls, and (ii) generalist multimodal agents that act in a semantic action space via deterministic Semantic Action Parsing. GameWorld contains 34 diverse games and 170 tasks, each paired with state-verifiable metrics for outcome-based evaluation. The results across 18 model-interface pairs suggest that even the best performing agent is far from achieving human capabilities on video games. Extensive experiments of repeated full-benchmark reruns demonstrate the robustness of the benchmark, while further studies on real-time interaction, context-memory sensitivity, and action validity expose more challenges ahead for game agents. Together, by offering a standardized, verifiable, and reproducible evaluation framework, GameWorld lays a robust foundation for advancing research on multimodal game agents and beyond. The project page is at https://gameworld-bench.github.io.",
+  "publishedAt": "2026-04-08T17:49:03Z",
+  "primaryArxivCategory": [
+   "cs.CV",
+   "cs.AI",
+   "cs.HC"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 123,
+  "citationCount": 10,
+  "githubStars": 216,
+  "pageCount": 52
+ },
+ {
+  "arxivId": "2605.13527",
+  "slug": "mmskills-towards-multimodal-skills-for-general-visual-agents",
+  "title": "MMSkills: Towards Multimodal Skills for General Visual Agents",
+  "authors": [
+   "Kangning Zhang",
+   "Shuai Shao",
+   "Qingyao Li",
+   "Jianghao Lin",
+   "Lingyue Fu",
+   "Shijian Wang"
+  ],
+  "abstract": "Reusable skills have become a core substrate for improving agent capabilities, yet most existing skill packages encode reusable behavior primarily as textual prompts, executable code, or learned routines. For visual agents, however, procedural knowledge is inherently multimodal: reuse depends not only on what operation to perform, but also on recognizing the relevant state, interpreting visual evidence of progress or failure, and deciding what to do next. We formalize this requirement as multimodal procedural knowledge and address three practical challenges: (I) what a multimodal skill package should contain; (II) where such packages can be derived from public interaction experience; and (III) how agents can consult multimodal evidence at inference time without excessive image context or over-anchoring to reference screenshots. We introduce MMSkills, a framework for representing, generating, and using reusable multimodal procedures for runtime visual decision making. Each MMSkill is a compact, state-conditioned package that couples a textual procedure with runtime state cards and multi-view keyframes. To construct these packages, we develop an agentic trajectory-to-skill Generator that transforms public non-evaluation trajectories into reusable multimodal skills through workflow grouping, procedure induction, visual grounding, and meta-skill-guided auditing. To use them, we introduce a branch-loaded multimodal skill agent: selected state cards and keyframes are inspected in a temporary branch, aligned with the live environment, and distilled into structured guidance for the main agent. Experiments across GUI and game-based visual-agent benchmarks show that MMSkills consistently improve both frontier and smaller multimodal agents, suggesting that external multimodal procedural knowledge complements model-internal priors.",
+  "publishedAt": "2026-05-13T13:40:31Z",
+  "primaryArxivCategory": [
+   "cs.AI"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 123,
+  "citationCount": 3,
+  "githubStars": 29,
+  "pageCount": 25
+ },
+ {
+  "arxivId": "2606.07297",
+  "slug": "swe-explore-benchmarking-how-coding-agents-explore-repositories",
+  "title": "SWE-Explore: Benchmarking How Coding Agents Explore Repositories",
+  "authors": [
+   "Shaoqiu Zhang",
+   "Yuhang Wang",
+   "Jialiang Liang",
+   "Yuling Shi",
+   "Wenhao Zeng",
+   "Maoquan Wang"
+  ],
+  "abstract": "Repository-level coding benchmarks such as SWE-bench have driven a rapid surge in the capabilities of coding agents. Yet they usually treat coding tasks as a holistic, binary prediction problem (e.g., resolved or unresolved), neglecting fine-grained agent capabilities such as repository understanding, context retrieval, code localization, and bug diagnosis. In this paper, we introduce SWE-Explore, a benchmark that isolates the evaluation of repository exploration, a critical capability of coding agents. Given a repository and an issue, SWE-Explore asks an explorer to return a ranked list of relevant code regions under a fixed line budget. SWE-Explore covers 848 issues across 10 programming languages and 203 open-source repositories. For each instance, we derive line-level ground truth from independent agent trajectories that successfully solved the same issue, distilling the specific code regions their solution paths actually consulted. We evaluate exploration along coverage, ranking, and context-efficiency dimensions, showing that these metrics strongly track downstream repair behavior. Across a broad set of retrieval methods, general coding agents, and specialized localizers, we find that agentic explorers form a clear tier above classical retrieval. While file-level localization is already strong for modern methods, line-level coverage and efficient ranking remain the key axes differentiating state-of-the-art explorers.",
+  "publishedAt": "2026-06-05T14:08:27Z",
+  "primaryArxivCategory": [
+   "cs.SE",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 123,
+  "citationCount": 10,
+  "githubStars": 39,
+  "pageCount": 20
+ },
+ {
+  "arxivId": "2509.19803",
+  "slug": "vcrl-variance-based-curriculum-reinforcement-learning-for-large-language-models",
+  "title": "VCRL: Variance-based Curriculum Reinforcement Learning for Large Language Models",
+  "authors": [
+   "Guochao Jiang",
+   "Wenfeng Feng",
+   "Guofeng Quan",
+   "Chuzhan Hao",
+   "Yuewei Zhang",
+   "Guohua Liu"
+  ],
+  "abstract": "Policy-based reinforcement learning currently plays an important role in improving LLMs on mathematical reasoning tasks. However, existing rollout-based reinforcement learning methods (GRPO, DAPO, GSPO, etc.) fail to explicitly consider LLMs' learning ability for samples of different difficulty levels, which is contrary to the human cognitive process of mathematical reasoning tasks from easy to difficult. Intuitively, we find that the variance of the rollout group's reward in RLVR partly reflects the difficulty of the current sample for LLMs. Samples that are too easy or too difficult have a lower variance, while samples with moderate difficulty have a higher variance. Based on this, we propose VCRL, a curriculum reinforcement learning framework that dynamically controls the difficulty of training samples based on the variance of group rewards. Experiments on five mathematical benchmarks and two models reveal the advantages of VCRL over the current LLM RL baselines.",
+  "publishedAt": "2025-09-24T06:38:58Z",
+  "primaryArxivCategory": [
+   "cs.LG",
+   "cs.CL"
+  ],
+  "officialLab": null,
+  "hfUpvotes": 122,
+  "citationCount": 27,
+  "githubStars": null,
+  "pageCount": 17
+ }
+]
