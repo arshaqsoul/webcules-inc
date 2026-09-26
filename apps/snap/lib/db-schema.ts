@@ -591,6 +591,38 @@ export const invoices = sqliteTable(
   (t) => [uniqueIndex("invoice_org_number_unique").on(t.organizationId, t.number)],
 );
 
+/* ---------------- Contracts & e-signatures (WEB-158) ---------------- */
+
+export const contracts = sqliteTable(
+  "contract",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    /** Merge-field template while draft; merged text once sent. */
+    body: text("body").notNull(),
+    /** draft | sent | signed | void */
+    status: text("status").notNull().default("draft"),
+    clientEmail: text("client_email"),
+    accessTokenHash: text("access_token_hash"),
+    tokenEnc: text("token_enc"),
+    sentAt: integer("sent_at", { mode: "timestamp" }),
+    signedAt: integer("signed_at", { mode: "timestamp" }),
+    signerName: text("signer_name"),
+    signerIp: text("signer_ip"),
+    signerUserAgent: text("signer_user_agent"),
+    /** R2 key of the signed PDF (org-prefixed). */
+    pdfKey: text("pdf_key"),
+    createdAt: ts("created_at"),
+  },
+  (t) => [index("contract_org_project_idx").on(t.organizationId, t.projectId)],
+);
+
 /** Per-org sequential counters (invoice numbering). */
 export const orgCounters = sqliteTable("org_counter", {
   organizationId: text("organization_id").primaryKey(),

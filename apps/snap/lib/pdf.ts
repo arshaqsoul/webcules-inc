@@ -133,3 +133,78 @@ export async function renderInvoicePdf(params: {
 
   return doc.save();
 }
+
+/* ---------------- Contract PDF (WEB-158) ---------------- */
+
+/** Multi-page contract: wrapped body text with page breaks, signature
+ * block on the final page (typed name, timestamp, IP — the audit trail). */
+export async function renderContractPdf(params: {
+  studioName: string;
+  accent: string;
+  title: string;
+  body: string;
+  signerName: string | null;
+  signedAt: Date | null;
+  signerIp: string | null;
+  clientEmail: string | null;
+}): Promise<Uint8Array> {
+  const sanitize = (v: string) => winAnsiSafe(v);
+  const doc = await PDFDocument.create();
+  const regular = await doc.embedFont(StandardFonts.Helvetica);
+  const bold = await doc.embedFont(StandardFonts.HelveticaBold);
+  const accent = hexToRgb(params.accent);
+
+  const MARGIN = 56;
+  const WIDTH = 595.28;
+  const BOTTOM = 72;
+  let page = doc.addPage([WIDTH, 841.89]);
+  let y = 841.89;
+
+  const newPage = () => {
+    page = doc.addPage([WIDTH, 841.89]);
+    y = 841.89 - 40;
+  };
+  const ensure = (needed: number) => {
+    if (y - needed < BOTTOM) newPage();
+  };
+
+  // Header
+  page.drawRectangle({ x: 0, y: 781.89, width: WIDTH, height: 60, color: rgb(accent.r, accent.g, accent.b) });
+  page.drawText(sanitize(params.studioName), { x: MARGIN, y: 815, size: 18, font: bold, color: rgb(1, 1, 1) });
+  y = 741.89;
+  page.drawText(sanitize(params.title), { x: MARGIN, y, size: 15, font: bold, color: rgb(0.06, 0.06, 0.07) });
+  y -= 22;
+  if (params.clientEmail) {
+    page.drawText(`Prepared for: ${sanitize(params.clientEmail)}`, { x: MARGIN, y, size: 10, font: regular, color: rgb(0.54, 0.56, 0.6) });
+    y -= 24;
+  }
+
+  // Body — paragraph-aware wrapping
+  for (const para of sanitize(params.body).split(/\n/)) {
+    if (!para.trim()) {
+      y -= 12;
+      continue;
+    }
+    for (const line of wrap(para, regular, 11, WIDTH - MARGIN * 2)) {
+      ensure(18);
+      page.drawText(line, { x: MARGIN, y, size: 11, font: regular, color: rgb(0.13, 0.14, 0.15) });
+      y -= 16;
+    }
+    y -= 6;
+  }
+
+  // Signature block
+  y -= 18;
+  ensure(120);
+  page.drawLine({ start: { x: MARGIN, y }, end: { x: MARGIN + 220, y }, thickness: 1, color: rgb(0.6, 0.62, 0.65) });
+  page.drawText(sanitize(params.signerName ?? "Unsigned"), { x: MARGIN, y: y + 8, size: 13, font: bold, color: rgb(0.06, 0.06, 0.07) });
+  y -= 16;
+  const signed = params.signedAt
+    ? `Signed electronically on ${params.signedAt.toLocaleString("en-US", { dateStyle: "long", timeStyle: "short" })} UTC${params.signerIp ? ` · IP ${params.signerIp}` : ""}`
+    : "Awaiting signature";
+  page.drawText(signed, { x: MARGIN, y, size: 9, font: regular, color: rgb(0.54, 0.56, 0.6) });
+  y -= 14;
+  page.drawText("Powered by Snap - snap.webcules.com", { x: MARGIN, y, size: 8, font: regular, color: rgb(0.54, 0.56, 0.6) });
+
+  return doc.save();
+}

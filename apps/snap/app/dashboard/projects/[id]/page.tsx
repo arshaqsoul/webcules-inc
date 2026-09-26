@@ -12,6 +12,8 @@ import { getProjectAuditActivity } from "@/lib/repos/audit";
 import { getProjectPaymentSummary, listPayments } from "@/lib/repos/payments";
 import { listProjectInvoices } from "@/lib/invoices";
 import { ProjectInvoices } from "@/components/project-invoices";
+import { listProjectContracts } from "@/lib/contracts";
+import { ProjectContracts } from "@/components/project-contracts";
 import { getProjectShareActivity, listProjectGrants } from "@/lib/shares/grants";
 import { getOrgContext } from "@/lib/session";
 import { and, eq } from "drizzle-orm";
@@ -45,7 +47,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     ? await db.select().from(schema.clients).where(eq(schema.clients.id, project.clientId)).limit(1)
     : [null];
 
-  const [events, assets, grants, shareActivity, payments, auditEvents, paymentSummary, invoices] = await Promise.all([
+  const [events, assets, grants, shareActivity, payments, auditEvents, paymentSummary, invoices, contractsRows] = await Promise.all([
     db
       .select()
       .from(schema.projectStatusEvents)
@@ -58,6 +60,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     getProjectAuditActivity(ctx.organizationId, id),
     getProjectPaymentSummary(ctx.organizationId, id),
     listProjectInvoices(ctx.organizationId, id),
+    listProjectContracts(ctx.organizationId, id),
   ]);
   const approvedCount = assets.filter((a) => a.status === "approved" || a.status === "shared").length;
 
@@ -208,6 +211,26 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             }))}
             clientEmail={client?.email ?? null}
             quotedTotalMinor={paymentSummary.quotedTotalMinor}
+          />
+        </section>
+                <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
+          <h2 className="text-[15px] font-medium text-ink">Contracts</h2>
+          <p className="mb-4 mt-1 text-xs text-ink-subtle">
+            Send agreements for e-signature — typed signature, IP and timestamp recorded.
+          </p>
+          <ProjectContracts
+            projectId={id}
+            contracts={contractsRows.map((c) => ({
+              id: c.id,
+              title: c.title,
+              status: c.status,
+              clientEmail: c.clientEmail ?? null,
+              sentAt: c.sentAt ? c.sentAt.toISOString() : null,
+              signedAt: c.signedAt ? c.signedAt.toISOString() : null,
+              signerName: c.signerName ?? null,
+              hasPdf: Boolean(c.pdfKey),
+            }))}
+            clientEmail={client?.email ?? null}
           />
         </section>
         <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">

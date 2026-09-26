@@ -436,6 +436,48 @@ export function invoiceEmail(studioName: string, params: {
   };
 }
 
+/** Contract signing request (WEB-158). */
+export function contractSignRequestEmail(studioName: string, params: {
+  accent: string;
+  title: string;
+  signUrl: string;
+}): { subject: string; html: string; text: string } {
+  return {
+    subject: `Please review & sign: ${params.title} — ${studioName}`,
+    html: shell(
+      params.accent,
+      "A contract awaits your signature",
+      `<p style="margin:0 0 16px;"><strong style="color:#0f1011;">${studioName}</strong> has sent you <strong style="color:#0f1011;">${params.title}</strong> for review and signature.</p>
+       <p style="margin:0 0 16px;">Open the secure link to read the full contract and sign it — no account needed. Your signature records the date, time and IP address for both parties' records.</p>
+       <p style="margin:24px 0 0;"><a href="${params.signUrl}" style="display:inline-block;background:${params.accent};color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">Review & sign</a></p>`,
+      `Snap contracts are signed electronically via secure links unique to you.`,
+    ),
+    text: `${studioName} sent you "${params.title}" for signature. Review & sign: ${params.signUrl}`,
+  };
+}
+
+/** Contract signed — sent to BOTH parties (WEB-158). */
+export function contractSignedEmail(studioName: string, params: {
+  accent: string;
+  title: string;
+  signerName: string;
+  signedAt: Date;
+  contractUrl: string;
+}): { subject: string; html: string; text: string } {
+  return {
+    subject: `Signed: ${params.title}`,
+    html: shell(
+      params.accent,
+      "Contract signed ✓",
+      `<p style="margin:0 0 16px;"><strong style="color:#0f1011;">${params.title}</strong> was signed by <strong style="color:#0f1011;">${params.signerName}</strong> on ${params.signedAt.toLocaleString("en-US", { dateStyle: "long", timeStyle: "short" })} UTC.</p>
+       <p style="margin:0 0 16px;">The signed copy is archived — open the link any time to view or download the PDF.</p>
+       <p style="margin:24px 0 0;"><a href="${params.contractUrl}" style="display:inline-block;background:${params.accent};color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">View signed contract</a></p>`,
+      `Electronically signed via Snap — date, time and IP recorded for both parties.`,
+    ),
+    text: `"${params.title}" was signed by ${params.signerName} on ${params.signedAt.toISOString()}. View: ${params.contractUrl}`,
+  };
+}
+
 /** Gallery OTP — big friendly code, short-lived. */
 export function galleryOtpEmail(studioName: string, params: {
   code: string;
