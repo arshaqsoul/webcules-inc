@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Button } from "@webcules/ui/components/button";
+import { useConfirm } from "@/components/confirm-provider";
 import { Input } from "@webcules/ui/components/input";
 import { Label } from "@webcules/ui/components/label";
 
@@ -22,6 +23,7 @@ type Initial = {
 
 export function SettingsForm({ initial }: { initial: Initial }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [profile, setProfile] = useState({
     studioName: initial.studioName,
     slug: initial.slug,
@@ -84,7 +86,7 @@ export function SettingsForm({ initial }: { initial: Initial }) {
   }
 
   async function rotateKey() {
-    if (!confirm("Rotate the embed key? Widgets using the old key stop working immediately.")) return;
+    if (!(await confirm({ title: "Rotate embed key?", body: "Widgets using the old key stop working immediately.", destructive: true, requireText: "ROTATE" }))) return;
     setBusy(true);
     const res = await fetch("/api/studio/embed", { method: "POST" });
     const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;

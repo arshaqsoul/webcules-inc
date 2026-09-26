@@ -8,6 +8,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@webcules/ui/components/button";
+import { useConfirm } from "@/components/confirm-provider";
 import { TriageMode } from "@/components/triage-mode";
 
 export type AssetItem = {
@@ -42,6 +43,7 @@ function mb(bytes: number): string {
 }
 
 export function ProjectFiles({ projectId, initial }: { projectId: string; initial?: AssetItem[] }) {
+  const confirm = useConfirm();
   const [feed, setFeed] = useState<Feed>({ items: initial ?? [], nextCursor: null, counts: {}, tags: [] });
   const [status, setStatus] = useState("");
   const [kind, setKind] = useState("");
@@ -121,8 +123,8 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
   async function bulk(action: string, tagValue?: string) {
     const ids = Array.from(selected);
     if (!ids.length) return;
-    if (action === "delete" && !confirm(`Delete ${ids.length} file${ids.length === 1 ? "" : "s"} permanently?`)) return;
-    if (action === "reject" && !confirm(`Reject ${ids.length} file${ids.length === 1 ? "" : "s"}?`)) return;
+    if (action === "delete" && !(await confirm({ title: "Delete files?", body: `Delete ${ids.length} file${ids.length === 1 ? "" : "s"} permanently?`, destructive: true }))) return;
+    if (action === "reject" && !(await confirm({ title: "Reject files?", body: `Reject ${ids.length} file${ids.length === 1 ? "" : "s"}?` }))) return;
     setNotice("");
     try {
       const res = await fetch("/api/assets/bulk", {

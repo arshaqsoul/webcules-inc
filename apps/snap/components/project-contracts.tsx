@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@webcules/ui/components/button";
+import { useConfirm } from "@/components/confirm-provider";
 
 export type ContractItem = {
   id: string;
@@ -51,6 +52,7 @@ export function ProjectContracts({
   clientEmail: string | null;
 }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -83,7 +85,7 @@ export function ProjectContracts({
   }
 
   async function act(contractId: string, action: "send" | "void") {
-    if (action === "void" && !confirm("Void this contract? The signing link stops working.")) return;
+    if (action === "void" && !(await confirm({ title: "Void contract?", body: "The signing link stops working.", destructive: true }))) return;
     setBusy(contractId + action);
     setError("");
     setNotice("");

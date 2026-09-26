@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@webcules/ui/components/button";
+import { useConfirm } from "@/components/confirm-provider";
 
 export type PaymentItem = {
   id: string;
@@ -59,6 +60,7 @@ function money(amountMinor: number, currency: string): string {
 
 export function ProjectPayments({ projectId, payments, summary }: { projectId: string; payments: PaymentItem[]; summary: PaymentSummary }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -71,7 +73,7 @@ export function ProjectPayments({ projectId, payments, summary }: { projectId: s
   );
 
   async function refund(id: string) {
-    if (!confirm("Refund this payment in full? The booking will be canceled and the client emailed.")) return;
+    if (!(await confirm({ title: "Refund payment?", body: "Refund this payment in full? The booking will be canceled and the client emailed.", destructive: true }))) return;
     setBusy(id);
     setError("");
     try {
@@ -94,7 +96,7 @@ export function ProjectPayments({ projectId, payments, summary }: { projectId: s
   }
 
   async function voidEntry(id: string) {
-    if (!confirm("Void this manual entry? It stays in the ledger as voided.")) return;
+    if (!(await confirm({ title: "Void entry?", body: "This manual entry stays in the ledger as voided.", destructive: true }))) return;
     setBusy(id);
     setError("");
     try {

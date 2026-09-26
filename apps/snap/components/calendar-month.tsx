@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { Button } from "@webcules/ui/components/button";
+import { useConfirm } from "@/components/confirm-provider";
 
 type BookingItem = {
   id: string;
@@ -28,6 +29,7 @@ export function CalendarMonth({
   initialMonth: string;
   initialBookings: BookingItem[];
 }) {
+  const confirm = useConfirm();
   void _organizationId;
   const [bookings, setBookings] = useState(initialBookings);
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
@@ -52,7 +54,7 @@ export function CalendarMonth({
   });
 
   async function cancel(id: string) {
-    if (!confirm("Cancel this booking? The client is emailed and the slot frees up.")) return;
+    if (!(await confirm({ title: "Cancel booking?", body: "The client is emailed and the slot frees up.", destructive: true }))) return;
     setBusy(id);
     const res = await fetch(`/api/bookings/${id}`, { method: "POST" });
     setBusy(null);

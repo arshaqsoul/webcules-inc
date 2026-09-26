@@ -7,6 +7,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { Button } from "@webcules/ui/components/button";
+import { useConfirm } from "@/components/confirm-provider";
 
 type PlanStatus = {
   plan: "free" | "lite" | "studio" | "pro";
@@ -51,6 +52,7 @@ const ALL_PLANS: { id: PlanStatus["plan"]; name: string; price: number; tagline:
 ];
 
 export function PlanPanel({ returnHint }: { returnHint?: string }) {
+  const confirm = useConfirm();
   const [st, setSt] = useState<PlanStatus | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
@@ -68,7 +70,7 @@ export function PlanPanel({ returnHint }: { returnHint?: string }) {
 
   async function choose(plan: string) {
     if (plan === st?.plan) return;
-    if (plan !== "free" && st?.plan !== "free" && !confirm(`Switch to ${plan}? Your subscription changes immediately with prorated billing.`)) return;
+    if (plan !== "free" && st?.plan !== "free" && !(await confirm({ title: `Switch to ${plan}?`, body: "Your subscription changes immediately with prorated billing." }))) return;
     setBusy(true);
     setNotice("");
     try {

@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@webcules/ui/components/button";
+import { useConfirm } from "@/components/confirm-provider";
 
 type ThreadMessage = {
   id: string;
@@ -29,6 +30,7 @@ export function LeadThread({
   messages: ThreadMessage[];
 }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [reply, setReply] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -53,7 +55,7 @@ export function LeadThread({
   }
 
   async function convert() {
-    if (!confirm(`Create a project for ${leadName}? They'll be added to your clients.`)) return;
+    if (!(await confirm({ title: "Create project?", body: `Create a project for ${leadName}? They'll be added to your clients.` }))) return;
     setBusy(true);
     const res = await fetch(`/api/leads/${leadId}`, { method: "POST" });
     setBusy(false);

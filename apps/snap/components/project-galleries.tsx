@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@webcules/ui/components/button";
+import { useConfirm } from "@/components/confirm-provider";
 
 export type GrantItem = {
   id: string;
@@ -53,6 +54,7 @@ export function ProjectGalleries({
   grants: GrantItem[];
 }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [email, setEmail] = useState(clientEmail);
   const [days, setDays] = useState("30");
   const [allowDownload, setAllowDownload] = useState(true);
@@ -95,7 +97,7 @@ export function ProjectGalleries({
         : action === "regenerate"
           ? "Create a new link? The old link stops working immediately and the client gets the new one by email."
           : null;
-    if (confirmText && !confirm(confirmText)) return;
+    if (confirmText && !(await confirm({ title: "Are you sure?", body: confirmText, destructive: true }))) return;
     setBusy(true);
     try {
       const res =
@@ -106,13 +108,13 @@ export function ProjectGalleries({
             : await fetch(`/api/grants/${grantId}/email`, { method: "POST" });
       const body = (await res.json().catch(() => ({}))) as { url?: string; emailed?: boolean };
       if (!res.ok && action === "resend") {
-        alert("This link is no longer active — regenerate to send a fresh one.");
+        setError("This link is no longer active — regenerate to send a fresh one.");
       } else if (res.ok && action === "regenerate") {
         setFlash({ url: body.url ?? "", emailed: Boolean(body.emailed) });
       }
       router.refresh();
     } catch {
-      alert("Network error — try again.");
+      setError("Network error — try again.");
     }
     setBusy(false);
   }

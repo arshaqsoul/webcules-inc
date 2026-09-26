@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@webcules/ui/components/button";
+import { useConfirm } from "@/components/confirm-provider";
 
 export type InvoiceItem = {
   id: string;
@@ -42,6 +43,7 @@ export function ProjectInvoices({
   quotedTotalMinor: number | null;
 }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -77,7 +79,7 @@ export function ProjectInvoices({
   }
 
   async function act(id: string, action: "send" | "paid" | "void") {
-    if (action !== "send" && !confirm(`Mark this invoice ${action}?`)) return;
+    if (action !== "send" && !(await confirm({ title: `Mark ${action}?`, body: `Mark this invoice ${action}?` }))) return;
     setBusy(id + action);
     setError("");
     setNotice("");
