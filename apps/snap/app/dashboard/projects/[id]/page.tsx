@@ -7,7 +7,7 @@ import { ProjectGalleries } from "@/components/project-galleries";
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { listAssets } from "@/lib/repos/assets";
-import { listProjectGrants } from "@/lib/shares/grants";
+import { getProjectShareActivity, listProjectGrants } from "@/lib/shares/grants";
 import { getOrgContext } from "@/lib/session";
 import { and, eq } from "drizzle-orm";
 
@@ -40,7 +40,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     ? await db.select().from(schema.clients).where(eq(schema.clients.id, project.clientId)).limit(1)
     : [null];
 
-  const [events, assets, grants] = await Promise.all([
+  const [events, assets, grants, shareActivity] = await Promise.all([
     db
       .select()
       .from(schema.projectStatusEvents)
@@ -48,8 +48,36 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
       .orderBy(schema.projectStatusEvents.createdAt),
     listAssets(ctx.organizationId, id),
     listProjectGrants(ctx.organizationId, id),
+    getProjectShareActivity(ctx.organizationId, id),
   ]);
   const approvedCount = assets.filter((a) => a.status === "approved" || a.status === "shared").length;
+
+  // One chronological feed: pipeline status events + gallery access audit.
+  const GALLERY_EVENT_LABEL: Record<string, string> = {
+    view: "opened the gallery",
+    otp_sent: "requested a verification code",
+    otp_success: "verified by email code",
+    otp_fail: "failed a code check",
+    download: "downloaded a file",
+  };
+  const feed = [
+    ...events.map((e) => ({
+      key: e.id,
+      at: e.createdAt,
+      kind: "status" as const,
+      dot: STATUS_ACCENT[e.toStatus] ?? "#8a8f98",
+      label: e.fromStatus ? `${e.fromStatus} → ${e.toStatus}` : `created as ${e.toStatus}`,
+      note: e.note ?? null,
+    })),
+    ...shareActivity.map((a) => ({
+      key: a.id,
+      at: new Date(a.createdAt),
+      kind: "gallery" as const,
+      dot: "#5e6ad2",
+      label: `${a.clientEmail.split("@")[0]} ${GALLERY_EVENT_LABEL[a.event] ?? a.event}`,
+      note: null,
+    })),
+  ].sort((a, b) => a.at.getTime() - b.at.getTime());
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-5">
@@ -108,16 +136,18 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
       <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
         <h2 className="text-[15px] font-medium text-ink">Activity</h2>
         <div className="mt-3 flex flex-col gap-3">
-          {events.length === 0 && <p className="text-sm text-ink-subtle">No status changes yet.</p>}
-          {events.map((e) => (
-            <div key={e.id} className="flex items-center gap-3 text-sm">
-              <span aria-hidden className="h-2 w-2 shrink-0 rounded-full" style={{ background: STATUS_ACCENT[e.toStatus] ?? "#8a8f98" }} />
-              <span className="text-ink">
-                {e.fromStatus ? `${e.fromStatus} → ${e.toStatus}` : `created as ${e.toStatus}`}
-              </span>
+          {feed.length === 0 && <p className="text-sm text-ink-subtle">No activity yet.</p>}
+          {feed.map((e) => (
+            <div key={e.key} className="flex items-center gap-3 text-sm">
+              <span
+                aria-hidden
+                className="h-2 w-2 shrink-0 rounded-full"
+                style={{ background: e.dot }}
+              />
+              <span className={e.kind === "gallery" ? "text-ink-muted" : "text-ink"}>{e.label}</span>
               {e.note && <span className="text-xs text-ink-tertiary">{e.note}</span>}
               <span className="ml-auto text-xs text-ink-tertiary">
-                {e.createdAt.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                {e.at.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
               </span>
             </div>
           ))}

@@ -16,6 +16,9 @@ export type GrantItem = {
   createdAt: string;
   assetCount: number;
   allowDownload: boolean;
+  views: number;
+  downloads: number;
+  lastViewedAt: string | null;
 };
 
 const STATE_BADGE: Record<GrantItem["state"], string> = {
@@ -208,6 +211,13 @@ export function ProjectGalleries({
                     {" · created "}{fmtDate(g.createdAt)}
                     {g.expiresAt ? ` · expires ${fmtDate(g.expiresAt)}` : " · no expiry"}
                   </p>
+                  {(g.views > 0 || g.downloads > 0 || g.lastViewedAt) && (
+                    <p className="mt-0.5 text-xs text-ink-tertiary">
+                      {g.lastViewedAt ? `Last opened ${fmtDate(g.lastViewedAt)}` : "Never opened"}
+                      {g.views > 0 ? ` · ${g.views} view${g.views === 1 ? "" : "s"}` : ""}
+                      {g.downloads > 0 ? ` · ${g.downloads} download${g.downloads === 1 ? "" : "s"}` : ""}
+                    </p>
+                  )}
                 </div>
                 {live && (
                   <select

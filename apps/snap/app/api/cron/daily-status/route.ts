@@ -1,7 +1,7 @@
 /* Daily pipeline automation — called by the snap-email worker's cron
  * (bearer-authed with the shared webhook secret). Moves booked projects whose
  * event day has arrived (or passed) into snapping. */
-import { and, eq, lte } from "drizzle-orm";
+import { and, eq, lte, sql } from "drizzle-orm";
 import { env } from "cloudflare:workers";
 
 import { getDb } from "@/lib/db";
@@ -48,5 +48,11 @@ export async function POST(req: Request) {
       }),
     ]);
   }
+
+  // Retention policy (documented on WEB-129): gallery access audit keeps
+  // 180 days; OTP codes are useless past expiry and drop after a day.
+  await db.run(sql`DELETE FROM share_access_log WHERE created_at < unixepoch() - 180 * 86400`);
+  await db.run(sql`DELETE FROM share_otp WHERE expires_at < unixepoch() - 86400`);
+
   return Response.json({ ok: true, moved: due.length });
 }
