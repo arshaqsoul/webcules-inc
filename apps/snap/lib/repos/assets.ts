@@ -1,7 +1,7 @@
 /* Asset repository — R2-backed project media. Keys are always
  * {orgId}/{projectId}/{assetId}/{filename}; every operation re-verifies the
  * org + project ownership. Status: uploaded → approved/rejected → shared. */
-import { and, eq } from "drizzle-orm";
+import { and, eq, gt, isNull, or } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
@@ -81,21 +81,76 @@ export async function getAsset(organizationId: string, assetId: string) {
   )[0];
 }
 
-export async function setAssetStatus(organizationId: string, assetId: string, status: "approved" | "rejected" | "uploaded") {
+export async function setAssetStatus(
+  organizationId: string,
+  assetId: string,
+  status: "approved" | "rejected" | "uploaded",
+): Promise<{ ok: true } | { ok: false; error: "shared_protected" }> {
   const db = getDb();
+
+  // Rejecting hides the file from curation — refused while an active client
+  // gallery holds it (approve/reset stay allowed).
+  if (status === "rejected" && (await assetProtectedByGrant(assetId))) {
+    await db.insert(schema.auditLog).values({
+      id: crypto.randomUUID(),
+      organizationId,
+      actorType: "user",
+      action: "asset.reject_blocked",
+      targetType: "asset",
+      targetId: assetId,
+      meta: JSON.stringify({ reason: "active_share_grant" }),
+    });
+    return { ok: false, error: "shared_protected" };
+  }
+
   await db
     .update(schema.assets)
     .set({ status })
     .where(and(eq(schema.assets.id, assetId), eq(schema.assets.organizationId, organizationId)));
+  return { ok: true };
 }
 
-/** Delete guarded: assets already tagged shared (active grant) are protected —
- * the full grant check lands with Epic 9; today `shared` status blocks delete. */
+/** THE authoritative protection check (WEB-127): an asset is locked while ANY
+ * effectively-active grant includes it (status='active' AND not expired —
+ * expiry derived live, so an expired link stops protecting immediately).
+ * Every destructive path (delete, reject, future auto-delete policy and bulk
+ * actions) MUST go through this, not the denormalized `shared` status. */
+export async function assetProtectedByGrant(assetId: string): Promise<boolean> {
+  const db = getDb();
+  const rows = await db
+    .select({ id: schema.shareGrants.id })
+    .from(schema.shareGrantAssets)
+    .innerJoin(schema.shareGrants, eq(schema.shareGrants.id, schema.shareGrantAssets.grantId))
+    .where(
+      and(
+        eq(schema.shareGrantAssets.assetId, assetId),
+        eq(schema.shareGrants.status, "active"),
+        or(isNull(schema.shareGrants.expiresAt), gt(schema.shareGrants.expiresAt, new Date())),
+      ),
+    )
+    .limit(1);
+  return rows.length > 0;
+}
+
+/** Delete guarded: assets in any effectively-active grant are protected —
+ * this is the single enforcement point for asset deletion (manual, bulk, or
+ * auto-delete policy). Storage keys are only removed after this check. */
 export async function deleteAsset(organizationId: string, assetId: string): Promise<{ ok: true } | { ok: false; error: "not_found" | "shared_protected" }> {
   const db = getDb();
   const asset = await getAsset(organizationId, assetId);
   if (!asset) return { ok: false, error: "not_found" };
-  if (asset.status === "shared") return { ok: false, error: "shared_protected" };
+  if (await assetProtectedByGrant(assetId)) {
+    await db.insert(schema.auditLog).values({
+      id: crypto.randomUUID(),
+      organizationId,
+      actorType: "user",
+      action: "asset.delete_blocked",
+      targetType: "asset",
+      targetId: assetId,
+      meta: JSON.stringify({ reason: "active_share_grant" }),
+    });
+    return { ok: false, error: "shared_protected" };
+  }
   await db.delete(schema.assets).where(eq(schema.assets.id, assetId));
   await deleteObject(organizationId, asset.storageKey);
   return { ok: true };

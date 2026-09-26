@@ -3,6 +3,11 @@
  * Invariant: object keys are always `{orgId}/...` and every operation validates
  * the key belongs to the caller's org. A buggy or compromised caller cannot
  * address another tenant's objects even with a valid call path.
+ *
+ * ASSET-key deletes must NEVER call deleteObject directly: the share-grant
+ * deletion guard (assetProtectedByGrant in lib/repos/assets.ts) is the single
+ * enforcement point and lives above this layer. Branding/logo keys have no
+ * grant semantics and may delete through here.
  * (Grows into the full asset pipeline in Epic 7: presigned uploads,
  * derivatives, share-guarded deletes.)
  */

@@ -152,7 +152,15 @@ export function ProjectFiles({ projectId, assets }: { projectId: string; assets:
                   {a.status !== "rejected" && a.status !== "shared" && (
                     <button disabled={busy === a.id} onClick={() => act(a.id, "reject")} className="flex-1 rounded-md bg-destructive/10 px-1.5 py-1 text-[10px] font-medium text-destructive hover:bg-destructive/20">Reject</button>
                   )}
-                  {a.status !== "shared" && (
+                  {a.status === "shared" ? (
+                    <span
+                      title="In an active client gallery — revoke the gallery link to edit or delete this file"
+                      className="flex flex-1 items-center justify-center gap-1 rounded-md bg-surface-2 px-1.5 py-1 text-[10px] font-medium text-ink-tertiary"
+                    >
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
+                      Locked
+                    </span>
+                  ) : (
                     <button disabled={busy === a.id} onClick={() => act(a.id, "delete")} aria-label="Delete" className="rounded-md px-1.5 py-1 text-[10px] text-ink-tertiary hover:text-destructive">✕</button>
                   )}
                 </div>

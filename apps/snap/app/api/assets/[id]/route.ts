@@ -111,7 +111,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return Response.json({ error: "invalid_action" }, { status: 400 });
   }
   const status = body.action === "approve" ? "approved" : body.action === "reject" ? "rejected" : "uploaded";
-  await setAssetStatus(ctx.organizationId, id, status);
+  const result = await setAssetStatus(ctx.organizationId, id, status);
+  if (!result.ok) return Response.json({ error: result.error }, { status: 409 });
   return Response.json({ ok: true, status });
 }
 
