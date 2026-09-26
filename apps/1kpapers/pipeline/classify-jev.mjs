@@ -27,7 +27,7 @@ const catalogPath = path.join(root, "public", "storage", "catalog.json");
 const ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID ?? "5677ff5e25a4e78485b774931f981681";
 const GATEWAY = process.env.AIG_GATEWAY_NAME;
 const TOKEN = process.env.CF_AIG_TOKEN ?? process.env.TYPESAFE_API_KEY;
-const MODEL = process.env.JEV_MODEL ?? "jev";
+const MODEL = process.env.JEV_MODEL ?? "jev-latest";
 const BASE_URL = process.env.AIG_BASE_URL
   ?? (GATEWAY ? `https://gateway.ai.cloudflare.com/v1/${ACCOUNT_ID}/${GATEWAY}` : undefined);
 
