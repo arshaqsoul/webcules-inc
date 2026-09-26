@@ -8,3 +8,4 @@ next-env.d.ts
 
 .dev.vars
 worker-configuration.d.ts
+tsconfig.tsbuildinfo
