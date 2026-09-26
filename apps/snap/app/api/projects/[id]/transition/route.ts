@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 const bodySchema = z.object({
   toStatus: z.enum(PROJECT_STATUSES),
   note: z.string().trim().max(500).optional(),
+  newEventDate: z.string().datetime().optional(),
 });
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -29,9 +30,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     toStatus: body.toStatus,
     actorUserId: ctx.user.id,
     note: body.note,
+    newEventDate: body.newEventDate ? new Date(body.newEventDate) : undefined,
   });
   if (!result.ok) {
-    const status = result.error === "not_found" ? 404 : 409;
+    const status = result.error === "not_found" ? 404 : result.error === "invalid_json" ? 400 : 409;
     return Response.json({ error: result.error }, { status });
   }
   return Response.json({ ok: true });

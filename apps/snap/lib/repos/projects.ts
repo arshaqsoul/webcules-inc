@@ -6,17 +6,36 @@ import { and, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 
-export const PROJECT_STATUSES = ["booked", "snapping", "evaluation", "complete", "closed"] as const;
+export const PROJECT_STATUSES = ["booked", "snapping", "evaluation", "complete", "closed", "canceled"] as const;
 export type ProjectStatus = (typeof PROJECT_STATUSES)[number];
 
-/** Allowed transitions — anything else is rejected. */
-const TRANSITIONS: Record<string, ProjectStatus[]> = {
-  booked: ["snapping", "closed"],
-  snapping: ["evaluation", "closed"],
-  evaluation: ["complete", "closed"],
-  complete: ["closed"],
+/** Transition rules (WEB-166 v2) — the server is the single source of truth.
+ * `reason: "required"` makes the caller supply a note (retakes, reschedules,
+ * cancellations); `newEventDate: true` marks reschedule moves that must carry
+ * a fresh event date so the cron re-arms. */
+export type TransitionRule = { to: ProjectStatus; reason?: "required"; newEventDate?: boolean };
+export const TRANSITIONS: Record<ProjectStatus, TransitionRule[]> = {
+  booked: [{ to: "snapping" }, { to: "closed" }, { to: "canceled", reason: "required" }],
+  snapping: [
+    { to: "evaluation" },
+    { to: "closed" },
+    { to: "booked", reason: "required", newEventDate: true }, // reschedule
+    { to: "canceled", reason: "required" },
+  ],
+  evaluation: [
+    { to: "complete" },
+    { to: "closed" },
+    { to: "snapping", reason: "required" }, // retake / reshoot
+    { to: "canceled", reason: "required" },
+  ],
+  complete: [{ to: "closed" }, { to: "canceled", reason: "required" }],
   closed: [],
+  canceled: [],
 };
+
+export function allowedTransitions(from: ProjectStatus): TransitionRule[] {
+  return TRANSITIONS[from] ?? [];
+}
 
 export async function createProjectForLead(params: {
   organizationId: string;
@@ -66,7 +85,10 @@ export async function transitionProject(params: {
   projectId: string;
   toStatus: ProjectStatus;
   actorUserId: string;
+  /** Mandatory for retakes/reschedules/cancellations (per the rule). */
   note?: string;
+  /** New event date — required on reschedule (snapping → booked). */
+  newEventDate?: Date;
 }): Promise<{ ok: true } | { ok: false; error: string }> {
   const db = getDb();
   const project = (
@@ -82,14 +104,24 @@ export async function transitionProject(params: {
       .limit(1)
   )[0];
   if (!project) return { ok: false, error: "not_found" };
-  const allowed = TRANSITIONS[project.status] ?? [];
-  if (!allowed.includes(params.toStatus)) {
+  const rule = (TRANSITIONS[project.status as ProjectStatus] ?? []).find((r) => r.to === params.toStatus);
+  if (!rule) {
     return { ok: false, error: `invalid_transition:${project.status}->${params.toStatus}` };
+  }
+  if (rule.reason === "required" && !params.note?.trim()) {
+    return { ok: false, error: "reason_required" };
+  }
+  if (rule.newEventDate && !params.newEventDate) {
+    return { ok: false, error: "new_event_date_required" };
   }
   await db.batch([
     db
       .update(schema.projects)
-      .set({ status: params.toStatus, updatedAt: new Date() })
+      .set({
+        status: params.toStatus,
+        ...(rule.newEventDate && params.newEventDate ? { eventDate: params.newEventDate } : {}),
+        updatedAt: new Date(),
+      })
       .where(eq(schema.projects.id, params.projectId)),
     db.insert(schema.projectStatusEvents).values({
       id: crypto.randomUUID(),

@@ -24,7 +24,20 @@ const COLUMNS = [
   { key: "evaluation", label: "Evaluation", accent: "#8f5fee" },
   { key: "complete", label: "Complete", accent: "#1e8e3e" },
   { key: "closed", label: "Closed", accent: "#8a8f98" },
+  { key: "canceled", label: "Canceled", accent: "#c0271f" },
 ] as const;
+
+/** Drag-safe subset of the server map (WEB-166): reason-requiring moves
+ * (retakes, reschedules, cancellations) happen from the project hub's status
+ * control where the reason dialog lives. */
+const ALLOWED: Record<string, string[]> = {
+  booked: ["snapping", "closed"],
+  snapping: ["evaluation", "closed"],
+  evaluation: ["complete", "closed"],
+  complete: ["closed"],
+  closed: [],
+  canceled: [],
+};
 
 export function KanbanBoard({ projects }: { projects: BoardProject[] }) {
   const router = useRouter();
@@ -46,7 +59,13 @@ export function KanbanBoard({ projects }: { projects: BoardProject[] }) {
     if (!res.ok) {
       setItems(prev);
       const body = (await res.json().catch(() => ({}))) as { error?: string };
-      setError(body.error?.startsWith("invalid_transition") ? "That move isn't allowed by the pipeline." : "Move failed — try again.");
+      setError(
+        body.error === "reason_required" || body.error === "new_event_date_required"
+          ? "That move needs a reason — use the project page's status control."
+          : body.error?.startsWith("invalid_transition")
+            ? "That move isn't allowed by the pipeline."
+            : "Move failed — try again.",
+      );
       return;
     }
     router.refresh();
@@ -63,7 +82,11 @@ export function KanbanBoard({ projects }: { projects: BoardProject[] }) {
               key={col.key}
               onDragOver={(e) => e.preventDefault()}
               onDrop={() => {
-                if (dragging) move(dragging, col.key);
+                if (dragging) {
+                  const item = items.find((p) => p.id === dragging);
+                  // Illegal moves are never offered (server still validates).
+                  if (item && (ALLOWED[item.status] ?? []).includes(col.key)) move(dragging, col.key);
+                }
                 setDragging(null);
               }}
               className="flex min-w-[220px] flex-col gap-2 rounded-[12px] border border-hairline bg-surface-1 p-3"

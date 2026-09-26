@@ -14,6 +14,7 @@ import { listProjectInvoices } from "@/lib/invoices";
 import { ProjectInvoices } from "@/components/project-invoices";
 import { listProjectContracts } from "@/lib/contracts";
 import { ProjectContracts } from "@/components/project-contracts";
+import { ProjectStatusControl } from "@/components/project-status-control";
 import { getProjectShareActivity, listProjectGrants } from "@/lib/shares/grants";
 import { getOrgContext } from "@/lib/session";
 import { and, eq } from "drizzle-orm";
@@ -26,6 +27,7 @@ const STATUS_ACCENT: Record<string, string> = {
   evaluation: "#8f5fee",
   complete: "#1e8e3e",
   closed: "#8a8f98",
+  canceled: "#c0271f",
 };
 
 export default async function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -136,9 +138,12 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             {project.eventDate ? ` · ${project.eventDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}` : ""}
           </p>
         </div>
-        <span className="rounded-full bg-surface-2 px-3 py-1 text-xs font-medium uppercase tracking-wide text-ink-muted">
-          {project.status}
-        </span>
+        <div className="flex flex-col items-end gap-2">
+          <span className="rounded-full bg-surface-2 px-3 py-1 text-xs font-medium uppercase tracking-wide text-ink-muted">
+            {project.status}
+          </span>
+          <ProjectStatusControl projectId={project.id} status={project.status} />
+        </div>
       </div>
 
       <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
