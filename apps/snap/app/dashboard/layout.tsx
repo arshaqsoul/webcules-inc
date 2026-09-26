@@ -8,6 +8,7 @@ import { redirect } from "next/navigation";
 import { getOrgContext } from "@/lib/session";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { SignOutButton } from "@/components/sign-out-button";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const nav = [
   { href: "/dashboard", label: "Overview", icon: LayoutGrid },
@@ -44,7 +45,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
             </Link>
           ))}
         </nav>
-        <div className="border-t border-hairline p-2">
+        <div className="flex flex-col gap-0.5 border-t border-hairline p-2">
+          <ThemeToggle />
           <SignOutButton />
         </div>
       </aside>

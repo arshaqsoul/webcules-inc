@@ -144,6 +144,8 @@ export const studioProfiles = sqliteTable("studio_profile", {
   contactEmail: text("contact_email"),
   timezone: text("timezone").notNull().default("UTC"),
   logoAssetId: text("logo_asset_id"),
+  /** R2 key of the studio logo ({orgId}/branding/logo.ext). */
+  logoKey: text("logo_key"),
   /** JSON: { accent: "#rrggbb", fontFamily?: string } */
   brand: text("brand").notNull().default("{}"),
   /** JSON: booking rules snapshot (slot length default, buffers, lead time) */

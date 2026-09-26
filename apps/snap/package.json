@@ -10,8 +10,8 @@
     "deploy": "vinext-cloudflare deploy --config dist/server/wrangler.json",
     "preview": "vinext build && wrangler dev --config dist/server/wrangler.json",
     "typecheck": "tsc --noEmit",
-    "db:migrate": "wrangler d1 execute webcules-snap --local --file=./migrations/0002_auth_org_ratelimit.sql",
-    "db:migrate:remote": "wrangler d1 execute webcules-snap --remote --file=./migrations/0002_auth_org_ratelimit.sql"
+    "db:migrate": "wrangler d1 execute webcules-snap --local --file=./migrations/0003_studio_logo.sql",
+    "db:migrate:remote": "wrangler d1 execute webcules-snap --remote --file=./migrations/0003_studio_logo.sql"
   },
   "dependencies": {
     "@vinext/cloudflare": "latest",
@@ -19,6 +19,7 @@
     "better-auth": "^1.7.6",
     "drizzle-orm": "^0.45.3",
     "lucide-react": "^0.544.0",
+    "next-themes": "^0.4.6",
     "react": "latest",
     "react-dom": "latest",
     "react-server-dom-webpack": "latest",

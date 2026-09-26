@@ -1,26 +1,80 @@
 /*
- * Snap design system — Linear-style dark language.
+ * Snap design system — Linear-derived language, LIGHT default + dark opt-in.
  * Source of truth: Linear project doc "Snap · Design System".
- * canvas #010102 · surface ladder #0f1011→#191a1b · hairlines #23252a→#3e3e44
- * ink scale #f7f8f8→#62666d · single chromatic accent: lavender #5e6ad2.
  *
- * The shared @webcules/ui globals bring Tailwind, tw-animate, base component
- * variables and @source scanning for apps/**. Snap then overrides the palette
- * in :root directly — Snap is dark-only, no light theme ships.
+ * Single chromatic accent (lavender #5e6ad2), surface ladder + hairlines for
+ * hierarchy, same ink/spacing/radius scales in both themes. Theme switching is
+ * class-based via next-themes (default: light; system preference respected).
  */
 @import "@webcules/ui/globals.css";
 
 :root {
-  /* --- shadcn variable slots (dark-only values) --- */
+  color-scheme: light;
+
+  /* --- shadcn variable slots (light theme — default) --- */
+  --background: #ffffff;
+  --foreground: #0f1011; /* ink */
+  --card: #f7f8f8; /* surface-1 */
+  --card-foreground: #0f1011;
+  --popover: #ffffff;
+  --popover-foreground: #0f1011;
+  --primary: #5e6ad2; /* lavender — brand mark, primary CTA, focus, links ONLY */
+  --primary-foreground: #ffffff;
+  --secondary: #f7f8f8; /* secondary button: surface-1 + hairline */
+  --secondary-foreground: #0f1011;
+  --muted: #f0f1f3; /* surface-2 */
+  --muted-foreground: #62666d; /* ink-subtle */
+  --accent: #f0f1f3;
+  --accent-foreground: #0f1011;
+  --destructive: #cc3d3d;
+  --destructive-foreground: #ffffff;
+  --success: #1e8e3e;
+  --border: #e3e5e8; /* hairline */
+  --input: #d0d3d8; /* hairline-strong */
+  --ring: #5e69d1; /* lavender-focus */
+  --radius: 0.5rem; /* 8px — buttons, inputs */
+  --sidebar: #f7f8f8;
+  --sidebar-foreground: #0f1011;
+  --sidebar-primary: #5e6ad2;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f0f1f3;
+  --sidebar-accent-foreground: #0f1011;
+  --sidebar-border: #e3e5e8;
+  --sidebar-ring: #5e69d1;
+
+  /* --- semantic tokens (referenced by @theme inline) --- */
+  --canvas: #ffffff;
+  --surface-1: #f7f8f8;
+  --surface-2: #f0f1f3;
+  --surface-3: #eceef0;
+  --surface-4: #e8eaec;
+  --hairline: #e3e5e8;
+  --hairline-strong: #d0d3d8;
+  --hairline-tertiary: #b9bdc4;
+  --ink: #0f1011;
+  --ink-muted: #3f4149;
+  --ink-subtle: #62666d;
+  --ink-tertiary: #8a8f98;
+  --lavender-hover: #4c56b4;
+  --success-text: #1e8e3e;
+
+  /* --- studio-brand theming hooks (client-facing surfaces only) --- */
+  --studio-accent: var(--primary);
+  --studio-logo: none;
+}
+
+.dark {
+  color-scheme: dark;
+
   --background: #010102; /* canvas */
   --foreground: #f7f8f8; /* ink */
   --card: #0f1011; /* surface-1 */
   --card-foreground: #f7f8f8;
   --popover: #18191a; /* surface-3 */
   --popover-foreground: #f7f8f8;
-  --primary: #5e6ad2; /* lavender — brand mark, primary CTA, focus, links ONLY */
+  --primary: #5e6ad2;
   --primary-foreground: #ffffff;
-  --secondary: #0f1011; /* secondary button: surface-1 + hairline */
+  --secondary: #0f1011;
   --secondary-foreground: #f7f8f8;
   --muted: #141516; /* surface-2 */
   --muted-foreground: #8a8f98; /* ink-subtle */
@@ -28,47 +82,9 @@
   --accent-foreground: #f7f8f8;
   --destructive: #eb5757;
   --destructive-foreground: #ffffff;
-  --success: #27a644; /* the only semantic color */
+  --success: #27a644;
   --border: #23252a; /* hairline */
   --input: #34343a; /* hairline-strong */
-  --ring: #5e69d1; /* lavender-focus */
-  --radius: 0.5rem; /* 8px — buttons, inputs */
-  --sidebar: #0f1011;
-  --sidebar-foreground: #f7f8f8;
-  --sidebar-primary: #5e6ad2;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #141516;
-  --sidebar-accent-foreground: #f7f8f8;
-  --sidebar-border: #23252a;
-  --sidebar-ring: #5e69d1;
-
-  /* --- studio-brand theming hooks (client-facing surfaces only) --- */
-  /* Overridden at widget/gallery/portal roots from server-resolved brand
-   * data; values are hex-sanitized server-side before rendering. */
-  --studio-accent: var(--primary);
-  --studio-logo: none;
-}
-
-.dark {
-  /* Snap is dark-only; .dark mirrors :root so `dark:` variants behave. */
-  --background: #010102;
-  --foreground: #f7f8f8;
-  --card: #0f1011;
-  --card-foreground: #f7f8f8;
-  --popover: #18191a;
-  --popover-foreground: #f7f8f8;
-  --primary: #5e6ad2;
-  --primary-foreground: #ffffff;
-  --secondary: #0f1011;
-  --secondary-foreground: #f7f8f8;
-  --muted: #141516;
-  --muted-foreground: #8a8f98;
-  --accent: #141516;
-  --accent-foreground: #f7f8f8;
-  --destructive: #eb5757;
-  --destructive-foreground: #ffffff;
-  --border: #23252a;
-  --input: #34343a;
   --ring: #5e69d1;
   --sidebar: #0f1011;
   --sidebar-foreground: #f7f8f8;
@@ -78,26 +94,43 @@
   --sidebar-accent-foreground: #f7f8f8;
   --sidebar-border: #23252a;
   --sidebar-ring: #5e69d1;
+
+  --canvas: #010102;
+  --surface-1: #0f1011;
+  --surface-2: #141516;
+  --surface-3: #18191a;
+  --surface-4: #191a1b;
+  --hairline: #23252a;
+  --hairline-strong: #34343a;
+  --hairline-tertiary: #3e3e44;
+  --ink: #f7f8f8;
+  --ink-muted: #d0d6e0;
+  --ink-subtle: #8a8f98;
+  --ink-tertiary: #62666d;
+  --lavender-hover: #828fff;
+  --success-text: #27a644;
 }
 
 @theme inline {
-  /* Snap-native tokens → utilities (bg-surface-1, text-ink-subtle, …) */
-  --color-canvas: #010102;
-  --color-surface-1: #0f1011;
-  --color-surface-2: #141516;
-  --color-surface-3: #18191a;
-  --color-surface-4: #191a1b;
-  --color-hairline: #23252a;
-  --color-hairline-strong: #34343a;
-  --color-hairline-tertiary: #3e3e44;
-  --color-ink: #f7f8f8;
-  --color-ink-muted: #d0d6e0;
-  --color-ink-subtle: #8a8f98;
-  --color-ink-tertiary: #62666d;
+  /* Snap-native tokens → utilities (bg-surface-1, text-ink-subtle, …) that
+   * resolve per theme via the semantic vars above. */
+  --color-canvas: var(--canvas);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-surface-4: var(--surface-4);
+  --color-hairline: var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
+  --color-hairline-tertiary: var(--hairline-tertiary);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-subtle: var(--ink-subtle);
+  --color-ink-tertiary: var(--ink-tertiary);
   --color-lavender: #5e6ad2;
-  --color-lavender-hover: #828fff;
+  --color-lavender-hover: var(--lavender-hover);
   --color-lavender-focus: #5e69d1;
-  --color-success: #27a644;
+  --color-success: var(--success);
+  --color-success-text: var(--success-text);
 
   --radius-card: 0.75rem; /* 12px — cards */
   --radius-panel: 1rem; /* 16px — hero/product panels */
@@ -107,10 +140,6 @@
     "Helvetica Neue", Arial, sans-serif;
   --font-mono:
     "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-}
-
-html {
-  color-scheme: dark;
 }
 
 body {
@@ -126,11 +155,11 @@ a {
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--primary) 40%, transparent);
+  background: color-mix(in srgb, #5e6ad2 30%, transparent);
 }
 
 /* Focus ring per spec: 2px lavender-focus at 50% opacity. */
 :focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--color-lavender-focus) 50%, transparent);
+  outline: 2px solid color-mix(in srgb, #5e69d1 50%, transparent);
   outline-offset: 1px;
 }
