@@ -7,7 +7,8 @@
  * ships the branded shell with height-resize + CSP frame-ancestors.
  */
 import { env } from "cloudflare:workers";
-import { frameAncestorsDirective, resolveStudioByEmbedKey, safeHexColor } from "@/lib/embed";
+import { frameAncestorsDirective, resolveStudioByEmbedKey } from "@/lib/embed";
+import { resolveWidgetVars, sanitizeTokenBag } from "@/lib/embed-tokens";
 
 export const dynamic = "force-dynamic";
 
@@ -34,15 +35,23 @@ export async function GET(req: Request) {
     );
   }
 
-  const accent = safeHexColor(studio.brand.accent) ?? "#5e6ad2";
+  // WEB-163 token layering: brand defaults → sanitized query overrides
+  // (snippet attrs / auto-inherit forwarded by the loader).
+  const brand = studio.brand as { accent?: string; fontFamily?: string; theme?: string; tokens?: Record<string, unknown> };
+  // Layering: brand token presets → sanitized query overrides (later wins).
+  const overrides = {
+    ...sanitizeTokenBag((brand.tokens ?? {}) as Record<string, unknown>),
+    ...sanitizeTokenBag(Object.fromEntries(new URL(req.url).searchParams.entries())),
+  };
+  const { vars, theme } = resolveWidgetVars(brand, overrides);
   const siteKey = env.TURNSTILE_SITE_KEY ?? "";
   const logo = studio.logoKey
     ? `<img src="/api/embed/logo?key=${esc(studio.embedKey)}" alt="${esc(studio.studioName)}" style="max-height:36px;max-width:160px;object-fit:contain;" />`
-    : `<span style="font-size:15px;font-weight:600;color:#0f1011;">${esc(studio.studioName)}</span>`;
+    : `<span style="font-size:15px;font-weight:600;color:var(--snap-text);">${esc(studio.studioName)}</span>`;
   const formOrigin = esc(new URL(req.url).origin);
 
   const html = `<!doctype html>
-<html lang="en">
+<html lang="en" data-theme="${theme}">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -50,24 +59,25 @@ export async function GET(req: Request) {
 <title>Contact ${esc(studio.studioName)}</title>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <style>
-  :root { --accent: ${accent}; }
+  :root { ${vars} }
   * { box-sizing: border-box; }
-  body { margin:0; padding:20px; font-family:Inter,-apple-system,system-ui,'Segoe UI',Roboto,sans-serif; background:#ffffff; color:#0f1011; font-size:14px; line-height:1.5; }
+  body { margin:0; padding:20px; font-family:var(--snap-font); background:var(--snap-bg); color:var(--snap-text); font-size:14px; line-height:1.5; }
   .brand { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
   h1 { font-size:16px; font-weight:600; margin:0 0 2px; }
-  p.sub { margin:0 0 18px; color:#62666d; font-size:13px; }
-  label { display:block; font-size:13px; font-weight:500; margin:0 0 6px; color:#3f4149; }
-  input, textarea, select { width:100%; padding:8px 12px; border:1px solid #d0d3d8; border-radius:8px; font:inherit; background:#fff; color:#0f1011; }
-  input:focus, textarea:focus { outline:2px solid color-mix(in srgb, var(--accent) 50%, transparent); outline-offset:0; border-color:var(--accent); }
+  p.sub { margin:0 0 18px; color:var(--snap-muted); font-size:13px; }
+  label { display:block; font-size:13px; font-weight:500; margin:0 0 6px; color:var(--snap-text); }
+  input, textarea, select { width:100%; padding:8px 12px; border:1px solid var(--snap-border); border-radius:var(--snap-radius); font:inherit; background:var(--snap-bg); color:var(--snap-text); }
+  input:focus, textarea:focus { outline:2px solid color-mix(in srgb, var(--snap-accent) 50%, transparent); outline-offset:0; border-color:var(--snap-accent); }
   .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
   .field { margin-bottom:12px; }
   textarea { min-height:88px; resize:vertical; }
-  button { width:100%; padding:9px 14px; background:var(--accent); color:#fff; border:0; border-radius:8px; font:inherit; font-weight:500; cursor:pointer; }
+  button { width:100%; padding:9px 14px; background:var(--snap-accent); color:#fff; border:0; border-radius:var(--snap-radius); font:inherit; font-weight:500; cursor:pointer; }
   button:hover { filter:brightness(1.08); }
   button:disabled { opacity:.6; cursor:default; }
-  .msg { margin-top:10px; font-size:13px; display:none; padding:10px 12px; border-radius:8px; }
-  .msg.ok { display:block; background:#f0f9f1; color:#1e8e3e; }
+  .msg { margin-top:10px; font-size:13px; display:none; padding:10px 12px; border-radius:var(--snap-radius); }
+  .msg.ok { display:block; background:color-mix(in srgb, var(--snap-accent) 8%, var(--snap-surface)); color:var(--snap-text); }
   .msg.err { display:block; background:#fdf0f0; color:#cc3d3d; }
+  html[data-theme="dark"] .msg.err { background:color-mix(in srgb, #cc3d3d 12%, var(--snap-surface)); }
   .hp { position:absolute; left:-9999px; opacity:0; height:0; width:0; }
 </style>
 </head>

@@ -15,6 +15,9 @@ type Initial = {
   timezone: string;
   contactEmail: string;
   accentColor: string;
+  fontFamily: string;
+  theme: string;
+  tokens: string;
   embedKey: string;
   embedOrigins: string[];
   hasLogo: boolean;
@@ -31,6 +34,10 @@ export function SettingsForm({ initial }: { initial: Initial }) {
     contactEmail: initial.contactEmail,
     accentColor: initial.accentColor,
   });
+  const [fontFamily, setFontFamily] = useState(initial.fontFamily);
+  const [theme, setTheme] = useState(initial.theme);
+  const [tokensJson, setTokensJson] = useState(initial.tokens);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [origins, setOrigins] = useState(initial.embedOrigins.join("\n"));
   const [embedKey, setEmbedKey] = useState(initial.embedKey);
   const [logoUrl, setLogoUrl] = useState(initial.logoUrl);
@@ -59,6 +66,15 @@ export function SettingsForm({ initial }: { initial: Initial }) {
         timezone: profile.timezone,
         contactEmail: profile.contactEmail || undefined,
         accentColor: profile.accentColor,
+        fontFamily: fontFamily || undefined,
+        theme: theme === "light" || theme === "dark" || theme === "auto" ? theme : undefined,
+        tokens: (() => {
+          try {
+            return tokensJson.trim() ? JSON.parse(tokensJson) : undefined;
+          } catch {
+            return undefined;
+          }
+        })(),
       }),
     });
     setBusy(false);
@@ -166,7 +182,45 @@ export function SettingsForm({ initial }: { initial: Initial }) {
                 onChange={(e) => setProfile({ ...profile, accentColor: e.target.value })} />
             </div>
           </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="fontFamily">Brand font (optional CSS stack)</Label>
+            <Input id="fontFamily" placeholder="Georgia, 'Times New Roman', serif" value={fontFamily}
+              onChange={(e) => setFontFamily(e.target.value)} />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="snapTheme">Widget theme</Label>
+            <select id="snapTheme" className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+              value={theme} onChange={(e) => setTheme(e.target.value)}>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+              <option value="auto">Follow the host site</option>
+            </select>
+          </div>
         </div>
+        <button type="button" className="mt-3 text-xs text-ink-subtle underline underline-offset-2" onClick={() => setShowAdvanced((v) => !v)}>
+          {showAdvanced ? "Hide" : "Show"} advanced widget tokens (JSON)
+        </button>
+        {showAdvanced && (
+          <div className="mt-2 flex flex-col gap-2">
+            <textarea
+              value={tokensJson}
+              onChange={(e) => setTokensJson(e.target.value)}
+              rows={5}
+              placeholder='{ "bg": "#fafafa", "radius": "12px" }'
+              className="rounded-md border border-input bg-background px-3 py-2 font-mono text-xs"
+            />
+            <p className="text-[11px] text-ink-tertiary">
+              Token keys: accent, bg, surface, text, muted, border, radius, fontFamily. Invalid values are dropped on save.
+            </p>
+            <div className="overflow-hidden rounded-lg border border-hairline">
+              <iframe
+                title="Widget preview"
+                src={"/embed/contact?key=" + initial.embedKey + "&theme=" + (theme === "auto" ? "light" : theme) + (fontFamily ? "&fontFamily=" + encodeURIComponent(fontFamily) : "")}
+                className="h-72 w-full border-0"
+              />
+            </div>
+          </div>
+        )}
         <div className="mt-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {logoUrl ? (

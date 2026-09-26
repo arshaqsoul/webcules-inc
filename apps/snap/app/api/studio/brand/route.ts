@@ -5,6 +5,7 @@ import { z } from "zod";
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { safeHexColor } from "@/lib/embed";
+import { safeFontStack, safeTheme, sanitizeTokenBag } from "@/lib/embed-tokens";
 import { updateStudioSlug } from "@/lib/repos/studios";
 import { getOrgContext } from "@/lib/session";
 
@@ -20,6 +21,10 @@ const bodySchema = z.object({
   timezone: z.string().trim().min(1).max(64).optional(),
   contactEmail: z.string().trim().email().optional(),
   accentColor: z.string().trim().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  fontFamily: z.string().trim().max(160).optional(),
+  theme: z.enum(["light", "dark", "auto"]).optional(),
+  /** Advanced token presets (WEB-163) — sanitized per-kind, invalid dropped. */
+  tokens: z.record(z.string(), z.unknown()).optional(),
 });
 
 export async function PATCH(req: Request) {
@@ -54,8 +59,20 @@ export async function PATCH(req: Request) {
   )[0];
   if (!existing) return Response.json({ error: "no_studio" }, { status: 404 });
 
-  const brand = JSON.parse(existing.brand || "{}") as { accent?: string };
+  const brand = JSON.parse(existing.brand || "{}") as {
+    accent?: string;
+    fontFamily?: string;
+    theme?: string;
+    tokens?: Record<string, unknown>;
+  };
   if (parsed.data.accentColor) brand.accent = safeHexColor(parsed.data.accentColor) ?? brand.accent;
+  if (parsed.data.fontFamily !== undefined) {
+    const f = safeFontStack(parsed.data.fontFamily);
+    if (f) brand.fontFamily = f;
+    else delete brand.fontFamily;
+  }
+  if (parsed.data.theme) brand.theme = safeTheme(parsed.data.theme) ?? undefined;
+  if (parsed.data.tokens) brand.tokens = sanitizeTokenBag(parsed.data.tokens) as Record<string, unknown>;
 
   await db
     .update(schema.studioProfiles)
