@@ -1,7 +1,7 @@
 /* Grant email delivery — the branded "your photos are ready" link email.
  * Same From pattern as lead replies (hello+{slug}@) so client replies thread
  * back into the studio's inbox via the sender trail. */
-import { galleryLinkEmail, sendEmail } from "@/lib/email";
+import { galleryLinkEmail, galleryOtpEmail, sendEmail } from "@/lib/email";
 import { getStudioProfile, getStudioSlug } from "@/lib/repos/studios";
 import { safeHexColor } from "@/lib/embed";
 
@@ -37,6 +37,29 @@ export async function sendGrantEmail(params: {
     replyTo: profile.contactEmail ?? undefined,
     organizationId: params.organizationId,
     template: "gallery_link",
+    refId: params.grantId,
+  });
+}
+
+/** Gallery OTP code email — sent only within the WEB-132 caps. */
+export async function sendGalleryOtpEmail(params: {
+  organizationId: string;
+  grantId: string;
+  to: string;
+  code: string;
+}): Promise<boolean> {
+  const profile = await getStudioProfile(params.organizationId);
+  if (!profile) return false;
+  const brand = JSON.parse(profile.brand || "{}") as { accent?: string };
+  const accent = safeHexColor(brand.accent) ?? "#5e6ad2";
+  const tmpl = galleryOtpEmail(profile.studioName, { code: params.code, galleryUrl: "", accent });
+  return sendEmail({
+    to: params.to,
+    subject: tmpl.subject,
+    html: tmpl.html,
+    text: tmpl.text,
+    organizationId: params.organizationId,
+    template: "gallery_otp",
     refId: params.grantId,
   });
 }

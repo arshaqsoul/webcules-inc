@@ -15,6 +15,7 @@ export type GrantItem = {
   expiresAt: string | null;
   createdAt: string;
   assetCount: number;
+  allowDownload: boolean;
 };
 
 const STATE_BADGE: Record<GrantItem["state"], string> = {
@@ -51,6 +52,7 @@ export function ProjectGalleries({
   const router = useRouter();
   const [email, setEmail] = useState(clientEmail);
   const [days, setDays] = useState("30");
+  const [allowDownload, setAllowDownload] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [flash, setFlash] = useState<{ url: string; emailed: boolean } | null>(null);
@@ -62,7 +64,7 @@ export function ProjectGalleries({
       const res = await fetch(`/api/projects/${projectId}/grants`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clientEmail: email, expiresInDays: days ? Number(days) : null }),
+        body: JSON.stringify({ clientEmail: email, expiresInDays: days ? Number(days) : null, allowDownload }),
       });
       const body = (await res.json().catch(() => ({}))) as { url?: string; emailed?: boolean; error?: string };
       if (!res.ok) {
@@ -171,6 +173,15 @@ export function ProjectGalleries({
             ))}
           </select>
         </label>
+        <label className="flex items-center gap-2 pb-2 text-xs text-ink-subtle">
+          <input
+            type="checkbox"
+            checked={allowDownload}
+            onChange={(e) => setAllowDownload(e.target.checked)}
+            className="h-4 w-4 accent-[var(--primary)]"
+          />
+          Allow downloads
+        </label>
         <Button size="sm" disabled={busy || !email} onClick={createGrant}>
           {busy ? "Working…" : `Share ${approvedCount} approved file${approvedCount === 1 ? "" : "s"}`}
         </Button>
@@ -192,7 +203,9 @@ export function ProjectGalleries({
                 <div className="min-w-40 flex-1">
                   <p className="truncate text-sm text-ink">{g.clientEmail}</p>
                   <p className="text-xs text-ink-tertiary">
-                    {g.assetCount} file{g.assetCount === 1 ? "" : "s"} · created {fmtDate(g.createdAt)}
+                    {g.assetCount} file{g.assetCount === 1 ? "" : "s"}
+                    {g.allowDownload ? " · downloads on" : " · view only"}
+                    {" · created "}{fmtDate(g.createdAt)}
                     {g.expiresAt ? ` · expires ${fmtDate(g.expiresAt)}` : " · no expiry"}
                   </p>
                 </div>

@@ -38,6 +38,9 @@
     "NEXT_PUBLIC_APP_URL": "https://snap.webcules.com",
     "BETTER_AUTH_URL": "https://snap.webcules.com",
     "EMAIL_FROM": "Snap <hello@snap.webcules.com>",
-    "TURNSTILE_SITE_KEY": "0x4AAAAAAFEC0tEjN8W9HSIe"
+    "TURNSTILE_SITE_KEY": "0x4AAAAAAFEC0tEjN8W9HSIe",
+    // Email-shock contingency (WEB-132): "off" stops gallery OTP emails entirely;
+    // the gallery then opens on link possession alone.
+    "GALLERY_OTP_MODE": "otp"
   }
 }

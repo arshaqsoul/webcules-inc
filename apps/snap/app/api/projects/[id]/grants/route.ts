@@ -40,7 +40,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const project = await projectForOrg(ctx.organizationId, id);
   if (!project) return Response.json({ error: "not_found" }, { status: 404 });
 
-  let body: { clientEmail?: string; assetIds?: string[]; expiresInDays?: number | null };
+  let body: {
+    clientEmail?: string;
+    assetIds?: string[];
+    expiresInDays?: number | null;
+    allowDownload?: boolean;
+  };
   try {
     body = (await req.json()) as typeof body;
   } catch {
@@ -85,6 +90,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     assetIds,
     expiresAt,
     createdById: ctx.user.id,
+    allowDownload: body.allowDownload !== false,
   });
   if (!created.ok) return Response.json({ error: created.error }, { status: 400 });
 

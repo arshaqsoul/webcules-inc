@@ -12,6 +12,8 @@ declare namespace Cloudflare {
     TURNSTILE_SECRET_KEY?: string;
     R2_S3_ACCESS_KEY_ID?: string;
     R2_S3_SECRET_ACCESS_KEY?: string;
+    /** "otp" (default) | "off" — email-shock contingency for gallery OTPs. */
+    GALLERY_OTP_MODE?: string;
   }
 }
 
@@ -23,4 +25,5 @@ interface Env {
   TURNSTILE_SECRET_KEY?: string;
   R2_S3_ACCESS_KEY_ID?: string;
   R2_S3_SECRET_ACCESS_KEY?: string;
+    GALLERY_OTP_MODE?: string;
 }

@@ -195,6 +195,26 @@ export function bookingCanceledEmail(studioName: string, params: {
   };
 }
 
+/** Gallery OTP — big friendly code, short-lived. */
+export function galleryOtpEmail(studioName: string, params: {
+  code: string;
+  galleryUrl: string;
+  accent: string;
+}): { subject: string; html: string; text: string } {
+  return {
+    subject: `Your verification code — ${studioName} gallery`,
+    html: shell(
+      params.accent,
+      "Verify it's you",
+      `<p style="margin:0 0 16px;">Enter this code to open your gallery from <strong style="color:#0f1011;">${studioName}</strong>:</p>
+       <p style="margin:0 0 16px;padding:16px;background:#f7f8f8;border-radius:8px;text-align:center;font-size:30px;letter-spacing:8px;font-weight:600;color:#0f1011;">${params.code}</p>
+       <p style="margin:0;font-size:13px;color:#8a8f98;">This code expires in 10 minutes. If you didn't request it, you can ignore this email.</p>`,
+      `Verification code for your ${studioName} gallery, sent via Snap.`,
+    ),
+    text: `Your verification code for the ${studioName} gallery: ${params.code}\n\nIt expires in 10 minutes.`,
+  };
+}
+
 /** Gallery link — branded "your photos are ready" with expiry info. */
 export function galleryLinkEmail(studioName: string, params: {
   clientName: string;

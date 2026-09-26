@@ -100,6 +100,7 @@ export async function createShareGrant(params: {
   assetIds: string[];
   expiresAt: Date | null;
   createdById: string;
+  allowDownload?: boolean;
 }): Promise<
   | { ok: true; grantId: string; token: string }
   | { ok: false; error: "no_assets" | "asset_mismatch" }
@@ -135,6 +136,7 @@ export async function createShareGrant(params: {
     status: "active",
     expiresAt: params.expiresAt,
     createdById: params.createdById,
+    allowDownload: params.allowDownload ?? true,
   });
   for (const assetId of params.assetIds) {
     await db.insert(schema.shareGrantAssets).values({ grantId, assetId });
@@ -173,6 +175,41 @@ export async function getShareGrant(
   )[0] ?? null;
 }
 
+/** Grant by id with NO org scope — internal use only where the grant itself
+ * is the security boundary (validated gallery cookie / token-hash match). */
+export async function getGrantById(grantId: string): Promise<typeof schema.shareGrants.$inferSelect | null> {
+  const db = getDb();
+  return (
+    await db.select().from(schema.shareGrants).where(eq(schema.shareGrants.id, grantId)).limit(1)
+  )[0] ?? null;
+}
+
+/** Grant by token hash regardless of lifecycle state — lets the gallery
+ * render a BRANDED denial (studio name/contact) for dead-but-known links
+ * without leaking anything about other grants. */
+export async function getGrantByTokenHashAny(token: string): Promise<typeof schema.shareGrants.$inferSelect | null> {
+  const db = getDb();
+  return (
+    await db
+      .select()
+      .from(schema.shareGrants)
+      .where(eq(schema.shareGrants.tokenHash, await hashToken(token)))
+      .limit(1)
+  )[0] ?? null;
+}
+
+/** Is this asset part of this grant's set? (Used by the proxy's gallery path.) */
+export async function assetInGrant(grantId: string, assetId: string): Promise<boolean> {
+  const db = getDb();
+  return (
+    await db
+      .select({ assetId: schema.shareGrantAssets.assetId })
+      .from(schema.shareGrantAssets)
+      .where(and(eq(schema.shareGrantAssets.grantId, grantId), eq(schema.shareGrantAssets.assetId, assetId)))
+      .limit(1)
+  ).length > 0;
+}
+
 /** All grants for a project with per-grant asset counts + derived states. */
 export async function listProjectGrants(organizationId: string, projectId: string) {
   const db = getDb();
@@ -199,6 +236,7 @@ export async function listProjectGrants(organizationId: string, projectId: strin
     expiresAt: g.expiresAt ? g.expiresAt.toISOString() : null,
     createdAt: g.createdAt.toISOString(),
     assetCount: counts.get(g.id) ?? 0,
+    allowDownload: g.allowDownload,
   }));
 }
 
@@ -278,6 +316,7 @@ export async function regenerateShareGrant(params: {
     expiresAt,
     parentGrantId: old.id,
     createdById: params.actorUserId,
+    allowDownload: old.allowDownload,
   });
   for (const row of assetRows) {
     await db.insert(schema.shareGrantAssets).values({ grantId: newId, assetId: row.assetId });

@@ -390,6 +390,8 @@ export const shareGrants = sqliteTable(
     parentGrantId: text("parent_grant_id"),
     createdById: text("created_by_id").references(() => user.id, { onDelete: "set null" }),
     revokedAt: integer("revoked_at", { mode: "timestamp" }),
+    /** Studio-controlled: may the client download originals from this link. */
+    allowDownload: integer("allow_download", { mode: "boolean" }).notNull().default(true),
     createdAt: ts("created_at"),
   },
   (t) => [index("share_grant_org_project_idx").on(t.organizationId, t.projectId, t.status)],
@@ -426,6 +428,42 @@ export const shareAccessLogs = sqliteTable(
     createdAt: ts("created_at"),
   },
   (t) => [index("share_access_log_grant_idx").on(t.grantId, t.createdAt)],
+);
+
+/* Gallery OTP gate — hashed 6-digit codes bound to a grant, plus a send log
+ * that enforces the email-cost caps (WEB-132 worst-case guardrails). */
+
+export const shareOtp = sqliteTable(
+  "share_otp",
+  {
+    id: text("id").primaryKey(),
+    grantId: text("grant_id")
+      .notNull()
+      .references(() => shareGrants.id, { onDelete: "cascade" }),
+    email: text("email").notNull(),
+    codeHash: text("code_hash").notNull(),
+    expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
+    attempts: integer("attempts").notNull().default(0),
+    createdAt: ts("created_at"),
+  },
+  (t) => [index("share_otp_grant_idx").on(t.grantId, t.createdAt)],
+);
+
+export const shareOtpLog = sqliteTable(
+  "share_otp_log",
+  {
+    id: text("id").primaryKey(),
+    grantId: text("grant_id")
+      .notNull()
+      .references(() => shareGrants.id, { onDelete: "cascade" }),
+    email: text("email").notNull(),
+    ip: text("ip"),
+    createdAt: ts("created_at"),
+  },
+  (t) => [
+    index("share_otp_log_email_idx").on(t.email, t.createdAt),
+    index("share_otp_log_ip_idx").on(t.ip, t.createdAt),
+  ],
 );
 
 /* ---------------- Money ---------------- */

@@ -1,25 +1,32 @@
-/* Authorized media proxy — every byte served passes the org check. Streams
- * from R2 with Range support (video scrubbing) and inline/attachment modes.
- * Gallery-grant access (public share links) extends this in Epic 9. */
+/* Authorized media proxy — every byte served passes an access check.
+ * Staff path: org-scoped via better-auth session. Gallery path: the snap-g
+ * OTP cookie (grant-scoped, 30d) + live grant re-check + asset ∈ grant set.
+ * Streams from R2 with Range support (video scrubbing) and
+ * inline/attachment modes; gallery downloads respect the grant's policy. */
 import { getObject } from "@/lib/storage/service";
 import { deleteAsset, getAsset, setAssetStatus } from "@/lib/repos/assets";
 import { getOrgContext } from "@/lib/session";
+import { logShareAccess, resolveGalleryAccess } from "@/lib/shares/gallery-auth";
+import { assetInGrant, getGrantById } from "@/lib/shares/grants";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const ctx = await getOrgContext();
-  if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
-  const { id } = await params;
+type ServableAsset = {
+  id: string;
+  organizationId: string;
+  storageKey: string;
+  filename: string;
+  mimeType: string;
+};
 
-  const asset = await getAsset(ctx.organizationId, id);
-  if (!asset) return Response.json({ error: "not_found" }, { status: 404 });
-
-  const object = await getObject(ctx.organizationId, asset.storageKey);
+/** Shared R2 streaming with Range + disposition (used by both paths). */
+async function serveAsset(req: Request, asset: ServableAsset, allowDownload: boolean): Promise<Response> {
+  const object = await getObject(asset.organizationId, asset.storageKey);
   if (!object) return Response.json({ error: "not_found" }, { status: 404 });
 
   const url = new URL(req.url);
-  const disposition = url.searchParams.get("download") === "1" ? "attachment" : "inline";
+  const disposition =
+    url.searchParams.get("download") === "1" && allowDownload ? "attachment" : "inline";
   const filename = encodeURIComponent(asset.filename);
 
   const headers = new Headers({
@@ -37,7 +44,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       const start = match[1] ? Number(match[1]) : 0;
       const end = match[2] ? Math.min(Number(match[2]), object.size - 1) : object.size - 1;
       if (start <= end && start < object.size) {
-        const slice = await getObject(ctx.organizationId, asset.storageKey, {
+        const slice = await getObject(asset.organizationId, asset.storageKey, {
           offset: start,
           length: end - start + 1,
         });
@@ -56,6 +63,36 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   }
 
   return new Response(object.body, { headers });
+}
+
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const url = new URL(req.url);
+  const wantsDownload = url.searchParams.get("download") === "1";
+
+  // Staff path — org-scoped session.
+  const ctx = await getOrgContext();
+  if (ctx) {
+    const asset = await getAsset(ctx.organizationId, id);
+    if (!asset) return Response.json({ error: "not_found" }, { status: 404 });
+    return serveAsset(req, asset, true);
+  }
+
+  // Gallery path — snap-g cookie, live grant check, asset ∈ grant set.
+  const access = await resolveGalleryAccess(req.headers);
+  if (access) {
+    const inSet = await assetInGrant(access.grant.id, id);
+    if (!inSet) return Response.json({ error: "not_found" }, { status: 404 });
+    const grant = await getGrantById(access.grant.id); // fresh row for expiry/policy
+    const asset = await getAsset(access.grant.organizationId, id);
+    if (!asset || !grant) return Response.json({ error: "not_found" }, { status: 404 });
+    if (wantsDownload && grant.allowDownload) {
+      await logShareAccess(grant.id, "download", req);
+    }
+    return serveAsset(req, asset, grant.allowDownload);
+  }
+
+  return Response.json({ error: "unauthorized" }, { status: 401 });
 }
 
 /** Approve / reject / reset an asset's status. */
