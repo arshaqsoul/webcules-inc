@@ -116,5 +116,14 @@ export async function POST(req: Request) {
     console.error("raw vault sweep failed:", String(err));
   }
 
-  return Response.json({ ok: true, moved: due.length, warned, downgraded, vault });
+  // WEB-159: dormancy sweep — idle studios to cold storage, purge lifecycle.
+  const { runDormancySweep } = await import("@/lib/dormancy");
+  let dormancy = null;
+  try {
+    dormancy = await runDormancySweep();
+  } catch (err) {
+    console.error("dormancy sweep failed:", String(err));
+  }
+
+  return Response.json({ ok: true, moved: due.length, warned, downgraded, vault, dormancy });
 }

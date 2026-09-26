@@ -4,7 +4,7 @@
  *
  * Lives apart from auth.server.ts so callers only pull next/headers when needed.
  */
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { headers } from "next/headers";
 
 import { getDb } from "./db";
@@ -73,6 +73,21 @@ export async function getOrgContext(): Promise<OrgContext | null> {
       )[0];
 
   if (!membership) return null;
+
+  // WEB-159: dormancy tracking — touch at most hourly; any staff login resets
+  // a pending purge cycle (objects already in cold storage stay there until
+  // restored). Conditional UPDATE keeps the steady-state path write-free.
+  await getDb().run(sql`
+    UPDATE studio_profile
+    SET last_active_at = unixepoch(),
+        dormant_notice1_at = NULL,
+        dormant_notice2_at = NULL,
+        dormant_purge_deadline = NULL,
+        dormant_purge_state = NULL,
+        updated_at = unixepoch()
+    WHERE organization_id = ${membership.organizationId}
+      AND (last_active_at IS NULL OR last_active_at < unixepoch() - 3600)
+  `);
 
   return {
     user: {

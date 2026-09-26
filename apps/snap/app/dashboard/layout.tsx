@@ -10,6 +10,7 @@ import { getStudioProfile } from "@/lib/repos/studios";
 import { getPlanEntitlements } from "@/lib/plans";
 import { SignOutButton } from "@/components/sign-out-button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { DormancyBanner } from "@/components/dormancy-banner";
 
 const nav = [
   { href: "/dashboard", label: "Overview", icon: LayoutGrid },
@@ -37,6 +38,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
         ? "Uploads are locked — you've reached 2× your plan storage. Galleries and downloads keep working."
         : `Storage at ${ent.storagePct}% of your ${ent.name} plan — uploads lock at 2× your cap.`
       : null;
+
+  // WEB-159: cold-storage banner for returning dormant studios.
+  const { getDormancyBanner } = await import("@/lib/dormancy");
+  const dormancy = await getDormancyBanner(ctx.organizationId);
 
   return (
     <div className="flex min-h-screen">
@@ -73,6 +78,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <Link href="/dashboard/settings" className="font-medium underline underline-offset-2">
               Review plan
             </Link>
+          </div>
+        )}
+        {dormancy && (
+          <div className="border-b border-hairline bg-surface px-6 py-2.5">
+            <DormancyBanner kind={dormancy.kind} objects={dormancy.objects} />
           </div>
         )}
         <main className="flex-1 p-6">{children}</main>

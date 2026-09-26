@@ -272,6 +272,57 @@ export function rawPurgeWarningEmail(studioName: string, params: {
   };
 }
 
+/** Dormancy & retention notices (WEB-159) — four staged variants. */
+export function dormancyEmail(studioName: string, params: {
+  variant: "pre_ia" | "ia_moved" | "pre_purge" | "final_purge";
+  accent: string;
+  dashboardUrl: string;
+  bytesLabel: string;
+  deleteOn: string | null;
+  free: boolean;
+}): { subject: string; html: string; text: string } {
+  const copy = {
+    pre_ia: {
+      subject: `Your Snap files move to cold storage soon — ${studioName}`,
+      title: "Your studio has been quiet",
+      body: `<p style="margin:0 0 16px;">It's been a while since anyone from <strong style="color:#0f1011;">${studioName}</strong> signed in. In about 10 days, your files (${params.bytesLabel}) move to low-cost cold storage to keep your plan sustainable.</p>
+             <p style="margin:0 0 16px;">Nothing is deleted and everything stays downloadable — signing in is enough to stop any further changes.</p>`,
+      cta: "Sign in to keep everything standard",
+    },
+    ia_moved: {
+      subject: `Your files are now in cold storage (restorable) — ${studioName}`,
+      title: "Files moved to cold storage",
+      body: `<p style="margin:0 0 16px;">Your Snap files (${params.bytesLabel}) are now in low-cost cold storage. They remain fully functional — galleries, downloads, everything. You can move them back to standard storage with one click whenever you return.</p>`,
+      cta: "Open Snap",
+    },
+    pre_purge: {
+      subject: `Action needed: files delete on ${params.deleteOn ?? "soon"} — ${studioName}`,
+      title: "Your Snap files are scheduled for deletion",
+      body: `<p style="margin:0 0 16px;"><strong style="color:#0f1011;">${studioName}</strong> has been dormant for a long time. On <strong style="color:#0f1011;">${params.deleteOn ?? "the scheduled date"}</strong>, all stored files (${params.bytesLabel}) will be permanently deleted.</p>
+             <p style="margin:0 0 16px;">Signing in stops it immediately and keeps everything safe. You'll get one more reminder before anything happens.</p>`,
+      cta: "Sign in to keep your files",
+    },
+    final_purge: {
+      subject: `Final notice: files delete on ${params.deleteOn ?? "soon"} — ${studioName}`,
+      title: "Final notice before deletion",
+      body: `<p style="margin:0 0 16px;">This is the last reminder: on <strong style="color:#0f1011;">${params.deleteOn ?? "the scheduled date"}</strong>, all files stored under <strong style="color:#0f1011;">${studioName}</strong> (${params.bytesLabel}) will be permanently deleted.</p>
+             <p style="margin:0 0 16px;">Signing in once cancels the deletion. After the date, recovery is impossible.</p>`,
+      cta: "Sign in now to keep your files",
+    },
+  }[params.variant];
+  return {
+    subject: copy.subject,
+    html: shell(
+      params.accent,
+      copy.title,
+      `${copy.body}
+       <p style="margin:24px 0 0;"><a href="${params.dashboardUrl}" style="display:inline-block;background:${params.accent};color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">${copy.cta}</a></p>`,
+      `Snap retention policy: dormant studios move to low-cost storage before any deletion, and signing in always stops the process.`,
+    ),
+    text: `${copy.title}. ${studioName}: ${params.bytesLabel} stored. ${params.deleteOn ? `Deletion scheduled ${params.deleteOn}. ` : ""}Sign in: ${params.dashboardUrl}`,
+  };
+}
+
 /** Gallery OTP — big friendly code, short-lived. */
 export function galleryOtpEmail(studioName: string, params: {
   code: string;

@@ -170,6 +170,24 @@ export const studioProfiles = sqliteTable("studio_profile", {
   stripeSubscriptionId: text("stripe_subscription_id"),
   /** Current subscription period end (epoch seconds). */
   planPeriodEnd: integer("plan_period_end"),
+  /* Dormancy & retention (WEB-159) — epoch seconds; the sweep in
+   * lib/dormancy.ts owns every transition. last_active_at is touched by
+   * getOrgContext at most hourly and resets the whole lifecycle. */
+  lastActiveAt: integer("last_active_at"),
+  dormantNotice1At: integer("dormant_notice1_at"),
+  dormantNotice2At: integer("dormant_notice2_at"),
+  /** Bulk IA move completed at (null = objects still standard). */
+  dormantIaAt: integer("dormant_ia_at"),
+  /** Set when a returning user requests bulk restore; cron batches it. */
+  iaRestoreRequestedAt: integer("ia_restore_requested_at"),
+  /** Scheduled permanent deletion (set when the final notice goes out). */
+  dormantPurgeDeadline: integer("dormant_purge_deadline"),
+  /** null | 'purging' | 'purged'. */
+  dormantPurgeState: text("dormant_purge_state"),
+  /** Objects remaining in the active bulk class batch (IA move or restore). */
+  bulkClassOpsRemaining: integer("bulk_class_ops_remaining"),
+  /** Last key processed by the active bulk batch (R2 listing startAfter). */
+  bulkClassCursor: text("bulk_class_cursor"),
   createdAt: ts("created_at"),
   updatedAt: ts("updated_at"),
 });
