@@ -67,8 +67,19 @@ export async function POST(req: Request) {
         const status = held.error === "conflict" ? 409 : 400;
         return Response.json({ error: held.error }, { status });
       }
-      const session = await stripe.checkout.sessions.create({
-        mode: "payment",
+
+      // Connected studios (active Express account) get a DESTINATION charge —
+      // money lands in the photographer's balance, platform takes $0
+      // (application_fee_amount omitted = 0). Unconnected/pending studios
+      // fall back to the platform account (founder-approved testing phase);
+      // if a stale "active" cache fails at Stripe, retry once as platform.
+      const profile = await getStudioProfile(studio.organizationId);
+      let transferData: { destination: string } | undefined;
+      if (profile?.stripeAccountId && profile.stripeConnectState === "active") {
+        transferData = { destination: profile.stripeAccountId };
+      }
+      const sessionArgs = {
+        mode: "payment" as const,
         customer_email: body.email.toLowerCase(),
         line_items: [
           {
@@ -88,7 +99,19 @@ export async function POST(req: Request) {
         metadata: { bookingId: held.bookingId, organizationId: studio.organizationId },
         success_url: `${url.origin}/booking/success?booking=${held.bookingId}`,
         cancel_url: `${url.origin}/booking/cancel?booking=${held.bookingId}`,
-      });
+        ...(transferData ? { payment_intent_data: { transfer_data: transferData } } : {}),
+      };
+      let session;
+      try {
+        session = await stripe.checkout.sessions.create(sessionArgs);
+      } catch (err) {
+        if (transferData && /destination|transfers/i.test(String(err))) {
+          console.error("connect destination charge failed — falling back to platform account:", String(err));
+          session = await stripe.checkout.sessions.create({ ...sessionArgs, payment_intent_data: undefined });
+        } else {
+          throw err;
+        }
+      }
       return Response.json({ ok: true, requiresPayment: true, checkoutUrl: session.url });
     }
   }

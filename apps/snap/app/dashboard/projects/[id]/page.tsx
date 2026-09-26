@@ -4,9 +4,11 @@ import { notFound, redirect } from "next/navigation";
 
 import { ProjectFiles } from "@/components/project-files";
 import { ProjectGalleries } from "@/components/project-galleries";
+import { ProjectPayments } from "@/components/project-payments";
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { listAssets } from "@/lib/repos/assets";
+import { listPayments } from "@/lib/repos/payments";
 import { getProjectShareActivity, listProjectGrants } from "@/lib/shares/grants";
 import { getOrgContext } from "@/lib/session";
 import { and, eq } from "drizzle-orm";
@@ -40,7 +42,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     ? await db.select().from(schema.clients).where(eq(schema.clients.id, project.clientId)).limit(1)
     : [null];
 
-  const [events, assets, grants, shareActivity] = await Promise.all([
+  const [events, assets, grants, shareActivity, payments] = await Promise.all([
     db
       .select()
       .from(schema.projectStatusEvents)
@@ -49,6 +51,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     listAssets(ctx.organizationId, id),
     listProjectGrants(ctx.organizationId, id),
     getProjectShareActivity(ctx.organizationId, id),
+    listPayments(ctx.organizationId, { projectId: id }),
   ]);
   const approvedCount = assets.filter((a) => a.status === "approved" || a.status === "shared").length;
 
@@ -130,6 +133,23 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           clientEmail={client?.email ?? ""}
           approvedCount={approvedCount}
           grants={grants}
+        />
+      </section>
+
+      <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
+        <h2 className="text-[15px] font-medium text-ink">Payments</h2>
+        <p className="mb-4 mt-1 text-xs text-ink-subtle">
+          Booking payments for this project. Refunds cancel the booking and email the client.
+        </p>
+        <ProjectPayments
+          payments={payments.map((p) => ({
+            id: p.id,
+            kind: p.kind,
+            amountMinor: p.amountMinor,
+            currency: p.currency,
+            status: p.status,
+            occurredAt: p.occurredAt,
+          }))}
         />
       </section>
 

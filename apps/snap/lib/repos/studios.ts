@@ -131,3 +131,15 @@ export async function updateStudioSlug(
     .where(eq(schema.organization.id, organizationId));
   return { ok: true };
 }
+
+/** Record a freshly created Stripe Express account for the studio. */
+export async function setStudioStripeAccount(
+  organizationId: string,
+  accountId: string,
+): Promise<void> {
+  const db = getDb();
+  await db
+    .update(schema.studioProfiles)
+    .set({ stripeAccountId: accountId, stripeConnectState: "pending", updatedAt: new Date() })
+    .where(eq(schema.studioProfiles.organizationId, organizationId));
+}

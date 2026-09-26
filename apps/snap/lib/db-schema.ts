@@ -157,6 +157,10 @@ export const studioProfiles = sqliteTable("studio_profile", {
   /** JSON: { enabled: bool, retainDays?: number } — rejected auto-delete policy */
   rejectedPolicy: text("rejected_policy").notNull().default('{"enabled":false}'),
   exifStripDerived: integer("exif_strip_derived", { mode: "boolean" }).notNull().default(false),
+  /** Stripe Connect Express account (KYC/bank data lives in Stripe, never here). */
+  stripeAccountId: text("stripe_account_id"),
+  /** not_connected | pending | active | restricted — derived from Stripe, cached. */
+  stripeConnectState: text("stripe_connect_state").notNull().default("not_connected"),
   createdAt: ts("created_at"),
   updatedAt: ts("updated_at"),
 });

@@ -271,8 +271,7 @@ export async function listProjectGrants(organizationId: string, projectId: strin
 }
 
 /** Recent gallery access events across a project's grants (WEB-129 feed). */
-export async function getProjectShareActivity(organizationId: string, projectId: string, limit = 40) {
-  const db = getDb();
+export async function getProjectShareActivity(organizationId: string, projectId: string, limit = 40) {  const db = getDb();
   const grants = await db
     .select({ id: schema.shareGrants.id, clientEmail: schema.shareGrants.clientEmail })
     .from(schema.shareGrants)
@@ -516,4 +515,36 @@ export function normalizeExpiry(days: unknown):
   const ms = days * 24 * 3600 * 1000;
   if (ms <= 0 || ms > TOKEN_TTL_MS) return { ok: false, error: "invalid_expiry" };
   return { ok: true, expiresAt: new Date(Date.now() + ms) };
+}
+
+/** Studio-wide grant list with project titles — the Galleries overview page. */
+export async function listStudioGrants(organizationId: string, limit = 100) {
+  const db = getDb();
+  const rows = await db
+    .select({
+      id: schema.shareGrants.id,
+      projectId: schema.shareGrants.projectId,
+      projectTitle: schema.projects.title,
+      clientEmail: schema.shareGrants.clientEmail,
+      status: schema.shareGrants.status,
+      expiresAt: schema.shareGrants.expiresAt,
+      createdAt: schema.shareGrants.createdAt,
+      allowDownload: schema.shareGrants.allowDownload,
+    })
+    .from(schema.shareGrants)
+    .leftJoin(schema.projects, eq(schema.projects.id, schema.shareGrants.projectId))
+    .where(eq(schema.shareGrants.organizationId, organizationId))
+    .orderBy(desc(schema.shareGrants.createdAt))
+    .limit(limit);
+
+  return rows.map((r) => ({
+    id: r.id,
+    projectId: r.projectId,
+    projectTitle: r.projectTitle ?? "—",
+    clientEmail: r.clientEmail,
+    state: grantState({ status: r.status, expiresAt: r.expiresAt }),
+    expiresAt: r.expiresAt ? r.expiresAt.toISOString() : null,
+    createdAt: r.createdAt.toISOString(),
+    allowDownload: r.allowDownload,
+  }));
 }

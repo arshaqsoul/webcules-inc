@@ -6,6 +6,7 @@
  *   payment_intent.payment_failed   → payment marked failed
  *   charge.refunded                 → refund: payment refunded + booking canceled + email
  *   charge.dispute.created          → flagged in audit log
+ *   account.updated                 → Connect onboarding state refresh (Epic 14)
  */
 import { and, eq } from "drizzle-orm";
 import type Stripe from "stripe";
@@ -162,6 +163,17 @@ export async function POST(req: Request) {
       }
       case "charge.dispute.created": {
         console.error("stripe dispute opened — event:", event.id);
+        break;
+      }
+      case "account.updated": {
+        // Connect onboarding state refresh (WEB-154). The panel also
+        // live-retrieves on view, so this is a push-based convenience.
+        const account = event.data.object as Stripe.Account;
+        const organizationId = account.metadata?.organizationId;
+        if (organizationId) {
+          const { deriveConnectState, saveConnectState } = await import("@/lib/connect");
+          await saveConnectState(organizationId, account.id, deriveConnectState(account));
+        }
         break;
       }
       default:

@@ -1,7 +1,7 @@
 /* Dashboard shell — auth + studio guards live here so every child route is
  * protected by construction. Redirects: /login (no session), /onboarding (no
  * studio profile yet). */
-import { CalendarDays, Images, LayoutGrid, Link2, Settings, Users } from "lucide-react";
+import { CalendarDays, CreditCard, Images, LayoutGrid, Link2, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -16,6 +16,7 @@ const nav = [
   { href: "/dashboard/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/dashboard/projects", label: "Projects", icon: Images },
   { href: "/dashboard/galleries", label: "Galleries", icon: Link2 },
+  { href: "/dashboard/transactions", label: "Transactions", icon: CreditCard },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 

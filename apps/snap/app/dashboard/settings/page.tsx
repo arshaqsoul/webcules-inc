@@ -1,17 +1,23 @@
 import { redirect } from "next/navigation";
 
+import { PayoutsPanel } from "@/components/payouts-panel";
 import { SettingsForm } from "@/components/settings-form";
 import { getStudioProfile, getStudioSlug } from "@/lib/repos/studios";
 import { getOrgContext } from "@/lib/session";
 
 export const metadata = { title: "Settings" };
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ payouts?: string }>;
+}) {
   const ctx = await getOrgContext();
   if (!ctx) redirect("/login");
   const profile = await getStudioProfile(ctx.organizationId);
   if (!profile) redirect("/onboarding");
   const slug = await getStudioSlug(ctx.organizationId);
+  const { payouts } = await searchParams;
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
@@ -32,6 +38,7 @@ export default async function SettingsPage() {
           logoUrl: profile.logoKey ? `/api/embed/logo?key=${profile.embedKey}` : null,
         }}
       />
+      <PayoutsPanel returnHint={payouts === "return" ? "return" : payouts === "refresh" ? "refresh" : undefined} />
     </div>
   );
 }
