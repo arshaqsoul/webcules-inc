@@ -96,6 +96,7 @@ export async function GET(req: Request) {
 <script>
 (function () {
   var origin = ${JSON.stringify(formOrigin)};
+  var key = ${JSON.stringify(studio.embedKey)};
   function postHeight() {
     parent.postMessage({ type: "snap:height", height: document.documentElement.scrollHeight }, origin);
   }
@@ -112,7 +113,7 @@ export async function GET(req: Request) {
     var data = Object.fromEntries(new FormData(form).entries());
     data.embedOrigin = (document.referrer && new URL(document.referrer).origin) || "";
     try {
-      var res = await fetch(origin + "/api/embed/leads", {
+      var res = await fetch(origin + "/api/embed/leads?key=" + encodeURIComponent(key), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
