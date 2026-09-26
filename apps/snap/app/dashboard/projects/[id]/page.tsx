@@ -79,6 +79,10 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     "share.grant.created": () => "created a client gallery link",
     "share.grant.revoked": () => "revoked a client gallery link",
     "share.grant.regenerated": () => "rotated a client gallery link",
+    "asset.raw_archive": (m) => `RAW vault: ${m.n ?? "?"} file${Number(m.n) === 1 ? "" : "s"} moved to cold storage (restorable)`,
+    "asset.raw_restore": (m) =>
+      `RAW vault: ${[m.restored ? `${m.restored} restored` : null, m.extended ? `${m.extended} kept hot` : null].filter(Boolean).join(", ") || "renewed"}`,
+    "asset.raw_purge": (m) => `RAW vault: ${m.n ?? "?"} file${Number(m.n) === 1 ? "" : "s"} permanently deleted after final warnings`,
   };
   const feed = [
     ...events.map((e) => ({

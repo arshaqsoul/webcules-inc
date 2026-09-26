@@ -106,5 +106,15 @@ export async function POST(req: Request) {
     }
   }
 
-  return Response.json({ ok: true, moved: due.length, warned, downgraded });
+  // WEB-153: RAW vault sweep — renewal notices, Infrequent-Access moves,
+  // purge warnings and (only after both warnings) hard deletes. JPGs untouched.
+  const { runRawVaultSweep } = await import("@/lib/vault");
+  let vault = null;
+  try {
+    vault = await runRawVaultSweep();
+  } catch (err) {
+    console.error("raw vault sweep failed:", String(err));
+  }
+
+  return Response.json({ ok: true, moved: due.length, warned, downgraded, vault });
 }

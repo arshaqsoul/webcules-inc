@@ -19,6 +19,9 @@ const SURFACED_ACTIONS = [
   "share.grant.created",
   "share.grant.revoked",
   "share.grant.regenerated",
+  "asset.raw_archive",
+  "asset.raw_restore",
+  "asset.raw_purge",
 ];
 
 export async function getProjectAuditActivity(organizationId: string, projectId: string, limit = 25) {

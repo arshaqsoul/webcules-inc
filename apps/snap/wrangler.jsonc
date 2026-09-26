@@ -41,6 +41,8 @@
     "TURNSTILE_SITE_KEY": "0x4AAAAAAFEC0tEjN8W9HSIe",
     // Email-shock contingency (WEB-132): "off" stops gallery OTP emails entirely;
     // the gallery then opens on link possession alone.
-    "GALLERY_OTP_MODE": "otp"
+    "GALLERY_OTP_MODE": "otp",
+    // S3 endpoint host for storage-class moves (RAW Vault) — keys are secrets.
+    "R2_S3_ACCOUNT_ID": "5677ff5e25a4e78485b774931f981681"
   }
 }

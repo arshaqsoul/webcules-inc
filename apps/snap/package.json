@@ -10,12 +10,13 @@
     "deploy": "vinext-cloudflare deploy --config dist/server/wrangler.json",
     "preview": "vinext build && wrangler dev --config dist/server/wrangler.json",
     "typecheck": "tsc --noEmit",
-    "db:migrate": "wrangler d1 execute webcules-snap --local --file=./migrations/0005_share_token_enc.sql",
-    "db:migrate:remote": "wrangler d1 execute webcules-snap --remote --file=./migrations/0005_share_token_enc.sql"
+    "db:migrate": "wrangler d1 execute webcules-snap --local --file=./migrations/0010_raw_vault.sql",
+    "db:migrate:remote": "wrangler d1 execute webcules-snap --remote --file=./migrations/0010_raw_vault.sql"
   },
   "dependencies": {
     "@vinext/cloudflare": "latest",
     "@webcules/ui": "workspace:*",
+    "aws4fetch": "^1.0.20",
     "better-auth": "^1.7.6",
     "drizzle-orm": "^0.45.3",
     "lucide-react": "^0.544.0",

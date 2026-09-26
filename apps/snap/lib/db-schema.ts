@@ -376,8 +376,18 @@ export const assets = sqliteTable(
     exifStripped: integer("exif_stripped", { mode: "boolean" }).notNull().default(false),
     uploadedBy: text("uploaded_by").references(() => user.id, { onDelete: "set null" }),
     createdAt: ts("created_at"),
+    /* RAW Vault (WEB-153) — epoch seconds, null = stage not reached. */
+    rawArchivedAt: integer("raw_archived_at"),
+    rawKeepUntil: integer("raw_keep_until"),
+    rawNoticeAt: integer("raw_notice_at"),
+    rawPurgeWarn1At: integer("raw_purge_warn1_at"),
+    rawPurgeWarn2At: integer("raw_purge_warn2_at"),
   },
-  (t) => [index("asset_org_project_idx").on(t.organizationId, t.projectId, t.createdAt)],
+  (t) => [
+    index("asset_org_project_idx").on(t.organizationId, t.projectId, t.createdAt),
+    index("asset_raw_scan_idx").on(t.kind, t.createdAt),
+    index("asset_raw_archive_idx").on(t.rawArchivedAt),
+  ],
 );
 
 /* ---------------- Curation tags (Epic 8) ---------------- */

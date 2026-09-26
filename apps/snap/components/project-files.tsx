@@ -17,6 +17,8 @@ export type AssetItem = {
   status: string;
   bytes: number;
   mimeType: string;
+  /** RAW vault (WEB-153): epoch seconds when moved to cold storage; null = hot. */
+  rawArchivedAt: number | null;
   tags: string[];
   createdAt: string;
 };
@@ -460,6 +462,7 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
               <div className="flex flex-col gap-1.5 p-2">
                 <div className="flex items-center justify-between gap-1">
                   <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${STATUS_BADGE[a.status] ?? ""}`}>{a.status}</span>
+                  {a.rawArchivedAt && <a href="/dashboard/raw-vault" title="In RAW vault cold storage — restorable from the RAW Vault page" className="rounded-full bg-sky-500/10 px-2 py-0.5 text-[10px] font-medium text-sky-600 dark:text-sky-400">❄ cold</a>}
                   {a.tags.includes("favorite") && <span title="Favorite" className="text-[10px] text-amber-500">★</span>}
                   <span className="text-[10px] text-ink-tertiary">{mb(a.bytes)}</span>
                 </div>
@@ -503,7 +506,10 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                   <td className="max-w-64 truncate px-4 py-2 text-ink">
                     <a href={`/api/assets/${a.id}`} target="_blank" rel="noreferrer" className="hover:underline">{a.filename}</a>
                   </td>
-                  <td className="px-4 py-2 text-ink-muted">{a.kind}</td>
+                  <td className="px-4 py-2 text-ink-muted">
+                    {a.kind}
+                    {a.rawArchivedAt && <a href="/dashboard/raw-vault" title="In RAW vault cold storage — restorable" className="ml-1.5 rounded-full bg-sky-500/10 px-2 py-0.5 text-[10px] font-medium text-sky-600 dark:text-sky-400">❄ cold</a>}
+                  </td>
                   <td className="px-4 py-2 text-ink-muted">{mb(a.bytes)}</td>
                   <td className="px-4 py-2">
                     <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${STATUS_BADGE[a.status] ?? ""}`}>{a.status}</span>

@@ -213,6 +213,65 @@ export function usageWarningEmail(studioName: string, params: {
   };
 }
 
+/** RAW Vault — month-5 renewal notice (WEB-153). */
+export function rawRenewalEmail(studioName: string, params: {
+  accent: string; vaultUrl: string; count: number; bytesLabel: string; projectNames: string[]; archiveOn: string;
+}): { subject: string; html: string; text: string } {
+  const projects = params.projectNames.slice(0, 6).join(", ") + (params.projectNames.length > 6 ? "…" : "");
+  return {
+    subject: `Your RAW files archive on ${params.archiveOn} — ${studioName}`,
+    html: shell(
+      params.accent,
+      "RAW vault reminder",
+      `<p style="margin:0 0 16px;"><strong style="color:#0f1011;">${params.count} RAW file${params.count === 1 ? "" : "s"} (${params.bytesLabel})</strong> from ${projects} move to low-cost cold storage on <strong style="color:#0f1011;">${params.archiveOn}</strong>.</p>
+       <p style="margin:0 0 16px;">Nothing is deleted — cold files stay fully downloadable and can be restored to hot storage anytime. Restore now if you want them instantly available for the next 6 months.</p>
+       <p style="margin:24px 0 0;"><a href="${params.vaultUrl}" style="display:inline-block;background:${params.accent};color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">Keep RAWs hot for 6 more months</a></p>`,
+      `Snap RAW vault policy: 6 months hot, then restorable cold storage. Raw files are only ever deleted after repeated emailed warnings.`,
+    ),
+    text: `${params.count} RAW files (${params.bytesLabel}) from ${projects} move to cold storage on ${params.archiveOn}. Nothing is deleted — restore anytime: ${params.vaultUrl}`,
+  };
+}
+
+/** RAW Vault — archived confirmation (sent when the move happened). */
+export function rawArchivedEmail(studioName: string, params: {
+  accent: string; vaultUrl: string; count: number; bytesLabel: string; projectNames: string[]; deleteOn: string;
+}): { subject: string; html: string; text: string } {
+  const projects = params.projectNames.slice(0, 6).join(", ") + (params.projectNames.length > 6 ? "…" : "");
+  return {
+    subject: `${params.count} RAW file${params.count === 1 ? "" : "s"} archived (restorable) — ${studioName}`,
+    html: shell(
+      params.accent,
+      "RAW files moved to cold storage",
+      `<p style="margin:0 0 16px;"><strong style="color:#0f1011;">${params.count} RAW file${params.count === 1 ? "" : "s"} (${params.bytesLabel})</strong> from ${projects} are now in cold storage. They remain fully downloadable, and restoring them to hot storage takes one click.</p>
+       <p style="margin:0 0 16px;">To keep the vault sustainable, files left in cold storage for 90 days are deleted — the earliest on <strong style="color:#0f1011;">${params.deleteOn}</strong>. You'll get two warnings first, and restoring or downloading always stops the clock.</p>
+       <p style="margin:24px 0 0;"><a href="${params.vaultUrl}" style="display:inline-block;background:${params.accent};color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">Open the RAW vault</a></p>`,
+      `Snap RAW vault policy: 6 months hot, then restorable cold storage. Raw files are only ever deleted after repeated emailed warnings.`,
+    ),
+    text: `${params.count} RAW files (${params.bytesLabel}) from ${projects} moved to cold storage (restorable, still downloadable). Earliest deletion ${params.deleteOn} — two warnings come first. Vault: ${params.vaultUrl}`,
+  };
+}
+
+/** RAW Vault — purge warnings (day 60 + final day 80 of the archive window). */
+export function rawPurgeWarningEmail(studioName: string, params: {
+  final: boolean; accent: string; vaultUrl: string; count: number; bytesLabel: string; projectNames: string[]; deleteOn: string;
+}): { subject: string; html: string; text: string } {
+  const projects = params.projectNames.slice(0, 6).join(", ") + (params.projectNames.length > 6 ? "…" : "");
+  return {
+    subject: params.final
+      ? `Final notice: RAW files delete on ${params.deleteOn} — ${studioName}`
+      : `RAW files will be deleted on ${params.deleteOn} — ${studioName}`,
+    html: shell(
+      params.accent,
+      params.final ? "Final notice before deletion" : "Upcoming RAW deletion",
+      `<p style="margin:0 0 16px;"><strong style="color:#0f1011;">${params.count} RAW file${params.count === 1 ? "" : "s"} (${params.bytesLabel})</strong> from ${projects} will be <strong style="color:#0f1011;">permanently deleted on ${params.deleteOn}</strong>${params.final ? " — this is the final notice." : "."}</p>
+       <p style="margin:0 0 16px;">Download them or restore them to hot storage before then to keep them forever. Restoring pauses every deletion timer.</p>
+       <p style="margin:24px 0 0;"><a href="${params.vaultUrl}" style="display:inline-block;background:${params.accent};color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">Download or keep these files</a></p>`,
+      `Snap never deletes without repeated emailed warnings — this is part of the RAW vault policy.`,
+    ),
+    text: `${params.count} RAW files (${params.bytesLabel}) from ${projects} are scheduled for permanent deletion on ${params.deleteOn}.${params.final ? " FINAL NOTICE." : ""} Download or restore before then: ${params.vaultUrl}`,
+  };
+}
+
 /** Gallery OTP — big friendly code, short-lived. */
 export function galleryOtpEmail(studioName: string, params: {
   code: string;

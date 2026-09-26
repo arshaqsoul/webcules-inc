@@ -50,6 +50,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       status: a.status,
       bytes: a.bytes,
       mimeType: a.mimeType,
+      rawArchivedAt: a.rawArchivedAt,
       tags: a.tags,
       createdAt: a.createdAt.toISOString(),
     })),
