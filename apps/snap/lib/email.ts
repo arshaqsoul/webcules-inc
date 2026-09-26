@@ -343,6 +343,37 @@ export function marginAlertEmail(lines: string[], params: {
   };
 }
 
+/** Portal magic-code login (WEB-131) — neutral Snap branding (cross-studio). */
+export function portalCodeEmail(code: string): { subject: string; html: string; text: string } {
+  return {
+    subject: "Your Snap portal code",
+    html: shell(
+      "#5e6ad2",
+      "Sign in to your client portal",
+      `<p style="margin:0 0 16px;">Enter this code to open your Snap client portal:</p>
+       <p style="margin:0 0 16px;padding:16px;background:#f7f8f8;border-radius:8px;text-align:center;font-size:30px;letter-spacing:8px;font-weight:600;color:#0f1011;">${code}</p>
+       <p style="margin:0;font-size:13px;color:#8a8f98;">It expires in 10 minutes. If you didn't request it, you can ignore this email.</p>`,
+      `One code signs you into every studio you work with on Snap.`,
+    ),
+    text: `Your Snap portal code: ${code}\n\nIt expires in 10 minutes.`,
+  };
+}
+
+/** Portal login attempt with a staff email — point them at the dashboard. */
+export function portalStaffRedirectEmail(dashboardUrl: string): { subject: string; html: string; text: string } {
+  return {
+    subject: "You already have a Snap studio account",
+    html: shell(
+      "#5e6ad2",
+      "Use your studio login instead",
+      `<p style="margin:0 0 16px;">This email is signed up as a Snap studio team member, so the client portal isn't the right door — your studios live in the dashboard.</p>
+       <p style="margin:24px 0 0;"><a href="${dashboardUrl}" style="display:inline-block;background:#5e6ad2;color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">Open the Snap dashboard</a></p>`,
+      `Snap studio members sign in through the dashboard.`,
+    ),
+    text: `This email is a Snap studio team member — sign in through the dashboard: ${dashboardUrl}`,
+  };
+}
+
 /** Gallery OTP — big friendly code, short-lived. */
 export function galleryOtpEmail(studioName: string, params: {
   code: string;

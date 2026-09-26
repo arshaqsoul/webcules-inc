@@ -673,3 +673,34 @@ export const usageCounters = sqliteTable(
     index("usage_counters_month_idx").on(t.month),
   ],
 );
+
+/* ---------------- Client portal auth (WEB-131) ---------------- */
+
+/** Magic-code login for portal clients — email-scoped, latest code wins. */
+export const portalOtp = sqliteTable(
+  "portal_otp",
+  {
+    id: text("id").primaryKey(),
+    email: text("email").notNull(),
+    codeHash: text("code_hash").notNull(),
+    expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
+    attempts: integer("attempts").notNull().default(0),
+    createdAt: ts("created_at"),
+  },
+  (t) => [index("portal_otp_email_idx").on(t.email, t.createdAt)],
+);
+
+/** Delivered-code log — caps count sent emails only. */
+export const portalOtpLog = sqliteTable(
+  "portal_otp_log",
+  {
+    id: text("id").primaryKey(),
+    email: text("email").notNull(),
+    ip: text("ip"),
+    createdAt: ts("created_at"),
+  },
+  (t) => [
+    index("portal_otp_log_email_idx").on(t.email, t.createdAt),
+    index("portal_otp_log_ip_idx").on(t.ip, t.createdAt),
+  ],
+);
