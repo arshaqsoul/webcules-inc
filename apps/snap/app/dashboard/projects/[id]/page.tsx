@@ -108,19 +108,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
       <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
         <h2 className="text-[15px] font-medium text-ink">Files</h2>
         <p className="mb-4 mt-1 text-xs text-ink-subtle">
-          Upload the shoot, approve/reject in the grid. Shared files are locked.
+          Upload the shoot, triage with Triage, curate in the grid — shared files are locked.
         </p>
-        <ProjectFiles
-          projectId={id}
-          assets={assets.map((a) => ({
-            id: a.id,
-            filename: a.filename,
-            kind: a.kind,
-            status: a.status,
-            bytes: a.bytes,
-            createdAt: a.createdAt.toISOString(),
-          }))}
-        />
+        <ProjectFiles projectId={id} />
       </section>
 
       <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">

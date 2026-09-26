@@ -371,6 +371,26 @@ export const assets = sqliteTable(
   (t) => [index("asset_org_project_idx").on(t.organizationId, t.projectId, t.createdAt)],
 );
 
+/* ---------------- Curation tags (Epic 8) ---------------- */
+
+export const assetTags = sqliteTable(
+  "asset_tag",
+  {
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    assetId: text("asset_id")
+      .notNull()
+      .references(() => assets.id, { onDelete: "cascade" }),
+    tag: text("tag").notNull(),
+    createdAt: ts("created_at"),
+  },
+  (t) => [
+    // PK(asset_id, tag) enforced in SQL (0008); org index for tag listings.
+    index("asset_tag_org_tag_idx").on(t.organizationId, t.tag),
+  ],
+);
+
 /* ---------------- Share grants (secure client galleries) ---------------- */
 
 export const shareGrants = sqliteTable(
