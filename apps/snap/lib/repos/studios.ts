@@ -100,3 +100,34 @@ export async function getStudioProfile(organizationId: string): Promise<StudioPr
     .limit(1);
   return rows[0] ?? null;
 }
+
+/** The studio's unique slug (used for its inbound email tag). */
+export async function getStudioSlug(organizationId: string): Promise<string> {
+  const db = getDb();
+  const rows = await db
+    .select({ slug: schema.organization.slug })
+    .from(schema.organization)
+    .where(eq(schema.organization.id, organizationId))
+    .limit(1);
+  return rows[0]?.slug ?? "";
+}
+
+/** Update the studio slug (validated: format + cross-tenant uniqueness). */
+export async function updateStudioSlug(
+  organizationId: string,
+  slug: string,
+): Promise<{ ok: true } | { ok: false; error: "invalid_format" | "taken" }> {
+  if (!/^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$/.test(slug)) return { ok: false, error: "invalid_format" };
+  const db = getDb();
+  const clash = await db
+    .select({ id: schema.organization.id })
+    .from(schema.organization)
+    .where(eq(schema.organization.slug, slug))
+    .limit(1);
+  if (clash[0] && clash[0].id !== organizationId) return { ok: false, error: "taken" };
+  await db
+    .update(schema.organization)
+    .set({ slug, updatedAt: new Date() })
+    .where(eq(schema.organization.id, organizationId));
+  return { ok: true };
+}

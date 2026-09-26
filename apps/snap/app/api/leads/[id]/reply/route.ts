@@ -8,7 +8,7 @@ import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { sendEmail } from "@/lib/email";
 import { safeHexColor } from "@/lib/embed";
-import { getStudioProfile } from "@/lib/repos/studios";
+import { getStudioProfile, getStudioSlug } from "@/lib/repos/studios";
 import { recordOutboundReply } from "@/lib/repos/leads";
 import { getOrgContext } from "@/lib/session";
 
@@ -47,10 +47,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const accent = safeHexColor(profile?.brand ? JSON.parse(profile.brand).accent : null) ?? "#5e6ad2";
   const firstName = lead.name.split(" ")[0] || "there";
   const subject = `Re: Your inquiry to ${studioName}`;
-  // Lead-scoped sub-address: client replies land on snap.webcules.com, route
-  // through the email worker, and thread into this lead exactly (no Reply-To
-  // diversion into the studio's private inbox).
-  const fromAddress = `hello+${lead.id}@snap.webcules.com`;
+  // Studio-slug sub-address: client replies land on snap.webcules.com, route
+  // through the email worker, and thread into the sender's lead (no Reply-To
+  // diversion into the studio's private inbox). Display name keeps clients
+  // seeing the studio, not the address.
+  const slug = (await getStudioSlug(ctx.organizationId)) || "studio";
+  const fromAddress = `${studioName} <hello+${slug}@snap.webcules.com>`;
 
   const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
   const html = `<!doctype html><html><body style="margin:0;padding:0;background:#f7f8f8;font-family:Inter,-apple-system,system-ui,'Segoe UI',Roboto,sans-serif;">

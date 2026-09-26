@@ -1,11 +1,12 @@
 /* Lead repository — inbox, threading, conversion. Every call is org-scoped
  * by the passed context; inbound email ingest matches sender→lead heuristically
  * (per-studio inbound addresses arrive with the embed-platform follow-up). */
-import { and, desc, eq, ilike, or } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, or } from "drizzle-orm";
 
 import { getD1, getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { createProjectForLead } from "./projects";
+import { stripQuotedReply } from "../strip-reply";
 
 export const LEAD_STATUSES = ["new", "replied", "converted", "archived"] as const;
 export type LeadStatus = (typeof LEAD_STATUSES)[number];
@@ -209,7 +210,7 @@ export async function ingestInboundEmail(payload: {
     leadId: result.leadId,
     direction: "in",
     subject: payload.subject,
-    body: (payload.text ?? payload.html ?? "").slice(0, 8000),
+    body: stripQuotedReply((payload.text ?? payload.html ?? "")).slice(0, 8000),
     providerId: payload.messageId,
   });
   await db

@@ -9,6 +9,7 @@ import { Input } from "@webcules/ui/components/input";
 import { Label } from "@webcules/ui/components/label";
 
 type Initial = {
+  slug: string;
   studioName: string;
   timezone: string;
   contactEmail: string;
@@ -23,6 +24,7 @@ export function SettingsForm({ initial }: { initial: Initial }) {
   const router = useRouter();
   const [profile, setProfile] = useState({
     studioName: initial.studioName,
+    slug: initial.slug,
     timezone: initial.timezone,
     contactEmail: initial.contactEmail,
     accentColor: initial.accentColor,
@@ -51,6 +53,7 @@ export function SettingsForm({ initial }: { initial: Initial }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         studioName: profile.studioName,
+        slug: profile.slug,
         timezone: profile.timezone,
         contactEmail: profile.contactEmail || undefined,
         accentColor: profile.accentColor,
@@ -123,6 +126,22 @@ export function SettingsForm({ initial }: { initial: Initial }) {
             <Label htmlFor="studioName">Studio name</Label>
             <Input id="studioName" value={profile.studioName}
               onChange={(e) => setProfile({ ...profile, studioName: e.target.value })} />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="slug">Reply address</Label>
+            <div className="flex items-center gap-1 font-mono text-xs text-ink-muted">
+              <span>hello+</span>
+              <input
+                id="slug"
+                value={profile.slug}
+                onChange={(e) => setProfile({ ...profile, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") })}
+                className="w-40 rounded-md border border-input bg-background px-2 py-1.5 font-mono text-xs text-ink"
+                minLength={3}
+                maxLength={40}
+              />
+              <span>@snap.webcules.com</span>
+            </div>
+            <p className="text-xs text-ink-tertiary">Customer replies thread into Snap via this address.</p>
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="timezone">Timezone</Label>

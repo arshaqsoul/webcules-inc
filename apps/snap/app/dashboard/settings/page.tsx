@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { SettingsForm } from "@/components/settings-form";
-import { getStudioProfile } from "@/lib/repos/studios";
+import { getStudioProfile, getStudioSlug } from "@/lib/repos/studios";
 import { getOrgContext } from "@/lib/session";
 
 export const metadata = { title: "Settings" };
@@ -11,6 +11,7 @@ export default async function SettingsPage() {
   if (!ctx) redirect("/login");
   const profile = await getStudioProfile(ctx.organizationId);
   if (!profile) redirect("/onboarding");
+  const slug = await getStudioSlug(ctx.organizationId);
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
@@ -20,6 +21,7 @@ export default async function SettingsPage() {
       </div>
       <SettingsForm
         initial={{
+          slug,
           studioName: profile.studioName,
           timezone: profile.timezone,
           contactEmail: profile.contactEmail ?? "",
