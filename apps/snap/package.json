@@ -10,8 +10,8 @@
     "deploy": "vinext-cloudflare deploy --config dist/server/wrangler.json",
     "preview": "vinext build && wrangler dev --config dist/server/wrangler.json",
     "typecheck": "tsc --noEmit",
-    "db:migrate": "wrangler d1 execute webcules-snap --local --file=./migrations/0001_init.sql",
-    "db:migrate:remote": "wrangler d1 execute webcules-snap --remote --file=./migrations/0001_init.sql"
+    "db:migrate": "wrangler d1 execute webcules-snap --local --file=./migrations/0002_auth_org_ratelimit.sql",
+    "db:migrate:remote": "wrangler d1 execute webcules-snap --remote --file=./migrations/0002_auth_org_ratelimit.sql"
   },
   "dependencies": {
     "@vinext/cloudflare": "latest",

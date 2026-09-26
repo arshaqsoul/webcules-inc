@@ -12,7 +12,7 @@
 import { sql } from "drizzle-orm";
 import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
-const ts = () => integer({ mode: "timestamp" }).notNull().default(sql`(unixepoch())`);
+const ts = (name: string) => integer(name, { mode: "timestamp" }).notNull().default(sql`(unixepoch())`);
 
 /* ---------------- Better Auth core ---------------- */
 
@@ -22,8 +22,8 @@ export const user = sqliteTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: integer("email_verified", { mode: "boolean" }).notNull().default(false),
   image: text("image"),
-  createdAt: ts(),
-  updatedAt: ts(),
+  createdAt: ts("created_at"),
+  updatedAt: ts("updated_at"),
 });
 
 export const session = sqliteTable("session", {
@@ -35,8 +35,10 @@ export const session = sqliteTable("session", {
   expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
   ipAddress: text("ip_address"),
   userAgent: text("user_agent"),
-  createdAt: ts(),
-  updatedAt: ts(),
+  /** Organization plugin: the staff member's active organization. */
+  activeOrganizationId: text("active_organization_id"),
+  createdAt: ts("created_at"),
+  updatedAt: ts("updated_at"),
 });
 
 export const account = sqliteTable("account", {
@@ -53,8 +55,8 @@ export const account = sqliteTable("account", {
   refreshTokenExpiresAt: integer("refresh_token_expires_at", { mode: "timestamp" }),
   scope: text("scope"),
   password: text("password"),
-  createdAt: ts(),
-  updatedAt: ts(),
+  createdAt: ts("created_at"),
+  updatedAt: ts("updated_at"),
 });
 
 export const verification = sqliteTable("verification", {
@@ -62,9 +64,23 @@ export const verification = sqliteTable("verification", {
   identifier: text("identifier").notNull(),
   value: text("value").notNull(),
   expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
-  createdAt: ts(),
-  updatedAt: ts(),
+  createdAt: ts("created_at"),
+  updatedAt: ts("updated_at"),
 });
+
+/* Better Auth rate limiting (storage: "database" — Workers are multi-isolate).
+ * lastRequest is written by better-auth as a raw epoch-ms NUMBER (not a Date),
+ * so the column is a plain integer — no timestamp mode mapping. */
+export const rateLimit = sqliteTable(
+  "rate_limit",
+  {
+    id: text("id").primaryKey(),
+    key: text("key").notNull(),
+    count: integer("count").notNull().default(0),
+    lastRequest: integer("last_request").notNull(),
+  },
+  (t) => [uniqueIndex("rate_limit_key_unique").on(t.key)],
+);
 
 /* ---------------- Better Auth organization plugin ---------------- */
 
@@ -76,8 +92,8 @@ export const organization = sqliteTable(
     slug: text("slug").notNull(),
     logo: text("logo"),
     metadata: text("metadata"),
-    createdAt: ts(),
-    updatedAt: ts(),
+    createdAt: ts("created_at"),
+    updatedAt: ts("updated_at"),
   },
   (t) => [uniqueIndex("organization_slug_unique").on(t.slug)],
 );
@@ -93,7 +109,7 @@ export const member = sqliteTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     role: text("role").notNull().default("member"),
-    createdAt: ts(),
+    createdAt: ts("created_at"),
   },
   (t) => [
     uniqueIndex("member_org_user_unique").on(t.organizationId, t.userId),
@@ -113,7 +129,7 @@ export const invitation = sqliteTable(
     status: text("status").notNull().default("pending"),
     expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
     inviterId: text("inviter_id"),
-    createdAt: ts(),
+    createdAt: ts("created_at"),
   },
   (t) => [index("invitation_org_email_idx").on(t.organizationId, t.email)],
 );
@@ -139,8 +155,8 @@ export const studioProfiles = sqliteTable("studio_profile", {
   /** JSON: { enabled: bool, retainDays?: number } — rejected auto-delete policy */
   rejectedPolicy: text("rejected_policy").notNull().default('{"enabled":false}'),
   exifStripDerived: integer("exif_strip_derived", { mode: "boolean" }).notNull().default(false),
-  createdAt: ts(),
-  updatedAt: ts(),
+  createdAt: ts("created_at"),
+  updatedAt: ts("updated_at"),
 });
 
 /* ---------------- Clients (per-studio records; same email, many studios) ---------------- */
@@ -158,8 +174,8 @@ export const clients = sqliteTable(
     /** Portal user this client record belongs to (linked on first login). */
     userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
     notes: text("notes"),
-    createdAt: ts(),
-    updatedAt: ts(),
+    createdAt: ts("created_at"),
+    updatedAt: ts("updated_at"),
   },
   (t) => [
     uniqueIndex("client_org_email_unique").on(t.organizationId, t.email),
@@ -187,8 +203,8 @@ export const leads = sqliteTable(
     /** new | replied | converted | archived */
     status: text("status").notNull().default("new"),
     embedOrigin: text("embed_origin"),
-    createdAt: ts(),
-    updatedAt: ts(),
+    createdAt: ts("created_at"),
+    updatedAt: ts("updated_at"),
   },
   (t) => [index("lead_org_status_idx").on(t.organizationId, t.status, t.createdAt)],
 );
@@ -209,7 +225,7 @@ export const leadMessages = sqliteTable(
     subject: text("subject"),
     body: text("body").notNull(),
     providerId: text("provider_id"),
-    createdAt: ts(),
+    createdAt: ts("created_at"),
   },
   (t) => [index("lead_message_lead_idx").on(t.organizationId, t.leadId, t.createdAt)],
 );
@@ -231,8 +247,8 @@ export const projects = sqliteTable(
     status: text("status").notNull().default("booked"),
     eventDate: integer("event_date", { mode: "timestamp" }),
     notes: text("notes"),
-    createdAt: ts(),
-    updatedAt: ts(),
+    createdAt: ts("created_at"),
+    updatedAt: ts("updated_at"),
   },
   (t) => [index("project_org_status_idx").on(t.organizationId, t.status, t.createdAt)],
 );
@@ -251,7 +267,7 @@ export const projectStatusEvents = sqliteTable(
     toStatus: text("to_status").notNull(),
     actorId: text("actor_id").references(() => user.id, { onDelete: "set null" }),
     note: text("note"),
-    createdAt: ts(),
+    createdAt: ts("created_at"),
   },
   (t) => [index("pse_project_idx").on(t.organizationId, t.projectId, t.createdAt)],
 );
@@ -272,7 +288,7 @@ export const availabilityRules = sqliteTable(
     slotMinutes: integer("slot_minutes").notNull().default(60),
     bufferMinutes: integer("buffer_minutes").notNull().default(0),
     active: integer("active", { mode: "boolean" }).notNull().default(true),
-    createdAt: ts(),
+    createdAt: ts("created_at"),
   },
   (t) => [index("availability_org_idx").on(t.organizationId, t.weekday)],
 );
@@ -287,7 +303,7 @@ export const blackoutDates = sqliteTable(
     /** YYYY-MM-DD in studio timezone */
     date: text("date").notNull(),
     reason: text("reason"),
-    createdAt: ts(),
+    createdAt: ts("created_at"),
   },
   (t) => [uniqueIndex("blackout_org_date_unique").on(t.organizationId, t.date)],
 );
@@ -310,8 +326,8 @@ export const bookings = sqliteTable(
     /** unpaid | deposit_paid | paid */
     paymentStatus: text("payment_status").notNull().default("unpaid"),
     notes: text("notes"),
-    createdAt: ts(),
-    updatedAt: ts(),
+    createdAt: ts("created_at"),
+    updatedAt: ts("updated_at"),
   },
   (t) => [index("booking_org_start_idx").on(t.organizationId, t.startAt)],
 );
@@ -344,7 +360,7 @@ export const assets = sqliteTable(
     previewKey: text("preview_key"),
     exifStripped: integer("exif_stripped", { mode: "boolean" }).notNull().default(false),
     uploadedBy: text("uploaded_by").references(() => user.id, { onDelete: "set null" }),
-    createdAt: ts(),
+    createdAt: ts("created_at"),
   },
   (t) => [index("asset_org_project_idx").on(t.organizationId, t.projectId, t.createdAt)],
 );
@@ -370,7 +386,7 @@ export const shareGrants = sqliteTable(
     parentGrantId: text("parent_grant_id"),
     createdById: text("created_by_id").references(() => user.id, { onDelete: "set null" }),
     revokedAt: integer("revoked_at", { mode: "timestamp" }),
-    createdAt: ts(),
+    createdAt: ts("created_at"),
   },
   (t) => [index("share_grant_org_project_idx").on(t.organizationId, t.projectId, t.status)],
 );
@@ -384,7 +400,7 @@ export const shareGrantAssets = sqliteTable(
     assetId: text("asset_id")
       .notNull()
       .references(() => assets.id, { onDelete: "cascade" }),
-    addedAt: ts(),
+    addedAt: ts("added_at"),
   },
   (t) => [
     index("share_grant_asset_pk_idx").on(t.grantId, t.assetId),
@@ -403,7 +419,7 @@ export const shareAccessLogs = sqliteTable(
     event: text("event").notNull(),
     ip: text("ip"),
     userAgent: text("user_agent"),
-    createdAt: ts(),
+    createdAt: ts("created_at"),
   },
   (t) => [index("share_access_log_grant_idx").on(t.grantId, t.createdAt)],
 );
@@ -428,7 +444,7 @@ export const payments = sqliteTable(
     /** pending | succeeded | failed | refunded */
     status: text("status").notNull().default("pending"),
     occurredAt: integer("occurred_at", { mode: "timestamp" }),
-    createdAt: ts(),
+    createdAt: ts("created_at"),
   },
   (t) => [index("payment_org_project_idx").on(t.organizationId, t.projectId)],
 );
@@ -455,7 +471,7 @@ export const invoices = sqliteTable(
     dueAt: integer("due_at", { mode: "timestamp" }),
     /** R2 key of the generated branded PDF (org-prefixed). */
     pdfKey: text("pdf_key"),
-    createdAt: ts(),
+    createdAt: ts("created_at"),
   },
   (t) => [uniqueIndex("invoice_org_number_unique").on(t.organizationId, t.number)],
 );
@@ -475,7 +491,7 @@ export const emailLog = sqliteTable(
     refId: text("ref_id"),
     providerId: text("provider_id"),
     status: text("status").notNull().default("sent"),
-    createdAt: ts(),
+    createdAt: ts("created_at"),
   },
   (t) => [index("email_log_org_idx").on(t.organizationId, t.createdAt)],
 );
@@ -496,7 +512,7 @@ export const auditLog = sqliteTable(
     ip: text("ip"),
     userAgent: text("user_agent"),
     meta: text("meta").notNull().default("{}"),
-    createdAt: ts(),
+    createdAt: ts("created_at"),
   },
   (t) => [index("audit_log_org_idx").on(t.organizationId, t.createdAt)],
 );
