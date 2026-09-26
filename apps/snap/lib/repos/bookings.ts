@@ -258,5 +258,33 @@ export async function confirmBookingPaid(params: {
       meta: JSON.stringify({ projectId }),
     }),
   ]);
+
+  // WEB-136: booking-confirmed client email (per-studio opt-out respected).
+  try {
+    const { sendEmail, bookingConfirmedClientEmail } = await import("@/lib/email");
+    const { getStudioProfile } = await import("@/lib/repos/studios");
+    const { clientWantsEmail } = await import("@/lib/notify-client");
+    const profile = await getStudioProfile(params.organizationId);
+    if (profile && (await clientWantsEmail(params.organizationId, booking.clientEmail))) {
+      const brand = JSON.parse(profile.brand || "{}") as { accent?: string };
+      const { safeHexColor } = await import("@/lib/embed");
+      const tmpl = bookingConfirmedClientEmail(profile.studioName, {
+        accent: safeHexColor(brand.accent) ?? "#5e6ad2",
+        when: booking.startAt,
+        portalUrl: "https://snap.webcules.com/portal/login",
+      });
+      await sendEmail({
+        to: booking.clientEmail,
+        subject: tmpl.subject,
+        html: tmpl.html,
+        text: tmpl.text,
+        organizationId: params.organizationId,
+        template: "client.booking_confirmed",
+        refId: booking.id,
+      });
+    }
+  } catch (err) {
+    console.error("booking-confirmed client email failed:", String(err)); // never break payment flow
+  }
   return { ok: true, booking };
 }

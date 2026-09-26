@@ -4,6 +4,7 @@
 import { galleryLinkEmail, galleryOtpEmail, sendEmail } from "@/lib/email";
 import { getStudioProfile, getStudioSlug } from "@/lib/repos/studios";
 import { safeHexColor } from "@/lib/embed";
+import { clientWantsEmail } from "@/lib/notify-client";
 
 export async function sendGrantEmail(params: {
   organizationId: string;
@@ -17,6 +18,9 @@ export async function sendGrantEmail(params: {
 }): Promise<boolean> {
   const profile = await getStudioProfile(params.organizationId);
   if (!profile) return false;
+  // WEB-136: per-studio client opt-out — the gallery itself stays live and
+  // visible in the portal; only the notification email is suppressed.
+  if (!(await clientWantsEmail(params.organizationId, params.clientEmail))) return false;
   const brand = JSON.parse(profile.brand || "{}") as { accent?: string };
   const accent = safeHexColor(brand.accent) ?? "#5e6ad2";
   const tmpl = galleryLinkEmail(profile.studioName, {

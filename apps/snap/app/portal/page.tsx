@@ -11,7 +11,7 @@ import { getClientRows } from "@/lib/portal";
 import { resolvePortalSession } from "@/lib/portal-auth";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { safeHexColor } from "@/lib/embed";
-import { PortalSignOut } from "@/components/portal-dashboard";
+import { NotifyToggle, PortalSignOut } from "@/components/portal-dashboard";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Your studios — Snap", robots: { index: false } };
@@ -109,7 +109,8 @@ export default async function PortalPage() {
                   {s!.profile.studioName.slice(0, 1)}
                 </span>
               )}
-              <span className="text-base font-medium text-ink">{s!.profile.studioName}</span>
+              <span className="min-w-0 flex-1 truncate text-base font-medium text-ink">{s!.profile.studioName}</span>
+              <NotifyToggle organizationId={s!.client.organizationId} initial={s!.client.notify} />
             </div>
             <div className="grid grid-cols-3 divide-x divide-hairline border-b border-hairline text-center">
               <div className="px-3 py-3">

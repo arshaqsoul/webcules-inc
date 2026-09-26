@@ -101,6 +101,44 @@ export async function transitionProject(params: {
       note: params.note ?? null,
     }),
   ]);
+
+  // WEB-136: photos-delivered milestone — the one status change clients care
+  // about. Per-studio opt-out respected; failures never block the transition.
+  if (params.toStatus === "complete" && project.clientId) {
+    try {
+      const { sendEmail, projectCompleteClientEmail } = await import("@/lib/email");
+      const { getStudioProfile } = await import("@/lib/repos/studios");
+      const { clientWantsEmail } = await import("@/lib/notify-client");
+      const { safeHexColor } = await import("@/lib/embed");
+      const client = (
+        await getDb()
+          .select({ email: schema.clients.email })
+          .from(schema.clients)
+          .where(eq(schema.clients.id, project.clientId))
+          .limit(1)
+      )[0];
+      const profile = await getStudioProfile(params.organizationId);
+      if (client && profile && (await clientWantsEmail(params.organizationId, client.email))) {
+        const brand = JSON.parse(profile.brand || "{}") as { accent?: string };
+        const tmpl = projectCompleteClientEmail(profile.studioName, {
+          accent: safeHexColor(brand.accent) ?? "#5e6ad2",
+          projectTitle: project.title,
+          portalUrl: "https://snap.webcules.com/portal/login",
+        });
+        await sendEmail({
+          to: client.email,
+          subject: tmpl.subject,
+          html: tmpl.html,
+          text: tmpl.text,
+          organizationId: params.organizationId,
+          template: "client.project_complete",
+          refId: params.projectId,
+        });
+      }
+    } catch (err) {
+      console.error("project-complete client email failed:", String(err));
+    }
+  }
   return { ok: true };
 }
 

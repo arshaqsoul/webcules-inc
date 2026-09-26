@@ -374,6 +374,46 @@ export function portalStaffRedirectEmail(dashboardUrl: string): { subject: strin
   };
 }
 
+/** Booking confirmed (WEB-136) — payment landed, the slot is locked in. */
+export function bookingConfirmedClientEmail(studioName: string, params: {
+  accent: string;
+  when: Date;
+  portalUrl: string;
+}): { subject: string; html: string; text: string } {
+  return {
+    subject: `Your session is booked with ${studioName}`,
+    html: shell(
+      params.accent,
+      "You're booked!",
+      `<p style="margin:0 0 16px;"><strong style="color:#0f1011;">${studioName}</strong> has confirmed your session for <strong style="color:#0f1011;">${params.when.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</strong> at ${params.when.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}.</p>
+       <p style="margin:0 0 16px;">Payment is confirmed — nothing more to do. You can follow your project any time from your Snap portal.</p>
+       <p style="margin:24px 0 0;"><a href="${params.portalUrl}" style="display:inline-block;background:${params.accent};color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">Open your portal</a></p>`,
+      `You can turn these emails off per studio inside your Snap portal.`,
+    ),
+    text: `${studioName} confirmed your session for ${params.when.toLocaleString()}. Portal: ${params.portalUrl}`,
+  };
+}
+
+/** Photos delivered — project marked complete (WEB-136). */
+export function projectCompleteClientEmail(studioName: string, params: {
+  accent: string;
+  projectTitle: string;
+  portalUrl: string;
+}): { subject: string; html: string; text: string } {
+  return {
+    subject: `Your photos from ${studioName} are ready`,
+    html: shell(
+      params.accent,
+      "Your photos are ready 🎉",
+      `<p style="margin:0 0 16px;">Your project <strong style="color:#0f1011;">${params.projectTitle}</strong> with <strong style="color:#0f1011;">${studioName}</strong> has been marked delivered.</p>
+       <p style="margin:0 0 16px;">Any galleries they've shared with you are live now — open your portal to view and download.</p>
+       <p style="margin:24px 0 0;"><a href="${params.portalUrl}" style="display:inline-block;background:${params.accent};color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">View your photos</a></p>`,
+      `You can turn these emails off per studio inside your Snap portal.`,
+    ),
+    text: `${studioName} marked "${params.projectTitle}" as delivered. Portal: ${params.portalUrl}`,
+  };
+}
+
 /** Gallery OTP — big friendly code, short-lived. */
 export function galleryOtpEmail(studioName: string, params: {
   code: string;
