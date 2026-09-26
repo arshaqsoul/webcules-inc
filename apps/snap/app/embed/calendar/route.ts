@@ -128,6 +128,11 @@ export async function GET(req: Request) {
 <script>
 (function () {
   var origin = ${JSON.stringify(url.origin)};
+  // postMessage target: the EMBEDDING site's origin (referrer), never snap's
+  // own — a snap-origin targetOrigin makes browsers drop the message on
+  // cross-origin hosts, silently breaking checkout redirects + auto-height.
+  var hostOrigin = null;
+  try { if (document.referrer) hostOrigin = new URL(document.referrer).origin; } catch (e) {}
   var key = ${JSON.stringify(studio.embedKey)};
   var tz = ${JSON.stringify(tz)};
   var studioName = ${JSON.stringify(studio.studioName)};
@@ -147,7 +152,7 @@ export async function GET(req: Request) {
   tzEl.textContent = visitorTz === tz ? tz : "times in " + tz;
 
   function postHeight() {
-    parent.postMessage({ type: "snap:height", height: document.documentElement.scrollHeight }, origin);
+    parent.postMessage({ type: "snap:height", height: document.documentElement.scrollHeight }, hostOrigin || "*");
   }
   window.addEventListener("load", postHeight);
   window.addEventListener("resize", postHeight);
@@ -272,7 +277,13 @@ export async function GET(req: Request) {
       if (res.ok && body.checkoutUrl) {
         msg.className = "msg ok";
         msg.textContent = "Redirecting to secure payment…";
-        parent.postMessage({ type: "snap:checkout", url: body.checkoutUrl }, origin);
+        if (window.parent === window) {
+          window.location.href = body.checkoutUrl;
+        } else if (hostOrigin) {
+          parent.postMessage({ type: "snap:checkout", url: body.checkoutUrl }, hostOrigin);
+        } else {
+          try { window.top.location.href = body.checkoutUrl; } catch (e) { /* no referrer + nested: loader handles */ }
+        }
       } else if (res.ok) {
         document.getElementById("panel").hidden = true;
         msg.className = "msg ok";

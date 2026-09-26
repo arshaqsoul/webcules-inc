@@ -100,9 +100,13 @@ export async function GET(req: Request) {
 <script>
 (function () {
   var origin = ${JSON.stringify(formOrigin)};
+  // postMessage target: the embedding site's origin (referrer) — a snap-origin
+  // targetOrigin makes browsers drop the message on cross-origin hosts.
+  var hostOrigin = null;
+  try { if (document.referrer) hostOrigin = new URL(document.referrer).origin; } catch (e) {}
   var key = ${JSON.stringify(studio.embedKey)};
   function postHeight() {
-    parent.postMessage({ type: "snap:height", height: document.documentElement.scrollHeight }, origin);
+    parent.postMessage({ type: "snap:height", height: document.documentElement.scrollHeight }, hostOrigin || "*");
   }
   window.addEventListener("load", postHeight);
   window.addEventListener("resize", postHeight);

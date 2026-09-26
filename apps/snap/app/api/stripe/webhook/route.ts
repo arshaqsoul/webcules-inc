@@ -79,6 +79,8 @@ export async function POST(req: Request) {
             organizationId,
             stripePaymentIntentId:
               typeof session.payment_intent === "string" ? session.payment_intent : null,
+            amountMinor: session.amount_total ?? null,
+            currency: session.currency ?? null,
           });
         }
         break;

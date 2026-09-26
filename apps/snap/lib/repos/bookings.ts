@@ -179,6 +179,8 @@ export async function confirmBookingPaid(params: {
   bookingId: string;
   organizationId: string;
   stripePaymentIntentId: string | null;
+  amountMinor?: number | null;
+  currency?: string | null;
 }): Promise<{ ok: boolean; booking?: typeof schema.bookings.$inferSelect }> {
   const db = getDb();
   const booking = (
@@ -241,7 +243,8 @@ export async function confirmBookingPaid(params: {
       projectId,
       stripePaymentIntentId: params.stripePaymentIntentId,
       kind: "booking",
-      amountMinor: 0, // reconciled from the Stripe session by a follow-up retrieve if needed
+      amountMinor: params.amountMinor ?? 0,
+      currency: params.currency ?? "usd",
       status: "succeeded",
       occurredAt: new Date(),
     }),
