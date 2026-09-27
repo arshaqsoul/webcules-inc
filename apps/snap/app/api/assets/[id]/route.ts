@@ -5,6 +5,7 @@
  * inline/attachment modes; gallery downloads respect the grant's policy. */
 import { getObject } from "@/lib/storage/service";
 import { deleteAsset, getAsset, setAssetStatus } from "@/lib/repos/assets";
+import { stripJpegExif } from "@/lib/exif";
 import { getOrgContext } from "@/lib/session";
 import { clientIp, logShareAccess, resolveGalleryAccess } from "@/lib/shares/gallery-auth";
 import { assetInGrant, getGrantById } from "@/lib/shares/grants";
@@ -119,6 +120,31 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       await logShareAccess(grant.id, "download", req);
     }
     const dk = variantKey(asset, url.searchParams.get("variant"));
+
+    // WEB-172: original JPEG downloads from a client gallery are delivered
+    // EXIF/GPS-free. Derivatives are metadata-free by construction; staff
+    // downloads keep the photographer's originals untouched.
+    if (wantsDownload && grant.allowDownload && !dk && asset.mimeType === "image/jpeg") {
+      const object = await getObject(asset.organizationId, asset.storageKey);
+      if (object) {
+        const bytes = await new Response(object.body).arrayBuffer();
+        const stripped = stripJpegExif(bytes);
+        const filename = encodeURIComponent(asset.filename);
+        const headers = new Headers({
+          "Content-Type": object.httpMetadata?.contentType ?? asset.mimeType,
+          "Cache-Control": "private, max-age=60",
+          "Content-Disposition": `attachment; filename*=UTF-8''${filename}`,
+        });
+        if (stripped) {
+          headers.set("Content-Length", String(stripped.byteLength));
+          headers.set("X-Snap-Exif", "stripped");
+          return new Response(stripped.buffer as ArrayBuffer, { headers });
+        }
+        headers.set("Content-Length", String(bytes.byteLength));
+        return new Response(bytes, { headers });
+      }
+    }
+
     return serveAsset(req, dk ? { ...asset, storageKey: dk, mimeType: "image/jpeg" } : asset, grant.allowDownload);
   }
 
