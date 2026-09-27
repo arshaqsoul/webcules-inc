@@ -72,12 +72,19 @@ export async function listPayments(
   }));
 }
 
-/** Issue a Stripe refund; the webhook finalizes status + booking cancel. */
+/** Issue a Stripe refund; the webhook finalizes status + booking/project
+ * cancel + client email. Guards: no refund once the linked project's work
+ * has begun (snapping or later), and disputed payments are frozen while the
+ * Stripe dispute resolves. */
 export async function refundPayment(
   organizationId: string,
   paymentId: string,
   actorUserId: string,
-): Promise<{ ok: true } | { ok: false; error: "not_found" | "no_intent" | "already_refunded" | "stripe_failed" }> {
+  opts: { contentPolicy?: "keep" | "delete_now" } = {},
+): Promise<
+  | { ok: true }
+  | { ok: false; error: "not_found" | "no_intent" | "already_refunded" | "stripe_failed" | "project_stage_blocked" | "dispute_frozen" }
+> {
   const db = getDb();
   const payment = (
     await db
@@ -88,7 +95,23 @@ export async function refundPayment(
   )[0];
   if (!payment) return { ok: false, error: "not_found" };
   if (payment.status === "refunded") return { ok: false, error: "already_refunded" };
+  if (payment.status === "disputed") return { ok: false, error: "dispute_frozen" };
   if (!payment.stripePaymentIntentId) return { ok: false, error: "no_intent" };
+
+  // Pipeline guard: once work has begun the studio delivers value — refunds
+  // are a pre-production remedy. (Flag-configurable post-launch.)
+  if (payment.projectId) {
+    const project = (
+      await db
+        .select({ status: schema.projects.status })
+        .from(schema.projects)
+        .where(and(eq(schema.projects.id, payment.projectId), eq(schema.projects.organizationId, organizationId)))
+        .limit(1)
+    )[0];
+    if (project && ["snapping", "evaluation", "complete", "closed"].includes(project.status)) {
+      return { ok: false, error: "project_stage_blocked" };
+    }
+  }
 
   const stripe = await getStripe();
   if (!stripe) return { ok: false, error: "stripe_failed" };
@@ -107,6 +130,38 @@ export async function refundPayment(
     .set({ status: "refunding" })
     .where(eq(schema.payments.id, paymentId));
 
+  // Content policy (explicit choice, audited): revoke live galleries and
+  // delete the project's uploaded files — assets inside an active grant at
+  // refund time are protected by the same share guard as manual deletes.
+  if (opts.contentPolicy === "delete_now" && payment.projectId) {
+    const { deleteAsset, listAssets } = await import("@/lib/repos/assets");
+    const { listProjectGrants, revokeShareGrant } = await import("@/lib/shares/grants");
+    const grants = await listProjectGrants(organizationId, payment.projectId);
+    for (const grant of grants) {
+      if (grant.status === "active") {
+        await revokeShareGrant({ organizationId, grantId: grant.id, actorUserId }).catch(() => undefined);
+      }
+    }
+    const assets = await listAssets(organizationId, payment.projectId);
+    let deleted = 0;
+    let blocked = 0;
+    for (const asset of assets) {
+      const r = await deleteAsset(organizationId, asset.id);
+      if (r.ok) deleted++;
+      else blocked++;
+    }
+    await db.insert(schema.auditLog).values({
+      id: crypto.randomUUID(),
+      organizationId,
+      actorType: "user",
+      actorId: actorUserId,
+      action: "project.content_deleted",
+      targetType: "project",
+      targetId: payment.projectId,
+      meta: JSON.stringify({ reason: "refund_delete_now", deleted, blocked, grantsRevoked: grants.filter((g) => g.status === "active").length }),
+    });
+  }
+
   await db.insert(schema.auditLog).values({
     id: crypto.randomUUID(),
     organizationId,
@@ -115,7 +170,11 @@ export async function refundPayment(
     action: "payment.refund_requested",
     targetType: "payment",
     targetId: paymentId,
-    meta: JSON.stringify({ paymentIntent: payment.stripePaymentIntentId, projectId: payment.projectId }),
+    meta: JSON.stringify({
+      paymentIntent: payment.stripePaymentIntentId,
+      projectId: payment.projectId,
+      contentPolicy: opts.contentPolicy ?? "keep",
+    }),
   });
   return { ok: true };
 }

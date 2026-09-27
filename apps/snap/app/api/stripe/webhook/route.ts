@@ -4,8 +4,9 @@
  * Events (register exactly these in Stripe):
  *   checkout.session.completed      → booking payment confirmed
  *   payment_intent.payment_failed   → payment marked failed
- *   charge.refunded                 → refund: payment refunded + booking canceled + email
- *   charge.dispute.created          → flagged in audit log
+ *   charge.refunded                 → refund: payment refunded + booking + project canceled + email
+ *   charge.dispute.created          → payment flagged disputed (refunds frozen)
+ *   charge.dispute.closed           → dispute outcome recorded (won restores, lost stays flagged)
  *   account.updated                 → Connect onboarding state refresh (Epic 14)
  */
 import { and, eq } from "drizzle-orm";
@@ -14,7 +15,7 @@ import { env } from "cloudflare:workers";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
-import { bookingCanceledEmail, sendEmail } from "@/lib/email";
+import { refundClientEmail, sendEmail } from "@/lib/email";
 import { safeHexColor } from "@/lib/embed";
 import { applySubscriptionState } from "@/lib/billing";
 import { cancelBooking, confirmBookingPaid } from "@/lib/repos/bookings";
@@ -122,7 +123,7 @@ export async function POST(req: Request) {
         // Booking sits on the payment's project (booking.projectId ↔ project.bookingId).
         const project = (
           await db
-            .select({ bookingId: schema.projects.bookingId })
+            .select({ bookingId: schema.projects.bookingId, status: schema.projects.status, title: schema.projects.title })
             .from(schema.projects)
             .where(eq(schema.projects.id, payment.projectId))
             .limit(1)
@@ -137,6 +138,37 @@ export async function POST(req: Request) {
             )[0]
           : undefined;
 
+        // WEB-141: the refund cancels the whole project too — otherwise it
+        // lingers and the cron keeps advancing it. Canceled/closed projects
+        // keep their status (a closed project with a late refund stays closed).
+        const cancelProject = (() => {
+          if (!project || ["canceled", "closed"].includes(project.status)) return [];
+          return [
+            db
+              .update(schema.projects)
+              .set({ status: "canceled", updatedAt: new Date() })
+              .where(eq(schema.projects.id, payment.projectId)),
+            db.insert(schema.projectStatusEvents).values({
+              id: crypto.randomUUID(),
+              organizationId: payment.organizationId,
+              projectId: payment.projectId,
+              fromStatus: project.status,
+              toStatus: "canceled",
+              actorId: null,
+              note: "Automatic: refund issued",
+            }),
+            db.insert(schema.auditLog).values({
+              id: crypto.randomUUID(),
+              organizationId: payment.organizationId,
+              actorType: "system",
+              action: "project.auto_canceled_refund",
+              targetType: "project",
+              targetId: payment.projectId,
+              meta: JSON.stringify({ paymentId: payment.id }),
+            }),
+          ];
+        })();
+
         await db.batch([
           db
             .update(schema.payments)
@@ -150,34 +182,90 @@ export async function POST(req: Request) {
                   .where(eq(schema.bookings.id, booking.id)),
               ]
             : []),
+          ...cancelProject,
         ]);
 
         // Canceled bookings free their slot (conflict query excludes canceled).
-        if (booking) {
-          const profile = await getStudioProfile(payment.organizationId);
-          if (profile) {
-            const accent = safeHexColor(JSON.parse(profile.brand || "{}").accent) ?? "#5e6ad2";
-            const template = bookingCanceledEmail(profile.studioName, {
-              clientName: booking.clientName ?? booking.clientEmail,
-              startAt: booking.startAt,
-              tz: booking.timezone,
-              accent,
-            });
-            await sendEmail({
-              to: booking.clientEmail,
-              subject: template.subject,
-              html: template.html,
-              text: template.text,
-              organizationId: payment.organizationId,
-              template: "booking.canceled_client",
-              refId: booking.id,
-            });
-          }
+        // WEB-141: the email states what happens to the booking, the project,
+        // and its content (deleted vs galleries-until-expiry).
+        const profile = await getStudioProfile(payment.organizationId);
+        if (profile && booking) {
+          const accent = safeHexColor(JSON.parse(profile.brand || "{}").accent) ?? "#5e6ad2";
+          const contentDeleted =
+            (
+              await db
+                .select({ id: schema.auditLog.id })
+                .from(schema.auditLog)
+                .where(
+                  and(
+                    eq(schema.auditLog.organizationId, payment.organizationId),
+                    eq(schema.auditLog.action, "project.content_deleted"),
+                    eq(schema.auditLog.targetType, "project"),
+                    eq(schema.auditLog.targetId, payment.projectId),
+                  ),
+                )
+                .limit(1)
+            ).length > 0;
+          const amountLabel = new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: payment.currency.toUpperCase(),
+          }).format(payment.amountMinor / 100);
+          const template = refundClientEmail(profile.studioName, {
+            clientName: booking.clientName ?? booking.clientEmail,
+            startAt: booking.startAt,
+            tz: booking.timezone,
+            accent,
+            amountLabel,
+            projectTitle: project?.title ?? null,
+            contentDeleted,
+          });
+          await sendEmail({
+            to: booking.clientEmail,
+            subject: template.subject,
+            html: template.html,
+            text: template.text,
+            organizationId: payment.organizationId,
+            template: "booking.refund_client",
+            refId: booking.id,
+          });
         }
         break;
       }
-      case "charge.dispute.created": {
-        console.error("stripe dispute opened — event:", event.id);
+      case "charge.dispute.created":
+      case "charge.dispute.closed": {
+        // WEB-141: disputes freeze refund actions (refundPayment blocks on
+        // "disputed") and are flagged on the payment + project via audit.
+        const dispute = event.data.object as Stripe.Dispute;
+        const intentId = typeof dispute.payment_intent === "string" ? dispute.payment_intent : null;
+        if (!intentId) break;
+        const payment = (
+          await db
+            .select({ id: schema.payments.id, projectId: schema.payments.projectId, organizationId: schema.payments.organizationId })
+            .from(schema.payments)
+            .where(eq(schema.payments.stripePaymentIntentId, intentId))
+            .limit(1)
+        )[0];
+        if (!payment) break;
+
+        const closed = event.type === "charge.dispute.closed";
+        // A won dispute restores the payment; a lost one ends disputed (Stripe
+        // has already pulled the funds back — the row stays flagged).
+        const nextStatus = closed ? (dispute.status === "lost" ? "dispute_lost" : "succeeded") : "disputed";
+        await db.batch([
+          db
+            .update(schema.payments)
+            .set({ status: nextStatus })
+            .where(eq(schema.payments.id, payment.id)),
+          db.insert(schema.auditLog).values({
+            id: crypto.randomUUID(),
+            organizationId: payment.organizationId,
+            actorType: "system",
+            action: closed ? "payment.dispute_closed" : "payment.dispute_opened",
+            targetType: payment.projectId ? "project" : "payment",
+            targetId: payment.projectId ?? payment.id,
+            meta: JSON.stringify({ disputeId: dispute.id, reason: dispute.reason ?? null, outcome: closed ? dispute.status : null, paymentId: payment.id }),
+          }),
+        ]);
         break;
       }
       case "account.updated": {

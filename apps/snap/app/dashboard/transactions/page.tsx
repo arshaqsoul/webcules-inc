@@ -12,6 +12,8 @@ const STATUS_TONE: Record<string, string> = {
   succeeded: "bg-success/10 text-success-text",
   failed: "bg-destructive/10 text-destructive",
   refunded: "bg-surface-2 text-ink-subtle",
+  disputed: "bg-destructive/15 font-medium text-destructive",
+  dispute_lost: "bg-destructive/15 font-medium text-destructive",
 };
 
 function money(amountMinor: number, currency: string): string {

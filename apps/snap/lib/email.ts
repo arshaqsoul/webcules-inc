@@ -195,6 +195,43 @@ export function bookingCanceledEmail(studioName: string, params: {
   };
 }
 
+/** Refund confirmation (WEB-141) — sent when charge.refunded lands: states
+ * what happens to the booking, the project, and its content. */
+export function refundClientEmail(studioName: string, params: {
+  clientName: string;
+  startAt: Date | null;
+  tz: string;
+  accent: string;
+  amountLabel: string;
+  projectTitle: string | null;
+  contentDeleted: boolean;
+}): { subject: string; html: string; text: string } {
+  const when = params.startAt
+    ? new Intl.DateTimeFormat("en-US", {
+        timeZone: params.tz, weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit",
+      }).format(params.startAt)
+    : null;
+  const sessionLine = when ? ` for <strong style="color:#0f1011;">${when}</strong>` : "";
+  const projectLine = params.projectTitle
+    ? ` The project <strong style="color:#0f1011;">${params.projectTitle}</strong> has been canceled as well.`
+    : " The project has been canceled as well.";
+  const contentLine = params.contentDeleted
+    ? " The uploaded photos from this project have been deleted."
+    : " Any gallery links you received stay available until they expire.";
+  return {
+    subject: `Refund processed — ${studioName}`,
+    html: shell(
+      params.accent,
+      "Refund processed",
+      `<p style="margin:0 0 12px;">Hi ${params.clientName}, a refund of <strong style="color:#0f1011;">${params.amountLabel}</strong> has been issued.</p>
+       <p style="margin:0 0 12px;">Your session with <strong style="color:#0f1011;">${studioName}</strong>${sessionLine} has been canceled.${projectLine}${contentLine}</p>
+       <p style="margin:0;">Refunds take 5–10 business days to appear on your statement. Questions? Just reply to this email.</p>`,
+      `Sent by ${studioName} via Snap.`,
+    ),
+    text: `Hi ${params.clientName}, a refund of ${params.amountLabel} has been issued. Your session with ${studioName}${when ? ` on ${when}` : ""} has been canceled.${params.projectTitle ? ` The project ${params.projectTitle} has been canceled as well.` : ""}${params.contentDeleted ? " The uploaded photos from this project have been deleted." : " Any gallery links you received stay available until they expire."} Refunds take 5-10 business days to appear on your statement.`,
+  };
+}
+
 /** Usage warning (WEB-150) — 90% of plan storage / overage zone entry. */
 export function usageWarningEmail(studioName: string, params: {
   usedLabel: string; capLabel: string; pct: number; planName: string; settingsUrl: string; accent: string;

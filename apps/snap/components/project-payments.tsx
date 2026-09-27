@@ -36,6 +36,8 @@ const STATUS_TONE: Record<string, string> = {
   succeeded: "bg-success/10 text-success-text",
   failed: "bg-destructive/10 text-destructive",
   refunded: "bg-surface-2 text-ink-subtle",
+  disputed: "bg-destructive/15 font-medium text-destructive",
+  dispute_lost: "bg-destructive/15 font-medium text-destructive",
 };
 
 const SUMMARY_TONE: Record<PaymentSummary["status"], string> = {
@@ -73,20 +75,47 @@ export function ProjectPayments({ projectId, payments, summary }: { projectId: s
   );
 
   async function refund(id: string) {
-    if (!(await confirm({ title: "Refund payment?", body: "Refund this payment in full? The booking will be canceled and the client emailed.", destructive: true }))) return;
+    if (
+      !(await confirm({
+        title: "Refund payment?",
+        body: "Refund this payment in full? The booking and project will be canceled and the client emailed.",
+        destructive: true,
+      }))
+    ) {
+      return;
+    }
+    // WEB-141: explicit content policy at refund time — delete the project's
+    // files now, or keep galleries until they expire.
+    const deleteNow = await confirm({
+      title: "Delete the project's photos too?",
+      body: "Delete now revokes client galleries and removes the uploaded files. Keep leaves any gallery links available until they expire.",
+      confirmLabel: "Delete now",
+    });
     setBusy(id);
     setError("");
     try {
-      const res = await fetch(`/api/payments/${id}/refund`, { method: "POST" });
+      const res = await fetch(`/api/payments/${id}/refund`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contentPolicy: deleteNow ? "delete_now" : "keep" }),
+      });
       const body = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {
         setError(
           body.error === "already_refunded"
             ? "Already refunded."
-            : "Refund failed — check that Stripe can process it, then retry.",
+            : body.error === "project_stage_blocked"
+              ? "No refund once work has begun — this project has moved past Booked."
+              : body.error === "dispute_frozen"
+                ? "This payment is under a Stripe dispute — refunds are frozen until it resolves."
+                : "Refund failed — check that Stripe can process it, then retry.",
         );
       } else {
-        setNotice("Refund issued — it shows as Refunding now and confirms once Stripe processes it.");
+        setNotice(
+          deleteNow
+            ? "Refund issued — galleries revoked and files deleted; the client has been emailed."
+            : "Refund issued — it shows as Refunding now and confirms once Stripe processes it.",
+        );
         router.refresh();
       }
     } catch {
