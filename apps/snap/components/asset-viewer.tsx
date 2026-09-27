@@ -23,6 +23,8 @@ export type ViewerItem = {
   width: number | null;
   height: number | null;
   exifStripped: boolean;
+  stars: number;
+  color: number;
   tags: string[];
   createdAt: string;
 };
@@ -104,12 +106,19 @@ export function AssetViewer({
   onIndexChange,
   onClose,
   derivVersion,
+  onFlag,
+  onRate,
+  onFavorite,
 }: {
   items: ViewerItem[];
   index: number | null;
   onIndexChange: (i: number) => void;
   onClose: () => void;
   derivVersion?: number;
+  /** Culling hooks (WEB-209 P0): flag/rate/favorite keys fire these and advance. */
+  onFlag?: (id: string, action: "approve" | "reject" | "reset") => void;
+  onRate?: (id: string, patch: { stars?: number; color?: number }) => void;
+  onFavorite?: (id: string) => void;
 }) {
   const [fullscreen, setFullscreen] = useState(false);
   const [dims, setDims] = useState<{ w: number; h: number } | null>(null);
@@ -183,6 +192,21 @@ export function AssetViewer({
       if (zoom > 1) resetZoom();
       else if (fullscreen) setFullscreen(false);
       else onClose();
+    } else if (item && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      // culling keys: flag/rate/favorite then advance (LRC muscle memory)
+      const k = e.key.toLowerCase();
+      const advance = () => { if (index !== null && index < items.length - 1) step(1); };
+      if (k === "p") { e.preventDefault(); onFlag?.(item.id, "approve"); advance(); }
+      else if (k === "x") { e.preventDefault(); onFlag?.(item.id, "reject"); advance(); }
+      else if (k === "u") { e.preventDefault(); onFlag?.(item.id, "reset"); advance(); }
+      else if (k === "f") { e.preventDefault(); onFavorite?.(item.id); }
+      else if (/^[0-5]$/.test(k)) { e.preventDefault(); onRate?.(item.id, { stars: Number(k) }); advance(); }
+      else if (/^[6-9]$/.test(k)) {
+        e.preventDefault();
+        const c = Number(k) - 5;
+        onRate?.(item.id, { color: item.color === c ? 0 : c });
+        advance();
+      }
     } else if (e.key === "Tab") {
       // simple focus trap within the overlay
       const focusables = overlayRef.current?.querySelectorAll<HTMLElement>(
@@ -352,6 +376,8 @@ export function AssetViewer({
               {shownDims && <Meta label="Dimensions">{shownDims}</Meta>}
               <Meta label="Size">{mb(item.bytes)}</Meta>
               <Meta label="Status">{item.status}</Meta>
+              {item.stars > 0 && <Meta label="Stars">{"★".repeat(item.stars)}</Meta>}
+              {item.color > 0 && <Meta label="Color">{["", "Red", "Yellow", "Green", "Blue", "Purple"][item.color]}</Meta>}
               <Meta label="Uploaded">{item.createdAt.slice(0, 10)}</Meta>
               {item.tags.length > 0 && <Meta label="Tags">{item.tags.join(", ")}</Meta>}
               <Meta label="Metadata">{item.exifStripped ? "EXIF stripped at upload" : exif ? "Original EXIF kept" : "Not stripped"}</Meta>

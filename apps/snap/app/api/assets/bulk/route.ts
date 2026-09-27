@@ -3,17 +3,17 @@
  * reporting (blocked items come back with reasons). "rename" runs the
  * pattern renamer (base + running index, extensions preserved). */
 import { getOrgContext } from "@/lib/session";
-import { bulkAssetAction, bulkRenameAssets } from "@/lib/repos/assets";
+import { bulkAssetAction, bulkRenameAssets, bulkSetRating } from "@/lib/repos/assets";
 
 export const dynamic = "force-dynamic";
 
-const ACTIONS = new Set(["approve", "reject", "reset", "delete", "tag", "untag", "rename"]);
+const ACTIONS = new Set(["approve", "reject", "reset", "delete", "tag", "untag", "rename", "stars", "color"]);
 
 export async function POST(req: Request) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
 
-  let body: { action?: string; assetIds?: string[]; tag?: string; base?: string; start?: number; pad?: number };
+  let body: { action?: string; assetIds?: string[]; tag?: string; base?: string; start?: number; pad?: number; value?: number };
   try {
     body = (await req.json()) as typeof body;
   } catch {
@@ -26,6 +26,14 @@ export async function POST(req: Request) {
     return Response.json({ error: "tag_required" }, { status: 400 });
   }
   const ids = body.assetIds.filter((x) => typeof x === "string").slice(0, 500);
+
+  if (body.action === "stars" || body.action === "color") {
+    if (!Number.isInteger(body.value) || (body.value as number) < 0 || (body.value as number) > 5) {
+      return Response.json({ error: "invalid_value" }, { status: 400 });
+    }
+    const done = await bulkSetRating(ctx.organizationId, ids, { [body.action]: body.value });
+    return Response.json({ done });
+  }
 
   if (body.action === "rename") {
     const base = (body.base ?? "").trim().replace(/[\\/:*?"<>|]/g, "-");

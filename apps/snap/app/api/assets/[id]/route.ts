@@ -4,7 +4,7 @@
  * Streams from R2 with Range support (video scrubbing) and
  * inline/attachment modes; gallery downloads respect the grant's policy. */
 import { getObject } from "@/lib/storage/service";
-import { deleteAsset, getAsset, setAssetStatus } from "@/lib/repos/assets";
+import { deleteAsset, getAsset, setAssetRating, setAssetStatus } from "@/lib/repos/assets";
 import { stripJpegExif } from "@/lib/exif";
 import { getOrgContext } from "@/lib/session";
 import { clientIp, logShareAccess, resolveGalleryAccess } from "@/lib/shares/gallery-auth";
@@ -157,11 +157,18 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
   const { id } = await params;
 
-  let body: { action?: string };
+  let body: { action?: string; value?: number };
   try {
-    body = (await req.json()) as { action?: string };
+    body = (await req.json()) as { action?: string; value?: number };
   } catch {
     return Response.json({ error: "invalid_json" }, { status: 400 });
+  }
+  const validValue = Number.isInteger(body.value) && (body.value as number) >= 0 && (body.value as number) <= 5;
+  if (body.action === "stars" || body.action === "color") {
+    if (!validValue) return Response.json({ error: "invalid_value" }, { status: 400 });
+    const r = await setAssetRating(ctx.organizationId, id, { [body.action]: body.value });
+    if (!r.ok) return Response.json({ error: r.error }, { status: 404 });
+    return Response.json({ ok: true, [body.action]: body.value });
   }
   if (body.action !== "approve" && body.action !== "reject" && body.action !== "reset") {
     return Response.json({ error: "invalid_action" }, { status: 400 });

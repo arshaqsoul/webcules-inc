@@ -394,6 +394,9 @@ export const assets = sqliteTable(
     checksum: text("checksum"),
     /** fp1:sha256(size + first 1MB) — duplicate-upload detection. */
     fingerprint: text("fingerprint"),
+    /** Culling ratings (0023): stars 0-5 (0 = unrated); color 0 none, 1 red, 2 yellow, 3 green, 4 blue, 5 purple. */
+    stars: integer("stars").notNull().default(0),
+    color: integer("color").notNull().default(0),
     /** uploaded | approved | rejected | shared */
     status: text("status").notNull().default("uploaded"),
     /** WEB-118: when the asset was (last) rejected — epoch seconds; anchors

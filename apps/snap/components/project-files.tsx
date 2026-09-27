@@ -34,11 +34,24 @@ export type AssetItem = {
   exifStripped: boolean;
   /** RAW vault (WEB-153): epoch seconds when moved to cold storage; null = hot. */
   rawArchivedAt: number | null;
+  /** Culling ratings (0023): stars 0-5, color 0-5. */
+  stars: number;
+  color: number;
   tags: string[];
   createdAt: string;
 };
 
-type Feed = { items: AssetItem[]; nextCursor: string | null; counts: Record<string, number>; tags: { tag: string; n: number }[] };
+type Feed = {
+  items: AssetItem[];
+  nextCursor: string | null;
+  counts: Record<string, number>;
+  tags: { tag: string; n: number }[];
+  ratings?: { stars: Record<string, number>; colors: Record<string, number> };
+};
+
+/** color 0 = none, 1 red, 2 yellow, 3 green, 4 blue, 5 purple. */
+const COLOR_HEX = ["#8a8f98", "#e5484d", "#f5d90a", "#46a758", "#3e63dd", "#8e4ec6"];
+const COLOR_NAMES = ["None", "Red", "Yellow", "Green", "Blue", "Purple"];
 type QueueState = "pending" | "uploading" | "done" | "failed" | "canceled";
 type QueueItem = { id: string; name: string; size: number; progress: number; state: QueueState; attempts: number; error?: string };
 
@@ -178,15 +191,18 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
   const [kind, setKind] = useState("");
   const [tag, setTag] = useState("");
   const [sort, setSort] = useState("date");
+  // Culling filters: rating ("unrated" | "1".."5" = ≥N), color ("none" | "1".."5").
+  const [rating, setRating] = useState("");
+  const [colorSel, setColorSel] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
   // Bumped when upload derivatives land so grid <img> cache-bust to the
   // light ?variant=thumb rendering (WEB-116).
   const [derivVersion, setDerivVersion] = useState(0);
   // Which group's values are shown ("" = root group list) — Linear-style
   // drill-down instead of one long list of every option.
-  const [filterGroup, setFilterGroup] = useState<"" | "status" | "kind" | "tag" | "sort">("");
+  const [filterGroup, setFilterGroup] = useState<"" | "status" | "kind" | "tag" | "sort" | "stars" | "color">("");
   const filterRef = useRef<HTMLDivElement>(null);
-  const filterCount = [status, kind, tag].filter(Boolean).length;
+  const filterCount = [status, kind, tag, rating, colorSel].filter(Boolean).length;
 
   // Close the filter popover on outside click / Escape; reset the drill-down.
   useEffect(() => {
@@ -247,10 +263,12 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
       if (kind) p.set("kind", kind);
       if (tag) p.set("tag", tag);
       if (sort) p.set("sort", sort);
+      if (rating) p.set("rating", rating);
+      if (colorSel) p.set("color", colorSel);
       if (cursor) p.set("cursor", cursor);
       return `/api/projects/${projectId}/assets?${p}`;
     },
-    [projectId, status, kind, tag, sort],
+    [projectId, status, kind, tag, sort, rating, colorSel],
   );
 
   const load = useCallback(
@@ -265,6 +283,7 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
             nextCursor: page.nextCursor,
             counts: page.counts,
             tags: page.tags,
+            ratings: page.ratings,
           }));
           // reflect view/filter in the URL (WEB-120)
           const url = new URL(window.location.href);
@@ -335,6 +354,151 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
   }
 
   // "Delete rejected now" (WEB-123) — confirmation with the live count, then  // a deleted/skipped report (skipped = locked by an active client gallery).
+  /* ---------------- Culling (WEB-209 P0) ----------------
+   * Optimistic single-asset rating/flagging + keyboard roving focus.
+   * Ratings skip the audit log on purpose (high-frequency, low-risk). */
+  const [focusIndex, setFocusIndex] = useState<number | null>(null);
+  const [autoAdvance, setAutoAdvance] = useState(false);
+
+  function patchLocal(id: string, patch: Partial<AssetItem>) {
+    setFeed((f) => ({ ...f, items: f.items.map((a) => (a.id === id ? { ...a, ...patch } : a)) }));
+  }
+
+  async function rateAsset(id: string, patch: { stars?: number; color?: number }) {
+    const before = feed.items.find((a) => a.id === id);
+    patchLocal(id, patch);
+    try {
+      for (const key of ["stars", "color"] as const) {
+        if (patch[key] === undefined) continue;
+        const res = await fetch(`/api/assets/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: key, value: patch[key] }),
+        });
+        if (!res.ok) throw new Error(String(res.status));
+      }
+    } catch {
+      if (before) patchLocal(id, { stars: before.stars, color: before.color });
+      setNotice("Couldn't save rating — try again.");
+    }
+  }
+
+  async function flagAsset(id: string, action: "approve" | "reject" | "reset") {
+    const before = feed.items.find((a) => a.id === id);
+    const to = action === "approve" ? "approved" : action === "reject" ? "rejected" : "uploaded";
+    patchLocal(id, { status: to });
+    try {
+      const res = await fetch(`/api/assets/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+    } catch {
+      if (before) patchLocal(id, { status: before.status });
+      setNotice("Couldn't update status — try again.");
+    }
+  }
+
+  async function toggleFavorite(id: string) {
+    const a = feed.items.find((x) => x.id === id);
+    if (!a) return;
+    const has = a.tags.includes("favorite");
+    patchLocal(id, { tags: has ? a.tags.filter((t) => t !== "favorite") : [...a.tags, "favorite"] });
+    try {
+      await fetch("/api/assets/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: has ? "untag" : "tag", assetIds: [id], tag: "favorite" }),
+      });
+    } catch {
+      patchLocal(id, { tags: a.tags });
+    }
+  }
+
+  function moveFocus(delta: 1 | -1) {
+    setFocusIndex((i) => {
+      const n = feed.items.length;
+      if (!n) return null;
+      return i === null ? (delta > 0 ? 0 : n - 1) : (i + delta + n) % n;
+    });
+  }
+
+  // keep the focused card in view
+  useEffect(() => {
+    if (focusIndex === null) return;
+    document.querySelector(`[data-asset-idx="${focusIndex}"]`)?.scrollIntoView({ block: "nearest" });
+  }, [focusIndex]);
+
+  // keyboard culling — active in the grid when no overlay/dialog owns the keys
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const t = e.target as HTMLElement | null;
+      if (t?.closest("input, textarea, select, [contenteditable]")) return;
+      if (renameOpen || triageOpen || viewerIndex !== null || dragActive) return;
+      if (document.querySelector('[role="dialog"]')) return;
+      const k = e.key.toLowerCase();
+
+      if (k === "a") {
+        setAutoAdvance((v) => !v);
+        return;
+      }
+
+      // Selection mode: number keys rate the whole selection in one call.
+      if (selectMode && selected.size > 0) {
+        const ids = feed.items.filter((x) => selected.has(x.id)).map((x) => x.id);
+        if (/^[0-5]$/.test(k)) {
+          e.preventDefault();
+          void fetch("/api/assets/bulk", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "stars", assetIds: ids, value: Number(k) }),
+          }).then(() => refresh());
+          return;
+        }
+        if (/^[6-9]$/.test(k)) {
+          e.preventDefault();
+          void fetch("/api/assets/bulk", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "color", assetIds: ids, value: Number(k) - 5 }),
+          }).then(() => refresh());
+          return;
+        }
+        if (k === "p") { e.preventDefault(); void bulk("approve"); return; }
+        if (k === "x") { e.preventDefault(); void bulk("reject"); return; }
+        return;
+      }
+
+      // Grid culling on the focused card (first action key focuses card 0).
+      if (e.key === "ArrowRight") { e.preventDefault(); moveFocus(1); return; }
+      if (e.key === "ArrowLeft") { e.preventDefault(); moveFocus(-1); return; }
+      const idx = focusIndex ?? 0;
+      const item = feed.items[idx];
+      if (!item) return;
+      const act = (fn: () => void | Promise<void>) => {
+        e.preventDefault();
+        setFocusIndex(idx);
+        void fn();
+        if (autoAdvance) moveFocus(1);
+      };
+      if (k === "p") return act(() => flagAsset(item.id, "approve"));
+      if (k === "x") return act(() => flagAsset(item.id, "reject"));
+      if (k === "u") return act(() => flagAsset(item.id, "reset"));
+      if (k === "f") return act(() => toggleFavorite(item.id));
+      if (k === "v" || e.key === "Enter") { e.preventDefault(); setFocusIndex(idx); setViewerIndex(idx); return; }
+      if (/^[0-5]$/.test(k)) return act(() => rateAsset(item.id, { stars: Number(k) }));
+      if (/^[6-9]$/.test(k)) {
+        const c = Number(k) - 5;
+        return act(() => rateAsset(item.id, { color: item.color === c ? 0 : c }));
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- closures read latest render values
+  });
+
   // Bulk rename (Files polish) — selected ids in grid order, preview of the
   // first few resulting names, extensions preserved server-side.
   function selectedInGridOrder(): AssetItem[] {
@@ -740,7 +904,7 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
 
   const inputRef = useRef<HTMLInputElement>(null);
   const counts = feed.counts;
-  const activeFilters = Boolean(status || kind || tag);
+  const activeFilters = Boolean(status || kind || tag || rating || colorSel);
 
   const summary = useMemo(() => {
     const done = queue.filter((q) => q.state === "done").length;
@@ -787,6 +951,8 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                       { key: "status", label: "Status", current: status || "All statuses", has: Boolean(status), clear: () => setStatus("") },
                       { key: "kind", label: "Type", current: kind || "All types", has: Boolean(kind), clear: () => setKind("") },
                       { key: "tag", label: "Tags", current: tag || "All tags", has: Boolean(tag), clear: () => setTag("") },
+                      { key: "stars", label: "Stars", current: rating ? (rating === "unrated" ? "Unrated" : `${rating}+`) : "Any", has: Boolean(rating), clear: () => setRating("") },
+                      { key: "color", label: "Color", current: colorSel ? (colorSel === "none" ? "No label" : COLOR_NAMES[Number(colorSel)]) : "Any", has: Boolean(colorSel), clear: () => setColorSel("") },
                       {
                         key: "sort",
                         label: "Sort by",
@@ -827,6 +993,8 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                         setStatus("");
                         setKind("");
                         setTag("");
+                        setRating("");
+                        setColorSel("");
                       }}
                       className="mt-1 w-full rounded-md border-t border-hairline px-2 py-1.5 text-left text-[13px] text-ink-subtle transition-colors hover:bg-surface-2"
                     >
@@ -864,6 +1032,38 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                               apply: (v: string) => setTag(v),
                               options: feed.tags.map((t) => ({ value: t.tag, label: t.tag, count: t.n })),
                             }
+                          : filterGroup === "stars"
+                            ? {
+                                title: "Stars",
+                                allLabel: "Any rating",
+                                allValue: "",
+                                current: rating,
+                                apply: (v: string) => setRating(v),
+                                options: [
+                                  { value: "unrated", label: "Unrated", count: Number(feed.ratings?.stars["0"] ?? 0) },
+                                  ...[5, 4, 3, 2, 1].map((n) => ({
+                                    value: String(n),
+                                    label: `${"★".repeat(n)}${n}+`,
+                                    count: Object.entries(feed.ratings?.stars ?? {}).reduce((acc, [k, c]) => (Number(k) >= n ? acc + c : acc), 0),
+                                  })),
+                                ],
+                              }
+                            : filterGroup === "color"
+                              ? {
+                                  title: "Color",
+                                  allLabel: "Any color",
+                                  allValue: "",
+                                  current: colorSel,
+                                  apply: (v: string) => setColorSel(v),
+                                  options: [
+                                    { value: "none", label: "No label", count: Number(feed.ratings?.colors["0"] ?? 0) },
+                                    ...[1, 2, 3, 4, 5].map((n) => ({
+                                      value: String(n),
+                                      label: COLOR_NAMES[n],
+                                      count: Number(feed.ratings?.colors[String(n)] ?? 0),
+                                    })),
+                                  ],
+                                }
                           : {
                               title: "Sort by",
                               allLabel: "Default",
@@ -937,6 +1137,14 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
               </button>
             ))}
           </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setAutoAdvance((v) => !v)}
+            title="Keyboard culling: ←/→ focus · P approve · X reject · U reset · 0-5 stars · 6-9 color labels · F favorite · V open viewer · A toggles auto-advance"
+          >
+            {autoAdvance ? "Auto ⏩ on" : "Auto ⏩ off"}
+          </Button>
           <Button size="sm" variant="outline" onClick={() => { setSelectMode((s) => !s); setSelected(new Set()); }}>
             {selectMode ? "Done selecting" : "Select"}
           </Button>
@@ -1122,9 +1330,10 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
           {feed.items.map((a, i) => (
             <div
               key={a.id}
-              className={`relative flex break-inside-avoid flex-col overflow-hidden rounded-[12px] border bg-surface-1 transition-opacity ${
+              data-asset-idx={i}
+              className={`group relative flex break-inside-avoid flex-col overflow-hidden rounded-[12px] border bg-surface-1 transition-opacity ${
                 selected.has(a.id) ? "border-primary ring-1 ring-primary/40" : "border-hairline"
-              } ${deleting.has(a.id) ? "opacity-40 saturate-50" : ""}`}
+              } ${focusIndex === i ? "ring-2 ring-primary" : ""} ${deleting.has(a.id) ? "opacity-40 saturate-50" : ""}`}
             >
               {deleting.has(a.id) && (
                 <span className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-medium text-white">
@@ -1170,11 +1379,44 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                   </span>
                 )}
               </a>
+              {/* hover quick actions (culling without leaving the grid) */}
+              {!selectMode && (
+                <div className="pointer-events-none absolute inset-x-1.5 bottom-[52px] z-20 flex items-center gap-1 rounded-lg bg-black/60 px-1.5 py-1 opacity-0 backdrop-blur-sm transition-opacity group-hover:pointer-events-auto group-hover:opacity-100">
+                  <button type="button" title="Reject (X)" aria-label={`Reject ${a.filename}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); void flagAsset(a.id, "reject"); }} className="rounded p-0.5 text-white/80 hover:text-red-400">✕</button>
+                  <button type="button" title="Approve (P)" aria-label={`Approve ${a.filename}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); void flagAsset(a.id, "approve"); }} className="rounded p-0.5 text-white/80 hover:text-emerald-400">✓</button>
+                  <button type="button" title="Favorite (F)" aria-label={`Favorite ${a.filename}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); void toggleFavorite(a.id); }} className={`rounded p-0.5 ${a.tags.includes("favorite") ? "text-amber-400" : "text-white/80 hover:text-amber-300"}`}>♥</button>
+                  <span className="ml-1 flex items-center" role="group" aria-label={`Rate ${a.filename}`}>
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        title={`${n} star${n > 1 ? "s" : ""} (${n})`}
+                        aria-label={`Rate ${a.filename} ${n} stars`}
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); void rateAsset(a.id, { stars: a.stars === n ? 0 : n }); }}
+                        className={`px-[1px] text-[11px] leading-none ${n <= a.stars ? "text-amber-400" : "text-white/45 hover:text-white/80"}`}
+                      >
+                        ★
+                      </button>
+                    ))}
+                  </span>
+                  <button
+                    type="button"
+                    title={`Color: ${COLOR_NAMES[a.color]} — cycles (6–9 keys)`}
+                    aria-label={`Cycle color label for ${a.filename}`}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); void rateAsset(a.id, { color: (a.color + 1) % 6 }); }}
+                    className="ml-auto flex items-center gap-1 rounded p-0.5 text-[9px] text-white/70 hover:text-white"
+                  >
+                    <span aria-hidden className="h-2.5 w-2.5 rounded-full border border-white/40" style={{ background: a.color ? COLOR_HEX[a.color] : "transparent" }} />
+                  </button>
+                </div>
+              )}
               <div className="flex flex-col gap-1.5 p-2">
                 <div className="flex items-center justify-between gap-1">
                   <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${STATUS_BADGE[a.status] ?? ""}`}>{a.status}</span>
+                  {a.stars > 0 && <span title={`${a.stars} stars`} className="text-[10px] leading-none text-amber-500">{"★".repeat(a.stars)}</span>}
+                  {a.color > 0 && <span aria-hidden title={COLOR_NAMES[a.color]} className="h-2 w-2 rounded-full" style={{ background: COLOR_HEX[a.color] }} />}
                   {a.rawArchivedAt && <a href="/dashboard/raw-vault" title="In RAW vault cold storage — restorable from the RAW Vault page" className="rounded-full bg-sky-500/10 px-2 py-0.5 text-[10px] font-medium text-sky-600 dark:text-sky-400">❄ cold</a>}
-                  {a.tags.includes("favorite") && <span title="Favorite" className="text-[10px] text-amber-500">★</span>}
+                  {a.tags.includes("favorite") && <span title="Favorite" className="text-[10px] text-amber-500">♥</span>}
                   <span className="text-[10px] text-ink-tertiary">{mb(a.bytes)}</span>
                 </div>
                 <p className="truncate text-[11px] text-ink-muted" title={a.filename}>{a.filename}</p>
@@ -1198,6 +1440,7 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                 <th className="px-4 py-2.5 font-medium">Type</th>
                 <th className="px-4 py-2.5 font-medium">Size</th>
                 <th className="px-4 py-2.5 font-medium">Status</th>
+                <th className="px-4 py-2.5 font-medium">Rating</th>
                 <th className="px-4 py-2.5 font-medium">Tags</th>
                 <th className="px-4 py-2.5 font-medium">Uploaded</th>
               </tr>
@@ -1250,6 +1493,13 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                   <td className="px-4 py-2">
                     <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${STATUS_BADGE[a.status] ?? ""}`}>{a.status}</span>
                   </td>
+                  <td className="px-4 py-2">
+                    <span className="flex items-center gap-1.5 text-xs">
+                      {a.stars > 0 && <span className="text-amber-500" title={`${a.stars} stars`}>{"★".repeat(a.stars)}</span>}
+                      {a.color > 0 && <span aria-hidden title={COLOR_NAMES[a.color]} className="h-2 w-2 rounded-full" style={{ background: COLOR_HEX[a.color] }} />}
+                      {a.stars === 0 && a.color === 0 && <span className="text-ink-tertiary">—</span>}
+                    </span>
+                  </td>
                   <td className="px-4 py-2 text-xs text-ink-muted">{a.tags.join(", ") || "—"}</td>
                   <td className="px-4 py-2 text-xs text-ink-tertiary">{a.createdAt.slice(0, 10)}</td>
                 </tr>
@@ -1297,6 +1547,9 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
         onIndexChange={setViewerIndex}
         onClose={() => setViewerIndex(null)}
         derivVersion={derivVersion}
+        onFlag={(id, action) => void flagAsset(id, action)}
+        onRate={(id, patch) => void rateAsset(id, patch)}
+        onFavorite={(id) => void toggleFavorite(id)}
       />
     </div>
   );

@@ -29,11 +29,33 @@ export function TriageMode({
   const [counters, setCounters] = useState({ approved: 0, rejected: 0, pending: items.filter((i) => i.status === "uploaded").length });
   const [undoStack, setUndoStack] = useState<UndoEntry[]>([]);
   const [flash, setFlash] = useState<"approved" | "rejected" | null>(null);
+  // Culling ratings (WEB-209 P0): stars/color live on the order copy so
+  // 1-9 key through the deck with advance.
+  const [rated, setRated] = useState<Record<string, { stars?: number; color?: number }>>({});
   const drag = useRef<{ x: number; active: boolean }>({ x: 0, active: false });
   const [dragDx, setDragDx] = useState(0);
 
   const current = order.current[index];
   const total = order.current.length;
+const rate = useCallback(
+    async (patch: { stars?: number; color?: number }) => {
+      if (!current) return;
+      setRated((r) => ({ ...r, [current.id]: { ...r[current.id], ...patch } }));
+      setIndex((i) => i + 1);
+      for (const key of ["stars", "color"] as const) {
+        if (patch[key] === undefined) continue;
+        try {
+          await fetch(`/api/assets/${current.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: key, value: patch[key] }),
+          });
+        } catch { /* refresh reconciles */ }
+      }
+    },
+    [current],
+  );
+
 
   const act = useCallback(
     async (decision: "approved" | "rejected") => {
@@ -90,14 +112,24 @@ export function TriageMode({
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-      if (e.key === "ArrowRight" || e.key.toLowerCase() === "a") void act("approved");
-      if (e.key === "ArrowLeft" || e.key.toLowerCase() === "x") void act("rejected");
-      if (e.key.toLowerCase() === "z" && (e.metaKey || e.ctrlKey)) void undo();
+      if (e.metaKey || e.ctrlKey) {
+        if (e.key.toLowerCase() === "z") void undo();
+        return;
+      }
+      const k = e.key.toLowerCase();
+      if (e.key === "Escape") return onClose();
+      if (e.key === "ArrowRight" || k === "a") return void act("approved");
+      if (e.key === "ArrowLeft" || k === "x") return void act("rejected");
+      if (/^[0-5]$/.test(k)) return void rate({ stars: Number(k) });
+      if (/^[6-9]$/.test(k)) {
+        const c = Number(k) - 5;
+        const cur = current ? (rated[current.id]?.color ?? current.color) : 0;
+        return void rate({ color: cur === c ? 0 : c });
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [act, undo, onClose]);
+  }, [act, undo, onClose, rate, current, rated]);
 
   if (index >= total) {
     return (
@@ -184,14 +216,20 @@ export function TriageMode({
           >
             {flash && <span className="rounded-full px-4 py-1.5 text-sm font-semibold text-white" style={{ background: flash === "approved" ? "#1e8e3e" : "#cc3d3d" }}>{flash}</span>}
           </div>
-          <span className="absolute bottom-2 left-3 rounded-full bg-black/45 px-2.5 py-1 text-xs text-white">{current.filename}</span>
+          <span className="absolute bottom-2 left-3 flex items-center gap-2 rounded-full bg-black/45 px-2.5 py-1 text-xs text-white">
+            {current.filename}
+            {(rated[current.id]?.stars ?? current.stars) > 0 && <span className="text-amber-400">{"★".repeat(rated[current.id]?.stars ?? current.stars)}</span>}
+            {(rated[current.id]?.color ?? current.color) > 0 && (
+              <span aria-hidden className="h-2 w-2 rounded-full" style={{ background: ["#8a8f98", "#e5484d", "#f5d90a", "#46a758", "#3e63dd", "#8e4ec6"][rated[current.id]?.color ?? current.color] }} />
+            )}
+          </span>
         </div>
       </div>
 
       <div className="flex items-center justify-center gap-3 pb-6 text-xs text-ink-tertiary">
         <button onClick={() => void act("rejected")} className="rounded-md border border-hairline px-3 py-1.5 text-sm text-destructive hover:bg-destructive/5">✕ Reject (X / ←)</button>
         <button onClick={() => void act("approved")} className="rounded-md border border-hairline px-3 py-1.5 text-sm text-success-text hover:bg-success/5">✓ Approve (A / →)</button>
-        <span className="hidden sm:inline">· swipe on touch</span>
+        <span className="hidden sm:inline">· 1-5 stars · 6-9 color · swipe on touch</span>
       </div>
     </div>
   );

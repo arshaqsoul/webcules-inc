@@ -4,7 +4,7 @@ import { and, eq } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
-import { listAssetsPaged, listProjectTags, statusCounts, type AssetFilter } from "@/lib/repos/assets";
+import { listAssetsPaged, listProjectTags, ratingCounts, statusCounts, type AssetFilter } from "@/lib/repos/assets";
 import { getOrgContext } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -27,6 +27,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   const url = new URL(req.url);
   const q = url.searchParams;
+  const RATING = new Set(["unrated", "1", "2", "3", "4", "5"]);
+  const COLOR = new Set(["none", "1", "2", "3", "4", "5"]);
   const filter: AssetFilter = {
     status: q.get("status"),
     kind: q.get("kind"),
@@ -34,12 +36,15 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     sort: (SORTS.has(q.get("sort") ?? "") ? q.get("sort") : "date") as AssetFilter["sort"],
     cursor: q.get("cursor"),
     limit: q.get("limit") ? Number(q.get("limit")) : undefined,
+    rating: RATING.has(q.get("rating") ?? "") ? q.get("rating") : undefined,
+    color: COLOR.has(q.get("color") ?? "") ? q.get("color") : undefined,
   };
 
-  const [page, counts, tags] = await Promise.all([
+  const [page, counts, tags, ratings] = await Promise.all([
     listAssetsPaged(ctx.organizationId, id, filter),
     statusCounts(ctx.organizationId, id),
     listProjectTags(ctx.organizationId, id),
+    ratingCounts(ctx.organizationId, id),
   ]);
 
   return Response.json({
@@ -53,6 +58,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       width: a.width,
       height: a.height,
       exifStripped: a.exifStripped,
+      stars: a.stars,
+      color: a.color,
       rawArchivedAt: a.rawArchivedAt,
       tags: a.tags,
       createdAt: a.createdAt.toISOString(),
@@ -60,5 +67,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     nextCursor: page.nextCursor,
     counts,
     tags,
+    ratings,
   });
 }

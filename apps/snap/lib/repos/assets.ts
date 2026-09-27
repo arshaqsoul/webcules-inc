@@ -1,7 +1,7 @@
 /* Asset repository — R2-backed project media. Keys are always
  * {orgId}/{projectId}/{assetId}/{filename}; every operation re-verifies the
  * org + project ownership. Status: uploaded → approved/rejected → shared. */
-import { and, desc, eq, gt, inArray, isNull, lte, or, sql } from "drizzle-orm";
+import { and, desc, eq, gt, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
@@ -79,6 +79,10 @@ export type AssetFilter = {
   sort?: "date" | "name" | "size" | "status";
   cursor?: string | null; // `${createdAtMs}|${id}` for date sort; plain offset otherwise
   limit?: number;
+  /** "unrated" = stars 0; "1".."5" = stars >= N (Lightroom attribute-filter semantics). */
+  rating?: string | null;
+  /** "none" = color 0; "1".."5" = that color. */
+  color?: string | null;
 };
 
 export type AssetRow = typeof schema.assets.$inferSelect & { tags: string[] };
@@ -98,6 +102,10 @@ export async function listAssetsPaged(
       sql`(EXISTS (SELECT 1 FROM asset_tag t WHERE t.asset_id = ${schema.assets.id} AND t.tag = ${filter.tag}))`,
     );
   }
+  if (filter.rating === "unrated") conditions.push(eq(schema.assets.stars, 0));
+  else if (filter.rating && /^[1-5]$/.test(filter.rating)) conditions.push(gte(schema.assets.stars, Number(filter.rating)));
+  if (filter.color === "none") conditions.push(eq(schema.assets.color, 0));
+  else if (filter.color && /^[1-5]$/.test(filter.color)) conditions.push(eq(schema.assets.color, Number(filter.color)));
 
   // Keyset only on the default date sort; others page by offset via cursor-as-number.
   const offset = filter.sort && filter.sort !== "date" ? Number(filter.cursor ?? 0) || 0 : 0;
@@ -131,6 +139,68 @@ export async function listAssetsPaged(
         : String(offset + limit);
   }
   return { items, nextCursor };
+}
+
+/** Set stars/color on one asset (culling v2). Deliberately no audit row:
+ * ratings are high-frequency, low-risk state — auditing them would double
+ * D1 writes and drown the activity feed. */
+export async function setAssetRating(
+  organizationId: string,
+  assetId: string,
+  value: { stars?: number; color?: number },
+): Promise<{ ok: true } | { ok: false; error: "not_found" }> {
+  const db = getDb();
+  const patch: { stars?: number; color?: number } = {};
+  if (value.stars !== undefined) patch.stars = Math.max(0, Math.min(5, Math.trunc(value.stars)));
+  if (value.color !== undefined) patch.color = Math.max(0, Math.min(5, Math.trunc(value.color)));
+  if (!Object.keys(patch).length) return { ok: true };
+  const res = await db
+    .update(schema.assets)
+    .set(patch)
+    .where(and(eq(schema.assets.id, assetId), eq(schema.assets.organizationId, organizationId)))
+    .returning({ id: schema.assets.id });
+  return res.length ? { ok: true } : { ok: false, error: "not_found" };
+}
+
+/** Bulk stars/color over an explicit id list — ONE update statement
+ * (no per-row loop) since ratings are uniform by construction. */
+export async function bulkSetRating(
+  organizationId: string,
+  assetIds: string[],
+  value: { stars?: number; color?: number },
+): Promise<number> {
+  const db = getDb();
+  const ids = assetIds.slice(0, 500);
+  if (!ids.length) return 0;
+  const patch: { stars?: number; color?: number } = {};
+  if (value.stars !== undefined) patch.stars = Math.max(0, Math.min(5, Math.trunc(value.stars)));
+  if (value.color !== undefined) patch.color = Math.max(0, Math.min(5, Math.trunc(value.color)));
+  if (!Object.keys(patch).length) return 0;
+  const res = await db
+    .update(schema.assets)
+    .set(patch)
+    .where(and(eq(schema.assets.organizationId, organizationId), inArray(schema.assets.id, ids)))
+    .returning({ id: schema.assets.id });
+  return res.length;
+}
+
+/** Marginal rating distributions for the filter menu — both GROUP BYs in
+ * one D1 batch (single round trip). */
+export async function ratingCounts(
+  organizationId: string,
+  projectId: string,
+): Promise<{ stars: Record<string, number>; colors: Record<string, number> }> {
+  const db = getDb();
+  const where = and(eq(schema.assets.organizationId, organizationId), eq(schema.assets.projectId, projectId));
+  const [starRows, colorRows] = await db.batch([
+    db.select({ v: schema.assets.stars, n: sql<number>`count(*)` }).from(schema.assets).where(where).groupBy(schema.assets.stars),
+    db.select({ v: schema.assets.color, n: sql<number>`count(*)` }).from(schema.assets).where(where).groupBy(schema.assets.color),
+  ]);
+  const stars: Record<string, number> = {};
+  for (const r of starRows) stars[String(r.v)] = Number(r.n);
+  const colors: Record<string, number> = {};
+  for (const r of colorRows) colors[String(r.v)] = Number(r.n);
+  return { stars, colors };
 }
 
 export async function statusCounts(organizationId: string, projectId: string): Promise<Record<string, number>> {
