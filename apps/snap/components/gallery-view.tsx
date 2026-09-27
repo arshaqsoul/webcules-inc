@@ -38,10 +38,12 @@ function BackoffImage(props: {
   alt: string;
   className?: string;
   loading?: "lazy" | "eager";
+  /** WEB-116: thumb for grid tiles, preview for the lightbox. */
+  variant?: "thumb" | "preview";
   onClick?: React.MouseEventHandler<HTMLImageElement>;
 }) {
   const [attempt, setAttempt] = useState(0);
-  const src = `/api/assets/${props.id}${attempt ? `?r=${attempt}` : ""}`;
+  const src = `/api/assets/${props.id}?variant=${props.variant ?? "thumb"}${attempt ? `&r=${attempt}` : ""}`;
   return (
     // eslint-disable-next-line @next/next/no-img-element -- authorized proxy, no optimizer
     <img
@@ -373,7 +375,9 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
               ) : a.kind === "video" ? (
                 <>
                   {/* eslint-disable-next-line jsx-a11y/media-has-caption -- gallery video, caption N/A */}
-                  <video src={`/api/assets/${a.id}#t=0.5`} preload="metadata" muted playsInline className="h-full w-full object-cover" />
+                  {/* WEB-116: poster thumb when the upload generated one; falls
+                      back to the video itself with a #t frame hint. */}
+                  <video src={`/api/assets/${a.id}?variant=thumb#t=0.5`} preload="metadata" muted playsInline className="h-full w-full object-cover" />
                   <span className="absolute inset-0 flex items-center justify-center">
                     <span className="flex h-11 w-11 items-center justify-center rounded-full bg-black/55 text-white">
                       <svg width="14" height="16" viewBox="0 0 14 16" fill="currentColor" aria-hidden><path d="M0 0l14 8-14 8z" /></svg>
@@ -448,6 +452,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
                 key={current.id}
                 id={current.id}
                 alt={current.filename}
+                variant="preview"
                 className="max-h-full max-w-full object-contain"
                 onClick={(e) => e.stopPropagation()}
               />

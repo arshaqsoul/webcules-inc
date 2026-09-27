@@ -44,6 +44,104 @@ function mb(bytes: number): string {
   return bytes > 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
 }
 
+/* ---------------- Derivatives (WEB-116) ----------------
+ * Generated in-browser with canvas right after an upload lands: thumb (320px)
+ * + preview (1600px) JPEGs for images, poster frame for videos. Re-encoding
+ * drops EXIF (orientation is baked in) so derivatives satisfy any strip
+ * policy while originals stay untouched; RAW/HEIC (no browser decoder) and
+ * failures simply serve the original. */
+
+const DERIV_IMAGE_EXTS = new Set(["jpg", "jpeg", "png", "webp", "avif", "gif"]);
+const DERIV_VIDEO_EXTS = new Set(["mp4", "webm", "mov"]);
+
+function canvasToBlob(bitmap: ImageBitmap | HTMLVideoElement, maxDim: number, quality: number): Promise<Blob | null> {
+  const bw = bitmap instanceof HTMLVideoElement ? bitmap.videoWidth : bitmap.width;
+  const bh = bitmap instanceof HTMLVideoElement ? bitmap.videoHeight : bitmap.height;
+  if (!bw || !bh) return Promise.resolve(null);
+  const scale = Math.min(1, maxDim / Math.max(bw, bh));
+  const w = Math.max(1, Math.round(bw * scale));
+  const h = Math.max(1, Math.round(bh * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return Promise.resolve(null);
+  ctx.drawImage(bitmap, 0, 0, w, h);
+  return new Promise((resolve) => canvas.toBlob((b) => resolve(b), "image/jpeg", quality));
+}
+
+async function uploadDerivative(assetId: string, kind: "thumb" | "preview", blob: Blob): Promise<boolean> {
+  const form = new FormData();
+  form.set("kind", kind);
+  form.set("file", blob, `${kind}.jpg`);
+  try {
+    const res = await fetch(`/api/assets/${assetId}/derivative`, { method: "POST", body: form });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/** Grab a decodable video frame (~25% in, capped at 1s) as a bitmap. */
+function videoFrame(file: File): Promise<ImageBitmap | null> {
+  return new Promise((resolve) => {
+    const video = document.createElement("video");
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = "metadata";
+    const url = URL.createObjectURL(file);
+    let settled = false;
+    const done = (result: ImageBitmap | null) => {
+      if (settled) return;
+      settled = true;
+      URL.revokeObjectURL(url);
+      resolve(result);
+    };
+    video.onloadeddata = () => {
+      try {
+        video.currentTime = Math.min(1, (video.duration || 2) * 0.25);
+      } catch {
+        void createImageBitmap(video)
+          .then(done, () => done(null));
+      }
+    };
+    video.onseeked = () =>
+      void createImageBitmap(video).then(done, () => done(null));
+    video.onerror = () => done(null);
+    setTimeout(() => done(null), 10_000); // codec support varies (HEVC mov) — give up, don't hang
+    video.src = url;
+  });
+}
+
+/** Best-effort derivatives for a finished upload; true when any landed. */
+async function generateDerivatives(assetId: string, file: File): Promise<boolean> {
+  const ext = (file.name.split(".").pop() ?? "").toLowerCase();
+  try {
+    if (DERIV_IMAGE_EXTS.has(ext)) {
+      const bitmap = await createImageBitmap(file);
+      const [thumb, preview] = await Promise.all([
+        canvasToBlob(bitmap, 320, 0.82),
+        canvasToBlob(bitmap, 1600, 0.85),
+      ]);
+      bitmap.close();
+      let any = false;
+      if (thumb) any = (await uploadDerivative(assetId, "thumb", thumb)) || any;
+      if (preview) any = (await uploadDerivative(assetId, "preview", preview)) || any;
+      return any;
+    }
+    if (DERIV_VIDEO_EXTS.has(ext)) {
+      const frame = await videoFrame(file);
+      if (!frame) return false;
+      const thumb = await canvasToBlob(frame, 640, 0.82);
+      frame.close();
+      return thumb ? uploadDerivative(assetId, "thumb", thumb) : false;
+    }
+  } catch {
+    return false;
+  }
+  return false;
+}
+
 export function ProjectFiles({ projectId, initial }: { projectId: string; initial?: AssetItem[] }) {
   const confirm = useConfirm();
   const [feed, setFeed] = useState<Feed>({ items: initial ?? [], nextCursor: null, counts: {}, tags: [] });
@@ -52,6 +150,9 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
   const [tag, setTag] = useState("");
   const [sort, setSort] = useState("date");
   const [filterOpen, setFilterOpen] = useState(false);
+  // Bumped when upload derivatives land so grid <img> cache-bust to the
+  // light ?variant=thumb rendering (WEB-116).
+  const [derivVersion, setDerivVersion] = useState(0);
   // Which group's values are shown ("" = root group list) — Linear-style
   // drill-down instead of one long list of every option.
   const [filterGroup, setFilterGroup] = useState<"" | "status" | "kind" | "tag" | "sort">("");
@@ -302,6 +403,13 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
         }
         sessions.current.delete(itemId);
         updateItem(itemId, { state: "done", progress: 100 });
+        // WEB-116: derivatives are generated client-side after the original
+        // lands — never gate the queue on them.
+        if (assetId) {
+          void generateDerivatives(assetId, file).then((any) => {
+            if (any) setDerivVersion((v) => v + 1);
+          });
+        }
       } catch (err) {
         const e = err as { fatal?: boolean; message?: string };
         const message = e?.message ?? "upload failed";
@@ -725,7 +833,12 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
               <a href={`/api/assets/${a.id}`} target="_blank" rel="noreferrer" className="block aspect-square bg-canvas" onClick={(e) => selectMode && e.preventDefault()}>
                 {a.kind === "image" ? (
                   // eslint-disable-next-line @next/next/no-img-element -- authorized proxy, no optimizer
-                  <img src={`/api/assets/${a.id}`} alt={a.filename} loading="lazy" className="h-full w-full object-cover" />
+                  <img
+                    src={`/api/assets/${a.id}?variant=thumb${derivVersion ? `&v=${derivVersion}` : ""}`}
+                    alt={a.filename}
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
                 ) : (
                   <span className="flex h-full w-full flex-col items-center justify-center gap-1 text-ink-tertiary">
                     <span className="text-xs uppercase">{a.kind}</span>

@@ -262,6 +262,37 @@ export async function getAsset(organizationId: string, assetId: string) {
   )[0];
 }
 
+/* ---------------- Derivatives (WEB-116) ----------------
+ * Pipeline decision (spike): Cloudflare Images/Resizing is a paid add-on and
+ * Workers have no native encoder — derivatives are generated in the browser
+ * at upload time (canvas) and pushed here. Canvas re-encode is EXIF-free by
+ * construction (orientation baked in), so any strip policy is satisfied for
+ * derivatives while originals stay untouched. RAW/HEIC have no browser
+ * decoder: they simply carry no derivatives and serve originals. */
+
+export async function attachDerivative(params: {
+  organizationId: string;
+  assetId: string;
+  kind: "thumb" | "preview";
+  bytes: ArrayBuffer;
+  contentType: string;
+}): Promise<{ ok: true } | { ok: false; error: "not_found" | "unsupported_type" }> {
+  const db = getDb();
+  const asset = await getAsset(params.organizationId, params.assetId);
+  if (!asset) return { ok: false, error: "not_found" };
+  if (!params.contentType.startsWith("image/")) return { ok: false, error: "unsupported_type" };
+
+  // Derivatives live beside the original under the asset's own directory:
+  // {org}/{project}/{asset}/{kind}.jpg
+  const key = buildKey(params.organizationId, asset.projectId, asset.id, `${params.kind}.jpg`);
+  await putObject(params.organizationId, `${asset.projectId}/${asset.id}/${params.kind}.jpg`, params.bytes, params.contentType);
+  await db
+    .update(schema.assets)
+    .set(params.kind === "thumb" ? { thumbKey: key } : { previewKey: key })
+    .where(and(eq(schema.assets.id, asset.id), eq(schema.assets.organizationId, params.organizationId)));
+  return { ok: true };
+}
+
 export async function setAssetStatus(
   organizationId: string,
   assetId: string,
@@ -334,5 +365,8 @@ export async function deleteAsset(organizationId: string, assetId: string): Prom
   }
   await db.delete(schema.assets).where(eq(schema.assets.id, assetId));
   await deleteObject(organizationId, asset.storageKey);
+  // WEB-116: derivative objects live beside the original — remove them too.
+  if (asset.thumbKey) await deleteObject(organizationId, asset.thumbKey).catch(() => undefined);
+  if (asset.previewKey) await deleteObject(organizationId, asset.previewKey).catch(() => undefined);
   return { ok: true };
 }

@@ -167,7 +167,7 @@ export function TriageMode({
         >
           {current.kind === "image" ? (
             // eslint-disable-next-line @next/next/no-img-element -- authorized proxy, no optimizer
-            <img src={`/api/assets/${current.id}`} alt={current.filename} className="max-h-[70vh] w-full object-contain" draggable={false} />
+            <img src={`/api/assets/${current.id}?variant=preview`} alt={current.filename} className="max-h-[70vh] w-full object-contain" draggable={false} />
           ) : current.kind === "video" ? (
             // eslint-disable-next-line jsx-a11y/media-has-caption -- triage video
             <video src={`/api/assets/${current.id}`} controls playsInline className="max-h-[70vh] w-full" />

@@ -20,6 +20,18 @@ type ServableAsset = {
   mimeType: string;
 };
 
+/** WEB-116: ?variant=thumb|preview swaps in the stored derivative key,
+ * falling back to the original when none exists (pre-derivative assets,
+ * RAW/HEIC that the browser can't decode). */
+function variantKey(
+  asset: { thumbKey: string | null; previewKey: string | null },
+  variant: string | null,
+): string | null {
+  if (variant === "thumb" && asset.thumbKey) return asset.thumbKey;
+  if (variant === "preview" && asset.previewKey) return asset.previewKey;
+  return null;
+}
+
 /** Shared R2 streaming with Range + disposition (used by both paths). */
 async function serveAsset(req: Request, asset: ServableAsset, allowDownload: boolean): Promise<Response> {
   const object = await getObject(asset.organizationId, asset.storageKey);
@@ -76,7 +88,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   if (ctx) {
     const asset = await getAsset(ctx.organizationId, id);
     if (!asset) return Response.json({ error: "not_found" }, { status: 404 });
-    return serveAsset(req, asset, true);
+    const dk = variantKey(asset, url.searchParams.get("variant"));
+    return serveAsset(req, dk ? { ...asset, storageKey: dk, mimeType: "image/jpeg" } : asset, true);
   }
 
   // Gallery path — snap-g cookie, live grant check, asset ∈ grant set.
@@ -105,7 +118,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     if (wantsDownload && grant.allowDownload) {
       await logShareAccess(grant.id, "download", req);
     }
-    return serveAsset(req, asset, grant.allowDownload);
+    const dk = variantKey(asset, url.searchParams.get("variant"));
+    return serveAsset(req, dk ? { ...asset, storageKey: dk, mimeType: "image/jpeg" } : asset, grant.allowDownload);
   }
 
   return Response.json({ error: "unauthorized" }, { status: 401 });
