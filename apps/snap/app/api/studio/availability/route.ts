@@ -6,13 +6,18 @@ import { getOrgContext } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
+/* Per-window overrides round-trip through the DB as 0 when unset — treat 0
+ * as "not provided" or every save after the first fails validation. */
+const optionalOverride = (min: number, max: number) =>
+  z.preprocess((v) => (v === 0 ? undefined : v), z.number().int().min(min).max(max).optional());
+
 const ruleSchema = z
   .object({
     weekday: z.number().int().min(0).max(6),
     startMinute: z.number().int().min(0).max(1439),
     endMinute: z.number().int().min(1).max(1440),
-    slotMinutes: z.number().int().min(15).max(480).optional(),
-    bufferMinutes: z.number().int().min(0).max(240).optional(),
+    slotMinutes: optionalOverride(15, 480),
+    bufferMinutes: optionalOverride(0, 240),
     active: z.boolean().optional(),
   })
   .refine((r) => r.endMinute > r.startMinute, { message: "end must be after start" });

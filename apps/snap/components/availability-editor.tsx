@@ -26,6 +26,13 @@ type Initial = {
     bufferMinutes: number;
     leadTimeMinutes: number;
     maxAdvanceDays: number;
+    /** Booking payment at checkout (deposit or full session). */
+    payment?: {
+      enabled: boolean;
+      kind: "deposit" | "full";
+      amountMinor: number;
+      label?: string;
+    };
   };
 };
 
@@ -43,6 +50,11 @@ export function AvailabilityEditor({ initial }: { initial: Initial }) {
   const [settings, setSettings] = useState(initial.settings);
   const [blackouts, setBlackouts] = useState<string[]>(initial.blackouts);
   const [newBlackout, setNewBlackout] = useState("");
+  const [payEnabled, setPayEnabled] = useState(initial.settings.payment?.enabled ?? false);
+  const [payKind, setPayKind] = useState<"deposit" | "full">(initial.settings.payment?.kind ?? "deposit");
+  const [payAmount, setPayAmount] = useState(
+    String(((initial.settings.payment?.amountMinor ?? 2500) / 100).toFixed(2)),
+  );
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -62,14 +74,29 @@ export function AvailabilityEditor({ initial }: { initial: Initial }) {
   async function save() {
     setBusy(true);
     setStatus(null);
+    const minor = Math.round(Number(payAmount) * 100);
+    const body = {
+      rules,
+      settings: {
+        ...settings,
+        // Payment block always sent so the toggle sticks; the amount is kept
+        // even when disabled so re-enabling restores it.
+        payment: {
+          enabled: payEnabled,
+          kind: payKind,
+          amountMinor: payEnabled ? Math.max(100, minor || 100) : (initial.settings.payment?.amountMinor ?? (minor || 2500)),
+        },
+      },
+      blackouts,
+    };
     const res = await fetch("/api/studio/availability", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ rules, settings, blackouts }),
+      body: JSON.stringify(body),
     });
-    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    const out = (await res.json().catch(() => ({}))) as { error?: string };
     setBusy(false);
-    setStatus(res.ok ? "Availability saved." : `Save failed: ${body.error ?? "unknown"}`);
+    setStatus(res.ok ? "Availability saved." : `Save failed: ${out.error ?? "unknown"}`);
     if (res.ok) router.refresh();
   }
 
@@ -150,6 +177,57 @@ export function AvailabilityEditor({ initial }: { initial: Initial }) {
               onChange={(e) => setSettings({ ...settings, maxAdvanceDays: Number(e.target.value) })} />
           </div>
         </div>
+      </section>
+
+      <section className={card}>
+        <h2 className="text-[15px] font-medium text-ink">Booking payment</h2>
+        <p className="mt-1 text-xs text-ink-subtle">
+          When on, clients pay through Stripe at booking — the slot is held until payment completes.
+          When off, bookings are confirmed instantly with no payment step.
+        </p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="payEnabled">Collect payment</Label>
+            <button
+              id="payEnabled"
+              type="button"
+              role="switch"
+              aria-checked={payEnabled}
+              onClick={() => setPayEnabled((v) => !v)}
+              className={`relative h-6 w-11 rounded-full transition-colors ${payEnabled ? "bg-primary" : "bg-surface-2 border border-hairline"}`}
+            >
+              <span
+                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${payEnabled ? "translate-x-[22px]" : "translate-x-0.5"}`}
+              />
+            </button>
+            <p className="text-xs text-ink-tertiary">{payEnabled ? "Payment required at booking" : "Free bookings"}</p>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="payKind">Type</Label>
+            <select
+              id="payKind"
+              value={payKind}
+              onChange={(e) => setPayKind(e.target.value as "deposit" | "full")}
+              disabled={!payEnabled}
+              className="rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
+            >
+              <option value="deposit">Deposit</option>
+              <option value="full">Full session</option>
+            </select>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="payAmount">Amount (USD)</Label>
+            <Input id="payAmount" type="number" min={1} step="0.01" inputMode="decimal" value={payAmount}
+              disabled={!payEnabled}
+              onChange={(e) => setPayAmount(e.target.value)} />
+          </div>
+        </div>
+        <p className="mt-3 text-xs text-ink-tertiary">
+          {payKind === "deposit"
+            ? "Deposits hold the date — invoice the balance later from the project."
+            : "Charges the full session price at booking time."}{" "}
+          Payments go to your Stripe account (Connect Payouts under Settings).
+        </p>
       </section>
 
       <section className={card}>

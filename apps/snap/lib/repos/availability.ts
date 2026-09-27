@@ -51,8 +51,10 @@ export async function saveAvailability(params: {
           weekday: r.weekday,
           startMinute: r.startMinute,
           endMinute: r.endMinute,
-          slotMinutes: r.slotMinutes ?? 0,
-          bufferMinutes: r.bufferMinutes ?? 0,
+          // Omitted when unset — column defaults apply (the slot engine
+          // reads settings-level values; per-rule overrides are stored only).
+          ...(r.slotMinutes ? { slotMinutes: r.slotMinutes } : {}),
+          ...(r.bufferMinutes ? { bufferMinutes: r.bufferMinutes } : {}),
           active: r.active ?? true,
         }),
     );
