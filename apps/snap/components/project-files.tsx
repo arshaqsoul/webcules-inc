@@ -7,7 +7,7 @@
  * (WEB-113). Fast triage lives in <TriageMode> (WEB-122). */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, ListFilter, X, ZoomIn } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, ChevronUp, Grid2x2, Grid3x3, ListFilter, Square, X } from "lucide-react";
 
 import { Button } from "@webcules/ui/components/button";
 import {
@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@webcules/ui/components/dialog";
-import { AssetViewer } from "@/components/asset-viewer";
+import { AssetManage } from "@/components/asset-manage";
 import { useConfirm } from "@/components/confirm-provider";
 import { TriageMode } from "@/components/triage-mode";
 
@@ -226,27 +226,25 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
   }, [filterOpen]);
   const [view, setView] = useState<"grid" | "list">("grid");
   const [loading, setLoading] = useState(false);
-  // Grid density (Samsung-Gallery style): 1 = one photo per row, up to 18
-  // micro-tiles. Persisted; cards adapt (labels hide, hover simplifies).
-  // SSR renders the responsive CSS default (columns-2 sm:columns-6); the
-  // inline style only applies post-mount — React never repairs style
-  // mismatches during hydration, so the saved/mobile value must land via a
-  // mount effect re-render.
-  const [gridCols, setGridCols] = useState(6);
-  const [colsMounted, setColsMounted] = useState(false);
+  // Grid density (Midjourney organize-style): three levels — s = dense
+  // contact sheet with square crops, m = default masonry, l = large review
+  // tiles. Mobile (<640px) is always a fixed 4-column image-only grid, so
+  // the class maps below only vary sm+ breakpoints — SSR markup stays
+  // hydration-stable with no mount-effect dance.
+  const [density, setDensity] = useState<"s" | "m" | "l">("m");
   useEffect(() => {
-    const v = Number(window.localStorage.getItem("snap-grid-cols"));
-    setGridCols(Number.isInteger(v) && v >= 1 && v <= 18 ? v : window.innerWidth < 640 ? 2 : 6);
-    setColsMounted(true);
+    const v = window.localStorage.getItem("snap-grid-density");
+    if (v === "s" || v === "l") setDensity(v);
   }, []);
   useEffect(() => {
-    if (colsMounted) window.localStorage.setItem("snap-grid-cols", String(gridCols));
-  }, [gridCols, colsMounted]);
-  const compact = view === "grid" && gridCols >= 8;
-  const micro = view === "grid" && gridCols >= 13;
+    window.localStorage.setItem("snap-grid-density", density);
+  }, [density]);
+  // Small density = pure image tiles: no meta row, hover-only controls.
+  const compact = view === "grid" && density === "s";
+  const micro = compact;
 
-  // Detail viewer (WEB-119): index into feed.items, null = closed.
-  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
+  // Manage pane (Midjourney-style): index into feed.items, null = grid.
+  const [manageIndex, setManageIndex] = useState<number | null>(null);
 
   // Selection (WEB-128): click toggle, shift-range, clear.
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -436,6 +434,22 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
     }
   }
 
+  /** Single-asset tag add/remove for the manage pane — one bulk-styled call. */
+  async function tagAsset(id: string, tag: string, add: boolean) {
+    const a = feed.items.find((x) => x.id === id);
+    if (!a || (!add && !a.tags.includes(tag))) return;
+    patchLocal(id, { tags: add ? (a.tags.includes(tag) ? a.tags : [...a.tags, tag]) : a.tags.filter((t) => t !== tag) });
+    try {
+      await fetch("/api/assets/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: add ? "tag" : "untag", assetIds: [id], tag }),
+      });
+    } catch {
+      patchLocal(id, { tags: a.tags });
+    }
+  }
+
   function moveFocus(delta: 1 | -1) {
     setFocusIndex((i) => {
       const n = feed.items.length;
@@ -454,9 +468,9 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
-      const t = e.target as HTMLElement | null;
-      if (t?.closest("input, textarea, select, [contenteditable]")) return;
-      if (renameOpen || triageOpen || viewerIndex !== null || dragActive) return;
+      const t = e.target;
+      if (t instanceof Element && t.closest("input, textarea, select, [contenteditable]")) return;
+      if (renameOpen || triageOpen || manageIndex !== null || dragActive) return;
       if (document.querySelector('[role="dialog"]')) return;
       const k = e.key.toLowerCase();
 
@@ -507,7 +521,7 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
       if (k === "x") return act(() => flagAsset(item.id, "reject"));
       if (k === "u") return act(() => flagAsset(item.id, "reset"));
       if (k === "f") return act(() => toggleFavorite(item.id));
-      if (k === "v" || e.key === "Enter") { e.preventDefault(); setFocusIndex(idx); setViewerIndex(idx); return; }
+      if (k === "v" || e.key === "Enter") { e.preventDefault(); setFocusIndex(idx); setManageIndex(idx); return; }
       if (/^[0-5]$/.test(k)) return act(() => rateAsset(item.id, { stars: Number(k) }));
       if (/^[6-9]$/.test(k)) {
         const c = Number(k) - 5;
@@ -926,6 +940,27 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
   const counts = feed.counts;
   const activeFilters = Boolean(status || kind || tag || rating || colorSel);
 
+  /* Day groups (Midjourney organize-style): date-sorted contiguous items
+   * share one bordered mosaic block with a date header, so the outline
+   * hugs the first/last images of each group. Non-date sorts render as a
+   * single unbordered grid. */
+  const groups = useMemo(() => {
+    const flat = feed.items.map((a, i) => ({ a, i }));
+    if (sort !== "date") return [{ key: "all", label: "", entries: flat }];
+    const today = new Date().toISOString().slice(0, 10);
+    const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+    const fmtDay = (key: string) =>
+      key === today ? "Today" : key === yesterday ? "Yesterday" : new Date(`${key}T12:00:00Z`).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+    const out: { key: string; label: string; entries: { a: AssetItem; i: number }[] }[] = [];
+    for (const e of flat) {
+      const key = e.a.createdAt.slice(0, 10);
+      const last = out[out.length - 1];
+      if (last && last.key === key) last.entries.push(e);
+      else out.push({ key, label: fmtDay(key), entries: [e] });
+    }
+    return out;
+  }, [feed.items, sort]);
+
   const summary = useMemo(() => {
     const done = queue.filter((q) => q.state === "done").length;
     const failed = queue.filter((q) => q.state === "failed").length;
@@ -1015,6 +1050,24 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
   }
 
   /* ---------------- Render ---------------- */
+
+  // Manage pane swap (Midjourney-style): replaces the whole tab body —
+  // inline layout, no modal, no fullscreen mode.
+  if (manageIndex !== null && feed.items.length > 0) {
+    return (
+      <AssetManage
+        items={feed.items}
+        index={Math.min(manageIndex, feed.items.length - 1)}
+        onIndexChange={setManageIndex}
+        onClose={() => setManageIndex(null)}
+        derivVersion={derivVersion}
+        onFlag={(id, action) => void flagAsset(id, action)}
+        onRate={(id, patch) => void rateAsset(id, patch)}
+        onFavorite={(id) => void toggleFavorite(id)}
+        onTag={(id, tag, add) => void tagAsset(id, tag, add)}
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -1127,19 +1180,25 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
 
         <div className="ml-auto flex flex-wrap items-center justify-end gap-1.5">
           {view === "grid" && (
-            <span className="flex min-w-0 items-center gap-1.5 rounded-md border border-hairline bg-canvas px-2 py-1" title="Grid size — drag to zoom photos in or out">
-              <ZoomIn className="h-3.5 w-3.5 rotate-180 text-ink-tertiary" aria-hidden />
-              <input
-                type="range"
-                min={1}
-                max={18}
-                value={gridCols}
-                onChange={(e) => setGridCols(Number(e.target.value))}
-                aria-label="Grid size"
-                className="h-1 w-16 cursor-pointer accent-[var(--primary)] sm:w-24"
-              />
-              <ZoomIn className="h-3.5 w-3.5 text-ink-tertiary" aria-hidden />
-            </span>
+            <div className="flex overflow-hidden rounded-md border border-hairline" role="group" aria-label="Grid size">
+              {([
+                ["s", Grid3x3, "Small — dense contact sheet"],
+                ["m", Grid2x2, "Medium — balanced masonry"],
+                ["l", Square, "Large — review tiles"],
+              ] as const).map(([d, Icon, title]) => (
+                <button
+                  key={d}
+                  type="button"
+                  onClick={() => setDensity(d)}
+                  aria-pressed={density === d}
+                  title={title}
+                  aria-label={title}
+                  className={`px-2 py-1.5 transition-colors ${density === d ? "bg-primary/10 text-primary" : "text-ink-tertiary hover:bg-surface-2 hover:text-ink-muted"}`}
+                >
+                  <Icon className="h-3.5 w-3.5" aria-hidden />
+                </button>
+              ))}
+            </div>
           )}
           <div className="flex overflow-hidden rounded-md border border-hairline">
             {(["grid", "list"] as const).map((v) => (
@@ -1155,6 +1214,7 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
           <Button
             size="sm"
             variant="outline"
+            className="hidden sm:inline-flex"
             onClick={() => setAutoAdvance((v) => !v)}
             title="Keyboard culling: ←/→ focus · P approve · X reject · U reset · 0-5 stars · 6-9 color labels · F favorite · V open viewer · A toggles auto-advance"
           >
@@ -1199,7 +1259,7 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
           e.stopPropagation(); // the document-level handler would enqueue again
           if (e.dataTransfer.files?.length) void enqueueWithStore(e.dataTransfer.files);
         }}
-        className="rounded-[12px] border border-dashed border-hairline-strong bg-surface-1 p-4 text-center text-xs text-ink-subtle"
+        className="hidden rounded-[12px] border border-dashed border-hairline-strong bg-surface-1 p-4 text-center text-xs text-ink-subtle sm:block"
       >
         Drag & drop photos, videos, and RAWs here (up to 5 GB per file)
       </div>
@@ -1338,126 +1398,171 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
         </DialogContent>
       </Dialog>
 
-      {/* Grid view — CSS-columns masonry: each photo keeps its own aspect
-       * so one tall image no longer stretches its whole row. */}
-      {view === "grid" && (
-        <div
-          style={colsMounted ? { columns: gridCols, columnGap: "0.75rem" } : undefined}
-          className="columns-2 gap-3 sm:columns-6 [&>*]:mb-3"
-        >
-          {feed.items.map((a, i) => (
-            <div
-              key={a.id}
-              data-asset-idx={i}
-              className={`group relative flex break-inside-avoid flex-col overflow-hidden rounded-[12px] border bg-surface-1 transition-opacity ${
-                selected.has(a.id) ? "border-primary ring-1 ring-primary/40" : "border-hairline"
-              } ${focusIndex === i ? "ring-2 ring-primary" : ""} ${deleting.has(a.id) ? "opacity-40 saturate-50" : ""}`}
-            >
-              {deleting.has(a.id) && (
-                <span className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-medium text-white">
-                  Deleting…
+      {/* Grid view (Midjourney organize-style) — day-grouped masonry blocks:
+       * each group's outline hugs its first/last images, mobile is always a
+       * fixed 4-column image-only grid, and density picks the sm+ column
+       * count (s = square contact sheet, m/l = natural-ratio masonry). */}
+      {view === "grid" &&
+        groups.map((g) => (
+          <section key={g.key} aria-label={g.label || "All files"} className="flex flex-col gap-1.5">
+            {g.label && (
+              <div className="flex items-baseline gap-2 px-0.5 pt-1">
+                <h3 className="text-xs font-medium text-ink-muted">{g.label}</h3>
+                <span className="text-[11px] text-ink-tertiary">
+                  {g.entries.length} file{g.entries.length === 1 ? "" : "s"}
                 </span>
-              )}
-              {selectMode && (
-                <input
-                  type="checkbox"
-                  checked={selected.has(a.id)}
-                  onClick={(e) => { e.stopPropagation(); toggleSelect(a.id, i, e.shiftKey); }}
-                  onChange={() => undefined}
-                  className="absolute left-2 top-2 z-10 h-4 w-4 accent-[var(--primary)]"
-                  aria-label={`Select ${a.filename}`}
-                />
-              )}
-              <a
-                href={`/api/assets/${a.id}`}
-                target="_blank"
-                rel="noreferrer"
-                title={selectMode ? undefined : "Open in viewer"}
-                className={`block bg-canvas ${selectMode ? "" : "cursor-zoom-in"}`}
-                onClick={(e) => {
-                  if (selectMode) e.preventDefault();
-                  else {
-                    e.preventDefault();
-                    setViewerIndex(i);
-                  }
-                }}
-              >
-                {a.kind === "image" ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- authorized proxy, no optimizer
-                  <img
-                    src={`/api/assets/${a.id}?variant=thumb${derivVersion ? `&v=${derivVersion}` : ""}`}
-                    alt={a.filename}
-                    loading="lazy"
-                    className="block h-auto w-full object-cover"
-                  />
-                ) : (
-                  <span className="flex h-32 w-full flex-col items-center justify-center gap-1 text-ink-tertiary">
-                    <span className="text-xs uppercase">{a.kind}</span>
-                    <span className="text-[10px]">.{a.filename.split(".").pop()}</span>
-                  </span>
-                )}
-              </a>
-              {/* hover quick actions (culling without leaving the grid) */}
-              {!selectMode && (
-                <div className={`pointer-events-none absolute z-20 flex items-center gap-1 rounded-lg bg-black/60 px-1.5 py-1 opacity-0 backdrop-blur-sm transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 ${micro ? "inset-x-1 bottom-1" : "inset-x-1.5 bottom-[52px]"}`}>
-                  <button type="button" title="Reject (X)" aria-label={`Reject ${a.filename}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); void flagAsset(a.id, "reject"); }} className="rounded p-0.5 text-white/80 hover:text-red-400">✕</button>
-                  <button type="button" title="Approve (P)" aria-label={`Approve ${a.filename}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); void flagAsset(a.id, "approve"); }} className="rounded p-0.5 text-white/80 hover:text-emerald-400">✓</button>
-                  <button type="button" title="Favorite (F)" aria-label={`Favorite ${a.filename}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); void toggleFavorite(a.id); }} className={`rounded p-0.5 ${a.tags.includes("favorite") ? "text-amber-400" : "text-white/80 hover:text-amber-300"}`}>♥</button>
-                  {!micro && (
-                  <span className="ml-1 flex items-center" role="group" aria-label={`Rate ${a.filename}`}>
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <button
-                        key={n}
-                        type="button"
-                        title={`${n} star${n > 1 ? "s" : ""} (${n})`}
-                        aria-label={`Rate ${a.filename} ${n} stars`}
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); void rateAsset(a.id, { stars: a.stars === n ? 0 : n }); }}
-                        className={`px-[1px] text-[11px] leading-none ${n <= a.stars ? "text-amber-400" : "text-white/45 hover:text-white/80"}`}
-                      >
-                        ★
-                      </button>
-                    ))}
-                  </span>
-                  )}
-                  {!micro && (
-                  <button
-                    type="button"
-                    title={`Color: ${COLOR_NAMES[a.color]} — cycles (6–9 keys)`}
-                    aria-label={`Cycle color label for ${a.filename}`}
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); void rateAsset(a.id, { color: (a.color + 1) % 6 }); }}
-                    className="ml-auto flex items-center gap-1 rounded p-0.5 text-[9px] text-white/70 hover:text-white"
-                  >
-                    <span aria-hidden className="h-2.5 w-2.5 rounded-full border border-white/40" style={{ background: a.color ? COLOR_HEX[a.color] : "transparent" }} />
-                  </button>
-                  )}
-                </div>
-              )}
-              {compact && (
-                <span className="pointer-events-none absolute inset-x-1 top-9 z-10 truncate rounded bg-black/55 px-1.5 py-0.5 text-[9px] text-white opacity-0 transition-opacity group-hover:opacity-100">
-                  {a.filename}
-                  {a.stars > 0 ? ` · ${"★".repeat(a.stars)}` : ""}
-                </span>
-              )}
-              {!compact && (
-              <div className="flex flex-col gap-1.5 p-2">
-                <div className="flex items-center justify-between gap-1">
-                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${STATUS_BADGE[a.status] ?? ""}`}>{a.status}</span>
-                  {a.stars > 0 && <span title={`${a.stars} stars`} className="text-[10px] leading-none text-amber-500">{"★".repeat(a.stars)}</span>}
-                  {a.color > 0 && <span aria-hidden title={COLOR_NAMES[a.color]} className="h-2 w-2 rounded-full" style={{ background: COLOR_HEX[a.color] }} />}
-                  {a.rawArchivedAt && <a href="/dashboard/raw-vault" title="In RAW vault cold storage — restorable from the RAW Vault page" className="rounded-full bg-sky-500/10 px-2 py-0.5 text-[10px] font-medium text-sky-600 dark:text-sky-400">❄ cold</a>}
-                  {a.tags.includes("favorite") && <span title="Favorite" className="text-[10px] text-amber-500">♥</span>}
-                  <span className="text-[10px] text-ink-tertiary">{mb(a.bytes)}</span>
-                </div>
-                <p className="truncate text-[11px] text-ink-muted" title={a.filename}>{a.filename}</p>
-                {a.status === "shared" && (
-                  <p className="text-[10px] text-ink-tertiary" title="In an active client gallery — revoke the gallery link to edit or delete">🔒 locked</p>
-                )}
               </div>
-              )}
+            )}
+            <div className={`overflow-hidden rounded-[10px] border border-hairline ${compact ? "p-0.5" : "p-0.5 sm:p-1"}`}>
+              <div
+                className={
+                  density === "s"
+                    ? "columns-4 gap-0.5 sm:columns-6 sm:gap-1 md:columns-8 lg:columns-10 [&>*]:mb-0.5 sm:[&>*]:mb-1"
+                    : density === "m"
+                      ? "columns-4 gap-1 sm:columns-4 sm:gap-2 md:columns-5 [&>*]:mb-1 sm:[&>*]:mb-2"
+                      : "columns-4 gap-1 sm:columns-2 sm:gap-3 lg:columns-3 [&>*]:mb-1 sm:[&>*]:mb-3"
+                }
+              >
+                {g.entries.map(({ a, i }) => (
+                  <div
+                    key={a.id}
+                    data-asset-idx={i}
+                    className={`group relative flex break-inside-avoid flex-col overflow-hidden transition-opacity ${
+                      compact
+                        ? `rounded-[4px] ${selected.has(a.id) ? "ring-2 ring-primary" : focusIndex === i ? "ring-2 ring-primary/70" : ""}`
+                        : `rounded-[6px] border border-transparent sm:rounded-[10px] sm:border-hairline sm:bg-surface-1 ${
+                            selected.has(a.id) ? "ring-2 ring-primary sm:border-primary" : focusIndex === i ? "ring-2 ring-primary/70" : ""
+                          }`
+                    } ${deleting.has(a.id) ? "opacity-40 saturate-50" : ""}`}
+                  >
+                    {deleting.has(a.id) && (
+                      <span className="absolute left-1/2 top-1/2 z-30 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black/60 px-2 py-0.5 text-[9px] font-medium text-white">
+                        Deleting…
+                      </span>
+                    )}
+                    {selectMode && (
+                      <input
+                        type="checkbox"
+                        checked={selected.has(a.id)}
+                        onClick={(e) => { e.stopPropagation(); toggleSelect(a.id, i, e.shiftKey); }}
+                        onChange={() => undefined}
+                        className="absolute left-1.5 top-1.5 z-20 h-4 w-4 accent-[var(--primary)]"
+                        aria-label={`Select ${a.filename}`}
+                      />
+                    )}
+                    <a
+                      href={`/api/assets/${a.id}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      title={selectMode ? undefined : "Manage this file"}
+                      className={`relative block bg-canvas ${selectMode ? "" : "cursor-zoom-in"}`}
+                      onClick={(e) => {
+                        if (selectMode) e.preventDefault();
+                        else {
+                          e.preventDefault();
+                          setManageIndex(i);
+                        }
+                      }}
+                    >
+                      {a.kind === "image" ? (
+                        // eslint-disable-next-line @next/next/no-img-element -- authorized proxy, no optimizer
+                        <img
+                          src={`/api/assets/${a.id}?variant=thumb${derivVersion ? `&v=${derivVersion}` : ""}`}
+                          alt={a.filename}
+                          loading="lazy"
+                          className={`block w-full object-cover ${compact ? "aspect-square" : "aspect-square sm:aspect-auto"}`}
+                        />
+                      ) : (
+                        <span className={`flex w-full flex-col items-center justify-center gap-1 text-ink-tertiary ${compact ? "aspect-square" : "aspect-square sm:min-h-32"}`}>
+                          <span className="text-xs uppercase">{a.kind}</span>
+                          <span className="text-[10px]">.{a.filename.split(".").pop()}</span>
+                        </span>
+                      )}
+                      {/* image-only indicators (small density + mobile):
+                         * overlays on the image, never card chrome */}
+                      {a.status === "rejected" && (
+                        <span className={`absolute inset-0 z-[5] bg-canvas/45 ${compact ? "" : "sm:hidden"}`} aria-hidden />
+                      )}
+                      {a.status === "approved" && (
+                        <span className={`absolute inset-x-0 bottom-0 z-[5] h-[3px] bg-emerald-500 ${compact ? "" : "sm:hidden"}`} aria-hidden />
+                      )}
+                      {a.color > 0 && (
+                        <span className={`absolute inset-y-0 left-0 z-[5] w-[3px] ${compact ? "" : "sm:hidden"}`} style={{ background: COLOR_HEX[a.color] }} aria-hidden />
+                      )}
+                      {a.stars > 0 && (
+                        <span className={`absolute right-1 top-1 z-[6] rounded-full bg-black/55 px-1.5 py-0.5 text-[9px] font-medium leading-none text-amber-400 ${compact ? "" : "sm:hidden"}`}>
+                          {"★".repeat(a.stars)}
+                        </span>
+                      )}
+                      {a.tags.includes("favorite") && (
+                        <span className={`absolute left-1 top-1 z-[6] text-[10px] leading-none text-amber-400 drop-shadow ${compact ? "" : "sm:hidden"}`} aria-hidden>
+                          ♥
+                        </span>
+                      )}
+                      {compact && (
+                        <span className="pointer-events-none absolute inset-x-7 top-1 z-10 truncate rounded bg-black/55 px-1.5 py-0.5 text-[9px] text-white opacity-0 transition-opacity group-hover:opacity-100">
+                          {a.filename}
+                        </span>
+                      )}
+                      {/* hover quick actions (culling without leaving the grid) */}
+                      {!selectMode && (
+                        <div className={`pointer-events-none absolute z-20 flex items-center gap-1 rounded-lg bg-black/60 px-1.5 py-1 opacity-0 backdrop-blur-sm transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 ${micro ? "inset-x-1 bottom-1" : "inset-x-1.5 bottom-1.5"}`}>
+                          <button type="button" title="Reject (X)" aria-label={`Reject ${a.filename}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); void flagAsset(a.id, "reject"); }} className="rounded p-0.5 text-white/80 hover:text-red-400">✕</button>
+                          <button type="button" title="Approve (P)" aria-label={`Approve ${a.filename}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); void flagAsset(a.id, "approve"); }} className="rounded p-0.5 text-white/80 hover:text-emerald-400">✓</button>
+                          <button type="button" title="Favorite (F)" aria-label={`Favorite ${a.filename}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); void toggleFavorite(a.id); }} className={`rounded p-0.5 ${a.tags.includes("favorite") ? "text-amber-400" : "text-white/80 hover:text-amber-300"}`}>♥</button>
+                          {!micro && (
+                          <span className="ml-1 flex items-center" role="group" aria-label={`Rate ${a.filename}`}>
+                            {[1, 2, 3, 4, 5].map((n) => (
+                              <button
+                                key={n}
+                                type="button"
+                                title={`${n} star${n > 1 ? "s" : ""} (${n})`}
+                                aria-label={`Rate ${a.filename} ${n} stars`}
+                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); void rateAsset(a.id, { stars: a.stars === n ? 0 : n }); }}
+                                className={`px-[1px] text-[11px] leading-none ${n <= a.stars ? "text-amber-400" : "text-white/45 hover:text-white/80"}`}
+                              >
+                                ★
+                              </button>
+                            ))}
+                          </span>
+                          )}
+                          {!micro && (
+                          <button
+                            type="button"
+                            title={`Color: ${COLOR_NAMES[a.color]} — cycles (6–9 keys)`}
+                            aria-label={`Cycle color label for ${a.filename}`}
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); void rateAsset(a.id, { color: (a.color + 1) % 6 }); }}
+                            className="ml-auto flex items-center gap-1 rounded p-0.5 text-[9px] text-white/70 hover:text-white"
+                          >
+                            <span aria-hidden className="h-2.5 w-2.5 rounded-full border border-white/40" style={{ background: a.color ? COLOR_HEX[a.color] : "transparent" }} />
+                          </button>
+                          )}
+                        </div>
+                      )}
+                    </a>
+                    {/* meta row — desktop m/l cards only (mobile is image-only) */}
+                    {!compact && (
+                      <div className="hidden flex-col gap-1.5 p-2 sm:flex">
+                        <div className="flex items-center justify-between gap-1">
+                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${STATUS_BADGE[a.status] ?? ""}`}>{a.status}</span>
+                          {a.stars > 0 && <span title={`${a.stars} stars`} className="text-[10px] leading-none text-amber-500">{"★".repeat(a.stars)}</span>}
+                          {a.color > 0 && <span aria-hidden title={COLOR_NAMES[a.color]} className="h-2 w-2 rounded-full" style={{ background: COLOR_HEX[a.color] }} />}
+                          {a.rawArchivedAt && <a href="/dashboard/raw-vault" title="In RAW vault cold storage — restorable from the RAW Vault page" className="rounded-full bg-sky-500/10 px-2 py-0.5 text-[10px] font-medium text-sky-600 dark:text-sky-400">❄ cold</a>}
+                          {a.tags.includes("favorite") && <span title="Favorite" className="text-[10px] text-amber-500">♥</span>}
+                          <span className="text-[10px] text-ink-tertiary">{mb(a.bytes)}</span>
+                        </div>
+                        <p className="truncate text-[11px] text-ink-muted" title={a.filename}>{a.filename}</p>
+                        {a.status === "shared" && (
+                          <p className="text-[10px] text-ink-tertiary" title="In an active client gallery — revoke the gallery link to edit or delete">🔒 locked</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
-      )}
+          </section>
+        ))}
 
       {/* List view */}
       {view === "list" && feed.items.length > 0 && (
@@ -1507,7 +1612,7 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                         className="truncate hover:underline"
                         onClick={(e) => {
                           e.preventDefault();
-                          setViewerIndex(i);
+                          setManageIndex(i);
                         }}
                       >
                         {a.filename}
@@ -1571,16 +1676,6 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
         </div>
       )}
 
-      <AssetViewer
-        items={feed.items}
-        index={viewerIndex}
-        onIndexChange={setViewerIndex}
-        onClose={() => setViewerIndex(null)}
-        derivVersion={derivVersion}
-        onFlag={(id, action) => void flagAsset(id, action)}
-        onRate={(id, patch) => void rateAsset(id, patch)}
-        onFavorite={(id) => void toggleFavorite(id)}
-      />
     </div>
   );
 }
