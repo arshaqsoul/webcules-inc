@@ -138,6 +138,9 @@ const LOADER_JS = `(function () {
       var overlay = document.createElement("div");
       overlay.setAttribute("style", "position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:16px;");
       var modal = document.createElement("div");
+      modal.setAttribute("role", "dialog");
+      modal.setAttribute("aria-modal", "true");
+      modal.setAttribute("aria-label", "Booking calendar");
       modal.setAttribute("style", "background:#fff;border-radius:16px;max-width:560px;width:100%;max-height:calc(100vh - 40px);overflow:auto;position:relative;");
       var close = document.createElement("button");
       close.type = "button";
@@ -147,7 +150,18 @@ const LOADER_JS = `(function () {
       function done() { overlay.remove(); open = false; }
       close.addEventListener("click", done);
       overlay.addEventListener("click", function (e) { if (e.target === overlay) done(); });
-      document.addEventListener("keydown", function esc(e) { if (e.key === "Escape") { done(); document.removeEventListener("keydown", esc); } });
+      // WEB-103 a11y: ESC closes; Tab wraps between the modal's focusables
+      // (close button ↔ iframe). Tabbing inside the iframe is native; when
+      // focus exits the iframe forward it lands on the close button's cycle.
+      function onKey(e) {
+        if (e.key === "Escape") { done(); document.removeEventListener("keydown", onKey); return; }
+        if (e.key !== "Tab") return;
+        var focusables = [close, frame];
+        var idx = focusables.indexOf(document.activeElement);
+        if (e.shiftKey && (idx === 0 || idx === -1)) { e.preventDefault(); frame.focus(); }
+        else if (!e.shiftKey && idx === focusables.length - 1) { e.preventDefault(); close.focus(); }
+      }
+      document.addEventListener("keydown", onKey);
       var frame = makeFrame("calendar", key, tokens);
       frame.__modal = modal;
       frame.setAttribute("style", "width:100%;border:0;display:block;min-height:420px;");
