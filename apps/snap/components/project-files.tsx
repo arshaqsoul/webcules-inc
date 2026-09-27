@@ -10,6 +10,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Check, ChevronDown, ChevronLeft, ChevronRight, ListFilter, X } from "lucide-react";
 
 import { Button } from "@webcules/ui/components/button";
+import { AssetViewer } from "@/components/asset-viewer";
 import { useConfirm } from "@/components/confirm-provider";
 import { TriageMode } from "@/components/triage-mode";
 
@@ -20,6 +21,9 @@ export type AssetItem = {
   status: string;
   bytes: number;
   mimeType: string;
+  width: number | null;
+  height: number | null;
+  exifStripped: boolean;
   /** RAW vault (WEB-153): epoch seconds when moved to cold storage; null = hot. */
   rawArchivedAt: number | null;
   tags: string[];
@@ -181,6 +185,9 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
   }, [filterOpen]);
   const [view, setView] = useState<"grid" | "list">("grid");
   const [loading, setLoading] = useState(false);
+
+  // Detail viewer (WEB-119): index into feed.items, null = closed.
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
 
   // Selection (WEB-128): click toggle, shift-range, clear.
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -830,7 +837,20 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                   aria-label={`Select ${a.filename}`}
                 />
               )}
-              <a href={`/api/assets/${a.id}`} target="_blank" rel="noreferrer" className="block aspect-square bg-canvas" onClick={(e) => selectMode && e.preventDefault()}>
+              <a
+                href={`/api/assets/${a.id}`}
+                target="_blank"
+                rel="noreferrer"
+                title={selectMode ? undefined : "Open in viewer"}
+                className={`block aspect-square bg-canvas ${selectMode ? "" : "cursor-zoom-in"}`}
+                onClick={(e) => {
+                  if (selectMode) e.preventDefault();
+                  else {
+                    e.preventDefault();
+                    setViewerIndex(i);
+                  }
+                }}
+              >
                 {a.kind === "image" ? (
                   // eslint-disable-next-line @next/next/no-img-element -- authorized proxy, no optimizer
                   <img
@@ -891,7 +911,18 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                     </td>
                   )}
                   <td className="max-w-64 truncate px-4 py-2 text-ink">
-                    <a href={`/api/assets/${a.id}`} target="_blank" rel="noreferrer" className="hover:underline">{a.filename}</a>
+                    <a
+                      href={`/api/assets/${a.id}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="hover:underline"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setViewerIndex(i);
+                      }}
+                    >
+                      {a.filename}
+                    </a>
                   </td>
                   <td className="px-4 py-2 text-ink-muted">
                     {a.kind}
@@ -932,6 +963,14 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
           onDone={refresh}
         />
       )}
+
+      <AssetViewer
+        items={feed.items}
+        index={viewerIndex}
+        onIndexChange={setViewerIndex}
+        onClose={() => setViewerIndex(null)}
+        derivVersion={derivVersion}
+      />
     </div>
   );
 }
