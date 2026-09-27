@@ -12,7 +12,7 @@ export default async function RawVaultPage() {
   const summary = await getRawVaultSummary(ctx.organizationId);
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-5">
+    <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-[-0.6px] text-ink">RAW Vault</h1>

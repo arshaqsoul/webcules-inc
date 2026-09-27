@@ -24,7 +24,7 @@ export default async function GalleriesPage() {
   const grants = await listStudioGrants(ctx.organizationId);
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-5">
+    <div className="flex flex-col gap-5">
       <div>
         <h1 className="text-2xl font-semibold tracking-[-0.6px] text-ink">Galleries</h1>
         <p className="mt-1 text-sm text-ink-subtle">
