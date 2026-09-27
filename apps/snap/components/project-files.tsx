@@ -230,6 +230,8 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
   const [triageOpen, setTriageOpen] = useState(false);
   const [notice, setNotice] = useState("");
   const [purging, setPurging] = useState(false);
+  // Ids being deleted right now — cards dim + badge until the server replies.
+  const [deleting, setDeleting] = useState<Set<string>>(new Set());
 
   // Bulk rename (Files polish): base + running index over the selected set.
   const [renameOpen, setRenameOpen] = useState(false);
@@ -296,7 +298,13 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
     if (!ids.length) return;
     if (action === "delete" && !(await confirm({ title: "Delete files?", body: `Delete ${ids.length} file${ids.length === 1 ? "" : "s"} permanently?`, destructive: true }))) return;
     if (action === "reject" && !(await confirm({ title: "Reject files?", body: `Reject ${ids.length} file${ids.length === 1 ? "" : "s"}?` }))) return;
-    setNotice("");
+    // Deletion can take a moment on large selections — mark the affected
+    // cards immediately so the action visibly registers.
+    const isDelete = action === "delete";
+    if (isDelete) {
+      setDeleting(new Set(ids));
+      setNotice(`Deleting ${ids.length} file${ids.length === 1 ? "" : "s"}…`);
+    } else setNotice("");
     try {
       const res = await fetch("/api/assets/bulk", {
         method: "POST",
@@ -305,16 +313,25 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
       });
       const body = (await res.json().catch(() => ({}))) as { done?: number; blocked?: { assetId: string }[] };
       const blocked = body.blocked?.length ?? 0;
-      setNotice(
-        blocked
-          ? `${body.done ?? 0} done · ${blocked} blocked (in an active client gallery)`
-          : `${body.done ?? 0} file${(body.done ?? 0) === 1 ? "" : "s"} updated`,
-      );
+      if (isDelete) {
+        setNotice(
+          blocked
+            ? `Deleted ${body.done ?? 0} file${(body.done ?? 0) === 1 ? "" : "s"} · ${blocked} blocked (in an active client gallery)`
+            : `Deleted ${body.done ?? 0} file${(body.done ?? 0) === 1 ? "" : "s"}.`,
+        );
+      } else {
+        setNotice(
+          blocked
+            ? `${body.done ?? 0} done · ${blocked} blocked (in an active client gallery)`
+            : `${body.done ?? 0} file${(body.done ?? 0) === 1 ? "" : "s"} updated`,
+        );
+      }
       setSelected(new Set());
       refresh();
     } catch {
       setNotice("Network error — try again.");
     }
+    if (isDelete) setDeleting(new Set());
   }
 
   // "Delete rejected now" (WEB-123) — confirmation with the live count, then  // a deleted/skipped report (skipped = locked by an active client gallery).
@@ -606,6 +623,46 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
   // content fingerprint per queue item — sent at confirm so the asset row
   // carries it for future duplicate checks.
   const fpStore = useRef<Map<string, string>>(new Map());
+
+  // Whole-tab drop target (Files polish): dropping anywhere on the tab
+  // uploads instead of the browser navigating to the file. Depth-counted
+  // dragenter/leave drives a full-viewport "Drop to upload" overlay.
+  const [dragActive, setDragActive] = useState(false);
+  const dragDepth = useRef(0);
+  const enqueueRef = useRef(enqueueWithStore);
+  enqueueRef.current = enqueueWithStore;
+  useEffect(() => {
+    const hasFiles = (e: DragEvent) => Array.from(e.dataTransfer?.types ?? []).includes("Files");
+    const onEnter = (e: DragEvent) => {
+      if (!hasFiles(e)) return;
+      dragDepth.current++;
+      setDragActive(true);
+    };
+    const onOver = (e: DragEvent) => {
+      if (hasFiles(e)) e.preventDefault();
+    };
+    const onLeave = () => {
+      dragDepth.current = Math.max(0, dragDepth.current - 1);
+      if (!dragDepth.current) setDragActive(false);
+    };
+    const onDrop = (e: DragEvent) => {
+      dragDepth.current = 0;
+      setDragActive(false);
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      if (e.dataTransfer?.files?.length) void enqueueRef.current(e.dataTransfer.files);
+    };
+    document.addEventListener("dragenter", onEnter);
+    document.addEventListener("dragover", onOver);
+    document.addEventListener("dragleave", onLeave);
+    document.addEventListener("drop", onDrop);
+    return () => {
+      document.removeEventListener("dragenter", onEnter);
+      document.removeEventListener("dragover", onOver);
+      document.removeEventListener("dragleave", onLeave);
+      document.removeEventListener("drop", onDrop);
+    };
+  }, []);
 
   async function enqueueWithStore(files: FileList | File[]) {
     const arr = Array.from(files);
@@ -916,7 +973,8 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
           e.preventDefault();
-          if (e.dataTransfer.files?.length) enqueueWithStore(e.dataTransfer.files);
+          e.stopPropagation(); // the document-level handler would enqueue again
+          if (e.dataTransfer.files?.length) void enqueueWithStore(e.dataTransfer.files);
         }}
         className="rounded-[12px] border border-dashed border-hairline-strong bg-surface-1 p-4 text-center text-xs text-ink-subtle"
       >
@@ -1064,10 +1122,15 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
           {feed.items.map((a, i) => (
             <div
               key={a.id}
-              className={`relative flex break-inside-avoid flex-col overflow-hidden rounded-[12px] border bg-surface-1 ${
+              className={`relative flex break-inside-avoid flex-col overflow-hidden rounded-[12px] border bg-surface-1 transition-opacity ${
                 selected.has(a.id) ? "border-primary ring-1 ring-primary/40" : "border-hairline"
-              }`}
+              } ${deleting.has(a.id) ? "opacity-40 saturate-50" : ""}`}
             >
+              {deleting.has(a.id) && (
+                <span className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-medium text-white">
+                  Deleting…
+                </span>
+              )}
               {selectMode && (
                 <input
                   type="checkbox"
@@ -1143,7 +1206,7 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
               {feed.items.map((a, i) => (
                 <tr
                   key={a.id}
-                  className={`cursor-default ${selected.has(a.id) ? "bg-primary/5" : ""}`}
+                  className={`cursor-default transition-opacity ${selected.has(a.id) ? "bg-primary/5" : ""} ${deleting.has(a.id) ? "opacity-40" : ""}`}
                   onClick={() => selectMode && toggleSelect(a.id, i, (window.event as MouseEvent)?.shiftKey ?? false)}
                 >
                   {selectMode && (
@@ -1151,19 +1214,33 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                       <input type="checkbox" checked={selected.has(a.id)} readOnly className="h-4 w-4 accent-[var(--primary)]" />
                     </td>
                   )}
-                  <td className="max-w-64 truncate px-4 py-2 text-ink">
-                    <a
-                      href={`/api/assets/${a.id}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="hover:underline"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setViewerIndex(i);
-                      }}
-                    >
-                      {a.filename}
-                    </a>
+                  <td className="max-w-72 px-4 py-2 text-ink">
+                    <div className="flex items-center gap-2.5">
+                      {a.kind === "image" ? (
+                        // eslint-disable-next-line @next/next/no-img-element -- authorized proxy, no optimizer
+                        <img
+                          src={`/api/assets/${a.id}?variant=thumb${derivVersion ? `&v=${derivVersion}` : ""}`}
+                          alt=""
+                          loading="lazy"
+                          className="h-9 w-9 shrink-0 rounded-md object-cover"
+                        />
+                      ) : (
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-surface-2 text-[9px] uppercase text-ink-tertiary">{a.kind}</span>
+                      )}
+                      <a
+                        href={`/api/assets/${a.id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="truncate hover:underline"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setViewerIndex(i);
+                        }}
+                      >
+                        {a.filename}
+                      </a>
+                      {deleting.has(a.id) && <span className="shrink-0 text-[10px] text-ink-tertiary">Deleting…</span>}
+                    </div>
                   </td>
                   <td className="px-4 py-2 text-ink-muted">
                     {a.kind}
@@ -1203,6 +1280,15 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
           onClose={() => setTriageOpen(false)}
           onDone={refresh}
         />
+      )}
+
+      {dragActive && (
+        <div className="pointer-events-none fixed inset-0 z-[70] bg-primary/5">
+          <div className="absolute inset-3 rounded-xl border-2 border-dashed border-primary/60 bg-surface-1/80 backdrop-blur-[1px]" />
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-xl border border-hairline bg-surface-1 px-6 py-4 text-sm font-medium text-ink shadow-2xl">
+            Drop files to upload
+          </div>
+        </div>
       )}
 
       <AssetViewer

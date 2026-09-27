@@ -209,14 +209,61 @@ export async function bulkAssetAction(
   },
 ): Promise<BulkResult> {
   const result: BulkResult = { done: 0, blocked: [] };
-  for (const assetId of params.assetIds.slice(0, 500)) {
-    if (params.action === "delete") {
-      const r = await deleteAsset(organizationId, assetId);
-      if (r.ok) result.done++;
-      else if (r.error === "shared_protected") result.blocked.push({ assetId, reason: "active client gallery" });
-      else result.blocked.push({ assetId, reason: "not found" });
-      continue;
+  const ids = params.assetIds.slice(0, 500);
+
+  // Delete runs batched: one assets fetch, one share-guard query, one row
+  // delete, parallel R2 deletes — the per-asset loop made large selections
+  // feel frozen (a query per file plus sequential object deletes).
+  if (params.action === "delete" && ids.length) {
+    const db = getDb();
+    const assets = await db
+      .select({ id: schema.assets.id, storageKey: schema.assets.storageKey, thumbKey: schema.assets.thumbKey, previewKey: schema.assets.previewKey, projectId: schema.assets.projectId })
+      .from(schema.assets)
+      .where(and(eq(schema.assets.organizationId, organizationId), inArray(schema.assets.id, ids)));
+    const foundIds = new Set(assets.map((a) => a.id));
+    const guardedRows = await db
+      .select({ assetId: schema.shareGrantAssets.assetId })
+      .from(schema.shareGrantAssets)
+      .innerJoin(schema.shareGrants, eq(schema.shareGrants.id, schema.shareGrantAssets.grantId))
+      .where(
+        and(
+          inArray(schema.shareGrantAssets.assetId, assets.map((a) => a.id)),
+          eq(schema.shareGrants.status, "active"),
+          or(isNull(schema.shareGrants.expiresAt), gt(schema.shareGrants.expiresAt, new Date())),
+        ),
+      );
+    const guarded = new Set(guardedRows.map((r) => r.assetId));
+    const doomed = assets.filter((a) => !guarded.has(a.id));
+    if (doomed.length) {
+      await db.delete(schema.assets).where(and(eq(schema.assets.organizationId, organizationId), inArray(schema.assets.id, doomed.map((a) => a.id))));
+      await Promise.allSettled(
+        doomed.flatMap((a) => [a.storageKey, a.thumbKey, a.previewKey].filter((k): k is string => Boolean(k)).map((k) => deleteObject(organizationId, k))),
+      );
     }
+    if (guarded.size) {
+      await db.insert(schema.auditLog).values(
+        Array.from(guarded).map((assetId) => ({
+          id: crypto.randomUUID(),
+          organizationId,
+          actorType: "user" as const,
+          actorId: params.actorUserId,
+          action: "asset.delete_blocked",
+          targetType: "asset" as const,
+          targetId: assetId,
+          meta: JSON.stringify({ reason: "active_share_grant", source: "bulk" }),
+        })),
+      );
+    }
+    result.done = doomed.length;
+    result.blocked = [
+      ...Array.from(guarded).map((assetId) => ({ assetId, reason: "active client gallery" })),
+      ...ids.filter((id) => !foundIds.has(id)).map((assetId) => ({ assetId, reason: "not found" })),
+    ];
+    // Project attribution must be captured before the rows are deleted.
+    return finishBulkAudit(organizationId, params, result, assets[0]?.projectId ?? null);
+  }
+
+  for (const assetId of ids) {
     if (params.action === "reject") {
       const r = await setAssetStatus(organizationId, assetId, "rejected");
       if (r.ok) result.done++;
@@ -233,19 +280,32 @@ export async function bulkAssetAction(
     await setAssetStatus(organizationId, assetId, status);
     result.done++;
   }
+  return finishBulkAudit(organizationId, params, result);
+}
+
+/** Shared bulk audit — attributes the run to the project so the activity
+ * feed can surface it. Delete passes the project captured pre-deletion;
+ * other actions still have their rows and resolve it here. */
+async function finishBulkAudit(
+  organizationId: string,
+  params: { action: string; assetIds: string[]; tag?: string; actorUserId: string },
+  result: BulkResult,
+  projectId?: string | null,
+): Promise<BulkResult> {
+  if (projectId === undefined) {
+    const first = await getAsset(organizationId, params.assetIds[0]);
+    projectId = first?.projectId ?? null;
+  }
   if (params.assetIds.length) {
-    // Attribute the bulk run to the project (first asset's project, org-scoped)
-    // so the project activity feed can surface it.
-    const firstAsset = await getAsset(organizationId, params.assetIds[0]);
     await getDb().insert(schema.auditLog).values({
       id: crypto.randomUUID(),
       organizationId,
       actorType: "user",
       actorId: params.actorUserId,
       action: `asset.bulk_${params.action}`,
-      targetType: firstAsset ? "project" : "asset",
-      targetId: firstAsset?.projectId ?? params.assetIds[0],
-      meta: JSON.stringify({ count: params.assetIds.length, done: result.done, blocked: result.blocked.length, tag: params.tag ?? null, projectId: firstAsset?.projectId ?? null }),
+      targetType: projectId ? "project" : "asset",
+      targetId: projectId ?? params.assetIds[0],
+      meta: JSON.stringify({ count: params.assetIds.length, done: result.done, blocked: result.blocked.length, tag: params.tag ?? null, projectId }),
     });
   }
   return result;
