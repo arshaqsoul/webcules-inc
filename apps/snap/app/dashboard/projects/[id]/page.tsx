@@ -91,7 +91,7 @@ export default async function ProjectDetailPage({
     ]);
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-5">
+    <div className="flex flex-col gap-5">
       <Link href="/dashboard/projects" className="flex items-center gap-1.5 text-sm text-ink-subtle hover:text-ink">
         <ArrowLeft className="h-4 w-4" aria-hidden /> All projects
       </Link>

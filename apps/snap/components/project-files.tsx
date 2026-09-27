@@ -1118,7 +1118,7 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
       {/* Grid view — CSS-columns masonry: each photo keeps its own aspect
        * so one tall image no longer stretches its whole row. */}
       {view === "grid" && (
-        <div className="columns-2 gap-3 sm:columns-3 lg:columns-4 xl:columns-5 [&>*]:mb-3">
+        <div className="columns-2 gap-3 sm:columns-3 lg:columns-4 xl:columns-5 2xl:columns-6 [&>*]:mb-3">
           {feed.items.map((a, i) => (
             <div
               key={a.id}
