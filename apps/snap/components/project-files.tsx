@@ -7,7 +7,7 @@
  * (WEB-113). Fast triage lives in <TriageMode> (WEB-122). */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, ListFilter, X } from "lucide-react";
+import { Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, ListFilter, X, ZoomIn } from "lucide-react";
 
 import { Button } from "@webcules/ui/components/button";
 import {
@@ -226,6 +226,18 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
   }, [filterOpen]);
   const [view, setView] = useState<"grid" | "list">("grid");
   const [loading, setLoading] = useState(false);
+  // Grid density (Samsung-Gallery style): 1 = one photo per row, up to 18
+  // micro-tiles. Persisted; cards adapt (labels hide, hover simplifies).
+  const [gridCols, setGridCols] = useState(() => {
+    if (typeof window === "undefined") return 6;
+    const v = Number(window.localStorage.getItem("snap-grid-cols"));
+    return Number.isInteger(v) && v >= 1 && v <= 18 ? v : 6;
+  });
+  useEffect(() => {
+    window.localStorage.setItem("snap-grid-cols", String(gridCols));
+  }, [gridCols]);
+  const compact = view === "grid" && gridCols >= 8;
+  const micro = view === "grid" && gridCols >= 13;
 
   // Detail viewer (WEB-119): index into feed.items, null = closed.
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
@@ -290,6 +302,8 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
           url.searchParams.set("fv", view);
           if (status) url.searchParams.set("fs", status); else url.searchParams.delete("fs");
           if (kind) url.searchParams.set("fk", kind); else url.searchParams.delete("fk");
+          if (rating) url.searchParams.set("fr", rating); else url.searchParams.delete("fr");
+          if (colorSel) url.searchParams.set("fc", colorSel); else url.searchParams.delete("fc");
           window.history.replaceState(null, "", url);
         }
       } catch { /* keep previous page */ }
@@ -306,7 +320,7 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
     if (v === "list" || v === "grid") setView(v);
     void load(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reload on filter change
-  }, [status, kind, tag, sort]);
+  }, [status, kind, tag, sort, rating, colorSel]);
 
   const refresh = useCallback(() => void load(true), [load]);
 
@@ -913,6 +927,87 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
     return { done, failed, total: queue.length, overallPct };
   }, [queue]);
 
+  /* Filter menu (hierarchical): root rows + flyout submenus. */
+  const FILTER_ROOT = [
+    { key: "status" as const, label: "Status", current: status || "All", has: Boolean(status), clear: () => setStatus("") },
+    { key: "kind" as const, label: "Type", current: kind || "All", has: Boolean(kind), clear: () => setKind("") },
+    { key: "tag" as const, label: "Tags", current: tag || "All", has: Boolean(tag), clear: () => setTag("") },
+    { key: "stars" as const, label: "Stars", current: rating ? (rating === "unrated" ? "Unrated" : `${rating}+`) : "Any", has: Boolean(rating), clear: () => setRating("") },
+    { key: "color" as const, label: "Color", current: colorSel ? (colorSel === "none" ? "None" : COLOR_NAMES[Number(colorSel)]) : "Any", has: Boolean(colorSel), clear: () => setColorSel("") },
+    {
+      key: "sort" as const,
+      label: "Sort by",
+      current: sort === "name" ? "Name" : sort === "size" ? "Largest" : sort === "status" ? "Status" : "Newest",
+      has: sort !== "date",
+      clear: () => setSort("date"),
+    },
+  ];
+
+  function filterGroupDef(key: "status" | "kind" | "tag" | "stars" | "color" | "sort") {
+    if (key === "status")
+      return {
+        allLabel: "All statuses",
+        allValue: "",
+        current: status,
+        apply: (v: string) => setStatus(v),
+        options: STATUSES.map((s) => ({ value: s, label: s, count: counts[s] ?? 0 })),
+      };
+    if (key === "kind")
+      return {
+        allLabel: "All types",
+        allValue: "",
+        current: kind,
+        apply: (v: string) => setKind(v),
+        options: KINDS.map((k) => ({ value: k, label: k, count: undefined })),
+      };
+    if (key === "tag")
+      return {
+        allLabel: "All tags",
+        allValue: "",
+        current: tag,
+        apply: (v: string) => setTag(v),
+        options: feed.tags.map((t) => ({ value: t.tag, label: t.tag, count: t.n })),
+      };
+    if (key === "stars")
+      return {
+        allLabel: "Any rating",
+        allValue: "",
+        current: rating,
+        apply: (v: string) => setRating(v),
+        options: [
+          { value: "unrated", label: "Unrated", count: Number(feed.ratings?.stars["0"] ?? 0) },
+          ...[5, 4, 3, 2, 1].map((n) => ({
+            value: String(n),
+            label: `${"★".repeat(n)} ${n}+`,
+            count: Object.entries(feed.ratings?.stars ?? {}).reduce((acc, [k, c]) => (Number(k) >= n ? acc + c : acc), 0),
+          })),
+        ],
+      };
+    if (key === "color")
+      return {
+        allLabel: "Any color",
+        allValue: "",
+        current: colorSel,
+        apply: (v: string) => setColorSel(v),
+        options: [
+          { value: "none", label: "No label", count: Number(feed.ratings?.colors["0"] ?? 0) },
+          ...[1, 2, 3, 4, 5].map((n) => ({ value: String(n), label: COLOR_NAMES[n], count: Number(feed.ratings?.colors[String(n)] ?? 0) })),
+        ],
+      };
+    return {
+      allLabel: "Default",
+      allValue: "date",
+      current: sort,
+      apply: (v: string) => setSort(v),
+      options: [
+        { value: "date", label: "Newest", count: undefined },
+        { value: "name", label: "Name", count: undefined },
+        { value: "size", label: "Largest", count: undefined },
+        { value: "status", label: "Status", count: undefined },
+      ],
+    };
+  }
+
   /* ---------------- Render ---------------- */
 
   return (
@@ -944,35 +1039,24 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
           </button>
           {filterOpen && (
             <div className="absolute left-0 top-full z-40 mt-1.5 w-60 rounded-[10px] border border-hairline bg-surface-1 p-1 shadow-lg">
-              {filterGroup === "" ? (
-                <>
-                  {(
-                    [
-                      { key: "status", label: "Status", current: status || "All statuses", has: Boolean(status), clear: () => setStatus("") },
-                      { key: "kind", label: "Type", current: kind || "All types", has: Boolean(kind), clear: () => setKind("") },
-                      { key: "tag", label: "Tags", current: tag || "All tags", has: Boolean(tag), clear: () => setTag("") },
-                      { key: "stars", label: "Stars", current: rating ? (rating === "unrated" ? "Unrated" : `${rating}+`) : "Any", has: Boolean(rating), clear: () => setRating("") },
-                      { key: "color", label: "Color", current: colorSel ? (colorSel === "none" ? "No label" : COLOR_NAMES[Number(colorSel)]) : "Any", has: Boolean(colorSel), clear: () => setColorSel("") },
-                      {
-                        key: "sort",
-                        label: "Sort by",
-                        current: sort === "name" ? "Name" : sort === "size" ? "Largest" : sort === "status" ? "Status" : "Newest",
-                        has: sort !== "date",
-                        clear: () => setSort("date"),
-                      },
-                    ] as const
-                  ).map((g) => (
-                    <div key={g.key} className="flex items-center">
+              {FILTER_ROOT.map((g) => {
+                const def = filterGroupDef(g.key);
+                return (
+                  <div key={g.key} className="relative">
+                    <div className="flex items-center">
                       <button
                         type="button"
-                        onClick={() => setFilterGroup(g.key)}
-                        className="flex flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] text-ink transition-colors hover:bg-surface-2"
+                        onClick={() => setFilterGroup(filterGroup === g.key ? "" : g.key)}
+                        aria-expanded={filterGroup === g.key}
+                        className={`flex flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] transition-colors hover:bg-surface-2 ${
+                          filterGroup === g.key ? "text-ink" : "text-ink-muted"
+                        }`}
                       >
-                        <span className="flex-1">
+                        <span className="flex-1 truncate">
                           {g.label}
-                          <span className="ml-1.5 text-[11px] text-ink-tertiary">{g.current}</span>
+                          {g.has && <span className="ml-1.5 text-[11px] text-primary">{g.current}</span>}
                         </span>
-                        <ChevronRight className="h-3.5 w-3.5 text-ink-tertiary" aria-hidden />
+                        <ChevronRight className={`h-3.5 w-3.5 text-ink-tertiary transition-transform ${filterGroup === g.key ? "rotate-90" : ""}`} aria-hidden />
                       </button>
                       {g.has && (
                         <button
@@ -985,147 +1069,72 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                         </button>
                       )}
                     </div>
-                  ))}
-                  {filterCount > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setStatus("");
-                        setKind("");
-                        setTag("");
-                        setRating("");
-                        setColorSel("");
-                      }}
-                      className="mt-1 w-full rounded-md border-t border-hairline px-2 py-1.5 text-left text-[13px] text-ink-subtle transition-colors hover:bg-surface-2"
-                    >
-                      Clear filters
-                    </button>
-                  )}
-                </>
-              ) : (
-                (() => {
-                  const group =
-                    filterGroup === "status"
-                      ? {
-                          title: "Status",
-                          allLabel: "All statuses",
-                          allValue: "",
-                          current: status,
-                          apply: (v: string) => setStatus(v),
-                          options: STATUSES.map((s) => ({ value: s, label: s, count: counts[s] ?? 0 })),
-                        }
-                      : filterGroup === "kind"
-                        ? {
-                            title: "Type",
-                            allLabel: "All types",
-                            allValue: "",
-                            current: kind,
-                            apply: (v: string) => setKind(v),
-                            options: KINDS.map((k) => ({ value: k, label: k, count: undefined })),
-                          }
-                        : filterGroup === "tag"
-                          ? {
-                              title: "Tags",
-                              allLabel: "All tags",
-                              allValue: "",
-                              current: tag,
-                              apply: (v: string) => setTag(v),
-                              options: feed.tags.map((t) => ({ value: t.tag, label: t.tag, count: t.n })),
-                            }
-                          : filterGroup === "stars"
-                            ? {
-                                title: "Stars",
-                                allLabel: "Any rating",
-                                allValue: "",
-                                current: rating,
-                                apply: (v: string) => setRating(v),
-                                options: [
-                                  { value: "unrated", label: "Unrated", count: Number(feed.ratings?.stars["0"] ?? 0) },
-                                  ...[5, 4, 3, 2, 1].map((n) => ({
-                                    value: String(n),
-                                    label: `${"★".repeat(n)}${n}+`,
-                                    count: Object.entries(feed.ratings?.stars ?? {}).reduce((acc, [k, c]) => (Number(k) >= n ? acc + c : acc), 0),
-                                  })),
-                                ],
-                              }
-                            : filterGroup === "color"
-                              ? {
-                                  title: "Color",
-                                  allLabel: "Any color",
-                                  allValue: "",
-                                  current: colorSel,
-                                  apply: (v: string) => setColorSel(v),
-                                  options: [
-                                    { value: "none", label: "No label", count: Number(feed.ratings?.colors["0"] ?? 0) },
-                                    ...[1, 2, 3, 4, 5].map((n) => ({
-                                      value: String(n),
-                                      label: COLOR_NAMES[n],
-                                      count: Number(feed.ratings?.colors[String(n)] ?? 0),
-                                    })),
-                                  ],
-                                }
-                          : {
-                              title: "Sort by",
-                              allLabel: "Default",
-                              allValue: "date",
-                              current: sort,
-                              apply: (v: string) => setSort(v),
-                              options: [
-                                { value: "date", label: "Newest", count: undefined },
-                                { value: "name", label: "Name", count: undefined },
-                                { value: "size", label: "Largest", count: undefined },
-                                { value: "status", label: "Status", count: undefined },
-                              ],
-                            };
-                  const pick = (v: string) => {
-                    group.apply(v);
-                    setFilterGroup("");
-                  };
-                  return (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => setFilterGroup("")}
-                        className="flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-left text-[13px] text-ink-subtle transition-colors hover:bg-surface-2"
-                      >
-                        <ChevronLeft className="h-3.5 w-3.5" aria-hidden />
-                        {group.title}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => pick(group.allValue)}
-                        className="flex w-full items-center rounded-md px-2 py-1.5 text-left text-[13px] text-ink-muted transition-colors hover:bg-surface-2"
-                      >
-                        <span className="flex-1">{group.allLabel}</span>
-                        {(group.current === group.allValue || (!group.current && group.allValue === "")) && (
-                          <Check className="h-3.5 w-3.5 text-ink-tertiary" aria-hidden />
-                        )}
-                      </button>
-                      {group.options.map((opt) => (
+                    {filterGroup === g.key && (
+                      <div className="absolute left-[calc(100%+6px)] top-0 z-50 w-56 rounded-[10px] border border-hairline bg-surface-1 p-1 shadow-lg">
                         <button
-                          key={opt.value}
                           type="button"
-                          onClick={() => pick(opt.value)}
-                          className="flex w-full items-center rounded-md px-2 py-1.5 pl-4 text-left text-[13px] text-ink-muted transition-colors hover:bg-surface-2"
+                          onClick={() => { def.apply(def.allValue); setFilterOpen(false); setFilterGroup(""); }}
+                          className="flex w-full items-center rounded-md px-2 py-1.5 text-left text-[13px] text-ink-muted transition-colors hover:bg-surface-2"
                         >
-                          <span className="flex-1 capitalize">
-                            {opt.label}
-                            {opt.count !== undefined && opt.count > 0 && (
-                              <span className="ml-1.5 text-[11px] text-ink-tertiary">{opt.count}</span>
-                            )}
-                          </span>
-                          {group.current === opt.value && <Check className="h-3.5 w-3.5 text-ink-tertiary" aria-hidden />}
+                          <span className="flex-1">{def.allLabel}</span>
+                          {(def.current === def.allValue || (!def.current && def.allValue === "")) && <Check className="h-3.5 w-3.5 text-ink-tertiary" aria-hidden />}
                         </button>
-                      ))}
-                    </>
-                  );
-                })()
+                        {def.options.map((opt) => (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => { def.apply(opt.value); setFilterOpen(false); setFilterGroup(""); }}
+                            className="flex w-full items-center rounded-md px-2 py-1.5 pl-3 text-left text-[13px] text-ink-muted transition-colors hover:bg-surface-2"
+                          >
+                            <span className="flex-1 capitalize">
+                              {opt.label}
+                              {opt.count !== undefined && opt.count > 0 && (
+                                <span className="ml-1.5 text-[11px] text-ink-tertiary">{opt.count}</span>
+                              )}
+                            </span>
+                            {def.current === opt.value && <Check className="h-3.5 w-3.5 text-ink-tertiary" aria-hidden />}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              {filterCount > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStatus("");
+                    setKind("");
+                    setTag("");
+                    setRating("");
+                    setColorSel("");
+                  }}
+                  className="mt-1 w-full rounded-md border-t border-hairline px-2 py-1.5 text-left text-[13px] text-ink-subtle transition-colors hover:bg-surface-2"
+                >
+                  Clear filters
+                </button>
               )}
             </div>
           )}
         </div>
 
         <div className="ml-auto flex items-center gap-1.5">
+          {view === "grid" && (
+            <span className="flex items-center gap-1.5 rounded-md border border-hairline bg-canvas px-2 py-1" title="Grid size — drag to zoom photos in or out">
+              <ZoomIn className="h-3.5 w-3.5 rotate-180 text-ink-tertiary" aria-hidden />
+              <input
+                type="range"
+                min={1}
+                max={18}
+                value={gridCols}
+                onChange={(e) => setGridCols(Number(e.target.value))}
+                aria-label="Grid size"
+                className="h-1 w-24 cursor-pointer accent-[var(--primary)]"
+              />
+              <ZoomIn className="h-3.5 w-3.5 text-ink-tertiary" aria-hidden />
+            </span>
+          )}
           <div className="flex overflow-hidden rounded-md border border-hairline">
             {(["grid", "list"] as const).map((v) => (
               <button
@@ -1326,7 +1335,7 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
       {/* Grid view — CSS-columns masonry: each photo keeps its own aspect
        * so one tall image no longer stretches its whole row. */}
       {view === "grid" && (
-        <div className="columns-2 gap-3 sm:columns-3 lg:columns-4 xl:columns-5 2xl:columns-6 [&>*]:mb-3">
+        <div style={{ columns: gridCols, columnGap: "0.75rem" }} className="[&>*]:mb-3">
           {feed.items.map((a, i) => (
             <div
               key={a.id}
@@ -1381,10 +1390,11 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
               </a>
               {/* hover quick actions (culling without leaving the grid) */}
               {!selectMode && (
-                <div className="pointer-events-none absolute inset-x-1.5 bottom-[52px] z-20 flex items-center gap-1 rounded-lg bg-black/60 px-1.5 py-1 opacity-0 backdrop-blur-sm transition-opacity group-hover:pointer-events-auto group-hover:opacity-100">
+                <div className={`pointer-events-none absolute z-20 flex items-center gap-1 rounded-lg bg-black/60 px-1.5 py-1 opacity-0 backdrop-blur-sm transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 ${micro ? "inset-x-1 bottom-1" : "inset-x-1.5 bottom-[52px]"}`}>
                   <button type="button" title="Reject (X)" aria-label={`Reject ${a.filename}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); void flagAsset(a.id, "reject"); }} className="rounded p-0.5 text-white/80 hover:text-red-400">✕</button>
                   <button type="button" title="Approve (P)" aria-label={`Approve ${a.filename}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); void flagAsset(a.id, "approve"); }} className="rounded p-0.5 text-white/80 hover:text-emerald-400">✓</button>
                   <button type="button" title="Favorite (F)" aria-label={`Favorite ${a.filename}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); void toggleFavorite(a.id); }} className={`rounded p-0.5 ${a.tags.includes("favorite") ? "text-amber-400" : "text-white/80 hover:text-amber-300"}`}>♥</button>
+                  {!micro && (
                   <span className="ml-1 flex items-center" role="group" aria-label={`Rate ${a.filename}`}>
                     {[1, 2, 3, 4, 5].map((n) => (
                       <button
@@ -1399,6 +1409,8 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                       </button>
                     ))}
                   </span>
+                  )}
+                  {!micro && (
                   <button
                     type="button"
                     title={`Color: ${COLOR_NAMES[a.color]} — cycles (6–9 keys)`}
@@ -1408,8 +1420,16 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                   >
                     <span aria-hidden className="h-2.5 w-2.5 rounded-full border border-white/40" style={{ background: a.color ? COLOR_HEX[a.color] : "transparent" }} />
                   </button>
+                  )}
                 </div>
               )}
+              {compact && (
+                <span className="pointer-events-none absolute inset-x-1 top-9 z-10 truncate rounded bg-black/55 px-1.5 py-0.5 text-[9px] text-white opacity-0 transition-opacity group-hover:opacity-100">
+                  {a.filename}
+                  {a.stars > 0 ? ` · ${"★".repeat(a.stars)}` : ""}
+                </span>
+              )}
+              {!compact && (
               <div className="flex flex-col gap-1.5 p-2">
                 <div className="flex items-center justify-between gap-1">
                   <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${STATUS_BADGE[a.status] ?? ""}`}>{a.status}</span>
@@ -1424,6 +1444,7 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                   <p className="text-[10px] text-ink-tertiary" title="In an active client gallery — revoke the gallery link to edit or delete">🔒 locked</p>
                 )}
               </div>
+              )}
             </div>
           ))}
         </div>
