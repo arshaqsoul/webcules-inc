@@ -20,6 +20,42 @@ export async function getProjectByLeadId(organizationId: string, leadId: string)
   )[0];
 }
 
+/** Edit the private project notes (WEB-115) — shot list, location details,
+ * anything the studio needs on one project. Never shown to the client. */
+export async function setProjectNotes(params: {
+  organizationId: string;
+  projectId: string;
+  notes: string;
+  actorUserId: string;
+}): Promise<{ ok: true } | { ok: false; error: "not_found" }> {
+  const db = getDb();
+  const project = (
+    await db
+      .select({ id: schema.projects.id })
+      .from(schema.projects)
+      .where(and(eq(schema.projects.id, params.projectId), eq(schema.projects.organizationId, params.organizationId)))
+      .limit(1)
+  )[0];
+  if (!project) return { ok: false, error: "not_found" };
+  await db.batch([
+    db
+      .update(schema.projects)
+      .set({ notes: params.notes, updatedAt: new Date() })
+      .where(eq(schema.projects.id, params.projectId)),
+    db.insert(schema.auditLog).values({
+      id: crypto.randomUUID(),
+      organizationId: params.organizationId,
+      actorType: "user",
+      actorId: params.actorUserId,
+      action: "project.notes_set",
+      targetType: "project",
+      targetId: params.projectId,
+      meta: JSON.stringify({ chars: params.notes.length }),
+    }),
+  ]);
+  return { ok: true };
+}
+
 /** Date an undated project (WEB-167) — projects converted from leads without
  * an event date sit still until this re-arms the auto-advance cron. */
 export async function setProjectEventDate(params: {

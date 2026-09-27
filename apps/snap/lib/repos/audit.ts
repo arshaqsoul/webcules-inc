@@ -23,6 +23,7 @@ const SURFACED_ACTIONS = [
   "asset.raw_restore",
   "asset.raw_purge",
   "project.event_date_set",
+  "project.notes_set",
 ];
 
 export async function getProjectAuditActivity(organizationId: string, projectId: string, limit = 25) {
