@@ -11,6 +11,7 @@ import { renderInvoicePdf, type PdfLine } from "./pdf";
 import { sendEmail, invoiceEmail } from "./email";
 import { getStudioProfile } from "./repos/studios";
 import { safeHexColor } from "./embed";
+import { getStripe } from "./stripe";
 
 export type InvoiceLine = { description: string; qty: number; amountMinor: number };
 
@@ -100,8 +101,56 @@ async function generateAndArchivePdf(invoice: InvoiceRow, projectTitle: string |
   return `${invoice.organizationId}/${suffix}`;
 }
 
+/** WEB-174: mint a persistent Stripe Payment Link for the invoice total —
+ * on the studio's connected account when live (direct charge, no platform
+ * fee), falling back to the platform account otherwise. Links don't expire
+ * (checkout sessions cap at 24h, invoices live longer). */
+async function createInvoicePaymentLink(organizationId: string, invoice: InvoiceRow): Promise<{ url: string; id: string } | null> {
+  const stripe = await getStripe();
+  if (!stripe) return null;
+  const profile = await getStudioProfile(organizationId);
+  const connected =
+    profile?.stripeAccountId && profile.stripeConnectState === "active"
+      ? { stripeAccount: profile.stripeAccountId }
+      : undefined;
+  const studioLabel = profile?.studioName ?? "Studio";
+  const lineItem = async (opts: { stripeAccount?: string } | undefined) => {
+    const price = await stripe.prices.create(
+      {
+        currency: invoice.currency,
+        unit_amount: invoice.totalMinor,
+        product_data: { name: `Invoice ${invoice.number} — ${studioLabel}` },
+      },
+      opts,
+    );
+    return stripe.paymentLinks.create(
+      {
+        line_items: [{ price: price.id, quantity: 1 }],
+        metadata: { kind: "invoice", invoiceId: invoice.id, organizationId },
+      },
+      opts,
+    );
+  };
+  try {
+    const link = await lineItem(connected);
+    return { url: link.url, id: link.id };
+  } catch (err) {
+    if (!connected) {
+      console.error("invoice payment link create failed:", String(err));
+      return null;
+    }
+    console.error("connect payment link failed — falling back to platform:", String(err));
+    try {
+      const link = await lineItem(undefined);
+      return { url: link.url, id: link.id };
+    } catch {
+      return null;
+    }
+  }
+}
+
 /** Draft → sent: generate + archive the branded PDF, mint the access token,
- * email the client their secure link. */
+ * attach the payment link, email the client their secure link. */
 export async function sendInvoice(organizationId: string, invoiceId: string): Promise<
   { ok: true; url: string } | { ok: false; error: "not_found" | "already_sent" | "no_recipient" | "email_failed" | "due_in_past" }
 > {
@@ -116,6 +165,7 @@ export async function sendInvoice(organizationId: string, invoiceId: string): Pr
 
   const [project] = await db.select({ title: schema.projects.title }).from(schema.projects).where(eq(schema.projects.id, invoice.projectId)).limit(1);
   const pdfKey = await generateAndArchivePdf(invoice, project?.title ?? null);
+  const paymentLink = await createInvoicePaymentLink(organizationId, invoice);
 
   const token = mintToken();
   const tokenHash = await hashToken(token);
@@ -123,7 +173,14 @@ export async function sendInvoice(organizationId: string, invoiceId: string): Pr
 
   await db
     .update(schema.invoices)
-    .set({ status: "sent", issuedAt: new Date(), pdfKey, accessTokenHash: tokenHash, tokenEnc })
+    .set({
+      status: "sent",
+      issuedAt: new Date(),
+      pdfKey,
+      accessTokenHash: tokenHash,
+      tokenEnc,
+      ...(paymentLink ? { paymentUrl: paymentLink.url, stripePaymentLinkId: paymentLink.id } : {}),
+    })
     .where(and(eq(schema.invoices.organizationId, organizationId), eq(schema.invoices.id, invoiceId)));
 
   const profile = await getStudioProfile(organizationId);
@@ -167,6 +224,15 @@ export async function setInvoiceStatus(
   const db = getDb();
   const invoice = await getInvoice(organizationId, invoiceId);
   if (!invoice) return { ok: false, error: "not_found" };
+  // Voiding kills the payment link too — a stale link must not stay payable.
+  if (status === "void" && invoice.stripePaymentLinkId) {
+    const stripe = await getStripe();
+    if (stripe) {
+      await stripe.paymentLinks
+        .update(invoice.stripePaymentLinkId, { active: false })
+        .catch((err) => console.error("payment link deactivate failed:", String(err)));
+    }
+  }
   await db
     .update(schema.invoices)
     .set({ status })
@@ -202,4 +268,52 @@ export async function getInvoicePdf(invoice: InvoiceRow): Promise<BodyInit | nul
   const { getObject } = await import("./storage/service");
   const obj = await getObject(invoice.organizationId, invoice.pdfKey);
   return obj ? (obj.body as ReadableStream) : null;
+}
+
+/** WEB-174: a client paid an invoice through its Payment Link — flip the
+ * invoice to paid, record the ledger entry, audit. Idempotent: only acts on
+ * a sent invoice, so duplicate webhook deliveries are safe. */
+export async function markInvoicePaidFromSession(session: {
+  id: string;
+  payment_intent: string | null;
+  amount_total: number | null;
+  currency: string | null;
+  metadata: Record<string, string | null> | null;
+}): Promise<void> {
+  const db = getDb();
+  const invoiceId = session.metadata?.invoiceId;
+  if (!invoiceId) return;
+  const invoice = (
+    await db.select().from(schema.invoices).where(eq(schema.invoices.id, invoiceId)).limit(1)
+  )[0];
+  if (!invoice || invoice.status !== "sent") return;
+
+  await db.batch([
+    db
+      .update(schema.invoices)
+      .set({ status: "paid" })
+      .where(and(eq(schema.invoices.id, invoiceId), eq(schema.invoices.status, "sent"))),
+    db.insert(schema.payments).values({
+      id: crypto.randomUUID(),
+      organizationId: invoice.organizationId,
+      projectId: invoice.projectId,
+      kind: "invoice",
+      amountMinor: session.amount_total ?? invoice.totalMinor,
+      currency: session.currency ?? invoice.currency,
+      status: "succeeded",
+      method: "stripe",
+      note: `Invoice ${invoice.number}`,
+      stripePaymentIntentId: session.payment_intent,
+      occurredAt: new Date(),
+    }),
+    db.insert(schema.auditLog).values({
+      id: crypto.randomUUID(),
+      organizationId: invoice.organizationId,
+      actorType: "system",
+      action: "invoice.paid_online",
+      targetType: "project",
+      targetId: invoice.projectId,
+      meta: JSON.stringify({ invoiceId, number: invoice.number, checkoutSession: session.id }),
+    }),
+  ]);
 }

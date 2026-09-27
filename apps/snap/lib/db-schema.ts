@@ -589,6 +589,9 @@ export const invoices = sqliteTable(
     clientEmail: text("client_email"),
     accessTokenHash: text("access_token_hash"),
     tokenEnc: text("token_enc"),
+    /** WEB-174: Stripe Payment Link for the invoice total (persistent URL). */
+    paymentUrl: text("payment_url"),
+    stripePaymentLinkId: text("stripe_payment_link_id"),
     createdAt: ts("created_at"),
   },
   (t) => [uniqueIndex("invoice_org_number_unique").on(t.organizationId, t.number)],

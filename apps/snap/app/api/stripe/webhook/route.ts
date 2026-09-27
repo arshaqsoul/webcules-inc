@@ -85,6 +85,19 @@ export async function POST(req: Request) {
           break;
         }
 
+        // WEB-174: invoice Payment Link checkout — flip the invoice paid.
+        if (session.metadata?.kind === "invoice") {
+          const { markInvoicePaidFromSession } = await import("@/lib/invoices");
+          await markInvoicePaidFromSession({
+            id: session.id,
+            payment_intent: typeof session.payment_intent === "string" ? session.payment_intent : null,
+            amount_total: session.amount_total ?? null,
+            currency: session.currency ?? null,
+            metadata: session.metadata,
+          });
+          break;
+        }
+
         const bookingId = session.metadata?.bookingId;
         const organizationId = session.metadata?.organizationId;
         if (bookingId && organizationId) {

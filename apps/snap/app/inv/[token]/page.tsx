@@ -77,20 +77,28 @@ export default async function InvoicePage({ params }: { params: Promise<{ token:
             </span>
           </div>
         </div>
-        {invoice.pdfKey && (
-          <div className="mt-4 text-center">
+        <div className="mt-4 text-center">
+          {invoice.status === "sent" && invoice.paymentUrl && (
+            <a
+              href={invoice.paymentUrl}
+              className="mb-3 inline-block rounded-lg px-5 py-2.5 text-sm font-semibold text-white shadow-sm"
+              style={{ background: accent }}
+            >
+              Pay {money(invoice.totalMinor, invoice.currency)} — secure checkout
+            </a>
+          )}
+          {invoice.pdfKey && (
             <a
               href={`/api/invoices/${invoice.id}/pdf?token=${token}`}
-              className="inline-block rounded-lg px-4 py-2 text-sm font-medium text-white"
-              style={{ background: accent }}
+              className="inline-block rounded-lg px-4 py-2 text-sm font-medium text-ink-subtle underline underline-offset-2"
             >
               Download PDF
             </a>
-            <p className="mt-3 text-xs text-ink-tertiary">
-              This private link is unique to you — {profile?.studioName ?? "the studio"} can resend it any time.
-            </p>
-          </div>
-        )}
+          )}
+          <p className="mt-3 text-xs text-ink-tertiary">
+            This private link is unique to you — {profile?.studioName ?? "the studio"} can resend it any time.
+          </p>
+        </div>
       </div>
     </main>
   );
