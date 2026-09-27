@@ -125,8 +125,31 @@ export function EmbedHub({ embedKey, slug, studioTheme, studioFontFamily, origin
         <div>
           <h2 className="text-[15px] font-medium text-ink">Embeds</h2>
           <p className="mt-1 text-xs text-ink-subtle">
-            Copy a snippet into any website — plain HTML, WordPress (Custom HTML block), Squarespace / Wix / Framer
-            (embed block), or a Next.js / Astro page. The loader is a single script tag; no npm install needed.
+            Copy a snippet into any website —{" "}
+            <a href="/docs/embeds#html" className="text-primary hover:underline">
+              plain HTML
+            </a>
+            ,{" "}
+            <a href="/docs/embeds#wordpress" className="text-primary hover:underline">
+              WordPress
+            </a>{" "}
+            (Custom HTML block),{" "}
+            <a href="/docs/embeds#builders" className="text-primary hover:underline">
+              Squarespace / Wix / Framer
+            </a>{" "}
+            (embed block), or{" "}
+            <a href="/docs/embeds#nextjs" className="text-primary hover:underline">
+              Next.js
+            </a>
+            /{" "}
+            <a href="/docs/embeds#astro" className="text-primary hover:underline">
+              Astro
+            </a>{" "}
+            — full guides with the{" "}
+            <a href="/docs/embeds#react" className="text-primary hover:underline">
+              React package
+            </a>
+            .
           </p>
         </div>
         <div className="flex items-center gap-2">

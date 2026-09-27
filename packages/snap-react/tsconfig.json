@@ -1,0 +1,7 @@
+{
+  "extends": "@webcules/typescript-config/react-library.json",
+  "compilerOptions": {
+    "jsx": "react-jsx"
+  },
+  "include": ["src", "tsconfig.json", "tsconfig.build.json"]
+}

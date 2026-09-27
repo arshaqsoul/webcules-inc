@@ -1,0 +1,37 @@
+{
+  "name": "@webcules/snap-react",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "React components for embedding Snap widgets (contact form, booking calendar, booking button) via the Snap embed loader.",
+  "license": "MIT",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.tsx"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+    }
+    },
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "pnpm run build"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.9",
+    "@webcules/typescript-config": "workspace:*",
+    "typescript": "^5.8.3"
+  }
+}
