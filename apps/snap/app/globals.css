@@ -129,6 +129,10 @@
   --color-lavender: #5e6ad2;
   --color-lavender-hover: var(--lavender-hover);
   --color-lavender-focus: #5e69d1;
+  /* text-white/bg-white compiled to var(--color-white), which the custom
+   * palette never defined — accent CTAs inherited ink (black on purple). */
+  --color-white: #ffffff;
+  --color-black: #000000;
   --color-success: var(--success);
   --color-success-text: var(--success-text);
 
@@ -150,9 +154,9 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-a {
-  color: inherit;
-}
+/* Links inherit by default via Tailwind preflight (@layer base) — a bare
+ * `a { color: inherit }` here would be UNLAYERED and override every utility
+ * (text-white on accent CTAs rendered as ink). */
 
 ::selection {
   background: color-mix(in srgb, #5e6ad2 30%, transparent);
