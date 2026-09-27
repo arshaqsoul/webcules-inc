@@ -477,7 +477,7 @@ export function AssetManage({
           role="dialog"
           aria-modal="true"
           aria-label={`Zoomed ${item.filename}`}
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-white/85 p-4 backdrop-blur-sm"
           onClick={() => {
             setLightbox(false);
             setZoom(1);
@@ -500,8 +500,8 @@ export function AssetManage({
                 setZoom(2.5);
               }
             }}
-            className="max-h-full max-w-full select-none object-contain transition-transform duration-200"
-            style={{ transform: `scale(${zoom})`, transformOrigin: zoomOrigin, cursor: zoom > 1 ? "zoom-out" : "zoom-in" }}
+            className="max-h-full max-w-full select-none object-contain shadow-2xl transition-transform duration-200"
+            style={{ transform: `scale(${zoom})`, transformOrigin: zoomOrigin, cursor: zoom > 1 ? "zoom-out" : "zoom-in", background: "#fff" }}
           />
           <div className="pointer-events-none absolute left-1/2 top-4 flex -translate-x-1/2 items-center gap-3 rounded-full bg-black/50 px-4 py-1.5 text-xs text-white backdrop-blur">
             <span className="max-w-[240px] truncate">{item.filename}</span>
