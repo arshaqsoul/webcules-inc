@@ -102,6 +102,9 @@ export default function Home() {
             <a href="#pricing" className="hidden text-sm text-ink-subtle hover:text-ink sm:block">
               Pricing
             </a>
+            <Link href="/docs/embeds" className="hidden text-sm text-ink-subtle hover:text-ink sm:block">
+              Docs
+            </Link>
             <Link
               href="/login"
               className="rounded-md border border-hairline bg-surface-1 px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:bg-surface-2"
