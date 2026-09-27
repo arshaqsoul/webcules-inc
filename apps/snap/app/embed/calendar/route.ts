@@ -117,6 +117,7 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
   </div>
   <div class="grid" id="dow-grid"></div>
   <div class="grid" id="day-grid"></div>
+  <p class="muted" id="cal-err"></p>
 
   <div class="panel" id="panel" hidden>
     <p class="muted" id="panel-title"></p>
@@ -192,6 +193,8 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
   })();
 
   function render() {
+    // A failed month fetch leaves data.month null — keep the current grid.
+    if (!data.month) return;
     jump.value = data.month;
     var grid = document.getElementById("day-grid");
     grid.innerHTML = "";
@@ -251,9 +254,21 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
   function load(month) {
     if (data.month === month && data.days) return Promise.resolve();
     return fetch(origin + "/api/embed/availability?key=" + encodeURIComponent(key) + "&month=" + month)
-      .then(function (r) { return r.json(); })
-      .then(function (j) { data = { month: j.month, days: j.days }; render(); })
-      .catch(function () {});
+      .then(function (r) {
+        if (!r.ok) throw new Error("http " + r.status);
+        return r.json();
+      })
+      .then(function (j) {
+        // Only swap in a well-formed payload — an error body must never
+        // blank the calendar.
+        if (!j || !j.month || !j.days) throw new Error("bad payload");
+        data = { month: j.month, days: j.days };
+        document.getElementById("cal-err").textContent = "";
+        render();
+      })
+      .catch(function () {
+        document.getElementById("cal-err").textContent = "Couldn't load that month — try again.";
+      });
   }
 
   document.getElementById("prev").addEventListener("click", function () { load(monthAdd(data.month, -1)); });

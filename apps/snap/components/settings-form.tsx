@@ -63,7 +63,10 @@ export function SettingsForm({ initial }: { initial: Initial }) {
         timezone: profile.timezone,
         contactEmail: profile.contactEmail || undefined,
         accentColor: profile.accentColor,
-        fontFamily: fontFamily || undefined,
+        // Send the raw string — empty means "clear" (the server drops an
+        // empty/invalid stack from the brand JSON). `|| undefined` here is
+        // what made a saved font impossible to remove.
+        fontFamily,
         theme: theme === "light" || theme === "dark" || theme === "auto" ? theme : undefined,
         tokens: (() => {
           try {

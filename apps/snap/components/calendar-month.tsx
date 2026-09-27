@@ -84,14 +84,15 @@ export function CalendarMonth({
             const date = `${initialMonth}-${String(i + 1).padStart(2, "0")}`;
             const dayItems = byDay.get(date) ?? [];
             const active = dayItems.filter((b) => b.status !== "canceled");
+            const canceled = dayItems.length - active.length;
             return (
               <button
                 key={date}
                 onClick={() => setSelectedDay(date)}
-                className={`flex min-h-[64px] flex-col items-start rounded-md border p-1.5 text-left transition-colors ${
+                className={`flex min-h-[64px] flex-col items-start gap-0.5 rounded-md border p-1.5 text-left transition-colors ${
                   selectedDay === date
                     ? "border-primary/50 bg-primary/10"
-                    : active.length
+                    : dayItems.length
                       ? "border-hairline bg-background hover:bg-surface-2"
                       : "border-transparent hover:bg-surface-2"
                 }`}
@@ -103,6 +104,11 @@ export function CalendarMonth({
                   </span>
                 ))}
                 {active.length > 2 && <span className="text-[10px] text-ink-tertiary">+{active.length - 2} more</span>}
+                {canceled > 0 && (
+                  <span className="w-full truncate rounded bg-surface-2 px-1 py-0.5 text-[10px] text-ink-tertiary line-through">
+                    {canceled} canceled
+                  </span>
+                )}
               </button>
             );
           })}

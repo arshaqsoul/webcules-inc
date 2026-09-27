@@ -50,9 +50,16 @@ export function normalizeOrigin(origin: string | null): string | null {
  * An Origin may embed this studio's widgets when it is registered, or when the
  * studio has registered no origins yet (open embed — the settings UI prompts
  * studios to lock this down; documented behavior).
+ *
+ * An ABSENT Origin header is allowed: the widget iframe's own same-origin GET
+ * fetches (month navigation, availability) carry no Origin — browsers only
+ * send it cross-origin, or on non-GET/HEAD requests. A cross-site browser
+ * request can never omit it, so restriction only needs to fire when the header
+ * is present and unlisted. (Non-browser clients can spoof it regardless.)
  */
 export function originAllowed(studio: ResolvedStudio, origin: string | null): boolean {
   if (studio.embedOrigins.length === 0) return true;
+  if (!origin) return true;
   const normalized = normalizeOrigin(origin);
   if (!normalized) return false;
   return studio.embedOrigins.some((allowed) => allowed.replace(/\/$/, "") === normalized);

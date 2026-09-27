@@ -15,9 +15,11 @@ export default async function SettingsPage({
 }) {
   const ctx = await getOrgContext();
   if (!ctx) redirect("/login");
-  const profile = await getStudioProfile(ctx.organizationId);
+  const [profile, slug] = await Promise.all([
+    getStudioProfile(ctx.organizationId),
+    getStudioSlug(ctx.organizationId),
+  ]);
   if (!profile) redirect("/onboarding");
-  const slug = await getStudioSlug(ctx.organizationId);
   const { payouts, plan } = await searchParams;
 
   return (

@@ -7,6 +7,8 @@
  * (WEB-113). Fast triage lives in <TriageMode> (WEB-122). */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { Check, ChevronDown, ListFilter } from "lucide-react";
+
 import { Button } from "@webcules/ui/components/button";
 import { useConfirm } from "@/components/confirm-provider";
 import { TriageMode } from "@/components/triage-mode";
@@ -49,6 +51,26 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
   const [kind, setKind] = useState("");
   const [tag, setTag] = useState("");
   const [sort, setSort] = useState("date");
+  const [filterOpen, setFilterOpen] = useState(false);
+  const filterRef = useRef<HTMLDivElement>(null);
+  const filterCount = [status, kind, tag].filter(Boolean).length;
+
+  // Close the filter popover on outside click / Escape (Linear-style panel).
+  useEffect(() => {
+    if (!filterOpen) return;
+    function onDown(e: MouseEvent) {
+      if (filterRef.current && !filterRef.current.contains(e.target as Node)) setFilterOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setFilterOpen(false);
+    }
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [filterOpen]);
   const [view, setView] = useState<"grid" | "list">("grid");
   const [loading, setLoading] = useState(false);
 
@@ -410,24 +432,85 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
           {counts.shared ? ` · ${counts.shared} shared` : ""}
         </div>
 
-        <select value={status} onChange={(e) => setStatus(e.target.value)} aria-label="Filter status" className="rounded-md border border-hairline bg-canvas px-2 py-1.5 text-xs text-ink-muted">
-          <option value="">All statuses</option>
-          {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-        </select>
-        <select value={kind} onChange={(e) => setKind(e.target.value)} aria-label="Filter kind" className="rounded-md border border-hairline bg-canvas px-2 py-1.5 text-xs text-ink-muted">
-          <option value="">All types</option>
-          {KINDS.map((k) => <option key={k} value={k}>{k}</option>)}
-        </select>
-        <select value={tag} onChange={(e) => setTag(e.target.value)} aria-label="Filter tag" className="rounded-md border border-hairline bg-canvas px-2 py-1.5 text-xs text-ink-muted">
-          <option value="">All tags</option>
-          {feed.tags.map((t) => <option key={t.tag} value={t.tag}>{t.tag} ({t.n})</option>)}
-        </select>
-        <select value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort" className="rounded-md border border-hairline bg-canvas px-2 py-1.5 text-xs text-ink-muted">
-          <option value="date">Newest</option>
-          <option value="name">Name</option>
-          <option value="size">Largest</option>
-          <option value="status">Status</option>
-        </select>
+        <div className="relative" ref={filterRef}>
+          <button
+            type="button"
+            onClick={() => setFilterOpen((o) => !o)}
+            className="flex items-center gap-1.5 rounded-md border border-hairline bg-canvas px-2.5 py-1.5 text-xs text-ink-muted transition-colors hover:bg-surface-2"
+          >
+            <ListFilter className="h-3.5 w-3.5" aria-hidden />
+            Filter
+            {filterCount > 0 && (
+              <span className="rounded-full bg-primary/15 px-1.5 text-[10px] font-medium text-primary">{filterCount}</span>
+            )}
+            <ChevronDown className="h-3 w-3" aria-hidden />
+          </button>
+          {filterOpen && (
+            <div className="absolute left-0 top-full z-40 mt-1.5 max-h-[70vh] w-64 overflow-y-auto rounded-[10px] border border-hairline bg-surface-1 p-1 shadow-lg">
+              {(
+                [
+                  { label: "Status", options: STATUSES.map((s) => ({ value: s, label: s, count: counts[s] ?? 0 })), value: status, set: setStatus },
+                  { label: "Type", options: KINDS.map((k) => ({ value: k, label: k })), value: kind, set: setKind },
+                  { label: "Tags", options: feed.tags.map((t) => ({ value: t.tag, label: t.tag, count: t.n })), value: tag, set: setTag },
+                  {
+                    label: "Sort by",
+                    options: [
+                      { value: "date", label: "Newest" },
+                      { value: "name", label: "Name" },
+                      { value: "size", label: "Largest" },
+                      { value: "status", label: "Status" },
+                    ],
+                    value: sort,
+                    set: (v: string) => setSort(v),
+                  },
+                ] as const
+              ).map((group) => (
+                <div key={group.label}>
+                  <p className="px-2 pb-0.5 pt-2 text-[11px] uppercase tracking-wide text-ink-tertiary">{group.label}</p>
+                  <button
+                    type="button"
+                    onClick={() => group.set(group.label === "Sort by" ? "date" : "")}
+                    className="flex w-full items-center rounded-md px-2 py-1.5 text-left text-[13px] text-ink-muted transition-colors hover:bg-surface-2"
+                  >
+                    <span className="flex-1">{group.label === "Sort by" ? "Default" : `All ${group.label.toLowerCase()}`}</span>
+                    {(group.label === "Sort by" ? !group.value || group.value === "date" : !group.value) && (
+                      <Check className="h-3.5 w-3.5 text-ink-tertiary" aria-hidden />
+                    )}
+                  </button>
+                  {group.options.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => group.set(opt.value)}
+                      className="flex w-full items-center rounded-md px-2 py-1.5 text-left text-[13px] text-ink-muted transition-colors hover:bg-surface-2"
+                    >
+                      <span className="flex-1 capitalize">
+                        {opt.label}
+                        {"count" in opt && opt.count > 0 && (
+                          <span className="ml-1.5 text-[11px] text-ink-tertiary">{opt.count}</span>
+                        )}
+                      </span>
+                      {group.value === opt.value && <Check className="h-3.5 w-3.5 text-ink-tertiary" aria-hidden />}
+                    </button>
+                  ))}
+                </div>
+              ))}
+              {filterCount > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStatus("");
+                    setKind("");
+                    setTag("");
+                  }}
+                  className="mt-1 w-full rounded-md border-t border-hairline px-2 py-1.5 text-left text-[13px] text-ink-subtle transition-colors hover:bg-surface-2"
+                >
+                  Clear filters
+                </button>
+              )}
+            </div>
+          )}
+        </div>
 
         <div className="ml-auto flex items-center gap-1.5">
           <div className="flex overflow-hidden rounded-md border border-hairline">

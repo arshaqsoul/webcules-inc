@@ -1,11 +1,12 @@
 "use client";
 
-/* Kanban pipeline — drag-drop between status columns with optimistic moves
- * and rollback on invalid transitions (the state machine rejects e.g.
- * booked → complete). */
+/* Kanban pipeline — free drag-drop between all status columns (every move is
+ * allowed and reversible) with optimistic updates, rollback on failure, and a
+ * transient notice confirming what changed. The only automation left is the
+ * daily cron that advances booked → snapping on the event date. */
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export type BoardProject = {
   id: string;
@@ -27,23 +28,28 @@ const COLUMNS = [
   { key: "canceled", label: "Canceled", accent: "#c0271f" },
 ] as const;
 
-/** Drag-safe subset of the server map (WEB-166): reason-requiring moves
- * (retakes, reschedules, cancellations) happen from the project hub's status
- * control where the reason dialog lives. */
-const ALLOWED: Record<string, string[]> = {
-  booked: ["snapping", "closed"],
-  snapping: ["evaluation", "closed"],
-  evaluation: ["complete", "closed"],
-  complete: ["closed"],
-  closed: [],
-  canceled: [],
-};
+const LABEL: Record<string, string> = Object.fromEntries(COLUMNS.map((c) => [c.key, c.label]));
 
 export function KanbanBoard({ projects }: { projects: BoardProject[] }) {
   const router = useRouter();
   const [items, setItems] = useState(projects);
   const [dragging, setDragging] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const noticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(
+    () => () => {
+      if (noticeTimer.current) clearTimeout(noticeTimer.current);
+    },
+    [],
+  );
+
+  function flashNotice(text: string) {
+    setNotice(text);
+    if (noticeTimer.current) clearTimeout(noticeTimer.current);
+    noticeTimer.current = setTimeout(() => setNotice(null), 4000);
+  }
 
   async function move(projectId: string, toStatus: string) {
     const project = items.find((p) => p.id === projectId);
@@ -58,23 +64,25 @@ export function KanbanBoard({ projects }: { projects: BoardProject[] }) {
     });
     if (!res.ok) {
       setItems(prev);
-      const body = (await res.json().catch(() => ({}))) as { error?: string };
-      setError(
-        body.error === "reason_required" || body.error === "new_event_date_required"
-          ? "That move needs a reason — use the project page's status control."
-          : body.error?.startsWith("invalid_transition")
-            ? "That move isn't allowed by the pipeline."
-            : "Move failed — try again.",
-      );
+      setError("Move failed — try again.");
       return;
     }
+    flashNotice(`“${project.title}” moved to ${LABEL[toStatus] ?? toStatus}`);
     router.refresh();
   }
 
   return (
     <div className="flex flex-col gap-3">
-      {error && <p className="text-sm text-destructive">{error}</p>}
-      <div className="grid grid-cols-1 gap-3 overflow-x-auto md:grid-cols-3 xl:grid-cols-5">
+      {(error || notice) && (
+        <p
+          className={`rounded-md px-3 py-1.5 text-xs ${
+            error ? "bg-destructive/10 text-destructive" : "bg-surface-2 text-ink-muted"
+          }`}
+        >
+          {error ?? notice}
+        </p>
+      )}
+      <div className="grid grid-cols-1 gap-3 overflow-x-auto md:grid-cols-3 xl:grid-cols-6">
         {COLUMNS.map((col) => {
           const cards = items.filter((p) => p.status === col.key);
           return (
@@ -82,11 +90,7 @@ export function KanbanBoard({ projects }: { projects: BoardProject[] }) {
               key={col.key}
               onDragOver={(e) => e.preventDefault()}
               onDrop={() => {
-                if (dragging) {
-                  const item = items.find((p) => p.id === dragging);
-                  // Illegal moves are never offered (server still validates).
-                  if (item && (ALLOWED[item.status] ?? []).includes(col.key)) move(dragging, col.key);
-                }
+                if (dragging) void move(dragging, col.key);
                 setDragging(null);
               }}
               className="flex min-w-[220px] flex-col gap-2 rounded-[12px] border border-hairline bg-surface-1 p-3"

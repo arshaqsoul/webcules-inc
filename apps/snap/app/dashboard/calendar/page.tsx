@@ -19,14 +19,24 @@ export default async function CalendarPage({
   if (!ctx) redirect("/login");
   const { tab = "calendar", month } = await searchParams;
 
-  const profile = await getStudioProfile(ctx.organizationId);
-  const tz = profile?.timezone ?? "UTC";
   const activeMonth = month && /^\d{4}-\d{2}$/.test(month) ? month : new Date().toISOString().slice(0, 7);
 
   const tabs = [
     { key: "calendar", label: "Calendar" },
     { key: "availability", label: "Availability" },
   ];
+  // Profile and the month's bookings are independent — fetch in parallel.
+  const [profile, bookings] = await Promise.all([
+    getStudioProfile(ctx.organizationId),
+    tab === "availability"
+      ? Promise.resolve([])
+      : listBookingsInRange(
+          ctx.organizationId,
+          new Date(`${activeMonth}-01T00:00:00Z`),
+          new Date(`${activeMonth}-31T23:59:59Z`),
+        ),
+  ]);
+  const tz = profile?.timezone ?? "UTC";
 
   return (
     <div className="flex flex-col gap-5">
@@ -59,11 +69,7 @@ export default async function CalendarPage({
           organizationId={ctx.organizationId}
           tz={tz}
           initialMonth={activeMonth}
-          initialBookings={(await listBookingsInRange(
-            ctx.organizationId,
-            new Date(`${activeMonth}-01T00:00:00Z`),
-            new Date(`${activeMonth}-31T23:59:59Z`),
-          )).map((b) => ({
+          initialBookings={bookings.map((b) => ({
             id: b.id,
             startAt: b.startAt.toISOString(),
             clientName: b.clientName ?? b.clientEmail,

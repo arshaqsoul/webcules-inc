@@ -14,7 +14,7 @@ import { listProjectInvoices } from "@/lib/invoices";
 import { ProjectInvoices } from "@/components/project-invoices";
 import { listProjectContracts } from "@/lib/contracts";
 import { ProjectContracts } from "@/components/project-contracts";
-import { ProjectStatusControl } from "@/components/project-status-control";
+import { ProjectStatusMenu } from "@/components/project-status-menu";
 import { ProjectDateControl } from "@/components/project-date-control";
 import { getProjectShareActivity, listProjectGrants } from "@/lib/shares/grants";
 import { getOrgContext } from "@/lib/session";
@@ -141,13 +141,8 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           </p>
         </div>
         <div className="flex flex-col items-end gap-2">
-          <span className="rounded-full bg-surface-2 px-3 py-1 text-xs font-medium uppercase tracking-wide text-ink-muted">
-            {project.status}
-          </span>
-          <ProjectStatusControl projectId={project.id} status={project.status} />
-          {!project.eventDate && project.status !== "closed" && project.status !== "canceled" && (
-            <ProjectDateControl projectId={project.id} />
-          )}
+          <ProjectStatusMenu projectId={project.id} status={project.status} />
+          {!project.eventDate && <ProjectDateControl projectId={project.id} />}
         </div>
       </div>
 
