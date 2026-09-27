@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { LeadCreate } from "@/components/lead-create";
 import { LEAD_STATUSES, listLeads, type LeadStatus } from "@/lib/repos/leads";
 import { getOrgContext } from "@/lib/session";
 
@@ -34,20 +35,23 @@ export default async function LeadsPage({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-[-0.6px] text-ink">Leads</h1>
-          <p className="mt-1 text-sm text-ink-subtle">Inquiries from your embedded contact form.</p>
+          <p className="mt-1 text-sm text-ink-subtle">Inquiries from your embedded contact form, plus manual entries.</p>
         </div>
-        <form action="/dashboard/leads" method="get" className="flex gap-2">
-          <input type="hidden" name="status" value={activeStatus} />
-          <input
-            name="q"
-            defaultValue={q ?? ""}
-            placeholder="Search name or email…"
-            className="w-56 rounded-md border border-input bg-background px-3 py-2 text-sm text-ink placeholder:text-ink-tertiary"
-          />
-          <button type="submit" className="rounded-md border border-hairline bg-surface-1 px-3 py-2 text-sm font-medium text-ink hover:bg-surface-2">
-            Search
-          </button>
-        </form>
+        <div className="flex items-center gap-2">
+          <form action="/dashboard/leads" method="get" className="flex gap-2">
+            <input type="hidden" name="status" value={activeStatus} />
+            <input
+              name="q"
+              defaultValue={q ?? ""}
+              placeholder="Search name or email…"
+              className="w-56 rounded-md border border-input bg-background px-3 py-2 text-sm text-ink placeholder:text-ink-tertiary"
+            />
+            <button type="submit" className="rounded-md border border-hairline bg-surface-1 px-3 py-2 text-sm font-medium text-ink hover:bg-surface-2">
+              Search
+            </button>
+          </form>
+          <LeadCreate />
+        </div>
       </div>
 
       <div className="flex gap-1.5">

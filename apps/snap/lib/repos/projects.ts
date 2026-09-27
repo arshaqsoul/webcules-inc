@@ -37,6 +37,52 @@ export function allowedTransitions(from: ProjectStatus): TransitionRule[] {
   return TRANSITIONS[from] ?? [];
 }
 
+export async function getProjectByLeadId(organizationId: string, leadId: string) {
+  return (
+    await getDb()
+      .select({ id: schema.projects.id, title: schema.projects.title, eventDate: schema.projects.eventDate })
+      .from(schema.projects)
+      .where(and(eq(schema.projects.organizationId, organizationId), eq(schema.projects.leadId, leadId)))
+      .limit(1)
+  )[0];
+}
+
+/** Date an undated project (WEB-167) — projects converted from leads without
+ * an event date sit still until this re-arms the auto-advance cron. */
+export async function setProjectEventDate(params: {
+  organizationId: string;
+  projectId: string;
+  eventDate: Date;
+  actorUserId: string;
+}): Promise<{ ok: true } | { ok: false; error: "not_found" }> {
+  const db = getDb();
+  const project = (
+    await db
+      .select({ id: schema.projects.id })
+      .from(schema.projects)
+      .where(and(eq(schema.projects.id, params.projectId), eq(schema.projects.organizationId, params.organizationId)))
+      .limit(1)
+  )[0];
+  if (!project) return { ok: false, error: "not_found" };
+  await db.batch([
+    db
+      .update(schema.projects)
+      .set({ eventDate: params.eventDate })
+      .where(eq(schema.projects.id, params.projectId)),
+    db.insert(schema.auditLog).values({
+      id: crypto.randomUUID(),
+      organizationId: params.organizationId,
+      actorType: "user",
+      actorId: params.actorUserId,
+      action: "project.event_date_set",
+      targetType: "project",
+      targetId: params.projectId,
+      meta: JSON.stringify({ eventDate: params.eventDate.toISOString().slice(0, 10) }),
+    }),
+  ]);
+  return { ok: true };
+}
+
 export async function createProjectForLead(params: {
   organizationId: string;
   clientId: string;

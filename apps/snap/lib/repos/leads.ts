@@ -1,7 +1,7 @@
 /* Lead repository — inbox, threading, conversion. Every call is org-scoped
  * by the passed context; inbound email ingest matches sender→lead heuristically
  * (per-studio inbound addresses arrive with the embed-platform follow-up). */
-import { and, desc, eq, ilike, inArray, or } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, ne, or } from "drizzle-orm";
 
 import { getD1, getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
@@ -105,11 +105,119 @@ export async function updateLeadStatus(organizationId: string, leadId: string, s
     .where(and(eq(schema.leads.id, leadId), eq(schema.leads.organizationId, organizationId)));
 }
 
+export type LeadPatch = {
+  name?: string;
+  email?: string;
+  phone?: string | null;
+  eventType?: string | null;
+  eventDate?: Date | null;
+  message?: string | null;
+};
+
+/** Open-lead merge guard (WEB-167): two open leads sharing an email would
+ * tangle reply threads and client upserts — edits and conversion overrides
+ * must not be able to create that state. */
+async function openLeadWithEmailExists(
+  organizationId: string,
+  email: string,
+  excludeLeadId?: string,
+): Promise<boolean> {
+  const conditions = [
+    eq(schema.leads.organizationId, organizationId),
+    eq(schema.leads.email, email),
+    inArray(schema.leads.status, ["new", "replied"]),
+  ];
+  if (excludeLeadId) conditions.push(ne(schema.leads.id, excludeLeadId));
+  const hit = (
+    await getDb()
+      .select({ id: schema.leads.id })
+      .from(schema.leads)
+      .where(and(...conditions))
+      .limit(1)
+  )[0];
+  return Boolean(hit);
+}
+
+const isoDay = (d: Date | null | undefined) => d?.toISOString().slice(0, 10) ?? null;
+
+export async function updateLead(params: {
+  organizationId: string;
+  leadId: string;
+  actorUserId: string;
+  patch: LeadPatch;
+}): Promise<{ ok: true; changed: string[] } | { ok: false; error: "not_found" | "duplicate_open_lead" }> {
+  const db = getDb();
+  const lead = (
+    await db
+      .select()
+      .from(schema.leads)
+      .where(and(eq(schema.leads.id, params.leadId), eq(schema.leads.organizationId, params.organizationId)))
+      .limit(1)
+  )[0];
+  if (!lead) return { ok: false, error: "not_found" };
+
+  const p = params.patch;
+  const set: Partial<typeof schema.leads.$inferInsert> = {};
+  const changed: string[] = [];
+  if (p.name !== undefined && p.name !== lead.name) {
+    set.name = p.name;
+    changed.push("name");
+  }
+  if (p.email !== undefined && p.email !== lead.email.toLowerCase()) {
+    if (await openLeadWithEmailExists(params.organizationId, p.email, lead.id)) {
+      return { ok: false, error: "duplicate_open_lead" };
+    }
+    set.email = p.email;
+    changed.push("email");
+  }
+  if (p.phone !== undefined && (p.phone || null) !== lead.phone) {
+    set.phone = p.phone || null;
+    changed.push("phone");
+  }
+  if (p.eventType !== undefined && (p.eventType || null) !== lead.eventType) {
+    set.eventType = p.eventType || null;
+    changed.push("eventType");
+  }
+  if (p.eventDate !== undefined && isoDay(p.eventDate) !== isoDay(lead.eventDate)) {
+    set.eventDate = p.eventDate ?? null;
+    changed.push("eventDate");
+  }
+  if (p.message !== undefined && (p.message || null) !== lead.message) {
+    set.message = p.message || null;
+    changed.push("message");
+  }
+
+  if (changed.length === 0) return { ok: true, changed: [] };
+
+  await db.batch([
+    db
+      .update(schema.leads)
+      .set({ ...set, updatedAt: new Date() })
+      .where(eq(schema.leads.id, lead.id)),
+    db.insert(schema.auditLog).values({
+      id: crypto.randomUUID(),
+      organizationId: params.organizationId,
+      actorType: "user",
+      actorId: params.actorUserId,
+      action: "lead.updated",
+      targetType: "lead",
+      targetId: lead.id,
+      meta: JSON.stringify({ changed, via: "edit" }),
+    }),
+  ]);
+  return { ok: true, changed };
+}
+
 export async function convertLeadToProject(params: {
   organizationId: string;
   leadId: string;
   actorUserId: string;
   title?: string;
+  /** Override the event date captured on the lead (null = deliberately undated). */
+  eventDate?: Date | null;
+  /** Override client identity before the client upsert — an email change re-keys it. */
+  clientEmail?: string;
+  clientName?: string;
 }): Promise<{ projectId: string; clientId: string }> {
   const db = getDb();
   const lead = (
@@ -120,6 +228,15 @@ export async function convertLeadToProject(params: {
       .limit(1)
   )[0];
   if (!lead) throw new Error("lead not found");
+  if (lead.status === "converted") throw new Error("already_converted");
+
+  const email = params.clientEmail?.trim().toLowerCase() || lead.email;
+  const name = params.clientName?.trim() || lead.name;
+  const eventDate = params.eventDate !== undefined ? params.eventDate : lead.eventDate;
+
+  if (email !== lead.email.toLowerCase() && (await openLeadWithEmailExists(params.organizationId, email, lead.id))) {
+    throw new Error("duplicate_open_lead");
+  }
 
   const client = (
     await db
@@ -127,13 +244,13 @@ export async function convertLeadToProject(params: {
       .values({
         id: crypto.randomUUID(),
         organizationId: params.organizationId,
-        email: lead.email,
-        name: lead.name,
+        email,
+        name,
         phone: lead.phone,
       })
       .onConflictDoUpdate({
         target: [schema.clients.organizationId, schema.clients.email],
-        set: { name: lead.name, phone: lead.phone, updatedAt: new Date() },
+        set: { name, phone: lead.phone, updatedAt: new Date() },
       })
       .returning()
   )[0];
@@ -142,17 +259,111 @@ export async function convertLeadToProject(params: {
     organizationId: params.organizationId,
     clientId: client.id,
     leadId: lead.id,
-    title: params.title?.trim() || `${lead.name}${lead.eventType ? ` — ${lead.eventType}` : ""}`,
-    eventDate: lead.eventDate,
+    title: params.title?.trim() || `${name}${lead.eventType ? ` — ${lead.eventType}` : ""}`,
+    eventDate,
     actorUserId: params.actorUserId,
   });
 
-  await db
-    .update(schema.leads)
-    .set({ status: "converted", updatedAt: new Date() })
-    .where(eq(schema.leads.id, lead.id));
+  // Persist any dialog overrides back onto the lead so the thread, the client
+  // row and the project stay keyed to the same person.
+  const set: Partial<typeof schema.leads.$inferInsert> = { status: "converted" };
+  const changed: string[] = [];
+  if (email !== lead.email.toLowerCase()) {
+    set.email = email;
+    changed.push("email");
+  }
+  if (name !== lead.name) {
+    set.name = name;
+    changed.push("name");
+  }
+  if (isoDay(eventDate) !== isoDay(lead.eventDate)) {
+    set.eventDate = eventDate ?? null;
+    changed.push("eventDate");
+  }
+
+  const audits = [
+    db
+      .insert(schema.auditLog)
+      .values({
+        id: crypto.randomUUID(),
+        organizationId: params.organizationId,
+        actorType: "user",
+        actorId: params.actorUserId,
+        action: "lead.converted",
+        targetType: "lead",
+        targetId: lead.id,
+        meta: JSON.stringify({ projectId }),
+      }),
+  ];
+  if (changed.length > 0) {
+    audits.push(
+      db
+        .insert(schema.auditLog)
+        .values({
+          id: crypto.randomUUID(),
+          organizationId: params.organizationId,
+          actorType: "user",
+          actorId: params.actorUserId,
+          action: "lead.updated",
+          targetType: "lead",
+          targetId: lead.id,
+          meta: JSON.stringify({ changed, via: "conversion" }),
+        }),
+    );
+  }
+  await db.batch([
+    db
+      .update(schema.leads)
+      .set({ ...set, updatedAt: new Date() })
+      .where(eq(schema.leads.id, lead.id)),
+    ...audits,
+  ]);
 
   return { projectId, clientId: client.id };
+}
+
+/** Manual lead entry (walk-in / phone enquiries) — same open-lead merge guard
+ * as edits, so a manual entry can't fork an existing open thread. */
+export async function createManualLead(params: {
+  organizationId: string;
+  actorUserId: string;
+  name: string;
+  email: string;
+  phone?: string | null;
+  eventType?: string | null;
+  eventDate?: Date | null;
+  message?: string | null;
+}): Promise<{ ok: true; leadId: string } | { ok: false; error: "duplicate_open_lead" }> {
+  const db = getDb();
+  if (await openLeadWithEmailExists(params.organizationId, params.email)) {
+    return { ok: false, error: "duplicate_open_lead" };
+  }
+  const leadId = crypto.randomUUID();
+  await db.batch([
+    db.insert(schema.leads).values({
+      id: leadId,
+      organizationId: params.organizationId,
+      name: params.name,
+      email: params.email,
+      phone: params.phone || null,
+      eventDate: params.eventDate ?? null,
+      eventType: params.eventType || null,
+      message: params.message || null,
+      source: "manual",
+      status: "new",
+    }),
+    db.insert(schema.auditLog).values({
+      id: crypto.randomUUID(),
+      organizationId: params.organizationId,
+      actorType: "user",
+      actorId: params.actorUserId,
+      action: "lead.created",
+      targetType: "lead",
+      targetId: leadId,
+      meta: JSON.stringify({ source: "manual" }),
+    }),
+  ]);
+  return { ok: true, leadId };
 }
 
 /**

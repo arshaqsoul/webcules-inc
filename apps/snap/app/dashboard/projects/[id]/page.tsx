@@ -15,6 +15,7 @@ import { ProjectInvoices } from "@/components/project-invoices";
 import { listProjectContracts } from "@/lib/contracts";
 import { ProjectContracts } from "@/components/project-contracts";
 import { ProjectStatusControl } from "@/components/project-status-control";
+import { ProjectDateControl } from "@/components/project-date-control";
 import { getProjectShareActivity, listProjectGrants } from "@/lib/shares/grants";
 import { getOrgContext } from "@/lib/session";
 import { and, eq } from "drizzle-orm";
@@ -92,6 +93,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     "asset.raw_restore": (m) =>
       `RAW vault: ${[m.restored ? `${m.restored} restored` : null, m.extended ? `${m.extended} kept hot` : null].filter(Boolean).join(", ") || "renewed"}`,
     "asset.raw_purge": (m) => `RAW vault: ${m.n ?? "?"} file${Number(m.n) === 1 ? "" : "s"} permanently deleted after final warnings`,
+    "project.event_date_set": (m) => `set the event date to ${m.eventDate ?? ""}`.trim(),
   };
   const feed = [
     ...events.map((e) => ({
@@ -143,6 +145,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             {project.status}
           </span>
           <ProjectStatusControl projectId={project.id} status={project.status} />
+          {!project.eventDate && project.status !== "closed" && project.status !== "canceled" && (
+            <ProjectDateControl projectId={project.id} />
+          )}
         </div>
       </div>
 
