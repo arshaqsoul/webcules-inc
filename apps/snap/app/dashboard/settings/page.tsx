@@ -47,6 +47,7 @@ export default async function SettingsPage({
             (JSON.parse(profile.rejectedPolicy || "{}") as { enabled?: boolean; retainDays?: number }).enabled
               ? (JSON.parse(profile.rejectedPolicy || "{}") as { retainDays?: number }).retainDays ?? 30
               : 0,
+          exifStripDerived: profile.exifStripDerived,
         }}
       />
       <PayoutsPanel returnHint={payouts === "return" ? "return" : payouts === "refresh" ? "refresh" : undefined} />

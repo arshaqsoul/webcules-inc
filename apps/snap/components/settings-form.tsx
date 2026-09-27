@@ -23,6 +23,8 @@ type Initial = {
   logoUrl: string | null;
   /** WEB-118: rejected auto-delete policy — days, 0 = keep forever. */
   rejectedRetentionDays: number;
+  /** WEB-117: reject derivatives that still carry EXIF/GPS. */
+  exifStripDerived: boolean;
 };
 
 export function SettingsForm({ initial }: { initial: Initial }) {
@@ -42,6 +44,7 @@ export function SettingsForm({ initial }: { initial: Initial }) {
   const [embedKey, setEmbedKey] = useState(initial.embedKey);
   const [logoUrl, setLogoUrl] = useState(initial.logoUrl);
   const [retentionDays, setRetentionDays] = useState(String(initial.rejectedRetentionDays));
+  const [stripExif, setStripExif] = useState(initial.exifStripDerived);
   const [zones, setZones] = useState<string[]>([]);
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -75,6 +78,8 @@ export function SettingsForm({ initial }: { initial: Initial }) {
           enabled: Number(retentionDays) > 0,
           ...(Number(retentionDays) > 0 ? { retainDays: Number(retentionDays) } : {}),
         },
+        // WEB-117: EXIF/GPS strip policy for derivatives.
+        exifStripDerived: stripExif,
         theme: theme === "light" || theme === "dark" || theme === "auto" ? theme : undefined,
         tokens: (() => {
           try {
@@ -203,6 +208,25 @@ export function SettingsForm({ initial }: { initial: Initial }) {
             <p className="text-xs text-ink-tertiary">
               The daily job permanently deletes rejected files past this window. Files in an active client gallery are never auto-deleted.
             </p>
+          </div>
+          <div className="flex flex-col gap-2 sm:col-span-2">
+            <label className="flex items-start gap-2 text-sm text-ink">
+              <input
+                type="checkbox"
+                checked={stripExif}
+                onChange={(e) => setStripExif(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-input"
+              />
+              <span>
+                Strip camera metadata (EXIF/GPS) from thumbnails &amp; previews
+                <span className="mt-1 block text-xs font-normal text-ink-tertiary">
+                  Thumbnails and previews shown in your dashboard and client galleries are re-encoded in the
+                  browser, so they never carry location or camera data — with this on, the server verifies it
+                  and rejects any that do. Your original files are stored and downloaded bit-exact, camera
+                  metadata included.
+                </span>
+              </span>
+            </label>
           </div>
         </div>
         <button type="button" className="mt-3 text-xs text-ink-subtle underline underline-offset-2" onClick={() => setShowAdvanced((v) => !v)}>

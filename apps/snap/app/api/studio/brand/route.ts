@@ -35,6 +35,8 @@ const bodySchema = z.object({
       message: "retainDays is required when the policy is enabled",
     })
     .optional(),
+  /** WEB-117: reject derivatives that still carry EXIF/GPS metadata. */
+  exifStripDerived: z.boolean().optional(),
 });
 
 export async function PATCH(req: Request) {
@@ -94,6 +96,7 @@ export async function PATCH(req: Request) {
       ...(parsed.data.rejectedPolicy
         ? { rejectedPolicy: JSON.stringify(parsed.data.rejectedPolicy) }
         : {}),
+      exifStripDerived: parsed.data.exifStripDerived ?? existing.exifStripDerived,
       updatedAt: new Date(),
     })
     .where(eq(schema.studioProfiles.organizationId, ctx.organizationId));

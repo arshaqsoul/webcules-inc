@@ -2,6 +2,7 @@
  * via canvas right after an upload completes and pushes them here. Small
  * (≤8MB) image-only payloads; the originals are never modified. */
 import { attachDerivative } from "@/lib/repos/assets";
+import { getStudioProfile } from "@/lib/repos/studios";
 import { getOrgContext } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -34,9 +35,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     kind,
     bytes: await file.arrayBuffer(),
     contentType: file.type,
+    // WEB-117: with the studio's strip policy on, a derivative carrying
+    // EXIF/GPS is rejected — canvas output always passes, this is the guard.
+    verifyNoExif: (await getStudioProfile(ctx.organizationId))?.exifStripDerived ?? false,
   });
   if (!result.ok) {
-    const status = result.error === "not_found" ? 404 : 400;
+    const status = result.error === "not_found" ? 404 : result.error === "metadata_present" ? 422 : 400;
     return Response.json({ error: result.error }, { status });
   }
   return Response.json({ ok: true });

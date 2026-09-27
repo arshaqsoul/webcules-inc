@@ -276,11 +276,22 @@ export async function attachDerivative(params: {
   kind: "thumb" | "preview";
   bytes: ArrayBuffer;
   contentType: string;
-}): Promise<{ ok: true } | { ok: false; error: "not_found" | "unsupported_type" }> {
+  /** WEB-117: enforce the studio's EXIF-strip policy — reject a derivative
+   * that still carries EXIF/GPS and mark the asset's derivatives as
+   * stripped once a clean one lands. */
+  verifyNoExif?: boolean;
+}): Promise<
+  | { ok: true }
+  | { ok: false; error: "not_found" | "unsupported_type" | "metadata_present" }
+> {
   const db = getDb();
   const asset = await getAsset(params.organizationId, params.assetId);
   if (!asset) return { ok: false, error: "not_found" };
   if (!params.contentType.startsWith("image/")) return { ok: false, error: "unsupported_type" };
+  if (params.verifyNoExif) {
+    const { jpegExifInfo } = await import("@/lib/exif");
+    if (jpegExifInfo(params.bytes).exif) return { ok: false, error: "metadata_present" };
+  }
 
   // Derivatives live beside the original under the asset's own directory:
   // {org}/{project}/{asset}/{kind}.jpg
@@ -288,7 +299,10 @@ export async function attachDerivative(params: {
   await putObject(params.organizationId, `${asset.projectId}/${asset.id}/${params.kind}.jpg`, params.bytes, params.contentType);
   await db
     .update(schema.assets)
-    .set(params.kind === "thumb" ? { thumbKey: key } : { previewKey: key })
+    .set({
+      ...(params.kind === "thumb" ? { thumbKey: key } : { previewKey: key }),
+      ...(params.verifyNoExif ? { exifStripped: true } : {}),
+    })
     .where(and(eq(schema.assets.id, asset.id), eq(schema.assets.organizationId, params.organizationId)));
   return { ok: true };
 }
