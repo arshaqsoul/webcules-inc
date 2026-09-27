@@ -333,23 +333,85 @@ export async function bulkAssetAction(
     return finishBulkAudit(organizationId, params, result, assets[0]?.projectId ?? null);
   }
 
-  for (const assetId of ids) {
+  // Status changes and tags run batched too — one ownership select, one
+  // (reject-only) guard select, ONE update/insert/delete for the whole set.
+  if ((params.action === "approve" || params.action === "reject" || params.action === "reset") && ids.length) {
+    const db = getDb();
+    const status = params.action === "approve" ? "approved" : params.action === "reject" ? "rejected" : "uploaded";
+    const assets = await db
+      .select({ id: schema.assets.id, projectId: schema.assets.projectId })
+      .from(schema.assets)
+      .where(and(eq(schema.assets.organizationId, organizationId), inArray(schema.assets.id, ids)));
+    const foundIds = new Set(assets.map((a) => a.id));
+    let allowed = assets;
     if (params.action === "reject") {
-      const r = await setAssetStatus(organizationId, assetId, "rejected");
-      if (r.ok) result.done++;
-      else result.blocked.push({ assetId, reason: "active client gallery" });
-      continue;
+      const guardedRows = await db
+        .select({ assetId: schema.shareGrantAssets.assetId })
+        .from(schema.shareGrantAssets)
+        .innerJoin(schema.shareGrants, eq(schema.shareGrants.id, schema.shareGrantAssets.grantId))
+        .where(
+          and(
+            inArray(schema.shareGrantAssets.assetId, assets.map((a) => a.id)),
+            eq(schema.shareGrants.status, "active"),
+            or(isNull(schema.shareGrants.expiresAt), gt(schema.shareGrants.expiresAt, new Date())),
+          ),
+        );
+      const guarded = new Set(guardedRows.map((r) => r.assetId));
+      allowed = assets.filter((a) => !guarded.has(a.id));
+      if (guarded.size) {
+        await db.insert(schema.auditLog).values(
+          Array.from(guarded).map((assetId) => ({
+            id: crypto.randomUUID(),
+            organizationId,
+            actorType: "user" as const,
+            actorId: params.actorUserId,
+            action: "asset.reject_blocked",
+            targetType: "asset" as const,
+            targetId: assetId,
+            meta: JSON.stringify({ reason: "active_share_grant", source: "bulk" }),
+          })),
+        );
+      }
+      result.blocked.push(...Array.from(guarded).map((assetId) => ({ assetId, reason: "active client gallery" })));
     }
-    if (params.action === "tag" || params.action === "untag") {
-      if (!params.tag) continue;
-      await setAssetTag(organizationId, assetId, params.tag, params.action === "tag");
-      result.done++;
-      continue;
+    if (allowed.length) {
+      await db
+        .update(schema.assets)
+        .set({
+          status,
+          // WEB-118: the retention clock starts on reject, stops otherwise.
+          rejectedAt: status === "rejected" ? Math.floor(Date.now() / 1000) : null,
+        })
+        .where(and(eq(schema.assets.organizationId, organizationId), inArray(schema.assets.id, allowed.map((a) => a.id))));
     }
-    const status = params.action === "approve" ? "approved" : "uploaded";
-    await setAssetStatus(organizationId, assetId, status);
-    result.done++;
+    result.done = allowed.length;
+    result.blocked.push(...ids.filter((id) => !foundIds.has(id)).map((assetId) => ({ assetId, reason: "not found" })));
+    return finishBulkAudit(organizationId, params, result, assets[0]?.projectId ?? null);
   }
+
+  if ((params.action === "tag" || params.action === "untag") && ids.length && params.tag) {
+    const db = getDb();
+    const clean = params.tag.trim().toLowerCase().slice(0, MAX_TAG_LEN);
+    const owned = await db
+      .select({ id: schema.assets.id })
+      .from(schema.assets)
+      .where(and(eq(schema.assets.organizationId, organizationId), inArray(schema.assets.id, ids)));
+    if (owned.length) {
+      if (params.action === "tag") {
+        await db
+          .insert(schema.assetTags)
+          .values(owned.map((a) => ({ organizationId, assetId: a.id, tag: clean })))
+          .onConflictDoNothing();
+      } else {
+        await db
+          .delete(schema.assetTags)
+          .where(and(eq(schema.assetTags.organizationId, organizationId), eq(schema.assetTags.tag, clean), inArray(schema.assetTags.assetId, owned.map((a) => a.id))));
+      }
+    }
+    result.done = owned.length;
+    return finishBulkAudit(organizationId, params, result, undefined);
+  }
+
   return finishBulkAudit(organizationId, params, result);
 }
 
