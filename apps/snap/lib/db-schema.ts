@@ -394,6 +394,9 @@ export const assets = sqliteTable(
     checksum: text("checksum"),
     /** uploaded | approved | rejected | shared */
     status: text("status").notNull().default("uploaded"),
+    /** WEB-118: when the asset was (last) rejected — epoch seconds; anchors
+     * the rejected auto-delete retention clock, cleared on approve/reset. */
+    rejectedAt: integer("rejected_at"),
     thumbKey: text("thumb_key"),
     previewKey: text("preview_key"),
     exifStripped: integer("exif_stripped", { mode: "boolean" }).notNull().default(false),

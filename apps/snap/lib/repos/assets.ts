@@ -1,7 +1,7 @@
 /* Asset repository — R2-backed project media. Keys are always
  * {orgId}/{projectId}/{assetId}/{filename}; every operation re-verifies the
  * org + project ownership. Status: uploaded → approved/rejected → shared. */
-import { and, desc, eq, gt, inArray, isNull, or, sql } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, isNull, lte, or, sql } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
@@ -317,9 +317,85 @@ export async function setAssetStatus(
 
   await db
     .update(schema.assets)
-    .set({ status })
+    .set({
+      status,
+      // WEB-118: the retention clock starts when the asset is rejected and
+      // stops (clears) on approve/reset, so a re-reject restarts it.
+      ...(status === "rejected"
+        ? { rejectedAt: Math.floor(Date.now() / 1000) }
+        : { rejectedAt: null }),
+    })
     .where(and(eq(schema.assets.id, assetId), eq(schema.assets.organizationId, organizationId)));
   return { ok: true };
+}
+
+/* ---------------- Rejected auto-deletion (WEB-118) ---------------- */
+
+/** Purge rejected assets past each studio's retention window. The share-grant
+ * guard inside deleteAsset is the enforcement point: an asset in any active
+ * client gallery is never auto-deleted (it is skipped, not failed). Every
+ * purge is audited per asset. Bounded per run so one sweep can't monopolize
+ * the cron. Returns the number of assets purged. */
+export async function sweepRejectedRetention(maxPerOrg = 200): Promise<number> {
+  const db = getDb();
+  const profiles = await db
+    .select({ organizationId: schema.studioProfiles.organizationId, rejectedPolicy: schema.studioProfiles.rejectedPolicy })
+    .from(schema.studioProfiles)
+    .limit(500);
+
+  const now = Math.floor(Date.now() / 1000);
+  let purged = 0;
+
+  for (const profile of profiles) {
+    let policy: { enabled?: boolean; retainDays?: number };
+    try {
+      policy = JSON.parse(profile.rejectedPolicy || "{}");
+    } catch {
+      continue;
+    }
+    if (!policy.enabled || !policy.retainDays || policy.retainDays < 1) continue;
+
+    // Legacy rejected assets (rejected before this column existed) start
+    // aging now rather than being purged instantly.
+    await db
+      .update(schema.assets)
+      .set({ rejectedAt: now })
+      .where(
+        and(
+          eq(schema.assets.organizationId, profile.organizationId),
+          eq(schema.assets.status, "rejected"),
+          isNull(schema.assets.rejectedAt),
+        ),
+      );
+
+    const expired = await db
+      .select({ id: schema.assets.id })
+      .from(schema.assets)
+      .where(
+        and(
+          eq(schema.assets.organizationId, profile.organizationId),
+          eq(schema.assets.status, "rejected"),
+          lte(schema.assets.rejectedAt, now - policy.retainDays * 86400),
+        ),
+      )
+      .limit(maxPerOrg);
+
+    for (const asset of expired) {
+      const result = await deleteAsset(profile.organizationId, asset.id);
+      if (!result.ok) continue; // shared_protected: the guard holds, skip
+      await db.insert(schema.auditLog).values({
+        id: crypto.randomUUID(),
+        organizationId: profile.organizationId,
+        actorType: "system",
+        action: "asset.auto_purged",
+        targetType: "asset",
+        targetId: asset.id,
+        meta: JSON.stringify({ reason: "rejected_retention", retainDays: policy.retainDays }),
+      });
+      purged++;
+    }
+  }
+  return purged;
 }
 
 /** THE authoritative protection check (WEB-127): an asset is locked while ANY

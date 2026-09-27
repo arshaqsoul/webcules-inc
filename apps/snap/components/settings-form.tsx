@@ -21,6 +21,8 @@ type Initial = {
   embedOrigins: string[];
   hasLogo: boolean;
   logoUrl: string | null;
+  /** WEB-118: rejected auto-delete policy — days, 0 = keep forever. */
+  rejectedRetentionDays: number;
 };
 
 export function SettingsForm({ initial }: { initial: Initial }) {
@@ -39,6 +41,7 @@ export function SettingsForm({ initial }: { initial: Initial }) {
   const [origins, setOrigins] = useState(initial.embedOrigins.join("\n"));
   const [embedKey, setEmbedKey] = useState(initial.embedKey);
   const [logoUrl, setLogoUrl] = useState(initial.logoUrl);
+  const [retentionDays, setRetentionDays] = useState(String(initial.rejectedRetentionDays));
   const [zones, setZones] = useState<string[]>([]);
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -67,6 +70,11 @@ export function SettingsForm({ initial }: { initial: Initial }) {
         // empty/invalid stack from the brand JSON). `|| undefined` here is
         // what made a saved font impossible to remove.
         fontFamily,
+        // WEB-118: rejected auto-delete policy.
+        rejectedPolicy: {
+          enabled: Number(retentionDays) > 0,
+          ...(Number(retentionDays) > 0 ? { retainDays: Number(retentionDays) } : {}),
+        },
         theme: theme === "light" || theme === "dark" || theme === "auto" ? theme : undefined,
         tokens: (() => {
           try {
@@ -180,6 +188,21 @@ export function SettingsForm({ initial }: { initial: Initial }) {
               <option value="dark">Dark</option>
               <option value="auto">Follow the host site</option>
             </select>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="rejectedRetention">Rejected files</Label>
+            <select id="rejectedRetention" className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+              value={retentionDays} onChange={(e) => setRetentionDays(e.target.value)}>
+              <option value="0">Keep forever</option>
+              <option value="7">Delete after 7 days</option>
+              <option value="14">Delete after 14 days</option>
+              <option value="30">Delete after 30 days</option>
+              <option value="60">Delete after 60 days</option>
+              <option value="90">Delete after 90 days</option>
+            </select>
+            <p className="text-xs text-ink-tertiary">
+              The daily job permanently deletes rejected files past this window. Files in an active client gallery are never auto-deleted.
+            </p>
           </div>
         </div>
         <button type="button" className="mt-3 text-xs text-ink-subtle underline underline-offset-2" onClick={() => setShowAdvanced((v) => !v)}>

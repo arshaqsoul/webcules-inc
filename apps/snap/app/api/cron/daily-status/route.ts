@@ -173,5 +173,15 @@ export async function POST(req: Request) {
     console.error("upload-session sweep failed:", String(err));
   }
 
-  return Response.json({ ok: true, moved: due.length, warned, downgraded, expiredHolds, vault, dormancy, margin, expiredUploads });
+  // WEB-118: rejected auto-deletion — per-studio retention windows; the
+  // share-grant guard inside deleteAsset keeps live-gallery files safe.
+  let rejectedPurged = 0;
+  try {
+    const { sweepRejectedRetention } = await import("@/lib/repos/assets");
+    rejectedPurged = await sweepRejectedRetention();
+  } catch (err) {
+    console.error("rejected-retention sweep failed:", String(err));
+  }
+
+  return Response.json({ ok: true, moved: due.length, warned, downgraded, expiredHolds, vault, dormancy, margin, expiredUploads, rejectedPurged });
 }

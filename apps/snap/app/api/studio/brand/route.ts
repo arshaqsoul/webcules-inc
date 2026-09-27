@@ -25,6 +25,16 @@ const bodySchema = z.object({
   theme: z.enum(["light", "dark", "auto"]).optional(),
   /** Advanced token presets (WEB-163) — sanitized per-kind, invalid dropped. */
   tokens: z.record(z.string(), z.unknown()).optional(),
+  /** WEB-118: rejected auto-delete policy — { enabled, retainDays }. */
+  rejectedPolicy: z
+    .object({
+      enabled: z.boolean(),
+      retainDays: z.number().int().min(1).max(365).optional(),
+    })
+    .refine((p) => !p.enabled || p.retainDays !== undefined, {
+      message: "retainDays is required when the policy is enabled",
+    })
+    .optional(),
 });
 
 export async function PATCH(req: Request) {
@@ -81,6 +91,9 @@ export async function PATCH(req: Request) {
       timezone: parsed.data.timezone ?? existing.timezone,
       contactEmail: parsed.data.contactEmail ?? existing.contactEmail,
       brand: JSON.stringify(brand),
+      ...(parsed.data.rejectedPolicy
+        ? { rejectedPolicy: JSON.stringify(parsed.data.rejectedPolicy) }
+        : {}),
       updatedAt: new Date(),
     })
     .where(eq(schema.studioProfiles.organizationId, ctx.organizationId));

@@ -43,6 +43,10 @@ export default async function SettingsPage({
           embedOrigins: JSON.parse(profile.embedOrigins || "[]") as string[],
           hasLogo: Boolean(profile.logoKey),
           logoUrl: profile.logoKey ? `/api/embed/logo?key=${profile.embedKey}` : null,
+          rejectedRetentionDays:
+            (JSON.parse(profile.rejectedPolicy || "{}") as { enabled?: boolean; retainDays?: number }).enabled
+              ? (JSON.parse(profile.rejectedPolicy || "{}") as { retainDays?: number }).retainDays ?? 30
+              : 0,
         }}
       />
       <PayoutsPanel returnHint={payouts === "return" ? "return" : payouts === "refresh" ? "refresh" : undefined} />
