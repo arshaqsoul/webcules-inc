@@ -412,6 +412,50 @@ export async function sweepRejectedRetention(maxPerOrg = 200): Promise<number> {
   return purged;
 }
 
+/** Bulk rename (Files polish) — pattern base + running index with zero
+ * padding, applied in the given order; extensions are preserved. Order of
+ * assetIds is the order the numbers run in. */
+export async function bulkRenameAssets(params: {
+  organizationId: string;
+  assetIds: string[];
+  base: string;
+  start: number;
+  pad: number;
+  actorUserId: string;
+}): Promise<{ done: number }> {
+  const db = getDb();
+  const ids = params.assetIds.slice(0, 500);
+  let renamedProjectId: string | null = null;
+  for (let i = 0; i < ids.length; i++) {
+    const asset = (
+      await db
+        .select({ filename: schema.assets.filename, projectId: schema.assets.projectId })
+        .from(schema.assets)
+        .where(and(eq(schema.assets.id, ids[i]), eq(schema.assets.organizationId, params.organizationId)))
+        .limit(1)
+    )[0];
+    if (!asset) continue;
+    const ext = asset.filename.includes(".") ? asset.filename.split(".").pop()! : "";
+    const name = `${params.base}${String(params.start + i).padStart(params.pad, "0")}${ext ? "." + ext : ""}`.slice(0, 160);
+    renamedProjectId ??= asset.projectId;
+    await db
+      .update(schema.assets)
+      .set({ filename: name })
+      .where(and(eq(schema.assets.id, ids[i]), eq(schema.assets.organizationId, params.organizationId)));
+  }
+  await db.insert(schema.auditLog).values({
+    id: crypto.randomUUID(),
+    organizationId: params.organizationId,
+    actorType: "user",
+    actorId: params.actorUserId,
+    action: "asset.bulk_rename",
+    targetType: "project",
+    targetId: renamedProjectId ?? "",
+    meta: JSON.stringify({ count: ids.length, base: params.base }),
+  });
+  return { done: ids.length };
+}
+
 /** Manual "delete rejected now" (WEB-123) — the studio-facing counterpart
  * to the retention sweep: purge this project's rejected assets on demand.
  * Active-gallery assets are skipped and reported (same guard as delete);

@@ -1,18 +1,19 @@
 /* Bulk asset actions (WEB-128) — approve/reject/reset/delete/tag/untag over
  * an explicit id list, org-scoped, share-guard aware, partial-failure
- * reporting (blocked items come back with reasons). */
+ * reporting (blocked items come back with reasons). "rename" runs the
+ * pattern renamer (base + running index, extensions preserved). */
 import { getOrgContext } from "@/lib/session";
-import { bulkAssetAction } from "@/lib/repos/assets";
+import { bulkAssetAction, bulkRenameAssets } from "@/lib/repos/assets";
 
 export const dynamic = "force-dynamic";
 
-const ACTIONS = new Set(["approve", "reject", "reset", "delete", "tag", "untag"]);
+const ACTIONS = new Set(["approve", "reject", "reset", "delete", "tag", "untag", "rename"]);
 
 export async function POST(req: Request) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
 
-  let body: { action?: string; assetIds?: string[]; tag?: string };
+  let body: { action?: string; assetIds?: string[]; tag?: string; base?: string; start?: number; pad?: number };
   try {
     body = (await req.json()) as typeof body;
   } catch {
@@ -25,6 +26,22 @@ export async function POST(req: Request) {
     return Response.json({ error: "tag_required" }, { status: 400 });
   }
   const ids = body.assetIds.filter((x) => typeof x === "string").slice(0, 500);
+
+  if (body.action === "rename") {
+    const base = (body.base ?? "").trim().replace(/[\\/:*?"<>|]/g, "-");
+    const start = Math.max(0, Math.min(999_999, Math.trunc(body.start ?? 1)));
+    const pad = Math.max(1, Math.min(5, Math.trunc(body.pad ?? 2)));
+    if (!base || base.length > 80) return Response.json({ error: "invalid_base" }, { status: 400 });
+    const result = await bulkRenameAssets({
+      organizationId: ctx.organizationId,
+      assetIds: ids,
+      base,
+      start,
+      pad,
+      actorUserId: ctx.user.id,
+    });
+    return Response.json(result);
+  }
 
   const result = await bulkAssetAction(ctx.organizationId, {
     action: body.action as "approve" | "reject" | "reset" | "delete" | "tag" | "untag",

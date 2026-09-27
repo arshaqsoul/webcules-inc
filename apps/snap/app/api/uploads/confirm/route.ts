@@ -17,6 +17,8 @@ const confirmSchema = z.object({
   assetId: z.string().uuid(),
   /** Ordered part ETags (multipart only) — quoted strings straight from the PUT responses. */
   etags: z.array(z.string().min(1).max(128)).max(10000).optional(),
+  /** Content fingerprint for duplicate detection (fp1:sha256 of size + first 1MB). */
+  fingerprint: z.string().regex(/^fp1:[0-9a-f]{64}$/).optional(),
 });
 
 export async function POST(req: Request) {
@@ -78,6 +80,7 @@ export async function POST(req: Request) {
       mimeType: session.mimeType,
       bytes: head.size,
       checksum: head.etag ?? null,
+      fingerprint: parsed.data.fingerprint,
       uploadedBy: session.uploadedBy,
     });
     await deleteUploadSession(session.id);

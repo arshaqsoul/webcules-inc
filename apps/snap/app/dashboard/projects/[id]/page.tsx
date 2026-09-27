@@ -340,6 +340,7 @@ function ActivityTab({
     "asset.bulk_delete": (m) => `bulk deleted ${m.count ?? ""} files`.trim(),
     "asset.bulk_tag": (m) => `tagged ${m.count ?? ""} files${m.tag ? ` "${String(m.tag)}"` : ""}`.trim(),
     "asset.bulk_untag": (m) => `untagged ${m.count ?? ""} files${m.tag ? ` "${String(m.tag)}"` : ""}`.trim(),
+    "asset.bulk_rename": (m) => `renamed ${m.count ?? ""} files to "${String(m.base ?? "")}…"`.trim(),
     "asset.delete_blocked": () => "delete blocked — active client gallery",
     "asset.reject_blocked": () => "reject blocked — active client gallery",
     "asset.rejected_purge": (m) =>

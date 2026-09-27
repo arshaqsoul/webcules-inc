@@ -14,6 +14,7 @@ const SURFACED_ACTIONS = [
   "asset.bulk_delete",
   "asset.bulk_tag",
   "asset.bulk_untag",
+  "asset.bulk_rename",
   "asset.delete_blocked",
   "asset.reject_blocked",
   "asset.rejected_purge",

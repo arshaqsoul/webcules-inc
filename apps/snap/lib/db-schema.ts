@@ -392,6 +392,8 @@ export const assets = sqliteTable(
     width: integer("width"),
     height: integer("height"),
     checksum: text("checksum"),
+    /** fp1:sha256(size + first 1MB) — duplicate-upload detection. */
+    fingerprint: text("fingerprint"),
     /** uploaded | approved | rejected | shared */
     status: text("status").notNull().default("uploaded"),
     /** WEB-118: when the asset was (last) rejected — epoch seconds; anchors
@@ -413,6 +415,7 @@ export const assets = sqliteTable(
     index("asset_org_project_idx").on(t.organizationId, t.projectId, t.createdAt),
     index("asset_raw_scan_idx").on(t.kind, t.createdAt),
     index("asset_raw_archive_idx").on(t.rawArchivedAt),
+    index("asset_fp_idx").on(t.projectId, t.fingerprint),
   ],
 );
 

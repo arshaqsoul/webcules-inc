@@ -7,9 +7,17 @@
  * (WEB-113). Fast triage lives in <TriageMode> (WEB-122). */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { Check, ChevronDown, ChevronLeft, ChevronRight, ListFilter, X } from "lucide-react";
+import { Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, ListFilter, X } from "lucide-react";
 
 import { Button } from "@webcules/ui/components/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@webcules/ui/components/dialog";
 import { AssetViewer } from "@/components/asset-viewer";
 import { useConfirm } from "@/components/confirm-provider";
 import { TriageMode } from "@/components/triage-mode";
@@ -46,6 +54,23 @@ const UPLOAD_PARALLELISM = 4;
 
 function mb(bytes: number): string {
   return bytes > 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+}
+
+/* Content fingerprint for duplicate detection — sha256 of the size plus the
+ * first 1MB, so any file size hashes in bounded time. Server stores it on
+ * the asset (asset.fingerprint) and the dedup-check endpoint compares. */
+async function fingerprintFile(file: File): Promise<string | null> {
+  try {
+    const head = new Uint8Array(await file.slice(0, 1 << 20).arrayBuffer());
+    const size = new TextEncoder().encode(`${file.size}:`);
+    const combined = new Uint8Array(size.length + head.length);
+    combined.set(size, 0);
+    combined.set(head, size.length);
+    const digest = await crypto.subtle.digest("SHA-256", combined);
+    return "fp1:" + Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
+  } catch {
+    return null;
+  }
 }
 
 /* ---------------- Derivatives (WEB-116) ----------------
@@ -196,6 +221,7 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
 
   // Upload queue (WEB-113).
   const [queue, setQueue] = useState<QueueItem[]>([]);
+  const [queueOpen, setQueueOpen] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [paused, setPaused] = useState(false);
   const filesPending = useRef<{ file: File; itemId: string }[]>([]);
@@ -204,6 +230,13 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
   const [triageOpen, setTriageOpen] = useState(false);
   const [notice, setNotice] = useState("");
   const [purging, setPurging] = useState(false);
+
+  // Bulk rename (Files polish): base + running index over the selected set.
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [renameBase, setRenameBase] = useState("photo");
+  const [renameStart, setRenameStart] = useState(1);
+  const [renamePad, setRenamePad] = useState(2);
+  const [renaming, setRenaming] = useState(false);
 
   const query = useCallback(
     (cursor?: string | null) => {
@@ -284,8 +317,46 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
     }
   }
 
-  // "Delete rejected now" (WEB-123) — confirmation with the live count, then
-  // a deleted/skipped report (skipped = locked by an active client gallery).
+  // "Delete rejected now" (WEB-123) — confirmation with the live count, then  // a deleted/skipped report (skipped = locked by an active client gallery).
+  // Bulk rename (Files polish) — selected ids in grid order, preview of the
+  // first few resulting names, extensions preserved server-side.
+  function selectedInGridOrder(): AssetItem[] {
+    return feed.items.filter((a) => selected.has(a.id));
+  }
+  function selectedExamples(): string[] {
+    return selectedInGridOrder().slice(0, 3).map((a) => a.filename);
+  }
+  function renamePreview(base: string, start: number, pad: number, examples: string[]): string[] {
+    return examples.map((name, i) => {
+      const ext = name.includes(".") ? name.split(".").pop() : "";
+      return `${base}${String(start + i).padStart(pad, "0")}${ext ? "." + ext : ""}`;
+    });
+  }
+  async function applyRename() {
+    const ids = selectedInGridOrder().map((a) => a.id);
+    if (!ids.length || !renameBase.trim() || renaming) return;
+    setRenaming(true);
+    setNotice("");
+    try {
+      const res = await fetch("/api/assets/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "rename", assetIds: ids, base: renameBase.trim(), start: renameStart, pad: renamePad }),
+      });
+      const body = (await res.json().catch(() => ({}))) as { done?: number; error?: string };
+      if (!res.ok) {
+        setNotice(body.error === "invalid_base" ? "Pick a base name (letters, numbers, dashes)." : "Rename failed — try again.");
+      } else {
+        setNotice(`Renamed ${body.done ?? 0} file${(body.done ?? 0) === 1 ? "" : "s"}.`);
+        setRenameOpen(false);
+        refresh();
+      }
+    } catch {
+      setNotice("Network error — try again.");
+    }
+    setRenaming(false);
+  }
+
   async function purgeRejected() {
     const n = feed.counts.rejected ?? 0;
     if (!n || purging) return;
@@ -381,11 +452,11 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
     [],
   );
 
-  async function confirmUpload(assetId: string, etags?: string[]): Promise<void> {
+  async function confirmUpload(assetId: string, etags?: string[], fingerprint?: string): Promise<void> {
     const res = await fetch("/api/uploads/confirm", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ assetId, etags }),
+      body: JSON.stringify({ assetId, etags, fingerprint }),
     });
     if (!res.ok) {
       const body = (await res.json().catch(() => ({}))) as { error?: string };
@@ -436,13 +507,13 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
               }
             }),
           );
-          await confirmUpload(assetId, etags);
+          await confirmUpload(assetId, etags, fpStore.current.get(itemId));
         } else {
           const headers = body.headers as Record<string, string> | undefined;
           await putBlob(itemId, String(body.url), file, headers?.["Content-Type"] ?? null, (l) =>
             updateItem(itemId, { progress: Math.min(99, Math.round((l / file.size) * 100)) }),
           );
-          await confirmUpload(assetId);
+          await confirmUpload(assetId, undefined, fpStore.current.get(itemId));
         }
         sessions.current.delete(itemId);
         updateItem(itemId, { state: "done", progress: 100 });
@@ -532,21 +603,64 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
 
   // file store for retries/cancel mapping
   const fileStore = useRef<Map<string, File>>(new Map());
-  function enqueueWithStore(files: FileList | File[]) {
+  // content fingerprint per queue item — sent at confirm so the asset row
+  // carries it for future duplicate checks.
+  const fpStore = useRef<Map<string, string>>(new Map());
+
+  async function enqueueWithStore(files: FileList | File[]) {
     const arr = Array.from(files);
+    if (!arr.length) return;
     // stash files for retry support
     const stash = arr.map((_, i) => `${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}`);
     stash.forEach((id, i) => fileStore.current.set(id, arr[i]));
+
+    // Duplicate pre-check: fingerprint every file (bounded read), ask the
+    // server which already exist in this project, offer to skip them.
+    const fps = await Promise.all(arr.map((f) => fingerprintFile(f)));
+    const skipIds = new Set<string>();
+    const checkable = fps.filter((f): f is string => Boolean(f));
+    if (checkable.length) {
+      try {
+        const res = await fetch(`/api/projects/${projectId}/assets/dedup-check`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fingerprints: checkable }),
+        });
+        const body = (await res.json().catch(() => ({}))) as { duplicates?: { fingerprint: string; filename: string }[] };
+        const dupFps = new Set((body.duplicates ?? []).map((d) => d.fingerprint));
+        if (dupFps.size) {
+          const dupNames = arr.filter((_, i) => fps[i] && dupFps.has(fps[i]!)).map((f) => f.name);
+          const skip = await confirm({
+            title: `${dupNames.length} duplicate file${dupNames.length === 1 ? "" : "s"}`,
+            body: (
+              <>
+                Already in this project (identical content): <b className="text-ink">{dupNames.slice(0, 3).join(", ")}</b>
+                {dupNames.length > 3 ? ` +${dupNames.length - 3} more` : ""}. Skip them, or cancel to upload everything anyway.
+              </>
+            ),
+            confirmLabel: "Skip duplicates",
+          });
+          if (skip) arr.forEach((_, i) => { if (fps[i] && dupFps.has(fps[i]!)) skipIds.add(stash[i]); });
+        }
+      } catch {
+        /* dedup check is advisory — network failure just uploads */
+      }
+    }
+
     const items: QueueItem[] = arr.map((file, i) => ({
       id: stash[i],
       name: file.name,
       size: file.size,
       progress: 0,
-      state: "pending",
+      state: skipIds.has(stash[i]) ? "canceled" : "pending",
       attempts: 0,
+      error: skipIds.has(stash[i]) ? "Duplicate — skipped" : undefined,
     }));
     for (const it of items) itemById.current.set(it.id, it);
-    filesPending.current.push(...arr.map((file, i) => ({ file, itemId: stash[i] })));
+    for (let i = 0; i < arr.length; i++) {
+      if (fps[i]) fpStore.current.set(stash[i], fps[i]!);
+      if (!skipIds.has(stash[i])) filesPending.current.push({ file: arr[i], itemId: stash[i] });
+    }
     setQueue((q) => [...q, ...items]);
     setUploading(true);
     setPaused(false);
@@ -574,7 +688,8 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
   const summary = useMemo(() => {
     const done = queue.filter((q) => q.state === "done").length;
     const failed = queue.filter((q) => q.state === "failed").length;
-    return { done, failed, total: queue.length };
+    const overallPct = queue.length ? Math.round(queue.reduce((n, q) => n + (q.state === "done" ? 100 : q.progress), 0) / queue.length) : 0;
+    return { done, failed, total: queue.length, overallPct };
   }, [queue]);
 
   /* ---------------- Render ---------------- */
@@ -810,15 +925,23 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
 
       {notice && <p className="text-xs text-ink-muted">{notice}</p>}
 
-      {/* Upload queue (WEB-113) */}
+      {/* Upload queue (WEB-113) — compact summary with overall progress;
+       * the per-file list collapses and scrolls instead of growing the page. */}
       {queue.length > 0 && (
         <div className="flex flex-col gap-2 rounded-[12px] border border-hairline bg-surface-1 p-3">
-          <div className="flex flex-wrap items-center gap-2 text-xs text-ink-subtle">
-            <span>
-              {summary.done}/{summary.total} uploaded
+          <div className="flex flex-wrap items-center gap-3 text-xs text-ink-subtle">
+            <span className="shrink-0 font-medium text-ink">
+              {uploading ? `Uploading ${summary.done + (uploading ? 1 : 0) > summary.total ? summary.total : summary.done}/${summary.total}` : `${summary.done}/${summary.total} uploaded`}
               {summary.failed ? ` · ${summary.failed} failed` : ""}
             </span>
-            <div className="ml-auto flex gap-1.5">
+            <div className="h-1.5 min-w-24 flex-1 overflow-hidden rounded-full bg-surface-2" role="progressbar" aria-valuenow={summary.overallPct} aria-valuemin={0} aria-valuemax={100}>
+              <div
+                className={`h-full rounded-full transition-[width] duration-300 ${summary.failed ? "bg-primary" : "bg-primary"}`}
+                style={{ width: `${summary.overallPct}%` }}
+              />
+            </div>
+            <span className="w-9 shrink-0 text-right tabular-nums text-ink-tertiary">{summary.overallPct}%</span>
+            <div className="flex shrink-0 gap-1.5">
               {uploading && (
                 <Button size="sm" variant="ghost" onClick={() => { setPaused(!paused); if (paused) pump(); }}>
                   {paused ? "Resume" : "Pause"}
@@ -830,22 +953,32 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
               {uploading && (
                 <Button size="sm" variant="ghost" onClick={cancelUploads}>Cancel</Button>
               )}
+              <Button size="sm" variant="ghost" onClick={() => setQueueOpen((o) => !o)} aria-expanded={queueOpen}>
+                {queueOpen ? <ChevronUp className="h-3.5 w-3.5" aria-hidden /> : <ChevronDown className="h-3.5 w-3.5" aria-hidden />}
+                {queueOpen ? "Hide" : "Files"}
+              </Button>
             </div>
           </div>
-          {queue.slice(-50).map((q) => (
-            <div key={q.id} className="flex items-center gap-2 text-xs">
-              <span className="w-44 truncate text-ink-muted" title={q.name}>{q.name} ({mb(q.size)})</span>
-              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2">
-                <div
-                  className={`h-full transition-[width] ${q.state === "failed" ? "bg-destructive" : q.state === "done" ? "bg-success" : "bg-primary"}`}
-                  style={{ width: `${q.state === "done" ? 100 : q.progress}%` }}
-                />
-              </div>
-              <span className={`w-20 text-right ${q.state === "failed" ? "text-destructive" : q.state === "done" ? "text-success-text" : "text-ink-tertiary"}`}>
-                {q.state === "uploading" ? `${q.progress}%` : q.state === "pending" ? (q.attempts ? `retry ${q.attempts}` : "waiting") : q.state}
-              </span>
+          {queueOpen && (
+            <div className="flex max-h-56 flex-col gap-2 overflow-y-auto pr-1">
+              {queue.slice(-200).map((q) => (
+                <div key={q.id} className="flex items-center gap-2 text-xs">
+                  <span className="w-44 shrink-0 truncate text-ink-muted" title={`${q.name} (${mb(q.size)})${q.error ? ` — ${q.error}` : ""}`}>
+                    {q.name} <span className="text-ink-tertiary">({mb(q.size)})</span>
+                  </span>
+                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2">
+                    <div
+                      className={`h-full transition-[width] ${q.state === "failed" ? "bg-destructive" : q.state === "done" ? "bg-success" : "bg-primary"}`}
+                      style={{ width: `${q.state === "done" ? 100 : q.progress}%` }}
+                    />
+                  </div>
+                  <span className={`w-24 shrink-0 text-right ${q.state === "failed" ? "text-destructive" : q.state === "done" ? "text-success-text" : q.state === "canceled" ? "text-ink-tertiary" : "text-ink-tertiary"}`}>
+                    {q.state === "uploading" ? `${q.progress}%` : q.state === "pending" ? (q.attempts ? `retry ${q.attempts}` : "waiting") : q.state === "canceled" ? (q.error ? "skipped" : "canceled") : q.state}
+                  </span>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
       )}
 
@@ -860,17 +993,78 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
           <Button size="sm" variant="outline" disabled={!selected.size} onClick={() => void bulk("reject")}>Reject</Button>
           <Button size="sm" variant="outline" disabled={!selected.size} onClick={() => void bulk("tag", "favorite")}>Favorite</Button>
           <TagInput disabled={!selected.size} onTag={(t) => void bulk("tag", t)} />
+          <Button size="sm" variant="outline" disabled={!selected.size} onClick={() => setRenameOpen(true)}>Rename</Button>
           <Button size="sm" variant="ghost" disabled={!selected.size} onClick={() => void bulk("delete")}>Delete</Button>
         </div>
       )}
 
-      {/* Grid view */}
+      <Dialog open={renameOpen} onOpenChange={(v) => !renaming && setRenameOpen(v)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rename {selected.size} file{selected.size === 1 ? "" : "s"}</DialogTitle>
+            <DialogDescription asChild>
+              <div className="flex flex-col gap-3 text-sm text-ink-subtle">
+                <p>
+                  Numbers run in the current grid order. Extensions are kept.
+                </p>
+                <label className="flex flex-col gap-1">
+                  Base name
+                  <input
+                    value={renameBase}
+                    onChange={(e) => setRenameBase(e.target.value.replace(/[\\/:*?"<>|]/g, "-").slice(0, 80))}
+                    className="rounded-md border border-hairline bg-canvas px-2.5 py-2 text-sm text-ink"
+                    placeholder="e.g. golden-hour"
+                  />
+                </label>
+                <div className="flex gap-3">
+                  <label className="flex flex-1 flex-col gap-1">
+                    Start at
+                    <input
+                      type="number"
+                      min={0}
+                      max={999999}
+                      value={renameStart}
+                      onChange={(e) => setRenameStart(Math.max(0, Math.min(999999, Number(e.target.value) || 0)))}
+                      className="rounded-md border border-hairline bg-canvas px-2.5 py-2 text-sm text-ink"
+                    />
+                  </label>
+                  <label className="flex flex-1 flex-col gap-1">
+                    Digits
+                    <select
+                      value={renamePad}
+                      onChange={(e) => setRenamePad(Number(e.target.value))}
+                      className="rounded-md border border-hairline bg-canvas px-2.5 py-2 text-sm text-ink"
+                    >
+                      {[1, 2, 3, 4, 5].map((d) => (
+                        <option key={d} value={d}>{d} ({String(1).padStart(d, "0")})</option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+                <p className="text-xs text-ink-tertiary">
+                  Preview: {renamePreview(renameBase, renameStart, renamePad, selectedExamples()).join(", ")}
+                  {selected.size > 3 ? ` … +${selected.size - 3}` : ""}
+                </p>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" disabled={renaming} onClick={() => setRenameOpen(false)}>Cancel</Button>
+            <Button disabled={renaming || !renameBase.trim() || !selected.size} onClick={() => void applyRename()}>
+              {renaming ? "Renaming…" : `Rename ${selected.size}`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Grid view — CSS-columns masonry: each photo keeps its own aspect
+       * so one tall image no longer stretches its whole row. */}
       {view === "grid" && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="columns-2 gap-3 sm:columns-3 lg:columns-4 xl:columns-5 [&>*]:mb-3">
           {feed.items.map((a, i) => (
             <div
               key={a.id}
-              className={`relative flex flex-col overflow-hidden rounded-[12px] border bg-surface-1 ${
+              className={`relative flex break-inside-avoid flex-col overflow-hidden rounded-[12px] border bg-surface-1 ${
                 selected.has(a.id) ? "border-primary ring-1 ring-primary/40" : "border-hairline"
               }`}
             >
@@ -889,7 +1083,7 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                 target="_blank"
                 rel="noreferrer"
                 title={selectMode ? undefined : "Open in viewer"}
-                className={`block aspect-square bg-canvas ${selectMode ? "" : "cursor-zoom-in"}`}
+                className={`block bg-canvas ${selectMode ? "" : "cursor-zoom-in"}`}
                 onClick={(e) => {
                   if (selectMode) e.preventDefault();
                   else {
@@ -904,10 +1098,10 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                     src={`/api/assets/${a.id}?variant=thumb${derivVersion ? `&v=${derivVersion}` : ""}`}
                     alt={a.filename}
                     loading="lazy"
-                    className="h-full w-full object-cover"
+                    className="block h-auto w-full object-cover"
                   />
                 ) : (
-                  <span className="flex h-full w-full flex-col items-center justify-center gap-1 text-ink-tertiary">
+                  <span className="flex h-32 w-full flex-col items-center justify-center gap-1 text-ink-tertiary">
                     <span className="text-xs uppercase">{a.kind}</span>
                     <span className="text-[10px]">.{a.filename.split(".").pop()}</span>
                   </span>
