@@ -203,6 +203,7 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
   const itemById = useRef<Map<string, QueueItem>>(new Map());
   const [triageOpen, setTriageOpen] = useState(false);
   const [notice, setNotice] = useState("");
+  const [purging, setPurging] = useState(false);
 
   const query = useCallback(
     (cursor?: string | null) => {
@@ -281,6 +282,41 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
     } catch {
       setNotice("Network error — try again.");
     }
+  }
+
+  // "Delete rejected now" (WEB-123) — confirmation with the live count, then
+  // a deleted/skipped report (skipped = locked by an active client gallery).
+  async function purgeRejected() {
+    const n = feed.counts.rejected ?? 0;
+    if (!n || purging) return;
+    if (
+      !(await confirm({
+        title: "Delete rejected files?",
+        body: `Permanently delete ${n} rejected file${n === 1 ? "" : "s"} from this project now? Files in an active client gallery are skipped.`,
+        destructive: true,
+        confirmLabel: "Delete now",
+      }))
+    )
+      return;
+    setPurging(true);
+    setNotice("");
+    try {
+      const res = await fetch(`/api/projects/${projectId}/assets/purge-rejected`, { method: "POST" });
+      const body = (await res.json().catch(() => ({}))) as { deleted?: number; skipped?: number; error?: string };
+      if (!res.ok) {
+        setNotice(body.error === "not_found" ? "Project not found." : "Purge failed — try again.");
+      } else {
+        setNotice(
+          body.skipped
+            ? `Deleted ${body.deleted ?? 0} rejected file${(body.deleted ?? 0) === 1 ? "" : "s"} · ${body.skipped} skipped (in an active client gallery)`
+            : `Deleted ${body.deleted ?? 0} rejected file${(body.deleted ?? 0) === 1 ? "" : "s"}.`,
+        );
+        refresh();
+      }
+    } catch {
+      setNotice("Network error — try again.");
+    }
+    setPurging(false);
   }
 
   function toggleSelect(id: string, index: number, shift: boolean) {
@@ -735,6 +771,17 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
           <Button size="sm" variant="outline" disabled={!feed.items.length} onClick={() => setTriageOpen(true)}>
             Triage
           </Button>
+          {(feed.counts.rejected ?? 0) > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={purging}
+              onClick={() => void purgeRejected()}
+              title="Permanently delete this project's rejected files now — files in an active client gallery are skipped"
+            >
+              {purging ? "Deleting…" : `Delete rejected (${feed.counts.rejected})`}
+            </Button>
+          )}
           <input
             ref={inputRef}
             type="file"

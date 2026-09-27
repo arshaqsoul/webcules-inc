@@ -412,6 +412,50 @@ export async function sweepRejectedRetention(maxPerOrg = 200): Promise<number> {
   return purged;
 }
 
+/** Manual "delete rejected now" (WEB-123) — the studio-facing counterpart
+ * to the retention sweep: purge this project's rejected assets on demand.
+ * Active-gallery assets are skipped and reported (same guard as delete);
+ * one summary audit row covers the run. */
+export async function purgeRejectedNow(params: {
+  organizationId: string;
+  projectId: string;
+  actorUserId: string;
+}): Promise<{ deleted: number; skipped: number }> {
+  const db = getDb();
+  const rejected = await db
+    .select({ id: schema.assets.id })
+    .from(schema.assets)
+    .where(
+      and(
+        eq(schema.assets.organizationId, params.organizationId),
+        eq(schema.assets.projectId, params.projectId),
+        eq(schema.assets.status, "rejected"),
+      ),
+    );
+  let deleted = 0;
+  let skipped = 0;
+  for (const asset of rejected) {
+    if (await assetProtectedByGrant(asset.id)) {
+      skipped++;
+      continue;
+    }
+    const result = await deleteAsset(params.organizationId, asset.id);
+    if (result.ok) deleted++;
+    else skipped++;
+  }
+  await db.insert(schema.auditLog).values({
+    id: crypto.randomUUID(),
+    organizationId: params.organizationId,
+    actorType: "user",
+    actorId: params.actorUserId,
+    action: "asset.rejected_purge",
+    targetType: "project",
+    targetId: params.projectId,
+    meta: JSON.stringify({ deleted, skipped, source: "manual" }),
+  });
+  return { deleted, skipped };
+}
+
 /** THE authoritative protection check (WEB-127): an asset is locked while ANY
  * effectively-active grant includes it (status='active' AND not expired —
  * expiry derived live, so an expired link stops protecting immediately).

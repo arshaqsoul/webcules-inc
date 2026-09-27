@@ -16,6 +16,7 @@ const SURFACED_ACTIONS = [
   "asset.bulk_untag",
   "asset.delete_blocked",
   "asset.reject_blocked",
+  "asset.rejected_purge",
   "share.grant.created",
   "share.grant.revoked",
   "share.grant.regenerated",

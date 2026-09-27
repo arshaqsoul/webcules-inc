@@ -342,6 +342,8 @@ function ActivityTab({
     "asset.bulk_untag": (m) => `untagged ${m.count ?? ""} files${m.tag ? ` "${String(m.tag)}"` : ""}`.trim(),
     "asset.delete_blocked": () => "delete blocked — active client gallery",
     "asset.reject_blocked": () => "reject blocked — active client gallery",
+    "asset.rejected_purge": (m) =>
+      `purged ${m.deleted ?? 0} rejected file${Number(m.deleted) === 1 ? "" : "s"}${m.skipped ? ` · ${m.skipped} skipped (active gallery)` : ""}`,
     "share.grant.created": () => "created a client gallery link",
     "share.grant.revoked": () => "revoked a client gallery link",
     "share.grant.regenerated": () => "rotated a client gallery link",
