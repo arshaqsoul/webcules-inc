@@ -46,6 +46,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     assetIds?: string[];
     expiresInDays?: number | null;
     allowDownload?: boolean;
+    selectionMode?: "off" | "favorites" | "selection";
+    selectionLimit?: number | null;
+    selectionDeadline?: number | null;
   };
   try {
     body = (await req.json()) as typeof body;
@@ -106,6 +109,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     expiresAt,
     createdById: ctx.user.id,
     allowDownload: body.allowDownload !== false,
+    selectionMode: body.selectionMode === "off" || body.selectionMode === "selection" ? body.selectionMode : "favorites",
+    selectionLimit:
+      body.selectionMode === "selection" && Number.isInteger(body.selectionLimit) && (body.selectionLimit as number) > 0
+        ? Math.min(body.selectionLimit as number, 10000)
+        : null,
+    selectionDeadline:
+      body.selectionMode === "selection" && Number.isInteger(body.selectionDeadline) && (body.selectionDeadline as number) > Math.floor(Date.now() / 1000)
+        ? (body.selectionDeadline as number)
+        : null,
   });
   if (!created.ok) return Response.json({ error: created.error }, { status: 400 });
 

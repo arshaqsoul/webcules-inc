@@ -6,6 +6,13 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@webcules/ui/components/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@webcules/ui/components/dialog";
 import { useConfirm } from "@/components/confirm-provider";
 
 export type GrantItem = {
@@ -20,6 +27,11 @@ export type GrantItem = {
   views: number;
   downloads: number;
   lastViewedAt: string | null;
+  selectionMode: string;
+  selectionLimit: number | null;
+  selectionDeadline: number | null;
+  favoritesCount: number;
+  selection: { count: number; note: string | null; submittedAt: string; clientEmail: string } | null;
 };
 
 const STATE_BADGE: Record<GrantItem["state"], string> = {
@@ -58,6 +70,10 @@ export function ProjectGalleries({
   const [email, setEmail] = useState(clientEmail);
   const [days, setDays] = useState("30");
   const [allowDownload, setAllowDownload] = useState(true);
+  const [selectionMode, setSelectionMode] = useState<"favorites" | "selection" | "off">("favorites");
+  const [selectionLimitInput, setSelectionLimitInput] = useState("50");
+  const [selectionDeadlineInput, setSelectionDeadlineInput] = useState("");
+  const [feedback, setFeedback] = useState<{ grant: GrantItem; favorites: string[]; selection: { items: string[]; note: string | null; submittedAt: string } | null } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [flash, setFlash] = useState<{ url: string; emailed: boolean } | null>(null);
@@ -69,7 +85,17 @@ export function ProjectGalleries({
       const res = await fetch(`/api/projects/${projectId}/grants`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clientEmail: email, expiresInDays: days ? Number(days) : null, allowDownload }),
+        body: JSON.stringify({
+          clientEmail: email,
+          expiresInDays: days ? Number(days) : null,
+          allowDownload,
+          selectionMode,
+          selectionLimit: selectionMode === "selection" ? Number(selectionLimitInput) || null : null,
+          selectionDeadline:
+            selectionMode === "selection" && selectionDeadlineInput
+              ? Math.floor(new Date(`${selectionDeadlineInput}T23:59:59`).getTime() / 1000)
+              : null,
+        }),
       });
       const body = (await res.json().catch(() => ({}))) as { url?: string; emailed?: boolean; error?: string };
       if (!res.ok) {
@@ -116,6 +142,18 @@ export function ProjectGalleries({
     } catch {
       setError("Network error — try again.");
     }
+    setBusy(false);
+  }
+
+  async function openFeedback(g: GrantItem) {
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/grants/${g.id}/feedback`);
+      if (res.ok) {
+        const body = (await res.json()) as { favorites: string[]; selection: { items: string[]; note: string | null; submittedAt: string } | null };
+        setFeedback({ grant: g, favorites: body.favorites, selection: body.selection });
+      }
+    } catch { /* ignore */ }
     setBusy(false);
   }
 
@@ -187,6 +225,42 @@ export function ProjectGalleries({
           />
           Allow downloads
         </label>
+        <label className="flex flex-col gap-1 text-xs text-ink-subtle">
+          Client picks
+          <select
+            value={selectionMode}
+            onChange={(e) => setSelectionMode(e.target.value as "favorites" | "selection" | "off")}
+            className="rounded-md border border-hairline bg-canvas px-3 py-2 text-sm text-ink outline-none focus:border-primary"
+          >
+            <option value="favorites">Favorites (♥ anything)</option>
+            <option value="selection">Selection (pick for album)</option>
+            <option value="off">Off</option>
+          </select>
+        </label>
+        {selectionMode === "selection" && (
+          <>
+            <label className="flex flex-col gap-1 text-xs text-ink-subtle">
+              Max picks
+              <input
+                type="number"
+                min={1}
+                max={10000}
+                value={selectionLimitInput}
+                onChange={(e) => setSelectionLimitInput(e.target.value)}
+                className="w-24 rounded-md border border-hairline bg-canvas px-3 py-2 text-sm text-ink outline-none focus:border-primary"
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-xs text-ink-subtle">
+              Pick deadline
+              <input
+                type="date"
+                value={selectionDeadlineInput}
+                onChange={(e) => setSelectionDeadlineInput(e.target.value)}
+                className="rounded-md border border-hairline bg-canvas px-3 py-2 text-sm text-ink outline-none focus:border-primary"
+              />
+            </label>
+          </>
+        )}
         <Button size="sm" disabled={busy || !email} onClick={createGrant}>
           {busy ? "Working…" : `Share ${approvedCount} approved file${approvedCount === 1 ? "" : "s"}`}
         </Button>
@@ -220,6 +294,15 @@ export function ProjectGalleries({
                       {g.downloads > 0 ? ` · ${g.downloads} download${g.downloads === 1 ? "" : "s"}` : ""}
                     </p>
                   )}
+                  {g.selectionMode !== "off" && (
+                    <p className="mt-0.5 text-xs text-primary">
+                      {g.selectionMode === "selection"
+                        ? g.selection
+                          ? `Selection in: ${g.selection.count} picked${g.selectionLimit ? ` of ${g.selectionLimit}` : ""} · ${fmtDate(g.selection.submittedAt)}`
+                          : `Awaiting selection${g.selectionLimit ? ` (max ${g.selectionLimit})` : ""}${g.selectionDeadline ? ` · due ${fmtDate(new Date(g.selectionDeadline).toISOString())}` : ""}`
+                        : `${g.favoritesCount} favorite${g.favoritesCount === 1 ? "" : "s"}`}
+                    </p>
+                  )}
                 </div>
                 {live && (
                   <select
@@ -235,6 +318,11 @@ export function ProjectGalleries({
                   </select>
                 )}
                 <div className="flex gap-1.5">
+                  {live && g.selectionMode !== "off" && (g.favoritesCount > 0 || g.selection) && (
+                    <Button size="sm" variant="outline" disabled={busy} onClick={() => void openFeedback(g)}>
+                      {g.selectionMode === "selection" && g.selection ? "View picks" : "View ♥"}
+                    </Button>
+                  )}
                   {live && (
                     <Button size="sm" variant="outline" disabled={busy} onClick={() => act(g.id, "resend")}>
                       Re-send
@@ -256,6 +344,37 @@ export function ProjectGalleries({
           })}
         </div>
       )}
+
+      <Dialog open={feedback !== null} onOpenChange={(v) => !v && setFeedback(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Client picks — {feedback?.grant.clientEmail}</DialogTitle>
+            <DialogDescription>
+              {feedback?.selection
+                ? `Selection of ${feedback.selection.items.length} submitted ${feedback?.selection ? fmtDate(feedback.selection.submittedAt) : ""}.`
+                : `${feedback?.favorites.length ?? 0} favorite${feedback?.favorites.length === 1 ? "" : "s"} so far.`}
+            </DialogDescription>
+          </DialogHeader>
+          {feedback?.selection?.note && (
+            <p className="rounded-md bg-surface-2 p-3 text-sm text-ink">“{feedback.selection.note}”</p>
+          )}
+          <div className="grid max-h-80 grid-cols-4 gap-2 overflow-y-auto sm:grid-cols-6">
+            {(feedback?.selection?.items ?? feedback?.favorites ?? []).map((assetId) => (
+              // eslint-disable-next-line @next/next/no-img-element -- authorized proxy, no optimizer
+              <img
+                key={assetId}
+                src={`/api/assets/${assetId}?variant=thumb`}
+                alt=""
+                loading="lazy"
+                className="aspect-square w-full rounded-md border border-hairline object-cover"
+              />
+            ))}
+            {((feedback?.selection?.items ?? feedback?.favorites ?? []).length === 0) && (
+              <p className="col-span-full py-6 text-center text-sm text-ink-subtle">Nothing picked yet.</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

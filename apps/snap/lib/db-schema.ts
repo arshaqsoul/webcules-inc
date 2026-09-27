@@ -467,6 +467,12 @@ export const shareGrants = sqliteTable(
     revokedAt: integer("revoked_at", { mode: "timestamp" }),
     /** Studio-controlled: may the client download originals from this link. */
     allowDownload: integer("allow_download", { mode: "boolean" }).notNull().default(true),
+    /** Client interaction mode (0024): off | favorites | selection. */
+    selectionMode: text("selection_mode").notNull().default("favorites"),
+    /** Max picks for selection mode; null = unlimited. */
+    selectionLimit: integer("selection_limit"),
+    /** Selection deadline, epoch seconds; null = none. */
+    selectionDeadline: integer("selection_deadline"),
     createdAt: ts("created_at"),
   },
   (t) => [index("share_grant_org_project_idx").on(t.organizationId, t.projectId, t.status)],
@@ -487,6 +493,44 @@ export const shareGrantAssets = sqliteTable(
     index("share_grant_asset_pk_idx").on(t.grantId, t.assetId),
     index("share_grant_asset_asset_idx").on(t.assetId),
   ],
+);
+
+/* ---------------- Client favorites & selections (WEB-209 P1) ---------------- */
+
+export const galleryFavorites = sqliteTable(
+  "gallery_favorite",
+  {
+    grantId: text("grant_id")
+      .notNull()
+      .references(() => shareGrants.id, { onDelete: "cascade" }),
+    assetId: text("asset_id")
+      .notNull()
+      .references(() => assets.id, { onDelete: "cascade" }),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    createdAt: ts("created_at"),
+  },
+  (t) => [primaryKey({ columns: [t.grantId, t.assetId] }), index("gallery_favorite_asset_idx").on(t.organizationId, t.assetId)],
+);
+
+export const gallerySelections = sqliteTable(
+  "gallery_selection",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    grantId: text("grant_id")
+      .notNull()
+      .references(() => shareGrants.id, { onDelete: "cascade" }),
+    clientEmail: text("client_email").notNull(),
+    note: text("note"),
+    /** JSON array of asset ids. */
+    itemsJson: text("items_json").notNull(),
+    submittedAt: ts("submitted_at"),
+  },
+  (t) => [index("gallery_selection_grant_idx").on(t.grantId, t.submittedAt)],
 );
 
 export const shareAccessLogs = sqliteTable(

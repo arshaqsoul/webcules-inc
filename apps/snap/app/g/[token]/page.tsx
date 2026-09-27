@@ -11,6 +11,7 @@ import { getStudioProfile } from "@/lib/repos/studios";
 import { getPlanEntitlements } from "@/lib/plans";
 import { logShareAccess, resolveGalleryAccess } from "@/lib/shares/gallery-auth";
 import { getGrantAssets, getGrantByTokenHashAny, resolveGrantByToken } from "@/lib/shares/grants";
+import { getFavorites, getLatestSelection } from "@/lib/shares/selections";
 import { safeHexColor } from "@/lib/embed";
 import { countGalleryOpen } from "@/lib/limits";
 
@@ -45,10 +46,12 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
     return <GalleryDenied reason="unknown" />;
   }
 
-  const [profile, assets, ent] = await Promise.all([
+  const [profile, assets, ent, favorites, selection] = await Promise.all([
     getStudioProfile(grant.organizationId),
     getGrantAssets(grant),
     getPlanEntitlements(grant.organizationId),
+    getFavorites(grant.id),
+    getLatestSelection(grant.id),
   ]);
   const brand = JSON.parse(profile?.brand || "{}") as { accent?: string };
   const shared = {
@@ -77,6 +80,12 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
         }))}
         allowDownload={grant.allowDownload}
         expiresAt={grant.expiresAt ? grant.expiresAt.toISOString() : null}
+        selectionMode={grant.selectionMode as "off" | "favorites" | "selection"}
+        selectionLimit={grant.selectionLimit ?? null}
+        selectionDeadline={grant.selectionDeadline ? grant.selectionDeadline * 1000 : null}
+        initialFavorites={favorites}
+        submittedSelection={selection ? { items: selection.items, note: selection.note, submittedAt: selection.submittedAt.toISOString() } : null}
+        clientToken={token}
       />
     );
   }
@@ -109,6 +118,12 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
       }))}
       allowDownload={grant.allowDownload}
       expiresAt={grant.expiresAt ? grant.expiresAt.toISOString() : null}
+      selectionMode={grant.selectionMode as "off" | "favorites" | "selection"}
+      selectionLimit={grant.selectionLimit ?? null}
+      selectionDeadline={grant.selectionDeadline ? grant.selectionDeadline * 1000 : null}
+      initialFavorites={favorites}
+      submittedSelection={selection ? { items: selection.items, note: selection.note, submittedAt: selection.submittedAt.toISOString() } : null}
+      clientToken={token}
     />
   );
 }

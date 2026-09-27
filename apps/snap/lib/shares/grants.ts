@@ -101,6 +101,9 @@ export async function createShareGrant(params: {
   expiresAt: Date | null;
   createdById: string;
   allowDownload?: boolean;
+  selectionMode?: "off" | "favorites" | "selection";
+  selectionLimit?: number | null;
+  selectionDeadline?: number | null;
 }): Promise<
   | { ok: true; grantId: string; token: string }
   | { ok: false; error: "no_assets" | "asset_mismatch" }
@@ -137,6 +140,9 @@ export async function createShareGrant(params: {
     expiresAt: params.expiresAt,
     createdById: params.createdById,
     allowDownload: params.allowDownload ?? true,
+    selectionMode: params.selectionMode ?? "favorites",
+    selectionLimit: params.selectionLimit ?? null,
+    selectionDeadline: params.selectionDeadline ?? null,
   });
   for (const assetId of params.assetIds) {
     await db.insert(schema.shareGrantAssets).values({ grantId, assetId });
@@ -222,9 +228,11 @@ export async function listProjectGrants(organizationId: string, projectId: strin
 
   const counts = new Map<string, number>();
   const activity = new Map<string, { views: number; downloads: number; lastViewedAt: Date | null }>();
+  const favCount = new Map<string, number>();
+  const latestSel = new Map<string, { items: string[]; note: string | null; submittedAt: Date; clientEmail: string }>();
   if (grants.length) {
     const grantIds = grants.map((g) => g.id);
-    const [assetRows, aggRows] = await Promise.all([
+    const [assetRows, aggRows, favRows, selRows] = await Promise.all([
       db
         .select({ grantId: schema.shareGrantAssets.grantId, assetId: schema.shareGrantAssets.assetId })
         .from(schema.shareGrantAssets)
@@ -239,7 +247,34 @@ export async function listProjectGrants(organizationId: string, projectId: strin
         .from(schema.shareAccessLogs)
         .where(inArray(schema.shareAccessLogs.grantId, grantIds))
         .groupBy(schema.shareAccessLogs.grantId, schema.shareAccessLogs.event),
+      db
+        .select({ grantId: schema.galleryFavorites.grantId, n: sql<number>`count(*)` })
+        .from(schema.galleryFavorites)
+        .where(inArray(schema.galleryFavorites.grantId, grantIds))
+        .groupBy(schema.galleryFavorites.grantId),
+      db
+        .select({
+          grantId: schema.gallerySelections.grantId,
+          itemsJson: schema.gallerySelections.itemsJson,
+          note: schema.gallerySelections.note,
+          submittedAt: schema.gallerySelections.submittedAt,
+          clientEmail: schema.gallerySelections.clientEmail,
+        })
+        .from(schema.gallerySelections)
+        .where(inArray(schema.gallerySelections.grantId, grantIds))
+        .orderBy(desc(schema.gallerySelections.submittedAt)),
     ]);
+    for (const r of favRows) favCount.set(r.grantId, Number(r.n));
+    for (const r of selRows) {
+      if (!latestSel.has(r.grantId)) {
+        let items: string[] = [];
+        try {
+          const parsed = JSON.parse(r.itemsJson) as unknown;
+          if (Array.isArray(parsed)) items = parsed.filter((x): x is string => typeof x === "string");
+        } catch { /* ignore */ }
+        latestSel.set(r.grantId, { items, note: r.note, submittedAt: r.submittedAt, clientEmail: r.clientEmail });
+      }
+    }
     for (const r of assetRows) counts.set(r.grantId, (counts.get(r.grantId) ?? 0) + 1);
     for (const r of aggRows) {
       const cur = activity.get(r.grantId) ?? { views: 0, downloads: 0, lastViewedAt: null };
@@ -266,6 +301,18 @@ export async function listProjectGrants(organizationId: string, projectId: strin
       views: a.views,
       downloads: a.downloads,
       lastViewedAt: a.lastViewedAt ? a.lastViewedAt.toISOString() : null,
+      selectionMode: g.selectionMode,
+      selectionLimit: g.selectionLimit ?? null,
+      selectionDeadline: g.selectionDeadline ? g.selectionDeadline * 1000 : null,
+      favoritesCount: favCount.get(g.id) ?? 0,
+      selection: latestSel.has(g.id)
+        ? {
+            count: latestSel.get(g.id)!.items.length,
+            note: latestSel.get(g.id)!.note,
+            submittedAt: latestSel.get(g.id)!.submittedAt.toISOString(),
+            clientEmail: latestSel.get(g.id)!.clientEmail,
+          }
+        : null,
     };
   });
 }
