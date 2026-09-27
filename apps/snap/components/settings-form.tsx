@@ -1,11 +1,10 @@
 "use client";
 
-import { Check, Copy, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Button } from "@webcules/ui/components/button";
-import { useConfirm } from "@/components/confirm-provider";
+import { EmbedHub } from "@/components/embed-hub";
 import { Input } from "@webcules/ui/components/input";
 import { Label } from "@webcules/ui/components/label";
 
@@ -26,7 +25,6 @@ type Initial = {
 
 export function SettingsForm({ initial }: { initial: Initial }) {
   const router = useRouter();
-  const confirm = useConfirm();
   const [profile, setProfile] = useState({
     studioName: initial.studioName,
     slug: initial.slug,
@@ -44,7 +42,6 @@ export function SettingsForm({ initial }: { initial: Initial }) {
   const [zones, setZones] = useState<string[]>([]);
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     try {
@@ -101,19 +98,6 @@ export function SettingsForm({ initial }: { initial: Initial }) {
     if (res.ok) router.refresh();
   }
 
-  async function rotateKey() {
-    if (!(await confirm({ title: "Rotate embed key?", body: "Widgets using the old key stop working immediately.", destructive: true, requireText: "ROTATE" }))) return;
-    setBusy(true);
-    const res = await fetch("/api/studio/embed", { method: "POST" });
-    const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
-    setBusy(false);
-    if (res.ok) {
-      setEmbedKey(String(body.embedKey ?? ""));
-      setLogoUrl(`/api/embed/logo?key=${String(body.embedKey ?? "")}`);
-      setStatus("Embed key rotated — update the snippet on your website.");
-    } else setStatus("Rotation failed.");
-  }
-
   async function uploadLogo(file: File) {
     setBusy(true);
     setStatus(null);
@@ -130,8 +114,6 @@ export function SettingsForm({ initial }: { initial: Initial }) {
       setStatus(`Logo upload failed: ${String(body.error ?? "unknown")}`);
     }
   }
-
-  const snippet = `<script src="https://snap.webcules.com/embed/loader.js" data-snap-key="${embedKey}" async></script>`;
 
   const card = "rounded-[12px] border border-hairline bg-surface-1 p-5";
 
@@ -239,54 +221,19 @@ export function SettingsForm({ initial }: { initial: Initial }) {
         </div>
       </section>
 
-      <section className={card}>
-        <h2 className="text-[15px] font-medium text-ink">Embed widget</h2>
-        <p className="mt-1 text-xs text-ink-subtle">
-          Paste this where the contact form should appear on your website.
-        </p>
-        <div className="mt-3 flex items-start gap-2">
-          <code className="flex-1 overflow-x-auto whitespace-pre rounded-md bg-canvas px-3 py-2 font-mono text-xs text-ink-muted">
-            {snippet}
-          </code>
-          <Button variant="secondary" size="icon" aria-label="Copy snippet"
-            onClick={async () => { await navigator.clipboard.writeText(snippet); setCopied(true); setTimeout(() => setCopied(false), 1500); }}>
-            {copied ? <Check className="h-4 w-4" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />}
-          </Button>
-        </div>
-        <div className="mt-3 flex items-center gap-2">
-          <code className="rounded bg-canvas px-2 py-1 font-mono text-[11px] text-ink-tertiary">{embedKey}</code>
-          <Button variant="ghost" size="sm" onClick={rotateKey} disabled={busy} className="text-ink-subtle">
-            <RefreshCw className="mr-1.5 h-3.5 w-3.5" aria-hidden /> Rotate key
-          </Button>
-        </div>
-        <div className="mt-4 border-t border-hairline pt-3">
-          <p className="text-xs font-medium text-ink">Shareable booking link</p>
-          <p className="mt-0.5 text-xs text-ink-subtle">A standalone booking page for bio links, Instagram and email signatures — no website needed.</p>
-          <div className="mt-2 flex items-center gap-2">
-            <a
-              href={"/b/" + initial.slug}
-              target="_blank"
-              rel="noreferrer"
-              className="flex-1 truncate rounded-md bg-canvas px-3 py-2 font-mono text-xs text-primary underline-offset-2 hover:underline"
-            >
-              {"https://snap.webcules.com/b/" + initial.slug}
-            </a>
-            <Button
-              variant="secondary"
-              size="icon"
-              aria-label="Copy booking link"
-              onClick={async () => {
-                await navigator.clipboard.writeText("https://snap.webcules.com/b/" + initial.slug);
-                setStatus("Booking link copied.");
-              }}
-            >
-              <Copy className="h-4 w-4" aria-hidden />
-            </Button>
-          </div>
-        </div>
-      </section>
+      <EmbedHub
+        embedKey={embedKey}
+        slug={initial.slug}
+        studioTheme={initial.theme}
+        studioFontFamily={initial.fontFamily}
+        originsCount={initial.embedOrigins.length}
+        onKeyRotated={(newKey) => {
+          setEmbedKey(newKey);
+          setLogoUrl(`/api/embed/logo?key=${newKey}`);
+        }}
+      />
 
-      <section className={card}>
+      <section className={card} id="origins">
         <h2 className="text-[15px] font-medium text-ink">Allowed embed sites</h2>
         <p className="mt-1 text-xs text-ink-subtle">
           One origin per line (e.g. https://yourstudio.com). Empty = widgets embed from any site —
