@@ -723,6 +723,40 @@ export const usageCounters = sqliteTable(
   ],
 );
 
+/* ---------------- Presigned upload sessions (WEB-111) ---------------- */
+
+/** Browser→R2 direct uploads: the session mints the asset key + presigned
+ * URL(s); the asset row only exists once /api/uploads/confirm has verified
+ * the object (size + magic bytes). Expired sessions are aborted by the cron. */
+export const uploadSessions = sqliteTable(
+  "upload_session",
+  {
+    /** = the future asset id — the client references it through confirm/abort. */
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    storageKey: text("storage_key").notNull().unique(),
+    /** single | multipart */
+    mode: text("mode").notNull(),
+    /** S3 uploadId — multipart only. */
+    uploadId: text("upload_id"),
+    filename: text("filename").notNull(),
+    mimeType: text("mime_type").notNull(),
+    declaredBytes: integer("declared_bytes").notNull(),
+    /** image | video | raw — re-verified against magic bytes on confirm. */
+    kind: text("kind").notNull(),
+    uploadedBy: text("uploaded_by").references(() => user.id, { onDelete: "set null" }),
+    createdAt: integer("created_at").notNull(),
+    /** Epoch seconds — the cron aborts multipart uploads past this. */
+    expiresAt: integer("expires_at").notNull(),
+  },
+  (t) => [index("upload_session_org_idx").on(t.organizationId, t.createdAt)],
+);
+
 /* ---------------- Client portal auth (WEB-131) ---------------- */
 
 /** Magic-code login for portal clients — email-scoped, latest code wins. */

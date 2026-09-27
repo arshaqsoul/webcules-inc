@@ -163,5 +163,15 @@ export async function POST(req: Request) {
     console.error("margin rollup failed:", String(err));
   }
 
-  return Response.json({ ok: true, moved: due.length, warned, downgraded, expiredHolds, vault, dormancy, margin });
+  // WEB-111: expired presigned upload sessions — abort orphaned multipart
+  // uploads (their part URLs are long dead) and clear the rows.
+  let expiredUploads = 0;
+  try {
+    const { sweepExpiredUploadSessions } = await import("@/lib/uploads");
+    expiredUploads = await sweepExpiredUploadSessions();
+  } catch (err) {
+    console.error("upload-session sweep failed:", String(err));
+  }
+
+  return Response.json({ ok: true, moved: due.length, warned, downgraded, expiredHolds, vault, dormancy, margin, expiredUploads });
 }

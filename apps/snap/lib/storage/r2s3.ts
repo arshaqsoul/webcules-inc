@@ -21,7 +21,8 @@ function encodeKey(key: string): string {
   return encodeURIComponent(key).replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`);
 }
 
-function s3Client(): { client: AwsClient; base: string } {
+/** Shared S3 handle for presigned uploads (WEB-111) and class moves. */
+export function s3Client(): { client: AwsClient; base: string } {
   if (!env.R2_S3_ACCESS_KEY_ID || !env.R2_S3_SECRET_ACCESS_KEY || !env.R2_S3_ACCOUNT_ID) {
     throw new Error("R2 S3 credentials not configured (R2_S3_* secrets / account id)");
   }
@@ -34,6 +35,11 @@ function s3Client(): { client: AwsClient; base: string } {
     }),
     base: `https://${env.R2_S3_ACCOUNT_ID}.r2.cloudflarestorage.com`,
   };
+}
+
+export function objectUrl(key: string): string {
+  const { base } = s3Client();
+  return `${base}/${BUCKET}/${encodeKey(key)}`;
 }
 
 async function copyClass(orgId: string, key: string, storageClass: string): Promise<void> {

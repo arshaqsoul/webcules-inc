@@ -62,7 +62,7 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
   const [uploading, setUploading] = useState(false);
   const [paused, setPaused] = useState(false);
   const filesPending = useRef<{ file: File; itemId: string }[]>([]);
-  const activeXhrs = useRef<Map<string, XMLHttpRequest>>(new Map());
+  const activeXhrs = useRef<Map<string, Set<XMLHttpRequest>>>(new Map());
   const itemById = useRef<Map<string, QueueItem>>(new Map());
   const [triageOpen, setTriageOpen] = useState(false);
   const [notice, setNotice] = useState("");
@@ -159,59 +159,148 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
     lastClicked.current = index;
   }
 
-  /* ---------------- Upload queue (WEB-113) ---------------- */
+  /* ---------------- Upload queue (WEB-113; presigned WEB-111) ----------------
+   * Bytes go browser→R2 directly: POST /api/uploads mints a session, the file
+   * is PUT via presigned URL(s) (multipart above 100MB, parts in parallel),
+   * and /api/uploads/confirm verifies + records the asset. Retries restart
+   * the whole item (fresh presign); plan-gate and confirm rejections are
+   * fatal and never retried. */
+
+  const sessions = useRef<Map<string, string>>(new Map());
+  const canceled = useRef<Set<string>>(new Set());
 
   const updateItem = useCallback((itemId: string, patch: Partial<QueueItem>) => {
     setQueue((q) => q.map((it) => (it.id === itemId ? { ...it, ...patch } : it)));
   }, []);
 
+  /** XHR PUT with progress; resolves to the ETag response header. */
+  const putBlob = useCallback(
+    (itemId: string, url: string, blob: Blob, contentType: string | null, onLoaded: (loaded: number) => void) =>
+      new Promise<string>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        const set = activeXhrs.current.get(itemId) ?? new Set<XMLHttpRequest>();
+        set.add(xhr);
+        activeXhrs.current.set(itemId, set);
+        const cleanup = () => {
+          set.delete(xhr);
+          if (!set.size) activeXhrs.current.delete(itemId);
+        };
+        xhr.open("PUT", url);
+        if (contentType) xhr.setRequestHeader("Content-Type", contentType);
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) onLoaded(e.loaded);
+        };
+        xhr.onload = () => {
+          cleanup();
+          if (xhr.status >= 200 && xhr.status < 300) resolve(xhr.getResponseHeader("ETag") ?? "");
+          else reject(new Error(`HTTP ${xhr.status}`));
+        };
+        xhr.onerror = () => {
+          cleanup();
+          reject(new Error("network"));
+        };
+        xhr.onabort = () => {
+          cleanup();
+          reject(new Error("canceled"));
+        };
+        xhr.send(blob);
+      }),
+    [],
+  );
+
+  async function confirmUpload(assetId: string, etags?: string[]): Promise<void> {
+    const res = await fetch("/api/uploads/confirm", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ assetId, etags }),
+    });
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      throw { fatal: true, message: String(body.error ?? "confirm failed") };
+    }
+  }
+
   const startItem = useCallback(
-    (itemId: string, file: File, attempt: number) => {
-      const xhr = new XMLHttpRequest();
-      activeXhrs.current.set(itemId, xhr);
+    async (itemId: string, file: File, attempt: number) => {
       const backoff = Math.min(9000, 1000 * 3 ** attempt);
-      xhr.open("POST", `/api/projects/${projectId}/upload`);
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) updateItem(itemId, { progress: Math.round((e.loaded / e.total) * 100) });
-      };
-      xhr.onload = () => {
-        activeXhrs.current.delete(itemId);
-        if (xhr.status >= 200 && xhr.status < 300) {
-          updateItem(itemId, { state: "done", progress: 100 });
-        } else if (attempt < 3) {
-          updateItem(itemId, { state: "pending", progress: 0, attempts: attempt + 1, error: `HTTP ${xhr.status}` });
-          // re-queue with exponential backoff (1s → 3s → 9s)
+      updateItem(itemId, { state: "uploading", attempts: attempt + 1, error: undefined });
+      let assetId: string | null = null;
+      try {
+        const res = await fetch("/api/uploads", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            projectId,
+            filename: file.name,
+            bytes: file.size,
+            mimeType: file.type || "application/octet-stream",
+          }),
+        });
+        const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+        if (!res.ok) throw { fatal: true, message: String(body.error ?? `HTTP ${res.status}`) };
+        assetId = String(body.assetId);
+        sessions.current.set(itemId, assetId);
+
+        if (body.mode === "multipart") {
+          const partSize = Number(body.partSize);
+          const urls = body.partUrls as string[];
+          const etags: string[] = new Array(urls.length);
+          const loaded = new Array(urls.length).fill(0);
+          const report = () =>
+            updateItem(itemId, { progress: Math.min(99, Math.round((loaded.reduce((a, b) => a + b, 0) / file.size) * 100)) });
+          let nextPart = 0;
+          const workers = Math.min(3, urls.length);
+          await Promise.all(
+            Array.from({ length: workers }, async () => {
+              for (;;) {
+                const i = nextPart++;
+                if (i >= urls.length) return;
+                const blob = file.slice(i * partSize, Math.min((i + 1) * partSize, file.size));
+                etags[i] = await putBlob(itemId, urls[i], blob, null, (l) => {
+                  loaded[i] = l;
+                  report();
+                });
+              }
+            }),
+          );
+          await confirmUpload(assetId, etags);
+        } else {
+          const headers = body.headers as Record<string, string> | undefined;
+          await putBlob(itemId, String(body.url), file, headers?.["Content-Type"] ?? null, (l) =>
+            updateItem(itemId, { progress: Math.min(99, Math.round((l / file.size) * 100)) }),
+          );
+          await confirmUpload(assetId);
+        }
+        sessions.current.delete(itemId);
+        updateItem(itemId, { state: "done", progress: 100 });
+      } catch (err) {
+        const e = err as { fatal?: boolean; message?: string };
+        const message = e?.message ?? "upload failed";
+        if (canceled.current.has(itemId)) {
+          updateItem(itemId, { state: "canceled" });
+        } else if (e?.fatal || attempt >= 3) {
+          updateItem(itemId, { state: "failed", error: message });
+          if (assetId) {
+            void fetch("/api/uploads/abort", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ assetId }),
+            }).catch(() => undefined);
+            sessions.current.delete(itemId);
+          }
+        } else {
+          updateItem(itemId, { state: "pending", progress: 0 });
           setTimeout(() => {
-            if (itemById.current.has(itemId)) {
-              updateItem(itemId, { state: "uploading" });
-              startItem(itemId, file, attempt + 1);
+            if (itemById.current.has(itemId) && !canceled.current.has(itemId)) {
+              void startItem(itemId, file, attempt + 1);
             }
           }, backoff);
-        } else {
-          updateItem(itemId, { state: "failed", error: `HTTP ${xhr.status}` });
         }
-        pump();
-      };
-      xhr.onerror = () => {
-        activeXhrs.current.delete(itemId);
-        if (attempt < 3) {
-          setTimeout(() => {
-            if (itemById.current.has(itemId)) {
-              updateItem(itemId, { state: "uploading" });
-              startItem(itemId, file, attempt + 1);
-            }
-          }, backoff);
-        } else {
-          updateItem(itemId, { state: "failed", error: "network" });
-        }
-        pump();
-      };
-      const form = new FormData();
-      form.set("file", file);
-      updateItem(itemId, { state: "uploading", attempts: attempt + 1 });
-      xhr.send(form);
+      }
+      pump();
     },
-    [projectId, paused, updateItem],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- pump referenced at call time (defined below)
+    [projectId, putBlob, updateItem],
   );
 
   const pump = useCallback(() => {
@@ -222,14 +311,23 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
       const next = filesPending.current.shift();
       if (!next) break;
       slots--;
-      startItem(next.itemId, next.file, itemById.current.get(next.itemId)?.attempts ?? 0);
+      void startItem(next.itemId, next.file, itemById.current.get(next.itemId)?.attempts ?? 0);
     }
   }, [paused, uploading, startItem]);
 
   function cancelUploads() {
-    for (const xhr of activeXhrs.current.values()) xhr.abort();
+    for (const set of activeXhrs.current.values()) for (const xhr of set) xhr.abort();
     activeXhrs.current.clear();
     filesPending.current = [];
+    for (const assetId of sessions.current.values()) {
+      void fetch("/api/uploads/abort", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assetId }),
+      }).catch(() => undefined);
+    }
+    sessions.current.clear();
+    for (const id of itemById.current.keys()) canceled.current.add(id);
     setQueue((q) => q.map((it) => (it.state === "pending" || it.state === "uploading" ? { ...it, state: "canceled" } : it)));
     setUploading(false);
   }
@@ -242,6 +340,7 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
       const f = fileStore.current.get(it.id);
       if (!f) continue;
       fileStore.current.delete(it.id);
+      canceled.current.delete(it.id);
       itemById.current.set(it.id, { ...it, state: "pending", attempts: 0, progress: 0 });
       filesPending.current.push({ file: f, itemId: it.id });
     }
@@ -371,7 +470,7 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
         }}
         className="rounded-[12px] border border-dashed border-hairline-strong bg-surface-1 p-4 text-center text-xs text-ink-subtle"
       >
-        Drag & drop photos, videos, and RAWs here (up to 100 MB per file)
+        Drag & drop photos, videos, and RAWs here (up to 5 GB per file)
       </div>
 
       {notice && <p className="text-xs text-ink-muted">{notice}</p>}
