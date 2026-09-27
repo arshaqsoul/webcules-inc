@@ -167,3 +167,12 @@ body {
   outline: 2px solid color-mix(in srgb, #5e69d1 50%, transparent);
   outline-offset: 1px;
 }
+
+/* Manage view (WEB-209): filmstrip rail + options panel scroll without a
+ * visible scrollbar — the thumbnails themselves are the scroller. */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

@@ -8,7 +8,7 @@
  * swaps to this layout and swaps back on close/Escape. */
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { ChevronLeft, ChevronRight, Heart, Star, X } from "lucide-react";
+import { Heart, Star, X } from "lucide-react";
 
 import type { AssetItem } from "@/components/project-files";
 
@@ -119,6 +119,12 @@ export function AssetManage({
   const [exif, setExif] = useState<Exif>(null);
   const [dims, setDims] = useState<{ w: number; h: number } | null>(null);
   const [tagDraft, setTagDraft] = useState("");
+  // Lightbox (zoom modal): opened by clicking the preview; clicking the
+  // image toggles zoom at the click point, backdrop click / Escape closes
+  // back to this manage layout.
+  const [lightbox, setLightbox] = useState(false);
+  const [zoom, setZoom] = useState(1);
+  const [zoomOrigin, setZoomOrigin] = useState("center");
   const item = items[index];
 
   const step = useCallback(
@@ -134,6 +140,7 @@ export function AssetManage({
     setExif(null);
     setDims(null);
     setTagDraft("");
+    setZoom(1);
     if (!item) return;
     for (const d of [1, -1]) {
       const n = items[(index + d + items.length) % items.length];
@@ -153,6 +160,16 @@ export function AssetManage({
     document.querySelector(`[data-thumb-idx="${index}"]`)?.scrollIntoView({ block: "nearest", inline: "nearest" });
   }, [index]);
 
+  // lock page scroll while the lightbox is up
+  useEffect(() => {
+    if (!lightbox) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [lightbox]);
+
   // culling keys — same muscle memory as the grid, plus ←/→ and Escape
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -161,15 +178,18 @@ export function AssetManage({
       if (t instanceof Element && t.closest("input, textarea, select, [contenteditable]")) return;
       if (e.key === "Escape") {
         e.preventDefault();
-        onClose();
+        if (lightbox) {
+          setLightbox(false);
+          setZoom(1);
+        } else onClose();
         return;
       }
-      if (e.key === "ArrowRight") {
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
         e.preventDefault();
         step(1);
         return;
       }
-      if (e.key === "ArrowLeft") {
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
         e.preventDefault();
         step(-1);
         return;
@@ -246,7 +266,7 @@ export function AssetManage({
   };
 
   const panel = (
-    <aside className="flex min-h-0 flex-col gap-5 overflow-y-auto rounded-[12px] border border-hairline bg-surface-1 p-4 lg:w-72 lg:shrink-0">
+    <aside className="no-scrollbar flex min-h-0 flex-col gap-5 overflow-y-auto rounded-[12px] border border-hairline bg-surface-1 p-4 lg:w-72 lg:shrink-0">
       {/* Status */}
       <section aria-label="Status">
         <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-tertiary">Status</h3>
@@ -406,8 +426,8 @@ export function AssetManage({
         </span>
       </div>
 
-      {/* Image + side rail (desktop) */}
-      <div className="flex min-h-0 flex-1 gap-3">
+      {/* Image | options panel | thumbnail rail (desktop row, mobile stack) */}
+      <div className="flex min-h-0 flex-1 flex-col gap-3 lg:flex-row">
         <div className="relative flex h-[52dvh] min-w-0 flex-1 items-center justify-center overflow-hidden rounded-[12px] border border-hairline bg-surface-1 p-2 lg:h-auto">
           {item.kind === "image" ? (
             // eslint-disable-next-line @next/next/no-img-element -- authorized proxy, no optimizer
@@ -416,7 +436,11 @@ export function AssetManage({
               alt={item.filename}
               draggable={false}
               onLoad={(e) => setDims({ w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight })}
-              className="max-h-full max-w-full select-none object-contain"
+              onClick={() => {
+                setZoom(1);
+                setLightbox(true);
+              }}
+              className="max-h-full max-w-full cursor-zoom-in select-none object-contain"
             />
           ) : item.kind === "video" ? (
             // eslint-disable-next-line jsx-a11y/media-has-caption -- managed video
@@ -427,39 +451,78 @@ export function AssetManage({
               <span className="text-xs">.{item.filename.split(".").pop()} — no inline preview</span>
             </div>
           )}
-          <button
-            type="button"
-            onClick={() => step(-1)}
-            aria-label="Previous file"
-            className="absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/40 p-2 text-white backdrop-blur transition-colors hover:bg-black/60"
-          >
-            <ChevronLeft className="h-5 w-5" aria-hidden />
-          </button>
-          <button
-            type="button"
-            onClick={() => step(1)}
-            aria-label="Next file"
-            className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/40 p-2 text-white backdrop-blur transition-colors hover:bg-black/60"
-          >
-            <ChevronRight className="h-5 w-5" aria-hidden />
-          </button>
           {item.status === "rejected" && (
             <span className="pointer-events-none absolute inset-0 bg-canvas/40" aria-hidden title="Rejected" />
           )}
         </div>
 
-        {/* Vertical filmstrip — the code-editor "scrollbar" (desktop only) */}
-        <div className="hidden w-[76px] shrink-0 flex-col gap-1 overflow-y-auto rounded-[12px] border border-hairline bg-surface-1 p-1.5 lg:flex">
+        {/* Horizontal filmstrip (mobile stack order: image → strip → panel) */}
+        <div className="no-scrollbar flex gap-1.5 overflow-x-auto rounded-[12px] border border-hairline bg-surface-1 p-1.5 lg:hidden">
+          {items.map((_, i) => thumb(i))}
+        </div>
+
+        {panel}
+
+        {/* Vertical thumbnail rail — the code-editor "scrollbar" (desktop).
+         * No visible scrollbar; wheel/drag still scrolls, click jumps. */}
+        <div className="no-scrollbar hidden w-[76px] shrink-0 flex-col gap-1 overflow-y-auto rounded-[12px] border border-hairline bg-surface-1 p-1.5 lg:flex">
           {items.map((_, i) => thumb(i))}
         </div>
       </div>
 
-      {/* Horizontal filmstrip (mobile only) */}
-      <div className="flex gap-1.5 overflow-x-auto rounded-[12px] border border-hairline bg-surface-1 p-1.5 lg:hidden">
-        {items.map((_, i) => thumb(i))}
-      </div>
-
-      {panel}
+      {/* Zoom lightbox — blurred backdrop; click image toggles zoom, click
+       * outside (or Escape) returns to this manage layout. */}
+      {lightbox && item.kind === "image" && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Zoomed ${item.filename}`}
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+          onClick={() => {
+            setLightbox(false);
+            setZoom(1);
+          }}
+        >
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- zoom toggle; Escape/backdrop close */}
+          <img
+            src={previewSrc}
+            alt={item.filename}
+            draggable={false}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (zoom > 1) {
+                setZoom(1);
+              } else {
+                const r = e.currentTarget.getBoundingClientRect();
+                setZoomOrigin(
+                  `${(((e.clientX - r.left) / r.width) * 100).toFixed(1)}% ${(((e.clientY - r.top) / r.height) * 100).toFixed(1)}%`,
+                );
+                setZoom(2.5);
+              }
+            }}
+            className="max-h-full max-w-full select-none object-contain transition-transform duration-200"
+            style={{ transform: `scale(${zoom})`, transformOrigin: zoomOrigin, cursor: zoom > 1 ? "zoom-out" : "zoom-in" }}
+          />
+          <div className="pointer-events-none absolute left-1/2 top-4 flex -translate-x-1/2 items-center gap-3 rounded-full bg-black/50 px-4 py-1.5 text-xs text-white backdrop-blur">
+            <span className="max-w-[240px] truncate">{item.filename}</span>
+            <span className="opacity-70">
+              {index + 1} / {items.length}
+            </span>
+          </div>
+          <button
+            type="button"
+            aria-label="Close zoom view"
+            onClick={(e) => {
+              e.stopPropagation();
+              setLightbox(false);
+              setZoom(1);
+            }}
+            className="absolute right-4 top-4 rounded-full bg-black/50 p-2 text-white backdrop-blur transition-colors hover:bg-black/70"
+          >
+            <X className="h-4 w-4" aria-hidden />
+          </button>
+        </div>
+      )}
     </section>
   );
 }
