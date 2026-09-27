@@ -228,14 +228,20 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
   const [loading, setLoading] = useState(false);
   // Grid density (Samsung-Gallery style): 1 = one photo per row, up to 18
   // micro-tiles. Persisted; cards adapt (labels hide, hover simplifies).
-  const [gridCols, setGridCols] = useState(() => {
-    if (typeof window === "undefined") return 6;
-    const v = Number(window.localStorage.getItem("snap-grid-cols"));
-    return Number.isInteger(v) && v >= 1 && v <= 18 ? v : 6;
-  });
+  // SSR renders the responsive CSS default (columns-2 sm:columns-6); the
+  // inline style only applies post-mount — React never repairs style
+  // mismatches during hydration, so the saved/mobile value must land via a
+  // mount effect re-render.
+  const [gridCols, setGridCols] = useState(6);
+  const [colsMounted, setColsMounted] = useState(false);
   useEffect(() => {
-    window.localStorage.setItem("snap-grid-cols", String(gridCols));
-  }, [gridCols]);
+    const v = Number(window.localStorage.getItem("snap-grid-cols"));
+    setGridCols(Number.isInteger(v) && v >= 1 && v <= 18 ? v : window.innerWidth < 640 ? 2 : 6);
+    setColsMounted(true);
+  }, []);
+  useEffect(() => {
+    if (colsMounted) window.localStorage.setItem("snap-grid-cols", String(gridCols));
+  }, [gridCols, colsMounted]);
   const compact = view === "grid" && gridCols >= 8;
   const micro = view === "grid" && gridCols >= 13;
 
@@ -1119,9 +1125,9 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
           )}
         </div>
 
-        <div className="ml-auto flex items-center gap-1.5">
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-1.5">
           {view === "grid" && (
-            <span className="flex items-center gap-1.5 rounded-md border border-hairline bg-canvas px-2 py-1" title="Grid size — drag to zoom photos in or out">
+            <span className="flex min-w-0 items-center gap-1.5 rounded-md border border-hairline bg-canvas px-2 py-1" title="Grid size — drag to zoom photos in or out">
               <ZoomIn className="h-3.5 w-3.5 rotate-180 text-ink-tertiary" aria-hidden />
               <input
                 type="range"
@@ -1130,7 +1136,7 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                 value={gridCols}
                 onChange={(e) => setGridCols(Number(e.target.value))}
                 aria-label="Grid size"
-                className="h-1 w-24 cursor-pointer accent-[var(--primary)]"
+                className="h-1 w-16 cursor-pointer accent-[var(--primary)] sm:w-24"
               />
               <ZoomIn className="h-3.5 w-3.5 text-ink-tertiary" aria-hidden />
             </span>
@@ -1237,8 +1243,8 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
           {queueOpen && (
             <div className="flex max-h-56 flex-col gap-2 overflow-y-auto pr-1">
               {queue.slice(-200).map((q) => (
-                <div key={q.id} className="flex items-center gap-2 text-xs">
-                  <span className="w-44 shrink-0 truncate text-ink-muted" title={`${q.name} (${mb(q.size)})${q.error ? ` — ${q.error}` : ""}`}>
+                <div key={q.id} className="flex min-w-0 items-center gap-2 text-xs">
+                  <span className="w-28 shrink-0 truncate text-ink-muted sm:w-44" title={`${q.name} (${mb(q.size)})${q.error ? ` — ${q.error}` : ""}`}>
                     {q.name} <span className="text-ink-tertiary">({mb(q.size)})</span>
                   </span>
                   <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2">
@@ -1247,7 +1253,7 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                       style={{ width: `${q.state === "done" ? 100 : q.progress}%` }}
                     />
                   </div>
-                  <span className={`w-24 shrink-0 text-right ${q.state === "failed" ? "text-destructive" : q.state === "done" ? "text-success-text" : q.state === "canceled" ? "text-ink-tertiary" : "text-ink-tertiary"}`}>
+                  <span className={`w-16 shrink-0 text-right sm:w-24 ${q.state === "failed" ? "text-destructive" : q.state === "done" ? "text-success-text" : "text-ink-tertiary"}`}>
                     {q.state === "uploading" ? `${q.progress}%` : q.state === "pending" ? (q.attempts ? `retry ${q.attempts}` : "waiting") : q.state === "canceled" ? (q.error ? "skipped" : "canceled") : q.state}
                   </span>
                 </div>
@@ -1335,7 +1341,10 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
       {/* Grid view — CSS-columns masonry: each photo keeps its own aspect
        * so one tall image no longer stretches its whole row. */}
       {view === "grid" && (
-        <div style={{ columns: gridCols, columnGap: "0.75rem" }} className="[&>*]:mb-3">
+        <div
+          style={colsMounted ? { columns: gridCols, columnGap: "0.75rem" } : undefined}
+          className="columns-2 gap-3 sm:columns-6 [&>*]:mb-3"
+        >
           {feed.items.map((a, i) => (
             <div
               key={a.id}
