@@ -20,11 +20,17 @@ export type InvoiceRow = typeof schema.invoices.$inferSelect;
  * voided invoices (standard accounting behavior). Format: 2026-0001. */
 async function nextInvoiceNumber(organizationId: string): Promise<string> {
   const db = getDb();
-  const rows = await db.all<{ seq: number }>(sql`
-    INSERT INTO org_counter (organization_id, invoice_seq) VALUES (${organizationId}, 1)
-    ON CONFLICT (organization_id) DO UPDATE SET invoice_seq = invoice_seq + 1
-    RETURNING invoice_seq
-  `);
+  // Drizzle's typed upsert-with-returning — the raw `db.all(INSERT…RETURNING)`
+  // form silently stopped executing after a drizzle upgrade, minting
+  // duplicate numbers into a unique-violation 500.
+  const rows = await db
+    .insert(schema.orgCounters)
+    .values({ organizationId, invoiceSeq: 1 })
+    .onConflictDoUpdate({
+      target: schema.orgCounters.organizationId,
+      set: { invoiceSeq: sql`${schema.orgCounters.invoiceSeq} + 1` },
+    })
+    .returning({ seq: schema.orgCounters.invoiceSeq });
   const seq = rows[0]?.seq ?? 1;
   return `${new Date().getUTCFullYear()}-${String(seq).padStart(4, "0")}`;
 }
@@ -97,13 +103,16 @@ async function generateAndArchivePdf(invoice: InvoiceRow, projectTitle: string |
 /** Draft → sent: generate + archive the branded PDF, mint the access token,
  * email the client their secure link. */
 export async function sendInvoice(organizationId: string, invoiceId: string): Promise<
-  { ok: true; url: string } | { ok: false; error: "not_found" | "already_sent" | "no_recipient" | "email_failed" }
+  { ok: true; url: string } | { ok: false; error: "not_found" | "already_sent" | "no_recipient" | "email_failed" | "due_in_past" }
 > {
   const db = getDb();
   const invoice = await getInvoice(organizationId, invoiceId);
   if (!invoice) return { ok: false, error: "not_found" };
   if (invoice.status !== "draft") return { ok: false, error: "already_sent" };
   if (!invoice.clientEmail) return { ok: false, error: "no_recipient" };
+  // Issued is stamped at send time — a due date already in the past would
+  // render an invoice that's due before it was issued.
+  if (invoice.dueAt && invoice.dueAt.getTime() < Date.now()) return { ok: false, error: "due_in_past" };
 
   const [project] = await db.select({ title: schema.projects.title }).from(schema.projects).where(eq(schema.projects.id, invoice.projectId)).limit(1);
   const pdfKey = await generateAndArchivePdf(invoice, project?.title ?? null);

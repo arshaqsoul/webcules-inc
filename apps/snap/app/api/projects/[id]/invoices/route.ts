@@ -32,6 +32,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const parsed = Body.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) return Response.json({ error: "bad_request" }, { status: 400 });
 
+  // A due date before today would print DUE < ISSUED on the PDF (issued is
+  // set at send time) — reject it here, not in postmortem.
+  if (parsed.data.dueAt && new Date(parsed.data.dueAt).getTime() < new Date().setUTCHours(0, 0, 0, 0)) {
+    return Response.json({ error: "due_in_past" }, { status: 400 });
+  }
+
   try {
     const invoice = await createInvoice({
       organizationId: ctx.organizationId,
@@ -41,7 +47,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       clientEmail: parsed.data.clientEmail ?? null,
     });
     return Response.json({ ok: true, invoice });
-  } catch {
+  } catch (err) {
+    console.error("invoice create failed:", String(err), err instanceof Error ? err.stack : "");
     return Response.json({ error: "creation_failed" }, { status: 500 });
   }
 }

@@ -101,8 +101,10 @@ export async function renderInvoicePdf(params: {
     });
   }
 
-  // Lines table
-  y = 640;
+  // Lines table — sits below the 4-row meta column (last value ~y 630);
+  // starting at 640 collided with the STATUS row and printed "DRAFT" over
+  // the header bar.
+  y = 596;
   page.drawRectangle({ x: 48, y: y - 6, width: 499.28, height: 24, color: rgb(0.95, 0.96, 0.96) });
   page.drawText("DESCRIPTION", { x: 56, y, size: 8, font: bold, color: subtle });
   page.drawText("QTY", { x: 386, y, size: 8, font: bold, color: subtle });

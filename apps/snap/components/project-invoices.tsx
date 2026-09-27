@@ -51,7 +51,8 @@ export function ProjectInvoices({
   const [desc, setDesc] = useState("Photography package");
   const [amount, setAmount] = useState(quotedTotalMinor !== null ? String(quotedTotalMinor / 100) : "");
   const [email, setEmail] = useState(clientEmail ?? "");
-  const [due, setDue] = useState("");
+  // Sensible default: net-14 (UTC date — day precision is what matters here).
+  const [due, setDue] = useState(() => new Date(Date.now() + 14 * 864e5).toISOString().slice(0, 10));
 
   async function create() {
     setBusy("create");
@@ -59,6 +60,10 @@ export function ProjectInvoices({
     try {
       const minor = Math.round(Number(amount) * 100);
       if (!Number.isFinite(minor) || minor <= 0) throw new Error();
+      if (due && new Date(due).getTime() < new Date().setUTCHours(0, 0, 0, 0)) {
+        setError("Due date can't be in the past.");
+        return;
+      }
       const res = await fetch(`/api/projects/${projectId}/invoices`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -94,9 +99,11 @@ export function ProjectInvoices({
         setError(
           body.error === "no_recipient"
             ? "Add the client's email first (create a new invoice with a recipient)."
-            : body.error === "email_failed"
-              ? "PDF archived but the email failed — check the address and resend."
-              : "Action failed — try again.",
+            : body.error === "due_in_past"
+              ? "The due date is in the past — void this draft and create one with a later due date (or mark it paid if it's settled)."
+              : body.error === "email_failed"
+                ? "PDF archived but the email failed — check the address and resend."
+                : "Action failed — try again.",
         );
       } else {
         setNotice(action === "send" ? "Invoice sent — the client got their secure link." : `Invoice marked ${action}.`);
