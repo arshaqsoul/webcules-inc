@@ -1,8 +1,8 @@
-/* Settings skeleton — mirrors the settings page shell: max-w-2xl header,
+/* Settings skeleton — mirrors the settings page shell: max-w-5xl header,
  * plan panel, then the form sections with label + field rows. */
 export default function SettingsLoading() {
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-6" aria-busy="true" aria-label="Loading settings">
+    <div className="mx-auto flex max-w-5xl flex-col gap-6" aria-busy="true" aria-label="Loading settings">
       <div className="flex flex-col gap-2">
         <div className="h-7 w-28 animate-pulse rounded-md bg-surface-2" />
         <div className="h-4 w-72 animate-pulse rounded bg-surface-2" />

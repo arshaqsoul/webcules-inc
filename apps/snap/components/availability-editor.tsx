@@ -194,10 +194,14 @@ export function AvailabilityEditor({ initial }: { initial: Initial }) {
               role="switch"
               aria-checked={payEnabled}
               onClick={() => setPayEnabled((v) => !v)}
-              className={`relative h-6 w-11 rounded-full transition-colors ${payEnabled ? "bg-primary" : "bg-surface-2 border border-hairline"}`}
+              className={`relative h-6 w-11 rounded-full transition-colors ${payEnabled ? "bg-primary" : "bg-surface-2 shadow-[inset_0_0_0_1px_var(--hairline)]"}`}
             >
+              {/* Thumb is anchored with left-0.5 and moved with translate —
+               * translate alone offsets from the span's UA "static position",
+               * which inside a <button> is the centered-content point, not the
+               * track's left edge (knob rendered at arbitrary offsets). */}
               <span
-                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${payEnabled ? "translate-x-[22px]" : "translate-x-0.5"}`}
+                className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${payEnabled ? "translate-x-5" : "translate-x-0"}`}
               />
             </button>
             <p className="text-xs text-ink-tertiary">{payEnabled ? "Payment required at booking" : "Free bookings"}</p>
