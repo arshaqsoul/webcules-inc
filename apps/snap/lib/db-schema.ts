@@ -170,6 +170,9 @@ export const studioProfiles = sqliteTable("studio_profile", {
   stripeSubscriptionId: text("stripe_subscription_id"),
   /** Current subscription period end (epoch seconds). */
   planPeriodEnd: integer("plan_period_end"),
+  /** Scheduled downgrade target (0025): cheaper-tier switch that starts at
+   * the next billing cycle — entitlements stay on `plan` until then. */
+  pendingPlan: text("pending_plan"),
   /* Dormancy & retention (WEB-159) — epoch seconds; the sweep in
    * lib/dormancy.ts owns every transition. last_active_at is touched by
    * getOrgContext at most hourly and resets the whole lifecycle. */

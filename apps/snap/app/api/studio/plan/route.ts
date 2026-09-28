@@ -1,10 +1,11 @@
 /* Plan status + changes (WEB-149/151/152). GET returns entitlements + billing
- * state; POST {plan} starts a checkout (or in-place swap), {plan:"free"}
- * cancels at period end, {resume:true} undoes a scheduled downgrade. */
+ * state; POST {plan} starts a checkout (or in-place swap / scheduled
+ * downgrade), {plan:"free"} cancels at period end — or flips instantly when
+ * no subscription exists — and {resume:true} undoes a scheduled downgrade. */
 import { getOrgContext } from "@/lib/session";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { getPlanEntitlements } from "@/lib/plans";
-import { cancelPlanAtPeriodEnd, createPlanCheckout, resumePlan } from "@/lib/billing";
+import { cancelPlanAtPeriodEnd, createPlanCheckout, resumePlan, setPlanFreeImmediately } from "@/lib/billing";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +39,7 @@ export async function GET() {
     whiteLabel: ent.whiteLabel,
     hasSubscription: Boolean(profile?.stripeSubscriptionId),
     planPeriodEnd: profile?.planPeriodEnd ?? null,
+    pendingPlan: profile?.pendingPlan ?? null,
   });
 }
 
@@ -60,13 +62,20 @@ export async function POST(req: Request) {
   const plan = body.plan ?? "";
   if (plan === "free") {
     const ok = await cancelPlanAtPeriodEnd(ctx.organizationId);
-    return Response.json(ok ? { ok: true, message: "Plan downgrades to Free at the end of your billing period." } : { error: "no_subscription" }, { status: ok ? 200 : 409 });
+    if (ok) {
+      return Response.json({ ok: true, mode: "scheduled", message: "Plan downgrades to Free at the end of your billing period." });
+    }
+    // Grandfathered plan rows with no subscription behind them: nothing to
+    // cancel — move to Free right now instead of erroring.
+    const flipped = await setPlanFreeImmediately(ctx.organizationId);
+    return flipped
+      ? Response.json({ ok: true, mode: "swapped", message: "Moved to the Free plan — you had no active subscription." })
+      : Response.json({ error: "no_subscription" }, { status: 409 });
   }
   if (plan !== "lite" && plan !== "studio" && plan !== "pro") {
     return Response.json({ error: "invalid_plan" }, { status: 400 });
   }
 
-  const url = await createPlanCheckout(ctx.organizationId, plan, new URL(req.url).origin);
-  // null + no error → in-place subscription swap already applied
-  return Response.json({ ok: true, url });
+  const { url, mode } = await createPlanCheckout(ctx.organizationId, plan, new URL(req.url).origin);
+  return Response.json({ ok: true, url, mode });
 }

@@ -1,7 +1,7 @@
 /* Daily pipeline automation — called by the snap-email worker's cron
  * (bearer-authed with the shared webhook secret). Moves booked projects whose
  * event day has arrived (or passed) into snapping. */
-import { and, eq, lte, sql } from "drizzle-orm";
+import { and, eq, isNotNull, lte, sql } from "drizzle-orm";
 import { env } from "cloudflare:workers";
 
 import { getDb } from "@/lib/db";
@@ -53,6 +53,28 @@ export async function POST(req: Request) {
   // 180 days; OTP codes are useless past expiry and drop after a day.
   await db.run(sql`DELETE FROM share_access_log WHERE created_at < unixepoch() - 180 * 86400`);
   await db.run(sql`DELETE FROM share_otp WHERE expires_at < unixepoch() - 86400`);
+
+  // Scheduled downgrades (0025): a cheaper-tier switch holds in pending_plan
+  // until the billing period ends; the renewal webhook usually applies it —
+  // this sweep covers missed events.
+  const duePending = await db
+    .select({
+      organizationId: schema.studioProfiles.organizationId,
+      pendingPlan: schema.studioProfiles.pendingPlan,
+      planPeriodEnd: schema.studioProfiles.planPeriodEnd,
+    })
+    .from(schema.studioProfiles)
+    .where(isNotNull(schema.studioProfiles.pendingPlan))
+    .limit(200);
+  let downgradesApplied = 0;
+  for (const row of duePending) {
+    if (!row.pendingPlan || !row.planPeriodEnd || row.planPeriodEnd * 1000 > Date.now()) continue;
+    await db
+      .update(schema.studioProfiles)
+      .set({ plan: row.pendingPlan, pendingPlan: null, updatedAt: new Date() })
+      .where(eq(schema.studioProfiles.organizationId, row.organizationId));
+    downgradesApplied++;
+  }
 
   // WEB-150: usage warnings — email studios at ≥90% of plan storage or in the
   // overage zone (≤1/day by construction; contact email only when set).

@@ -33,6 +33,7 @@ type PlanStatus = {
   whiteLabel: boolean;
   hasSubscription: boolean;
   planPeriodEnd: number | null;
+  pendingPlan: string | null;
 };
 
 const GB = 1024 ** 3;
@@ -70,7 +71,33 @@ export function PlanPanel({ returnHint }: { returnHint?: string }) {
 
   async function choose(plan: string) {
     if (plan === st?.plan) return;
-    if (plan !== "free" && st?.plan !== "free" && !(await confirm({ title: `Switch to ${plan}?`, body: "Your subscription changes immediately with prorated billing." }))) return;
+    // Confirm copy matches what will ACTUALLY happen: starting a first
+    // subscription, an immediate prorated upgrade, a next-cycle downgrade,
+    // or a period-end cancel to Free.
+    if (st) {
+      const target = ALL_PLANS.find((p) => p.id === plan);
+      let title = `Switch to ${target?.name ?? plan}?`;
+      let body = "Your subscription changes immediately with prorated billing.";
+      if (plan === "free") {
+        if (st.hasSubscription) {
+          title = "Downgrade to Free?";
+          body = `Your subscription cancels at the end of the current billing period — ${st.planName} keeps working until then, nothing further is charged, and your files are never deleted.`;
+        } else {
+          title = "Move to Free?";
+          body = "You have no active subscription, so this takes effect immediately. Your files are never deleted.";
+        }
+      } else if (!st.hasSubscription || st.plan === "free") {
+        title = `Start ${target?.name}?`;
+        body = `You don't have an active subscription yet — this opens Stripe checkout to start ${target?.name} at $${target?.price}/mo from today. Nothing is owed for your current plan.`;
+      } else if ((target?.price ?? 0) < st.priceMonthlyUsd) {
+        title = `Switch to ${target?.name}?`;
+        body = `The $${target?.price}/mo price starts on your next billing cycle — nothing is charged now, and ${st.planName} keeps working until then.`;
+      } else {
+        title = `Upgrade to ${target?.name}?`;
+        body = `Switches immediately — Stripe prorates, so you're only charged the difference for the rest of this cycle.`;
+      }
+      if (!(await confirm({ title, body }))) return;
+    }
     setBusy(true);
     setNotice("");
     try {
@@ -79,11 +106,15 @@ export function PlanPanel({ returnHint }: { returnHint?: string }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plan }),
       });
-      const body = (await res.json().catch(() => ({}))) as { url?: string; message?: string; error?: string };
-      if (res.ok && body.url) {
-        window.location.href = body.url; // Stripe checkout
+      const result = (await res.json().catch(() => ({}))) as { url?: string; mode?: string; message?: string; error?: string };
+      if (res.ok && result.url) {
+        window.location.href = result.url; // Stripe checkout
       } else if (res.ok) {
-        setNotice(body.message ?? "Plan updated.");
+        setNotice(
+          result.mode === "scheduled"
+            ? (result.message ?? "Scheduled — the new plan starts at the end of your billing period.")
+            : (result.message ?? "Plan updated."),
+        );
         void refresh();
       } else {
         setNotice("Couldn't change the plan — try again in a moment.");
@@ -129,6 +160,15 @@ export function PlanPanel({ returnHint }: { returnHint?: string }) {
             {st.planName}{st.priceMonthlyUsd ? ` · $${st.priceMonthlyUsd}/mo` : ""}
             {st.planStatus !== "active" ? ` · ${st.planStatus.replace("_", " ")}` : ""}
           </p>
+          {st.pendingPlan && (
+            <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+              Switching to {st.pendingPlan} on{" "}
+              {st.planPeriodEnd
+                ? new Date(st.planPeriodEnd * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+                : "your next billing cycle"}{" "}
+              — nothing is charged until then.
+            </p>
+          )}
         </div>
         {st.hasSubscription && (
           <Button size="sm" variant="outline" disabled={busy} onClick={() => void openPortal()}>
@@ -205,7 +245,7 @@ export function PlanPanel({ returnHint }: { returnHint?: string }) {
         })}
       </div>
       <p className="mt-3 text-[11px] text-ink-tertiary">
-        Stripe processing fees apply to payments. Plan changes prorate automatically; downgrades take effect at period end — your files are never deleted.
+        Stripe processing fees apply to payments. Upgrades apply immediately with proration; downgrades take effect on your next billing cycle — your files are never deleted.
       </p>
     </section>
   );

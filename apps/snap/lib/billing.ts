@@ -72,24 +72,53 @@ export async function ensureCustomer(organizationId: string): Promise<string | n
   }
 }
 
-/** Start an upgrade/plan-change checkout (subscription mode). */
+/** Result of a plan-change request: "checkout" → redirect the user to
+ * Stripe to START a subscription (none exists); "swapped" → in-place
+ * upgrade applied immediately (prorated by Stripe); "scheduled" → cheaper
+ * tier locked in for the NEXT billing cycle, nothing charged now. */
+export type PlanChangeResult = { url: string | null; mode: "checkout" | "swapped" | "scheduled" };
+
+/** Plan change: start a subscription via checkout, or — when one already
+ * exists — swap in place. Upgrades apply immediately with Stripe proration
+ * (only the difference is charged); downgrades to a cheaper tier apply at
+ * the next billing cycle (pending_plan + cron/renewal flip), matching the
+ * "price changes next cycle" model users expect. */
 export async function createPlanCheckout(
   organizationId: string,
   planId: PlanId,
   baseUrl: string,
-): Promise<string | null> {
+): Promise<PlanChangeResult> {
   const stripe = await getStripe();
-  if (!stripe || !PAID_PLANS.includes(planId)) return null;
+  if (!stripe || !PAID_PLANS.includes(planId)) return { url: null, mode: "swapped" };
   const customerId = await ensureCustomer(organizationId);
-  if (!customerId) return null;
+  if (!customerId) return { url: null, mode: "swapped" };
 
-  // Already subscribed → swap via subscription update (prorated by Stripe).
+  // Already subscribed → swap via subscription update, no checkout.
   const profile = await getStudioProfile(organizationId);
   if (profile?.stripeSubscriptionId) {
     try {
       const sub = await stripe.subscriptions.retrieve(profile.stripeSubscriptionId);
       const price = await ensurePrice(stripe, planId);
       if (price) {
+        const currentPrice = PLANS[(profile.plan as PlanId) ?? "free"]?.priceMonthlyUsd ?? 0;
+        if (PLANS[planId].priceMonthlyUsd < currentPrice) {
+          // Downgrade: the lower price starts next cycle — no charge, no
+          // credit, no checkout. Entitlements stay on the current plan
+          // until the period ends; pending_plan flips via the renewal
+          // webhook or the daily cron.
+          await stripe.subscriptions.update(sub.id, {
+            items: [{ id: sub.items.data[0].id, price: price.id }],
+            proration_behavior: "none",
+            cancel_at_period_end: false, // a previously scheduled cancel is superseded
+            metadata: { organizationId, plan: planId },
+          });
+          await getDb()
+            .update(schema.studioProfiles)
+            .set({ pendingPlan: planId, planStatus: "active", updatedAt: new Date() })
+            .where(eq(schema.studioProfiles.organizationId, organizationId));
+          return { url: null, mode: "scheduled" };
+        }
+        // Upgrade: immediate in-place swap; Stripe prorates the difference.
         await stripe.subscriptions.update(sub.id, {
           items: [{ id: sub.items.data[0].id, price: price.id }],
           proration_behavior: "create_prorations",
@@ -97,9 +126,9 @@ export async function createPlanCheckout(
         });
         await getDb()
           .update(schema.studioProfiles)
-          .set({ plan: planId, planStatus: "active", updatedAt: new Date() })
+          .set({ plan: planId, pendingPlan: null, planStatus: "active", updatedAt: new Date() })
           .where(eq(schema.studioProfiles.organizationId, organizationId));
-        return null; // in-place swap — no redirect needed
+        return { url: null, mode: "swapped" }; // no redirect needed
       }
     } catch (err) {
       console.error("billing: subscription swap failed — falling back to checkout:", String(err));
@@ -107,7 +136,7 @@ export async function createPlanCheckout(
   }
 
   const price = await ensurePrice(stripe, planId);
-  if (!price) return null;
+  if (!price) return { url: null, mode: "swapped" };
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     customer: customerId,
@@ -117,7 +146,20 @@ export async function createPlanCheckout(
     success_url: `${baseUrl}/dashboard/settings?plan=return`,
     cancel_url: `${baseUrl}/dashboard/settings?plan=cancelled`,
   });
-  return session.url;
+  return { url: session.url, mode: "checkout" };
+}
+
+/** Studios with no subscription (grandfathered plan rows, pre-launch
+ * defaults): "downgrading" to Free is a plain row update — there is nothing
+ * to cancel at period end and nothing to refund. */
+export async function setPlanFreeImmediately(organizationId: string): Promise<boolean> {
+  const profile = await getStudioProfile(organizationId);
+  if (!profile || profile.stripeSubscriptionId) return false;
+  await getDb()
+    .update(schema.studioProfiles)
+    .set({ plan: "free", pendingPlan: null, planStatus: "active", updatedAt: new Date() })
+    .where(eq(schema.studioProfiles.organizationId, organizationId));
+  return true;
 }
 
 /** Cancel (downgrade to free) at period end — data is never touched. */
@@ -206,10 +248,17 @@ export async function applySubscriptionState(sub: Stripe.Subscription): Promise<
     : sub.status === "past_due" ? "past_due"
     : "canceled";
   const db = getDb();
+  // Scheduled downgrade still inside its billing period: keep the current
+  // plan's entitlements (the sub's price already holds the lower tier for
+  // next cycle). Once the stored period end passes — renewal webhook or
+  // cron — the pending plan applies.
+  const profile = await getStudioProfile(organizationId);
+  const pendingStillValid =
+    Boolean(profile?.pendingPlan) && sub.status !== "canceled" && (profile?.planPeriodEnd ?? 0) * 1000 > Date.now();
   await db
     .update(schema.studioProfiles)
     .set({
-      ...(plan && PLANS[plan] ? { plan } : {}),
+      ...(plan && PLANS[plan] && !pendingStillValid ? { plan, pendingPlan: null } : {}),
       planStatus: status,
       stripeSubscriptionId: sub.status === "canceled" ? null : sub.id,
       planPeriodEnd: (sub.items.data[0] as { current_period_end?: number } | undefined)?.current_period_end ?? null,
@@ -221,7 +270,7 @@ export async function applySubscriptionState(sub: Stripe.Subscription): Promise<
   if (sub.status === "canceled") {
     await db
       .update(schema.studioProfiles)
-      .set({ plan: "free", planStatus: "active", updatedAt: new Date() })
+      .set({ plan: "free", pendingPlan: null, planStatus: "active", updatedAt: new Date() })
       .where(eq(schema.studioProfiles.organizationId, organizationId));
   }
 }
