@@ -8,6 +8,7 @@ import { ProjectPayments } from "@/components/project-payments";
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { listAssets } from "@/lib/repos/assets";
+import { listFolders } from "@/lib/repos/folders";
 import { getProjectAuditActivity } from "@/lib/repos/audit";
 import { getProjectPaymentSummary, listPayments } from "@/lib/repos/payments";
 import { listProjectInvoices } from "@/lib/invoices";
@@ -71,7 +72,7 @@ export default async function ProjectDetailPage({
 
   // Load only what the active tab renders — the Files workspace fetches its
   // own asset grid client-side.
-  const [events, shareActivity, auditEvents, assets, grants, payments, paymentSummary, invoices, contractsRows] =
+  const [events, shareActivity, auditEvents, assets, grants, deliverFolders, payments, paymentSummary, invoices, contractsRows] =
     await Promise.all([
       tab === "overview" || tab === "activity"
         ? db
@@ -84,6 +85,8 @@ export default async function ProjectDetailPage({
       tab === "activity" ? getProjectAuditActivity(ctx.organizationId, id) : Promise.resolve([]),
       tab === "gallery" ? listAssets(ctx.organizationId, id) : Promise.resolve([]),
       tab === "gallery" ? listProjectGrants(ctx.organizationId, id) : Promise.resolve([]),
+      // WEB-216: folder-level delivery — chips with approved/shared counts.
+      tab === "gallery" ? listFolders(ctx.organizationId, id, { statuses: ["approved", "shared"] }) : Promise.resolve({ folders: [], unfiledCount: 0 }),
       tab === "payments" ? listPayments(ctx.organizationId, { projectId: id }) : Promise.resolve([]),
       tab === "payments" ? getProjectPaymentSummary(ctx.organizationId, id) : Promise.resolve(null),
       tab === "payments" ? listProjectInvoices(ctx.organizationId, id) : Promise.resolve([]),
@@ -226,6 +229,7 @@ export default async function ProjectDetailPage({
             projectId={id}
             clientEmail={client?.email ?? ""}
             approvedCount={assets.filter((a) => a.status === "approved" || a.status === "shared").length}
+            folders={deliverFolders.folders}
             grants={grants}
           />
         </section>

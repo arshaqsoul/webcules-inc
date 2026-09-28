@@ -1,19 +1,22 @@
 /* Bulk asset actions (WEB-128) — approve/reject/reset/delete/tag/untag over
  * an explicit id list, org-scoped, share-guard aware, partial-failure
  * reporting (blocked items come back with reasons). "rename" runs the
- * pattern renamer (base + running index, extensions preserved). */
+ * pattern renamer (base + running index, extensions preserved). "move"
+ * (WEB-216) files the ids into a folder (folderId) or back to Unfiled
+ * (folderId null) — pointer moves, no bytes touched. */
 import { getOrgContext } from "@/lib/session";
 import { bulkAssetAction, bulkRenameAssets, bulkSetRating } from "@/lib/repos/assets";
+import { moveAssets } from "@/lib/repos/folders";
 
 export const dynamic = "force-dynamic";
 
-const ACTIONS = new Set(["approve", "reject", "reset", "delete", "tag", "untag", "rename", "stars", "color"]);
+const ACTIONS = new Set(["approve", "reject", "reset", "delete", "tag", "untag", "rename", "stars", "color", "move"]);
 
 export async function POST(req: Request) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
 
-  let body: { action?: string; assetIds?: string[]; tag?: string; base?: string; start?: number; pad?: number; value?: number };
+  let body: { action?: string; assetIds?: string[]; tag?: string; base?: string; start?: number; pad?: number; value?: number; folderId?: string | null };
   try {
     body = (await req.json()) as typeof body;
   } catch {
@@ -25,7 +28,20 @@ export async function POST(req: Request) {
   if ((body.action === "tag" || body.action === "untag") && !body.tag?.trim()) {
     return Response.json({ error: "tag_required" }, { status: 400 });
   }
+  if (body.action === "move" && body.folderId !== null && typeof body.folderId !== "string") {
+    return Response.json({ error: "invalid_input" }, { status: 400 });
+  }
   const ids = body.assetIds.filter((x) => typeof x === "string").slice(0, 500);
+
+  if (body.action === "move") {
+    const result = await moveAssets({
+      organizationId: ctx.organizationId,
+      assetIds: ids,
+      folderId: body.folderId ?? null,
+      actorUserId: ctx.user.id,
+    });
+    return Response.json({ done: result.moved, blocked: ids.length - result.moved });
+  }
 
   if (body.action === "stars" || body.action === "color") {
     if (!Number.isInteger(body.value) || (body.value as number) < 0 || (body.value as number) > 5) {

@@ -108,6 +108,8 @@ export function AssetManage({
   onRate,
   onFavorite,
   onTag,
+  folders,
+  onMove,
 }: {
   items: AssetItem[];
   index: number;
@@ -119,6 +121,9 @@ export function AssetManage({
   onFavorite: (id: string) => void;
   /** add = true tags, false untags — single-asset bulk call. */
   onTag: (id: string, tag: string, add: boolean) => void;
+  /** WEB-216: file this asset into a folder (null = unfiled). */
+  folders?: { id: string; name: string }[];
+  onMove?: (id: string, folderId: string | null) => void;
 }) {
   const [exif, setExif] = useState<Exif>(null);
   const [dims, setDims] = useState<{ w: number; h: number } | null>(null);
@@ -450,6 +455,24 @@ export function AssetManage({
           className="w-full rounded-md border border-hairline bg-canvas px-2.5 py-1.5 text-xs text-ink outline-none focus:border-primary"
         />
       </section>
+
+      {/* Folder (WEB-216) */}
+      {onMove && (
+        <section aria-label="Folder">
+          <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-tertiary">Folder</h3>
+          <select
+            value={item.folderId ?? ""}
+            onChange={(e) => onMove(item.id, e.target.value || null)}
+            aria-label="Move this file to a folder"
+            className="w-full rounded-md border border-hairline bg-canvas px-2.5 py-1.5 text-xs text-ink outline-none focus:border-primary"
+          >
+            <option value="">Unfiled</option>
+            {(folders ?? []).map((f) => (
+              <option key={f.id} value={f.id}>{f.name}</option>
+            ))}
+          </select>
+        </section>
+      )}
 
       {/* Metadata */}
       <section aria-label="Metadata">

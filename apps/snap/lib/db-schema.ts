@@ -419,6 +419,9 @@ export const assets = sqliteTable(
     rawNoticeAt: integer("raw_notice_at"),
     rawPurgeWarn1At: integer("raw_purge_warn1_at"),
     rawPurgeWarn2At: integer("raw_purge_warn2_at"),
+    /** WEB-216: the one folder this asset lives in (null = unfiled). Moving
+     * rewrites this pointer only — storage keys and R2 bytes never move. */
+    folderId: text("folder_id").references(() => folders.id, { onDelete: "set null" }),
   },
   (t) => [
     index("asset_org_project_idx").on(t.organizationId, t.projectId, t.createdAt),
@@ -426,6 +429,28 @@ export const assets = sqliteTable(
     index("asset_raw_archive_idx").on(t.rawArchivedAt),
     index("asset_fp_idx").on(t.projectId, t.fingerprint),
   ],
+);
+
+/* ---------------- Project folders (WEB-216) ----------------
+ * Structural one-home grouping for delivery — deliberately NOT tags: a tag
+ * is many-to-many curation vocabulary; an asset lives in one folder (or
+ * none). Flat per project in v1 (no parent nesting). */
+
+export const folders = sqliteTable(
+  "folder",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    sort: integer("sort").notNull().default(0),
+    createdAt: ts("created_at"),
+  },
+  (t) => [index("folder_org_project_idx").on(t.organizationId, t.projectId, t.sort)],
 );
 
 /* ---------------- Curation tags (Epic 8) ---------------- */
@@ -494,6 +519,9 @@ export const shareGrantAssets = sqliteTable(
       .notNull()
       .references(() => assets.id, { onDelete: "cascade" }),
     addedAt: ts("added_at"),
+    /** WEB-216: folder label frozen at delivery — post-delivery renames and
+     * reorgs never change what a live gallery shows. */
+    folderName: text("folder_name"),
   },
   (t) => [
     index("share_grant_asset_pk_idx").on(t.grantId, t.assetId),

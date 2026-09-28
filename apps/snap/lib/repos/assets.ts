@@ -105,6 +105,9 @@ export type AssetFilter = {
   rating?: string | null;
   /** "none" = color 0; "1".."5" = that color. */
   color?: string | null;
+  /** WEB-216 folders: "none" = unfiled bucket, anything else = folder id,
+   * undefined/null = no folder filtering. */
+  folder?: string | null;
 };
 
 export type AssetRow = typeof schema.assets.$inferSelect & { tags: string[] };
@@ -128,6 +131,8 @@ export async function listAssetsPaged(
   else if (filter.rating && /^[1-5]$/.test(filter.rating)) conditions.push(gte(schema.assets.stars, Number(filter.rating)));
   if (filter.color === "none") conditions.push(eq(schema.assets.color, 0));
   else if (filter.color && /^[1-5]$/.test(filter.color)) conditions.push(eq(schema.assets.color, Number(filter.color)));
+  if (filter.folder === "none") conditions.push(isNull(schema.assets.folderId));
+  else if (filter.folder) conditions.push(eq(schema.assets.folderId, filter.folder));
 
   // Keyset only on the default date sort; others page by offset via cursor-as-number.
   const offset = filter.sort && filter.sort !== "date" ? Number(filter.cursor ?? 0) || 0 : 0;

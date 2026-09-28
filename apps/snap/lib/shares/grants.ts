@@ -123,6 +123,16 @@ export async function createShareGrant(params: {
     );
   if (owned.length !== params.assetIds.length) return { ok: false, error: "asset_mismatch" };
 
+  // WEB-216: freeze the folder label each asset is delivered under — live
+  // galleries group by this snapshot, so post-delivery renames/reorgs never
+  // change what the client sees.
+  const folderRows = await db
+    .select({ assetId: schema.assets.id, folderName: schema.folders.name })
+    .from(schema.assets)
+    .leftJoin(schema.folders, eq(schema.folders.id, schema.assets.folderId))
+    .where(inArray(schema.assets.id, params.assetIds));
+  const folderByAsset = new Map(folderRows.map((r) => [r.assetId, r.folderName]));
+
   const token = mintToken();
   const tokenHash = await hashToken(token);
   const tokenEnc = await encryptToken(token);
@@ -145,7 +155,7 @@ export async function createShareGrant(params: {
     selectionDeadline: params.selectionDeadline ?? null,
   });
   for (const assetId of params.assetIds) {
-    await db.insert(schema.shareGrantAssets).values({ grantId, assetId });
+    await db.insert(schema.shareGrantAssets).values({ grantId, assetId, folderName: folderByAsset.get(assetId) ?? null });
   }
   await db
     .update(schema.assets)
@@ -400,7 +410,7 @@ export async function regenerateShareGrant(params: {
   if (old.status === "regenerated") return { ok: false, error: "superseded" };
 
   const assetRows = await db
-    .select({ assetId: schema.shareGrantAssets.assetId })
+    .select({ assetId: schema.shareGrantAssets.assetId, folderName: schema.shareGrantAssets.folderName })
     .from(schema.shareGrantAssets)
     .where(eq(schema.shareGrantAssets.grantId, old.id));
 
@@ -425,7 +435,7 @@ export async function regenerateShareGrant(params: {
     allowDownload: old.allowDownload,
   });
   for (const row of assetRows) {
-    await db.insert(schema.shareGrantAssets).values({ grantId: newId, assetId: row.assetId });
+    await db.insert(schema.shareGrantAssets).values({ grantId: newId, assetId: row.assetId, folderName: row.folderName ?? null });
   }
   await db
     .update(schema.assets)
@@ -499,7 +509,8 @@ export async function resolveGrantByToken(
   return grant && grantIsEffectivelyActive(grant) ? grant : null;
 }
 
-/** Assets in a grant (org re-verified via the grant row's org). */
+/** Assets in a grant (org re-verified via the grant row's org) with the
+ * folder label snapshotted at delivery. */
 export async function getGrantAssets(grant: typeof schema.shareGrants.$inferSelect) {
   const db = getDb();
   return db
@@ -508,7 +519,7 @@ export async function getGrantAssets(grant: typeof schema.shareGrants.$inferSele
     .innerJoin(schema.shareGrantAssets, eq(schema.shareGrantAssets.assetId, schema.assets.id))
     .where(eq(schema.shareGrantAssets.grantId, grant.id))
     .orderBy(schema.assets.createdAt)
-    .then((rows) => rows.map((r) => r.asset));
+    .then((rows) => rows.map((r) => ({ ...r.asset, folder: r.share_grant_asset.folderName })));
 }
 
 /** After a grant ends (revoked / superseded / expired), recompute 'shared'

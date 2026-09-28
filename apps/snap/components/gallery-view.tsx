@@ -29,6 +29,8 @@ export type GalleryAsset = {
   kind: string;
   mimeType: string;
   bytes: number;
+  /** WEB-216: folder label snapshotted at delivery — the gallery groups by it. */
+  folder?: string | null;
 };
 
 /** WEB-160: gallery image with 429 backoff — a rate-limited load retries
@@ -323,6 +325,12 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
   const [note, setNote] = useState(submittedSelection?.note ?? "");
   const [busy, setBusy] = useState(false);
   const [flash, setFlash] = useState("");
+  // WEB-216: folder navigation — null = all photos. Favorites/selection stay
+  // gallery-wide; only the grid + lightbox walk the visible slice.
+  const [activeFolder, setActiveFolder] = useState<string | null>(null);
+
+  const folderNames = Array.from(new Set(assets.map((a) => a.folder).filter((f): f is string => Boolean(f))));
+  const visible = activeFolder ? assets.filter((a) => a.folder === activeFolder) : assets;
 
   const deadlinePassed = selectionDeadline !== null && selectionDeadline < Date.now();
   const heartsOn = selectionMode !== "off";
@@ -392,8 +400,8 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
 
   const close = useCallback(() => setOpen(null), []);
   const stepIdx = useCallback(
-    (dir: 1 | -1) => setOpen((cur) => (cur === null ? cur : (cur + dir + assets.length) % assets.length)),
-    [assets.length],
+    (dir: 1 | -1) => setOpen((cur) => (cur === null ? cur : (cur + dir + visible.length) % visible.length)),
+    [visible.length],
   );
 
   useEffect(() => {
@@ -407,7 +415,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
     return () => window.removeEventListener("keydown", onKey);
   }, [open, close, stepIdx]);
 
-  const current = open !== null ? assets[open] : null;
+  const current = open !== null ? visible[open] : null;
   const expiry = expiresAt
     ? new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" }).format(new Date(expiresAt))
     : null;
@@ -431,13 +439,43 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
         </div>
       </header>
 
+      {/* Folder navigation (WEB-216) — only when the delivery was foldered. */}
+      {folderNames.length > 0 && (
+        <nav aria-label="Folders" className="mx-auto flex max-w-6xl flex-wrap gap-1.5 px-5 pt-4">
+          <button
+            type="button"
+            onClick={() => { setActiveFolder(null); setOpen(null); }}
+            className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${activeFolder === null ? "text-white" : "bg-surface-1 text-ink-muted hover:text-ink"}`}
+            style={activeFolder === null ? { background: "var(--accent)" } : undefined}
+          >
+            All photos
+          </button>
+          {folderNames.map((f) => (
+            <button
+              key={f}
+              type="button"
+              onClick={() => { setActiveFolder(activeFolder === f ? null : f); setOpen(null); }}
+              aria-pressed={activeFolder === f}
+              className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${activeFolder === f ? "text-white" : "bg-surface-1 text-ink-muted hover:text-ink"}`}
+              style={activeFolder === f ? { background: "var(--accent)" } : undefined}
+            >
+              {f}
+            </button>
+          ))}
+        </nav>
+      )}
+
       {assets.length === 0 ? (
         <div className="mx-auto max-w-6xl px-5 py-24 text-center text-sm text-ink-subtle">
           Nothing has been shared in this gallery yet — check back soon.
         </div>
+      ) : visible.length === 0 ? (
+        <div className="mx-auto max-w-6xl px-5 py-24 text-center text-sm text-ink-subtle">
+          No photos in this folder.
+        </div>
       ) : (
         <div className="mx-auto grid max-w-6xl grid-cols-2 gap-3 p-5 sm:grid-cols-3 lg:grid-cols-4">
-          {assets.map((a, i) => (
+          {visible.map((a, i) => (
             <button
               key={a.id}
               onClick={() => setOpen(i)}
@@ -600,7 +638,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
             <button onClick={close} aria-label="Close" className="rounded-md p-1.5 hover:bg-white/10">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M18 6 6 18M6 6l12 12" /></svg>
             </button>
-            <span className="min-w-0 flex-1 truncate text-sm">{open !== null ? `${open + 1} / ${assets.length} · ` : ""}{current.filename}</span>
+            <span className="min-w-0 flex-1 truncate text-sm">{open !== null ? `${open + 1} / ${visible.length} · ` : ""}{current.filename}</span>
             {allowDownload && (
               <a
                 href={`/api/assets/${current.id}?download=1`}
@@ -614,7 +652,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
           </div>
 
           <div className="relative flex min-h-0 flex-1 items-center justify-center px-4 pb-6" onClick={close}>
-            {assets.length > 1 && (
+            {visible.length > 1 && (
               <button
                 onClick={(e) => { e.stopPropagation(); stepIdx(-1); }}
                 aria-label="Previous"
@@ -654,7 +692,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
                 )}
               </div>
             )}
-            {assets.length > 1 && (
+            {visible.length > 1 && (
               <button
                 onClick={(e) => { e.stopPropagation(); stepIdx(1); }}
                 aria-label="Next"

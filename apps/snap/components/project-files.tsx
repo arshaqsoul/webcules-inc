@@ -38,8 +38,12 @@ export type AssetItem = {
   stars: number;
   color: number;
   tags: string[];
+  /** WEB-216: the folder this asset lives in (null = unfiled). */
+  folderId: string | null;
   createdAt: string;
 };
+
+export type FolderItem = { id: string; name: string; count: number };
 
 type Feed = {
   items: AssetItem[];
@@ -47,6 +51,8 @@ type Feed = {
   counts: Record<string, number>;
   tags: { tag: string; n: number }[];
   ratings?: { stars: Record<string, number>; colors: Record<string, number> };
+  folders?: FolderItem[];
+  unfiledCount?: number;
 };
 
 /** color 0 = none, 1 red, 2 yellow, 3 green, 4 blue, 5 purple. */
@@ -191,6 +197,17 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
   const [kind, setKind] = useState("");
   const [tag, setTag] = useState("");
   const [sort, setSort] = useState("date");
+  // WEB-216 folders: "" = all, "none" = unfiled, else folder id.
+  const [folder, setFolder] = useState("");
+  // Folder rail editing: which chip is an inline input (folder id | "new").
+  const [folderEdit, setFolderEdit] = useState<string | null>(null);
+  const [folderDraft, setFolderDraft] = useState("");
+  // Folder chip highlighted while assets are dragged over it.
+  const [dropFolder, setDropFolder] = useState<string | null>(null);
+  // Bulk-bar "new folder + move" flow: inline input creates the folder and
+  // immediately files the selection into it.
+  const [moveNewOpen, setMoveNewOpen] = useState(false);
+  const [moveNewDraft, setMoveNewDraft] = useState("");
   // Culling filters: rating ("unrated" | "1".."5" = ≥N), color ("none" | "1".."5").
   const [rating, setRating] = useState("");
   const [colorSel, setColorSel] = useState("");
@@ -281,10 +298,11 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
       if (sort) p.set("sort", sort);
       if (rating) p.set("rating", rating);
       if (colorSel) p.set("color", colorSel);
+      if (folder) p.set("folder", folder);
       if (cursor) p.set("cursor", cursor);
       return `/api/projects/${projectId}/assets?${p}`;
     },
-    [projectId, status, kind, tag, sort, rating, colorSel],
+    [projectId, status, kind, tag, sort, rating, colorSel, folder],
   );
 
   const load = useCallback(
@@ -300,6 +318,8 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
             counts: page.counts,
             tags: page.tags,
             ratings: page.ratings,
+            folders: page.folders,
+            unfiledCount: page.unfiledCount,
           }));
           // reflect view/filter in the URL (WEB-120)
           const url = new URL(window.location.href);
@@ -308,25 +328,143 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
           if (kind) url.searchParams.set("fk", kind); else url.searchParams.delete("fk");
           if (rating) url.searchParams.set("fr", rating); else url.searchParams.delete("fr");
           if (colorSel) url.searchParams.set("fc", colorSel); else url.searchParams.delete("fc");
+          if (folder) url.searchParams.set("ff", folder); else url.searchParams.delete("ff");
           window.history.replaceState(null, "", url);
         }
       } catch { /* keep previous page */ }
       setLoading(false);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps -- feed.nextCursor read on purpose
-    [query, view, status, kind],
+    [query, view, status, kind, folder],
   );
 
-  // reload on filter/sort change; restore view from URL once
+  // reload on filter/sort change; restore view + folder from the URL once on
+  // mount (re-reading them on later runs would fight fresh state — the URL
+  // only catches up after each load's replaceState).
+  const urlRestored = useRef(false);
   useEffect(() => {
-    const u = new URL(window.location.href);
-    const v = u.searchParams.get("fv");
-    if (v === "list" || v === "grid") setView(v);
+    if (!urlRestored.current) {
+      urlRestored.current = true;
+      const u = new URL(window.location.href);
+      const v = u.searchParams.get("fv");
+      if (v === "list" || v === "grid") setView(v);
+      const f = u.searchParams.get("ff");
+      if (f) setFolder(f);
+    }
     void load(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reload on filter change
-  }, [status, kind, tag, sort, rating, colorSel]);
+  }, [status, kind, tag, sort, rating, colorSel, folder]);
 
   const refresh = useCallback(() => void load(true), [load]);
+
+  /* ---------------- Folders (WEB-216) ---------------- */
+
+  const folders = feed.folders ?? [];
+  const folderName = useCallback((id: string | null) => (id ? folders.find((f) => f.id === id)?.name ?? null : null), [folders]);
+
+  /** Submit the rail's inline create/rename input. */
+  async function submitFolderEdit() {
+    const name = folderDraft.trim();
+    const editing = folderEdit;
+    setFolderEdit(null);
+    setFolderDraft("");
+    if (!name || !editing) return;
+    try {
+      const res =
+        editing === "new"
+          ? await fetch(`/api/projects/${projectId}/folders`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name }),
+            })
+          : await fetch(`/api/projects/${projectId}/folders/${editing}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name }),
+            });
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) {
+        setNotice(body.error === "name_taken" ? `“${name}” already exists in this project.` : body.error === "too_many" ? "Folder limit reached (100 per project)." : "Couldn't save the folder — try again.");
+      } else {
+        refresh();
+      }
+    } catch {
+      setNotice("Network error — try again.");
+    }
+  }
+
+  async function deleteFolderClick(f: FolderItem) {
+    if (!(await confirm({ title: `Delete “${f.name}”?`, body: `${f.count} file${f.count === 1 ? "" : "s"} fall back to Unfiled — nothing is deleted. Delivered galleries keep their folders.`, destructive: true, confirmLabel: "Delete folder" }))) return;
+    try {
+      const res = await fetch(`/api/projects/${projectId}/folders/${f.id}`, { method: "DELETE" });
+      if (!res.ok) {
+        setNotice("Couldn't delete the folder — try again.");
+        return;
+      }
+      if (folder === f.id) setFolder("");
+      refresh();
+    } catch {
+      setNotice("Network error — try again.");
+    }
+  }
+
+  /** Move explicit asset ids into a folder (null = unfiled) — one bulk call;
+   * pointer moves only, bytes and locks never change. */
+  async function moveIdsTo(ids: string[], target: string | null) {
+    if (!ids.length) return;
+    try {
+      const res = await fetch("/api/assets/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "move", assetIds: ids, folderId: target }),
+      });
+      const body = (await res.json().catch(() => ({}))) as { done?: number };
+      const label = target ? folderName(target) ?? "folder" : "Unfiled";
+      setNotice(`Moved ${body.done ?? 0} file${(body.done ?? 0) === 1 ? "" : "s"} to ${label}.`);
+      refresh();
+    } catch {
+      setNotice("Couldn't move — try again.");
+    }
+  }
+
+  /** Drop handler for folder chips — accepts dragged asset ids (grid cards). */
+  function folderDrop(e: React.DragEvent, target: string | null) {
+    e.preventDefault();
+    e.stopPropagation();
+    setDropFolder(null);
+    const raw = e.dataTransfer.getData("application/x-snap-assets");
+    if (!raw) return;
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      const ids = Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === "string") : [];
+      void moveIdsTo(ids, target);
+    } catch { /* not our payload */ }
+  }
+
+  /** Bulk-bar flow: create the folder, then file the selection into it. */
+  async function createAndMoveSelection() {
+    const name = moveNewDraft.trim();
+    const ids = Array.from(selected);
+    setMoveNewOpen(false);
+    setMoveNewDraft("");
+    if (!name || !ids.length) return;
+    try {
+      const res = await fetch(`/api/projects/${projectId}/folders`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      const body = (await res.json().catch(() => ({}))) as { id?: string; error?: string };
+      if (!res.ok || !body.id) {
+        setNotice(body.error === "name_taken" ? `“${name}” already exists in this project.` : "Couldn't create the folder — try again.");
+        return;
+      }
+      setSelected(new Set());
+      await moveIdsTo(ids, body.id);
+    } catch {
+      setNotice("Network error — try again.");
+    }
+  }
 
   /* ---------------- Bulk actions (WEB-128) ---------------- */
 
@@ -973,7 +1111,6 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
   const inputRef = useRef<HTMLInputElement>(null);
   const counts = feed.counts;
   const activeFilters = Boolean(status || kind || tag || rating || colorSel);
-
   /* Day groups (Midjourney organize-style): date-sorted contiguous items
    * share one bordered mosaic block with a date header, so the outline
    * hugs the first/last images of each group. Non-date sorts render as a
@@ -1099,12 +1236,116 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
         onRate={(id, patch) => void rateAsset(id, patch)}
         onFavorite={(id) => void toggleFavorite(id)}
         onTag={(id, tag, add) => void tagAsset(id, tag, add)}
+        folders={folders}
+        onMove={(id, folderId) => void moveIdsTo([id], folderId)}
       />
     );
   }
 
   return (
     <div className="flex flex-col gap-4">
+      {/* Folder rail (WEB-216) — delivery outline. Chips filter the feed;
+       * drag cards (or use the bulk bar) to file assets. Folders are free on
+       * every tier: delivery craft is not a tier lever. */}
+      <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Folders">
+        <button
+          type="button"
+          onClick={() => setFolder("")}
+          aria-pressed={folder === ""}
+          className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${folder === "" ? "bg-primary/10 text-primary" : "text-ink-subtle hover:bg-surface-2 hover:text-ink"}`}
+        >
+          All files
+        </button>
+        <button
+          type="button"
+          onClick={() => setFolder("none")}
+          aria-pressed={folder === "none"}
+          onDragOver={(e) => { if (e.dataTransfer.types.includes("application/x-snap-assets")) { e.preventDefault(); setDropFolder("none"); } }}
+          onDragLeave={() => setDropFolder((d) => (d === "none" ? null : d))}
+          onDrop={(e) => folderDrop(e, null)}
+          className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
+            dropFolder === "none" ? "ring-2 ring-primary" : ""
+          } ${folder === "none" ? "bg-primary/10 text-primary" : "text-ink-subtle hover:bg-surface-2 hover:text-ink"}`}
+        >
+          Unfiled{feed.unfiledCount ? ` · ${feed.unfiledCount}` : ""}
+        </button>
+        {folders.map((f) => (
+          <span key={f.id} className="group/folder relative inline-flex items-center">
+            {folderEdit === f.id ? (
+              <input
+                autoFocus
+                value={folderDraft}
+                onChange={(e) => setFolderDraft(e.target.value)}
+                onBlur={() => void submitFolderEdit()}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") void submitFolderEdit();
+                  if (e.key === "Escape") { setFolderEdit(null); setFolderDraft(""); }
+                }}
+                aria-label="Rename folder"
+                className="w-32 rounded-full border border-primary bg-canvas px-2.5 py-1 text-xs text-ink outline-none"
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={() => setFolder(f.id)}
+                aria-pressed={folder === f.id}
+                onDragOver={(e) => { if (e.dataTransfer.types.includes("application/x-snap-assets")) { e.preventDefault(); setDropFolder(f.id); } }}
+                onDragLeave={() => setDropFolder((d) => (d === f.id ? null : d))}
+                onDrop={(e) => folderDrop(e, f.id)}
+                className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
+                  dropFolder === f.id ? "ring-2 ring-primary" : ""
+                } ${folder === f.id ? "bg-primary/10 text-primary" : "text-ink-subtle hover:bg-surface-2 hover:text-ink"}`}
+              >
+                {f.name} · {f.count}
+              </button>
+            )}
+            {folderEdit !== f.id && (
+              <span className="ml-0.5 hidden items-center group-hover/folder:inline-flex">
+                <button
+                  type="button"
+                  aria-label={`Rename ${f.name}`}
+                  onClick={() => { setFolderEdit(f.id); setFolderDraft(f.name); }}
+                  className="rounded p-0.5 text-ink-tertiary hover:text-ink"
+                >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /></svg>
+                </button>
+                <button
+                  type="button"
+                  aria-label={`Delete ${f.name}`}
+                  onClick={() => void deleteFolderClick(f)}
+                  className="rounded p-0.5 text-ink-tertiary hover:text-destructive"
+                >
+                  <X className="h-3 w-3" aria-hidden />
+                </button>
+              </span>
+            )}
+          </span>
+        ))}
+        {folderEdit === "new" ? (
+          <input
+            autoFocus
+            value={folderDraft}
+            onChange={(e) => setFolderDraft(e.target.value)}
+            onBlur={() => void submitFolderEdit()}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") void submitFolderEdit();
+              if (e.key === "Escape") { setFolderEdit(null); setFolderDraft(""); }
+            }}
+            aria-label="New folder name"
+            placeholder="Folder name"
+            className="w-36 rounded-full border border-primary bg-canvas px-2.5 py-1 text-xs text-ink outline-none"
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => { setFolderEdit("new"); setFolderDraft(""); }}
+            className="rounded-full border border-dashed border-hairline-strong px-2.5 py-1 text-xs text-ink-tertiary transition-colors hover:border-primary hover:text-primary"
+          >
+            + Folder
+          </button>
+        )}
+      </div>
+
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2 rounded-[12px] border border-hairline bg-surface-1 p-3">
         <div className="mr-2 text-sm text-ink-subtle">
@@ -1369,6 +1610,45 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
           <Button size="sm" variant="outline" disabled={!selected.size} onClick={() => void bulk("reject")}>Reject</Button>
           <Button size="sm" variant="outline" disabled={!selected.size} onClick={() => void bulk("tag", "favorite")}>Favorite</Button>
           <TagInput disabled={!selected.size} onTag={(t) => void bulk("tag", t)} />
+          <span className="relative">
+            <select
+              aria-label="Move selection to folder"
+              disabled={!selected.size}
+              value=""
+              onChange={(e) => {
+                const v = e.target.value;
+                if (!v) return;
+                if (v === "__new") setMoveNewOpen(true);
+                else {
+                  void moveIdsTo(Array.from(selected), v === "__none" ? null : v);
+                  setSelected(new Set());
+                }
+              }}
+              className="h-8 rounded-md border border-hairline bg-canvas px-2 text-xs text-ink-muted outline-none disabled:opacity-50"
+            >
+              <option value="">Move to…</option>
+              <option value="__none">Unfiled</option>
+              {folders.map((f) => (
+                <option key={f.id} value={f.id}>{f.name}</option>
+              ))}
+              <option value="__new">+ New folder…</option>
+            </select>
+          </span>
+          {moveNewOpen && (
+            <input
+              autoFocus
+              value={moveNewDraft}
+              onChange={(e) => setMoveNewDraft(e.target.value)}
+              onBlur={() => { setMoveNewOpen(false); setMoveNewDraft(""); }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") void createAndMoveSelection();
+                if (e.key === "Escape") { setMoveNewOpen(false); setMoveNewDraft(""); }
+              }}
+              aria-label="New folder name"
+              placeholder="Folder name + Enter"
+              className="w-40 rounded-md border border-primary bg-canvas px-2 py-1 text-xs text-ink outline-none"
+            />
+          )}
           <Button size="sm" variant="outline" disabled={!selected.size} onClick={() => setRenameOpen(true)}>Rename</Button>
           <Button size="sm" variant="ghost" disabled={!selected.size} onClick={() => void bulk("delete")}>Delete</Button>
         </div>
@@ -1462,6 +1742,13 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                   <div
                     key={a.id}
                     data-asset-idx={i}
+                    draggable={!selectMode}
+                    onDragStart={(e) => {
+                      // Dragging a selected card carries the whole selection.
+                      const ids = selected.has(a.id) ? Array.from(selected) : [a.id];
+                      e.dataTransfer.setData("application/x-snap-assets", JSON.stringify(ids));
+                      e.dataTransfer.effectAllowed = "move";
+                    }}
                     className={`group relative flex break-inside-avoid flex-col overflow-hidden transition-opacity ${
                       compact
                         ? `rounded-[4px] ${selected.has(a.id) ? "ring-2 ring-primary" : focusIndex === i ? "ring-2 ring-primary/70" : ""}`
@@ -1684,7 +1971,13 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
 
       {feed.items.length === 0 && !loading && (
         <p className="py-8 text-center text-sm text-ink-subtle">
-          {activeFilters ? "No files match these filters." : "No files yet — upload the shoot to get started."}
+          {folder === "none"
+            ? "No unfiled files — everything lives in a folder."
+            : folder
+              ? `No files in ${folderName(folder) ?? "this folder"} yet — select files and use “Move to…”, or drag cards onto the folder chip.`
+              : activeFilters
+                ? "No files match these filters."
+                : "No files yet — upload the shoot to get started."}
         </p>
       )}
 

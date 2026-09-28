@@ -68,6 +68,8 @@ export async function seedAsset(params: {
   kind?: "image" | "video" | "raw" | "other";
   bytes?: number;
   filename?: string;
+  status?: string;
+  folderId?: string | null;
   createdAt?: Date;
 }): Promise<string> {
   const db = getDb();
@@ -81,6 +83,8 @@ export async function seedAsset(params: {
     filename: params.filename ?? "f.jpg",
     mimeType: "application/octet-stream",
     bytes: params.bytes ?? 1000,
+    status: params.status ?? "uploaded",
+    folderId: params.folderId ?? null,
     createdAt: params.createdAt ?? new Date(),
   });
   return id;

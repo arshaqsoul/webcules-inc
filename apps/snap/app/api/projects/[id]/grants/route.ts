@@ -44,6 +44,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   let body: {
     clientEmail?: string;
     assetIds?: string[];
+    folderIds?: string[];
     expiresInDays?: number | null;
     allowDownload?: boolean;
     selectionMode?: "off" | "favorites" | "selection";
@@ -84,10 +85,40 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     );
   }
 
-  // Asset set: explicit list, else the approved/shared (sent-to-client) set.
+  // Asset set: explicit list > folder-scoped set (WEB-216 — deliver only
+  // those folders, expanding to their approved/shared assets) > the whole
+  // approved/shared (sent-to-client) set.
   const db = getDb();
   let assetIds = Array.isArray(body.assetIds) ? body.assetIds.filter((a) => typeof a === "string") : null;
-  if (assetIds === null) {
+  const folderIds = Array.isArray(body.folderIds) ? body.folderIds.filter((f) => typeof f === "string") : null;
+  if (assetIds === null && folderIds !== null && folderIds.length) {
+    // Folders must belong to this org + project (a foreign id just narrows
+    // the set to nothing, never widens it).
+    const ownedFolders = await db
+      .select({ id: schema.folders.id })
+      .from(schema.folders)
+      .where(
+        and(
+          eq(schema.folders.organizationId, ctx.organizationId),
+          eq(schema.folders.projectId, id),
+          inArray(schema.folders.id, folderIds),
+        ),
+      );
+    const rows = ownedFolders.length
+      ? await db
+          .select({ id: schema.assets.id })
+          .from(schema.assets)
+          .where(
+            and(
+              eq(schema.assets.organizationId, ctx.organizationId),
+              eq(schema.assets.projectId, id),
+              inArray(schema.assets.folderId, ownedFolders.map((f) => f.id)),
+              inArray(schema.assets.status, ["approved", "shared"]),
+            ),
+          )
+      : [];
+    assetIds = rows.map((r) => r.id);
+  } else if (assetIds === null) {
     const rows = await db
       .select({ id: schema.assets.id })
       .from(schema.assets)

@@ -58,11 +58,14 @@ export function ProjectGalleries({
   projectId,
   clientEmail,
   approvedCount,
+  folders,
   grants,
 }: {
   projectId: string;
   clientEmail: string;
   approvedCount: number;
+  /** WEB-216: folders with their approved/shared (deliverable) counts. */
+  folders: { id: string; name: string; count: number }[];
   grants: GrantItem[];
 }) {
   const router = useRouter();
@@ -73,10 +76,27 @@ export function ProjectGalleries({
   const [selectionMode, setSelectionMode] = useState<"favorites" | "selection" | "off">("favorites");
   const [selectionLimitInput, setSelectionLimitInput] = useState("50");
   const [selectionDeadlineInput, setSelectionDeadlineInput] = useState("");
+  // WEB-216: empty set = deliver everything approved; otherwise only the
+  // checked folders' approved files ship in this link.
+  const [deliverFolders, setDeliverFolders] = useState<Set<string>>(new Set());
   const [feedback, setFeedback] = useState<{ grant: GrantItem; favorites: string[]; selection: { items: string[]; note: string | null; submittedAt: string } | null } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [flash, setFlash] = useState<{ url: string; emailed: boolean } | null>(null);
+
+  const deliverableFolders = folders.filter((f) => f.count > 0);
+  const deliverCount = deliverFolders.size
+    ? deliverableFolders.filter((f) => deliverFolders.has(f.id)).reduce((n, f) => n + f.count, 0)
+    : approvedCount;
+
+  function toggleDeliver(id: string) {
+    setDeliverFolders((cur) => {
+      const next = new Set(cur);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
   async function createGrant() {
     setBusy(true);
@@ -87,6 +107,7 @@ export function ProjectGalleries({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           clientEmail: email,
+          ...(deliverFolders.size ? { folderIds: Array.from(deliverFolders) } : {}),
           expiresInDays: days ? Number(days) : null,
           allowDownload,
           selectionMode,
@@ -101,13 +122,14 @@ export function ProjectGalleries({
       if (!res.ok) {
         setError(
           body.error === "no_assets"
-            ? "Approve some files first — a gallery shares your approved set."
+            ? "Nothing approved in that selection — approve some files in those folders first."
             : body.error === "invalid_email"
               ? "Enter a valid client email."
               : "Could not create the link — try again.",
         );
       } else {
         setFlash({ url: body.url ?? "", emailed: Boolean(body.emailed) });
+        setDeliverFolders(new Set());
         router.refresh();
       }
     } catch {
@@ -262,9 +284,35 @@ export function ProjectGalleries({
           </>
         )}
         <Button size="sm" disabled={busy || !email} onClick={createGrant}>
-          {busy ? "Working…" : `Share ${approvedCount} approved file${approvedCount === 1 ? "" : "s"}`}
+          {busy ? "Working…" : `Share ${deliverCount} approved file${deliverCount === 1 ? "" : "s"}${deliverFolders.size ? ` · ${deliverFolders.size} folder${deliverFolders.size === 1 ? "" : "s"}` : ""}`}
         </Button>
       </div>
+      {deliverableFolders.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5 rounded-[12px] border border-hairline bg-surface-1 px-4 py-2.5">
+          <span className="mr-1 text-xs text-ink-subtle">
+            Deliver {deliverFolders.size ? "only:" : "everything approved, or just:"}
+          </span>
+          <button
+            type="button"
+            onClick={() => setDeliverFolders(new Set())}
+            className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${deliverFolders.size === 0 ? "bg-primary/10 text-primary" : "text-ink-subtle hover:bg-surface-2 hover:text-ink"}`}
+          >
+            All approved · {approvedCount}
+          </button>
+          {deliverableFolders.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              onClick={() => toggleDeliver(f.id)}
+              aria-pressed={deliverFolders.has(f.id)}
+              className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${deliverFolders.has(f.id) ? "bg-primary/10 text-primary" : "text-ink-subtle hover:bg-surface-2 hover:text-ink"}`}
+            >
+              {f.name} · {f.count}
+            </button>
+          ))}
+          <span className="ml-auto hidden text-[11px] text-ink-tertiary sm:inline">The client sees these as folders in their gallery.</span>
+        </div>
+      )}
       {error && <p className="text-xs text-destructive">{error}</p>}
       {approvedCount === 0 && (
         <p className="text-xs text-ink-tertiary">Approve files below first — the gallery shares your approved set.</p>
