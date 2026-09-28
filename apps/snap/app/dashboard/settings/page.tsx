@@ -34,6 +34,7 @@ export default async function SettingsPage({
       </div>
       <PlanPanel returnHint={plan === "return" ? "return" : undefined} />
       <SettingsForm
+        brandRevision={String(profile.updatedAt?.getTime() ?? "")}
         initial={{
           slug,
           studioName: profile.studioName,

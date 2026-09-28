@@ -27,7 +27,7 @@ type Initial = {
   exifStripDerived: boolean;
 };
 
-export function SettingsForm({ initial }: { initial: Initial }) {
+export function SettingsForm({ initial, brandRevision }: { initial: Initial; brandRevision?: string }) {
   const router = useRouter();
   const [profile, setProfile] = useState({
     studioName: initial.studioName,
@@ -274,9 +274,17 @@ export function SettingsForm({ initial }: { initial: Initial }) {
       <EmbedHub
         embedKey={embedKey}
         slug={initial.slug}
-        studioTheme={initial.theme}
-        studioFontFamily={initial.fontFamily}
+        studioTheme={theme}
+        studioFontFamily={fontFamily}
         originsCount={initial.embedOrigins.length}
+        revision={brandRevision}
+        liveTokens={(() => {
+          try {
+            return tokensJson.trim() ? (JSON.parse(tokensJson) as Record<string, unknown>) : undefined;
+          } catch {
+            return undefined;
+          }
+        })()}
         onKeyRotated={(newKey) => {
           setEmbedKey(newKey);
           setLogoUrl(`/api/embed/logo?key=${newKey}`);

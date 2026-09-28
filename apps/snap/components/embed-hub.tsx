@@ -19,6 +19,12 @@ type Props = {
   studioTheme: string;
   studioFontFamily: string;
   originsCount: number;
+  /** Brand updatedAt — bumping it (a save) reloads the preview iframes,
+   * which React otherwise keeps mounted since their src never changes. */
+  revision?: string;
+  /** Unsaved token edits from the JSON box — forwarded so the previews
+   * track what you're typing; the widget route re-sanitizes server-side. */
+  liveTokens?: Record<string, unknown>;
   /** Lets the parent (settings form) refresh its logo URL after a rotation. */
   onKeyRotated?: (newKey: string) => void;
 };
@@ -31,7 +37,7 @@ const inputCls =
 
 type WidgetKind = "contact" | "calendar" | "calendar-button";
 
-export function EmbedHub({ embedKey, slug, studioTheme, studioFontFamily, originsCount, onKeyRotated }: Props) {
+export function EmbedHub({ embedKey, slug, studioTheme, studioFontFamily, originsCount, revision, liveTokens, onKeyRotated }: Props) {
   const router = useRouter();
   const confirm = useConfirm();
   const [theme, setTheme] = useState("brand"); // brand | light | dark | auto
@@ -61,7 +67,11 @@ export function EmbedHub({ embedKey, slug, studioTheme, studioFontFamily, origin
     ].join("\n");
   }
 
-  /** Mirrors the loader's buildSrc so the preview matches production rendering. */
+  /**
+   * Mirrors the loader's buildSrc so the preview matches production rendering.
+   * `rev` busts the iframe when a save lands; live token edits ride along as
+   * query overrides (the widget re-sanitizes and layers them over the brand).
+   */
   function previewSrc(kind: "contact" | "calendar"): string {
     const q = new URLSearchParams({ key });
     const resolved = theme === "brand" ? studioTheme : theme;
@@ -69,6 +79,12 @@ export function EmbedHub({ embedKey, slug, studioTheme, studioFontFamily, origin
     if (studioFontFamily) q.set("fontFamily", studioFontFamily);
     if (/^#[0-9a-f]{6}$/.test(a)) q.set("accent", a);
     if (/^(\d{1,3}px|\d{1,2}(\.\d+)?rem|50%)$/.test(r)) q.set("radius", r);
+    if (liveTokens) {
+      for (const [k, v] of Object.entries(liveTokens)) {
+        if (typeof v === "string" && v) q.set(k, v);
+      }
+    }
+    if (revision) q.set("rev", revision);
     return `/embed/${kind}?${q.toString()}`;
   }
 
