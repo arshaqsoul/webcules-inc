@@ -20,6 +20,11 @@ export default async function CalendarPage({
   const { tab = "calendar", month } = await searchParams;
 
   const activeMonth = month && /^\d{4}-\d{2}$/.test(month) ? month : new Date().toISOString().slice(0, 7);
+  // First → LAST day of the month (Date.UTC day 0 of next month) — correct
+  // for 28/29/30-day months; the "-31" hack rolled over into the next month.
+  const [my, mm] = activeMonth.split("-").map(Number);
+  const rangeStart = new Date(Date.UTC(my, mm - 1, 1, 0, 0, 0));
+  const rangeEnd = new Date(Date.UTC(my, mm, 0, 23, 59, 59));
 
   const tabs = [
     { key: "calendar", label: "Calendar" },
@@ -30,11 +35,7 @@ export default async function CalendarPage({
     getStudioProfile(ctx.organizationId),
     tab === "availability"
       ? Promise.resolve([])
-      : listBookingsInRange(
-          ctx.organizationId,
-          new Date(`${activeMonth}-01T00:00:00Z`),
-          new Date(`${activeMonth}-31T23:59:59Z`),
-        ),
+      : listBookingsInRange(ctx.organizationId, rangeStart, rangeEnd),
   ]);
   const tz = profile?.timezone ?? "UTC";
 

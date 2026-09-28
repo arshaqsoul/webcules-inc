@@ -1,10 +1,12 @@
 "use client";
 
 /* Dashboard calendar — month grid of bookings with day drill-down + cancel.
- * Bookings are passed in server-side per month; navigation reloads the page
- * with a new ?month= (simple, correct, no client data layer yet). */
-import Link from "next/link";
-import { useState } from "react";
+ * The server seeds the first paint (initialBookings); the component then owns
+ * its data: it refetches the month on navigation, whenever the tab regains
+ * focus (bookings made elsewhere — e.g. the widget in another tab — appear
+ * without a manual refresh), and after actions, so the view can never drift
+ * from the server for longer than one fetch. */
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button } from "@webcules/ui/components/button";
 import { useConfirm } from "@/components/confirm-provider";
@@ -19,7 +21,6 @@ type BookingItem = {
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export function CalendarMonth({
-  organizationId: _organizationId,
   tz,
   initialMonth,
   initialBookings,
@@ -30,12 +31,73 @@ export function CalendarMonth({
   initialBookings: BookingItem[];
 }) {
   const confirm = useConfirm();
-  void _organizationId;
+  const [month, setMonth] = useState(initialMonth);
   const [bookings, setBookings] = useState(initialBookings);
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [notice, setNotice] = useState("");
+  const loadToken = useRef(0);
 
-  const [y, m] = initialMonth.split("-").map(Number);
+  /** Fetch a month's bookings; the token drops stale responses (fast nav). */
+  const load = useCallback(async (m: string) => {
+    const token = ++loadToken.current;
+    try {
+      const res = await fetch(`/api/bookings?month=${m}`, { cache: "no-store" });
+      if (!res.ok) return; // keep current view; surfaced by the action paths
+      const body = (await res.json()) as { bookings?: BookingItem[] };
+      if (token === loadToken.current && Array.isArray(body.bookings)) {
+        setBookings(body.bookings);
+      }
+    } catch {
+      /* offline blip — the focus listener will retry */
+    }
+  }, []);
+
+  // Month navigation: client-side state + shareable URL, data always fresh.
+  function goMonth(delta: 1 | -1) {
+    const [y, m] = month.split("-").map(Number);
+    const next = new Date(Date.UTC(y, m - 1 + delta, 1)).toISOString().slice(0, 7);
+    setMonth(next);
+    setSelectedDay(null);
+    window.history.replaceState(null, "", `/dashboard/calendar?month=${next}`);
+    void load(next);
+  }
+
+  // Fresh data when the tab comes back (booked in another tab / widget).
+  useEffect(() => {
+    const onFocus = () => void load(month);
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onFocus);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onFocus);
+    };
+  }, [load, month]);
+
+  async function cancel(id: string) {
+    if (!(await confirm({ title: "Cancel booking?", body: "The client is emailed and the slot frees up.", destructive: true }))) return;
+    setBusy(id);
+    setNotice("");
+    let ok = false;
+    try {
+      const res = await fetch(`/api/bookings/${id}`, { method: "POST" });
+      ok = res.ok;
+    } catch {
+      /* network — fall through to refetch */
+    }
+    setBusy(null);
+    if (ok) {
+      setBookings((prev) => prev.filter((b) => b.id !== id));
+    } else {
+      // Non-2xx does NOT mean the cancel failed — the server cancels before
+      // the email step, and an email error would 500 after committing.
+      setNotice("Couldn't confirm the cancellation — refreshing your calendar…");
+    }
+    // Either way, sync with server truth.
+    await load(month);
+  }
+
+  const [y, m] = month.split("-").map(Number);
   const firstWeekday = new Date(Date.UTC(y, m - 1, 1)).getUTCDay();
   const daysInMonth = new Date(Date.UTC(y, m, 0)).getUTCDate();
 
@@ -47,19 +109,9 @@ export function CalendarMonth({
     byDay.set(day, [...(byDay.get(day) ?? []), b]);
   }
 
-  const prevMonth = new Date(Date.UTC(y, m - 2, 1)).toISOString().slice(0, 7);
-  const nextMonth = new Date(Date.UTC(y, m, 1)).toISOString().slice(0, 7);
   const monthLabel = new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString("en-US", {
     month: "long", year: "numeric", timeZone: "UTC",
   });
-
-  async function cancel(id: string) {
-    if (!(await confirm({ title: "Cancel booking?", body: "The client is emailed and the slot frees up.", destructive: true }))) return;
-    setBusy(id);
-    const res = await fetch(`/api/bookings/${id}`, { method: "POST" });
-    setBusy(null);
-    if (res.ok) setBookings((prev) => prev.filter((b) => b.id !== id));
-  }
 
   const dayBookings = selectedDay ? (byDay.get(selectedDay) ?? []) : [];
 
@@ -67,13 +119,13 @@ export function CalendarMonth({
     <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
       <div className="rounded-[12px] border border-hairline bg-surface-1 p-4">
         <div className="mb-3 flex items-center justify-between">
-          <Link href={`/dashboard/calendar?month=${prevMonth}`} className="rounded-md px-2 py-1 text-sm text-ink-subtle hover:bg-surface-2 hover:text-ink">
+          <button onClick={() => goMonth(-1)} className="rounded-md px-2 py-1 text-sm text-ink-subtle hover:bg-surface-2 hover:text-ink" aria-label="Previous month">
             ←
-          </Link>
+          </button>
           <span className="text-sm font-medium text-ink">{monthLabel}</span>
-          <Link href={`/dashboard/calendar?month=${nextMonth}`} className="rounded-md px-2 py-1 text-sm text-ink-subtle hover:bg-surface-2 hover:text-ink">
+          <button onClick={() => goMonth(1)} className="rounded-md px-2 py-1 text-sm text-ink-subtle hover:bg-surface-2 hover:text-ink" aria-label="Next month">
             →
-          </Link>
+          </button>
         </div>
         <div className="grid grid-cols-7 gap-1 text-center text-[11px] uppercase tracking-wide text-ink-tertiary">
           {WEEKDAYS.map((d) => <div key={d} className="py-1">{d}</div>)}
@@ -81,7 +133,7 @@ export function CalendarMonth({
         <div className="grid grid-cols-7 gap-1">
           {Array.from({ length: firstWeekday }).map((_, i) => <div key={`pad-${i}`} />)}
           {Array.from({ length: daysInMonth }, (_, i) => {
-            const date = `${initialMonth}-${String(i + 1).padStart(2, "0")}`;
+            const date = `${month}-${String(i + 1).padStart(2, "0")}`;
             const dayItems = byDay.get(date) ?? [];
             const active = dayItems.filter((b) => b.status !== "canceled");
             const canceled = dayItems.length - active.length;
@@ -140,6 +192,7 @@ export function CalendarMonth({
             </div>
           ))}
         </div>
+        {notice && <p className="mt-3 text-xs text-amber-600 dark:text-amber-400">{notice}</p>}
       </div>
     </div>
   );
