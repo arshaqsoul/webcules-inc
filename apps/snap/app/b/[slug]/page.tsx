@@ -73,7 +73,7 @@ export default async function PublicBookingPage({ params }: { params: Promise<{ 
 
   return (
     <main className="flex min-h-screen flex-col items-center px-4 py-8 sm:py-12" style={{ background: `color-mix(in srgb, ${accent} 6%, #fafafa)` }}>
-      <div className="w-full max-w-lg">
+      <div className="w-full max-w-3xl">
         <div className="mb-4 flex flex-col items-center gap-2 text-center">
           {studio.logoKey ? (
             // eslint-disable-next-line @next/next/no-img-element -- branded logo via authorized proxy
@@ -88,6 +88,7 @@ export default async function PublicBookingPage({ params }: { params: Promise<{ 
             title={`Book ${studio.studioName}`}
             src={widgetSrc}
             className="block h-[640px] w-full border-0"
+            id="snap-booking-frame"
           />
         </div>
         <p className="mt-4 text-center text-xs text-[#8a8f98]">
@@ -102,6 +103,23 @@ export default async function PublicBookingPage({ params }: { params: Promise<{ 
           ) : null}
         </p>
       </div>
+      {/* The widget reports its height like any other host — grow/shrink the
+       * frame with it (fixed h-[640px] only seeds the first paint). Same-origin
+       * page, so the widget's referrer-derived target origin matches. */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `(function () {
+  window.addEventListener("message", function (e) {
+    var f = document.getElementById("snap-booking-frame");
+    if (!f || e.source !== f.contentWindow) return;
+    var d = e.data || {};
+    if (d.type === "snap:height" && typeof d.height === "number") {
+      f.style.height = Math.max(420, Math.round(d.height) + 16) + "px";
+    }
+  });
+})();`,
+        }}
+      />
     </main>
   );
 }

@@ -1,8 +1,10 @@
 /* The booking calendar widget — framework-free HTML in the loader iframe.
- * Cal-style month grid with just ‹ › month navigation, circular day cells,
- * and a day drill-down times panel, in-page booking form, branded from the
- * studio profile. First month renders server-side (inline JSON) for instant
- * paint; the visitor's timezone is shown alongside the studio's. */
+ * Cal-style two-pane layout: month grid left, times panel right; picking a
+ * time swaps the panel to the booking form (Back returns to the times list).
+ * Stacks vertically in narrow iframes, where the form takes over the full
+ * row. Branded from the studio profile. First month renders server-side
+ * (inline JSON) for instant paint; the visitor's timezone is shown alongside
+ * the studio's. */
 import { monthDates } from "@/lib/availability";
 import { env } from "cloudflare:workers";
 import { frameAncestorsDirective, resolveStudioByEmbedKey, safeHexColor } from "@/lib/embed";
@@ -75,18 +77,23 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
   body { margin:0; padding:20px; font-family:var(--snap-font); background:var(--snap-bg); color:var(--snap-text); font-size:14px; line-height:1.5; }
   .brand { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
   .tz { font-size:11px; color:var(--snap-muted); margin-left:auto; }
-  /* Cal-style shell: calendar left, times/form right (stacked on narrow) */
+  /* Cal-style shell: calendar left, times/form right (stacked on narrow).
+   * Media queries key off the iframe viewport, so hosts embedding the widget
+   * in a narrow column get the stacked layout automatically. */
   .shell { display:grid; grid-template-columns:1fr; gap:16px; align-items:start; }
-  @media (min-width:620px) { .shell { grid-template-columns:1fr 224px; } }
+  @media (min-width:620px) { .shell { grid-template-columns:minmax(0,1fr) 248px; gap:24px; } }
+  /* Stacked layout: once the visitor opens the form, it takes over the row —
+   * no calendar + form scroll marathon. */
+  @media (max-width:619px) { .shell.form-open .cal-wrap { display:none; } }
   .cal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
   .cal-title { font-weight:600; font-size:15px; }
   .cal-nav { display:flex; gap:4px; }
   .cal-nav button { width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center; border:0; background:transparent; border-radius:999px; font-size:18px; line-height:1; cursor:pointer; color:var(--snap-text); padding:0; }
   .cal-nav button:hover { background:color-mix(in srgb, var(--snap-text) 8%, transparent); }
-  .grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
+  .grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px 2px; }
   .dow { text-align:center; font-size:11px; text-transform:uppercase; color:var(--snap-muted); padding:2px 0; }
-  .day { aspect-ratio:1/1; width:100%; max-width:40px; margin:0 auto; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; border:1px solid transparent; border-radius:999px; background:transparent; font:inherit; cursor:pointer; color:var(--snap-text); padding:0; }
-  .day:disabled { color:#c4c7cc; cursor:default; }
+  .day { aspect-ratio:1/1; width:100%; max-width:42px; margin:0 auto; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; border:1px solid transparent; border-radius:999px; background:transparent; font:inherit; cursor:pointer; color:var(--snap-text); padding:0; }
+  .day:disabled { color:color-mix(in srgb, var(--snap-text) 28%, var(--snap-bg)); cursor:default; }
   .day.open { color:var(--snap-text); }
   .day.open:hover { background:color-mix(in srgb, var(--snap-accent) 12%, var(--snap-bg)); }
   .day.selected { background:var(--snap-accent); color:#fff; }
@@ -96,10 +103,13 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
   .day .dot { width:4px; height:4px; border-radius:999px; background:var(--snap-accent); }
   .day.selected .dot { background:#fff; }
   .panel { border:1px solid var(--snap-border); background:var(--snap-surface); border-radius:calc(var(--snap-radius) + 4px); padding:16px; }
-  .panel-title { font-size:15px; font-weight:600; margin:0 0 10px; }
-  .slots-grid { display:flex; flex-direction:column; gap:6px; max-height:264px; overflow-y:auto; }
-  .slot { border:1px solid var(--snap-border); background:var(--snap-bg); border-radius:var(--snap-radius); padding:8px 12px; font:inherit; font-size:13px; cursor:pointer; text-align:center; }
-  .slot:hover, .slot.sel { border-color:var(--snap-accent); background:color-mix(in srgb, var(--snap-accent) 8%, var(--snap-bg)); }
+  .panel-title { margin:0 0 10px; font-size:15px; font-weight:600; color:var(--snap-text); }
+  .slots { display:flex; flex-direction:column; gap:8px; max-height:322px; overflow-y:auto; }
+  .slot { border:1px solid var(--snap-border); background:var(--snap-bg); border-radius:var(--snap-radius); padding:9px 12px; font:inherit; font-size:13px; cursor:pointer; text-align:center; color:var(--snap-text); }
+  .slot:hover { border-color:var(--snap-accent); }
+  .back { display:inline-flex; align-items:center; border:0; background:transparent; padding:2px 6px; margin:0 0 4px -6px; border-radius:6px; font:inherit; font-size:13px; color:var(--snap-muted); cursor:pointer; }
+  .back:hover { color:var(--snap-text); background:color-mix(in srgb, var(--snap-text) 7%, transparent); }
+  .slot-summary { margin:0 0 4px; padding:8px 12px; border:1px solid color-mix(in srgb, var(--snap-accent) 45%, var(--snap-border)); border-radius:var(--snap-radius); background:color-mix(in srgb, var(--snap-accent) 8%, var(--snap-bg)); font-size:13px; font-weight:600; text-align:center; color:var(--snap-text); }
   label { display:block; font-size:13px; font-weight:500; margin:10px 0 4px; color:var(--snap-text); }
   input, textarea { width:100%; padding:8px 12px; border:1px solid var(--snap-border); border-radius:var(--snap-radius); font:inherit; background:var(--snap-bg); color:var(--snap-text); }
   input:focus, textarea:focus { outline:2px solid color-mix(in srgb, var(--snap-accent) 50%, transparent); border-color:var(--snap-accent); }
@@ -116,8 +126,8 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
 <body>
   <div class="brand">${logo}<span class="tz" id="visitor-tz"></span></div>
 
-  <div class="shell">
-  <div>
+  <div class="shell" id="shell">
+  <div class="cal-wrap">
   <div class="cal-head">
     <span class="cal-title" id="cal-title"></span>
     <div class="cal-nav" role="group" aria-label="Navigate months">
@@ -131,9 +141,13 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
   </div>
 
   <div class="panel" id="panel" hidden>
-    <p class="muted" id="panel-title"></p>
-    <div class="slots-grid" id="slots"></div>
+    <div id="times-view">
+      <p class="panel-title" id="panel-title"></p>
+      <div class="slots" id="slots"></div>
+    </div>
     <form id="book-form" hidden novalidate>
+      <button type="button" class="back" id="back-btn">‹ Back</button>
+      <p class="slot-summary" id="slot-summary"></p>
       <label for="b-name">Your name</label><input id="b-name" required autocomplete="name" />
       <label for="b-email">Email</label><input id="b-email" type="email" required autocomplete="email" />
       <label for="b-phone">Phone (optional)</label><input id="b-phone" type="tel" autocomplete="tel" />
@@ -161,9 +175,19 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
   var selectedDay = null, selectedSlot = null;
   var tsToken = "";
   var SITE_KEY = ${JSON.stringify(siteKey)};
+
+  var shell = document.getElementById("shell");
+  var panel = document.getElementById("panel");
+  var timesView = document.getElementById("times-view");
+  var form = document.getElementById("book-form");
+  var slotsWrap = document.getElementById("slots");
+  var msg = document.getElementById("msg");
+
   function initTs() {
+    // size:"compact" (130px) — the normal 300px widget overflows the 214px
+    // times panel and forces a horizontal scrollbar inside the iframe.
     if (SITE_KEY && window.turnstile && !document.getElementById("ts").hasChildNodes()) {
-      turnstile.render("#ts", { sitekey: SITE_KEY, callback: function (t) { tsToken = t; } });
+      turnstile.render("#ts", { sitekey: SITE_KEY, callback: function (t) { tsToken = t; }, size: "compact" });
     }
   }
 
@@ -173,7 +197,12 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
   tzEl.textContent = visitorTz === tz ? tz : "times in " + tz;
 
   function postHeight() {
-    parent.postMessage({ type: "snap:height", height: document.documentElement.scrollHeight }, hostOrigin || "*");
+    // body.scrollHeight = true content height, independent of the iframe's
+    // current viewport height (documentElement.scrollHeight is floored at
+    // the viewport, which makes host height syncs that add padding grow
+    // without bound — and never shrink back).
+    var h = (document.body && document.body.scrollHeight) || document.documentElement.scrollHeight;
+    parent.postMessage({ type: "snap:height", height: h }, hostOrigin || "*");
   }
   window.addEventListener("load", postHeight);
   window.addEventListener("resize", postHeight);
@@ -191,6 +220,35 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
   }
   function monthLabel(month) {
     return new Date(month + "-01T12:00:00Z").toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
+  }
+  function dayLabel(date) {
+    return new Date(date + "T12:00:00Z").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" });
+  }
+
+  function clearMsg() { msg.className = "msg"; msg.textContent = ""; }
+
+  /* Panel views: the times list and the booking form swap in place; the
+   * calendar column stays put so Back really does come back to it. */
+  function showTimes() {
+    timesView.hidden = false;
+    form.hidden = true;
+    shell.classList.remove("form-open");
+    clearMsg();
+  }
+  function showForm() {
+    timesView.hidden = true;
+    form.hidden = false;
+    shell.classList.add("form-open");
+    clearMsg();
+    initTs();
+    // Turnstile injects its iframe asynchronously, after this frame's height
+    // was already reported — re-measure when it lands (and once late, in
+    // case the challenge script itself was still loading).
+    if (window.MutationObserver && !showForm.tsObs) {
+      showForm.tsObs = new MutationObserver(function () { setTimeout(postHeight, 50); });
+      showForm.tsObs.observe(document.getElementById("ts"), { childList: true, subtree: true });
+    }
+    setTimeout(postHeight, 400);
   }
 
   function render() {
@@ -232,26 +290,33 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
 
   function selectDay(date, slots) {
     selectedDay = date; selectedSlot = null;
-    document.getElementById("book-form").hidden = true;
-    var msg = document.getElementById("msg"); msg.className = "msg";
-    var panel = document.getElementById("panel"); panel.hidden = false;
-    document.getElementById("panel-title").textContent = new Date(date + "T12:00:00Z").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" });
-    var wrap = document.getElementById("slots"); wrap.innerHTML = "";
+    panel.hidden = false;
+    showTimes();
+    document.getElementById("panel-title").textContent = dayLabel(date);
+    slotsWrap.innerHTML = "";
     slots.forEach(function (iso) {
       var b = document.createElement("button");
       b.className = "slot"; b.type = "button"; b.textContent = fmtTime(iso);
       b.addEventListener("click", function () {
-        Array.prototype.forEach.call(wrap.children, function (c) { c.classList.remove("sel"); });
-        b.classList.add("sel");
         selectedSlot = iso;
-        document.getElementById("book-form").hidden = false;
-        initTs();
+        document.getElementById("slot-summary").textContent = dayLabel(date) + " · " + fmtTime(iso);
+        showForm();
+        document.getElementById("b-name").focus();
         postHeight();
       });
-      wrap.appendChild(b);
+      slotsWrap.appendChild(b);
     });
     render();
+    postHeight();
   }
+
+  document.getElementById("back-btn").addEventListener("click", function () {
+    selectedSlot = null;
+    showTimes();
+    var first = slotsWrap.querySelector(".slot");
+    if (first) first.focus();
+    postHeight();
+  });
 
   function load(month) {
     if (data.month === month && data.days) return Promise.resolve();
@@ -286,7 +351,7 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
     if (!selectedSlot) return;
     var btn = document.getElementById("book-btn");
     btn.disabled = true;
-    var msg = document.getElementById("msg"); msg.className = "msg"; msg.textContent = "";
+    clearMsg();
     var f = new FormData(e.target);
     try {
       var res = await fetch(origin + "/api/embed/bookings?key=" + encodeURIComponent(key), {
@@ -314,26 +379,35 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
           try { window.top.location.href = body.checkoutUrl; } catch (e) { /* no referrer + nested: loader handles */ }
         }
       } else if (res.ok) {
-        document.getElementById("panel").hidden = true;
+        // Confirmed: collapse the panel to the success note. (The message
+        // lives inside the panel, so the panel itself must stay visible.)
+        timesView.hidden = true;
+        form.hidden = true;
+        shell.classList.remove("form-open");
+        selectedDay = null; selectedSlot = null;
         msg.className = "msg ok";
         msg.textContent = "Booked! A confirmation email is on its way to you.";
         // Bust the month cache so the just-booked slot disappears.
         var booked = data.month;
         data = { month: null, days: null };
         load(booked);
-      } else if (body.error === "captcha_failed") {
+      } else if (body.error === "slot_unavailable" || body.error === "conflict") {
+        // The picked slot is gone — drop both views and let them re-pick
+        // from a freshly loaded month.
+        timesView.hidden = true;
+        form.hidden = true;
+        shell.classList.remove("form-open");
+        selectedDay = null; selectedSlot = null;
         msg.className = "msg err";
-        msg.textContent = "Verification failed — please try again.";
-        btn.disabled = false;
+        msg.textContent = "That slot was just taken — please pick another.";
+        // Bust the month cache so the stale slot disappears immediately.
+        var gone = data.month;
+        data = { month: null, days: null };
+        load(gone);
       } else {
+        // Verification/payment-form errors keep the form open for a retry.
         msg.className = "msg err";
-        if (body.error === "slot_unavailable" || body.error === "conflict") {
-          msg.textContent = "That slot was just taken — please pick another.";
-          // Bust the month cache so the stale slot disappears immediately.
-          var gone = data.month;
-          data = { month: null, days: null };
-          load(gone);
-        } else msg.textContent = body.error === "studio_booking_limit"
+        msg.textContent = body.error === "studio_booking_limit"
           ? "This studio can't take more bookings right now — please contact them directly."
           : body.error === "captcha_failed"
           ? "Verification failed — please try again."

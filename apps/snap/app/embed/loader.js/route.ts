@@ -141,7 +141,8 @@ const LOADER_JS = `(function () {
       modal.setAttribute("role", "dialog");
       modal.setAttribute("aria-modal", "true");
       modal.setAttribute("aria-label", "Booking calendar");
-      modal.setAttribute("style", "background:#fff;border-radius:16px;max-width:560px;width:100%;max-height:calc(100vh - 40px);overflow:auto;position:relative;");
+      // Wide enough for the widget's side-by-side calendar + times panes.
+      modal.setAttribute("style", "background:#fff;border-radius:16px;max-width:720px;width:100%;max-height:calc(100vh - 40px);overflow:auto;position:relative;");
       var close = document.createElement("button");
       close.type = "button";
       close.setAttribute("aria-label", "Close");
