@@ -151,3 +151,144 @@ export async function setStudioStripeAccount(
     .set({ stripeAccountId: accountId, stripeConnectState: "pending", updatedAt: new Date() })
     .where(eq(schema.studioProfiles.organizationId, organizationId));
 }
+
+/* ---------------- Multi-studio family (WEB-217) ---------------- */
+
+export type UserStudio = {
+  organizationId: string;
+  name: string;
+  role: string;
+  /** Parent link — null = family root (or standalone). */
+  parentOrganizationId: string | null;
+};
+
+/** Every studio the user has a membership in, with its family link — feeds
+ * the dashboard studio switcher. */
+export async function listUserStudios(userId: string): Promise<UserStudio[]> {
+  const db = getDb();
+  const rows = await db
+    .select({
+      organizationId: schema.member.organizationId,
+      role: schema.member.role,
+      name: schema.studioProfiles.studioName,
+      parent: schema.organization.parentOrganizationId,
+    })
+    .from(schema.member)
+    .innerJoin(schema.organization, eq(schema.organization.id, schema.member.organizationId))
+    .leftJoin(schema.studioProfiles, eq(schema.studioProfiles.organizationId, schema.member.organizationId))
+    .where(eq(schema.member.userId, userId));
+  return rows.map((r) => ({
+    organizationId: r.organizationId,
+    name: r.name ?? "Studio",
+    role: r.role,
+    parentOrganizationId: r.parent ?? null,
+  }));
+}
+
+/** Create a new studio inside the caller's family: full org + owner
+ * membership + fresh profile/embed key (reusing the onboarding path), then
+ * linked to the family root. Caller gates the tier's studio limit. */
+export async function createFamilyStudio(params: {
+  userId: string;
+  rootOrganizationId: string;
+  studioName: string;
+  timezone: string;
+  contactEmail?: string;
+}): Promise<{ organizationId: string; slug: string; embedKey: string }> {
+  const db = getDb();
+  const created = await createStudioForUser({
+    userId: params.userId,
+    studioName: params.studioName,
+    timezone: params.timezone,
+    contactEmail: params.contactEmail,
+    plan: "free", // children carry no subscription — plan resolves via the root
+  });
+  await db
+    .update(schema.organization)
+    .set({ parentOrganizationId: params.rootOrganizationId, updatedAt: new Date() })
+    .where(eq(schema.organization.id, created.organizationId));
+  return { organizationId: created.organizationId, slug: created.slug, embedKey: created.embedKey };
+}
+
+/** Link an EXISTING org (the user owns) into the family. One level only:
+ * the target must be standalone (no parent, no children) and not the root. */
+export async function linkStudioToFamily(params: {
+  rootOrganizationId: string;
+  organizationId: string;
+  actorUserId: string;
+}): Promise<{ ok: true } | { ok: false; error: "cycle" | "has_family" }> {
+  const db = getDb();
+  if (params.organizationId === params.rootOrganizationId) return { ok: false, error: "cycle" };
+  const target = (
+    await db
+      .select({ parent: schema.organization.parentOrganizationId })
+      .from(schema.organization)
+      .where(eq(schema.organization.id, params.organizationId))
+      .limit(1)
+  )[0];
+  if (target?.parent) return { ok: false, error: "has_family" };
+  const children = await db
+    .select({ id: schema.organization.id })
+    .from(schema.organization)
+    .where(eq(schema.organization.parentOrganizationId, params.organizationId))
+    .limit(1);
+  if (children.length) return { ok: false, error: "has_family" };
+  // Defensive: the root must not already be the target's child (cycle).
+  const rootParent = (
+    await db
+      .select({ parent: schema.organization.parentOrganizationId })
+      .from(schema.organization)
+      .where(eq(schema.organization.id, params.rootOrganizationId))
+      .limit(1)
+  )[0];
+  if (rootParent?.parent === params.organizationId) return { ok: false, error: "cycle" };
+
+  await db
+    .update(schema.organization)
+    .set({ parentOrganizationId: params.rootOrganizationId, updatedAt: new Date() })
+    .where(eq(schema.organization.id, params.organizationId));
+  await db.insert(schema.auditLog).values({
+    id: crypto.randomUUID(),
+    organizationId: params.rootOrganizationId,
+    actorType: "user",
+    actorId: params.actorUserId,
+    action: "studio.linked",
+    targetType: "organization",
+    targetId: params.organizationId,
+  });
+  return { ok: true };
+}
+
+/** Unlink a child studio from the family — it becomes standalone (Free
+ * until separately subscribed). Only children can be unlinked. */
+export async function unlinkStudioFromFamily(params: {
+  rootOrganizationId: string;
+  organizationId: string;
+  actorUserId: string;
+}): Promise<{ ok: true } | { ok: false; error: "not_a_child" | "cycle" }> {
+  const db = getDb();
+  if (params.organizationId === params.rootOrganizationId) return { ok: false, error: "cycle" };
+  const target = (
+    await db
+      .select({ parent: schema.organization.parentOrganizationId })
+      .from(schema.organization)
+      .where(eq(schema.organization.id, params.organizationId))
+      .limit(1)
+  )[0];
+  if (target?.parent !== params.rootOrganizationId) return { ok: false, error: "not_a_child" };
+
+  await db
+    .update(schema.organization)
+    .set({ parentOrganizationId: null, updatedAt: new Date() })
+    .where(eq(schema.organization.id, params.organizationId));
+  await db.insert(schema.auditLog).values({
+    id: crypto.randomUUID(),
+    organizationId: params.rootOrganizationId,
+    actorType: "user",
+    actorId: params.actorUserId,
+    action: "studio.unlinked",
+    targetType: "organization",
+    targetId: params.organizationId,
+  });
+  return { ok: true };
+}

@@ -10,7 +10,7 @@
  * Storage is 97–98.5% of COGS; the guardrails below come from the worst-case
  * simulation: hard upload lock at 2× included bytes (overage zone between cap
  * and lock), monthly upload bytes ≤ 2× cap, and a 250k file cap per org. */
-import { and, eq, gte, sql } from "drizzle-orm";
+import { and, eq, gte, inArray, sql } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
@@ -40,6 +40,9 @@ export type PlanDef = {
   whiteLabel: boolean;
   maxActiveBookings: number | null;
   maxActiveGalleries: number | null;
+  /** WEB-217 multi-studio: studios in the family incl. the parent (null =
+   * unlimited). Non-negotiable condition: quotas POOL across the family. */
+  maxLinkedStudios: number | null;
   /** OTP emails per client per rolling 30d (enforced in gallery-auth). */
   otpCapPerUser: number;
 };
@@ -53,28 +56,28 @@ export const PLANS: Record<PlanId, PlanDef> = {
     storageBytes: 20 * GB, hardLockBytes: 40 * GB, overagePerGbUsd: 0,
     monthlyUploadBytes: 40 * GB, fileCap: 250_000,
     jpgOnly: true, rawAllowed: false, rawTrialBytes: 3 * GB, whiteLabel: false,
-    maxActiveBookings: null, maxActiveGalleries: 5, otpCapPerUser: 30,
+    maxActiveBookings: null, maxActiveGalleries: 5, maxLinkedStudios: 1, otpCapPerUser: 30,
   },
   lite: {
     id: "lite", name: "Lite", priceMonthlyUsd: 15,
     storageBytes: 150 * GB, hardLockBytes: 300 * GB, overagePerGbUsd: 0,
     monthlyUploadBytes: 300 * GB, fileCap: 250_000,
     jpgOnly: false, rawAllowed: true, rawTrialBytes: null, whiteLabel: false,
-    maxActiveBookings: null, maxActiveGalleries: 15, otpCapPerUser: 30,
+    maxActiveBookings: null, maxActiveGalleries: 15, maxLinkedStudios: 3, otpCapPerUser: 30,
   },
   studio: {
     id: "studio", name: "Studio", priceMonthlyUsd: 29,
     storageBytes: 500 * GB, hardLockBytes: TB, overagePerGbUsd: 0.1,
     monthlyUploadBytes: TB, fileCap: 250_000,
     jpgOnly: false, rawAllowed: true, rawTrialBytes: null, whiteLabel: true,
-    maxActiveBookings: null, maxActiveGalleries: null, otpCapPerUser: 30,
+    maxActiveBookings: null, maxActiveGalleries: null, maxLinkedStudios: null, otpCapPerUser: 30,
   },
   pro: {
     id: "pro", name: "Pro", priceMonthlyUsd: 59,
     storageBytes: 2 * TB, hardLockBytes: 4 * TB, overagePerGbUsd: 0.1,
     monthlyUploadBytes: 4 * TB, fileCap: 250_000,
     jpgOnly: false, rawAllowed: true, rawTrialBytes: null, whiteLabel: true,
-    maxActiveBookings: null, maxActiveGalleries: null, otpCapPerUser: 30,
+    maxActiveBookings: null, maxActiveGalleries: null, maxLinkedStudios: null, otpCapPerUser: 30,
   },
 };
 
@@ -85,7 +88,9 @@ export function planDef(plan: string | null | undefined): PlanDef {
 export type Entitlements = PlanDef & {
   organizationId: string;
   planStatus: string;
-  /** Live usage (D1 sums — can't drift from the ledger). */
+  /** Live usage (D1 sums — can't drift from the ledger), POOLED across the
+   * whole studio family (WEB-217): storage, uploads, galleries, bookings
+   * and file counts all share the parent's single subscription. */
   storageUsedBytes: number;
   fileCount: number;
   monthUploadBytes: number;
@@ -97,13 +102,49 @@ export type Entitlements = PlanDef & {
   storagePct: number; // of included cap
   inOverageZone: boolean; // cap ≤ used < hardLock
   atHardLock: boolean; // used ≥ hardLock
+  /** WEB-217: the family — root owns the subscription; ids = root + children. */
+  rootOrganizationId: string;
+  familyOrgIds: string[];
+  familyStudioCount: number;
+  /** True when this org is a child (plan surfaces point at the parent bill). */
+  isFamilyChild: boolean;
 };
 
 const ACTIVE_BOOKING_STATUSES = ["pending", "confirmed"];
 
-/** One helper every gate reads: plan + live usage + derived flags. */
+/** WEB-217: resolve a studio family — walk up (defensively capped) parent
+ * links to the root, then take the root's direct children. Families are one
+ * level deep by construction (link APIs never parent a parent). */
+export async function resolveFamily(
+  organizationId: string,
+): Promise<{ rootId: string; ids: string[] }> {
+  const db = getDb();
+  let current = organizationId;
+  for (let hop = 0; hop < 5; hop++) {
+    const row = (
+      await db
+        .select({ parent: schema.organization.parentOrganizationId })
+        .from(schema.organization)
+        .where(eq(schema.organization.id, current))
+        .limit(1)
+    )[0];
+    if (!row?.parent) break;
+    current = row.parent;
+  }
+  const children = await db
+    .select({ id: schema.organization.id })
+    .from(schema.organization)
+    .where(eq(schema.organization.parentOrganizationId, current));
+  return { rootId: current, ids: [current, ...children.map((c) => c.id)] };
+}
+
+/** One helper every gate reads: plan + live usage + derived flags. The plan
+ * comes from the family ROOT's studio_profile; usage sums across the whole
+ * family so quotas genuinely pool (Lite × 3 studios = ONE 150 GB envelope,
+ * not three — the pricing condition for multi-studio). */
 export async function getPlanEntitlements(organizationId: string): Promise<Entitlements | null> {
   const db = getDb();
+  const family = await resolveFamily(organizationId);
   const profile = (
     await db
       .select({
@@ -111,7 +152,7 @@ export async function getPlanEntitlements(organizationId: string): Promise<Entit
         planStatus: schema.studioProfiles.planStatus,
       })
       .from(schema.studioProfiles)
-      .where(eq(schema.studioProfiles.organizationId, organizationId))
+      .where(eq(schema.studioProfiles.organizationId, family.rootId))
       .limit(1)
   )[0];
   if (!profile) return null;
@@ -128,11 +169,11 @@ export async function getPlanEntitlements(organizationId: string): Promise<Entit
         rawBytes: sql<number>`coalesce(sum(case when ${schema.assets.kind} = 'raw' then ${schema.assets.bytes} else 0 end), 0)`,
       })
       .from(schema.assets)
-      .where(eq(schema.assets.organizationId, organizationId)),
+      .where(inArray(schema.assets.organizationId, family.ids)),
     db
       .select({ bytes: sql<number>`coalesce(sum(${schema.assets.bytes}), 0)` })
       .from(schema.assets)
-      .where(and(eq(schema.assets.organizationId, organizationId), gte(schema.assets.createdAt, monthStart))),
+      .where(and(inArray(schema.assets.organizationId, family.ids), gte(schema.assets.createdAt, monthStart))),
     // Expired grants never flip status in the DB (grantLive() evaluates
     // expiresAt on read) — the slot count honors expiry the same way, so a
     // lapsed gallery releases the tier slot the moment it lapses.
@@ -141,7 +182,7 @@ export async function getPlanEntitlements(organizationId: string): Promise<Entit
       .from(schema.shareGrants)
       .where(
         and(
-          eq(schema.shareGrants.organizationId, organizationId),
+          inArray(schema.shareGrants.organizationId, family.ids),
           eq(schema.shareGrants.status, "active"),
           sql`(${schema.shareGrants.expiresAt} IS NULL OR ${schema.shareGrants.expiresAt} > ${Math.floor(Date.now() / 1000)})`,
         ),
@@ -149,7 +190,7 @@ export async function getPlanEntitlements(organizationId: string): Promise<Entit
     db
       .select({ n: sql<number>`count(*)` })
       .from(schema.bookings)
-      .where(and(eq(schema.bookings.organizationId, organizationId), sql`${schema.bookings.status} IN ('pending','confirmed')`)),
+      .where(and(inArray(schema.bookings.organizationId, family.ids), sql`${schema.bookings.status} IN ('pending','confirmed')`)),
   ]);
 
   const def = planDef(profile.plan);
@@ -168,5 +209,9 @@ export async function getPlanEntitlements(organizationId: string): Promise<Entit
     storagePct: Math.round(pct * 10) / 10,
     inOverageZone: storageUsedBytes >= def.storageBytes && storageUsedBytes < def.hardLockBytes,
     atHardLock: storageUsedBytes >= def.hardLockBytes,
+    rootOrganizationId: family.rootId,
+    familyOrgIds: family.ids,
+    familyStudioCount: family.ids.length,
+    isFamilyChild: family.rootId !== organizationId,
   };
 }

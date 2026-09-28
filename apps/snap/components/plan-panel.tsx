@@ -45,6 +45,10 @@ type PlanStatus = {
   rawTrialBytes: number | null;
   rawBytesUsed: number;
   downgradeReversible: boolean;
+  /** WEB-217 multi-studio family. */
+  familyStudioCount: number;
+  maxLinkedStudios: number | null;
+  isFamilyChild: boolean;
 };
 
 const GB = 1024 ** 3;
@@ -265,6 +269,11 @@ export function PlanPanel({ returnHint }: { returnHint?: string }) {
           <span>{st.fileCount.toLocaleString()} / {st.fileCap.toLocaleString()} files</span>
         </div>
         {overageNote && <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">{overageNote}</p>}
+        {st.isFamilyChild && (
+          <p className="mt-2 text-xs text-ink-tertiary">
+            Quotas pool across your studio family — this bill covers every studio under one subscription.
+          </p>
+        )}
         {st.atHardLock && (
           <p className="mt-1 text-xs text-destructive">
             Uploads are locked — downloads and galleries keep working. Upgrade to continue.
@@ -279,6 +288,9 @@ export function PlanPanel({ returnHint }: { returnHint?: string }) {
         </span>
         <span className="rounded-full bg-surface-2 px-2.5 py-1 text-ink-muted">
           {st.maxActiveBookings === null ? "Unlimited bookings" : `${st.activeBookings}/${st.maxActiveBookings} active bookings`}
+        </span>
+        <span className="rounded-full bg-surface-2 px-2.5 py-1 text-ink-muted">
+          {st.maxLinkedStudios === null ? "Unlimited studios" : `${st.familyStudioCount}/${st.maxLinkedStudios} studios`}
         </span>
         {st.rawAllowed ? (
           <span className="rounded-full bg-surface-2 px-2.5 py-1 text-ink-muted">RAW uploads</span>

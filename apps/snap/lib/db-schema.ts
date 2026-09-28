@@ -92,10 +92,15 @@ export const organization = sqliteTable(
     slug: text("slug").notNull(),
     logo: text("logo"),
     metadata: text("metadata"),
+    /** WEB-217 multi-studio: family link — the parent org owns the
+     * subscription; children are full orgs whose quotas pool into it.
+     * Exactly one level deep (a parent never has a parent). FK lives in the
+     * migration DDL (ON DELETE SET NULL), same as parent_grant_id. */
+    parentOrganizationId: text("parent_organization_id"),
     createdAt: ts("created_at"),
     updatedAt: ts("updated_at"),
   },
-  (t) => [uniqueIndex("organization_slug_unique").on(t.slug)],
+  (t) => [uniqueIndex("organization_slug_unique").on(t.slug), index("organization_parent_idx").on(t.parentOrganizationId)],
 );
 
 export const member = sqliteTable(

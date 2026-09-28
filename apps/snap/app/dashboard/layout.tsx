@@ -5,7 +5,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { getOrgContext } from "@/lib/session";
-import { getStudioProfile } from "@/lib/repos/studios";
+import { getStudioProfile, listUserStudios } from "@/lib/repos/studios";
 import { getPlanEntitlements } from "@/lib/plans";
 import { SignOutButton } from "@/components/sign-out-button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -13,6 +13,7 @@ import { DormancyBanner } from "@/components/dormancy-banner";
 import { ConfirmProvider } from "@/components/confirm-provider";
 import { DashboardNavLinks } from "@/components/dashboard-nav";
 import { MobileNav } from "@/components/mobile-nav";
+import { StudioSwitcher } from "@/components/studio-switcher";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const ctx = await getOrgContext();
@@ -30,6 +31,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
         : `Storage at ${ent.storagePct}% of your ${ent.name} plan — uploads lock at 2× your cap.`
       : null;
 
+  // WEB-217: studio family — the switcher (and its add/link affordances).
+  const studios = await listUserStudios(ctx.user.id);
+
   // WEB-159: cold-storage banner for returning dormant studios.
   const { getDormancyBanner } = await import("@/lib/dormancy");
   const dormancy = await getDormancyBanner(ctx.organizationId);
@@ -41,9 +45,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
        * the content column, so the theme/logout block stays on screen while
        * long pages scroll; the nav scrolls internally on short viewports. */}
       <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col overflow-y-auto border-r border-hairline bg-surface-1 md:flex">
-        <div className="flex h-14 shrink-0 items-center gap-2 border-b border-hairline px-4">
-          <span aria-hidden className="inline-block h-4 w-4 rounded-[4px] bg-primary" />
-          <span className="truncate text-sm font-medium text-ink">{profile.studioName}</span>
+        <div className="flex h-14 shrink-0 items-center border-b border-hairline px-3">
+          <StudioSwitcher
+            studios={studios}
+            currentOrganizationId={ctx.organizationId}
+            rootOrganizationId={ent?.rootOrganizationId ?? ctx.organizationId}
+            familyStudioCount={ent?.familyStudioCount ?? 1}
+            maxLinkedStudios={ent?.maxLinkedStudios ?? 1}
+          />
         </div>
         <DashboardNavLinks />
         <div className="mt-auto flex flex-col gap-0.5 border-t border-hairline p-2">

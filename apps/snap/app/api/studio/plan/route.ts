@@ -1,7 +1,12 @@
 /* Plan status + changes (WEB-149/151/152). GET returns entitlements + billing
  * state; POST {plan} starts a checkout (or in-place swap / scheduled
  * downgrade), {plan:"free"} cancels at period end — or flips instantly when
- * no subscription exists — and {resume:true} undoes a scheduled downgrade. */
+ * no subscription exists — and {resume:true} undoes a scheduled downgrade.
+ *
+ * WEB-217 multi-studio: ONE subscription per family, always on the root org.
+ * Every billing read/write below resolves the family root first, so a child
+ * studio upgrading from its dashboard changes the whole family's bill (and
+ * the Stripe webhook writes the root, whose metadata the checkout carried). */
 import { getOrgContext } from "@/lib/session";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { getPlanEntitlements } from "@/lib/plans";
@@ -21,7 +26,8 @@ export async function GET() {
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
   const ent = await getPlanEntitlements(ctx.organizationId);
   if (!ent) return Response.json({ error: "no_studio" }, { status: 404 });
-  const profile = await getStudioProfile(ctx.organizationId);
+  // Billing state lives on the root profile (subscription, period, pending).
+  const profile = await getStudioProfile(ent.rootOrganizationId);
   return Response.json({
     plan: ent.id,
     planName: ent.name,
@@ -46,16 +52,23 @@ export async function GET() {
     rawTrialBytes: ent.rawTrialBytes ?? null,
     rawBytesUsed: ent.rawBytesUsed,
     whiteLabel: ent.whiteLabel,
+    familyStudioCount: ent.familyStudioCount,
+    maxLinkedStudios: ent.maxLinkedStudios,
+    isFamilyChild: ent.isFamilyChild,
     hasSubscription: Boolean(profile?.stripeSubscriptionId),
     planPeriodEnd: profile?.planPeriodEnd ?? null,
     pendingPlan: profile?.pendingPlan ?? null,
-    downgradeReversible: await downgradeReversible(ctx.organizationId),
+    downgradeReversible: await downgradeReversible(ent.rootOrganizationId),
   });
 }
 
 export async function POST(req: Request) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const ent = await getPlanEntitlements(ctx.organizationId);
+  if (!ent) return Response.json({ error: "no_studio" }, { status: 404 });
+  // One bill per family: all mutations target the root org.
+  const rootOrgId = ent.rootOrganizationId;
 
   let body: { plan?: string; resume?: boolean; timing?: "now" | "cycle"; preview?: string };
   try {
@@ -70,24 +83,24 @@ export async function POST(req: Request) {
     if (body.preview !== "lite" && body.preview !== "studio" && body.preview !== "pro") {
       return Response.json({ error: "invalid_plan" }, { status: 400 });
     }
-    const preview = await previewPlanChange(ctx.organizationId, body.preview);
+    const preview = await previewPlanChange(rootOrgId, body.preview);
     return Response.json(preview, { status: preview.ok ? 200 : 409 });
   }
 
   if (body.resume) {
-    const ok = await resumePlan(ctx.organizationId);
+    const ok = await resumePlan(rootOrgId);
     return Response.json(ok ? { ok: true } : { error: "no_subscription" }, { status: ok ? 200 : 409 });
   }
 
   const plan = body.plan ?? "";
   if (plan === "free") {
-    const ok = await cancelPlanAtPeriodEnd(ctx.organizationId);
+    const ok = await cancelPlanAtPeriodEnd(rootOrgId);
     if (ok) {
       return Response.json({ ok: true, mode: "scheduled", message: "Plan downgrades to Free at the end of your billing period." });
     }
     // Grandfathered plan rows with no subscription behind them: nothing to
     // cancel — move to Free right now instead of erroring.
-    const flipped = await setPlanFreeImmediately(ctx.organizationId);
+    const flipped = await setPlanFreeImmediately(rootOrgId);
     return flipped
       ? Response.json({ ok: true, mode: "swapped", message: "Moved to the Free plan — you had no active subscription." })
       : Response.json({ error: "no_subscription" }, { status: 409 });
@@ -97,7 +110,7 @@ export async function POST(req: Request) {
   }
 
   const { url, mode, message } = await createPlanCheckout(
-    ctx.organizationId,
+    rootOrgId,
     plan,
     new URL(req.url).origin,
     body.timing === "now" ? "now" : "cycle",
