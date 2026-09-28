@@ -11,7 +11,10 @@
     "preview": "vinext build && wrangler dev --config dist/server/wrangler.json",
     "typecheck": "tsc --noEmit",
     "db:migrate": "wrangler d1 execute webcules-snap --local --file=./migrations/0018_contracts.sql",
-    "db:migrate:remote": "wrangler d1 execute webcules-snap --remote --file=./migrations/0018_contracts.sql"
+    "db:migrate:remote": "wrangler d1 execute webcules-snap --remote --file=./migrations/0018_contracts.sql",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@vinext/cloudflare": "latest",
@@ -32,6 +35,8 @@
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "latest",
+    "@cloudflare/vitest-plugin": "^1.3.0",
+    "@playwright/test": "1.54.1",
     "@tailwindcss/postcss": "latest",
     "@types/node": "latest",
     "@types/react": "latest",
@@ -42,6 +47,7 @@
     "tailwindcss": "latest",
     "typescript": "latest",
     "vite": "latest",
+    "vitest": "^4.1.11",
     "wrangler": "latest"
   },
   "pnpm": {

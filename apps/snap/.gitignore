@@ -9,3 +9,11 @@ next-env.d.ts
 .dev.vars
 worker-configuration.d.ts
 tsconfig.tsbuildinfo
+tests/e2e/.state/
+tests/e2e/.artifacts/
+tests/e2e/.seed.json
+tests/e2e/.seed.sql
+tests/e2e/.migrations-combined.sql
+tests/e2e/.server.log
+tests/e2e/.run.log
+test-results/

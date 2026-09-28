@@ -7,3 +7,7 @@ BETTER_AUTH_SECRET=generate-with-openssl-rand-base64-32
 
 # Inbound-email webhook (set once the Snap inbound route exists)
 SNAP_INBOUND_WEBHOOK_SECRET=
+
+# Local dev origin (auth cookies + trustedOrigins) — E2E relies on these.
+BETTER_AUTH_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=http://localhost:3000

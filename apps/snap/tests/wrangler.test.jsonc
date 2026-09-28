@@ -1,0 +1,35 @@
+/* Bindings for unit/integration tests — a slim copy of wrangler.jsonc with
+ * everything miniflare shouldn't spin up stripped (no main/assets/routes),
+ * no send_email binding (sendEmail() no-ops when env.EMAIL is absent), and
+ * no TURNSTILE_SECRET_KEY (verifyTurnstile() passes without a secret). */
+{
+  "name": "webcules-snap-test",
+  "compatibility_date": "2026-09-26",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "D1",
+      "database_name": "webcules-snap-test",
+      "database_id": "snap-test"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "R2",
+      "bucket_name": "snap-test"
+    }
+  ],
+  "vars": {
+    "NEXT_PUBLIC_APP_URL": "http://localhost:8899",
+    "BETTER_AUTH_URL": "http://localhost:8899",
+    "EMAIL_FROM": "Snap Test <test@snap.test>",
+    "GALLERY_OTP_MODE": "otp",
+    "R2_S3_ACCOUNT_ID": "test-account-id",
+    "FOUNDER_EMAILS": "founder@test.test",
+    // Fake S3 creds — aws4fetch presigning is local HMAC, never a network call.
+    "R2_S3_ACCESS_KEY_ID": "test-access-key",
+    "R2_S3_SECRET_ACCESS_KEY": "test-secret-key",
+    // Test-only secret — token encryption (AES-GCM under a derived key) needs one.
+    "BETTER_AUTH_SECRET": "test-secret-test-secret-test-secret-0123456789"
+  }
+}

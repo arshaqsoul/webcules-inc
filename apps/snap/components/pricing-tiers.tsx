@@ -1,87 +1,17 @@
 "use client";
 
-/* The single place Snap's public pricing lives. Every surface that shows
- * tiers — the landing page, /onboarding/plan, and Settings → Plan — reads
- * TIER_CARDS here, so a tier change is one edit. Enforcement limits stay in
- * lib/plans.ts (the single source of truth); this mirrors them for display
- * because that server module pulls in the DB and can't be imported from
- * client components. */
+/* Full marketing-style tier cards. mode="marketing" links each CTA to its
+ * signup URL; mode="onboarding" fires onChoose (checkout / dashboard) and
+ * marks the current plan. Settings → Plan keeps its own dense grid but
+ * sources the same TIER_CARDS data. The data itself lives in lib/tier-cards
+ * (pure, testable, no React). */
 import Link from "next/link";
 
 import { Button } from "@webcules/ui/components/button";
+import { TIER_CARDS, type TierCard, type TierId } from "@/lib/tier-cards";
 
-export type TierId = "free" | "lite" | "studio" | "pro";
-
-export type TierCard = {
-  id: TierId;
-  name: string;
-  /** Numeric price for dialogs and dense layouts (Settings → Plan). */
-  price: number;
-  priceLabel: string;
-  cadence: string;
-  tagline: string;
-  /** Compact spec line for dense surfaces ("20GB · RAW trial · 5 galleries"). */
-  spec: string;
-  features: string[];
-  highlight: boolean;
-  cta: string;
-  href: string;
-};
-
-export const TIER_CARDS: TierCard[] = [
-  {
-    id: "free",
-    name: "Free",
-    price: 0,
-    priceLabel: "$0",
-    cadence: "",
-    tagline: "Try the whole thing",
-    spec: "20GB · RAW trial · 5 galleries",
-    features: ["20 GB (incl. 3 GB RAW trial)", "Unlimited bookings", "5 active galleries", "Full CRM + pipeline"],
-    highlight: false,
-    cta: "Start free",
-    href: "/signup?plan=free",
-  },
-  {
-    id: "lite",
-    name: "Lite",
-    price: 15,
-    priceLabel: "$15",
-    cadence: "/mo",
-    tagline: "For part-timers growing",
-    spec: "150GB · RAW · 15 galleries",
-    features: ["150 GB storage", "Unlimited RAW Vault", "15 active galleries", "Bookings + payments"],
-    highlight: false,
-    cta: "Start Lite",
-    href: "/signup?plan=lite",
-  },
-  {
-    id: "studio",
-    name: "Studio",
-    price: 29,
-    priceLabel: "$29",
-    cadence: "/mo",
-    tagline: "The working pro's tier",
-    spec: "500GB · white-label · $0.10/GB",
-    features: ["500 GB, then $0.10/GB", "Unlimited galleries", "White-label everything", "RAW Vault + payment automations"],
-    highlight: true,
-    cta: "Start Studio",
-    href: "/signup?plan=studio",
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    price: 59,
-    priceLabel: "$59",
-    cadence: "/mo",
-    tagline: "Studios & teams",
-    spec: "2TB · white-label · $0.10/GB",
-    features: ["2 TB, then $0.10/GB", "Teams & permissions", "Contracts & e-sign", "Priority support"],
-    highlight: false,
-    cta: "Start Pro",
-    href: "/signup?plan=pro",
-  },
-];
+export { TIER_CARDS };
+export type { TierCard, TierId };
 
 /** Full marketing-style tier cards. mode="marketing" links each CTA to its
  * signup URL; mode="onboarding" fires onChoose (checkout / dashboard) and
