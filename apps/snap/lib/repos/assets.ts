@@ -19,6 +19,7 @@ const EXT_KIND: Record<string, (typeof ASKINDS)[number]> = {
   cr2: "raw", cr3: "raw", // Canon
   nef: "raw", nrw: "raw", // Nikon
   arw: "raw", srf: "raw", sr2: "raw", mrw: "raw", // Sony / Minolta
+  lrf: "raw", // Sony R1-era
   raf: "raw", // Fuji
   orf: "raw", // Olympus / OM System
   rw2: "raw", raw: "raw", // Panasonic (+ generic RAW containers)

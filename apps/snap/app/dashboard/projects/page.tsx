@@ -13,7 +13,7 @@ export const metadata = { title: "Projects" };
  * change, which flashed a skeleton on each project-hub tab switch. */
 export default function ProjectsPage() {
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex min-h-0 flex-1 flex-col gap-5">
       <div>
         <h1 className="text-2xl font-semibold tracking-[-0.6px] text-ink">Projects</h1>
         <p className="mt-1 text-sm text-ink-subtle">
@@ -59,9 +59,9 @@ async function Board() {
 
 function BoardSkeleton() {
   return (
-    <div className="grid grid-cols-1 gap-3 md:grid-cols-3 xl:grid-cols-6" aria-busy="true" aria-label="Loading projects">
+    <div className="-mx-6 flex min-h-0 flex-1 gap-3 overflow-hidden px-6" aria-busy="true" aria-label="Loading projects">
       {[0, 1, 2, 3, 4, 5].map((col) => (
-        <div key={col} className="flex min-w-[220px] flex-col gap-2 rounded-[12px] border border-hairline bg-surface-1 p-3">
+        <div key={col} className="flex w-[272px] shrink-0 flex-col gap-2 rounded-[12px] border border-hairline bg-surface-1 p-3 md:w-[300px]">
           <div className="flex items-center justify-between px-1">
             <div className="h-3 w-20 animate-pulse rounded bg-surface-2" />
             <div className="h-4 w-6 animate-pulse rounded-full bg-surface-2" />

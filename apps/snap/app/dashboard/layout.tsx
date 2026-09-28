@@ -3,6 +3,7 @@
  * studio profile yet). */
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { BookOpen } from "lucide-react";
 
 import { getOrgContext } from "@/lib/session";
 import { getStudioProfile, listUserStudios } from "@/lib/repos/studios";
@@ -54,8 +55,19 @@ export default async function DashboardLayout({ children }: { children: React.Re
             maxLinkedStudios={ent?.maxLinkedStudios ?? 1}
           />
         </div>
-        <DashboardNavLinks />
+        <DashboardNavLinks includeDocs={false} />
         <div className="mt-auto flex flex-col gap-0.5 border-t border-hairline p-2">
+          {/* Docs opens beside the app (external tab) — kept in the bottom
+           * utility group, above theme/logout, out of the studio nav. */}
+          <a
+            href="/docs/embeds"
+            target="_blank"
+            rel="noreferrer"
+            className="flex w-full items-center rounded-md px-2 py-1.5 text-sm text-ink-subtle transition-colors hover:bg-surface-2 hover:text-ink"
+          >
+            <BookOpen className="h-4 w-4 shrink-0" aria-hidden />
+            <span className="ml-2.5">Docs</span>
+          </a>
           <ThemeToggle />
           <SignOutButton />
         </div>
@@ -79,7 +91,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <DormancyBanner kind={dormancy.kind} objects={dormancy.objects} />
           </div>
         )}
-        <main className="flex-1 p-6">{children}</main>
+        {/* Flex column so page roots (flex-1) can fill the viewport height;
+         * [&>*]:min-w-0 keeps children shrinkable like block layout — without
+         * it a wide child forces main wider than the viewport. */}
+        <main className="flex flex-1 flex-col p-6 [&>*]:min-w-0">{children}</main>
       </div>
     </div>
     </ConfirmProvider>

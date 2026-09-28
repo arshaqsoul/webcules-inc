@@ -23,11 +23,12 @@ export function isActivePath(pathname: string, href: string): boolean {
   return href === "/dashboard" ? pathname === href : pathname.startsWith(href);
 }
 
-export function DashboardNavLinks({ onNavigate }: { onNavigate?: () => void }) {
+export function DashboardNavLinks({ onNavigate, includeDocs = true }: { onNavigate?: () => void; /** desktop aside groups Docs with theme/logout instead */ includeDocs?: boolean }) {
   const pathname = usePathname();
+  const items = includeDocs ? NAV_ITEMS : NAV_ITEMS.filter((i) => !i.href.startsWith("/docs"));
   return (
     <nav className="flex flex-1 flex-col gap-0.5 p-2">
-      {NAV_ITEMS.map((item) => {
+      {items.map((item) => {
         const active = isActivePath(pathname, item.href);
         // Docs lives outside the dashboard — open beside it, keep the session.
         if (item.href.startsWith("/docs")) {

@@ -72,7 +72,7 @@ export function KanbanBoard({ projects }: { projects: BoardProject[] }) {
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex min-h-0 flex-1 flex-col gap-3">
       {(error || notice) && (
         <p
           className={`rounded-md px-3 py-1.5 text-xs ${
@@ -86,7 +86,7 @@ export function KanbanBoard({ projects }: { projects: BoardProject[] }) {
        * fixed-width lanes never wrap or stack, the row scrolls (touch on
        * mobile), and -mx-6/px-6 bleeds to the main padding's edges so lanes
        * stay aligned with the rest of the content. */}
-      <div className="-mx-6 flex snap-x snap-proximity gap-3 overflow-x-auto px-6 pb-2">
+      <div className="-mx-6 flex min-h-0 flex-1 snap-x snap-proximity gap-3 overflow-x-auto px-6 pb-2">
         {COLUMNS.map((col) => {
           const cards = items.filter((p) => p.status === col.key);
           return (
@@ -99,13 +99,15 @@ export function KanbanBoard({ projects }: { projects: BoardProject[] }) {
               }}
               className="flex w-[272px] shrink-0 snap-start flex-col gap-2 rounded-[12px] border border-hairline bg-surface-1 p-3 md:w-[300px]"
             >
-              <div className="flex items-center justify-between px-1">
+              <div className="flex shrink-0 items-center justify-between px-1">
                 <span className="flex items-center gap-2 text-[13px] font-medium text-ink">
                   <span aria-hidden className="h-2 w-2 rounded-full" style={{ background: col.accent }} />
                   {col.label}
                 </span>
                 <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] text-ink-subtle">{cards.length}</span>
               </div>
+              {/* Lane body scrolls its cards; the lane itself fills the board height. */}
+              <div className="no-scrollbar flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
               {cards.length === 0 && (
                 <p className="px-1 py-4 text-center text-xs text-ink-tertiary">Drop here</p>
               )}
@@ -144,6 +146,7 @@ export function KanbanBoard({ projects }: { projects: BoardProject[] }) {
                   </div>
                 </div>
               ))}
+              </div>
             </div>
           );
         })}
