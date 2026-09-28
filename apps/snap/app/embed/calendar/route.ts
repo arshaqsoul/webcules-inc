@@ -476,9 +476,7 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
       } else {
         // Verification/payment-form errors keep the form open for a retry.
         msg.className = "msg err";
-        msg.textContent = body.error === "studio_booking_limit"
-          ? "This studio can't take more bookings right now — please contact them directly."
-          : body.error === "captcha_failed"
+        msg.textContent = body.error === "captcha_failed"
           ? "Verification failed — please try again."
           : "Booking failed — please try again.";
         btn.disabled = false;

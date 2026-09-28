@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from "@webcules/ui/components/dialog";
 import { useConfirm } from "@/components/confirm-provider";
+import { TIER_CARDS } from "@/components/pricing-tiers";
 
 type PlanStatus = {
   plan: "free" | "lite" | "studio" | "pro";
@@ -41,6 +42,8 @@ type PlanStatus = {
   hasSubscription: boolean;
   planPeriodEnd: number | null;
   pendingPlan: string | null;
+  rawTrialBytes: number | null;
+  rawBytesUsed: number;
   downgradeReversible: boolean;
 };
 
@@ -53,12 +56,9 @@ function fmtBytes(b: number): string {
   return `${Math.max(1, Math.round(b / 1024 / 1024))}MB`;
 }
 
-const ALL_PLANS: { id: PlanStatus["plan"]; name: string; price: number; tagline: string }[] = [
-  { id: "free", name: "Free", price: 0, tagline: "20GB · JPG only · 1 booking · 5 galleries" },
-  { id: "lite", name: "Lite", price: 15, tagline: "150GB · RAW · unlimited bookings · 15 galleries" },
-  { id: "studio", name: "Studio", price: 29, tagline: "500GB · white-label · $0.10/GB overage" },
-  { id: "pro", name: "Pro", price: 59, tagline: "2TB · white-label · $0.10/GB overage" },
-];
+/* Tier identity (names, prices, spec lines) comes from the shared pricing
+ * component — one source across landing, onboarding, and this panel. */
+const ALL_PLANS = TIER_CARDS;
 
 export function PlanPanel({ returnHint }: { returnHint?: string }) {
   const confirm = useConfirm();
@@ -280,7 +280,15 @@ export function PlanPanel({ returnHint }: { returnHint?: string }) {
         <span className="rounded-full bg-surface-2 px-2.5 py-1 text-ink-muted">
           {st.maxActiveBookings === null ? "Unlimited bookings" : `${st.activeBookings}/${st.maxActiveBookings} active bookings`}
         </span>
-        <span className={`rounded-full px-2.5 py-1 ${st.rawAllowed ? "bg-surface-2 text-ink-muted" : "bg-surface-2 text-ink-tertiary line-through"}`}>RAW uploads</span>
+        {st.rawAllowed ? (
+          <span className="rounded-full bg-surface-2 px-2.5 py-1 text-ink-muted">RAW uploads</span>
+        ) : st.rawTrialBytes ? (
+          <span className="rounded-full bg-surface-2 px-2.5 py-1 text-ink-muted">
+            RAW · {fmtBytes(st.rawBytesUsed)} / {fmtBytes(st.rawTrialBytes)} trial
+          </span>
+        ) : (
+          <span className="rounded-full bg-surface-2 px-2.5 py-1 text-ink-tertiary line-through">RAW uploads</span>
+        )}
         <span className={`rounded-full px-2.5 py-1 ${st.whiteLabel ? "bg-surface-2 text-ink-muted" : "bg-surface-2 text-ink-tertiary line-through"}`}>White-label</span>
       </div>
 
@@ -300,7 +308,7 @@ export function PlanPanel({ returnHint }: { returnHint?: string }) {
                 <span className="text-sm font-medium text-ink">{p.name}</span>
                 <span className="text-xs text-ink-subtle">{p.price ? `$${p.price}/mo` : "$0"}</span>
               </div>
-              <p className="text-[11px] leading-snug text-ink-tertiary">{p.tagline}</p>
+              <p className="text-[11px] leading-snug text-ink-tertiary">{p.spec}</p>
               {current ? (
                 <span className="mt-auto text-[11px] font-medium text-primary">Current plan</span>
               ) : (

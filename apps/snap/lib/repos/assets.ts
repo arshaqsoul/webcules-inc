@@ -12,10 +12,32 @@ export const ASKINDS = ["image", "video", "raw", "other"] as const;
 const EXT_KIND: Record<string, (typeof ASKINDS)[number]> = {
   jpg: "image", jpeg: "image", png: "image", webp: "image", avif: "image", heic: "image", gif: "image",
   mp4: "video", mov: "video", webm: "video",
-  cr2: "raw", cr3: "raw", nef: "raw", arw: "raw", dng: "raw", rwl: "raw",
+  /* Camera RAW — the full brand set so every camera lands in the Vault.
+   * All TIFF-container formats (II/MM byte-order headers) are caught by
+   * sniffKind's TIFF branch; the non-TIFF exceptions (Sigma X3F) have their
+   * own magic there. kind="raw" feeds the free-tier trial pocket (plans.ts). */
+  cr2: "raw", cr3: "raw", // Canon
+  nef: "raw", nrw: "raw", // Nikon
+  arw: "raw", srf: "raw", sr2: "raw", mrw: "raw", // Sony / Minolta
+  raf: "raw", // Fuji
+  orf: "raw", // Olympus / OM System
+  rw2: "raw", raw: "raw", // Panasonic (+ generic RAW containers)
+  rwl: "raw", lfr: "raw", // Leica
+  pef: "raw", // Pentax
+  x3f: "raw", // Sigma
+  "3fr": "raw", fff: "raw", // Hasselblad
+  iiq: "raw", // Phase One
+  mef: "raw", // Mamiya
+  erf: "raw", // Epson
+  kdc: "raw", dcr: "raw", // Kodak
+  mos: "raw", // Leaf
+  srw: "raw", // Samsung
+  gpr: "raw", // GoPro
+  dng: "raw", // Adobe / generic
 };
 
-const ALLOWED_EXTENSIONS = new Set(Object.keys(EXT_KIND));
+const ALLOWED_EXTENSIONS: Set<string> = new Set(Object.keys(EXT_KIND));
+export { ALLOWED_EXTENSIONS };
 
 /** Cap for worker-proxied uploads — direct-to-R2 presigned multipart (larger
  * files) arrives with the presign story; Workers request bodies cap ~100MB. */

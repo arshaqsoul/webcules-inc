@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { PricingTiers } from "@/components/pricing-tiers";
 import { getSessionUser } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -42,54 +43,6 @@ const usps = [
   {
     title: "Honest pricing, no traps",
     body: "Clear storage tiers with a simple overage rate. No shrinking free tiers, no 15% store commissions, no surprise price hikes.",
-  },
-];
-
-const tiers = [
-  {
-    name: "Free",
-    price: "$0",
-    cadence: "",
-    tagline: "Try the whole thing",
-    features: ["20 GB (JPG)", "5 active galleries", "1 active booking", "Full CRM + pipeline"],
-    cta: "Start free",
-    href: "/signup?plan=free",
-    highlight: false,
-  },
-  {
-    name: "Lite",
-    price: "$15",
-    cadence: "/mo",
-    tagline: "For part-timers growing",
-    features: ["150 GB storage", "RAW Vault included", "15 active galleries", "Bookings + payments"],
-    cta: "Start Lite",
-    href: "/signup?plan=lite",
-    highlight: false,
-  },
-  {
-    name: "Studio",
-    price: "$29",
-    cadence: "/mo",
-    tagline: "The working pro's tier",
-    features: [
-      "500 GB, then $0.10/GB",
-      "Unlimited galleries",
-      "White-label everything",
-      "RAW Vault + payment automations",
-    ],
-    cta: "Start Studio",
-    href: "/signup?plan=studio",
-    highlight: true,
-  },
-  {
-    name: "Pro",
-    price: "$59",
-    cadence: "/mo",
-    tagline: "Studios & teams",
-    features: ["2 TB, then $0.10/GB", "Teams & permissions", "Contracts (coming)", "Priority support"],
-    cta: "Start Pro",
-    href: "/signup?plan=pro",
-    highlight: false,
   },
 ];
 
@@ -197,46 +150,7 @@ export default async function Home() {
             your clients pay you.
           </p>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {tiers.map((t) => (
-            <div
-              key={t.name}
-              className={`flex flex-col rounded-[16px] border p-6 ${
-                t.highlight ? "border-primary/50 bg-surface-1 ring-1 ring-primary/20" : "border-hairline bg-surface-1"
-              }`}
-            >
-              {t.highlight && (
-                <span className="mb-3 w-fit rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary">
-                  Most popular
-                </span>
-              )}
-              <h3 className="text-[15px] font-medium text-ink">{t.name}</h3>
-              <p className="mt-1 text-xs text-ink-tertiary">{t.tagline}</p>
-              <p className="mt-4">
-                <span className="text-3xl font-semibold tracking-[-0.8px] text-ink">{t.price}</span>
-                <span className="text-sm text-ink-subtle">{t.cadence}</span>
-              </p>
-              <ul className="mt-4 flex flex-1 flex-col gap-2 text-sm text-ink-muted">
-                {t.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2">
-                    <span aria-hidden className="mt-0.5 text-success-text">✓</span>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href={t.href}
-                className={`mt-6 rounded-md px-4 py-2.5 text-center text-sm font-medium transition-colors ${
-                  t.highlight
-                    ? "bg-primary text-white hover:bg-lavender-hover"
-                    : "border border-hairline bg-background text-ink hover:bg-surface-2"
-                }`}
-              >
-                {t.cta}
-              </Link>
-            </div>
-          ))}
-        </div>
+        <PricingTiers mode="marketing" />
         <p className="mt-6 text-center text-xs leading-relaxed text-ink-tertiary">
           Overage beyond your tier's storage is $0.10/GB-month — we'll always show you the cheaper
           upgrade first. Payments processed by Stripe (their fee, not ours). RAW Vault: RAWs stay

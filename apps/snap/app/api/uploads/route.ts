@@ -8,6 +8,7 @@ import { z } from "zod";
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { DIRECT_MAX_BYTES, createUploadSession } from "@/lib/uploads";
+import { ALLOWED_EXTENSIONS } from "@/lib/repos/assets";
 import { getOrgContext } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -53,7 +54,7 @@ export async function POST(req: Request) {
   });
   if (!result.ok) {
     return Response.json(
-      { error: result.error, allowed: result.error === "unsupported_type" ? ["jpg", "png", "webp", "avif", "heic", "mp4", "mov", "cr2", "cr3", "nef", "arw", "dng", "rwl"] : undefined, ...result.extra },
+      { error: result.error, allowed: result.error === "unsupported_type" ? [...ALLOWED_EXTENSIONS] : undefined, ...result.extra },
       { status: result.status },
     );
   }

@@ -696,7 +696,21 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
           }),
         });
         const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
-        if (!res.ok) throw { fatal: true, message: String(body.error ?? `HTTP ${res.status}`) };
+        if (!res.ok) {
+          let message = String(body.error ?? `HTTP ${res.status}`);
+          // Plan-gate failures read as reasons, not codes (kind rides at the
+          // top level — the route spreads the gate's extra into the body).
+          if (body.error === "plan_type_restricted") {
+            message = body.kind === "raw"
+              ? "RAW trial full (3 GB on Free) — Lite unlocks unlimited RAW"
+              : "Video uploads need a paid plan — Free covers JPG and the 3 GB RAW trial";
+          } else if (body.error === "storage_locked") {
+            message = "Storage limit reached — upgrade to keep uploading";
+          } else if (body.error === "upload_rate_bound") {
+            message = "Monthly upload limit reached — resets next month";
+          }
+          throw { fatal: true, message };
+        }
         assetId = String(body.assetId);
         sessions.current.set(itemId, assetId);
 

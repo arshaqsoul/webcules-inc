@@ -2,7 +2,7 @@
  * Final Decision" Linear doc. Every enforcement point reads this; nothing
  * hardcodes limits elsewhere.
  *
- *   Free    $0    20GB   JPG-only, 1 active booking, 5 active galleries
+ *   Free    $0    20GB (JPG + 3GB RAW trial)  unlimited bookings, 5 active galleries
  *   Lite    $15   150GB  RAW allowed, 15 galleries, unlimited bookings
  *   Studio  $29   500GB  white-label, $0.10/GB-mo overage
  *   Pro     $59   2TB    white-label, $0.10/GB-mo overage
@@ -33,6 +33,10 @@ export type PlanDef = {
   fileCap: number;
   jpgOnly: boolean;
   rawAllowed: boolean;
+  /** Free-tier RAW trial pocket: RAW bytes permitted inside storageBytes
+   * (kind='raw' assets; the pocket lets prospects feel the Vault — paid
+   * tiers are unlimited via rawAllowed). null = no pocket on this tier. */
+  rawTrialBytes: number | null;
   whiteLabel: boolean;
   maxActiveBookings: number | null;
   maxActiveGalleries: number | null;
@@ -48,28 +52,28 @@ export const PLANS: Record<PlanId, PlanDef> = {
     id: "free", name: "Free", priceMonthlyUsd: 0,
     storageBytes: 20 * GB, hardLockBytes: 40 * GB, overagePerGbUsd: 0,
     monthlyUploadBytes: 40 * GB, fileCap: 250_000,
-    jpgOnly: true, rawAllowed: false, whiteLabel: false,
-    maxActiveBookings: 1, maxActiveGalleries: 5, otpCapPerUser: 30,
+    jpgOnly: true, rawAllowed: false, rawTrialBytes: 3 * GB, whiteLabel: false,
+    maxActiveBookings: null, maxActiveGalleries: 5, otpCapPerUser: 30,
   },
   lite: {
     id: "lite", name: "Lite", priceMonthlyUsd: 15,
     storageBytes: 150 * GB, hardLockBytes: 300 * GB, overagePerGbUsd: 0,
     monthlyUploadBytes: 300 * GB, fileCap: 250_000,
-    jpgOnly: false, rawAllowed: true, whiteLabel: false,
+    jpgOnly: false, rawAllowed: true, rawTrialBytes: null, whiteLabel: false,
     maxActiveBookings: null, maxActiveGalleries: 15, otpCapPerUser: 30,
   },
   studio: {
     id: "studio", name: "Studio", priceMonthlyUsd: 29,
     storageBytes: 500 * GB, hardLockBytes: TB, overagePerGbUsd: 0.1,
     monthlyUploadBytes: TB, fileCap: 250_000,
-    jpgOnly: false, rawAllowed: true, whiteLabel: true,
+    jpgOnly: false, rawAllowed: true, rawTrialBytes: null, whiteLabel: true,
     maxActiveBookings: null, maxActiveGalleries: null, otpCapPerUser: 30,
   },
   pro: {
     id: "pro", name: "Pro", priceMonthlyUsd: 59,
     storageBytes: 2 * TB, hardLockBytes: 4 * TB, overagePerGbUsd: 0.1,
     monthlyUploadBytes: 4 * TB, fileCap: 250_000,
-    jpgOnly: false, rawAllowed: true, whiteLabel: true,
+    jpgOnly: false, rawAllowed: true, rawTrialBytes: null, whiteLabel: true,
     maxActiveBookings: null, maxActiveGalleries: null, otpCapPerUser: 30,
   },
 };
@@ -87,6 +91,8 @@ export type Entitlements = PlanDef & {
   monthUploadBytes: number;
   activeGalleries: number;
   activeBookings: number;
+  /** RAW bytes in play (kind='raw') — drives the free-tier trial pocket. */
+  rawBytesUsed: number;
   /** Derived overage state for UI + enforcement. */
   storagePct: number; // of included cap
   inOverageZone: boolean; // cap ≤ used < hardLock
@@ -116,17 +122,30 @@ export async function getPlanEntitlements(organizationId: string): Promise<Entit
 
   const [usage, monthBytes, galleries, bookings] = await Promise.all([
     db
-      .select({ bytes: sql<number>`coalesce(sum(${schema.assets.bytes}), 0)`, files: sql<number>`count(*)` })
+      .select({
+        bytes: sql<number>`coalesce(sum(${schema.assets.bytes}), 0)`,
+        files: sql<number>`count(*)`,
+        rawBytes: sql<number>`coalesce(sum(case when ${schema.assets.kind} = 'raw' then ${schema.assets.bytes} else 0 end), 0)`,
+      })
       .from(schema.assets)
       .where(eq(schema.assets.organizationId, organizationId)),
     db
       .select({ bytes: sql<number>`coalesce(sum(${schema.assets.bytes}), 0)` })
       .from(schema.assets)
       .where(and(eq(schema.assets.organizationId, organizationId), gte(schema.assets.createdAt, monthStart))),
+    // Expired grants never flip status in the DB (grantLive() evaluates
+    // expiresAt on read) — the slot count honors expiry the same way, so a
+    // lapsed gallery releases the tier slot the moment it lapses.
     db
       .select({ n: sql<number>`count(*)` })
       .from(schema.shareGrants)
-      .where(and(eq(schema.shareGrants.organizationId, organizationId), eq(schema.shareGrants.status, "active"))),
+      .where(
+        and(
+          eq(schema.shareGrants.organizationId, organizationId),
+          eq(schema.shareGrants.status, "active"),
+          sql`(${schema.shareGrants.expiresAt} IS NULL OR ${schema.shareGrants.expiresAt} > ${Math.floor(Date.now() / 1000)})`,
+        ),
+      ),
     db
       .select({ n: sql<number>`count(*)` })
       .from(schema.bookings)
@@ -145,6 +164,7 @@ export async function getPlanEntitlements(organizationId: string): Promise<Entit
     monthUploadBytes: Number(monthBytes[0].bytes),
     activeGalleries: Number(galleries[0].n),
     activeBookings: Number(bookings[0].n),
+    rawBytesUsed: Number(usage[0].rawBytes),
     storagePct: Math.round(pct * 10) / 10,
     inOverageZone: storageUsedBytes >= def.storageBytes && storageUsedBytes < def.hardLockBytes,
     atHardLock: storageUsedBytes >= def.hardLockBytes,

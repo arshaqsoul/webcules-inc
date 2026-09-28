@@ -43,6 +43,8 @@ export async function GET() {
     maxActiveBookings: ent.maxActiveBookings,
     jpgOnly: ent.jpgOnly,
     rawAllowed: ent.rawAllowed,
+    rawTrialBytes: ent.rawTrialBytes ?? null,
+    rawBytesUsed: ent.rawBytesUsed,
     whiteLabel: ent.whiteLabel,
     hasSubscription: Boolean(profile?.stripeSubscriptionId),
     planPeriodEnd: profile?.planPeriodEnd ?? null,

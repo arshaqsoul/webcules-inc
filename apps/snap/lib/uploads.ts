@@ -113,6 +113,7 @@ export function sniffKind(b: Uint8Array): "image" | "video" | "raw" | null {
   if (b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) return "image"; // PNG
   if (ascii(b, 0, 4) === "RIFF" && ascii(b, 8, 12) === "WEBP") return "image"; // WebP
   if (ascii(b, 0, 4) === "GIF8") return "image"; // GIF
+  if (ascii(b, 0, 3) === "FOV") return "raw"; // Sigma X3F (FOVb/FOVc…)
   if (ascii(b, 4, 8) === "ftyp") {
     const brand = ascii(b, 8, 12);
     if (brand.startsWith("avif") || brand.startsWith("avis")) return "image"; // AVIF
@@ -241,7 +242,8 @@ export async function sweepExpiredUploadSessions(): Promise<number> {
 
 export type GateFailure = { ok: false; error: string; status: number; extra?: Record<string, unknown> };
 
-/** WEB-148/151 gates: free-tier JPG-only, 2× hard lock, monthly PUT bound,
+/** WEB-148/151 gates: free-tier type rules (video paid, RAW inside the trial
+ * pocket), 2× hard lock, monthly PUT bound,
  * org file cap. Every failure carries usage + plan for the upsell UI. */
 export async function checkUploadGate(
   organizationId: string,
@@ -259,8 +261,20 @@ export async function checkUploadGate(
     fileCount: ent.fileCount,
     plan: ent.id,
   };
+  // Free-tier type gate: video stays paid; RAW passes inside the trial
+  // pocket (rawTrialBytes counted within the overall cap), so prospects can
+  // feel the Vault before upgrading.
   if ((ent.jpgOnly || !ent.rawAllowed) && classified && classified.kind !== "image" && classified.kind !== "other") {
-    return { ok: false, error: "plan_type_restricted", status: 403, extra: { kind: classified.kind, ...usage } };
+    const rawPocketOk =
+      classified.kind === "raw" && ent.rawTrialBytes !== null && ent.rawBytesUsed + bytes <= ent.rawTrialBytes;
+    if (!rawPocketOk) {
+      return {
+        ok: false,
+        error: "plan_type_restricted",
+        status: 403,
+        extra: { kind: classified.kind, rawTrialBytes: ent.rawTrialBytes, rawBytesUsed: ent.rawBytesUsed, ...usage },
+      };
+    }
   }
   if (ent.storageUsedBytes + bytes > ent.hardLockBytes || ent.atHardLock) {
     return { ok: false, error: "storage_locked", status: 413, extra: usage };
