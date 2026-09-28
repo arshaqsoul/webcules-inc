@@ -2,13 +2,17 @@
 
 /* Manage pane (Midjourney-style, WEB-209) — replaces the old modal viewer
  * AND its fullscreen mode entirely. Rendered inline where the grid was:
- * large image + right-hand actions/metadata panel + a thumbnail filmstrip
- * that doubles as the scrollbar (code-editor style navigation). Deliberately
- * NOT a dialog: no overlay, no aria-modal, no scroll lock — the tab body
- * swaps to this layout and swaps back on close/Escape. */
+ * desktop = large image + right-hand actions/metadata panel + a thumbnail
+ * filmstrip rail that doubles as the scrollbar. Mobile (<lg) = Midjourney
+ * app layout: thumbnail strip on top (scrolling it scrubs the main image),
+ * swipe left/right on the image to navigate, and a bottom bar with quick
+ * actions + summary that expands — tap or swipe up — into a sheet holding
+ * the full options/metadata panel. Deliberately NOT a dialog: no overlay,
+ * no aria-modal, no scroll lock for the pane itself; the tab body swaps to
+ * this layout and swaps back on close/Escape. */
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { Heart, Star, X } from "lucide-react";
+import { Check, ChevronUp, Heart, Star, X } from "lucide-react";
 
 import type { AssetItem } from "@/components/project-files";
 
@@ -127,6 +131,43 @@ export function AssetManage({
   const [zoomOrigin, setZoomOrigin] = useState("center");
   const item = items[index];
 
+  // Mobile gestures (Midjourney-style): swipe on the image steps prev/next,
+  // scrolling the filmstrip scrubs the active index, and the bottom bar
+  // expands into the options/metadata sheet on tap or swipe-up.
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [swipeDx, setSwipeDx] = useState(0);
+  const swipe = useRef<{ x: number; y: number; dx: number } | null>(null);
+  const swipedAt = useRef(0);
+  const stripRef = useRef<HTMLDivElement>(null);
+  const scrubUntil = useRef(0);
+  const scrubRaf = useRef(0);
+  const barTouchY = useRef(0);
+  const sheetTouchY = useRef(0);
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    swipe.current = { x: t.clientX, y: t.clientY, dx: 0 };
+  };
+  const onTouchMove = (e: React.TouchEvent) => {
+    const s = swipe.current;
+    if (!s) return;
+    const t = e.touches[0];
+    const dx = t.clientX - s.x;
+    if (Math.abs(dx) > Math.abs(t.clientY - s.y)) {
+      s.dx = dx;
+      setSwipeDx(dx * 0.35);
+    }
+  };
+  const onTouchEnd = () => {
+    const s = swipe.current;
+    swipe.current = null;
+    setSwipeDx(0);
+    if (s && Math.abs(s.dx) > 12) swipedAt.current = Date.now();
+    if (s && Math.abs(s.dx) > 56) step(s.dx < 0 ? 1 : -1);
+  };
+  // A swipe should not also register as the tap that opens the lightbox.
+  const tappedAfterSwipe = () => Date.now() - swipedAt.current < 300;
+
   const step = useCallback(
     (dir: 1 | -1) => {
       if (!items.length) return;
@@ -155,20 +196,49 @@ export function AssetManage({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- item identity is the trigger
   }, [item?.id]);
 
-  // keep the active filmstrip thumb in view (the rail IS the scroller)
+  // keep the active filmstrip thumb in view (the rail IS the scroller) —
+  // suppressed while the visitor is scrubbing the mobile strip so the
+  // auto-centering doesn't fight their finger.
   useEffect(() => {
+    if (Date.now() < scrubUntil.current) return;
     document.querySelector(`[data-thumb-idx="${index}"]`)?.scrollIntoView({ block: "nearest", inline: "nearest" });
   }, [index]);
 
-  // lock page scroll while the lightbox is up
+  // Mobile strip scrubbing: whichever thumbnail sits nearest the strip's
+  // center becomes the main image, live, while the visitor scrolls it.
+  const onStripScroll = () => {
+    const el = stripRef.current;
+    if (!el) return;
+    scrubUntil.current = Date.now() + 240;
+    if (scrubRaf.current) return;
+    scrubRaf.current = requestAnimationFrame(() => {
+      scrubRaf.current = 0;
+      const el = stripRef.current;
+      if (!el) return;
+      const center = el.scrollLeft + el.clientWidth / 2;
+      let best = 0;
+      let bestD = Infinity;
+      for (let i = 0; i < el.children.length; i++) {
+        const c = el.children[i] as HTMLElement;
+        const d = Math.abs(c.offsetLeft + c.offsetWidth / 2 - center);
+        if (d < bestD) {
+          bestD = d;
+          best = i;
+        }
+      }
+      if (best !== index) onIndexChange(best);
+    });
+  };
+
+  // lock page scroll while the lightbox or the mobile options sheet is up
   useEffect(() => {
-    if (!lightbox) return;
+    if (!lightbox && !sheetOpen) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = prev;
     };
-  }, [lightbox]);
+  }, [lightbox, sheetOpen]);
 
   // culling keys — same muscle memory as the grid, plus ←/→ and Escape
   useEffect(() => {
@@ -181,7 +251,8 @@ export function AssetManage({
         if (lightbox) {
           setLightbox(false);
           setZoom(1);
-        } else onClose();
+        } else if (sheetOpen) setSheetOpen(false);
+        else onClose();
         return;
       }
       if (e.key === "ArrowRight" || e.key === "ArrowDown") {
@@ -265,8 +336,9 @@ export function AssetManage({
     );
   };
 
-  const panel = (
-    <aside className="no-scrollbar flex min-h-0 flex-col gap-5 overflow-y-auto rounded-[12px] border border-hairline bg-surface-1 p-4 lg:w-72 lg:shrink-0">
+  // Panel content, shared by the desktop sidebar and the mobile sheet.
+  const panelInner = (
+    <>
       {/* Status */}
       <section aria-label="Status">
         <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-tertiary">Status</h3>
@@ -402,7 +474,7 @@ export function AssetManage({
       >
         Open original ↗
       </a>
-    </aside>
+    </>
   );
 
   return (
@@ -426,9 +498,26 @@ export function AssetManage({
         </span>
       </div>
 
-      {/* Image | options panel | thumbnail rail (desktop row, mobile stack) */}
+      {/* Mobile: strip on top (scrolling it scrubs the main image) · main
+       * image (swipe left/right to navigate) · bottom bar. Desktop row:
+       * image | options panel | thumbnail rail. */}
       <div className="flex min-h-0 flex-1 flex-col gap-3 lg:flex-row">
-        <div className="relative flex h-[52dvh] min-w-0 flex-1 items-center justify-center overflow-hidden rounded-[12px] border border-hairline bg-surface-1 p-2 lg:h-auto">
+        {/* Horizontal filmstrip — scrubbing it drives the main image (mobile). */}
+        <div
+          ref={stripRef}
+          onScroll={onStripScroll}
+          className="no-scrollbar relative flex gap-1.5 overflow-x-auto rounded-[12px] border border-hairline bg-surface-1 p-1.5 lg:hidden"
+        >
+          {items.map((_, i) => thumb(i))}
+        </div>
+
+        <div
+          className="relative flex h-[52dvh] min-w-0 flex-1 items-center justify-center overflow-hidden rounded-[12px] border border-hairline bg-surface-1 p-2 lg:h-auto"
+          style={{ touchAction: "pan-y" }}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+        >
           {item.kind === "image" ? (
             // eslint-disable-next-line @next/next/no-img-element -- authorized proxy, no optimizer
             <img
@@ -437,10 +526,16 @@ export function AssetManage({
               draggable={false}
               onLoad={(e) => setDims({ w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight })}
               onClick={() => {
+                if (tappedAfterSwipe()) return;
                 setZoom(1);
                 setLightbox(true);
               }}
               className="max-h-full max-w-full cursor-zoom-in select-none object-contain"
+              style={{
+                transform: swipeDx ? `translateX(${swipeDx}px)` : undefined,
+                opacity: swipeDx ? Math.max(0.45, 1 - Math.abs(swipeDx) / 320) : undefined,
+                transition: swipeDx ? "none" : "transform 180ms ease, opacity 180ms ease",
+              }}
             />
           ) : item.kind === "video" ? (
             // eslint-disable-next-line jsx-a11y/media-has-caption -- managed video
@@ -456,12 +551,10 @@ export function AssetManage({
           )}
         </div>
 
-        {/* Horizontal filmstrip (mobile stack order: image → strip → panel) */}
-        <div className="no-scrollbar flex gap-1.5 overflow-x-auto rounded-[12px] border border-hairline bg-surface-1 p-1.5 lg:hidden">
-          {items.map((_, i) => thumb(i))}
-        </div>
-
-        {panel}
+        {/* Options panel — desktop sidebar; on mobile it lives in the bottom sheet. */}
+        <aside className="no-scrollbar hidden w-72 shrink-0 lg:flex min-h-0 flex-col gap-5 overflow-y-auto rounded-[12px] border border-hairline bg-surface-1 p-4">
+          {panelInner}
+        </aside>
 
         {/* Vertical thumbnail rail — the code-editor "scrollbar" (desktop).
          * No visible scrollbar; wheel/drag still scrolls, click jumps. */}
@@ -469,6 +562,139 @@ export function AssetManage({
           {items.map((_, i) => thumb(i))}
         </div>
       </div>
+
+      {/* Mobile bottom bar (Midjourney-style): quick actions + a summary line.
+       * Tap anywhere (or swipe up) expands the full options/metadata sheet. */}
+      <div
+        role="button"
+        tabIndex={0}
+        aria-expanded={sheetOpen}
+        aria-label="Show options and details"
+        onClick={() => setSheetOpen(true)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setSheetOpen(true);
+          }
+        }}
+        onTouchStart={(e) => {
+          barTouchY.current = e.touches[0].clientY;
+        }}
+        onTouchEnd={(e) => {
+          if (barTouchY.current - e.changedTouches[0].clientY > 48) setSheetOpen(true);
+        }}
+        className="sticky bottom-2 z-30 flex cursor-pointer flex-col gap-1.5 rounded-[14px] border border-hairline bg-canvas/90 px-3 py-2.5 shadow-lg backdrop-blur lg:hidden"
+      >
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            aria-pressed={item.status === "approved"}
+            aria-label="Approve"
+            title="Approve"
+            onClick={(e) => {
+              e.stopPropagation();
+              onFlag(item.id, "approve");
+            }}
+            className={`rounded-md p-1.5 transition-colors ${item.status === "approved" ? "bg-success/15 text-success-text" : "text-ink-muted hover:bg-surface-2"}`}
+          >
+            <Check className="h-4.5 w-4.5" aria-hidden />
+          </button>
+          <button
+            type="button"
+            aria-pressed={item.status === "rejected"}
+            aria-label="Reject"
+            title="Reject"
+            onClick={(e) => {
+              e.stopPropagation();
+              onFlag(item.id, "reject");
+            }}
+            className={`rounded-md p-1.5 transition-colors ${item.status === "rejected" ? "bg-destructive/10 text-destructive" : "text-ink-muted hover:bg-surface-2"}`}
+          >
+            <X className="h-4.5 w-4.5" aria-hidden />
+          </button>
+          <span className="mx-1 h-4 w-px bg-hairline" aria-hidden />
+          <button
+            type="button"
+            aria-label={`Stars: ${item.stars} — tap to raise`}
+            title="Stars"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRate(item.id, { stars: (item.stars + 1) % 6 });
+            }}
+            className="flex items-center gap-0.5 rounded-md p-1.5 text-ink-muted transition-colors hover:bg-surface-2"
+          >
+            <Star className={`h-4 w-4 ${item.stars ? "fill-amber-400 text-amber-400" : ""}`} aria-hidden />
+            {item.stars > 0 && <span className="text-[11px] tabular-nums">{item.stars}</span>}
+          </button>
+          <button
+            type="button"
+            aria-pressed={item.tags.includes("favorite")}
+            aria-label="Favorite"
+            title="Favorite"
+            onClick={(e) => {
+              e.stopPropagation();
+              onFavorite(item.id);
+            }}
+            className="rounded-md p-1.5 text-ink-muted transition-colors hover:bg-surface-2"
+          >
+            <Heart className={`h-4 w-4 ${item.tags.includes("favorite") ? "fill-amber-400 text-amber-400" : ""}`} aria-hidden />
+          </button>
+          {item.color > 0 && (
+            <span
+              aria-label={`${COLOR_NAMES[item.color]} label`}
+              className="ml-0.5 h-3.5 w-3.5 rounded-full border border-ink/20"
+              style={{ background: COLOR_HEX[item.color] }}
+            />
+          )}
+          <span className="ml-auto flex items-center gap-1 pr-0.5 text-[11px] font-medium text-ink-muted">
+            Details
+            <ChevronUp className="h-3.5 w-3.5" aria-hidden />
+          </span>
+        </div>
+        <p className="truncate text-[11px] text-ink-tertiary">
+          {item.filename} · {shownDims ?? item.mimeType} · {mb(item.bytes)}
+        </p>
+      </div>
+
+      {/* Mobile options sheet — the desktop panel's content as an expandable
+       * bottom sheet; drag the handle down, tap the backdrop, or Escape. */}
+      {sheetOpen && (
+        <div className="fixed inset-0 z-[70] lg:hidden" role="dialog" aria-modal="true" aria-label={`Options and details for ${item.filename}`}>
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" onClick={() => setSheetOpen(false)} />
+          <div
+            className="absolute inset-x-0 bottom-0 flex max-h-[85dvh] flex-col rounded-t-[16px] border-t border-hairline bg-surface-1 shadow-2xl"
+            onTouchStart={(e) => {
+              sheetTouchY.current = e.touches[0].clientY;
+            }}
+            onTouchEnd={(e) => {
+              if (e.changedTouches[0].clientY - sheetTouchY.current > 56) setSheetOpen(false);
+            }}
+          >
+            <div className="flex shrink-0 flex-col gap-2 px-4 pb-2 pt-2.5">
+              <span className="mx-auto h-1 w-10 rounded-full bg-hairline-strong" aria-hidden />
+              <div className="flex items-center gap-2">
+                <span className="min-w-0 flex-1 truncate text-sm font-medium text-ink" title={item.filename}>
+                  {item.filename}
+                </span>
+                <span className="shrink-0 text-xs tabular-nums text-ink-tertiary">
+                  {index + 1} / {items.length}
+                </span>
+                <button
+                  type="button"
+                  aria-label="Close options"
+                  onClick={() => setSheetOpen(false)}
+                  className="rounded-md p-1 text-ink-tertiary transition-colors hover:bg-surface-2 hover:text-ink"
+                >
+                  <X className="h-4 w-4" aria-hidden />
+                </button>
+              </div>
+            </div>
+            <div className="no-scrollbar flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 pb-6">
+              {panelInner}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Zoom lightbox — blurred backdrop; click image toggles zoom, click
        * outside (or Escape) returns to this manage layout. */}
