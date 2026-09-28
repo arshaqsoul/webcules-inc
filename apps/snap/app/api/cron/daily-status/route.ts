@@ -71,7 +71,12 @@ export async function POST(req: Request) {
     if (!row.pendingPlan || !row.planPeriodEnd || row.planPeriodEnd * 1000 > Date.now()) continue;
     await db
       .update(schema.studioProfiles)
-      .set({ plan: row.pendingPlan, pendingPlan: null, updatedAt: new Date() })
+      .set({
+        plan: row.pendingPlan,
+        pendingPlan: null,
+        planChangedAt: Math.floor(Date.now() / 1000),
+        updatedAt: new Date(),
+      })
       .where(eq(schema.studioProfiles.organizationId, row.organizationId));
     downgradesApplied++;
   }

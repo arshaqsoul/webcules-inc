@@ -7,6 +7,13 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { Button } from "@webcules/ui/components/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@webcules/ui/components/dialog";
 import { useConfirm } from "@/components/confirm-provider";
 
 type PlanStatus = {
@@ -34,6 +41,7 @@ type PlanStatus = {
   hasSubscription: boolean;
   planPeriodEnd: number | null;
   pendingPlan: string | null;
+  downgradeReversible: boolean;
 };
 
 const GB = 1024 ** 3;
@@ -57,6 +65,9 @@ export function PlanPanel({ returnHint }: { returnHint?: string }) {
   const [st, setSt] = useState<PlanStatus | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
+  // Reversal choice (upgraded this cycle, now stepping down): Slack-style
+  // explicit pick between switch-back-now (prorated credit) and next-cycle.
+  const [reversal, setReversal] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     try {
@@ -69,52 +80,41 @@ export function PlanPanel({ returnHint }: { returnHint?: string }) {
     void refresh();
   }, [refresh]);
 
-  async function choose(plan: string) {
-    if (plan === st?.plan) return;
-    // Confirm copy matches what will ACTUALLY happen: starting a first
-    // subscription, an immediate prorated upgrade, a next-cycle downgrade,
-    // or a period-end cancel to Free.
-    if (st) {
-      const target = ALL_PLANS.find((p) => p.id === plan);
-      let title = `Switch to ${target?.name ?? plan}?`;
-      let body = "Your subscription changes immediately with prorated billing.";
-      if (plan === "free") {
-        if (st.hasSubscription) {
-          title = "Downgrade to Free?";
-          body = `Your subscription cancels at the end of the current billing period — ${st.planName} keeps working until then, nothing further is charged, and your files are never deleted.`;
-        } else {
-          title = "Move to Free?";
-          body = "You have no active subscription, so this takes effect immediately. Your files are never deleted.";
-        }
-      } else if (!st.hasSubscription || st.plan === "free") {
-        title = `Start ${target?.name}?`;
-        body = `You don't have an active subscription yet — this opens Stripe checkout to start ${target?.name} at $${target?.price}/mo from today. Nothing is owed for your current plan.`;
-      } else if ((target?.price ?? 0) < st.priceMonthlyUsd) {
-        title = `Switch to ${target?.name}?`;
-        body = `The $${target?.price}/mo price starts on your next billing cycle — nothing is charged now, and ${st.planName} keeps working until then.`;
-      } else {
-        title = `Upgrade to ${target?.name}?`;
-        body = `Switches immediately — Stripe prorates, so you're only charged the difference for the rest of this cycle.`;
+  // The checkout "welcome aboard" hint is a one-shot: strip the ?plan=
+  // marker so refreshes and later in-place changes don't keep showing it.
+  useEffect(() => {
+    if (returnHint === "return" && typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has("plan")) {
+        url.searchParams.delete("plan");
+        window.history.replaceState(null, "", url);
       }
-      if (!(await confirm({ title, body }))) return;
     }
+  }, [returnHint]);
+
+  function fmtUsd(minor: number): string {
+    return `$${(Math.abs(minor) / 100).toFixed(2)}`;
+  }
+
+  function periodEndDate(): string | null {
+    if (!st?.planPeriodEnd) return null;
+    return new Date(st.planPeriodEnd * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  }
+
+  async function submit(plan: string, timing: "now" | "cycle") {
     setBusy(true);
     setNotice("");
     try {
       const res = await fetch("/api/studio/plan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ plan, timing }),
       });
       const result = (await res.json().catch(() => ({}))) as { url?: string; mode?: string; message?: string; error?: string };
       if (res.ok && result.url) {
         window.location.href = result.url; // Stripe checkout
       } else if (res.ok) {
-        setNotice(
-          result.mode === "scheduled"
-            ? (result.message ?? "Scheduled — the new plan starts at the end of your billing period.")
-            : (result.message ?? "Plan updated."),
-        );
+        setNotice(result.message ?? (result.mode === "scheduled" ? "Scheduled — the new plan starts at the end of your billing period." : "Plan updated."));
         void refresh();
       } else {
         setNotice("Couldn't change the plan — try again in a moment.");
@@ -123,6 +123,74 @@ export function PlanPanel({ returnHint }: { returnHint?: string }) {
       setNotice("Network error — try again.");
     }
     setBusy(false);
+  }
+
+  async function choose(plan: string) {
+    if (plan === st?.plan) return;
+    if (!st) return;
+    const target = ALL_PLANS.find((p) => p.id === plan);
+    if (!target) return;
+
+    if (plan === "free") {
+      const ok = st.hasSubscription
+        ? await confirm({
+            title: "Downgrade to Free?",
+            body: `Your subscription cancels at the end of the current billing period — ${st.planName} keeps working until then, nothing further is charged, and your files are never deleted.`,
+          })
+        : await confirm({
+            title: "Move to Free?",
+            body: "You have no active subscription, so this takes effect immediately. Your files are never deleted.",
+          });
+      if (ok) await submit(plan, "cycle");
+      return;
+    }
+
+    if (!st.hasSubscription || st.plan === "free") {
+      // First subscription — checkout, nothing to prorate.
+      const ok = await confirm({
+        title: `Start ${target.name}?`,
+        body: `You don't have an active subscription yet — this opens Stripe checkout to start ${target.name} at $${target.price}/mo from today. Nothing is owed for your current plan.`,
+      });
+      if (ok) await submit(plan, "cycle");
+      return;
+    }
+
+    if (target.price < st.priceMonthlyUsd) {
+      // Downgrade. Industry default: next cycle, nothing charged. When the
+      // current tier was adopted THIS cycle (an upgrade the user may be
+      // rethinking), offer the instant prorated switch-back explicitly.
+      if (st.downgradeReversible) {
+        setReversal(plan);
+        return;
+      }
+      const ok = await confirm({
+        title: `Switch to ${target.name}?`,
+        body: `The $${target.price}/mo price starts on your next billing cycle — nothing is charged now, and ${st.planName} keeps working until then.`,
+      });
+      if (ok) await submit(plan, "cycle");
+      return;
+    }
+
+    // Upgrade: show the exact prorated amount Stripe will charge now.
+    let extra = "";
+    try {
+      const res = await fetch("/api/studio/plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ preview: plan }),
+      });
+      if (res.ok) {
+        const p = (await res.json()) as { ok: boolean; netMinor?: number };
+        if (p.ok && typeof p.netMinor === "number") {
+          extra = ` Charged now: ${fmtUsd(p.netMinor)} (prorated for the rest of this cycle).`;
+        }
+      }
+    } catch { /* preview is best-effort */ }
+    const ok = await confirm({
+      title: `Upgrade to ${target.name}?`,
+      body: `Switches immediately${extra || " — Stripe prorates, so you're only charged the difference for the rest of this cycle."} Your next invoice is $${target.price}/mo.`,
+    });
+    if (ok) await submit(plan, "cycle");
   }
 
   async function openPortal() {
@@ -247,6 +315,39 @@ export function PlanPanel({ returnHint }: { returnHint?: string }) {
       <p className="mt-3 text-[11px] text-ink-tertiary">
         Stripe processing fees apply to payments. Upgrades apply immediately with proration; downgrades take effect on your next billing cycle — your files are never deleted.
       </p>
+
+      {/* Same-cycle switch-back: the current tier was an upgrade made this
+       * cycle, so offer the industry-standard choice — instant prorated
+       * reversal, or keep the tier until the period ends. */}
+      <Dialog open={reversal !== null} onOpenChange={(v) => !busy && !v && setReversal(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Switch back to {ALL_PLANS.find((p) => p.id === reversal)?.name ?? reversal}?
+            </DialogTitle>
+            <DialogDescription asChild>
+              <div className="flex flex-col gap-4 text-sm text-ink-subtle">
+                <p>
+                  You upgraded to {st?.planName} during this billing cycle, so you can switch back right away — the
+                  unused difference is credited on your next invoice — or stay on {st?.planName} until the cycle ends
+                  {periodEndDate() ? ` (${periodEndDate()})` : ""} and switch then.
+                </p>
+                <div className="flex flex-col gap-2">
+                  <Button disabled={busy} onClick={() => { const p = reversal!; setReversal(null); void submit(p, "now"); }}>
+                    {busy ? "Switching…" : "Switch back now — prorated credit on next invoice"}
+                  </Button>
+                  <Button variant="outline" disabled={busy} onClick={() => { const p = reversal!; setReversal(null); void submit(p, "cycle"); }}>
+                    Keep {st?.planName} until {periodEndDate()} — switch then
+                  </Button>
+                  <Button variant="ghost" disabled={busy} onClick={() => setReversal(null)}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

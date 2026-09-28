@@ -5,7 +5,14 @@
 import { getOrgContext } from "@/lib/session";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { getPlanEntitlements } from "@/lib/plans";
-import { cancelPlanAtPeriodEnd, createPlanCheckout, resumePlan, setPlanFreeImmediately } from "@/lib/billing";
+import {
+  cancelPlanAtPeriodEnd,
+  createPlanCheckout,
+  downgradeReversible,
+  previewPlanChange,
+  resumePlan,
+  setPlanFreeImmediately,
+} from "@/lib/billing";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +47,7 @@ export async function GET() {
     hasSubscription: Boolean(profile?.stripeSubscriptionId),
     planPeriodEnd: profile?.planPeriodEnd ?? null,
     pendingPlan: profile?.pendingPlan ?? null,
+    downgradeReversible: await downgradeReversible(ctx.organizationId),
   });
 }
 
@@ -47,11 +55,21 @@ export async function POST(req: Request) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
 
-  let body: { plan?: string; resume?: boolean };
+  let body: { plan?: string; resume?: boolean; timing?: "now" | "cycle"; preview?: string };
   try {
     body = (await req.json()) as typeof body;
   } catch {
     return Response.json({ error: "invalid_json" }, { status: 400 });
+  }
+
+  // Proration preview (no mutation) — powers the confirm dialog's exact
+  // "you will be charged $X now" copy before any change.
+  if (body.preview) {
+    if (body.preview !== "lite" && body.preview !== "studio" && body.preview !== "pro") {
+      return Response.json({ error: "invalid_plan" }, { status: 400 });
+    }
+    const preview = await previewPlanChange(ctx.organizationId, body.preview);
+    return Response.json(preview, { status: preview.ok ? 200 : 409 });
   }
 
   if (body.resume) {
@@ -76,6 +94,11 @@ export async function POST(req: Request) {
     return Response.json({ error: "invalid_plan" }, { status: 400 });
   }
 
-  const { url, mode } = await createPlanCheckout(ctx.organizationId, plan, new URL(req.url).origin);
-  return Response.json({ ok: true, url, mode });
+  const { url, mode, message } = await createPlanCheckout(
+    ctx.organizationId,
+    plan,
+    new URL(req.url).origin,
+    body.timing === "now" ? "now" : "cycle",
+  );
+  return Response.json({ ok: true, url, mode, message });
 }
