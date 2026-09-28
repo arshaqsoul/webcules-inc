@@ -367,6 +367,53 @@ export async function createManualLead(params: {
 }
 
 /**
+ * Launch fix — close the contact-form → booking loop: when someone who
+ * already has an OPEN lead (filled the contact form) books directly through
+ * the calendar, the booking creates its own project while the lead stays
+ * open, leaving a duplicate person in the inbox. Called on confirmed
+ * bookings (immediate and post-payment): flips that open lead to
+ * "converted" and audit-trails the linkage. Repeat enquiries stay possible —
+ * a converted/archived lead never blocks a new one.
+ */
+export async function linkOpenLeadToBooking(params: {
+  organizationId: string;
+  email: string;
+  projectId: string;
+  bookingId: string;
+}): Promise<void> {
+  const db = getDb();
+  const hit = (
+    await db
+      .select({ id: schema.leads.id })
+      .from(schema.leads)
+      .where(
+        and(
+          eq(schema.leads.organizationId, params.organizationId),
+          eq(schema.leads.email, params.email.toLowerCase()),
+          inArray(schema.leads.status, ["new", "replied"]),
+        ),
+      )
+      .limit(1)
+  )[0];
+  if (!hit) return;
+  await db.batch([
+    db
+      .update(schema.leads)
+      .set({ status: "converted", updatedAt: new Date() })
+      .where(and(eq(schema.leads.id, hit.id), eq(schema.leads.organizationId, params.organizationId))),
+    db.insert(schema.auditLog).values({
+      id: crypto.randomUUID(),
+      organizationId: params.organizationId,
+      actorType: "system",
+      action: "lead.auto_converted",
+      targetType: "lead",
+      targetId: hit.id,
+      meta: JSON.stringify({ via: "direct_booking", projectId: params.projectId, bookingId: params.bookingId }),
+    }),
+  ]);
+}
+
+/**
  * Inbound email ingest (called by the snap-email worker webhook): match the
  * sender to the most recent thread this platform sent outbound mail to (within
  * 45 days) — today all outbound goes from shared addresses, so the org is

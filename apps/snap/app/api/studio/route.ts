@@ -11,6 +11,7 @@ const bodySchema = z.object({
   studioName: z.string().trim().min(2).max(80),
   timezone: z.string().trim().min(1).max(64).default("UTC"),
   contactEmail: z.string().trim().email().optional(),
+  plan: z.enum(["free", "lite", "studio", "pro"]).optional(),
 });
 
 export async function POST(req: Request) {
@@ -34,6 +35,7 @@ export async function POST(req: Request) {
       studioName: parsed.data.studioName,
       timezone: parsed.data.timezone,
       contactEmail: parsed.data.contactEmail ?? user.email,
+      plan: parsed.data.plan,
     });
     return Response.json({ ok: true, ...studio });
   } catch (err) {

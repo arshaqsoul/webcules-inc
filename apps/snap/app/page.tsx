@@ -1,5 +1,9 @@
 import Link from "next/link";
 
+import { getSessionUser } from "@/lib/session";
+
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Snap — The studio platform for photographers",
   description:
@@ -49,7 +53,7 @@ const tiers = [
     tagline: "Try the whole thing",
     features: ["20 GB (JPG)", "5 active galleries", "1 active booking", "Full CRM + pipeline"],
     cta: "Start free",
-    href: "/signup",
+    href: "/signup?plan=free",
     highlight: false,
   },
   {
@@ -59,7 +63,7 @@ const tiers = [
     tagline: "For part-timers growing",
     features: ["150 GB storage", "RAW Vault included", "15 active galleries", "Bookings + payments"],
     cta: "Start Lite",
-    href: "/signup",
+    href: "/signup?plan=lite",
     highlight: false,
   },
   {
@@ -74,7 +78,7 @@ const tiers = [
       "RAW Vault + payment automations",
     ],
     cta: "Start Studio",
-    href: "/signup",
+    href: "/signup?plan=studio",
     highlight: true,
   },
   {
@@ -84,12 +88,13 @@ const tiers = [
     tagline: "Studios & teams",
     features: ["2 TB, then $0.10/GB", "Teams & permissions", "Contracts (coming)", "Priority support"],
     cta: "Start Pro",
-    href: "/signup",
+    href: "/signup?plan=pro",
     highlight: false,
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const user = await getSessionUser();
   return (
     <main className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-10 border-b border-hairline bg-background/90 backdrop-blur">
@@ -105,18 +110,29 @@ export default function Home() {
             <Link href="/docs/embeds" className="hidden text-sm text-ink-subtle hover:text-ink sm:block">
               Docs
             </Link>
-            <Link
-              href="/login"
-              className="rounded-md border border-hairline bg-surface-1 px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:bg-surface-2"
-            >
-              Sign in
-            </Link>
-            <Link
-              href="/signup"
-              className="rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-lavender-hover"
-            >
-              Create your studio
-            </Link>
+            {user ? (
+              <Link
+                href="/dashboard"
+                className="rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-lavender-hover"
+              >
+                Go to dashboard
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="rounded-md border border-hairline bg-surface-1 px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:bg-surface-2"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/signup"
+                  className="rounded-md bg-primary px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-lavender-hover"
+                >
+                  Create your studio
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -132,10 +148,10 @@ export default function Home() {
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3">
           <Link
-            href="/signup"
+            href={user ? "/dashboard" : "/signup"}
             className="rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-lavender-hover"
           >
-            Create your studio — free
+            {user ? "Go to your dashboard" : "Create your studio — free"}
           </Link>
           <a
             href="#pricing"

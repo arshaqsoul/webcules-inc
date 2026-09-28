@@ -35,7 +35,7 @@ export default function OnboardingPage() {
     }
     const studio = (await res.json()) as { organizationId: string };
     await authClient.organization.setActive({ organizationId: studio.organizationId });
-    router.push("/dashboard");
+    router.push("/onboarding/plan");
   }
 
   return (

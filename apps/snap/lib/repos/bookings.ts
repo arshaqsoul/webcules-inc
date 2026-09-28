@@ -7,6 +7,7 @@ import { and, eq, gte, lte } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { computeDateSlots } from "./availability";
+import { linkOpenLeadToBooking } from "./leads";
 import { getStudioProfile } from "./studios";
 
 export type CreateBookingResult =
@@ -116,6 +117,12 @@ export async function createBookingFromWidget(params: {
       return { ok: false, error: "conflict" };
     }
     throw err;
+  }
+
+  // Contact-form → booking loop: flip any open lead for this email to
+  // converted so the inbox doesn't show a duplicate person.
+  if (bookingStatus === "confirmed") {
+    await linkOpenLeadToBooking({ organizationId: params.organizationId, email, projectId, bookingId });
   }
 
   return { ok: true, bookingId, projectId };
@@ -258,6 +265,15 @@ export async function confirmBookingPaid(params: {
       meta: JSON.stringify({ projectId }),
     }),
   ]);
+
+  // Contact-form → booking loop (paid path): close any open lead now that
+  // the project exists.
+  await linkOpenLeadToBooking({
+    organizationId: params.organizationId,
+    email: booking.clientEmail,
+    projectId,
+    bookingId: booking.id,
+  });
 
   // WEB-136: booking-confirmed client email (per-studio opt-out respected).
   try {

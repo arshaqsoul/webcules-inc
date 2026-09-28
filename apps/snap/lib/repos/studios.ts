@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
+import { PLANS, type PlanId } from "@/lib/plans";
 
 export type StudioProfile = typeof schema.studioProfiles.$inferSelect;
 
@@ -42,17 +43,23 @@ async function uniqueSlug(base: string): Promise<string> {
  * Create the studio organization + owner membership + studio_profile with a
  * fresh embed key, and log the audit event. Rows match what the better-auth
  * organization plugin expects (organization / member tables).
+ *
+ * Launch fix: the studio starts on the plan the signup chose — Free by
+ * default. (The column default of 'studio' only remains for pre-launch
+ * studios; writing explicitly keeps new signups honest.)
  */
 export async function createStudioForUser(params: {
   userId: string;
   studioName: string;
   timezone: string;
   contactEmail?: string;
-}): Promise<{ organizationId: string; slug: string; embedKey: string }> {
+  plan?: string;
+}): Promise<{ organizationId: string; slug: string; embedKey: string; plan: PlanId }> {
   const db = getDb();
   const organizationId = crypto.randomUUID();
   const slug = await uniqueSlug(slugify(params.studioName));
   const embedKey = newEmbedKey();
+  const planId = (PLANS[params.plan as PlanId] ? params.plan : "free") as PlanId;
 
   await db.batch([
     db.insert(schema.organization).values({
@@ -75,6 +82,7 @@ export async function createStudioForUser(params: {
       timezone: params.timezone,
       contactEmail: params.contactEmail ?? null,
       embedKey,
+      plan: planId,
     }),
     db.insert(schema.auditLog).values({
       id: crypto.randomUUID(),
@@ -87,7 +95,7 @@ export async function createStudioForUser(params: {
     }),
   ]);
 
-  return { organizationId, slug, embedKey };
+  return { organizationId, slug, embedKey, plan: planId };
 }
 
 /** The studio profile for an org, or null. */

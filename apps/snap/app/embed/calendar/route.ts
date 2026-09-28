@@ -132,6 +132,17 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
   .msg.ok { display:block; background:color-mix(in srgb, var(--snap-accent) 8%, var(--snap-surface)); color:var(--snap-text); }
   .msg.err { display:block; background:#fdf0f0; color:#cc3d3d; }
   .hp { position:absolute; left:-9999px; opacity:0; }
+  /* Confirmation view — the professional "you're booked" moment: check,
+   * slot recap, email note, add-to-calendar, book-another. */
+  .done { text-align:center; padding:6px 2px 2px; }
+  .done-check { width:46px; height:46px; margin:0 auto 12px; border-radius:999px; background:var(--snap-accent); color:#fff; font-size:22px; line-height:46px; font-weight:600; }
+  .done-title { margin:0 0 4px; font-size:17px; font-weight:600; color:var(--snap-text); }
+  .done-when { margin:0 0 10px; font-size:13px; font-weight:600; color:var(--snap-text); }
+  .done-note { margin:0 0 14px; font-size:13px; line-height:1.55; color:var(--snap-muted); }
+  .done-note b { color:var(--snap-text); font-weight:600; }
+  .done-ics { display:block; margin:0 0 12px; font-size:13px; color:var(--snap-accent); text-decoration:none; }
+  .done-ics:hover { text-decoration:underline; }
+  .done-again { margin-top:2px; }
 </style>
 </head>
 <body>
@@ -169,6 +180,16 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
       <div id="ts" style="margin:12px 0 0;"></div>
       <button class="cta" id="book-btn" type="submit">Confirm booking</button>
     </form>
+    <div id="done-view" hidden>
+      <div class="done">
+        <div class="done-check" aria-hidden="true">✓</div>
+        <p class="done-title">You're booked!</p>
+        <p class="done-when" id="done-when"></p>
+        <p class="done-note" id="done-note"></p>
+        <a class="done-ics" id="done-ics" href="#" target="_blank" rel="noopener">Add to your calendar</a>
+        <button type="button" class="cta done-again" id="done-again">Book another time</button>
+      </div>
+    </div>
     <div class="msg" id="msg" role="status"></div>
   </div>
   </div>
@@ -193,8 +214,39 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
   var panel = document.getElementById("panel");
   var timesView = document.getElementById("times-view");
   var form = document.getElementById("book-form");
+  var doneView = document.getElementById("done-view");
   var slotsWrap = document.getElementById("slots");
   var msg = document.getElementById("msg");
+
+  function showDone(when, email, bookingRef) {
+    timesView.hidden = true;
+    form.hidden = true;
+    doneView.hidden = false;
+    shell.classList.remove("form-open");
+    document.getElementById("done-when").textContent = when;
+    document.getElementById("done-note").innerHTML = "A confirmation email with all the details is on its way to <b>" + esc2(email) + "</b>. " + studioName + " will see your booking instantly.";
+    var ics = document.getElementById("done-ics");
+    if (bookingRef) {
+      ics.href = origin + "/api/embed/ics?booking=" + encodeURIComponent(bookingRef) + "&key=" + encodeURIComponent(key);
+      ics.hidden = false;
+    } else {
+      ics.hidden = true;
+    }
+    postHeight();
+  }
+  function esc2(s) {
+    var d = document.createElement("div");
+    d.textContent = String(s);
+    return d.innerHTML;
+  }
+
+  document.getElementById("done-again").addEventListener("click", function () {
+    doneView.hidden = true;
+    panel.hidden = true;
+    selectedDay = null; selectedSlot = null;
+    render();
+    postHeight();
+  });
 
   function initTs() {
     // "normal" (300×65) fits and is half the height of "compact" (130×120) —
@@ -248,6 +300,7 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
   function showTimes() {
     timesView.hidden = false;
     form.hidden = true;
+    doneView.hidden = true;
     shell.classList.remove("form-open");
     clearMsg();
   }
@@ -395,14 +448,14 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
           try { window.top.location.href = body.checkoutUrl; } catch (e) { /* no referrer + nested: loader handles */ }
         }
       } else if (res.ok) {
-        // Confirmed: collapse the panel to the success note. (The message
-        // lives inside the panel, so the panel itself must stay visible.)
-        timesView.hidden = true;
-        form.hidden = true;
-        shell.classList.remove("form-open");
+        // Confirmed: swap the panel to the confirmation view (recap, email
+        // note, add-to-calendar) instead of a bare one-liner.
+        showDone(
+          document.getElementById("slot-summary").textContent || "",
+          document.getElementById("b-email").value,
+          body.bookingRef
+        );
         selectedDay = null; selectedSlot = null;
-        msg.className = "msg ok";
-        msg.textContent = "Booked! A confirmation email is on its way to you.";
         // Bust the month cache so the just-booked slot disappears.
         var booked = data.month;
         data = { month: null, days: null };
