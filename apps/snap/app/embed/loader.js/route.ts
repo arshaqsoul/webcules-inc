@@ -129,6 +129,20 @@ const LOADER_JS = `(function () {
     btn.type = "button";
     btn.textContent = label;
     btn.setAttribute("style", "display:inline-block;background:#5e6ad2;color:#fff;border:0;border-radius:8px;padding:10px 18px;font:inherit;font-weight:500;cursor:pointer;");
+    // Button color: a snippet accent override applies immediately; otherwise
+    // pull the studio's brand accent (the trigger lives on the host page,
+    // outside the widget iframe, so it can't inherit the widget's CSS vars).
+    var btnTokens = collectTokens(cfgEl || container);
+    if (!btnTokens.accent) {
+      try {
+        fetch(ORIGIN + "/embed/brand?key=" + encodeURIComponent(key))
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (b) {
+            if (b && /^#[0-9a-fA-F]{6}$/.test(b.accent)) btn.style.background = b.accent;
+          })
+          .catch(function () {});
+      } catch (e) {}
+    } else btn.style.background = btnTokens.accent;
     var open = false;
     btn.addEventListener("click", function () {
       if (open) return;

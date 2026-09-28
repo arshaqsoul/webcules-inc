@@ -17,6 +17,8 @@ type Props = {
   slug: string;
   /** Studio-level widget theme from the brand profile (fallback when no override). */
   studioTheme: string;
+  /** Saved brand accent — the booking-button preview's fallback color. */
+  studioAccent: string;
   studioFontFamily: string;
   originsCount: number;
   /** Brand updatedAt — bumping it (a save) reloads the preview iframes,
@@ -37,7 +39,7 @@ const inputCls =
 
 type WidgetKind = "contact" | "calendar" | "calendar-button";
 
-export function EmbedHub({ embedKey, slug, studioTheme, studioFontFamily, originsCount, revision, liveTokens, onKeyRotated }: Props) {
+export function EmbedHub({ embedKey, slug, studioTheme, studioAccent, studioFontFamily, originsCount, revision, liveTokens, onKeyRotated }: Props) {
   const router = useRouter();
   const confirm = useConfirm();
   const [theme, setTheme] = useState("brand"); // brand | light | dark | auto
@@ -244,7 +246,10 @@ export function EmbedHub({ embedKey, slug, studioTheme, studioFontFamily, origin
             </p>
           </div>
           <div className="flex items-center justify-center rounded-lg border border-dashed border-hairline px-4 py-8">
-            <span className="rounded-lg px-4 py-2.5 text-sm font-medium text-white" style={{ background: /^#[0-9a-fA-F]{6}$/.test(a) ? a : "#5e6ad2" }}>
+            <span
+              className="rounded-lg px-4 py-2.5 text-sm font-medium text-white"
+              style={{ background: /^#[0-9a-fA-F]{6}$/.test(a) ? a : (/^#[0-9a-fA-F]{6}$/.test(studioAccent) ? studioAccent : "#5e6ad2") }}
+            >
               {label || "Book a session"}
             </span>
           </div>

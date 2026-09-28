@@ -275,6 +275,7 @@ export function SettingsForm({ initial, brandRevision }: { initial: Initial; bra
         embedKey={embedKey}
         slug={initial.slug}
         studioTheme={theme}
+        studioAccent={profile.accentColor}
         studioFontFamily={fontFamily}
         originsCount={initial.embedOrigins.length}
         revision={brandRevision}
