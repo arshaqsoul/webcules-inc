@@ -79,9 +79,12 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
   .tz { font-size:11px; color:var(--snap-muted); margin-left:auto; }
   /* Cal-style shell: calendar left, times/form right (stacked on narrow).
    * Media queries key off the iframe viewport, so hosts embedding the widget
-   * in a narrow column get the stacked layout automatically. */
+   * in a narrow column get the stacked layout automatically. Wide screens
+   * get a roomier panel where the form fits two fields per row and the
+   * full-size Turnstile — keeping the form step no taller than the calendar. */
   .shell { display:grid; grid-template-columns:1fr; gap:16px; align-items:start; }
   @media (min-width:620px) { .shell { grid-template-columns:minmax(0,1fr) 248px; gap:24px; } }
+  @media (min-width:860px) { .shell { grid-template-columns:minmax(0,1fr) 360px; gap:28px; } }
   /* Stacked layout: once the visitor opens the form, it takes over the row —
    * no calendar + form scroll marathon. */
   @media (max-width:619px) { .shell.form-open .cal-wrap { display:none; } }
@@ -91,6 +94,8 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
   .cal-nav button { width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center; border:0; background:transparent; border-radius:999px; font-size:18px; line-height:1; cursor:pointer; color:var(--snap-text); padding:0; }
   .cal-nav button:hover { background:color-mix(in srgb, var(--snap-text) 8%, transparent); }
   .grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px 2px; }
+  @media (min-width:620px) { .grid { gap:4px 4px; } .day { max-width:44px; } }
+  @media (min-width:860px) { .grid { gap:4px 8px; } .day { max-width:46px; } }
   .dow { text-align:center; font-size:11px; text-transform:uppercase; color:var(--snap-muted); padding:2px 0; }
   .day { aspect-ratio:1/1; width:100%; max-width:42px; margin:0 auto; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; border:1px solid transparent; border-radius:999px; background:transparent; font:inherit; cursor:pointer; color:var(--snap-text); padding:0; }
   .day:disabled { color:color-mix(in srgb, var(--snap-text) 28%, var(--snap-bg)); cursor:default; }
@@ -104,7 +109,10 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
   .day.selected .dot { background:#fff; }
   .panel { border:1px solid var(--snap-border); background:var(--snap-surface); border-radius:min(calc(var(--snap-radius) + 4px), 22px); padding:16px; }
   .panel-title { margin:0 0 10px; font-size:15px; font-weight:600; color:var(--snap-text); }
-  .slots { display:flex; flex-direction:column; gap:8px; max-height:322px; overflow-y:auto; }
+  /* Tall enough that the times view is the height ceiling on desktop — the
+   * booking form (compact rows, side-by-side fields, full-size Turnstile)
+   * then never stretches the widget when it swaps in. */
+  .slots { display:flex; flex-direction:column; gap:8px; max-height:380px; overflow-y:auto; }
   .slot { border:1px solid var(--snap-border); background:var(--snap-bg); border-radius:var(--snap-radius); padding:9px 12px; font:inherit; font-size:13px; cursor:pointer; text-align:center; color:var(--snap-text); }
   .slot:hover { border-color:var(--snap-accent); }
   .back { display:inline-flex; align-items:center; border:0; background:transparent; padding:2px 6px; margin:0 0 4px -6px; border-radius:6px; font:inherit; font-size:13px; color:var(--snap-muted); cursor:pointer; }
@@ -113,6 +121,9 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
   label { display:block; font-size:13px; font-weight:500; margin:10px 0 4px; color:var(--snap-text); }
   input, textarea { width:100%; padding:8px 12px; border:1px solid var(--snap-border); border-radius:var(--snap-radius); font:inherit; background:var(--snap-bg); color:var(--snap-text); }
   input:focus, textarea:focus { outline:2px solid color-mix(in srgb, var(--snap-accent) 50%, transparent); border-color:var(--snap-accent); }
+  /* Wide panel: name + email share a row so the form never outgrows the
+   * calendar column's height. */
+  @media (min-width:860px) { .frow { display:grid; grid-template-columns:1fr 1fr; gap:0 10px; } }
   .cta { margin-top:14px; width:100%; padding:9px 14px; background:var(--snap-accent); color:#fff; border:0; border-radius:var(--snap-radius); font:inherit; font-weight:500; cursor:pointer; }
   .cta:disabled { opacity:.6; cursor:default; }
   .muted { color:var(--snap-muted); font-size:13px; }
@@ -148,8 +159,10 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
     <form id="book-form" hidden novalidate>
       <button type="button" class="back" id="back-btn">‹ Back</button>
       <p class="slot-summary" id="slot-summary"></p>
-      <label for="b-name">Your name</label><input id="b-name" required autocomplete="name" />
-      <label for="b-email">Email</label><input id="b-email" type="email" required autocomplete="email" />
+      <div class="frow">
+        <div><label for="b-name">Your name</label><input id="b-name" required autocomplete="name" /></div>
+        <div><label for="b-email">Email</label><input id="b-email" type="email" required autocomplete="email" /></div>
+      </div>
       <label for="b-phone">Phone (optional)</label><input id="b-phone" type="tel" autocomplete="tel" />
       <label for="b-notes">Anything we should know? (optional)</label><textarea id="b-notes"></textarea>
       <div class="hp" aria-hidden="true"><label>Leave empty<input name="company_website" tabindex="-1" autocomplete="off" /></label></div>
@@ -184,10 +197,13 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
   var msg = document.getElementById("msg");
 
   function initTs() {
-    // size:"compact" (130px) — the normal 300px widget overflows the 214px
-    // times panel and forces a horizontal scrollbar inside the iframe.
+    // "normal" (300×65) fits and is half the height of "compact" (130×120) —
+    // but only where the panel is ≥360px wide (≥860px iframe). Below that the
+    // normal widget overflows the 248px panel and forces a horizontal
+    // scrollbar, so it falls back to compact.
+    var wide = window.matchMedia && window.matchMedia("(min-width:860px)").matches;
     if (SITE_KEY && window.turnstile && !document.getElementById("ts").hasChildNodes()) {
-      turnstile.render("#ts", { sitekey: SITE_KEY, callback: function (t) { tsToken = t; }, size: "compact" });
+      turnstile.render("#ts", { sitekey: SITE_KEY, callback: function (t) { tsToken = t; }, size: wide ? "normal" : "compact" });
     }
   }
 

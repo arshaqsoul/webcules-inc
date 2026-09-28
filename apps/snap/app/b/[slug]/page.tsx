@@ -73,7 +73,7 @@ export default async function PublicBookingPage({ params }: { params: Promise<{ 
 
   return (
     <main className="flex min-h-screen flex-col items-center px-4 py-8 sm:py-12" style={{ background: `color-mix(in srgb, ${accent} 6%, #fafafa)` }}>
-      <div className="w-full max-w-3xl">
+      <div className="w-full max-w-5xl">
         <div className="mb-4 flex flex-col items-center gap-2 text-center">
           {studio.logoKey ? (
             // eslint-disable-next-line @next/next/no-img-element -- branded logo via authorized proxy
