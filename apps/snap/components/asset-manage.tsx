@@ -326,6 +326,7 @@ export function AssetManage({
             src={`/api/assets/${t.id}?variant=thumb${derivVersion ? `&v=${derivVersion}` : ""}`}
             alt=""
             loading="lazy"
+            draggable={false}
             className="h-full w-full object-cover"
           />
         ) : (

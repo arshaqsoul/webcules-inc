@@ -825,19 +825,30 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
   // Whole-tab drop target (Files polish): dropping anywhere on the tab
   // uploads instead of the browser navigating to the file. Depth-counted
   // dragenter/leave drives a full-viewport "Drop to upload" overlay.
+  // Launch fix: drags that START inside this page (grid thumbnails, links)
+  // never upload — some browsers expose an in-page image drag as a File
+  // (the rendered derivative bytes), which fingerprint dedup can't catch
+  // and produced duplicate uploads.
   const [dragActive, setDragActive] = useState(false);
   const dragDepth = useRef(0);
+  const internalDrag = useRef(false);
   const enqueueRef = useRef(enqueueWithStore);
   enqueueRef.current = enqueueWithStore;
   useEffect(() => {
     const hasFiles = (e: DragEvent) => Array.from(e.dataTransfer?.types ?? []).includes("Files");
+    const onDragStart = () => {
+      internalDrag.current = true;
+    };
+    const onDragEnd = () => {
+      internalDrag.current = false;
+    };
     const onEnter = (e: DragEvent) => {
-      if (!hasFiles(e)) return;
+      if (internalDrag.current || !hasFiles(e)) return;
       dragDepth.current++;
       setDragActive(true);
     };
     const onOver = (e: DragEvent) => {
-      if (hasFiles(e)) e.preventDefault();
+      if (hasFiles(e) && !internalDrag.current) e.preventDefault();
     };
     const onLeave = () => {
       dragDepth.current = Math.max(0, dragDepth.current - 1);
@@ -846,15 +857,24 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
     const onDrop = (e: DragEvent) => {
       dragDepth.current = 0;
       setDragActive(false);
+      if (internalDrag.current) {
+        // Swallow the drop so the browser doesn't navigate to the image.
+        e.preventDefault();
+        return;
+      }
       if (!hasFiles(e)) return;
       e.preventDefault();
       if (e.dataTransfer?.files?.length) void enqueueRef.current(e.dataTransfer.files);
     };
+    document.addEventListener("dragstart", onDragStart, true);
+    document.addEventListener("dragend", onDragEnd, true);
     document.addEventListener("dragenter", onEnter);
     document.addEventListener("dragover", onOver);
     document.addEventListener("dragleave", onLeave);
     document.addEventListener("drop", onDrop);
     return () => {
+      document.removeEventListener("dragstart", onDragStart, true);
+      document.removeEventListener("dragend", onDragEnd, true);
       document.removeEventListener("dragenter", onEnter);
       document.removeEventListener("dragover", onOver);
       document.removeEventListener("dragleave", onLeave);
@@ -1257,6 +1277,7 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
         onDrop={(e) => {
           e.preventDefault();
           e.stopPropagation(); // the document-level handler would enqueue again
+          if (internalDrag.current) return; // in-page drags never upload
           if (e.dataTransfer.files?.length) void enqueueWithStore(e.dataTransfer.files);
         }}
         className="hidden rounded-[12px] border border-dashed border-hairline-strong bg-surface-1 p-4 text-center text-xs text-ink-subtle sm:block"
@@ -1454,6 +1475,7 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                       href={`/api/assets/${a.id}`}
                       target="_blank"
                       rel="noreferrer"
+                      draggable={false}
                       title={selectMode ? undefined : "Manage this file"}
                       className={`relative block bg-canvas ${selectMode ? "" : "cursor-zoom-in"}`}
                       onClick={(e) => {
@@ -1470,6 +1492,7 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                           src={`/api/assets/${a.id}?variant=thumb${derivVersion ? `&v=${derivVersion}` : ""}`}
                           alt={a.filename}
                           loading="lazy"
+                          draggable={false}
                           className={`block w-full object-cover ${compact ? "aspect-square" : "aspect-square sm:aspect-auto"}`}
                         />
                       ) : (
@@ -1600,6 +1623,7 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                           src={`/api/assets/${a.id}?variant=thumb${derivVersion ? `&v=${derivVersion}` : ""}`}
                           alt=""
                           loading="lazy"
+                          draggable={false}
                           className="h-9 w-9 shrink-0 rounded-md object-cover"
                         />
                       ) : (
