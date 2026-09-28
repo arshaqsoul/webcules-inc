@@ -82,7 +82,11 @@ export function KanbanBoard({ projects }: { projects: BoardProject[] }) {
           {error ?? notice}
         </p>
       )}
-      <div className="grid grid-cols-1 gap-3 overflow-x-auto md:grid-cols-3 xl:grid-cols-6">
+      {/* Linear-style lanes: one horizontal scroller at every breakpoint —
+       * fixed-width lanes never wrap or stack, the row scrolls (touch on
+       * mobile), and -mx-6/px-6 bleeds to the main padding's edges so lanes
+       * stay aligned with the rest of the content. */}
+      <div className="-mx-6 flex snap-x snap-proximity gap-3 overflow-x-auto px-6 pb-2">
         {COLUMNS.map((col) => {
           const cards = items.filter((p) => p.status === col.key);
           return (
@@ -93,7 +97,7 @@ export function KanbanBoard({ projects }: { projects: BoardProject[] }) {
                 if (dragging) void move(dragging, col.key);
                 setDragging(null);
               }}
-              className="flex min-w-[220px] flex-col gap-2 rounded-[12px] border border-hairline bg-surface-1 p-3"
+              className="flex w-[272px] shrink-0 snap-start flex-col gap-2 rounded-[12px] border border-hairline bg-surface-1 p-3 md:w-[300px]"
             >
               <div className="flex items-center justify-between px-1">
                 <span className="flex items-center gap-2 text-[13px] font-medium text-ink">
