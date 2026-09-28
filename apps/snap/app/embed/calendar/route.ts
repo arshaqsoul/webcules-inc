@@ -102,7 +102,7 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
   .day .n { font-size:13px; font-weight:500; line-height:1; }
   .day .dot { width:4px; height:4px; border-radius:999px; background:var(--snap-accent); }
   .day.selected .dot { background:#fff; }
-  .panel { border:1px solid var(--snap-border); background:var(--snap-surface); border-radius:calc(var(--snap-radius) + 4px); padding:16px; }
+  .panel { border:1px solid var(--snap-border); background:var(--snap-surface); border-radius:min(calc(var(--snap-radius) + 4px), 22px); padding:16px; }
   .panel-title { margin:0 0 10px; font-size:15px; font-weight:600; color:var(--snap-text); }
   .slots { display:flex; flex-direction:column; gap:8px; max-height:322px; overflow-y:auto; }
   .slot { border:1px solid var(--snap-border); background:var(--snap-bg); border-radius:var(--snap-radius); padding:9px 12px; font:inherit; font-size:13px; cursor:pointer; text-align:center; color:var(--snap-text); }

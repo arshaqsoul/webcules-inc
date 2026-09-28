@@ -79,6 +79,11 @@ export function sanitizeTokenBag(input: Record<string, unknown>): TokenBag {
 export function resolveWidgetVars(brand: { accent?: string; fontFamily?: string; theme?: string }, overrides: TokenBag): { vars: string; theme: "light" | "dark" } {
   const theme: "light" | "dark" = overrides.theme === "dark" || (!overrides.theme && brand.theme === "dark") ? "dark" : "light";
   const neutrals = theme === "dark" ? DARK_DEFAULTS : LIGHT_DEFAULTS;
+  // A percentage radius is per-axis in CSS — on any non-square element it
+  // renders a full ellipse, not a rounded corner. Treat 50% as "fully
+  // rounded" so it makes pills, never ovals.
+  const radiusToken = safeRadius(overrides.radius) ?? neutrals.radius;
+  const radius = radiusToken.endsWith("%") ? "999px" : radiusToken;
 
   const final: Record<string, string> = {
     "--snap-accent": safeHexColor(overrides.accent ?? brand.accent ?? "") ?? "#5e6ad2",
@@ -88,7 +93,7 @@ export function resolveWidgetVars(brand: { accent?: string; fontFamily?: string;
     "--snap-text": safeHexColor(overrides.text ?? "") ?? neutrals.text,
     "--snap-muted": safeHexColor(overrides.muted ?? "") ?? neutrals.muted,
     "--snap-border": safeHexColor(overrides.border ?? "") ?? neutrals.border,
-    "--snap-radius": safeRadius(overrides.radius) ?? neutrals.radius,
+    "--snap-radius": radius,
   };
   const vars = Object.entries(final)
     .map(([k, v]) => `${k}:${v};`)
