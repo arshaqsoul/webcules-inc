@@ -28,6 +28,7 @@ import { parseFormSchema } from "@/lib/forms";
 import { parsePresetLines } from "@/lib/invoice-settings";
 import { GalleryDesigner } from "@/components/gallery-designer";
 import { getProjectGalleryDesign } from "@/lib/repos/gallery-design";
+import { getProjectSlideshow } from "@/lib/repos/slideshow";
 import { getDefaultTemplate } from "@/lib/repos/templates";
 import { parseGalleryDesignJson } from "@/lib/gallery-design";
 import { getPlanEntitlements } from "@/lib/plans";
@@ -82,7 +83,7 @@ export default async function ProjectDetailPage({
 
   // Load only what the active tab renders — the Files workspace fetches its
   // own asset grid client-side.
-  const [events, shareActivity, auditEvents, assets, grants, deliverFolders, payments, paymentSummary, invoices, contractsRows, formResponses, questionnaireTemplates, contractTemplates, invoicePresets, design, inheritedDesign, ent] =
+  const [events, shareActivity, auditEvents, assets, grants, deliverFolders, payments, paymentSummary, invoices, contractsRows, formResponses, questionnaireTemplates, contractTemplates, invoicePresets, design, slideshowCfg, inheritedDesign, ent] =
     await Promise.all([
       tab === "overview" || tab === "activity"
         ? db
@@ -109,6 +110,8 @@ export default async function ProjectDetailPage({
       // WEB-258: gallery design — the project's own + the org default preset
       // (inherited), plus entitlements for the Lite+ design gate.
       tab === "gallery" ? getProjectGalleryDesign(ctx.organizationId, id) : Promise.resolve(null),
+      // WEB-259: slideshow config (music picker gates on the Lite+ flag).
+      tab === "gallery" ? getProjectSlideshow(ctx.organizationId, id) : Promise.resolve(null),
       tab === "gallery"
         ? (async () => (await getDefaultTemplate(ctx.organizationId, "gallery_preset"))?.body ?? null)().then((b) => parseGalleryDesignJson(b))
         : Promise.resolve(null),
@@ -272,6 +275,8 @@ export default async function ProjectDetailPage({
           initialDesign={design}
           inherited={inheritedDesign}
           canDesign={(ent?.id ?? "free") !== "free"}
+          initialSlideshow={slideshowCfg}
+          canMusic={(ent?.id ?? "free") !== "free"}
         />
         <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
           <h2 className="text-[15px] font-medium text-ink">Client gallery</h2>

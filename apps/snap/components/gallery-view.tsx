@@ -338,6 +338,219 @@ export function GalleryGate({ studioName, accent, logoUrl, whiteLabel, token, ma
   );
 }
 
+/* ---------------- WEB-259: full-screen slideshow ---------------- */
+
+export type SlideshowProps = {
+  pace: number;
+  transition: "fade" | "kenburns";
+  musicUrl: string | null;
+  musicStartAt: number;
+};
+
+/** Autoplay slideshow: crossfade + optional Ken Burns drift per slide, pace
+   * 3/5/8 s, arrows/swipe/keyboard, progress bar, 9:16 vertical (social)
+   * mode, optional BYO music streamed from R2. Autoplay-policy-safe: audio
+   * starts muted-blocked until a gesture when the browser insists (iOS) —
+   * the "tap for sound" pill covers it. Tapping a slide hands off to the
+   * lightbox at that photo. Preloads only the next two previews. */
+function Slideshow({ slides, startIndex, cfg, watermarked, deterrents, onOpenLightbox, onClose }: {
+  slides: { asset: GalleryAsset; lightboxIdx: number }[];
+  startIndex: number;
+  cfg: SlideshowProps;
+  watermarked?: boolean;
+  deterrents?: boolean;
+  onOpenLightbox: (lightboxIdx: number) => void;
+  onClose: () => void;
+}) {
+  const n = slides.length;
+  const [{ idx, fadeFrom }, setSlide] = useState(() => ({
+    idx: Math.min(Math.max(0, startIndex), Math.max(0, n - 1)),
+    fadeFrom: null as number | null,
+  }));
+  const [playing, setPlaying] = useState(true);
+  const [muted, setMuted] = useState(false);
+  const [audioBlocked, setAudioBlocked] = useState(false);
+  const [vertical, setVertical] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const touchX = useRef<number | null>(null);
+
+  const step = useCallback(
+    (dir: 1 | -1) => {
+      setSlide((cur) => (n ? { idx: (cur.idx + dir + n) % n, fadeFrom: cur.idx } : cur));
+    },
+    [n],
+  );
+
+  useEffect(() => {
+    if (!playing || n < 2) return;
+    const t = setInterval(() => step(1), cfg.pace * 1000);
+    return () => clearInterval(t);
+  }, [playing, cfg.pace, n, step]);
+
+  // Crossfade layer: keep the previous slide mounted briefly under the new one.
+  useEffect(() => {
+    if (fadeFrom === null) return;
+    const t = setTimeout(() => setSlide((cur) => ({ ...cur, fadeFrom: null })), 750);
+    return () => clearTimeout(t);
+  }, [fadeFrom]);
+
+  // Bandwidth-polite: preload only the next two previews.
+  useEffect(() => {
+    if (n < 2) return;
+    for (const off of [1, 2]) {
+      const img = new Image();
+      img.src = `/api/assets/${slides[(idx + off) % n].asset.id}?variant=${watermarked ? "preview_wm" : "preview"}`;
+    }
+  }, [idx, n, slides, watermarked]);
+
+  // Audio follows play/pause + mute; a rejected play() = autoplay policy
+  // (iOS Safari) — surface the gesture pill instead of fighting it.
+  useEffect(() => {
+    const el = audioRef.current;
+    if (!el || !cfg.musicUrl) return;
+    el.muted = muted;
+    if (playing) {
+      el.play().then(() => setAudioBlocked(false)).catch(() => setAudioBlocked(true));
+    } else {
+      el.pause();
+    }
+  }, [playing, muted, cfg.musicUrl]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowRight") step(1);
+      if (e.key === "ArrowLeft") step(-1);
+      if (e.key === " ") {
+        e.preventDefault();
+        setPlaying((p) => !p);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose, step]);
+
+  if (!n) return null;
+  const current = slides[idx];
+  const previous = fadeFrom !== null ? slides[fadeFrom] : null;
+  const slideCls = "absolute inset-0 h-full w-full object-contain";
+  const kenburns = cfg.transition === "kenburns";
+
+  const media = (entry: { asset: GalleryAsset }, isCurrent: boolean) =>
+    entry.asset.kind === "image" ? (
+      <BackoffImage
+        id={entry.asset.id}
+        alt={entry.asset.filename}
+        variant={watermarked ? "preview_wm" : "preview"}
+        protectedMedia={deterrents}
+        loading="eager"
+        className={`${slideCls} ${isCurrent ? "snap-fade-in" : ""} ${isCurrent && kenburns ? "snap-kenburns" : ""}`}
+      />
+    ) : null;
+
+  return (
+    <div role="dialog" aria-modal="true" aria-label="Slideshow" className="fixed inset-0 z-[60] flex flex-col bg-black">
+      {cfg.musicUrl && (
+        // eslint-disable-next-line jsx-a11y/media-has-caption -- music track
+        <audio ref={audioRef} src={cfg.musicUrl} loop preload="auto" onLoadedMetadata={(e) => { if (cfg.musicStartAt > 0) e.currentTarget.currentTime = cfg.musicStartAt; }} />
+      )}
+
+      <div className="flex items-center gap-2 px-4 py-3 text-white/90">
+        <button onClick={onClose} aria-label="Close slideshow" className="rounded-md p-1.5 hover:bg-white/10">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M18 6 6 18M6 6l12 12" /></svg>
+        </button>
+        <span className="min-w-0 flex-1 truncate text-sm">{idx + 1} / {n}</span>
+        <button
+          type="button"
+          onClick={() => setVertical((v) => !v)}
+          aria-pressed={vertical}
+          className="rounded-md px-2.5 py-1.5 text-xs font-medium hover:bg-white/10"
+          title={vertical ? "Full-screen mode" : "Vertical (9:16) — perfect for Stories & Reels"}
+        >
+          {vertical ? "9:16" : "16:9"}
+        </button>
+        {cfg.musicUrl && (
+          <button
+            type="button"
+            onClick={() => {
+              setMuted((m) => !m);
+              setAudioBlocked(false);
+            }}
+            aria-label={muted ? "Unmute music" : "Mute music"}
+            className="rounded-md p-1.5 hover:bg-white/10"
+          >
+            {muted ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M11 5 6 9H2v6h4l5 4V5Z" /><path d="m22 9-6 6M16 9l6 6" /></svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M11 5 6 9H2v6h4l5 4V5Z" /><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a9 9 0 0 1 0 14" /></svg>
+            )}
+          </button>
+        )}
+        <button type="button" onClick={() => setPlaying((p) => !p)} aria-label={playing ? "Pause" : "Play"} className="rounded-md p-1.5 hover:bg-white/10">
+          {playing ? (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden><rect x="6" y="4" width="4" height="16" rx="1" /><rect x="14" y="4" width="4" height="16" rx="1" /></svg>
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 14 16" fill="currentColor" aria-hidden><path d="M0 0l14 8-14 8z" /></svg>
+          )}
+        </button>
+      </div>
+
+      <div
+        className={`relative flex min-h-0 flex-1 items-center justify-center px-2 pb-4 ${vertical ? "py-0" : ""}`}
+        onTouchStart={(e) => (touchX.current = e.touches[0].clientX)}
+        onTouchEnd={(e) => {
+          if (touchX.current === null) return;
+          const dx = e.changedTouches[0].clientX - touchX.current;
+          touchX.current = null;
+          if (Math.abs(dx) > 48) step(dx < 0 ? 1 : -1);
+        }}
+      >
+        {n > 1 && (
+          <button onClick={(e) => { e.stopPropagation(); step(-1); }} aria-label="Previous photo" className="absolute left-2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur hover:bg-white/20">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M15 18l-6-6 6-6" /></svg>
+          </button>
+        )}
+        <div
+          className={`relative overflow-hidden ${vertical ? "aspect-[9/16] max-h-full w-auto max-w-full" : "h-full w-full"}`}
+          onClick={() => onOpenLightbox(current.lightboxIdx)}
+        >
+          {previous && media(previous, false)}
+          {media(current, true)}
+        </div>
+        {n > 1 && (
+          <button onClick={(e) => { e.stopPropagation(); step(1); }} aria-label="Next photo" className="absolute right-2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur hover:bg-white/20">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M9 18l6-6-6-6" /></svg>
+          </button>
+        )}
+      </div>
+
+      {audioBlocked && !muted && (
+        <button
+          type="button"
+          onClick={() => {
+            const el = audioRef.current;
+            if (!el) return;
+            el.muted = false;
+            el.play().then(() => setAudioBlocked(false)).catch(() => {});
+          }}
+          className="absolute bottom-16 left-1/2 -translate-x-1/2 rounded-full bg-white/15 px-4 py-2 text-xs font-medium text-white backdrop-blur"
+        >
+          🔊 Tap for sound
+        </button>
+      )}
+      {vertical && <p className="pb-2 text-center text-[11px] text-white/50">Vertical format — record your screen for Stories &amp; Reels</p>}
+
+      <div className="h-1 w-full bg-white/15" role="progressbar" aria-label="Slide progress">
+        <span
+          key={`${idx}-${playing}`}
+          className="snap-progress-bar block h-full bg-white"
+          style={{ animationDuration: `${cfg.pace}s`, animationPlayState: playing ? "running" : "paused" }}
+        />
+      </div>
+    </div>
+  );
+}
+
 /* ---------------- WEB-258: designed gallery (cover, layouts, theme) ---------------- */
 
 /** Cover hero — three styles, all CSS (Ken Burns is keyframes-only and
@@ -558,7 +771,7 @@ function GalleryTile(props: {
 }
 
 
-export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLabel, watermarked, deterrents, assets, allowDownload, expiresAt, selectionMode, selectionLimit, selectionDeadline, initialFavorites, submittedSelection, clientToken, design }: Brand & {
+export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLabel, watermarked, deterrents, assets, allowDownload, expiresAt, selectionMode, selectionLimit, selectionDeadline, initialFavorites, submittedSelection, clientToken, design, slideshow }: Brand & {
   assets: GalleryAsset[];
   allowDownload: boolean;
   expiresAt: string | null;
@@ -571,8 +784,12 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
   clientToken: string;
   /** WEB-258: gallery design (cover/layout/theme) — null = classic look. */
   design?: GalleryDesign | null;
+  /** WEB-259: slideshow (server-resolved: Free tier arrives musicless). */
+  slideshow?: SlideshowProps | null;
 }) {
   const [open, setOpen] = useState<number | null>(null);
+  // WEB-259: slideshow start index into the photos-only slide list.
+  const [slideshowStart, setSlideshowStart] = useState<number | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set(initialFavorites));
   const [picks, setPicks] = useState<Set<string>>(new Set(submittedSelection?.items ?? []));
   const [submitted, setSubmitted] = useState<{ items: string[]; note: string | null; submittedAt: string } | null>(submittedSelection);
@@ -614,6 +831,12 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
 
   const folderNames = Array.from(new Set(assets.map((a) => a.folder).filter((f): f is string => Boolean(f))));
   const visible = activeFolder ? assets.filter((a) => a.folder === activeFolder) : assets;
+  // WEB-259: photos in delivery order; each carries its lightbox index so a
+  // slideshow tap hands off to the lightbox at the same photo.
+  const slideEntries = useMemo(
+    () => visible.map((asset, lightboxIdx) => ({ asset, lightboxIdx })).filter((e) => e.asset.kind === "image"),
+    [visible],
+  );
 
   // WEB-258: designed galleries group folders as section headers (the
   // folderless block leads without one). Classic mode stays a flat grid.
@@ -775,6 +998,16 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
           <span className="text-xs text-ink-tertiary">
             {assets.length} item{assets.length === 1 ? "" : "s"}
           </span>
+          {slideshow && slideEntries.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setSlideshowStart(0)}
+              className="flex items-center gap-1.5 rounded-full bg-surface-1 px-3 py-1.5 text-xs font-medium text-ink-muted transition-colors hover:text-ink"
+            >
+              <svg width="12" height="12" viewBox="0 0 14 16" fill="currentColor" aria-hidden><path d="M0 0l14 8-14 8z" /></svg>
+              Slideshow
+            </button>
+          )}
           <span className="ml-auto text-xs text-ink-tertiary">
             {expiry ? `Link expires ${expiry}` : "Saved to your gallery"}
           </span>
@@ -822,7 +1055,21 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
               {section.name && themed && (
                 <div className="mb-3 flex items-baseline justify-between">
                   <h2 className="text-[15px] font-medium text-ink">{section.name}</h2>
-                  <span className="text-xs text-ink-tertiary">{section.items.length} item{section.items.length === 1 ? "" : "s"}</span>
+                  <span className="flex items-center gap-2 text-xs text-ink-tertiary">
+                    {section.items.length} item{section.items.length === 1 ? "" : "s"}
+                    {slideshow && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const first = section.items.find((it) => it.a.kind === "image");
+                          if (first) setSlideshowStart(slideEntries.findIndex((e) => e.asset.id === first.a.id));
+                        }}
+                        className="rounded-full bg-surface-1 px-2.5 py-1 text-[11px] font-medium text-ink-muted transition-colors hover:text-ink"
+                      >
+                        ▶ Play
+                      </button>
+                    )}
+                  </span>
                 </div>
               )}
               {layout === "grid" && (
@@ -956,6 +1203,21 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
         {whiteLabel ? `© ${studioName}` : <>Delivered by {studioName} via Snap</>}
         {!whiteLabel && contactEmail ? <> · <a href={`mailto:${contactEmail}`} className="underline underline-offset-2">Contact the studio</a></> : null}
       </footer>
+
+      {slideshow && slideshowStart !== null && slideEntries.length > 0 && (
+        <Slideshow
+          slides={slideEntries}
+          startIndex={slideshowStart}
+          cfg={slideshow}
+          watermarked={watermarked}
+          deterrents={deterrents}
+          onOpenLightbox={(lightboxIdx) => {
+            setSlideshowStart(null);
+            setOpen(lightboxIdx);
+          }}
+          onClose={() => setSlideshowStart(null)}
+        />
+      )}
 
       {current && (
         <div

@@ -213,3 +213,35 @@ body {
     animation: none;
   }
 }
+
+/* WEB-259: slideshow crossfade + progress bar. Reduced motion keeps the
+ * crossfade (opacity only, spec: "static crossfades") but kills drift. */
+@keyframes snap-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.snap-fade-in {
+  animation: snap-fade-in 700ms ease both;
+}
+@keyframes snap-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.snap-progress-bar {
+  transform-origin: left;
+  animation: snap-progress linear forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .snap-kenburns,
+  .snap-fade-in {
+    animation-duration: 1ms;
+  }
+}

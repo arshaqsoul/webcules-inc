@@ -16,6 +16,8 @@ import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { effectiveGalleryDesign } from "@/lib/repos/gallery-design";
+import { getProjectSlideshow, slideshowForTier } from "@/lib/repos/slideshow";
+import type { SlideshowProps } from "@/components/gallery-view";
 import { getPlanEntitlements } from "@/lib/plans";
 import { logShareAccess, resolveGalleryAccess } from "@/lib/shares/gallery-auth";
 import { getGrantAssets, getGrantByTokenHashAny, resolveGrantByToken } from "@/lib/shares/grants";
@@ -137,7 +139,7 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
     return <GalleryDenied reason="unknown" />;
   }
 
-  const [profile, assets, ent, favorites, selection, projectOverride, design] = await Promise.all([
+  const [profile, assets, ent, favorites, selection, projectOverride, design, slideshowCfg] = await Promise.all([
     getStudioProfile(grant.organizationId),
     getGrantAssets(grant),
     getPlanEntitlements(grant.organizationId),
@@ -151,6 +153,8 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
       .limit(1),
     // WEB-258: effective design (project → org default preset → classic).
     designedGallery(grant),
+    // WEB-259: slideshow config (music resolved + tier-stripped below).
+    getProjectSlideshow(grant.organizationId, grant.projectId),
   ]);
   const brand = JSON.parse(profile?.brand || "{}") as { accent?: string };
   const shared = {
@@ -171,6 +175,17 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
       studioName: profile?.studioName,
     }) !== null,
   };
+
+  // WEB-259: Free galleries keep the basic slideshow but never audio.
+  const effectiveSlideshow = slideshowForTier(slideshowCfg, (ent?.id ?? "free") !== "free");
+  const slideshow: SlideshowProps | null = effectiveSlideshow
+    ? {
+        pace: effectiveSlideshow.pace,
+        transition: effectiveSlideshow.transition,
+        musicUrl: effectiveSlideshow.music ? `/api/g/${token}/music?a=${effectiveSlideshow.music}` : null,
+        musicStartAt: effectiveSlideshow.musicStartAt,
+      }
+    : null;
 
   // Email-shock contingency: OTPs off, the link itself is the gate.
   if (env.GALLERY_OTP_MODE === "off") {
@@ -200,6 +215,7 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
         submittedSelection={selection ? { items: selection.items, note: selection.note, submittedAt: selection.submittedAt.toISOString() } : null}
         clientToken={token}
         design={design}
+        slideshow={slideshow}
       />
     );
   }
@@ -242,6 +258,7 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
       submittedSelection={selection ? { items: selection.items, note: selection.note, submittedAt: selection.submittedAt.toISOString() } : null}
       clientToken={token}
       design={design}
+      slideshow={slideshow}
     />
   );
 }

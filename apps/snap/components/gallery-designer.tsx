@@ -19,22 +19,27 @@ import {
   focalPosition,
   type GalleryDesign,
 } from "@/lib/gallery-design";
+import { SLIDESHOW_PACES, SLIDESHOW_TRANSITIONS, type SlideshowConfig } from "@/lib/slideshow";
 
 type PickerAsset = { id: string; filename: string; status: string };
 type PresetRow = { id: string; name: string; isDefault: boolean; body?: string };
+type MusicTrack = { id: string; name: string; bytes: number };
 
 const CLASSIC: GalleryDesign = {
   layout: "grid",
   theme: { background: "light", padding: "normal", radius: "16px", captions: "off" },
 };
 
-export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign }: {
+export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign, initialSlideshow, canMusic }: {
   projectId: string;
   /** The project's own saved design (null = none). */
   initialDesign: GalleryDesign | null;
   /** The org's default preset design, shown when the project has none. */
   inherited: GalleryDesign | null;
   canDesign: boolean;
+  /** WEB-259: slideshow config + whether this org may pick music (Lite+). */
+  initialSlideshow: SlideshowConfig | null;
+  canMusic: boolean;
 }) {
   const [draft, setDraft] = useState<GalleryDesign>(initialDesign ?? inherited ?? CLASSIC);
   const [customized, setCustomized] = useState(Boolean(initialDesign));
@@ -45,6 +50,14 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
   const [picker, setPicker] = useState<PickerAsset[] | null>(null);
   const [presets, setPresets] = useState<PresetRow[]>([]);
   const [presetName, setPresetName] = useState("");
+  const [slideshowDraft, setSlideshowDraft] = useState<SlideshowConfig>(
+    initialSlideshow ?? { enabled: false, pace: 5, transition: "kenburns", music: "", musicStartAt: 0 },
+  );
+  const [slideshowDirty, setSlideshowDirty] = useState(false);
+  const [tracks, setTracks] = useState<MusicTrack[] | null>(null);
+  const [uploadName, setUploadName] = useState("");
+  const [warranted, setWarranted] = useState(false);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
   const focalRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
 
@@ -59,7 +72,13 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
       .then((r) => (r.ok ? (r.json() as Promise<{ templates?: PresetRow[] }>) : Promise.resolve({ templates: [] })))
       .then((b: { templates?: PresetRow[] }) => setPresets(b.templates ?? []))
       .catch(() => setPresets([]));
-  }, [projectId]);
+    if (canMusic) {
+      fetch("/api/studio/slideshow-music")
+        .then((r) => (r.ok ? (r.json() as Promise<{ tracks?: MusicTrack[] }>) : Promise.resolve({ tracks: [] })))
+        .then((b: { tracks?: MusicTrack[] }) => setTracks(b.tracks ?? []))
+        .catch(() => setTracks([]));
+    }
+  }, [projectId, canMusic]);
 
   function edit(patch: Partial<GalleryDesign>) {
     setDraft((cur) => ({ ...cur, ...patch }));
@@ -162,6 +181,83 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
     edit(next);
     setNote(`Applied "${p.name}" — remember to save.`);
     setTimeout(() => setNote(""), 3500);
+  }
+
+  function editSlideshow(patch: Partial<SlideshowConfig>) {
+    setSlideshowDraft((cur) => ({ ...cur, ...patch }));
+    setSlideshowDirty(true);
+  }
+
+  async function saveSlideshow() {
+    if (busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/projects/${projectId}/slideshow`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slideshow: slideshowDraft.enabled ? slideshowDraft : null }),
+      });
+      const body = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      if (!res.ok || !body.ok) {
+        setError(body.error === "music_requires_lite" ? "Slideshow music is a Lite feature." : body.error === "track_not_found" ? "That track no longer exists — pick another." : "Couldn't save the slideshow — try again.");
+      } else {
+        setSlideshowDirty(false);
+        setNote(slideshowDraft.enabled ? "Slideshow saved ✓" : "Slideshow turned off ✓");
+        setTimeout(() => setNote(""), 3500);
+      }
+    } catch {
+      setError("Network error — try again.");
+    }
+    setBusy(false);
+  }
+
+  async function uploadTrack() {
+    if (!uploadFile || !warranted || busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      const form = new FormData();
+      form.set("file", uploadFile);
+      form.set("warranted", "true");
+      const res = await fetch("/api/studio/slideshow-music", { method: "POST", body: form });
+      const body = (await res.json().catch(() => ({}))) as { id?: string; name?: string; bytes?: number; error?: string };
+      if (!res.ok || !body.id) {
+        setError(
+          body.error === "file_too_large" ? "Tracks are capped at 15 MB."
+          : body.error === "unsupported_audio" ? "MP3, AAC or M4A only."
+          : body.error === "rights_warranty_required" ? "Please confirm you own the rights to this music."
+          : body.error === "music_requires_lite" ? "Music uploads are a Lite feature."
+          : "Upload failed — try again.",
+        );
+      } else {
+        const track = { id: body.id, name: body.name ?? "Track", bytes: body.bytes ?? 0 };
+        setTracks((cur) => [...(cur ?? []), track]);
+        editSlideshow({ music: track.id });
+        setUploadFile(null);
+        setUploadName("");
+        setWarranted(false);
+        setNote(`"${track.name}" uploaded — remember to save ✓`);
+        setTimeout(() => setNote(""), 3500);
+      }
+    } catch {
+      setError("Network error — try again.");
+    }
+    setBusy(false);
+  }
+
+  async function removeTrack(id: string) {
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/studio/slideshow-music/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        setTracks((cur) => (cur ?? []).filter((t) => t.id !== id));
+        setSlideshowDraft((cur) => (cur.music === id ? { ...cur, music: "" } : cur));
+      }
+    } catch {
+      setError("Network error — try again.");
+    }
+    setBusy(false);
   }
 
   function safeJson(body: string | undefined): unknown {
@@ -387,6 +483,109 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
                 Save as preset
               </Button>
             </div>
+          </fieldset>
+
+          <fieldset>
+            <legend className="text-xs font-semibold uppercase tracking-wide text-ink-tertiary">Slideshow</legend>
+            <div className="mt-2 flex flex-wrap items-center gap-3">
+              <label className="flex items-center gap-2 text-sm text-ink">
+                <input
+                  type="checkbox"
+                  checked={slideshowDraft.enabled}
+                  onChange={(e) => editSlideshow({ enabled: e.target.checked })}
+                  className="h-4 w-4"
+                />
+                Slideshow button on the gallery
+              </label>
+              {slideshowDraft.enabled && (
+                <>
+                  <Seg
+                    label="Pace"
+                    value={String(slideshowDraft.pace)}
+                    options={[["3", "3 s"], ["5", "5 s"], ["8", "8 s"]]}
+                    onChange={(v) => editSlideshow({ pace: (SLIDESHOW_PACES as readonly number[]).includes(Number(v)) ? (Number(v) as SlideshowConfig["pace"]) : 5 })}
+                  />
+                  <Seg
+                    label="Motion"
+                    value={slideshowDraft.transition}
+                    options={[["fade", "Crossfade"], ["kenburns", "Ken Burns"]]}
+                    onChange={(v) => editSlideshow({ transition: v as SlideshowConfig["transition"] })}
+                  />
+                </>
+              )}
+              <Button size="sm" disabled={busy || !slideshowDirty} onClick={() => void saveSlideshow()} className="ml-auto">
+                {busy ? "Saving…" : "Save slideshow"}
+              </Button>
+            </div>
+
+            {slideshowDraft.enabled && (
+              <div className="mt-3 rounded-lg border border-hairline bg-surface-2 p-4">
+                {!canMusic ? (
+                  <div className="text-sm text-ink-subtle">
+                    <p className="font-medium text-ink">Slideshow music is a Lite feature.</p>
+                    <p className="mt-1">Upload a track you own the rights to and it plays with the slideshow — no catalog, your music.</p>
+                    <Link href="/dashboard/billing" className="mt-2 inline-block text-sm font-medium text-primary underline underline-offset-2">
+                      Upgrade to Lite — $15/mo
+                    </Link>
+                  </div>
+                ) : (
+                  <>
+                    <label className="text-xs text-ink-subtle">
+                      Music
+                      <select
+                        value={slideshowDraft.music}
+                        onChange={(e) => editSlideshow({ music: e.target.value })}
+                        className="snap-select mt-1 w-full max-w-sm rounded-md border border-hairline bg-canvas px-3 py-2 text-sm text-ink"
+                      >
+                        <option value="">No music (silent slideshow)</option>
+                        {(tracks ?? []).map((t) => (
+                          <option key={t.id} value={t.id}>{t.name}</option>
+                        ))}
+                      </select>
+                    </label>
+                    {slideshowDraft.music && (
+                      <div className="mt-2 flex flex-wrap items-center gap-3">
+                        {/* eslint-disable-next-line jsx-a11y/media-has-caption -- music preview */}
+                        <audio controls preload="none" src={`/api/studio/slideshow-music/${slideshowDraft.music}`} className="h-8 w-72 max-w-full" />
+                        <label className="text-xs text-ink-subtle">
+                          Start at (s)
+                          <input
+                            type="number"
+                            min={0}
+                            max={600}
+                            value={slideshowDraft.musicStartAt}
+                            onChange={(e) => editSlideshow({ musicStartAt: Math.min(600, Math.max(0, Number(e.target.value) || 0)) })}
+                            className="ml-2 w-20 rounded-md border border-hairline bg-canvas px-2 py-1 text-sm text-ink"
+                          />
+                        </label>
+                        <Button size="sm" variant="ghost" disabled={busy} onClick={() => void removeTrack(slideshowDraft.music)}>
+                          Delete track
+                        </Button>
+                      </div>
+                    )}
+                    <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-hairline pt-3">
+                      <input
+                        type="file"
+                        accept=".mp3,.aac,.m4a,audio/mpeg,audio/aac,audio/mp4"
+                        onChange={(e) => {
+                          setUploadFile(e.target.files?.[0] ?? null);
+                          setUploadName(e.target.files?.[0]?.name ?? "");
+                        }}
+                        className="text-xs text-ink-subtle"
+                      />
+                      <label className="flex items-center gap-1.5 text-xs text-ink-subtle">
+                        <input type="checkbox" checked={warranted} onChange={(e) => setWarranted(e.target.checked)} className="h-3.5 w-3.5" />
+                        I own the rights to this music
+                      </label>
+                      <Button size="sm" variant="outline" disabled={!uploadFile || !warranted || busy} onClick={() => void uploadTrack()}>
+                        {busy && uploadName ? "Uploading…" : "Upload"}
+                      </Button>
+                      <span className="text-[11px] text-ink-tertiary">MP3 / AAC / M4A · ≤ 15 MB · reused across your galleries</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </fieldset>
         </div>
 

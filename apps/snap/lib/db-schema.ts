@@ -366,6 +366,10 @@ export const projects = sqliteTable(
     /** WEB-258: gallery design JSON (cover/layout/theme), <= 16 KB, app-validated.
      * NULL = classic gallery (or the org's default gallery_preset template). */
     galleryDesign: text("gallery_design"),
+    /** WEB-259: slideshow config JSON (enabled/pace/transition/music + start
+     * offset), <= 2 KB. Kept out of gallery_design so the basic slideshow
+     * stays free while the design layer is Lite+. NULL = no button. */
+    gallerySlideshow: text("gallery_slideshow"),
     createdAt: ts("created_at"),
     updatedAt: ts("updated_at"),
   },
@@ -872,6 +876,24 @@ export const sessionTypes = sqliteTable(
 );
 
 /* ---------------- Template store (WEB-247) ---------------- */
+
+/** WEB-259: BYO slideshow music — one org-level library, reused across
+ * galleries. No catalog: studios warrant rights at upload (audit-logged). */
+export const slideshowTracks = sqliteTable(
+  "slideshow_track",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    storageKey: text("storage_key").notNull().unique(),
+    mimeType: text("mime_type").notNull(),
+    bytes: integer("bytes").notNull(),
+    createdAt: ts("created_at"),
+  },
+  (t) => [index("slideshow_track_org_idx").on(t.organizationId, t.createdAt)],
+);
 
 export const templates = sqliteTable(
   "template",
