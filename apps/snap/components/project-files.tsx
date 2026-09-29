@@ -620,6 +620,25 @@ export function ProjectFiles({ projectId, clientEmail, initial }: { projectId: s
       setNotice(`Deleting ${ids.length} file${ids.length === 1 ? "" : "s"}…`);
     } else setNotice("");
     try {
+      // WEB-263: sneak-peek flags go through their own (Studio-gated) route.
+      if (action === "peek-on" || action === "peek-off") {
+        const res = await fetch("/api/assets/sneak-peek", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ assetIds: ids, on: action === "peek-on" }),
+        });
+        const body = (await res.json().catch(() => ({}))) as { updated?: number; error?: string };
+        setNotice(
+          res.ok
+            ? `${body.updated ?? 0} photo${(body.updated ?? 0) === 1 ? "" : "s"} ${action === "peek-on" ? "flagged as a first look" : "back to normal"}`
+            : body.error === "sneak_peeks_require_studio"
+              ? "Sneak peeks are a Studio feature."
+              : "Couldn't update — try again.",
+        );
+        setSelected(new Set());
+        refresh();
+        return;
+      }
       const res = await fetch("/api/assets/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1973,6 +1992,8 @@ export function ProjectFiles({ projectId, clientEmail, initial }: { projectId: s
           <Button size="sm" variant="outline" disabled={!selected.size} onClick={() => void bulk("approve")}>Approve</Button>
           <Button size="sm" variant="outline" disabled={!selected.size} onClick={() => void bulk("reject")}>Reject</Button>
           <Button size="sm" variant="outline" disabled={!selected.size} onClick={() => void bulk("tag", "favorite")}>Favorite</Button>
+          <Button size="sm" variant="outline" disabled={!selected.size} onClick={() => void bulk("peek-on")} title="A first look on the client home before the gallery opens (Studio)">Sneak peek</Button>
+          <Button size="sm" variant="ghost" disabled={!selected.size} onClick={() => void bulk("peek-off")} title="Remove the sneak-peek flag">Un-peek</Button>
           <TagInput disabled={!selected.size} onTag={(t) => void bulk("tag", t)} />
           <span className="relative">
             <select

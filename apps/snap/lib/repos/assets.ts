@@ -563,6 +563,29 @@ export async function attachDerivative(params: {
   return { ok: true };
 }
 
+/** WEB-263: flag assets as sneak peeks (Studio+ gate at the API; the
+ * flag surfaces them on the client home before the gallery opens). */
+export async function setSneakPeek(params: {
+  organizationId: string;
+  assetIds: string[];
+  on: boolean;
+}): Promise<number> {
+  if (!params.assetIds.length) return 0;
+  const db = getDb();
+  const chunks: (typeof params.assetIds)[] = [];
+  for (let i = 0; i < params.assetIds.length; i += 200) chunks.push(params.assetIds.slice(i, i + 200));
+  let n = 0;
+  for (const chunk of chunks) {
+    const rows = await db
+      .update(schema.assets)
+      .set({ sneakPeek: params.on })
+      .where(and(eq(schema.assets.organizationId, params.organizationId), inArray(schema.assets.id, chunk)))
+      .returning({ id: schema.assets.id });
+    n += rows.length;
+  }
+  return n;
+}
+
 export async function setAssetStatus(
   organizationId: string,
   assetId: string,

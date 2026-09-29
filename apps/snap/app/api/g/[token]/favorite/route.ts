@@ -1,7 +1,7 @@
 /* Client favorite toggle — snap-g cookie auth (same gate as the gallery
  * page itself); membership re-verified server-side. */
 import { resolveGalleryAccess } from "@/lib/shares/gallery-auth";
-import { toggleFavorite } from "@/lib/shares/selections";
+import { setFavorite, toggleFavorite } from "@/lib/shares/selections";
 import { resolveGrantByToken } from "@/lib/shares/grants";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +18,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
   }
   if (grant.selectionMode === "off") return Response.json({ error: "disabled" }, { status: 409 });
 
-  let body: { assetId?: string };
+  let body: { assetId?: string; favorited?: boolean };
   try {
     body = (await req.json()) as typeof body;
   } catch {
@@ -26,6 +26,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
   }
   if (!body.assetId) return Response.json({ error: "invalid_body" }, { status: 400 });
 
-  const result = await toggleFavorite(grant, body.assetId);
+  // WEB-263: an explicit `favorited` is an idempotent SET (offline queue
+  // replay); absent = the classic toggle.
+  const result =
+    typeof body.favorited === "boolean"
+      ? await setFavorite(grant, body.assetId, body.favorited)
+      : await toggleFavorite(grant, body.assetId);
   return Response.json(result);
 }

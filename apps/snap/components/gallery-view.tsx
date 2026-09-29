@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { FileTypeIcon } from "@/components/file-type-icon";
+import { PwaRuntime, queueFavoriteOp, recordFavoriteState } from "@/components/my-pwa";
 import { captionOf, fmtDuration, focalPosition, themeVars, type GalleryDesign } from "@/lib/gallery-design";
 
 declare global {
@@ -1124,14 +1125,17 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
     if (next.has(assetId)) next.delete(assetId);
     else next.add(assetId);
     setFavorites(next);
+    const desired = !favorites.has(assetId);
+    recordFavoriteState(clientToken, assetId, desired);
     try {
       const res = await fetch(`/api/g/${clientToken}/favorite`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assetId }),
+        body: JSON.stringify({ assetId, favorited: desired }),
       });
       if (!res.ok) throw new Error();
       const body = (await res.json()) as { favorited: boolean };
+      recordFavoriteState(clientToken, assetId, body.favorited);
       setFavorites((cur) => {
         const fixed = new Set(cur);
         if (body.favorited) fixed.add(assetId);
@@ -1139,8 +1143,10 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
         return fixed;
       });
     } catch {
-      setFavorites(new Set(initialFavorites));
-      setFlash("Couldn't save that — check your connection and try again.");
+      // WEB-263: offline (or flaky) — keep the local heart and replay on
+      // reconnect; the server op is an idempotent set.
+      queueFavoriteOp(clientToken, assetId);
+      setFlash(desired ? "Saved offline — will sync when you're back." : "Removed offline — will sync when you're back.");
       setTimeout(() => setFlash(""), 3000);
     }
   }
@@ -1212,6 +1218,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
         if (deterrents && (e.target as HTMLElement).tagName === "IMG") e.preventDefault();
       }}
     >
+      <PwaRuntime enabled />
       {design && (
         <GalleryHero
           design={design}

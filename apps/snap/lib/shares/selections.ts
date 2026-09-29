@@ -48,6 +48,24 @@ export async function toggleFavorite(grant: Grant, assetId: string): Promise<{ f
   return { favorited: true };
 }
 
+/** WEB-263: idempotent set (offline queue replay) — add or remove to
+ * reach the desired state; membership verified like the toggle. */
+export async function setFavorite(grant: Grant, assetId: string, favorited: boolean): Promise<{ favorited: boolean }> {
+  const db = getDb();
+  if (!(await assetInGrant(grant.id, assetId))) return { favorited: false };
+  if (favorited) {
+    await db
+      .insert(schema.galleryFavorites)
+      .values({ grantId: grant.id, assetId, organizationId: grant.organizationId })
+      .onConflictDoNothing();
+  } else {
+    await db
+      .delete(schema.galleryFavorites)
+      .where(and(eq(schema.galleryFavorites.grantId, grant.id), eq(schema.galleryFavorites.assetId, assetId)));
+  }
+  return { favorited };
+}
+
 export async function getLatestSelection(
   grantId: string,
 ): Promise<{ items: string[]; note: string | null; submittedAt: Date; clientEmail: string } | null> {

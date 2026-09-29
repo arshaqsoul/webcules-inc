@@ -484,6 +484,9 @@ export const assets = sqliteTable(
     height: integer("height"),
     /** WEB-260: video duration ms (browser decoder at upload). */
     durationMs: integer("duration_ms"),
+    /** WEB-263: sneak peek — surfaces on the client home before the gallery
+     * opens (Studio gate). */
+    sneakPeek: integer("is_sneak_peek", { mode: "boolean" }).notNull().default(false),
     checksum: text("checksum"),
     /** fp1:sha256(size + first 1MB) — duplicate-upload detection. */
     fingerprint: text("fingerprint"),
@@ -668,6 +671,21 @@ export const photoShares = sqliteTable(
     index("photo_share_grant_idx").on(t.grantId, t.createdAt),
     index("photo_share_asset_idx").on(t.assetId),
   ],
+);
+
+/** WEB-263: one-time codes for the client home (/my) — keyed by hashed
+ * email, capped + short-lived like the gallery OTPs. */
+export const myOtp = sqliteTable(
+  "my_otp",
+  {
+    id: text("id").primaryKey(),
+    emailHash: text("email_hash").notNull(),
+    codeHash: text("code_hash").notNull(),
+    expiresAt: ts("expires_at").notNull(),
+    attempts: integer("attempts").notNull().default(0),
+    createdAt: ts("created_at"),
+  },
+  (t) => [index("my_otp_email_idx").on(t.emailHash, t.createdAt)],
 );
 
 export const shareGrantAssets = sqliteTable(
