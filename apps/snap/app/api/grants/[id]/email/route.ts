@@ -1,6 +1,7 @@
 /* Re-send the SAME link (decrypts token_enc). Only for effectively-active
  * grants — a dead link is never re-emailed; regenerate instead. */
 import { getOrgContext } from "@/lib/session";
+import { clientUrl } from "@/lib/client-urls";
 import { getGrantAssets, getGrantToken, getShareGrant } from "@/lib/shares/grants";
 import { sendGrantEmail } from "@/lib/shares/notify";
 
@@ -18,7 +19,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
   if (!token) return Response.json({ error: "link_dead_regenerate" }, { status: 409 });
 
   const assets = await getGrantAssets(grant);
-  const galleryUrl = `${new URL(_req.url).origin}/g/${token}`;
+  const galleryUrl = await clientUrl(ctx.organizationId, `/g/${token}`);
   const emailed = await sendGrantEmail({
     organizationId: ctx.organizationId,
     clientEmail: grant.clientEmail,

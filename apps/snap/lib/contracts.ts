@@ -9,6 +9,7 @@ import { encryptToken, hashToken, mintToken } from "./shares/grants";
 import { putObject } from "./storage/service";
 import { renderContractPdf } from "./pdf";
 import { sendEmail, contractSignRequestEmail, contractSignedEmail } from "./email";
+import { clientUrl } from "./client-urls";
 import { getStudioProfile } from "./repos/studios";
 import { safeHexColor } from "./embed";
 
@@ -121,7 +122,7 @@ export async function sendContract(organizationId: string, contractId: string): 
     .where(and(eq(schema.contracts.organizationId, organizationId), eq(schema.contracts.id, contractId)));
 
   const studio = await studioAccent(organizationId);
-  const url = `https://snap.webcules.com/c/${token}`;
+  const url = await clientUrl(organizationId, `/c/${token}`);
   const tmpl = contractSignRequestEmail(studio.name, {
     accent: studio.accent,
     title: contract.title,
@@ -235,7 +236,7 @@ export async function signContract(
   });
 
   // Both parties get the signed PDF link.
-  const url = `https://snap.webcules.com/c/${token}`;
+  const url = await clientUrl(contract.organizationId, `/c/${token}`);
   const tmpl = contractSignedEmail(studio.name, {
     accent: studio.accent,
     title: contract.title,

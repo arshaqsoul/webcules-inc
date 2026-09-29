@@ -5,6 +5,7 @@
 import { and, eq } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
+import { clientUrl } from "@/lib/client-urls";
 import * as schema from "@/lib/db-schema";
 
 export const PROJECT_STATUSES = ["booked", "snapping", "evaluation", "complete", "closed", "canceled"] as const;
@@ -203,7 +204,7 @@ export async function transitionProject(params: {
         const tmpl = projectCompleteClientEmail(profile.studioName, {
           accent: safeHexColor(brand.accent) ?? "#5e6ad2",
           projectTitle: project.title,
-          portalUrl: "https://snap.webcules.com/portal/login",
+          portalUrl: await clientUrl(params.organizationId, "/portal/login"),
         });
         await sendEmail({
           to: client.email,

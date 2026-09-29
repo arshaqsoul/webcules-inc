@@ -2,6 +2,7 @@
  * emails the fresh link to the grant's client email. Expiry carries over
  * unless the request provides a new one (null = never expires). */
 import { getOrgContext } from "@/lib/session";
+import { clientUrl } from "@/lib/client-urls";
 import { getGrantAssets, getShareGrant, normalizeExpiry, regenerateShareGrant } from "@/lib/shares/grants";
 import { sendGrantEmail } from "@/lib/shares/notify";
 
@@ -37,7 +38,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const grant = await getShareGrant(ctx.organizationId, result.grantId);
   const assets = grant ? await getGrantAssets(grant) : [];
 
-  const galleryUrl = `${new URL(req.url).origin}/g/${result.token}`;
+  const galleryUrl = await clientUrl(ctx.organizationId, `/g/${result.token}`);
   const emailed = await sendGrantEmail({
     organizationId: ctx.organizationId,
     clientEmail: grant?.clientEmail ?? "",

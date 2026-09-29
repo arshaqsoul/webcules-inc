@@ -4,6 +4,7 @@
 import { and, eq, sql } from "drizzle-orm";
 
 import { getDb } from "./db";
+import { clientUrl } from "./client-urls";
 import * as schema from "./db-schema";
 import { encryptToken, hashToken, mintToken } from "./shares/grants";
 import { putObject } from "./storage/service";
@@ -185,7 +186,7 @@ export async function sendInvoice(organizationId: string, invoiceId: string): Pr
 
   const profile = await getStudioProfile(organizationId);
   const brand = JSON.parse(profile?.brand || "{}") as { accent?: string };
-  const url = `https://snap.webcules.com/inv/${token}`;
+  const url = await clientUrl(organizationId, `/inv/${token}`);
   const tmpl = invoiceEmail(profile?.studioName ?? "the studio", {
     accent: safeHexColor(brand.accent) ?? "#5e6ad2",
     invoiceNumber: invoice.number,

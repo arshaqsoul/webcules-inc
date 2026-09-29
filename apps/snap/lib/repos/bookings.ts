@@ -5,6 +5,7 @@
 import { and, eq, gte, lte } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
+import { clientUrl } from "@/lib/client-urls";
 import * as schema from "@/lib/db-schema";
 import { computeDateSlots } from "./availability";
 import { linkOpenLeadToBooking } from "./leads";
@@ -287,7 +288,7 @@ export async function confirmBookingPaid(params: {
       const tmpl = bookingConfirmedClientEmail(profile.studioName, {
         accent: safeHexColor(brand.accent) ?? "#5e6ad2",
         when: booking.startAt,
-        portalUrl: "https://snap.webcules.com/portal/login",
+        portalUrl: await clientUrl(params.organizationId, "/portal/login"),
       });
       await sendEmail({
         to: booking.clientEmail,
