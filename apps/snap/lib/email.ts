@@ -569,3 +569,38 @@ export function galleryLinkEmail(studioName: string, params: {
     text: `Hi ${params.clientName}, ${studioName} shared ${params.photoCount} photo${params.photoCount === 1 ? "" : "s"} with you. View gallery: ${params.galleryUrl}${expires ? `\n\nThis link expires ${expires}.` : ""}`,
   };
 }
+
+/** WEB-230: a studio's custom domain stopped resolving at Snap — the email
+ * carries the exact records to restore so the studio never has to hunt. */
+export function domainDegradedEmail(studioName: string, params: {
+  accent: string; hostname: string; cnameTarget: string; txtName: string; txtValue: string;
+}): { subject: string; html: string; text: string } {
+  return {
+    subject: `Your gallery domain needs attention — ${params.hostname}`,
+    html: shell(
+      params.accent,
+      `${params.hostname} needs attention`,
+      `<p style="margin:0 0 16px;">Visitors may not be reaching your galleries on <strong style="color:#0f1011;">${params.hostname}</strong> right now. Restore these two DNS records at your domain host and it will reconnect automatically (usually within the hour):</p>
+       <p style="margin:0 0 12px;padding:12px;background:#f7f8f8;border-radius:8px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.8;color:#0f1011;">CNAME&nbsp;&nbsp;${params.hostname}&nbsp;&nbsp;→&nbsp;&nbsp;${params.cnameTarget}<br>TXT&nbsp;&nbsp;${params.txtName}&nbsp;&nbsp;=&nbsp;&nbsp;"${params.txtValue}"</p>
+       <p style="margin:0;font-size:13px;color:#8a8f98;">We'll keep checking and will email you when it's back.</p>`,
+      `Domain alert from your Snap studio ${studioName}.`,
+    ),
+    text: `Your gallery domain ${params.hostname} needs attention — restore these DNS records at your host:\nCNAME ${params.hostname} -> ${params.cnameTarget}\nTXT ${params.txtName} = "${params.txtValue}"\nWe'll email you when it reconnects.`,
+  };
+}
+
+/** WEB-230: recovery follow-up — only sent after a degraded email went out. */
+export function domainRecoveredEmail(studioName: string, params: {
+  accent: string; hostname: string;
+}): { subject: string; html: string; text: string } {
+  return {
+    subject: `${params.hostname} is back online`,
+    html: shell(
+      params.accent,
+      `${params.hostname} is back online`,
+      `<p style="margin:0 0 16px;">Your galleries are reachable on <strong style="color:#0f1011;">${params.hostname}</strong> again. Nothing else to do.</p>`,
+      `Domain recovery notice from your Snap studio ${studioName}.`,
+    ),
+    text: `Your gallery domain ${params.hostname} is back online.`,
+  };
+}

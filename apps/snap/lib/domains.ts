@@ -114,11 +114,14 @@ export function newVerificationToken(): string {
   return `snap-verify=${Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("")}`;
 }
 
+/** Injectable fetch shape for the DoH helpers (tests pass stubs). */
+export type DohFetch = (input: string, init?: RequestInit) => Promise<Response>;
+
 /** DoH TXT lookup for the ownership record — returns the TXT strings or null
  * (no answer / lookup failure). Cloudflare's public JSON API; no auth needed. */
 export async function lookupVerificationTxt(
   hostname: string,
-  fetchImpl: typeof fetch = fetch,
+  fetchImpl: DohFetch = fetch,
 ): Promise<string[] | null> {
   try {
     const res = await fetchImpl(
@@ -131,6 +134,32 @@ export async function lookupVerificationTxt(
   } catch {
     return null;
   }
+}
+
+/** DoH CNAME lookup — the sweep's health check (does the hostname still
+ * point at our fallback origin?). Returns the target or null. */
+export async function lookupCname(
+  hostname: string,
+  fetchImpl: DohFetch = fetch,
+): Promise<string | null> {
+  try {
+    const res = await fetchImpl(
+      `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(hostname)}&type=CNAME`,
+      { headers: { accept: "application/dns-json" } },
+    );
+    if (!res.ok) return null;
+    const json = (await res.json()) as { Answer?: { data?: string }[] };
+    return (json.Answer ?? []).map((a) => (a.data ?? "").replace(/\.$/, "")).find(Boolean) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Does the CNAME answer point at our serving target (exact or nested)? */
+export function cnamePointsAtSnap(target: string | null): boolean {
+  if (!target) return false;
+  const t = target.toLowerCase().replace(/\.$/, "");
+  return t === CNAME_TARGET || t.endsWith(`.${CNAME_TARGET}`);
 }
 
 export function txtMatches(token: string, records: string[] | null): boolean {

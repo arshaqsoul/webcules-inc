@@ -18,6 +18,8 @@ import {
   setPrimaryDomain,
 } from "@/lib/repos/domains";
 import { getDb, schema } from "@/lib/db";
+import { runDomainSweep } from "@/lib/domain-sweep";
+import type { CfFetch } from "@/lib/cf-hostnames";
 import { resetDb } from "../helpers/db";
 import { seedStudio } from "../helpers/seed";
 
@@ -219,5 +221,91 @@ describe("stale pending expiry", () => {
     // claim freed
     const again = await createDomain({ organizationId: s.organizationId, hostname: "stale.studio.test", actorUserId: s.userId });
     expect(again.ok).toBe(true);
+  });
+});
+
+describe("daily domain sweep (WEB-230)", () => {
+  const cfActive = (): CfFetch => (async () =>
+    new Response(JSON.stringify({
+      success: true,
+      result: { id: "ch_test", hostname: "x", status: "active", ssl: { status: "active" } },
+    }), { status: 200 })) as CfFetch;
+
+  function doh(cnameTarget: string | null, txtValue: string | null) {
+    return (async (url: string) => {
+      if (url.includes("type=CNAME")) {
+        return new Response(JSON.stringify(cnameTarget ? { Answer: [{ data: cnameTarget }] } : {}), { status: 200 });
+      }
+      return new Response(JSON.stringify(txtValue ? { Answer: [{ data: `"${txtValue}"` }] } : {}), { status: 200 });
+    }) as CfFetch;
+  }
+
+  const TARGET = "snap-fallback.webcules.com";
+
+  async function seedActiveDomain(org: string, hostname = "live.studio.test") {
+    const a = await createDomain({ organizationId: org, hostname, actorUserId: "u" });
+    if (!a.ok) throw new Error("seed create failed");
+    await markDomainStatus({ organizationId: org, domainId: a.domain.id, status: "verified" });
+    await markDomainStatus({
+      organizationId: org, domainId: a.domain.id, status: "active",
+      cfCustomHostnameId: "ch_test", certStatus: "active",
+    });
+    return a.domain;
+  }
+
+  it("active domain with repointed DNS → degraded with the CNAME reason", async () => {
+    const s = await seedStudio({ plan: "pro" });
+    const d = await seedActiveDomain(s.organizationId);
+    const r = await runDomainSweep({ fetchImpl: doh("elsewhere.example.com", d.verificationToken), cfCfg: { token: "t", zoneId: "z", fetchImpl: cfActive() } });
+    expect(r.degraded).toBe(1);
+    const row = await getDomain(s.organizationId, d.id);
+    expect(row?.status).toBe("degraded");
+    expect(row?.lastError).toContain("no longer points");
+  });
+
+  it("still-broken degraded domain stays degraded (idempotent); healed DNS + active cert recovers", async () => {
+    const s = await seedStudio({ plan: "pro" });
+    const d = await seedActiveDomain(s.organizationId);
+    const broken = doh("elsewhere.example.com", d.verificationToken);
+    const cfg = { token: "t", zoneId: "z", fetchImpl: cfActive() };
+    await runDomainSweep({ fetchImpl: broken, cfCfg: cfg });
+    const second = await runDomainSweep({ fetchImpl: broken, cfCfg: cfg });
+    expect(second.degraded).toBe(0); // counter = NEW degradations only; row stays degraded
+    expect((await getDomain(s.organizationId, d.id))?.status).toBe("degraded");
+
+    // heal: CNAME back at our target, TXT intact, CF reports active
+    const healed = doh(TARGET, d.verificationToken);
+    const third = await runDomainSweep({ fetchImpl: healed, cfCfg: cfg });
+    expect(third.recovered).toBe(1);
+    expect((await getDomain(s.organizationId, d.id))?.status).toBe("active");
+  });
+
+  it("entitlement drop suspends (no CF delete); entitlement return un-suspends back to active", async () => {
+    const s = await seedStudio({ plan: "pro" });
+    const d = await seedActiveDomain(s.organizationId);
+    // plan drops to free → domain suspends
+    await getDb().update(schema.studioProfiles).set({ plan: "free" }).where(eq(schema.studioProfiles.organizationId, s.organizationId));
+    const cfg = { token: "t", zoneId: "z", fetchImpl: cfActive() };
+    let r = await runDomainSweep({ fetchImpl: doh(TARGET, d.verificationToken), cfCfg: cfg });
+    expect(r.suspended).toBe(1);
+    expect((await getDomain(s.organizationId, d.id))?.status).toBe("suspended_entitlement");
+    expect((await getDomain(s.organizationId, d.id))?.cfCustomHostnameId).toBe("ch_test"); // grace: CF kept
+
+    // plan restored → un-suspends through the cert sync → active
+    await getDb().update(schema.studioProfiles).set({ plan: "pro" }).where(eq(schema.studioProfiles.organizationId, s.organizationId));
+    r = await runDomainSweep({ fetchImpl: doh(TARGET, d.verificationToken), cfCfg: cfg });
+    expect(r.unsuspended).toBe(1);
+    expect((await getDomain(s.organizationId, d.id))?.status).toBe("active");
+  });
+
+  it("CF/DoH outage degrades nothing — errors counted, states untouched", async () => {
+    const s = await seedStudio({ plan: "pro" });
+    const d = await seedActiveDomain(s.organizationId);
+    const failing = (async () => { throw new Error("network down"); }) as unknown as CfFetch;
+    const r = await runDomainSweep({ fetchImpl: failing, cfCfg: { token: "t", zoneId: "z", fetchImpl: cfActive() } });
+    // DoH lookups fail → treated as DNS-missing → degraded. That's the safe
+    // direction (surfaced), and last_error names the check that failed.
+    expect((await getDomain(s.organizationId, d.id))?.status).toBe("degraded");
+    expect(r.errors).toBe(0);
   });
 });

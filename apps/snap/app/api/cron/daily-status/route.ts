@@ -210,5 +210,16 @@ export async function POST(req: Request) {
     console.error("rejected-retention sweep failed:", String(err));
   }
 
-  return Response.json({ ok: true, moved: due.length, warned, downgraded, expiredHolds, vault, dormancy, margin, expiredUploads, rejectedPurged });
+  // WEB-224/230: custom-domain sweep — stale-pending expiry + CF cleanup,
+  // entitlement suspension/re-activation, DNS health re-checks with
+  // degraded/recovery studio emails (7-day throttle per domain).
+  let domains: Awaited<ReturnType<typeof import("@/lib/domain-sweep").runDomainSweep>> | null = null;
+  try {
+    const { runDomainSweep } = await import("@/lib/domain-sweep");
+    domains = await runDomainSweep();
+  } catch (err) {
+    console.error("domains sweep failed:", String(err));
+  }
+
+  return Response.json({ ok: true, moved: due.length, warned, downgraded, expiredHolds, vault, dormancy, margin, expiredUploads, rejectedPurged, domains });
 }
