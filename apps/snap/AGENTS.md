@@ -32,7 +32,7 @@ node scripts/deploy.mjs production --staging-verified  # ONLY after verifying
 | Worker | `webcules-snap` | `webcules-snap-staging` |
 | D1 | `webcules-snap` (`badece16-2231-4b37-81ac-54f7c4bbf464` — recreated fresh 2026-09-29 at launch; pre-launch backup in repo `.backups/`) | `webcules-snap-staging` (`9b850d02-67d3-4c1b-a7ed-482cc587b2d5`) |
 | R2 | `snap-webcules` | `snap-staging` |
-| Stripe | TEST keys today; live keys at launch (see below) | TEST keys (sandbox) |
+| Stripe | LIVE keys + live webhook endpoint (`we_1ULAApDQylYjEBwsSCHyGmh8`, 11 events) — live since 2026-09-29 | TEST keys + test webhook endpoint (`we_1ULAB5DQylYjEBwsnrODOCT8`) |
 | Cron | `webcules-snap-email` daily 06:00 UTC → `POST /api/cron/daily-status` | none — call the endpoint manually (below) |
 
 - Staging has its **own** `BETTER_AUTH_SECRET` and `SNAP_INBOUND_WEBHOOK_SECRET` (set via
@@ -40,7 +40,8 @@ node scripts/deploy.mjs production --staging-verified  # ONLY after verifying
   Never copy production secret values into staging or vice versa.
 - Stripe on staging = the sandbox/test keys (`sk_test_…` + a webhook endpoint pointed at
   `https://snap-staging.webcules.com/api/stripe/webhook` — its `whsec_…` is staging's
-  `STRIPE_WEBHOOK_SECRET`). Billing needs no product setup: prices are auto-created by metadata.
+  `STRIPE_WEBHOOK_SECRET`). Billing needs no product setup: prices are auto-created by metadata
+  (verified in live mode: $15/mo `snap_plan=lite` price auto-created on first checkout).
 - Turnstile is disabled on staging (no site key / no secret → widgets skip, verification passes).
 - Staging sends REAL email (Cloudflare Email Service) with display name "Snap Staging" — use
   inboxes you control.
@@ -72,9 +73,9 @@ node scripts/deploy.mjs production --staging-verified  # ONLY after verifying
   verifications). Revert test data when done; delete temp secret files (`.token.tmp`, cookie jars).
 - `.dev.vars` holds real secrets (`BETTER_AUTH_SECRET`, `SNAP_INBOUND_WEBHOOK_SECRET`) —
   gitignored, never commit, never paste.
-- Prod Stripe secrets are TEST keys until the founder supplies live keys; when swapping, also
-  create the LIVE-mode webhook endpoint → `https://snap.webcules.com/api/stripe/webhook` and set
-  its `whsec_…` as prod `STRIPE_WEBHOOK_SECRET`.
+- Prod Stripe is LIVE (since 2026-09-29): live secret + live webhook endpoint →
+  `https://snap.webcules.com/api/stripe/webhook`. Never run test-mode checkouts against prod or
+  live-mode keys against staging; verify billing flows on staging with the test key and 4242 card.
 - Test constraints: routes importing `next/headers` can't run under workerd tests — test the
   repos instead; JSX can't be imported into tests — keep helpers in pure `lib/`.
 - Zero third-party analytics scripts on client surfaces (grep before shipping marketing claims);
