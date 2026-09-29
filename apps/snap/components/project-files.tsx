@@ -650,14 +650,17 @@ export function ProjectFiles({ projectId, clientEmail, initial }: { projectId: s
    * left/right move to the nearest card in the adjacent column and up/down
    * move within the current column. Works for every density, no layout
    * change. */
-  function spatialColumns(): { i: number; top: number }[][] {
-    const cells = [...document.querySelectorAll<HTMLElement>("[data-asset-idx]")]
+  function spatialCells(): { i: number; top: number; left: number; h: number }[] {
+    return [...document.querySelectorAll<HTMLElement>("[data-asset-idx]")]
       .map((el) => {
         const r = el.getBoundingClientRect();
-        return { i: Number(el.getAttribute("data-asset-idx")), left: r.left, top: r.top };
+        return { i: Number(el.getAttribute("data-asset-idx")), left: r.left, top: r.top, h: r.height };
       })
       .filter((c) => Number.isFinite(c.i))
-      .sort((a, b) => a.left - b.left || a.top - b.top);
+      .sort((a, b) => a.top - b.top || a.left - b.left);
+  }
+
+  function groupColumns(cells: { i: number; top: number; left: number }[]): { i: number; top: number }[][] {
     const cols: { i: number; top: number }[][] = [];
     let col: { i: number; top: number }[] = [];
     let colLeft = -Infinity;
@@ -688,9 +691,13 @@ export function ProjectFiles({ projectId, clientEmail, initial }: { projectId: s
 
   function moveFocus(delta: 1 | -1, axis: "x" | "y" = "x") {
     setFocusIndex((cur) => {
-      const cols = spatialColumns();
-      if (!cols.length) return null;
-      if (cur === null) return delta > 0 ? cols[0][0].i : cols[cols.length - 1][cols[cols.length - 1].length - 1].i;
+      const cells = spatialCells();
+      if (!cells.length) return null;
+      const cols = groupColumns(cells);
+      const maxH = cells.reduce((m, c) => Math.max(m, c.h), 0);
+      const tol = Math.max(20, maxH * 0.5); // row-band tolerance (masonry offsets)
+      if (cur === null) return delta > 0 ? cells[0].i : cells[cells.length - 1].i;
+
       let ci = 0;
       let ri = -1;
       let top = 0;
@@ -702,17 +709,32 @@ export function ProjectFiles({ projectId, clientEmail, initial }: { projectId: s
           top = cols[c][idx].top;
         }
       }
-      if (ri === -1) return cols[0][0].i; // focused card not rendered — reset to first
+      if (ri === -1) return cells[0].i; // focused card not rendered — reset to first
+
       if (axis === "y") {
         const r = ri + delta;
         if (r >= 0 && r < cols[ci].length) return cols[ci][r].i;
         return cur; // column edge — stay put so page scroll stays natural
       }
-      const next = cols[ci + delta];
-      if (next) return nearestToTop(next, top);
-      // past the board edge — wrap to the far column
-      const wrapCol = cols[delta > 0 ? 0 : cols.length - 1];
-      return delta > 0 ? wrapCol[0].i : wrapCol[wrapCol.length - 1].i;
+
+      const nextCol = cols[ci + delta];
+      if (nextCol) return nearestToTop(nextCol, top);
+
+      // Horizontal edge: step to the adjacent visual ROW in reading order —
+      // right = first (leftmost) card of the row below; left = last card of
+      // the row above. Wrap across the board only when there is no such row.
+      if (delta > 0) {
+        const below = cells.filter((c) => c.top > top + tol);
+        if (!below.length) return cells[0].i;
+        const rowTop = below.reduce((m, c) => Math.min(m, c.top), Infinity);
+        const row = cells.filter((c) => Math.abs(c.top - rowTop) <= tol);
+        return row.reduce((l, c) => (c.left < l.left ? c : l), row[0]).i;
+      }
+      const above = cells.filter((c) => c.top < top - tol);
+      if (!above.length) return cells[cells.length - 1].i;
+      const rowTop = above.reduce((m, c) => Math.max(m, c.top), -Infinity);
+      const row = cells.filter((c) => Math.abs(c.top - rowTop) <= tol);
+      return row.reduce((r, c) => (c.left > r.left ? c : r), row[0]).i;
     });
   }
 
