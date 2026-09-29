@@ -23,6 +23,8 @@ type Brand = {
   contactEmail: string | null;
   /** Studio+ plans may remove Snap branding (WEB-151 white-label gate). */
   whiteLabel?: boolean;
+  /** WEB-242: serve watermarked previews (effective config on). */
+  watermarked?: boolean;
 };
 
 export type GalleryAsset = {
@@ -43,7 +45,7 @@ function BackoffImage(props: {
   className?: string;
   loading?: "lazy" | "eager";
   /** WEB-116: thumb for grid tiles, preview for the lightbox. */
-  variant?: "thumb" | "preview";
+  variant?: "thumb" | "preview" | "preview_wm";
   onClick?: React.MouseEventHandler<HTMLImageElement>;
 }) {
   const [attempt, setAttempt] = useState(0);
@@ -312,7 +314,7 @@ export function GalleryGate({ studioName, accent, logoUrl, whiteLabel, token, ma
 
 /* ---------------- Gallery view ---------------- */
 
-export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLabel, assets, allowDownload, expiresAt, selectionMode, selectionLimit, selectionDeadline, initialFavorites, submittedSelection, clientToken }: Brand & {
+export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLabel, watermarked, assets, allowDownload, expiresAt, selectionMode, selectionLimit, selectionDeadline, initialFavorites, submittedSelection, clientToken }: Brand & {
   assets: GalleryAsset[];
   allowDownload: boolean;
   expiresAt: string | null;
@@ -682,7 +684,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
                 key={current.id}
                 id={current.id}
                 alt={current.filename}
-                variant="preview"
+                variant={watermarked ? "preview_wm" : "preview"}
                 className="max-h-full max-w-full object-contain"
                 onClick={(e) => e.stopPropagation()}
               />

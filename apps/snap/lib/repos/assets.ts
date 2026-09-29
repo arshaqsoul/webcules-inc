@@ -507,16 +507,20 @@ export async function getAsset(organizationId: string, assetId: string) {
 export async function attachDerivative(params: {
   organizationId: string;
   assetId: string;
-  kind: "thumb" | "preview";
+  kind: "thumb" | "preview" | "preview_wm";
   bytes: ArrayBuffer;
   contentType: string;
   /** WEB-117: enforce the studio's EXIF-strip policy — reject a derivative
    * that still carries EXIF/GPS and mark the asset's derivatives as
    * stripped once a clean one lands. */
   verifyNoExif?: boolean;
+  /** WEB-242: regeneration replaces an existing preview_wm (settings
+   * changes re-run the bulk path); the first write per upload stays
+   * unique-guarded like thumb/preview. */
+  replace?: boolean;
 }): Promise<
   | { ok: true }
-  | { ok: false; error: "not_found" | "unsupported_type" | "metadata_present" }
+  | { ok: false; error: "not_found" | "unsupported_type" | "metadata_present" | "already_present" }
 > {
   const db = getDb();
   const asset = await getAsset(params.organizationId, params.assetId);
@@ -527,6 +531,12 @@ export async function attachDerivative(params: {
     if (jpegExifInfo(params.bytes).exif) return { ok: false, error: "metadata_present" };
   }
 
+  // WEB-242: bulk regeneration may replace an existing preview_wm; a second
+  // upload of the same kind is rejected (the upload pipeline races retries).
+  if (params.kind === "preview_wm" && !params.replace && asset.previewWmKey) {
+    return { ok: false, error: "already_present" };
+  }
+
   // Derivatives live beside the original under the asset's own directory:
   // {org}/{project}/{asset}/{kind}.jpg
   const key = buildKey(params.organizationId, asset.projectId, asset.id, `${params.kind}.jpg`);
@@ -534,7 +544,11 @@ export async function attachDerivative(params: {
   await db
     .update(schema.assets)
     .set({
-      ...(params.kind === "thumb" ? { thumbKey: key } : { previewKey: key }),
+      ...(params.kind === "thumb"
+        ? { thumbKey: key }
+        : params.kind === "preview"
+          ? { previewKey: key }
+          : { previewWmKey: key }),
       ...(params.verifyNoExif ? { exifStripped: true } : {}),
     })
     .where(and(eq(schema.assets.id, asset.id), eq(schema.assets.organizationId, params.organizationId)));

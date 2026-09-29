@@ -101,6 +101,8 @@ export async function createShareGrant(params: {
   expiresAt: Date | null;
   createdById: string;
   allowDownload?: boolean;
+  /** WEB-242: proofing — downloads deliver the watermarked preview. */
+  proofing?: boolean;
   selectionMode?: "off" | "favorites" | "selection";
   selectionLimit?: number | null;
   selectionDeadline?: number | null;
@@ -150,6 +152,7 @@ export async function createShareGrant(params: {
     expiresAt: params.expiresAt,
     createdById: params.createdById,
     allowDownload: params.allowDownload ?? true,
+    proofing: params.proofing ?? false,
     selectionMode: params.selectionMode ?? "favorites",
     selectionLimit: params.selectionLimit ?? null,
     selectionDeadline: params.selectionDeadline ?? null,

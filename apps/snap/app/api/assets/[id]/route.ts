@@ -21,15 +21,17 @@ type ServableAsset = {
   mimeType: string;
 };
 
-/** WEB-116: ?variant=thumb|preview swaps in the stored derivative key,
- * falling back to the original when none exists (pre-derivative assets,
- * RAW/HEIC that the browser can't decode). */
+/** WEB-116/242: ?variant=thumb|preview|preview_wm swaps in the stored
+ * derivative key, falling back sensibly when none exists (pre-derivative
+ * assets, RAW/HEIC that the browser can't decode, wm variant not yet
+ * regenerated → clean preview — transitional, never a broken image). */
 function variantKey(
-  asset: { thumbKey: string | null; previewKey: string | null },
+  asset: { thumbKey: string | null; previewKey: string | null; previewWmKey: string | null },
   variant: string | null,
 ): string | null {
   if (variant === "thumb" && asset.thumbKey) return asset.thumbKey;
   if (variant === "preview" && asset.previewKey) return asset.previewKey;
+  if (variant === "preview_wm") return asset.previewWmKey ?? asset.previewKey;
   return null;
 }
 
@@ -120,6 +122,19 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       await logShareAccess(grant.id, "download", req);
     }
     const dk = variantKey(asset, url.searchParams.get("variant"));
+
+    // WEB-242 proofing mode: downloads deliver the watermarked preview
+    // (pre-sale delivery) — original bytes never leave in proofing grants.
+    if (wantsDownload && grant.allowDownload && grant.proofing) {
+      const wmKey = asset.previewWmKey ?? asset.previewKey;
+      if (wmKey) {
+        return serveAsset(
+          req,
+          { ...asset, storageKey: wmKey, mimeType: "image/jpeg", filename: asset.filename },
+          true,
+        );
+      }
+    }
 
     // WEB-172: original JPEG downloads from a client gallery are delivered
     // EXIF/GPS-free. Derivatives are metadata-free by construction; staff

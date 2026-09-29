@@ -63,6 +63,7 @@ export function ProjectGalleries({
   approvedCount,
   folders,
   grants,
+  watermarkOverride: initialOverride,
 }: {
   projectId: string;
   clientEmail: string;
@@ -70,9 +71,13 @@ export function ProjectGalleries({
   /** WEB-216: folders with their approved/shared (deliverable) counts. */
   folders: { id: string; name: string; count: number }[];
   grants: GrantItem[];
+  /** WEB-242: per-project watermark override. */
+  watermarkOverride: "inherit" | "on" | "off";
 }) {
   const router = useRouter();
   const confirm = useConfirm();
+  const [wmOverride, setWmOverride] = useState<"inherit" | "on" | "off">(initialOverride);
+  const [wmBusy, setWmBusy] = useState(false);
   const [email, setEmail] = useState(clientEmail);
   const [days, setDays] = useState("30");
   const [allowDownload, setAllowDownload] = useState(true);
@@ -88,6 +93,28 @@ export function ProjectGalleries({
   const [flash, setFlash] = useState<{ url: string; emailed: boolean } | null>(null);
   // WEB-223: expandable "what was sent" grid per grant.
   const [expanded, setExpanded] = useState<string | null>(null);
+
+  async function setOverride(next: "inherit" | "on" | "off") {
+    setWmOverride(next);
+    setWmBusy(true);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/watermark`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ override: next }),
+      });
+      if (!res.ok) {
+        setWmOverride(initialOverride);
+        setError("Couldn't save the watermark setting — try again.");
+      } else {
+        router.refresh();
+      }
+    } catch {
+      setWmOverride(initialOverride);
+      setError("Network error — try again.");
+    }
+    setWmBusy(false);
+  }
   const [sentAssets, setSentAssets] = useState<Record<string, { id: string; filename: string; kind: string; folder: string | null }[]>>({});
   const [lightbox, setLightbox] = useState<number | null>(null);
 
@@ -238,6 +265,24 @@ export function ProjectGalleries({
           </div>
         </div>
       )}
+
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-[12px] border border-hairline bg-surface-1 px-4 py-3">
+        <p className="text-xs text-ink-subtle">
+          <span className="font-medium text-ink">Watermark on this project's galleries</span>
+          <span className="ml-1 text-ink-tertiary">(previews only — originals and standard downloads stay clean)</span>
+        </p>
+        <select
+          value={wmOverride}
+          onChange={(e) => void setOverride(e.target.value as "inherit" | "on" | "off")}
+          disabled={wmBusy}
+          aria-label="Watermark override"
+          className="snap-select rounded-md border border-hairline bg-canvas px-2 py-1.5 text-xs text-ink-muted outline-none"
+        >
+          <option value="inherit">Use studio setting</option>
+          <option value="on">Always watermark</option>
+          <option value="off">Never watermark</option>
+        </select>
+      </div>
 
       <div className="flex flex-wrap items-end gap-3 rounded-[12px] border border-hairline bg-surface-1 p-4">
         <label className="flex min-w-56 flex-1 flex-col gap-1 text-xs text-ink-subtle">

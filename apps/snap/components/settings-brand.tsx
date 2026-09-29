@@ -14,6 +14,7 @@ import { Input } from "@webcules/ui/components/input";
 import { Label } from "@webcules/ui/components/label";
 
 import { generateAndUploadBrandAssets } from "@/components/brand-asset-generator";
+import { WatermarkCard } from "@/components/watermark-card";
 
 export function SettingsBrand({
   embedKey,
@@ -28,6 +29,8 @@ export function SettingsBrand({
   removeBranding: initialRemoveBranding,
   hasBrandAssets: initialHasBrandAssets,
   studioName,
+  watermark,
+  watermarkLogoUrl,
 }: {
   embedKey: string;
   hasLogo: boolean;
@@ -43,6 +46,9 @@ export function SettingsBrand({
   /** WEB-239: a generated bundle exists (favicon/OG/etc.). */
   hasBrandAssets: boolean;
   studioName: string;
+  /** WEB-242: watermark card state + the generated watermark-source URL. */
+  watermark: { mode: "off" | "corner" | "tiled" | "text"; opacity: number; scale: number; margin: number; text: string };
+  watermarkLogoUrl: string | null;
 }) {
   const router = useRouter();
   const [accentColor, setAccentColor] = useState(initialAccent);
@@ -260,6 +266,8 @@ export function SettingsBrand({
           </>
         )}
       </div>
+
+      <WatermarkCard initial={watermark} studioName={studioName} logoUrl={watermarkLogoUrl} entitled={whiteLabelEntitled} />
     </section>
   );
 }

@@ -10,6 +10,7 @@ import { env } from "cloudflare:workers";
 
 import { GalleryDenied, GalleryGate, GalleryView } from "@/components/gallery-view";
 import { isWhiteLabeled } from "@/lib/branding";
+import { effectiveWatermark } from "@/lib/watermark";
 import { brandIcons, brandOgImage, parseBrandAssets } from "@/lib/brand-assets";
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
@@ -86,12 +87,18 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
     return <GalleryDenied reason="unknown" />;
   }
 
-  const [profile, assets, ent, favorites, selection] = await Promise.all([
+  const [profile, assets, ent, favorites, selection, projectOverride] = await Promise.all([
     getStudioProfile(grant.organizationId),
     getGrantAssets(grant),
     getPlanEntitlements(grant.organizationId),
     getFavorites(grant.id),
     getLatestSelection(grant.id),
+    // WEB-242: per-project watermark override.
+    getDb()
+      .select({ watermarkOverride: schema.projects.watermarkOverride })
+      .from(schema.projects)
+      .where(eq(schema.projects.id, grant.projectId))
+      .limit(1),
   ]);
   const brand = JSON.parse(profile?.brand || "{}") as { accent?: string };
   const shared = {
@@ -100,6 +107,15 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
     logoUrl: profile?.logoKey && profile?.embedKey ? `/api/embed/logo?key=${profile.embedKey}` : null,
     contactEmail: profile?.contactEmail ?? null,
     whiteLabel: isWhiteLabeled(ent, profile?.brand),
+    // WEB-242: lightbox previews swap to the watermarked variant; thumbs
+    // (dashboard-only) always stay clean. Missing variant falls back to the
+    // clean preview server-side until the bulk backfill covers the asset.
+    watermarked: effectiveWatermark({
+      ent,
+      brand: profile?.brand,
+      override: projectOverride[0]?.watermarkOverride ?? null,
+      studioName: profile?.studioName,
+    }) !== null,
   };
 
   // Email-shock contingency: OTPs off, the link itself is the gate.

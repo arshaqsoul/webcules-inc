@@ -2,6 +2,7 @@
  * via canvas right after an upload completes and pushes them here. Small
  * (≤8MB) image-only payloads; the originals are never modified. */
 import { attachDerivative } from "@/lib/repos/assets";
+import { getPlanEntitlements } from "@/lib/plans";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { getOrgContext } from "@/lib/session";
 
@@ -21,9 +22,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     return Response.json({ error: "expected_multipart" }, { status: 400 });
   }
   const kind = form.get("kind");
-  if (kind !== "thumb" && kind !== "preview") {
+  if (kind !== "thumb" && kind !== "preview" && kind !== "preview_wm") {
     return Response.json({ error: "invalid_kind" }, { status: 400 });
   }
+  // WEB-242: preview_wm exists only for entitled studios (margin + abuse).
+  if (kind === "preview_wm") {
+    const ent = await getPlanEntitlements(ctx.organizationId);
+    if (!ent?.whiteLabel) return Response.json({ error: "plan_required" }, { status: 403 });
+  }
+  const replace = form.get("replace") === "1";
   const file = form.get("file");
   if (!(file instanceof File)) return Response.json({ error: "missing_file" }, { status: 400 });
   if (file.size > MAX_DERIVATIVE_BYTES) return Response.json({ error: "too_large" }, { status: 413 });
@@ -35,6 +42,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     kind,
     bytes: await file.arrayBuffer(),
     contentType: file.type,
+    ...(replace ? { replace: true } : {}),
     // WEB-117: with the studio's strip policy on, a derivative carrying
     // EXIF/GPS is rejected — canvas output always passes, this is the guard.
     verifyNoExif: (await getStudioProfile(ctx.organizationId))?.exifStripDerived ?? false,

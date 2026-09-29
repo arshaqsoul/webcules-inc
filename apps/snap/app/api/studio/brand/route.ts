@@ -6,6 +6,7 @@ import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { safeHexColor } from "@/lib/embed";
 import { safeFontStack, safeTheme, sanitizeTokenBag } from "@/lib/embed-tokens";
+import { sanitizeWatermarkInput } from "@/lib/watermark";
 import { getPlanEntitlements } from "@/lib/plans";
 import { updateStudioSlug } from "@/lib/repos/studios";
 import { getOrgContext } from "@/lib/session";
@@ -27,6 +28,9 @@ const bodySchema = z.object({
   /** WEB-238: remove Snap branding from client surfaces (Studio/Pro only —
    * enforced server-side against the entitlement, not just the UI lock). */
   removeBranding: z.boolean().optional(),
+  /** WEB-242: watermark engine config — sanitized + clamped; mode "off" (or
+   * absent/null) deletes the key so no variants generate. Studio+ only. */
+  watermark: z.record(z.string(), z.unknown()).nullable().optional(),
   /** Advanced token presets (WEB-163) — sanitized per-kind, invalid dropped. */
   tokens: z.record(z.string(), z.unknown()).optional(),
   /** WEB-118: rejected auto-delete policy — { enabled, retainDays }. */
@@ -90,6 +94,7 @@ export async function PATCH(req: Request) {
     theme?: string;
     tokens?: Record<string, unknown>;
     removeBranding?: boolean;
+    watermark?: unknown;
   };
   if (parsed.data.accentColor) brand.accent = safeHexColor(parsed.data.accentColor) ?? brand.accent;
   if (parsed.data.fontFamily !== undefined) {
@@ -100,6 +105,17 @@ export async function PATCH(req: Request) {
   if (parsed.data.theme) brand.theme = safeTheme(parsed.data.theme) ?? undefined;
   if (parsed.data.tokens) brand.tokens = sanitizeTokenBag(parsed.data.tokens) as Record<string, unknown>;
   if (parsed.data.removeBranding !== undefined) brand.removeBranding = parsed.data.removeBranding;
+  if (parsed.data.watermark !== undefined) {
+    const wm = sanitizeWatermarkInput(parsed.data.watermark);
+    if (wm) brand.watermark = wm;
+    else delete brand.watermark; // "off" or junk → gone (zero generation cost)
+    if (wm) {
+      // Entitlement gate mirrors removeBranding: turning the engine on
+      // requires Studio/Pro; turning it off is always allowed.
+      const ent = await getPlanEntitlements(ctx.organizationId);
+      if (!ent?.whiteLabel) return Response.json({ error: "plan_required" }, { status: 403 });
+    }
+  }
 
   await db
     .update(schema.studioProfiles)

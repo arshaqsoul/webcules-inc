@@ -237,6 +237,11 @@ export default async function ProjectDetailPage({
             approvedCount={assets.filter((a) => a.status === "approved" || a.status === "shared").length}
             folders={deliverFolders.folders}
             grants={grants}
+            watermarkOverride={
+              project.watermarkOverride === "on" || project.watermarkOverride === "off"
+                ? project.watermarkOverride
+                : "inherit"
+            }
           />
         </section>
       )}

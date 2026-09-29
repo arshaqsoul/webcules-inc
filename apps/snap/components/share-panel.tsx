@@ -66,6 +66,7 @@ export function SharePanel({
   const router = useRouter();
   const [email, setEmail] = useState(clientEmail ?? "");
   const [days, setDays] = useState("30");
+  const [proofing, setProofing] = useState(false);
   const [folders, setFolders] = useState<DeliverFolder[]>([]);
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const [preview, setPreview] = useState<PreviewAsset[]>([]);
@@ -126,6 +127,8 @@ export function SharePanel({
           clientEmail: email.trim(),
           ...(picked.size ? { folderIds: Array.from(picked) } : {}),
           expiresInDays: days ? Number(days) : null,
+          // WEB-242: proofing — downloads deliver watermarked previews.
+          proofing,
         }),
       });
       const body = (await res.json().catch(() => ({}))) as { error?: string };
@@ -182,6 +185,23 @@ export function SharePanel({
                 <option key={o.value} value={o.value}>{o.label}</option>
               ))}
             </select>
+          </label>
+
+          {/* WEB-242: proofing mode — client downloads get the watermarked
+           * preview (pre-sale delivery); re-share a clean gallery on purchase. */}
+          <label className="mt-3 flex items-start gap-2 text-xs text-ink-subtle">
+            <input
+              type="checkbox"
+              checked={proofing}
+              onChange={(e) => setProofing(e.target.checked)}
+              className="mt-0.5 h-4 w-4"
+            />
+            <span>
+              <span className="block text-xs font-medium text-ink">Proofing gallery</span>
+              <span className="block text-[11px] leading-relaxed text-ink-tertiary">
+                Downloads deliver watermarked previews instead of originals — deliver clean files after purchase.
+              </span>
+            </span>
           </label>
 
           <div className="mt-4">

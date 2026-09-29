@@ -351,6 +351,8 @@ export const projects = sqliteTable(
     /** WEB-135: quoted package total — anchors paid/partial/unpaid badges. */
     quotedTotalMinor: integer("quoted_total_minor"),
     quotedCurrency: text("quoted_currency").notNull().default("usd"),
+    /** WEB-242: per-project watermark override — null/'inherit' | 'on' | 'off'. */
+    watermarkOverride: text("watermark_override"),
     createdAt: ts("created_at"),
     updatedAt: ts("updated_at"),
   },
@@ -470,6 +472,8 @@ export const assets = sqliteTable(
     rejectedAt: integer("rejected_at"),
     thumbKey: text("thumb_key"),
     previewKey: text("preview_key"),
+    /** WEB-242: watermarked preview derivative (browser-composited). */
+    previewWmKey: text("preview_wm_key"),
     exifStripped: integer("exif_stripped", { mode: "boolean" }).notNull().default(false),
     uploadedBy: text("uploaded_by").references(() => user.id, { onDelete: "set null" }),
     createdAt: ts("created_at"),
@@ -558,6 +562,8 @@ export const shareGrants = sqliteTable(
     revokedAt: integer("revoked_at", { mode: "timestamp" }),
     /** Studio-controlled: may the client download originals from this link. */
     allowDownload: integer("allow_download", { mode: "boolean" }).notNull().default(true),
+    /** WEB-242: proofing mode — downloads deliver the watermarked preview. */
+    proofing: integer("proofing", { mode: "boolean" }).notNull().default(false),
     /** Client interaction mode (0024): off | favorites | selection. */
     selectionMode: text("selection_mode").notNull().default("favorites"),
     /** Max picks for selection mode; null = unlimited. */

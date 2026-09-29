@@ -48,6 +48,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     folderIds?: string[];
     expiresInDays?: number | null;
     allowDownload?: boolean;
+    proofing?: boolean;
     selectionMode?: "off" | "favorites" | "selection";
     selectionLimit?: number | null;
     selectionDeadline?: number | null;
@@ -141,6 +142,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     expiresAt,
     createdById: ctx.user.id,
     allowDownload: body.allowDownload !== false,
+    proofing: body.proofing === true,
     selectionMode: body.selectionMode === "off" || body.selectionMode === "selection" ? body.selectionMode : "favorites",
     selectionLimit:
       body.selectionMode === "selection" && Number.isInteger(body.selectionLimit) && (body.selectionLimit as number) > 0

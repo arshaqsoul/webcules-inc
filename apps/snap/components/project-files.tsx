@@ -19,6 +19,7 @@ import {
   DialogTitle,
 } from "@webcules/ui/components/dialog";
 import { AssetManage } from "@/components/asset-manage";
+import { drawWatermark, loadWatermarkLogo } from "@/components/watermark-canvas";
 import { FileTypeIcon } from "@/components/file-type-icon";
 import { useConfirm } from "@/components/confirm-provider";
 import { SharePanel } from "@/components/share-panel";
@@ -94,6 +95,25 @@ async function fingerprintFile(file: File): Promise<string | null> {
   }
 }
 
+/* ---------------- Watermark context (WEB-242) ----------------
+ * Fetched once per dashboard mount: when the studio's watermark is on, new
+ * uploads also generate a preview_wm derivative (browser canvas — the only
+ * place watermark pixels are drawn). */
+
+type WmContext = {
+  config: { mode: "corner" | "tiled" | "text"; opacity: number; scale: number; margin: number; text?: string } | null;
+  studioName: string;
+  logoUrl: string | null;
+};
+
+let wmContextPromise: Promise<WmContext> | null = null;
+function watermarkContext(): Promise<WmContext> {
+  wmContextPromise ??= fetch("/api/studio/watermark")
+    .then((r) => (r.ok ? (r.json() as Promise<WmContext>) : { config: null, studioName: "", logoUrl: null }))
+    .catch(() => ({ config: null, studioName: "", logoUrl: null }));
+  return wmContextPromise;
+}
+
 /* ---------------- Derivatives (WEB-116) ----------------
  * Generated in-browser with canvas right after an upload lands: thumb (320px)
  * + preview (1600px) JPEGs for images, poster frame for videos. Re-encoding
@@ -120,10 +140,38 @@ function canvasToBlob(bitmap: ImageBitmap | HTMLVideoElement, maxDim: number, qu
   return new Promise((resolve) => canvas.toBlob((b) => resolve(b), "image/jpeg", quality));
 }
 
-async function uploadDerivative(assetId: string, kind: "thumb" | "preview", blob: Blob): Promise<boolean> {
+/** WEB-242: preview canvas + watermark composite in one pass. */
+async function canvasToBlobWatermarked(
+  file: File,
+  maxDim: number,
+  quality: number,
+  wm: { config: WmContext["config"]; logo: HTMLImageElement | null; studioName: string },
+): Promise<Blob | null> {
+  if (!wm.config) return null;
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, maxDim / Math.max(bitmap.width, bitmap.height));
+    const w = Math.max(1, Math.round(bitmap.width * scale));
+    const h = Math.max(1, Math.round(bitmap.height * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    ctx.drawImage(bitmap, 0, 0, w, h);
+    bitmap.close();
+    drawWatermark(ctx, { config: wm.config, logo: wm.logo, studioName: wm.studioName });
+    return new Promise((resolve) => canvas.toBlob((b) => resolve(b), "image/jpeg", quality));
+  } catch {
+    return null;
+  }
+}
+
+async function uploadDerivative(assetId: string, kind: "thumb" | "preview" | "preview_wm", blob: Blob, replace = false): Promise<boolean> {
   const form = new FormData();
   form.set("kind", kind);
   form.set("file", blob, `${kind}.jpg`);
+  if (replace) form.set("replace", "1");
   try {
     const res = await fetch(`/api/assets/${assetId}/derivative`, { method: "POST", body: form });
     return res.ok;
@@ -177,6 +225,18 @@ async function generateDerivatives(assetId: string, file: File): Promise<boolean
       let any = false;
       if (thumb) any = (await uploadDerivative(assetId, "thumb", thumb)) || any;
       if (preview) any = (await uploadDerivative(assetId, "preview", preview)) || any;
+      // WEB-242: watermarked preview for client galleries (best-effort —
+      // the bulk regenerate action in Settings backfills any misses).
+      const wm = await watermarkContext();
+      if (preview && wm.config) {
+        const logo = await loadWatermarkLogo(wm.logoUrl);
+        const blob = await canvasToBlobWatermarked(file, 1600, 0.85, {
+          config: wm.config,
+          logo,
+          studioName: wm.studioName,
+        });
+        if (blob) any = (await uploadDerivative(assetId, "preview_wm", blob)) || any;
+      }
       return any;
     }
     if (DERIV_VIDEO_EXTS.has(ext)) {
