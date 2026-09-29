@@ -10,6 +10,9 @@ All three apps run as **Cloudflare Workers** in production on the Webcules accou
 | `apps/landing` | `webcules-landing` | https://webcules.com, https://www.webcules.com | Zone routes (apex DNS is externally managed) |
 | `apps/backgrounds` | `webcules-backgrounds` | https://backgrounds.webcules.com | Custom domain |
 | `apps/portfolio` | `arshaq-portfolio` | https://arshaq.webcules.com | Static assets worker (no build step, no bindings) — personal portfolio |
+| `apps/snap` | `webcules-snap` | https://snap.webcules.com | Photographer SaaS (vinext, NOT OpenNext) — own D1 `webcules-snap` + own R2 `snap-webcules`, deliberately NOT on the shared CMS resources. **Staging-first deploy policy** — see `apps/snap/AGENTS.md` |
+| `apps/snap` (staging) | `webcules-snap-staging` | https://snap-staging.webcules.com | Isolated staging: D1 `webcules-snap-staging`, R2 `snap-staging`, Stripe test keys. Deploy: `node scripts/deploy.mjs staging` from `apps/snap` |
+| `apps/snap-email` | `webcules-snap-email` | — | Inbound email (Email Routing) + daily cron 06:00 UTC → `POST https://snap.webcules.com/api/cron/daily-status` |
 
 ## Shared resources
 

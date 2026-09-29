@@ -34,7 +34,7 @@ export function GalleryActivity({ analytics, grants, canNudge, canView = true }:
       <div className="rounded-[12px] border border-hairline bg-surface-1 p-5">
         <h3 className="text-[15px] font-medium text-ink">Activity</h3>
         <p className="mt-1 text-sm text-ink-subtle">See who viewed your gallery, what they favorited, and which photos they lingered on.</p>
-        <a href="/dashboard/billing" className="mt-2 inline-block text-sm font-medium text-primary underline underline-offset-2">
+        <a href="/dashboard/settings/billing" className="mt-2 inline-block text-sm font-medium text-primary underline underline-offset-2">
           Upgrade to Lite — $15/mo
         </a>
       </div>

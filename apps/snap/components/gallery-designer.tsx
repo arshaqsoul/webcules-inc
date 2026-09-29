@@ -295,7 +295,7 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
         <div className="mt-4 rounded-lg border border-hairline bg-surface-2 p-4 text-sm text-ink-subtle">
           <p className="font-medium text-ink">Covers, layouts and themes are a Lite feature.</p>
           <p className="mt-1">Design your galleries — cover photo with a focal point, cinematic Ken Burns hero, editorial layouts, dark or brand-tinted themes, reusable presets.</p>
-          <Link href="/dashboard/billing" className="mt-2 inline-block text-sm font-medium text-primary underline underline-offset-2">
+          <Link href="/dashboard/settings/billing" className="mt-2 inline-block text-sm font-medium text-primary underline underline-offset-2">
             Upgrade to Lite — $15/mo
           </Link>
         </div>
@@ -535,7 +535,7 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
                   <div className="text-sm text-ink-subtle">
                     <p className="font-medium text-ink">Slideshow music is a Lite feature.</p>
                     <p className="mt-1">Upload a track you own the rights to and it plays with the slideshow — no catalog, your music.</p>
-                    <Link href="/dashboard/billing" className="mt-2 inline-block text-sm font-medium text-primary underline underline-offset-2">
+                    <Link href="/dashboard/settings/billing" className="mt-2 inline-block text-sm font-medium text-primary underline underline-offset-2">
                       Upgrade to Lite — $15/mo
                     </Link>
                   </div>

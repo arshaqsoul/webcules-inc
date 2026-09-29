@@ -171,8 +171,14 @@ export function txtMatches(token: string, records: string[] | null): boolean {
 
 /** Hosts that are the app itself, never a studio custom hostname. The
  * fallback origin is included: it routes traffic for custom hostnames but
- * its own name is not a client surface. */
-export const DEFAULT_APP_HOSTS = new Set(["snap.webcules.com", "snap-fallback.webcules.com"]);
+ * its own name is not a client surface. The staging host guards the isolated
+ * staging deploy (webcules-snap-staging) — without it, staging auth paths
+ * would 302 to the production origin. */
+export const DEFAULT_APP_HOSTS = new Set([
+  "snap.webcules.com",
+  "snap-fallback.webcules.com",
+  "snap-staging.webcules.com",
+]);
 
 function bareHost(host: string): string {
   return host.toLowerCase().replace(/^\[|\]$/g, "").split(":")[0];
