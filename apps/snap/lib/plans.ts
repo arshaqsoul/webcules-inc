@@ -10,7 +10,7 @@
  * Storage is 97–98.5% of COGS; the guardrails below come from the worst-case
  * simulation: hard upload lock at 2× included bytes (overage zone between cap
  * and lock), monthly upload bytes ≤ 2× cap, and a 250k file cap per org. */
-import { and, eq, gte, inArray, sql } from "drizzle-orm";
+import { and, eq, gte, inArray, isNull, sql } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
@@ -43,6 +43,9 @@ export type PlanDef = {
   /** WEB-217 multi-studio: studios in the family incl. the parent (null =
    * unlimited). Non-negotiable condition: quotas POOL across the family. */
   maxLinkedStudios: number | null;
+  /** WEB-224 custom domains: slots included with the plan (Pro 2, others 0 —
+   * Studio buys one via the $5/mo add-on, read from addon_custom_domain). */
+  maxCustomDomains: number;
   /** OTP emails per client per rolling 30d (enforced in gallery-auth). */
   otpCapPerUser: number;
 };
@@ -57,6 +60,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     monthlyUploadBytes: 40 * GB, fileCap: 250_000,
     jpgOnly: true, rawAllowed: false, rawTrialBytes: 3 * GB, whiteLabel: false,
     maxActiveBookings: null, maxActiveGalleries: 5, maxLinkedStudios: 1, otpCapPerUser: 30,
+    maxCustomDomains: 0,
   },
   lite: {
     id: "lite", name: "Lite", priceMonthlyUsd: 15,
@@ -64,6 +68,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     monthlyUploadBytes: 300 * GB, fileCap: 250_000,
     jpgOnly: false, rawAllowed: true, rawTrialBytes: null, whiteLabel: false,
     maxActiveBookings: null, maxActiveGalleries: 15, maxLinkedStudios: 3, otpCapPerUser: 30,
+    maxCustomDomains: 0,
   },
   studio: {
     id: "studio", name: "Studio", priceMonthlyUsd: 29,
@@ -71,6 +76,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     monthlyUploadBytes: TB, fileCap: 250_000,
     jpgOnly: false, rawAllowed: true, rawTrialBytes: null, whiteLabel: true,
     maxActiveBookings: null, maxActiveGalleries: null, maxLinkedStudios: null, otpCapPerUser: 30,
+    maxCustomDomains: 0,
   },
   pro: {
     id: "pro", name: "Pro", priceMonthlyUsd: 59,
@@ -78,6 +84,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     monthlyUploadBytes: 4 * TB, fileCap: 250_000,
     jpgOnly: false, rawAllowed: true, rawTrialBytes: null, whiteLabel: true,
     maxActiveBookings: null, maxActiveGalleries: null, maxLinkedStudios: null, otpCapPerUser: 30,
+    maxCustomDomains: 2,
   },
 };
 
@@ -108,6 +115,13 @@ export type Entitlements = PlanDef & {
   familyStudioCount: number;
   /** True when this org is a child (plan surfaces point at the parent bill). */
   isFamilyChild: boolean;
+  /** WEB-224: effective custom-domain slots — plan-included clamped by tier
+   * (add-on is Studio-only; Pro+add-on stays 2), and the org's live count of
+   * non-removed rows so UI and enforcement never query separately. Domains
+   * are per-org (each family studio gets its own), not pooled. */
+  maxCustomDomains: number;
+  addonCustomDomain: boolean;
+  activeCustomDomains: number;
 };
 
 const ACTIVE_BOOKING_STATUSES = ["pending", "confirmed"];
@@ -150,6 +164,7 @@ export async function getPlanEntitlements(organizationId: string): Promise<Entit
       .select({
         plan: schema.studioProfiles.plan,
         planStatus: schema.studioProfiles.planStatus,
+        addonCustomDomain: schema.studioProfiles.addonCustomDomain,
       })
       .from(schema.studioProfiles)
       .where(eq(schema.studioProfiles.organizationId, family.rootId))
@@ -161,7 +176,7 @@ export async function getPlanEntitlements(organizationId: string): Promise<Entit
   monthStart.setUTCDate(1);
   monthStart.setUTCHours(0, 0, 0, 0);
 
-  const [usage, monthBytes, galleries, bookings] = await Promise.all([
+  const [usage, monthBytes, galleries, bookings, domains] = await Promise.all([
     db
       .select({
         bytes: sql<number>`coalesce(sum(${schema.assets.bytes}), 0)`,
@@ -191,9 +206,16 @@ export async function getPlanEntitlements(organizationId: string): Promise<Entit
       .select({ n: sql<number>`count(*)` })
       .from(schema.bookings)
       .where(and(inArray(schema.bookings.organizationId, family.ids), sql`${schema.bookings.status} IN ('pending','confirmed')`)),
+    // Custom domains are per-org (each family studio brands its own host) —
+    // only the SLOT count is family-derived, not the rows.
+    db
+      .select({ n: sql<number>`count(*)` })
+      .from(schema.customDomains)
+      .where(and(eq(schema.customDomains.organizationId, organizationId), isNull(schema.customDomains.removedAt))),
   ]);
 
   const def = planDef(profile.plan);
+  const addonCustomDomain = Boolean(profile.addonCustomDomain);
   const storageUsedBytes = Number(usage[0].bytes);
   const pct = def.storageBytes > 0 ? (storageUsedBytes / def.storageBytes) * 100 : 0;
   return {
@@ -213,5 +235,10 @@ export async function getPlanEntitlements(organizationId: string): Promise<Entit
     familyOrgIds: family.ids,
     familyStudioCount: family.ids.length,
     isFamilyChild: family.rootId !== organizationId,
+    // Add-on is Studio-only (WEB-231): Pro clamps at its included 2, Free/Lite
+    // have no purchase path — the flag never leaks a slot to them.
+    maxCustomDomains: def.id === "studio" && addonCustomDomain ? 1 : def.maxCustomDomains,
+    addonCustomDomain,
+    activeCustomDomains: Number(domains[0].n),
   };
 }

@@ -31,17 +31,18 @@ import m25 from "../../migrations/0025_pending_plan.sql?raw";
 import m26 from "../../migrations/0026_plan_changed_at.sql?raw";
 import m27 from "../../migrations/0027_project_folders.sql?raw";
 import m28 from "../../migrations/0028_multi_studio.sql?raw";
+import m29 from "../../migrations/0029_custom_domains.sql?raw";
 
 const MIGRATIONS = [
   m01, m02, m03, m04, m05, m06, m07, m08, m09, m10, m11, m12, m13, m14, m15,
-  m16, m17, m18, m19, m20, m21, m22, m23, m24, m25, m26, m27, m28,
+  m16, m17, m18, m19, m20, m21, m22, m23, m24, m25, m26, m27, m28, m29,
 ];
 
 /** Every table, in an order that satisfies FK constraints when deleting. */
 const TABLES = [
   "gallery_selection", "gallery_favorite", "share_otp_log", "share_otp", "share_access_log",
   "share_grant_asset", "share_grant",
-  "asset_tag", "upload_session", "asset", "folder",
+  "asset_tag", "upload_session", "asset", "folder", "custom_domain",
   "contract", "invoice", "payment", "org_counter",
   "lead_message", "lead",
   "booking", "project_status_event", "project", "client",

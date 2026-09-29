@@ -26,6 +26,7 @@ export async function seedStudio(opts: {
   plan?: string;
   timezone?: string;
   embedKey?: string;
+  addonCustomDomain?: boolean;
 } = {}): Promise<SeedStudio> {
   const db = getDb();
   const userId = crypto.randomUUID();
@@ -46,6 +47,7 @@ export async function seedStudio(opts: {
     db.insert(schema.studioProfiles).values({
       organizationId, studioName: name, timezone: opts.timezone ?? "UTC",
       contactEmail: `${slug}@test.test`, embedKey, plan: opts.plan ?? "free",
+      addonCustomDomain: opts.addonCustomDomain ?? false,
     }),
   ]);
   return { userId, organizationId, slug, embedKey, plan: opts.plan ?? "free" };

@@ -199,9 +199,58 @@ export const studioProfiles = sqliteTable("studio_profile", {
   bulkClassOpsRemaining: integer("bulk_class_ops_remaining"),
   /** Last key processed by the active bulk batch (R2 listing startAfter). */
   bulkClassCursor: text("bulk_class_cursor"),
+  /** WEB-224: Studio-tier custom-domain add-on ($5/mo) — flipped by the
+   * Stripe webhook on subscription-item add/remove; entitlements only read. */
+  addonCustomDomain: integer("addon_custom_domain", { mode: "boolean" }).notNull().default(false),
   createdAt: ts("created_at"),
   updatedAt: ts("updated_at"),
 });
+
+/* ---------------- Custom domains (WEB-224) ---------------- */
+
+/** Per-org hostnames serving the client surface (galleries, booking, portal)
+ * via Cloudflare for SaaS custom hostnames. Soft-delete only — rows are never
+ * hard-deleted (WEB-152 no-data-loss); the partial unique index frees the
+ * hostname claim the moment removed_at is set. */
+export const customDomains = sqliteTable(
+  "custom_domain",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    /** Normalized: lowercase, no scheme/path/trailing dot; subdomains only. */
+    hostname: text("hostname").notNull(),
+    isPrimary: integer("is_primary", { mode: "boolean" }).notNull().default(false),
+    /** pending_verification | verified | cert_pending | active | degraded | failed | suspended_entitlement | removed */
+    status: text("status").notNull().default("pending_verification"),
+    /** "snap-verify=<32 hex>" — the TXT value the studio publishes at
+     * _snap-verify.<hostname>. */
+    verificationToken: text("verification_token").notNull(),
+    /** created_at + 30d, epoch seconds; the sweep expires stale pendings. */
+    verificationExpiresAt: integer("verification_expires_at"),
+    /** Cloudflare Custom Hostnames API id. */
+    cfCustomHostnameId: text("cf_custom_hostname_id"),
+    /** CF ssl.status string, mirrored for the UI. */
+    certStatus: text("cert_status"),
+    /** CF's DCV TXT record (name + value) — rendered alongside our own
+     * _snap-verify TXT so the studio can publish every required record. */
+    dcvTxtName: text("dcv_txt_name"),
+    dcvTxtValue: text("dcv_txt_value"),
+    /** Human-readable last failure (DNS mismatch, CAA blocked, …). */
+    lastError: text("last_error"),
+    lastCheckedAt: integer("last_checked_at"),
+    /** Degraded-email throttle stamp (sweep; ≤1 per domain per 7d). */
+    lastNotifiedAt: integer("last_notified_at"),
+    createdAt: ts("created_at"),
+    updatedAt: ts("updated_at"),
+    removedAt: integer("removed_at"),
+  },
+  (t) => [
+    uniqueIndex("custom_domain_hostname_unique").on(t.hostname).where(sql`${t.removedAt} IS NULL`),
+    index("custom_domain_org_idx").on(t.organizationId, t.status),
+  ],
+);
 
 /* ---------------- Clients (per-studio records; same email, many studios) ---------------- */
 
