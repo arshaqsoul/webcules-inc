@@ -336,6 +336,11 @@ export function PlanPanel({ returnHint }: { returnHint?: string }) {
         </a>
         <span className={`rounded-full px-2.5 py-1 ${st.plan === "studio" || st.plan === "pro" ? "bg-surface-2 text-ink-muted" : "bg-surface-2 text-ink-tertiary line-through"}`}>Custom form fields</span>
         <span className={`rounded-full px-2.5 py-1 ${st.plan !== "free" ? "bg-surface-2 text-ink-muted" : "bg-surface-2 text-ink-tertiary line-through"}`}>Booking page designer</span>
+        <span className={`rounded-full px-2.5 py-1 ${st.plan !== "free" ? "bg-surface-2 text-ink-muted" : "bg-surface-2 text-ink-tertiary line-through"}`}>Designed galleries + client app</span>
+        <span className={`rounded-full px-2.5 py-1 ${st.plan !== "free" ? "bg-surface-2 text-ink-muted" : "bg-surface-2 text-ink-tertiary line-through"}`}>Slideshows w/ music + sharing</span>
+        <span className={`rounded-full px-2.5 py-1 ${st.plan !== "free" ? "bg-surface-2 text-ink-muted" : "bg-surface-2 text-ink-tertiary line-through"}`}>Download PIN + bulk ZIPs</span>
+        <span className={`rounded-full px-2.5 py-1 ${st.plan === "studio" || st.plan === "pro" ? "bg-surface-2 text-ink-muted" : "bg-surface-2 text-ink-tertiary line-through"}`}>Sneak peeks + approvals</span>
+        <span className={`rounded-full px-2.5 py-1 ${st.plan === "studio" || st.plan === "pro" ? "bg-surface-2 text-ink-muted" : "bg-surface-2 text-ink-tertiary line-through"}`}>Per-photo insights</span>
         {st.rawAllowed ? (
           <span className="rounded-full bg-surface-2 px-2.5 py-1 text-ink-muted">RAW uploads</span>
         ) : st.rawTrialBytes ? (

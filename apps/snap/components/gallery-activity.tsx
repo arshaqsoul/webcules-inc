@@ -22,11 +22,24 @@ const EVENT_LABEL: Record<string, string> = {
   share_create: "shared a photo",
 };
 
-export function GalleryActivity({ analytics, grants, canNudge }: {
+export function GalleryActivity({ analytics, grants, canNudge, canView = true }: {
   analytics: GalleryAnalytics;
   grants: { id: string; clientEmail: string; state: string }[];
   canNudge: boolean;
+  /** WEB-267: views-basics is Lite+ (per-photo heat is Studio, gated at its API). */
+  canView?: boolean;
 }) {
+  if (!canView) {
+    return (
+      <div className="rounded-[12px] border border-hairline bg-surface-1 p-5">
+        <h3 className="text-[15px] font-medium text-ink">Activity</h3>
+        <p className="mt-1 text-sm text-ink-subtle">See who viewed your gallery, what they favorited, and which photos they lingered on.</p>
+        <a href="/dashboard/billing" className="mt-2 inline-block text-sm font-medium text-primary underline underline-offset-2">
+          Upgrade to Lite — $15/mo
+        </a>
+      </div>
+    );
+  }
   const t = analytics.totals;
   if (!analytics.clients.length) return null;
 

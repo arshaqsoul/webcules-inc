@@ -58,8 +58,8 @@ export function BentoFeatures() {
         <BentoTile
           className="md:col-span-2"
           icon={<LockKeyhole className="h-4 w-4" />}
-          title="Galleries built like vaults"
-          desc="Email-code access, expiring links, one-click revocation. Leak-proof by default."
+          title="Galleries that wow — and sell"
+          desc="Designed covers, layouts & Ken Burns slideshows with your music, films and reels, social share cards, a client photo app — all leak-proof by default: email codes, expiring links, one-click revocation."
         >
           <VaultDemo />
         </BentoTile>

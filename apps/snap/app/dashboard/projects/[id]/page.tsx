@@ -284,6 +284,7 @@ export default async function ProjectDetailPage({
           analytics={await getGalleryAnalytics(ctx.organizationId, id)}
           grants={grants.map((g) => ({ id: g.id, clientEmail: g.clientEmail, state: g.state }))}
           canNudge={(ent?.id ?? "free") !== "free"}
+          canView={(ent?.id ?? "free") !== "free"}
         />
         <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
           <h2 className="text-[15px] font-medium text-ink">Client gallery</h2>

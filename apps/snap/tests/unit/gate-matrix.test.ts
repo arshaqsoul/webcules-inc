@@ -2,6 +2,18 @@
  * story table so drift in any surface fails the suite. Every gate here is
  * enforced server-side (see the per-story integration suites). */
 import { describe, expect, it } from "vitest";
+import galleryDesignRoute from "../../app/api/projects/[id]/gallery-design/route.ts?raw";
+import templatesRoute from "../../app/api/studio/templates/route.ts?raw";
+import slideshowMusicRoute from "../../app/api/studio/slideshow-music/route.ts?raw";
+import downloadRequestRoute from "../../app/api/g/[token]/download-request/route.ts?raw";
+import shareRoute from "../../app/api/g/[token]/share/route.ts?raw";
+import listsRoute from "../../app/api/g/[token]/lists/route.ts?raw";
+import lifecycleRoute from "../../app/api/grants/[id]/lifecycle/route.ts?raw";
+import downloadSettingsRoute from "../../app/api/grants/[id]/download-settings/route.ts?raw";
+import favoriteRoute from "../../app/api/g/[token]/favorite/route.ts?raw";
+import favoritesExportRoute from "../../app/api/grants/[id]/favorites/export/route.ts?raw";
+import sneakPeekRoute from "../../app/api/assets/sneak-peek/route.ts?raw";
+import assetViewsRoute from "../../app/api/projects/[id]/asset-views/route.ts?raw";
 
 import { PLANS } from "@/lib/plans";
 import { FREE_CUSTOM_FIELD_CAP } from "@/lib/forms";
@@ -44,5 +56,31 @@ describe("tier gate matrix (WEB-256)", () => {
   it("invoice presets + booking-page designer are Lite+ (file-upload parity with Studio)", () => {
     expect(PLANS.free.maxSessionTypes).toBe(1);
     expect(PLANS.lite.rawAllowed).toBe(true); // Lite is a paid rung — presets/booking-page gate on id !== free in their routes
+  });
+});
+
+describe("WEB-267 gallery ladder (gates as shipped)", () => {
+  it("free keeps the classic gallery; every gate lands on the paid tier the table says", async () => {
+    // The ladder is enforced at the surfaces; each gated route source must
+    // contain its exact error marker (?raw keeps this a static pin).
+    const gates = [
+      ["design_requires_lite", galleryDesignRoute],
+      ["presets_require_lite", templatesRoute],
+      ["music_requires_lite", slideshowMusicRoute],
+      ["zip_requires_lite", downloadRequestRoute],
+      ["sharing_requires_lite", shareRoute],
+      ["lists_require_lite", listsRoute],
+      ["scheduling_requires_lite", lifecycleRoute],
+      ["pin_requires_lite", downloadSettingsRoute],
+      ["web_size_requires_lite", downloadSettingsRoute],
+      ["approvals_require_studio", downloadSettingsRoute],
+      ["notes_require_studio", favoriteRoute],
+      ["exports_require_studio", favoritesExportRoute],
+      ["sneak_peeks_require_studio", sneakPeekRoute],
+      ["insights_require_studio", assetViewsRoute],
+    ] as const;
+    for (const [marker, src] of gates) {
+      expect(src, `gate ${marker} must stay`).toContain(marker);
+    }
   });
 });
