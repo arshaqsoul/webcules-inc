@@ -38,7 +38,7 @@ export function Chapter({
   const dip = useTransform(scrollYProgress, [0.96, 1], [0, 1]);
 
   return (
-    <section id={id} ref={ref} style={{ height: `${vh}vh` }} className="relative">
+    <section id={id} ref={ref} style={{ height: `${vh}vh` }} className="relative bg-[#0a0b0f]">
       <div className={`sticky top-0 h-[100svh] overflow-hidden ${className ?? "bg-[#0a0b0f]"}`}>
         {children(scrollYProgress)}
         {dipEnd ? (

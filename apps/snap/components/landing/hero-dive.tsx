@@ -45,7 +45,7 @@ export function HeroDive({ signedIn }: { signedIn: boolean }) {
   const dip = useTransform(scrollYProgress, [0.955, 1], [0, 1]);
 
   return (
-    <section ref={ref} aria-label="Snap — the studio platform for photographers" className="relative h-[380vh]">
+    <section ref={ref} aria-label="Snap — the studio platform for photographers" className="relative h-[380vh] bg-[#0a0b0f]">
       <div className="sticky top-0 h-[100svh] overflow-hidden bg-[#0a0b0f]">
         {HERO_FRAMES.map((photo, i) => (
           <DiveFrame
