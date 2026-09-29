@@ -306,6 +306,8 @@ export const leads = sqliteTable(
     embedOrigin: text("embed_origin"),
     /** WEB-248: custom form answers — JSON { fieldId: {label, value} }. */
     customFields: text("custom_fields"),
+    /** WEB-250: soft link to the session type the inquiry is about. */
+    sessionTypeId: text("session_type_id"),
     createdAt: ts("created_at"),
     updatedAt: ts("updated_at"),
   },
@@ -396,6 +398,8 @@ export const availabilityRules = sqliteTable(
     slotMinutes: integer("slot_minutes").notNull().default(60),
     bufferMinutes: integer("buffer_minutes").notNull().default(0),
     active: integer("active", { mode: "boolean" }).notNull().default(true),
+    /** WEB-250: scoped to one session type (null = applies to all). */
+    sessionTypeId: text("session_type_id"),
     createdAt: ts("created_at"),
   },
   (t) => [index("availability_org_idx").on(t.organizationId, t.weekday)],
@@ -434,6 +438,10 @@ export const bookings = sqliteTable(
     /** unpaid | deposit_paid | paid */
     paymentStatus: text("payment_status").notNull().default("unpaid"),
     notes: text("notes"),
+    /** WEB-250: booked session type (kept on booking delete of the type). */
+    sessionTypeId: text("session_type_id"),
+    /** WEB-250: booking-question answers (JSON, validated at submit). */
+    answers: text("answers"),
     createdAt: ts("created_at"),
     updatedAt: ts("updated_at"),
   },
@@ -811,6 +819,40 @@ export const orgCounters = sqliteTable("org_counter", {
   invoiceSeq: integer("invoice_seq").notNull().default(0),
 });
 
+
+/* ---------------- Session types (WEB-250) ---------------- */
+
+export const sessionTypes = sqliteTable(
+  "session_type",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    slug: text("slug").notNull(),
+    description: text("description"),
+    color: text("color"),
+    icon: text("icon"),
+    slotMinutes: integer("slot_minutes"),
+    bufferMinutes: integer("buffer_minutes"),
+    minLeadHours: integer("min_lead_hours"),
+    maxAdvanceDays: integer("max_advance_days"),
+    priceMinor: integer("price_minor"),
+    /** null = inherit org payment; 'off' | 'deposit' | 'full'. */
+    depositKind: text("deposit_kind"),
+    depositMinor: integer("deposit_minor"),
+    /** inherit (own rules + shared) | own (only this type's rules). */
+    availabilityMode: text("availability_mode").notNull().default("inherit"),
+    bookingFormTemplateId: text("booking_form_template_id"),
+    galleryDefaults: text("gallery_defaults").notNull().default("{}"),
+    active: integer("active", { mode: "boolean" }).notNull().default(true),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: ts("created_at"),
+    updatedAt: ts("updated_at"),
+  },
+  (t) => [uniqueIndex("session_type_org_slug_unique").on(t.organizationId, t.slug)],
+);
 
 /* ---------------- Template store (WEB-247) ---------------- */
 

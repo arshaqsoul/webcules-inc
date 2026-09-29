@@ -120,7 +120,11 @@ const LOADER_JS = `(function () {
     if (opts) for (var k in opts) tokens[k] = opts[k];
     if (tokens.inherit === "auto") { var inh = inheritTokens(el); for (var i in inh) if (!(i in tokens)) tokens[i] = inh[i]; }
     var formId = el.getAttribute("data-snap-form") || "";
+    var typeAttr = el.getAttribute("data-snap-type") || "";
     var frame = makeFrame(widget, key, tokens, formId);
+    if (widget === "calendar" && typeAttr && /^[a-z0-9-]{1,40}$/i.test(typeAttr)) {
+      frame.src = buildSrc(widget, key, tokens, "") + "&type=" + encodeURIComponent(typeAttr);
+    }
     el.appendChild(frame);
     el.setAttribute("data-snap-mounted", "1");
     listenResize(frame);

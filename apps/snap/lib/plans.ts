@@ -48,6 +48,8 @@ export type PlanDef = {
   maxCustomDomains: number;
   /** OTP emails per client per rolling 30d (enforced in gallery-auth). */
   otpCapPerUser: number;
+  /** WEB-250 session types (HoneyBook ladder): null = unlimited. */
+  maxSessionTypes: number | null;
 };
 
 const GB = 1024 ** 3;
@@ -59,7 +61,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     storageBytes: 20 * GB, hardLockBytes: 40 * GB, overagePerGbUsd: 0,
     monthlyUploadBytes: 40 * GB, fileCap: 250_000,
     jpgOnly: true, rawAllowed: false, rawTrialBytes: 3 * GB, whiteLabel: false,
-    maxActiveBookings: null, maxActiveGalleries: 5, maxLinkedStudios: 1, otpCapPerUser: 30,
+    maxActiveBookings: null, maxActiveGalleries: 5, maxLinkedStudios: 1, otpCapPerUser: 30, maxSessionTypes: 1,
     maxCustomDomains: 0,
   },
   lite: {
@@ -67,7 +69,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     storageBytes: 150 * GB, hardLockBytes: 300 * GB, overagePerGbUsd: 0,
     monthlyUploadBytes: 300 * GB, fileCap: 250_000,
     jpgOnly: false, rawAllowed: true, rawTrialBytes: null, whiteLabel: false,
-    maxActiveBookings: null, maxActiveGalleries: 15, maxLinkedStudios: 3, otpCapPerUser: 30,
+    maxActiveBookings: null, maxActiveGalleries: 15, maxLinkedStudios: 3, otpCapPerUser: 30, maxSessionTypes: 3,
     maxCustomDomains: 0,
   },
   studio: {
@@ -75,7 +77,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     storageBytes: 500 * GB, hardLockBytes: TB, overagePerGbUsd: 0.1,
     monthlyUploadBytes: TB, fileCap: 250_000,
     jpgOnly: false, rawAllowed: true, rawTrialBytes: null, whiteLabel: true,
-    maxActiveBookings: null, maxActiveGalleries: null, maxLinkedStudios: null, otpCapPerUser: 30,
+    maxActiveBookings: null, maxActiveGalleries: null, maxLinkedStudios: null, otpCapPerUser: 30, maxSessionTypes: null,
     maxCustomDomains: 0,
   },
   pro: {
@@ -83,7 +85,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     storageBytes: 2 * TB, hardLockBytes: 4 * TB, overagePerGbUsd: 0.1,
     monthlyUploadBytes: 4 * TB, fileCap: 250_000,
     jpgOnly: false, rawAllowed: true, rawTrialBytes: null, whiteLabel: true,
-    maxActiveBookings: null, maxActiveGalleries: null, maxLinkedStudios: null, otpCapPerUser: 30,
+    maxActiveBookings: null, maxActiveGalleries: null, maxLinkedStudios: null, otpCapPerUser: 30, maxSessionTypes: null,
     maxCustomDomains: 2,
   },
 };

@@ -6,6 +6,9 @@ import { originAllowed, resolveStudioByEmbedKey, safeHexColor } from "@/lib/embe
 import { bookingConfirmedEmails, sendEmail } from "@/lib/email";
 import { getEmailBrand } from "@/lib/branding";
 import { getBookingSettings } from "@/lib/repos/availability";
+import { effectiveBookingPayment, getSessionTypeBySlug } from "@/lib/repos/session-types";
+import { getTemplate } from "@/lib/repos/templates";
+import { parseFormSchema, validateFormAnswers } from "@/lib/forms";
 import { createBookingFromWidget } from "@/lib/repos/bookings";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { getStripe } from "@/lib/stripe";
@@ -21,6 +24,8 @@ const bodySchema = z.object({
   notes: z.string().trim().max(2000).optional().or(z.literal("")),
   embedOrigin: z.string().trim().max(200).optional().or(z.literal("")),
   turnstileToken: z.string().max(4096).optional(),
+  sessionType: z.string().trim().max(40).optional().or(z.literal("")),
+  answers: z.record(z.string(), z.string().max(4000)).optional(),
 });
 
 export async function POST(req: Request) {
@@ -49,10 +54,29 @@ export async function POST(req: Request) {
     return Response.json({ error: "captcha_failed" }, { status: 403 });
   }
 
+  // WEB-250: resolve the session type (slug) and validate booking answers
+  // against the STORED template schema.
+  const type = body.sessionType ? await getSessionTypeBySlug(studio.organizationId, body.sessionType) : null;
+  if (body.sessionType && !type) return Response.json({ error: "invalid_session_type" }, { status: 400 });
+  let answersJson: string | null = null;
+  if (type?.bookingFormTemplateId) {
+    const template = await getTemplate(studio.organizationId, type.bookingFormTemplateId);
+    const formSchema = template && !template.archivedAt ? parseFormSchema(template.body) : null;
+    if (formSchema) {
+      const validated = validateFormAnswers(formSchema, body.answers ?? {});
+      if (!validated.ok) return Response.json({ error: "invalid_answers", fields: validated.errors.map((e) => e.field) }, { status: 400 });
+      answersJson = JSON.stringify(validated.result);
+    }
+  } else if (body.answers && Object.keys(body.answers).length) {
+    return Response.json({ error: "invalid_answers" }, { status: 400 }); // no questions on this type
+  }
+
   // Payment-required studios: hold the booking pending and hand back a
   // Stripe Checkout URL — the webhook confirms and finishes the flow.
+  // WEB-250: the type's deposit config overrides the org-level one.
   const settings = await getBookingSettings(studio.organizationId);
-  if (settings.payment?.enabled) {
+  const payment = effectiveBookingPayment(settings, type);
+  if (payment?.enabled) {
     const stripe = await getStripe();
     if (stripe) {
       const held = await createBookingFromWidget({
@@ -63,6 +87,8 @@ export async function POST(req: Request) {
         clientPhone: body.phone || null,
         notes: body.notes || null,
         pendingWhenPaymentRequired: true,
+        ...(type ? { sessionTypeId: type.id } : {}),
+        ...(answersJson ? { answers: answersJson } : {}),
       });
       if (!held.ok) {
         const status = held.error === "conflict" ? 409 : 400;
@@ -86,10 +112,10 @@ export async function POST(req: Request) {
           {
             price_data: {
               currency: "usd",
-              unit_amount: settings.payment.amountMinor,
+              unit_amount: payment.amountMinor,
               product_data: {
                 name:
-                  settings.payment.kind === "deposit"
+                  payment.kind === "deposit"
                     ? `Session deposit — ${studio.studioName}`
                     : `Session payment — ${studio.studioName}`,
               },
@@ -124,6 +150,8 @@ export async function POST(req: Request) {
     clientEmail: body.email,
     clientPhone: body.phone || null,
     notes: body.notes || null,
+    ...(type ? { sessionTypeId: type.id } : {}),
+    ...(answersJson ? { answers: answersJson } : {}),
   });
   if (!result.ok) {
     const status = result.error === "conflict" ? 409 : 400;

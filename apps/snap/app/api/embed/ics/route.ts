@@ -2,6 +2,8 @@
  * Addressed by unguessable booking UUID + embed key; booking times are UTC
  * with a TZID-less UTC form (imported correctly by all major clients). */
 import { isWhiteLabeled } from "@/lib/branding";
+import { eq } from "drizzle-orm";
+import { getDb, schema } from "@/lib/db";
 import { resolveStudioByEmbedKey } from "@/lib/embed";
 import { getPlanEntitlements } from "@/lib/plans";
 import { getBookingByRef } from "@/lib/repos/bookings";
@@ -32,6 +34,10 @@ export async function GET(req: Request) {
   // studios. PRODID stays the producing software (standard ICS practice);
   // UID stays on our domain (stability + uniqueness).
   const wl = isWhiteLabeled(await getPlanEntitlements(studio.organizationId), studio.brand);
+  const sessionTypeName = booking.sessionTypeId
+    ? ((await getDb().select({ name: schema.sessionTypes.name }).from(schema.sessionTypes).where(eq(schema.sessionTypes.id, booking.sessionTypeId)).limit(1))[0]?.name ?? null)
+    : null;
+  const sessionTitle = sessionTypeName ? `${sessionTypeName} — ${studio.studioName}` : `Photo session — ${studio.studioName}`;
   const ics = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
@@ -41,9 +47,10 @@ export async function GET(req: Request) {
     "BEGIN:VEVENT",
     `UID:${booking.id}@snap.webcules.com`,
     `DTSTAMP:${icsStamp(new Date())}`,
+
     `DTSTART:${icsStamp(booking.startAt)}`,
     `DTEND:${icsStamp(booking.endAt)}`,
-    `SUMMARY:${esc(`Photo session — ${studio.studioName}`)}`,
+    `SUMMARY:${esc(sessionTitle)}`,
     `DESCRIPTION:${esc(wl ? `Session with ${studio.studioName}.` : `Session with ${studio.studioName}. Booked via Snap.`)}`,
     `STATUS:${booking.status === "confirmed" ? "CONFIRMED" : "TENTATIVE"}`,
     "END:VEVENT",

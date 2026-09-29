@@ -37,10 +37,11 @@ import m31 from "../../migrations/0031_brand_assets.sql?raw";
 import m32 from "../../migrations/0032_watermark.sql?raw";
 import m33 from "../../migrations/0033_templates.sql?raw";
 import m34 from "../../migrations/0034_forms.sql?raw";
+import m35 from "../../migrations/0035_session_types.sql?raw";
 
 const MIGRATIONS = [
   m01, m02, m03, m04, m05, m06, m07, m08, m09, m10, m11, m12, m13, m14, m15,
-  m16, m17, m18, m19, m20, m21, m22, m23, m24, m25, m26, m27, m28, m29, m30, m31, m32, m33, m34,
+  m16, m17, m18, m19, m20, m21, m22, m23, m24, m25, m26, m27, m28, m29, m30, m31, m32, m33, m34, m35,
 ];
 
 /** Every table, in an order that satisfies FK constraints when deleting. */
@@ -54,7 +55,7 @@ const TABLES = [
   "availability_rule", "blackout_date",
   "email_log", "portal_otp_log", "portal_otp",
   "gallery_view_monthly", "view_rate_window", "usage_counters", "rate_limit",
-  "audit_log", "template", "studio_profile", "member", "invitation",
+  "audit_log", "template", "session_type", "studio_profile", "member", "invitation",
   "session", "account", "verification", "user", "organization",
 ];
 

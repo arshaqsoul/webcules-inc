@@ -3,7 +3,11 @@ import { redirect } from "next/navigation";
 
 import { CalendarMonth } from "@/components/calendar-month";
 import { AvailabilityEditor } from "@/components/availability-editor";
+import { SessionTypesManager } from "@/components/session-types-manager";
 import { getAvailability } from "@/lib/repos/availability";
+import { listSessionTypes } from "@/lib/repos/session-types";
+import { listTemplates } from "@/lib/repos/templates";
+import { getPlanEntitlements } from "@/lib/plans";
 import { listBookingsInRange } from "@/lib/repos/bookings";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { getOrgContext } from "@/lib/session";
@@ -64,7 +68,27 @@ export default async function CalendarPage({
       </div>
 
       {tab === "availability" ? (
-        <AvailabilityEditor initial={await getAvailability(ctx.organizationId)} />
+        <div className="flex flex-col gap-5">
+          <SessionTypesManager
+            initial={(await listSessionTypes(ctx.organizationId, { includeInactive: true })).map((t) => ({
+              id: t.id,
+              name: t.name,
+              slug: t.slug,
+              description: t.description,
+              color: t.color,
+              slotMinutes: t.slotMinutes,
+              priceMinor: t.priceMinor,
+              depositKind: t.depositKind,
+              depositMinor: t.depositMinor,
+              availabilityMode: t.availabilityMode,
+              bookingFormTemplateId: t.bookingFormTemplateId,
+              active: t.active,
+            }))}
+            formTemplates={(await listTemplates(ctx.organizationId, "form")).map((t) => ({ id: t.id, name: t.name }))}
+            limit={(await getPlanEntitlements(ctx.organizationId))?.maxSessionTypes ?? null}
+          />
+          <AvailabilityEditor initial={await getAvailability(ctx.organizationId)} />
+        </div>
       ) : (
         <CalendarMonth
           organizationId={ctx.organizationId}

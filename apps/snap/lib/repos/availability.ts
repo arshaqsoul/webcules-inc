@@ -12,6 +12,7 @@ import {
   type BookingSettings,
 } from "@/lib/availability";
 import { getStudioProfile } from "./studios";
+import { effectiveBookingSettings } from "./session-types";
 
 export async function getBookingSettings(organizationId: string): Promise<BookingSettings> {
   const profile = await getStudioProfile(organizationId);
@@ -93,14 +94,42 @@ export async function getAvailability(organizationId: string) {
   return { rules, blackouts: blackouts.map((b) => b.date), settings };
 }
 
-/** Slots for one calendar date, conflict-aware (used by APIs + validation). */
-export async function computeDateSlots(organizationId: string, timezone: string, date: string) {
+/** Slots for one calendar date, conflict-aware (used by APIs + validation).
+ * WEB-250: an optional session type scopes the rules ('own' mode = only the
+ * type's rules; 'inherit' = shared rules + the type's own) and layers its
+ * scheduling overrides over the studio settings — the DST engine itself is
+ * untouched. */
+export async function computeDateSlots(organizationId: string, timezone: string, date: string, sessionTypeId?: string | null) {
   const db = getDb();
   const [{ rules, blackouts, settings }, profile] = await Promise.all([
     getAvailability(organizationId),
     getStudioProfile(organizationId),
   ]);
   const tz = profile?.timezone ?? timezone;
+  let type: typeof schema.sessionTypes.$inferSelect | null = null;
+  // Type-scoped rules apply ONLY to their type — the no-type calendar shows
+  // the studio's shared hours exclusively.
+  let effectiveRules = rules.filter((r) => !r.sessionTypeId);
+  let effectiveSettings = settings;
+  if (sessionTypeId) {
+    type =
+      (
+        await db
+          .select()
+          .from(schema.sessionTypes)
+          .where(and(eq(schema.sessionTypes.id, sessionTypeId), eq(schema.sessionTypes.organizationId, organizationId)))
+          .limit(1)
+      )[0] ?? null;
+    if (type) {
+      const t = type;
+      effectiveRules = (
+        t.availabilityMode === "own"
+          ? rules.filter((r) => r.sessionTypeId === t.id)
+          : rules.filter((r) => !r.sessionTypeId || r.sessionTypeId === t.id)
+      ).map((r) => (t.slotMinutes ? { ...r, slotMinutes: t.slotMinutes } : r));
+      effectiveSettings = effectiveBookingSettings(settings, t);
+    }
+  }
   const window = dateWindowUtc(date, tz);
   const conflicts = (
     await db
@@ -122,8 +151,8 @@ export async function computeDateSlots(organizationId: string, timezone: string,
     slots: slotsForDate({
       date,
       tz,
-      rules,
-      settings,
+      rules: effectiveRules,
+      settings: effectiveSettings,
       blackedOut: blackouts.includes(date),
       conflicts: conflicts.map((c) => ({ startAt: new Date(c.startAt), endAt: new Date(c.endAt) })),
     }),

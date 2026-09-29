@@ -72,8 +72,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
-export default async function PublicBookingPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function PublicBookingPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ type?: string }>;
+}) {
   const { slug } = await params;
+  const typeSlug = ((await searchParams).type ?? "").replace(/[^a-z0-9-]/gi, "").slice(0, 40);
   if (RESERVED_SLUGS.has(slug)) notFound();
   const studio = await studioBySlug(slug);
   if (!studio || !studio.embedKey) notFound();
@@ -90,6 +97,7 @@ export default async function PublicBookingPage({ params }: { params: Promise<{ 
   for (const [k, v] of Object.entries(brand.tokens ?? {})) {
     if (typeof v === "string" && tokenQuery.size < 8) tokenQuery.set(k, v);
   }
+  if (typeSlug) tokenQuery.set("type", typeSlug);
   const widgetSrc = `/embed/calendar?key=${studio.embedKey}${tokenQuery.size ? `&${tokenQuery}` : ""}`;
 
   return (

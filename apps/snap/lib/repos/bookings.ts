@@ -9,6 +9,8 @@ import { clientUrl } from "@/lib/client-urls";
 import * as schema from "@/lib/db-schema";
 import { computeDateSlots } from "./availability";
 import { linkOpenLeadToBooking } from "./leads";
+import { galleryTitlePattern } from "./session-types";
+import { renderMerge } from "@/lib/merge";
 import { getStudioProfile } from "./studios";
 
 export type CreateBookingResult =
@@ -24,6 +26,10 @@ export async function createBookingFromWidget(params: {
   notes?: string | null;
   /** Payment-required studios hold the booking as pending until the webhook confirms payment. */
   pendingWhenPaymentRequired?: boolean;
+  /** WEB-250: booked session type — scopes the slot engine + stamps the booking. */
+  sessionTypeId?: string | null;
+  /** WEB-250: booking-question answers (already validated against the template schema). */
+  answers?: string | null;
 }): Promise<CreateBookingResult> {
   const db = getDb();
   const profile = await getStudioProfile(params.organizationId);
@@ -37,9 +43,12 @@ export async function createBookingFromWidget(params: {
     timeZone: profile.timezone, year: "numeric", month: "2-digit", day: "2-digit",
   }).format(startAt);
 
-  const { slots } = await computeDateSlots(params.organizationId, profile.timezone, dateInTz);
+  const { slots } = await computeDateSlots(params.organizationId, profile.timezone, dateInTz, params.sessionTypeId ?? null);
   const match = slots.find((s) => s.startAt.getTime() === startAt.getTime());
   if (!match) return { ok: false, error: "slot_unavailable" };
+  const sessionType = params.sessionTypeId
+    ? ((await getDb().select().from(schema.sessionTypes).where(eq(schema.sessionTypes.id, params.sessionTypeId)).limit(1))[0] ?? null)
+    : null;
 
   const endAt = match.endAt;
   const email = params.clientEmail.trim().toLowerCase();
@@ -70,12 +79,21 @@ export async function createBookingFromWidget(params: {
     // Project first — booking.projectId carries an FK to it. Sequential awaits:
     // variable-shaped batches don't type as tuples, and order matters.
     if (bookingStatus === "confirmed") {
+      const title = renderMerge(
+        galleryTitlePattern(sessionType),
+        {
+          client_name: params.clientName,
+          session_type: sessionType?.name ?? "Session",
+          event_date: endAt.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
+        },
+        { surface: "plain" },
+      );
       await db.insert(schema.projects).values({
         id: projectId,
         organizationId: params.organizationId,
         clientId: client.id,
         bookingId,
-        title: `${params.clientName} — session`,
+        title,
         status: "booked",
         eventDate: endAt,
       });
@@ -92,6 +110,8 @@ export async function createBookingFromWidget(params: {
       status: bookingStatus,
       paymentStatus: "unpaid",
       notes: params.notes ?? null,
+      ...(params.sessionTypeId ? { sessionTypeId: params.sessionTypeId } : {}),
+      ...(params.answers ? { answers: params.answers } : {}),
     });
     if (bookingStatus === "confirmed") {
       await db.insert(schema.projectStatusEvents).values({

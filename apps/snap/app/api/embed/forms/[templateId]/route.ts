@@ -17,6 +17,7 @@ import { checkFormRate, verifyFormFileKey } from "@/lib/repos/forms";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { getTemplate } from "@/lib/repos/templates";
 import { verifyTurnstile } from "@/lib/turnstile";
+import { matchSessionTypeByLabel } from "@/lib/repos/session-types";
 
 export const dynamic = "force-dynamic";
 

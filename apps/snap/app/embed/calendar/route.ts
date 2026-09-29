@@ -10,12 +10,39 @@ import { env } from "cloudflare:workers";
 import { frameAncestorsDirective, resolveStudioByEmbedKey, safeHexColor } from "@/lib/embed";
 import { resolveWidgetVars, sanitizeTokenBag } from "@/lib/embed-tokens";
 import { computeDateSlots } from "@/lib/repos/availability";
+import { listSessionTypes, type SessionTypeRow } from "@/lib/repos/session-types";
+import { getTemplate } from "@/lib/repos/templates";
+import { parseFormSchema } from "@/lib/forms";
+import { renderFieldsHtml } from "@/lib/forms-render";
 import { getStudioProfile } from "@/lib/repos/studios";
 
 export const dynamic = "force-dynamic";
 
 function esc(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+}
+
+function money(minor: number | null): string {
+  if (minor === null || minor === undefined) return "";
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(minor / 100);
+}
+
+function typePickerHtml(types: SessionTypeRow[], selectedId: string | null): string {
+  const cards = types
+    .map(
+      (t) => `      <button type="button" class="type-card${t.id === selectedId ? " sel" : ""}" data-type-slug="${esc(t.slug)}" data-type-id="${esc(t.id)}">
+        <p class="type-name"><span class="type-dot" style="background:${esc(t.color ?? "var(--snap-accent)")}"></span>${esc(t.name)}</p>
+        <p class="type-meta">${t.slotMinutes ? `${t.slotMinutes} min` : ""}${t.priceMinor ? `${t.slotMinutes ? " · " : ""}${money(t.priceMinor)}` : ""}</p>
+        ${t.description ? `<p class="type-desc">${esc(t.description)}</p>` : ""}
+      </button>`,
+    )
+    .join(String.fromCharCode(10));
+  return `  <div id="type-picker" role="group" aria-label="Choose a session type">
+    <p class="panel-title" style="margin:0 0 10px;">Choose your session</p>
+    <div class="types">
+${cards}
+    </div>
+  </div>`;
 }
 
 export async function GET(req: Request) {
@@ -52,16 +79,42 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
     ? `<img src="/api/embed/logo?key=${esc(studio.embedKey)}" alt="${esc(studio.studioName)}" style="max-height:36px;max-width:160px;object-fit:contain;" />`
     : `<span style="font-size:15px;font-weight:600;color:#0f1011;">${esc(studio.studioName)}</span>`;
 
+  // WEB-250 session types: 0 types → exactly today's widget; 1 type →
+  // applied silently; 2+ → a picker first (?type= deep-links straight in).
+  const types = await listSessionTypes(studio.organizationId);
+  const typeParam = (url.searchParams.get("type") ?? "").replace(/[^a-z0-9-]/gi, "").slice(0, 40);
+  const initialType = types.length === 0
+    ? null
+    : typeParam
+      ? (types.find((t) => t.slug === typeParam) ?? null)
+      : types.length === 1
+        ? types[0]
+        : null;
+  const showPicker = types.length >= 2;
+
+  // Booking questions per type (stored schema → simple inputs, shown only
+  // for the selected type's form step).
+  const questionSets = await Promise.all(
+    types.map(async (t) => {
+      if (!t.bookingFormTemplateId) return { typeId: t.id, html: "" };
+      const template = await getTemplate(studio.organizationId, t.bookingFormTemplateId);
+      const schema = template && !template.archivedAt ? parseFormSchema(template.body) : null;
+      return { typeId: t.id, html: schema ? renderFieldsHtml(schema, "q-") : "" };
+    }),
+  );
+
   // Server-render the current month's day → slot counts + ISO slots.
   const now = new Date();
   const month = new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit" }).format(now);
   const days: Record<string, string[]> = {};
-  await Promise.all(
-    monthDates(month).map(async (date) => {
-      const { slots } = await computeDateSlots(studio.organizationId, tz, date);
-      if (slots.length) days[date] = slots.map((s) => s.startAt.toISOString());
-    }),
-  );
+  if (!showPicker || initialType) {
+    await Promise.all(
+      monthDates(month).map(async (date) => {
+        const { slots } = await computeDateSlots(studio.organizationId, tz, date, initialType?.id ?? null);
+        if (slots.length) days[date] = slots.map((s) => s.startAt.toISOString());
+      }),
+    );
+  }
 
   const html = `<!doctype html>
 <html lang="en" data-theme="${theme}">
@@ -132,6 +185,15 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
   .msg.ok { display:block; background:color-mix(in srgb, var(--snap-accent) 8%, var(--snap-surface)); color:var(--snap-text); }
   .msg.err { display:block; background:#fdf0f0; color:#cc3d3d; }
   .hp { position:absolute; left:-9999px; opacity:0; }
+  .types { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; margin-bottom:16px; }
+  .type-card { text-align:left; border:1px solid var(--snap-border); background:var(--snap-surface); border-radius:min(calc(var(--snap-radius) + 4px), 16px); padding:12px 14px; font:inherit; cursor:pointer; color:var(--snap-text); }
+  .type-card:hover { border-color:var(--snap-accent); }
+  .type-card.sel { border-color:var(--snap-accent); background:color-mix(in srgb, var(--snap-accent) 8%, var(--snap-surface)); }
+  .type-name { display:flex; align-items:center; gap:7px; font-weight:600; font-size:14px; margin:0 0 2px; }
+  .type-dot { width:8px; height:8px; border-radius:999px; background:var(--snap-accent); flex:none; }
+  .type-meta { font-size:12px; color:var(--snap-muted); margin:0 0 4px; }
+  .type-desc { font-size:12px; color:var(--snap-muted); margin:0; line-height:1.45; }
+  .qs label { margin-top:8px; }
   /* Confirmation view — the professional "you're booked" moment: check,
    * slot recap, email note, add-to-calendar, book-another. */
   .done { text-align:center; padding:6px 2px 2px; }
@@ -148,7 +210,8 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
 <body>
   <div class="brand">${logo}<span class="tz" id="visitor-tz"></span></div>
 
-  <div class="shell" id="shell">
+  ${showPicker ? typePickerHtml(types, initialType?.id ?? null) : ""}
+  <div class="shell" id="shell" ${showPicker && !initialType ? "hidden" : ""}>
   <div class="cal-wrap">
   <div class="cal-head">
     <span class="cal-title" id="cal-title"></span>
@@ -176,6 +239,7 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
       </div>
       <label for="b-phone">Phone (optional)</label><input id="b-phone" type="tel" autocomplete="tel" />
       <label for="b-notes">Anything we should know? (optional)</label><textarea id="b-notes"></textarea>
+      ${questionSets.filter((q) => q.html).map((q) => `<div class="qs" data-qs="${esc(q.typeId)}" hidden>${q.html}</div>`).join("")}
       <div class="hp" aria-hidden="true"><label>Leave empty<input name="company_website" tabindex="-1" autocomplete="off" /></label></div>
       <div id="ts" style="margin:12px 0 0;"></div>
       <button class="cta" id="book-btn" type="submit">Confirm booking</button>
@@ -206,6 +270,8 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
   var tz = ${JSON.stringify(tz)};
   var studioName = ${JSON.stringify(studio.studioName)};
   var data = ${JSON.stringify({ month, days })};
+  var types = ${JSON.stringify(types.map((t) => ({ id: t.id, slug: t.slug, name: t.name, description: t.description, color: t.color, minutes: t.slotMinutes, priceMinor: t.priceMinor })))};
+  var typeSlug = ${JSON.stringify(initialType?.slug ?? "")};
   var selectedDay = null, selectedSlot = null;
   var tsToken = "";
   var SITE_KEY = ${JSON.stringify(siteKey)};
@@ -388,8 +454,8 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
   });
 
   function load(month) {
-    if (data.month === month && data.days) return Promise.resolve();
-    return fetch(origin + "/api/embed/availability?key=" + encodeURIComponent(key) + "&month=" + month)
+    if (data.month === month && data.days && data.type === typeSlug) return Promise.resolve();
+    return fetch(origin + "/api/embed/availability?key=" + encodeURIComponent(key) + "&month=" + month + (typeSlug ? "&type=" + encodeURIComponent(typeSlug) : ""))
       .then(function (r) {
         if (!r.ok) throw new Error("http " + r.status);
         return r.json();
@@ -398,7 +464,7 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
         // Only swap in a well-formed payload — an error body must never
         // blank the calendar.
         if (!j || !j.month || !j.days) throw new Error("bad payload");
-        data = { month: j.month, days: j.days };
+        data = { month: j.month, days: j.days, type: typeSlug };
         document.getElementById("cal-err").textContent = "";
         render();
       })
@@ -422,6 +488,11 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
     btn.disabled = true;
     clearMsg();
     var f = new FormData(e.target);
+    function collectAnswers() {
+      var out = {};
+      f.forEach(function (v, k) { if (k.indexOf("q-") === 0) out[k.slice(2)] = v; });
+      return out;
+    }
     try {
       var res = await fetch(origin + "/api/embed/bookings?key=" + encodeURIComponent(key), {
         method: "POST",
@@ -433,7 +504,9 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
           phone: document.getElementById("b-phone").value,
           notes: document.getElementById("b-notes").value,
           embedOrigin: (document.referrer && new URL(document.referrer).origin) || "",
-          turnstileToken: tsToken
+          turnstileToken: tsToken,
+          ...(typeSlug ? { sessionType: typeSlug } : {}),
+          ...(Object.keys(collectAnswers()).length ? { answers: collectAnswers() } : {})
         })
       });
       var body = await res.json().catch(function () { return {}; });
@@ -486,6 +559,33 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
     }
     postHeight();
   });
+
+  /* WEB-250: type picker (2+ active types). Selecting a type reveals the
+   * shell, refetches availability scoped to it and shows its questions. */
+  (function initPicker() {
+    var picker = document.getElementById("type-picker");
+    if (!picker) return;
+    picker.addEventListener("click", function (e) {
+      var btn = e.target.closest("[data-type-slug]");
+      if (!btn) return;
+      typeSlug = btn.getAttribute("data-type-slug");
+      picker.querySelectorAll("[data-type-slug]").forEach(function (b) { b.classList.toggle("sel", b === btn); });
+      document.getElementById("shell").hidden = false;
+      panel.hidden = true;
+      selectedDay = null; selectedSlot = null;
+      document.querySelectorAll("[data-qs]").forEach(function (q) { q.hidden = q.getAttribute("data-qs") !== btn.getAttribute("data-type-id"); });
+      data = { month: null, days: null };
+      load(new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit" }).format(new Date()));
+      postHeight();
+    });
+    if (typeSlug) {
+      var active = picker.querySelector('[data-type-slug="' + typeSlug + '"]');
+      if (active) {
+        active.classList.add("sel");
+        document.querySelectorAll("[data-qs]").forEach(function (q) { q.hidden = q.getAttribute("data-qs") !== active.getAttribute("data-type-id"); });
+      }
+    }
+  })();
 
   render();
   setTimeout(postHeight, 300);

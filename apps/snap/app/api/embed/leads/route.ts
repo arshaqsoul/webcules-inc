@@ -12,6 +12,7 @@ import { getEmailBrand } from "@/lib/branding";
 import { inquiryAckEmail, inquiryReceivedEmail, sendEmail } from "@/lib/email";
 import { originAllowed, resolveStudioByEmbedKey, safeHexColor } from "@/lib/embed";
 import { verifyTurnstile } from "@/lib/turnstile";
+import { matchSessionTypeByLabel } from "@/lib/repos/session-types";
 
 export const dynamic = "force-dynamic";
 
@@ -70,6 +71,7 @@ export async function POST(req: Request) {
 
   const db = getDb();
   const email = input.email.toLowerCase();
+  const sessionTypeId = await matchSessionTypeByLabel(studio.organizationId, input.eventType || null);
 
   // Dedupe: an existing open lead from this email updates instead of piling up.
   const existing = (
@@ -114,6 +116,7 @@ export async function POST(req: Request) {
       message: input.message || null,
       source: "contact_form",
       embedOrigin: input.embedOrigin || null,
+      ...(sessionTypeId ? { sessionTypeId } : {}),
     });
   }
 

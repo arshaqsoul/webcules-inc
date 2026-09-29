@@ -250,3 +250,10 @@ ${script}
 </body>
 </html>`;
 }
+
+/** Just the field markup (no document shell) — used by the booking
+ * calendar's per-type question fieldsets. Names use the q- prefix so the
+ * widget's submit can separate them from the standard booking inputs. */
+export function renderFieldsHtml(schema: FormSchema, namePrefix = "data-"): string {
+  return schema.fields.map((f) => fieldHtml(f).replaceAll('name="data-', `name="${namePrefix}`)).join(String.fromCharCode(10));
+}

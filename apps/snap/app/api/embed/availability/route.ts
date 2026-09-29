@@ -3,6 +3,7 @@
 import { monthDates } from "@/lib/availability";
 import { originAllowed, resolveStudioByEmbedKey } from "@/lib/embed";
 import { computeDateSlots } from "@/lib/repos/availability";
+import { getSessionTypeBySlug } from "@/lib/repos/session-types";
 import { getStudioProfile } from "@/lib/repos/studios";
 
 export const dynamic = "force-dynamic";
@@ -22,11 +23,13 @@ export async function GET(req: Request) {
 
   const profile = await getStudioProfile(studio.organizationId);
   const tz = profile?.timezone ?? "UTC";
+  const typeSlug = (url.searchParams.get("type") ?? "").replace(/[^a-z0-9-]/gi, "").slice(0, 40);
+  const type = typeSlug ? await getSessionTypeBySlug(studio.organizationId, typeSlug) : null;
 
   const days: Record<string, string[]> = {};
   await Promise.all(
     monthDates(month).map(async (date) => {
-      const { slots } = await computeDateSlots(studio.organizationId, tz, date);
+      const { slots } = await computeDateSlots(studio.organizationId, tz, date, type?.id ?? null);
       if (slots.length) days[date] = slots.map((s) => s.startAt.toISOString());
     }),
   );
