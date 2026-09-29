@@ -31,6 +31,7 @@ export function SettingsBrand({
   studioName,
   watermark,
   watermarkLogoUrl,
+  deterrentsOn: initialDeterrents,
 }: {
   embedKey: string;
   hasLogo: boolean;
@@ -49,6 +50,8 @@ export function SettingsBrand({
   /** WEB-242: watermark card state + the generated watermark-source URL. */
   watermark: { mode: "off" | "corner" | "tiled" | "text"; opacity: number; scale: number; margin: number; text: string };
   watermarkLogoUrl: string | null;
+  /** WEB-243: gallery protection deterrents enabled. */
+  deterrentsOn: boolean;
 }) {
   const router = useRouter();
   const [accentColor, setAccentColor] = useState(initialAccent);
@@ -60,6 +63,7 @@ export function SettingsBrand({
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [removeBranding, setRemoveBranding] = useState(initialRemoveBranding);
+  const [deterrents, setDeterrents] = useState(initialDeterrents);
   const [hasBrandAssets, setHasBrandAssets] = useState(initialHasBrandAssets);
   const [assetsBusy, setAssetsBusy] = useState(false);
 
@@ -77,6 +81,7 @@ export function SettingsBrand({
         fontFamily,
         theme: theme === "light" || theme === "dark" || theme === "auto" ? theme : undefined,
         ...(whiteLabelEntitled ? { removeBranding } : {}),
+        ...(whiteLabelEntitled ? { deterrents: { rightClick: deterrents } } : {}),
         tokens: (() => {
           try {
             return tokensJson.trim() ? JSON.parse(tokensJson) : undefined;
@@ -259,6 +264,39 @@ export function SettingsBrand({
             <p className="mt-1 text-xs leading-relaxed text-ink-subtle">
               Make the platform invisible to your clients — galleries, emails, invoices and tab titles carry only your
               studio. Included on the Studio and Pro plans.
+            </p>
+            <a href="/dashboard/settings/billing" className="mt-3 inline-block text-xs font-medium text-primary hover:underline">
+              Upgrade to Studio →
+            </a>
+          </>
+        )}
+      </div>
+
+      {/* WEB-243: gallery protection deterrents — honest scope copy is the
+       * product requirement, not legal fine print. */}
+      <div className="mt-5 rounded-[12px] border border-hairline bg-surface-1 p-4">
+        {whiteLabelEntitled ? (
+          <label htmlFor="deterrents" className="flex cursor-pointer items-start gap-3">
+            <input
+              id="deterrents"
+              type="checkbox"
+              checked={deterrents}
+              onChange={(e) => setDeterrents(e.target.checked)}
+              className="mt-0.5 h-4 w-4"
+            />
+            <span>
+              <span className="block text-sm font-medium text-ink">Gallery protection</span>
+              <span className="mt-1 block text-xs leading-relaxed text-ink-subtle">
+                Disables right-click, drag-to-desktop and long-press save menus on gallery photos. Deters casual saving.
+                Like every platform, it cannot prevent screenshots — we won't pretend it can. Save to apply.
+              </span>
+            </span>
+          </label>
+        ) : (
+          <>
+            <p className="text-sm font-medium text-ink">Gallery protection</p>
+            <p className="mt-1 text-xs leading-relaxed text-ink-subtle">
+              Right-click, drag and long-press deterrence on client galleries. Included on the Studio and Pro plans.
             </p>
             <a href="/dashboard/settings/billing" className="mt-3 inline-block text-xs font-medium text-primary hover:underline">
               Upgrade to Studio →

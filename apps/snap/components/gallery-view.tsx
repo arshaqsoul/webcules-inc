@@ -25,6 +25,9 @@ type Brand = {
   whiteLabel?: boolean;
   /** WEB-242: serve watermarked previews (effective config on). */
   watermarked?: boolean;
+  /** WEB-243: protection deterrents on gallery media (contextmenu/drag/
+   * long-press). Honest scope: deters casual saves, nothing more. */
+  deterrents?: boolean;
 };
 
 export type GalleryAsset = {
@@ -47,6 +50,8 @@ function BackoffImage(props: {
   /** WEB-116: thumb for grid tiles, preview for the lightbox. */
   variant?: "thumb" | "preview" | "preview_wm";
   onClick?: React.MouseEventHandler<HTMLImageElement>;
+  /** WEB-243: media protection — drag/long-press suppression (deterrents on). */
+  protectedMedia?: boolean;
 }) {
   const [attempt, setAttempt] = useState(0);
   const src = `/api/assets/${props.id}?variant=${props.variant ?? "thumb"}${attempt ? `&r=${attempt}` : ""}`;
@@ -57,6 +62,10 @@ function BackoffImage(props: {
       alt={props.alt}
       loading={props.loading}
       className={props.className}
+      draggable={props.protectedMedia !== true}
+      {...(props.protectedMedia === true
+        ? { style: { WebkitTouchCallout: "none", userSelect: "none" } as React.CSSProperties }
+        : {})}
       onClick={props.onClick}
       onError={() => {
         if (attempt < 3) {
@@ -314,7 +323,7 @@ export function GalleryGate({ studioName, accent, logoUrl, whiteLabel, token, ma
 
 /* ---------------- Gallery view ---------------- */
 
-export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLabel, watermarked, assets, allowDownload, expiresAt, selectionMode, selectionLimit, selectionDeadline, initialFavorites, submittedSelection, clientToken }: Brand & {
+export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLabel, watermarked, deterrents, assets, allowDownload, expiresAt, selectionMode, selectionLimit, selectionDeadline, initialFavorites, submittedSelection, clientToken }: Brand & {
   assets: GalleryAsset[];
   allowDownload: boolean;
   expiresAt: string | null;
@@ -429,7 +438,14 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
     : null;
 
   return (
-    <main className="min-h-screen bg-canvas" style={{ ["--accent" as string]: accent }}>
+    <main
+      className="min-h-screen bg-canvas"
+      style={{ ["--accent" as string]: accent }}
+      onContextMenu={(e) => {
+        // WEB-243: deterrent on MEDIA only — UI chrome keeps the normal menu.
+        if (deterrents && (e.target as HTMLElement).tagName === "IMG") e.preventDefault();
+      }}
+    >
       <header className="sticky top-0 z-10 border-b border-hairline bg-canvas/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3.5">
           {logoUrl ? (
@@ -555,6 +571,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
                   alt={a.filename}
                   loading="lazy"
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                  protectedMedia={deterrents}
                 />
               ) : a.kind === "video" ? (
                 <>
@@ -685,6 +702,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
                 id={current.id}
                 alt={current.filename}
                 variant={watermarked ? "preview_wm" : "preview"}
+                protectedMedia={deterrents}
                 className="max-h-full max-w-full object-contain"
                 onClick={(e) => e.stopPropagation()}
               />

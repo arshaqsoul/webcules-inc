@@ -5,7 +5,7 @@
  * honest limit, not a branding mention. */
 import { describe, expect, it } from "vitest";
 
-import { isWhiteLabeled } from "@/lib/branding";
+import { deterrentsOn, isWhiteLabeled } from "@/lib/branding";
 import {
   bookingCanceledEmail,
   bookingConfirmedClientEmail,
@@ -174,6 +174,22 @@ const TEMPLATES: ClientTemplate[] = [
       }),
   },
 ];
+
+describe("deterrentsOn (WEB-243)", () => {
+  it("entitlement AND the toggle must both agree", () => {
+    expect(deterrentsOn(ENT_ON, { deterrents: { rightClick: true } })).toBe(true);
+    expect(deterrentsOn(ENT_OFF, { deterrents: { rightClick: true } })).toBe(false);
+    expect(deterrentsOn(ENT_ON, { deterrents: { rightClick: false } })).toBe(false);
+    expect(deterrentsOn(ENT_ON, {})).toBe(false);
+    expect(deterrentsOn(ENT_ON, null)).toBe(false);
+  });
+
+  it("parses raw brand JSON strings and rejects junk", () => {
+    expect(deterrentsOn(ENT_ON, JSON.stringify({ deterrents: { rightClick: true } }))).toBe(true);
+    expect(deterrentsOn(ENT_ON, "not json")).toBe(false);
+    expect(deterrentsOn(ENT_ON, JSON.stringify({ deterrents: "yes" }))).toBe(false);
+  });
+});
 
 describe("client email templates (WEB-238)", () => {
   for (const t of TEMPLATES) {

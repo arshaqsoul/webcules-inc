@@ -32,6 +32,22 @@ export function isWhiteLabeled(ent: WhiteLabelEnt, brand: unknown): boolean {
   return brandBag(brand)?.removeBranding === true;
 }
 
+/** WEB-243: gallery protection deterrents — Studio+ AND the studio toggle.
+ * Honest scope: this deters casual right-click/drag/long-press saves; it
+ * cannot prevent screenshots and we never claim it can. */
+export function deterrentsOn(ent: WhiteLabelEnt, brand: unknown): boolean {
+  if (!ent?.whiteLabel) return false;
+  let bag: unknown = brand;
+  if (typeof brand === "string") {
+    try {
+      bag = JSON.parse(brand || "{}");
+    } catch {
+      return false;
+    }
+  }
+  return (bag as { deterrents?: { rightClick?: unknown } } | null)?.deterrents?.rightClick === true;
+}
+
 /** Convenience for routes that don't already hold the profile/entitlements. */
 export async function resolveWhiteLabel(organizationId: string): Promise<boolean> {
   const [ent, profile] = await Promise.all([

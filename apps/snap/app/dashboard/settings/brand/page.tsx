@@ -4,6 +4,7 @@ import { SettingsBrand } from "@/components/settings-brand";
 import { brandAssetUrl, parseBrandAssets } from "@/lib/brand-assets";
 import { getPlanEntitlements } from "@/lib/plans";
 import { parseWatermarkConfig } from "@/lib/watermark";
+import { deterrentsOn } from "@/lib/branding";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { getOrgContext } from "@/lib/session";
 
@@ -50,6 +51,7 @@ export default async function SettingsBrandPage() {
         text: wm?.text ?? "",
       }}
       watermarkLogoUrl={assetBag.watermark ? brandAssetUrl(ctx.organizationId, "watermark", assetBag.rev) : null}
+      deterrentsOn={deterrentsOn(ent, profile.brand)}
     />
   );
 }

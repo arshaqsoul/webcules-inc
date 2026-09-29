@@ -31,6 +31,8 @@ const bodySchema = z.object({
   /** WEB-242: watermark engine config — sanitized + clamped; mode "off" (or
    * absent/null) deletes the key so no variants generate. Studio+ only. */
   watermark: z.record(z.string(), z.unknown()).nullable().optional(),
+  /** WEB-243: gallery protection deterrents — { rightClick: boolean }. */
+  deterrents: z.object({ rightClick: z.boolean() }).nullable().optional(),
   /** Advanced token presets (WEB-163) — sanitized per-kind, invalid dropped. */
   tokens: z.record(z.string(), z.unknown()).optional(),
   /** WEB-118: rejected auto-delete policy — { enabled, retainDays }. */
@@ -95,6 +97,7 @@ export async function PATCH(req: Request) {
     tokens?: Record<string, unknown>;
     removeBranding?: boolean;
     watermark?: unknown;
+    deterrents?: { rightClick?: boolean };
   };
   if (parsed.data.accentColor) brand.accent = safeHexColor(parsed.data.accentColor) ?? brand.accent;
   if (parsed.data.fontFamily !== undefined) {
@@ -105,6 +108,16 @@ export async function PATCH(req: Request) {
   if (parsed.data.theme) brand.theme = safeTheme(parsed.data.theme) ?? undefined;
   if (parsed.data.tokens) brand.tokens = sanitizeTokenBag(parsed.data.tokens) as Record<string, unknown>;
   if (parsed.data.removeBranding !== undefined) brand.removeBranding = parsed.data.removeBranding;
+  // WEB-243: deterrents toggle — entitlement-gated on, always-off allowed.
+  if (parsed.data.deterrents !== undefined) {
+    if (parsed.data.deterrents?.rightClick === true) {
+      const ent = await getPlanEntitlements(ctx.organizationId);
+      if (!ent?.whiteLabel) return Response.json({ error: "plan_required" }, { status: 403 });
+      brand.deterrents = { rightClick: true };
+    } else {
+      delete brand.deterrents;
+    }
+  }
   if (parsed.data.watermark !== undefined) {
     const wm = sanitizeWatermarkInput(parsed.data.watermark);
     if (wm) brand.watermark = wm;

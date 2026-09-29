@@ -9,7 +9,7 @@ import { eq } from "drizzle-orm";
 import { env } from "cloudflare:workers";
 
 import { GalleryDenied, GalleryGate, GalleryView } from "@/components/gallery-view";
-import { isWhiteLabeled } from "@/lib/branding";
+import { deterrentsOn, isWhiteLabeled } from "@/lib/branding";
 import { effectiveWatermark } from "@/lib/watermark";
 import { brandIcons, brandOgImage, parseBrandAssets } from "@/lib/brand-assets";
 import { getDb } from "@/lib/db";
@@ -107,6 +107,8 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
     logoUrl: profile?.logoKey && profile?.embedKey ? `/api/embed/logo?key=${profile.embedKey}` : null,
     contactEmail: profile?.contactEmail ?? null,
     whiteLabel: isWhiteLabeled(ent, profile?.brand),
+    // WEB-243: honest deterrents — right-click/drag/long-press on media.
+    deterrents: deterrentsOn(ent, profile?.brand),
     // WEB-242: lightbox previews swap to the watermarked variant; thumbs
     // (dashboard-only) always stay clean. Missing variant falls back to the
     // clean preview server-side until the bulk backfill covers the asset.
