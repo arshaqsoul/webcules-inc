@@ -14,46 +14,14 @@ import { getDb } from "./db";
 import * as schema from "./db-schema";
 import { clientUrl } from "./client-urls";
 import { getStudioProfile, getStudioSlug } from "./repos/studios";
+import { MERGE_FIELDS } from "./merge-fields";
+
+export { MERGE_FIELDS, CONTRACT_MERGE_FIELDS } from "./merge-fields";
+export type { MergeField } from "./merge-fields";
+void MERGE_FIELDS;
 
 export type MergeSurface = "plain" | "pdf-text" | "html" | "html-email";
 
-export type MergeField = {
-  id: string;
-  label: string;
-  description: string;
-  /** Renders a URL — auto-linked on HTML surfaces. */
-  link?: boolean;
-  /** Contract-era alias kept so existing drafts keep resolving. */
-  legacy?: boolean;
-};
-
-/** The registry — also feeds every designer's {{…}} picker. */
-export const MERGE_FIELDS: MergeField[] = [
-  { id: "client_name", label: "Client name", description: "The client's display name" },
-  { id: "client_email", label: "Client email", description: "The client's email address" },
-  { id: "client_phone", label: "Client phone", description: "The client's phone number, when known" },
-  { id: "studio_name", label: "Studio name", description: "Your studio's name" },
-  { id: "studio_email", label: "Studio email", description: "Your contact email" },
-  { id: "project_title", label: "Project", description: "The project or collection title" },
-  { id: "event_date", label: "Event date", description: "The project's event date (e.g. June 14, 2027)" },
-  { id: "session_type", label: "Session type", description: "The booked session type (Wedding, Mini…)" },
-  { id: "invoice_number", label: "Invoice number", description: "The invoice's number (e.g. INV-014)" },
-  { id: "invoice_total", label: "Invoice total", description: "The invoice total with currency" },
-  { id: "today", label: "Today", description: "Today's date" },
-  { id: "booking_link", label: "Booking link", description: "Your public booking page", link: true },
-  { id: "gallery_link", label: "Gallery link", description: "The client's gallery link", link: true },
-  { id: "portal_link", label: "Portal link", description: "The client portal sign-in", link: true },
-  { id: "sign_url", label: "Signing link", description: "The contract's signing link", link: true },
-  // Legacy contract aliases ({{date}}, {{package}}) — resolvers identical to
-  // today's mergeContractBody so existing drafts are unchanged.
-  { id: "date", label: "Today", description: "Today's date", legacy: true },
-  { id: "package", label: "Project", description: "The project or collection title", legacy: true },
-];
-
-/** The five fields the contract composer offers (WEB-158 set + order). */
-export const CONTRACT_MERGE_FIELDS = ["client_name", "studio_name", "date", "event_date", "package"]
-  .map((id) => MERGE_FIELDS.find((f) => f.id === id))
-  .filter((f): f is MergeField => Boolean(f));
 
 export type MergeContext = {
   organizationId: string;
@@ -80,6 +48,18 @@ function escapeAttrValue(s: string): string {
 
 function longDate(d: Date): string {
   return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+}
+
+async function resolveDeposit(organizationId: string, project: typeof schema.projects.$inferSelect | undefined, override?: string): Promise<string> {
+  if (override) return override;
+  try {
+    const { getBookingSettings } = await import("./repos/availability");
+    const settings = await getBookingSettings(organizationId);
+    if (settings.payment?.enabled && settings.payment.amountMinor > 0) return formatMoney(settings.payment.amountMinor, "usd");
+  } catch {
+    /* settings unavailable — fall through */
+  }
+  return "the deposit as agreed";
 }
 
 function formatMoney(minor: number, currency: string): string {
@@ -125,6 +105,11 @@ export async function buildMergeValues(ctx: MergeContext): Promise<Record<string
   values.project_title = project?.title ?? "your project";
   values.package = project?.title ?? "the package";
   values.event_date = project?.eventDate ? longDate(project.eventDate) : "the scheduled date";
+  values.event_date_long = values.event_date;
+  values.studio_legal_name = profile?.studioName ?? "the Studio";
+  values.client_legal_name = values.client_name;
+  values.total = project?.quotedTotalMinor ? formatMoney(project.quotedTotalMinor, project.quotedCurrency) : "the package total";
+  values.deposit = await resolveDeposit(ctx.organizationId, project, o.deposit);
   values.session_type = lead?.eventType?.trim() ?? "your session";
   values.invoice_number = invoice?.number ?? "";
   values.invoice_total = invoice ? formatMoney(invoice.totalMinor, invoice.currency) : "";

@@ -108,11 +108,12 @@ describe("payments + titles (WEB-250)", () => {
   it("deposit config overrides the org setting; 'off' disables; null inherits", async () => {
     const settings = { ...DEFAULT_BOOKING_SETTINGS, payment: { enabled: true, kind: "deposit" as const, amountMinor: 10000 } };
     expect(effectiveBookingPayment(settings, null)).toEqual(settings.payment);
-    expect(
-      effectiveBookingPayment(settings, {
-        ...(await fakeType({ name: "Mini", depositKind: "deposit", depositMinor: 5000 })),
-      }),
-    ).toEqual({ enabled: true, kind: "deposit", amountMinor: 5000, label: "Mini" });
+    expect(effectiveBookingPayment(settings, await fakeType({ name: "Mini", depositKind: "deposit", depositMinor: 5000 }))).toEqual({
+      enabled: true,
+      kind: "deposit",
+      amountMinor: 5000,
+      label: "Mini",
+    });
     expect(effectiveBookingPayment(settings, await fakeType({ name: "Free consult", depositKind: "off" }))).toBeUndefined();
     expect(effectiveBookingPayment(settings, await fakeType({ name: "Plain" }))?.amountMinor).toBe(10000);
   });
@@ -148,7 +149,7 @@ const fakeRow = (over: Record<string, unknown>) =>
     createdAt: new Date(),
     updatedAt: new Date(),
     ...over,
-  }) as Parameters<typeof effectiveBookingPayment>[1];
+  }) as unknown as Parameters<typeof effectiveBookingPayment>[1];
 
 async function fakeType(over: Record<string, unknown>) {
   return fakeRow(over);

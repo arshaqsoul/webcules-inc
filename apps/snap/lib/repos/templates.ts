@@ -14,13 +14,14 @@ import { DEFAULT_CONTACT_FORM_BODY } from "../forms";
 export type TemplateRow = typeof schema.templates.$inferSelect;
 export type TemplateInsert = typeof schema.templates.$inferInsert;
 
-export const TEMPLATE_KINDS = ["contract", "form", "email_snippet", "invoice_preset", "questionnaire"] as const;
+export const TEMPLATE_KINDS = ["contract", "contract_clause", "form", "email_snippet", "invoice_preset", "questionnaire"] as const;
 export type TemplateKind = (typeof TEMPLATE_KINDS)[number];
 
 /** Body byte caps — D1-row friendly (epic contract: ≤256 KB documents,
  * ≤64 KB schemas). */
 const BODY_CAPS: Record<TemplateKind, number> = {
   contract: 256 * 1024,
+  contract_clause: 16 * 1024,
   form: 64 * 1024,
   email_snippet: 256 * 1024,
   invoice_preset: 64 * 1024,
@@ -47,8 +48,10 @@ export function normalizeTemplateBody(kind: TemplateKind, body: string): string 
     return trimmed;
   }
   if (kind === "email_snippet") return sanitizeRichText(trimmed);
-  // Contracts stay plain text (rendered with whitespace-pre-wrap / PDF text):
-  // strip control characters except newlines/tabs.
+  // Contracts are plain text by default (whitespace-pre-wrap / PDF text);
+  // bodies that carry allowlist HTML are sanitized to the same allowlist the
+  // signing page renders with.
+  if (/<(p|br|strong|em|u|ul|ol|li|h3|h4|blockquote|a)\b/i.test(trimmed)) return sanitizeRichText(trimmed);
   return trimmed.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
 }
 
@@ -321,6 +324,11 @@ By signing below, both parties agree to these terms.`,
       terms: "Payment due within 14 days of the invoice date.",
       notes: "Thank you for your business!",
     }, 1),
+    row("contract_clause", "Image usage & licensing", "All images remain the copyright of the studio. The client receives a personal-use license covering printing, sharing and archiving; commercial use, third-party licensing or AI training requires separate written permission."),
+    row("contract_clause", "Weather policy", "If conditions make outdoor photography unsafe or unreasonably difficult, the studio and client will agree on a new date within 60 days at no additional charge."),
+    row("contract_clause", "Retainer non-refundable", "The retainer reserves the date exclusively and is non-refundable, though it may be transferred once to a new date if the client reschedules at least 30 days in advance."),
+    row("contract_clause", "Delivery timeline", "Edited images are delivered through a private online gallery within six weeks of the session date. Sneak peeks may arrive sooner at the studio's discretion."),
+    row("contract_clause", "Cancellation by studio", "If the studio cannot attend due to illness, emergency or force majeure, all payments made will be refunded in full within 10 business days, or a comparable replacement photographer may be offered."),
     row(
       "questionnaire",
       "Client questionnaire",
@@ -352,7 +360,10 @@ export async function seedStarterTemplates(organizationId: string): Promise<numb
   const existing = await countAllTemplates(organizationId);
   if (existing > 0) return 0;
   const rows = starterTemplateRows(organizationId);
-  await getDb().insert(schema.templates).values(rows);
+  // D1 caps bound variables per statement (100) — insert in chunks of 9 rows.
+  for (let i = 0; i < rows.length; i += 9) {
+    await getDb().insert(schema.templates).values(rows.slice(i, i + 9));
+  }
   return rows.length;
 }
 

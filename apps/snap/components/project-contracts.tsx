@@ -46,10 +46,12 @@ export function ProjectContracts({
   projectId,
   contracts,
   clientEmail,
+  templates,
 }: {
   projectId: string;
   contracts: ContractItem[];
   clientEmail: string | null;
+  templates: Array<{ id: string; name: string; body: string }>;
 }) {
   const router = useRouter();
   const confirm = useConfirm();
@@ -63,6 +65,15 @@ export function ProjectContracts({
 
   function insertField(field: (typeof MERGE_FIELDS)[number]) {
     setBody((b) => `${b}{{${field}}}`);
+  }
+
+  /** WEB-251: applying a template copies its text into the draft — later
+   * template edits never reach this contract. */
+  function applyTemplate(id: string) {
+    const t = templates.find((x) => x.id === id);
+    if (!t) return;
+    setTitle(t.name);
+    setBody(t.body);
   }
 
   async function create() {
@@ -125,6 +136,19 @@ export function ProjectContracts({
 
       {showEditor && (
         <div className="flex flex-col gap-2 rounded-[12px] border border-hairline bg-surface-1 px-4 py-3">
+          {templates.length > 0 && (
+            <select
+              className="snap-select max-w-sm rounded-md border border-hairline bg-canvas px-2 py-1.5 text-xs text-ink-muted outline-none"
+              value=""
+              onChange={(e) => applyTemplate(e.target.value)}
+              aria-label="Start from a template"
+            >
+              <option value="">Start from a template…</option>
+              {templates.map((t) => (
+                <option key={t.id} value={t.id}>{t.name}</option>
+              ))}
+            </select>
+          )}
           <div className="flex flex-wrap gap-2">
             <input
               value={title}

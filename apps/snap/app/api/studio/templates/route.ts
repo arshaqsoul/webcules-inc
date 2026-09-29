@@ -7,7 +7,7 @@ import { z } from "zod";
 import { getOrgContext } from "@/lib/session";
 import { getPlanEntitlements } from "@/lib/plans";
 import { countCustomFields, FREE_CUSTOM_FIELD_CAP, validateFormSchema } from "@/lib/forms";
-import { createTemplate, isTemplateKind, listTemplates, type TemplateKind } from "@/lib/repos/templates";
+import { countTemplates, createTemplate, isTemplateKind, listTemplates, type TemplateKind } from "@/lib/repos/templates";
 
 export const dynamic = "force-dynamic";
 
@@ -42,9 +42,9 @@ export async function POST(req: Request) {
     return Response.json({ error: "invalid_body" }, { status: 400 });
   }
   if (!isTemplateKind(body.kind)) return Response.json({ error: "invalid_kind" }, { status: 400 });
+  const ent = await getPlanEntitlements(ctx.organizationId);
 
   if (body.kind === "form" || body.kind === "questionnaire") {
-    const ent = await getPlanEntitlements(ctx.organizationId);
     const allowFile = ent?.id === "studio" || ent?.id === "pro";
     let parsed: unknown;
     try {
@@ -56,6 +56,14 @@ export async function POST(req: Request) {
     if (!schema) return Response.json({ error: allowFile ? "invalid_schema" : "file_fields_require_studio" }, { status: 400 });
     const capOk = ent?.id === "studio" || ent?.id === "pro" || countCustomFields(schema) <= FREE_CUSTOM_FIELD_CAP;
     if (!capOk) return Response.json({ error: "custom_fields_limit", limit: FREE_CUSTOM_FIELD_CAP }, { status: 403 });
+  }
+  // WEB-251: contract-template gate (Free/Lite 2, Studio+ unlimited).
+  // Clauses are ungated — they're just text snippets.
+  if (body.kind === "contract") {
+    const limit = ent ? (ent.id === "studio" || ent.id === "pro" ? null : ent.maxContractTemplates ?? 2) : 2;
+    if (limit !== null && (await countTemplates(ctx.organizationId, "contract")) >= limit) {
+      return Response.json({ error: "limit_reached", limit }, { status: 403 });
+    }
   }
   if ((body.meta as Record<string, unknown> | undefined)?.redirectUrl !== undefined) {
     const r = String((body.meta as Record<string, unknown>).redirectUrl);

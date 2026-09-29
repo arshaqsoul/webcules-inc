@@ -76,7 +76,7 @@ export default async function ProjectDetailPage({
 
   // Load only what the active tab renders — the Files workspace fetches its
   // own asset grid client-side.
-  const [events, shareActivity, auditEvents, assets, grants, deliverFolders, payments, paymentSummary, invoices, contractsRows, formResponses, questionnaireTemplates] =
+  const [events, shareActivity, auditEvents, assets, grants, deliverFolders, payments, paymentSummary, invoices, contractsRows, formResponses, questionnaireTemplates, contractTemplates] =
     await Promise.all([
       tab === "overview" || tab === "activity"
         ? db
@@ -98,6 +98,7 @@ export default async function ProjectDetailPage({
       // WEB-248: questionnaires live on the overview tab.
       tab === "overview" ? listProjectFormResponses(ctx.organizationId, id) : Promise.resolve([]),
       tab === "overview" ? listTemplates(ctx.organizationId, "questionnaire") : Promise.resolve([]),
+      tab === "contracts" ? listTemplates(ctx.organizationId, "contract") : Promise.resolve([]),
     ]);
 
   return (
@@ -332,6 +333,7 @@ export default async function ProjectDetailPage({
           </p>
           <ProjectContracts
             projectId={id}
+            templates={contractTemplates.map((t) => ({ id: t.id, name: t.name, body: t.body }))}
             contracts={contractsRows.map((c) => ({
               id: c.id,
               title: c.title,

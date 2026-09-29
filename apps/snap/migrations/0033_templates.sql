@@ -102,3 +102,33 @@ SELECT lower(hex(randomblob(16))), id, 'questionnaire', 'Client questionnaire',
 {"id":"f_notes","kind":"textarea","label":"Anything else we should know?","required":false}
 ]}', '{}', 1
 FROM organization;
+
+INSERT INTO template (id, organization_id, kind, name, body, meta, is_default)
+SELECT lower(hex(randomblob(16))), id, 'contract_clause', 'Image usage & licensing',
+'All images remain the copyright of the studio. The client receives a personal-use license covering printing, sharing and archiving; commercial use, third-party licensing or AI training requires separate written permission.', '{}', 0
+FROM organization o
+WHERE NOT EXISTS (SELECT 1 FROM template t WHERE t.organization_id = o.id AND t.kind = 'contract_clause');
+
+INSERT INTO template (id, organization_id, kind, name, body, meta, is_default)
+SELECT lower(hex(randomblob(16))), id, 'contract_clause', 'Weather policy',
+'If conditions make outdoor photography unsafe or unreasonably difficult, the studio and client will agree on a new date within 60 days at no additional charge.', '{}', 0
+FROM organization o
+WHERE NOT EXISTS (SELECT 1 FROM template t WHERE t.organization_id = o.id AND t.kind = 'contract_clause');
+
+INSERT INTO template (id, organization_id, kind, name, body, meta, is_default)
+SELECT lower(hex(randomblob(16))), id, 'contract_clause', 'Retainer non-refundable',
+'The retainer reserves the date exclusively and is non-refundable, though it may be transferred once to a new date if the client reschedules at least 30 days in advance.', '{}', 0
+FROM organization o
+WHERE NOT EXISTS (SELECT 1 FROM template t WHERE t.organization_id = o.id AND t.kind = 'contract_clause');
+
+INSERT INTO template (id, organization_id, kind, name, body, meta, is_default)
+SELECT lower(hex(randomblob(16))), id, 'contract_clause', 'Delivery timeline',
+'Edited images are delivered through a private online gallery within six weeks of the session date. Sneak peeks may arrive sooner at the studio''s discretion.', '{}', 0
+FROM organization o
+WHERE NOT EXISTS (SELECT 1 FROM template t WHERE t.organization_id = o.id AND t.kind = 'contract_clause');
+
+INSERT INTO template (id, organization_id, kind, name, body, meta, is_default)
+SELECT lower(hex(randomblob(16))), id, 'contract_clause', 'Cancellation by studio',
+'If the studio cannot attend due to illness, emergency or force majeure, all payments made will be refunded in full within 10 business days, or a comparable replacement photographer may be offered.', '{}', 0
+FROM organization o
+WHERE NOT EXISTS (SELECT 1 FROM template t WHERE t.organization_id = o.id AND t.kind = 'contract_clause');

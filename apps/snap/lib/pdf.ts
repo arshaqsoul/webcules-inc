@@ -1,6 +1,7 @@
 /* PDF generation on Workers (WEB-137/158) — pdf-lib (pure JS, no native
  * deps). Standard fonts only; brand accent applied as a header bar. */
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import { contractBodyToText } from "./contract-body";
 
 export type PdfLine = { description: string; qty: number; amountMinor: number };
 
@@ -235,7 +236,7 @@ export async function renderContractPdf(params: {
   }
 
   // Body — paragraph-aware wrapping
-  for (const para of sanitize(params.body).split(/\n/)) {
+  for (const para of sanitize(contractBodyToText(params.body)).split(/\n/)) {
     if (!para.trim()) {
       y -= 12;
       continue;
