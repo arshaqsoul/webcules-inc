@@ -117,11 +117,11 @@ export default async function ProjectDetailPage({
         </div>
       </div>
 
-      {/* Mobile: one scrollable row (bleeds edge-to-edge under the page
-       * padding) instead of wrapping to a second line; desktop wraps as
-       * before since the tabs fit. */}
+      {/* Mobile: one scrollable row (contained — no negative-margin bleed,
+       * no scroll chaining into the page) instead of wrapping to a second
+       * line; desktop wraps as before since the tabs fit. */}
       <nav
-        className="no-scrollbar -mx-6 flex gap-1.5 overflow-x-auto px-6 pb-0.5 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0"
+        className="no-scrollbar flex gap-1.5 overflow-x-auto overscroll-x-contain pb-0.5 sm:flex-wrap sm:overflow-visible sm:pb-0"
         aria-label="Project sections"
       >
         {TABS.map((t) => (

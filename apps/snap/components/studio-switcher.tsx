@@ -146,8 +146,11 @@ export function StudioSwitcher({
         <ChevronDown className="h-3.5 w-3.5 shrink-0 text-ink-tertiary" aria-hidden />
       </button>
 
+      {/* Anchored to the aside's outer edge (header has px-3) and sized to
+       * the sidebar width, so the open popover never overhangs — the aside
+       * is its own scroll container and would grow a horizontal scrollbar. */}
       {open && (
-        <div className="absolute left-0 top-full z-50 mt-1.5 w-64 rounded-[10px] border border-hairline bg-surface-1 p-1 shadow-lg" role="listbox" aria-label="Studios">
+        <div className="absolute -left-3 top-full z-50 mt-1.5 w-60 rounded-[10px] border border-hairline bg-surface-1 p-1 shadow-lg" role="listbox" aria-label="Studios">
           {familyStudios.map((s) => (
             <button
               key={s.organizationId}
@@ -169,7 +172,7 @@ export function StudioSwitcher({
           <div className="my-1 border-t border-hairline" />
 
           {adding ? (
-            <div className="flex flex-col gap-1.5 p-1.5">
+            <div className="flex flex-col gap-2 p-2">
               <input
                 autoFocus
                 value={name}
@@ -180,21 +183,26 @@ export function StudioSwitcher({
                 }}
                 placeholder="New studio name"
                 aria-label="New studio name"
-                className="rounded-md border border-hairline bg-canvas px-2.5 py-1.5 text-xs text-ink outline-none focus:border-primary"
+                className="h-8 w-full rounded-md border border-hairline bg-canvas px-2.5 text-xs text-ink outline-none focus:border-primary"
               />
-              <div className="flex gap-1.5">
+              <div className="flex items-center gap-1.5">
                 <button
                   type="button"
                   disabled={busy || name.trim().length < 2}
                   onClick={() => void addStudio()}
-                  className="flex-1 rounded-md bg-primary px-2 py-1.5 text-xs font-medium text-white disabled:opacity-50"
+                  className="h-8 flex-1 rounded-md bg-primary px-2 text-xs font-medium text-white transition-opacity disabled:opacity-50"
                 >
                   {busy ? "Creating…" : "Create & switch"}
                 </button>
-                <button type="button" onClick={() => setAdding(false)} className="rounded-md px-2 py-1.5 text-xs text-ink-subtle hover:bg-surface-2">
+                <button
+                  type="button"
+                  onClick={() => setAdding(false)}
+                  className="h-8 shrink-0 rounded-md px-2.5 text-xs text-ink-subtle transition-colors hover:bg-surface-2"
+                >
                   Cancel
                 </button>
               </div>
+              {error && <p className="text-[11px] text-destructive">{error}</p>}
             </div>
           ) : atLimit ? (
             <p className="px-2 py-1.5 text-[11px] leading-relaxed text-ink-tertiary">
@@ -231,7 +239,7 @@ export function StudioSwitcher({
             </>
           )}
 
-          {error && <p className="px-2 pb-1 pt-1 text-[11px] text-destructive">{error}</p>}
+          {error && !adding && <p className="px-2 pb-1 pt-1 text-[11px] text-destructive">{error}</p>}
         </div>
       )}
     </div>
