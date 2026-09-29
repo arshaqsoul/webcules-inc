@@ -20,7 +20,8 @@ import { getProjectSlideshow, slideshowForTier } from "@/lib/repos/slideshow";
 import type { SlideshowProps } from "@/components/gallery-view";
 import { getPlanEntitlements } from "@/lib/plans";
 import { logShareAccess, resolveGalleryAccess } from "@/lib/shares/gallery-auth";
-import { getGrantAssets, getGrantByTokenHashAny, resolveGrantByToken } from "@/lib/shares/grants";
+import { getGrantAssets, getGrantByTokenHashAny, grantIsOpen, resolveGrantByToken } from "@/lib/shares/grants";
+import { GalleryPreRegister } from "@/components/gallery-preregister";
 import { ensureFavoriteLists, getFavoritesForList, getLatestSelection, listFavoriteDetails } from "@/lib/shares/selections";
 import { safeHexColor } from "@/lib/embed";
 import { countGalleryOpen } from "@/lib/limits";
@@ -143,6 +144,20 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
   // the first list with its own favorites + notes.
   const favLists = grant.selectionMode !== "off" ? await ensureFavoriteLists(grant.id, grant.organizationId) : [];
   const activeList = favLists[0] ?? null;
+  // WEB-266: scheduled gallery — pre-registration page instead of photos.
+  if (!grantIsOpen(grant)) {
+    const profile = await getStudioProfile(grant.organizationId);
+    const brand = JSON.parse(profile?.brand || "{}") as { accent?: string };
+    return (
+      <GalleryPreRegister
+        token={token}
+        studioName={profile?.studioName ?? "your photographer"}
+        accent={safeHexColor(brand.accent) ?? "#5e6ad2"}
+        openAt={grant.openAt!.toISOString()}
+      />
+    );
+  }
+
   const [profile, assets, ent, favorites, favNotes, selection, projectOverride, design, slideshowCfg] = await Promise.all([
     getStudioProfile(grant.organizationId),
     getGrantAssets(grant),

@@ -238,11 +238,25 @@ export async function sweepExpiredZips(): Promise<number> {
   return stale.length;
 }
 
+/** WEB-266: scheduled galleries whose open moment arrived — flip open and
+ * notify pre-registered guests (same once-guard as the manual button). */
+export async function openDueScheduledGrants(): Promise<number> {
+  const { dueScheduledGrants, openScheduledGrant } = await import("./gallery-guests");
+  const due = await dueScheduledGrants();
+  let opened = 0;
+  for (const grant of due) {
+    const r = await openScheduledGrant(grant.organizationId, grant.id);
+    if (r.opened) opened += 1;
+  }
+  return opened;
+}
+
 /** Daily roll: everything the cron needs from this module. */
 export async function downloadsDailySweep(): Promise<BuildSummary> {
   const { built, failed } = await buildDownloadZips();
   const expired = await sweepExpiredZips();
   const reminded = await sendExpiryReminders();
+  await openDueScheduledGrants();
   return { built, failed, expired, reminded };
 }
 

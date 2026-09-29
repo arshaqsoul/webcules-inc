@@ -603,6 +603,11 @@ export const shareGrants = sqliteTable(
     downloadSettings: text("download_settings"),
     /** WEB-262: per-photo social sharing allowed (default on). */
     allowSharing: integer("allow_sharing", { mode: "boolean" }).notNull().default(true),
+    /** WEB-266: scheduled opening — before this moment the gallery renders
+     * the pre-registration page (null = open now, today's behavior). */
+    openAt: integer("open_at", { mode: "timestamp" }),
+    /** WEB-266: last "new photos added" notification stamp. */
+    updatedNotifyAt: integer("updated_notify_at", { mode: "timestamp" }),
     /** WEB-261: expiry-reminder email sent (epoch seconds, once per grant). */
     expiryRemindedAt: integer("expiry_reminded_at"),
     createdAt: ts("created_at"),
@@ -644,6 +649,27 @@ export const downloadRequests = sqliteTable(
     index("download_request_grant_idx").on(t.grantId, t.state, t.createdAt),
     index("download_request_org_idx").on(t.organizationId, t.state, t.createdAt),
   ],
+);
+
+/** WEB-266: gallery guests — email-capture gate visitors + pre-registration
+ * list; warm leads the studio can export or convert. */
+export const galleryGuests = sqliteTable(
+  "gallery_guest",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    grantId: text("grant_id")
+      .notNull()
+      .references(() => shareGrants.id, { onDelete: "cascade" }),
+    email: text("email").notNull(),
+    /** guest | preregistered */
+    kind: text("kind").notNull().default("guest"),
+    notifiedAt: integer("notified_at"),
+    createdAt: ts("created_at"),
+  },
+  (t) => [uniqueIndex("gallery_guest_unique").on(t.grantId, t.email), index("gallery_guest_org_idx").on(t.organizationId, t.createdAt)],
 );
 
 /** WEB-265: per-photo interest counters (heat overlay) — upsert pattern

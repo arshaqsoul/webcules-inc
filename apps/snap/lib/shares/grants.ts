@@ -70,9 +70,9 @@ export async function decryptToken(enc: string): Promise<string | null> {
 
 /* ---------------- State model ---------------- */
 
-export type GrantState = "active" | "expiring_soon" | "expired" | "revoked" | "regenerated";
+export type GrantState = "active" | "expiring_soon" | "expired" | "revoked" | "regenerated" | "scheduled";
 
-export type GrantLike = { status: string; expiresAt: Date | null };
+export type GrantLike = { status: string; expiresAt: Date | null; openAt?: Date | null };
 
 /** The single predicate for "this grant may serve media / protects its assets".
  * Expiry is derived per-request — no cron needed to flip rows. */
@@ -80,9 +80,16 @@ export function grantIsEffectivelyActive(grant: GrantLike): boolean {
   return grant.status === "active" && (!grant.expiresAt || grant.expiresAt.getTime() > Date.now());
 }
 
+/** WEB-266: a scheduled grant is alive but not yet open — the gallery page
+ * renders pre-registration instead of photos. */
+export function grantIsOpen(grant: GrantLike): boolean {
+  return grantIsEffectivelyActive(grant) && (!grant.openAt || grant.openAt.getTime() <= Date.now());
+}
+
 export function grantState(grant: GrantLike): GrantState {
   if (grant.status === "revoked") return "revoked";
   if (grant.status === "regenerated") return "regenerated";
+  if (grant.openAt && grant.openAt.getTime() > Date.now()) return "scheduled" as GrantState;
   if (grant.expiresAt) {
     const msLeft = grant.expiresAt.getTime() - Date.now();
     if (msLeft <= 0) return "expired";

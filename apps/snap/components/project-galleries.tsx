@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
 import { Button } from "@webcules/ui/components/button";
+import { GrantLifecycle } from "@/components/grant-lifecycle";
 import {
   Dialog,
   DialogContent,
@@ -22,7 +23,7 @@ export type GrantItem = {
   id: string;
   clientEmail: string;
   status: string;
-  state: "active" | "expiring_soon" | "expired" | "revoked" | "regenerated";
+  state: "active" | "expiring_soon" | "expired" | "revoked" | "regenerated" | "scheduled";
   expiresAt: string | null;
   createdAt: string;
   assetCount: number;
@@ -43,6 +44,7 @@ const STATE_BADGE: Record<GrantItem["state"], string> = {
   expired: "bg-surface-2 text-ink-tertiary",
   revoked: "bg-destructive/10 text-destructive",
   regenerated: "bg-surface-2 text-ink-tertiary",
+  scheduled: "bg-violet-500/10 text-violet-600 dark:text-violet-400",
 };
 
 const EXPIRY_OPTIONS = [
@@ -499,6 +501,7 @@ export function ProjectGalleries({
             return (
               <div key={g.id} className="flex flex-col">
               <GrantDownloadSettings grantId={g.id} canLite={canLite !== false} canStudio={canStudio !== false} />
+              <GrantLifecycle grantId={g.id} canSchedule={canLite !== false} />
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 p-4">
                 <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ${STATE_BADGE[g.state]}`}>
                   {g.state.replace("_", " ")}
