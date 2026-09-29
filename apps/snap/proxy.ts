@@ -8,7 +8,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { nonClientPathRedirect } from "@/lib/domains";
 
-export const middleware = (req: NextRequest) => {
+export const proxy = (req: NextRequest) => {
   const host = req.headers.get("host") ?? new URL(req.url).host;
   const target = nonClientPathRedirect(host, new URL(req.url).pathname);
   if (!target) return NextResponse.next();
