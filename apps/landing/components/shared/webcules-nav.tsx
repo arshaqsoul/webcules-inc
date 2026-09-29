@@ -21,6 +21,11 @@ const apps = [
     link: "https://tru.webcules.com",
     description: "Workflow automation on the edge — pay per run, no subscription.",
   },
+  {
+    name: "snap",
+    link: "https://snap.webcules.com",
+    description: "Photographer studio platform — galleries, bookings and delivery.",
+  },
 ];
 
 const AppsMenu = () => (

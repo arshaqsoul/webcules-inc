@@ -88,6 +88,13 @@ export const Footer = () => {
             >
               tru — workflow automation, pay per run
             </a>
+            <a
+              href="https://snap.webcules.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              snap — photographer studio platform
+            </a>
           </div>
           <div className="flex flex-col text-slate-400 gap-y-2">
             <p className="text-white font-bold text-xl">Company</p>
