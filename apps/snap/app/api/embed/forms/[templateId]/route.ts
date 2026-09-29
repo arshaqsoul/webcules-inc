@@ -15,7 +15,7 @@ import { mapLeadColumns, parseFormSchema, packLeadCustomFields, validateFormAnsw
 import { clientIp } from "@/lib/shares/gallery-auth";
 import { checkFormRate, verifyFormFileKey } from "@/lib/repos/forms";
 import { getStudioProfile } from "@/lib/repos/studios";
-import { getTemplate } from "@/lib/repos/templates";
+import { getTemplate, touchTemplateUsed } from "@/lib/repos/templates";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { matchSessionTypeByLabel } from "@/lib/repos/session-types";
 
@@ -50,6 +50,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ templat
   }
   const formSchema = parseFormSchema(template.body);
   if (!formSchema) return Response.json({ error: "unavailable" }, { status: 404 });
+  await touchTemplateUsed(studio.organizationId, template.id);
 
   const validated = validateFormAnswers(formSchema, body);
   if (!validated.ok) return Response.json({ error: "invalid_answers", fields: validated.errors.map((e) => e.field) }, { status: 400 });

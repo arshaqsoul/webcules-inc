@@ -384,3 +384,62 @@ async function countAllTemplates(organizationId: string): Promise<number> {
     .where(eq(schema.templates.organizationId, organizationId));
   return rows[0]?.n ?? 0;
 }
+
+/* ---------------- Hub additions (WEB-255) ---------------- */
+
+/** Mark a template used (submissions/applications). Never throws — telemetry. */
+export async function touchTemplateUsed(organizationId: string, id: string): Promise<void> {
+  try {
+    await getDb()
+      .update(schema.templates)
+      .set({ lastUsedAt: new Date() })
+      .where(and(eq(schema.templates.organizationId, organizationId), eq(schema.templates.id, id)));
+  } catch {
+    /* telemetry only */
+  }
+}
+
+/** Usage count for delete protection: form/questionnaire templates have real
+ * linkage (form_response rows); other kinds count by last-used. */
+export async function countTemplateUsage(organizationId: string, id: string, kind: TemplateKind): Promise<number> {
+  const db = getDb();
+  if (kind === "form" || kind === "questionnaire") {
+    const rows = await db
+      .select({ n: sql<number>`count(*)` })
+      .from(schema.formResponses)
+      .where(and(eq(schema.formResponses.organizationId, organizationId), eq(schema.formResponses.templateId, id)));
+    return rows[0]?.n ?? 0;
+  }
+  const rows = await db
+    .select({ used: schema.templates.lastUsedAt })
+    .from(schema.templates)
+    .where(and(eq(schema.templates.organizationId, organizationId), eq(schema.templates.id, id)))
+    .limit(1);
+  return rows[0]?.used ? 1 : 0;
+}
+
+/** Hard delete — refused while in use (archive is always available). */
+export async function hardDeleteTemplate(organizationId: string, id: string): Promise<{ ok: true } | { ok: false; error: "not_found" | "in_use" }> {
+  const existing = await getTemplate(organizationId, id);
+  if (!existing) return { ok: false, error: "not_found" };
+  const usage = await countTemplateUsage(organizationId, id, existing.kind as TemplateKind);
+  if (usage > 0) return { ok: false, error: "in_use" };
+  await getDb().delete(schema.templates).where(and(eq(schema.templates.organizationId, organizationId), eq(schema.templates.id, id)));
+  return { ok: true };
+}
+
+/** Re-seed missing starter rows only — existing rows (edited or not) are
+ * never touched. Returns how many were re-added. */
+export async function restoreMissingStarters(organizationId: string): Promise<number> {
+  const db = getDb();
+  const existing = await db
+    .select({ kind: schema.templates.kind, name: schema.templates.name })
+    .from(schema.templates)
+    .where(eq(schema.templates.organizationId, organizationId));
+  const have = new Set(existing.map((r) => `${r.kind}::${r.name}`));
+  const missing = starterTemplateRows(organizationId).filter((r) => !have.has(`${r.kind}::${r.name}`));
+  for (let i = 0; i < missing.length; i += 9) {
+    await db.insert(schema.templates).values(missing.slice(i, i + 9));
+  }
+  return missing.length;
+}

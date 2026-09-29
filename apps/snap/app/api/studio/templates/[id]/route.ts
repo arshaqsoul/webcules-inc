@@ -93,6 +93,12 @@ export async function POST(req: Request, { params }: Params) {
     if (!result.ok) return Response.json({ error: result.error }, { status: 404 });
     return Response.json({ ok: true });
   }
+  if (action === "delete") {
+    const { hardDeleteTemplate } = await import("@/lib/repos/templates");
+    const result = await hardDeleteTemplate(ctx.organizationId, id);
+    if (!result.ok) return Response.json({ error: result.error }, { status: result.error === "in_use" ? 409 : 404 });
+    return Response.json({ ok: true });
+  }
   if (action === "restore") {
     const result = await restoreTemplate(ctx.organizationId, id);
     if (!result.ok) return Response.json({ error: result.error }, { status: 404 });

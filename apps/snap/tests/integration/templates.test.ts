@@ -8,6 +8,8 @@ import { eq } from "drizzle-orm";
 import { getDb, schema } from "@/lib/db";
 import {
   archiveTemplate,
+  countTemplateUsage,
+  hardDeleteTemplate,
   countTemplates,
   createTemplate,
   duplicateTemplate,
@@ -18,7 +20,9 @@ import {
   seedStarterTemplates,
   setDefaultTemplate,
   starterTemplateRows,
+  touchTemplateUsed,
   updateTemplate,
+  restoreMissingStarters,
 } from "@/lib/repos/templates";
 import { createStudioForUser } from "@/lib/repos/studios";
 import { resetDb } from "../helpers/db";
@@ -189,5 +193,66 @@ describe("starter library (WEB-247)", () => {
       expect(r.organizationId).toBe(orgId);
       expect(r.name?.length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe("hub (WEB-255)", () => {
+  it("hard delete refuses templates with submissions; archive always works", async () => {
+    const studio = await seedStudio();
+    const q = await createTemplate({
+      organizationId: studio.organizationId,
+      kind: "questionnaire",
+      name: "Q",
+      body: JSON.stringify({ v: 1, fields: [{ id: "f_name", kind: "text", label: "Name", required: true }] }),
+    });
+    if (!q.ok) throw new Error("seed");
+    expect((await hardDeleteTemplate(studio.organizationId, q.template.id)).ok).toBe(true);
+
+    const q2 = await createTemplate({
+      organizationId: studio.organizationId,
+      kind: "questionnaire",
+      name: "Q2",
+      body: JSON.stringify({ v: 1, fields: [{ id: "f_name", kind: "text", label: "Name", required: true }] }),
+    });
+    if (!q2.ok) throw new Error("seed");
+    const { seedProject } = await import("../helpers/seed");
+    const projectId = await seedProject(studio.organizationId);
+    await getDb().insert(schema.formResponses).values({
+      id: crypto.randomUUID(),
+      organizationId: studio.organizationId,
+      projectId,
+      templateId: q2.template.id,
+      answers: JSON.stringify({ answers: { f_name: "Maya" }, files: {} }),
+      submittedAt: new Date(),
+    });
+    expect(await countTemplateUsage(studio.organizationId, q2.template.id, "questionnaire")).toBe(1);
+    expect((await hardDeleteTemplate(studio.organizationId, q2.template.id)).error).toBe("in_use");
+    // Archive is always available and removes it from the active list.
+    expect((await archiveTemplate(studio.organizationId, q2.template.id)).ok).toBe(true);
+    expect(await countTemplates(studio.organizationId, "questionnaire")).toBe(0);
+  });
+
+  it("touchTemplateUsed stamps last-used", async () => {
+    const studio = await seedStudio();
+    const t = await createTemplate({ organizationId: studio.organizationId, kind: "contract", name: "T", body: "b" });
+    if (!t.ok) throw new Error("seed");
+    expect((await getTemplate(studio.organizationId, t.template.id))!.lastUsedAt).toBeNull();
+    await touchTemplateUsed(studio.organizationId, t.template.id);
+    expect((await getTemplate(studio.organizationId, t.template.id))!.lastUsedAt).not.toBeNull();
+  });
+
+  it("restoreMissingStarters re-adds only missing rows", async () => {
+    const studio = await seedStudio();
+    await seedStarterTemplates(studio.organizationId); // 16 rows
+    // Archive the wedding contract (row still exists → not re-added)…
+    const wedding = (await listTemplates(studio.organizationId)).find((t) => t.name === "Wedding photography agreement")!;
+    await archiveTemplate(studio.organizationId, wedding.id);
+    // …delete one snippet outright (missing → re-added).
+    const snippet = (await listTemplates(studio.organizationId)).find((t) => t.kind === "email_snippet")!;
+    await hardDeleteTemplate(studio.organizationId, snippet.id);
+    const added = await restoreMissingStarters(studio.organizationId);
+    expect(added).toBe(1);
+    const after = await listTemplates(studio.organizationId, undefined, { includeArchived: true });
+    expect(after.filter((t) => t.kind === "email_snippet").length).toBe(3);
   });
 });

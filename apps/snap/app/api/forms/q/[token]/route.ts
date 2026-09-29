@@ -12,7 +12,7 @@ import { sendEmail, questionnaireAckEmail, questionnaireAnsweredEmail } from "@/
 import { parseFormSchema, validateFormAnswers } from "@/lib/forms";
 import { clientIp } from "@/lib/shares/gallery-auth";
 import { checkFormRate, getFormResponseByToken, submitFormResponse, verifyFormFileKey } from "@/lib/repos/forms";
-import { getTemplate } from "@/lib/repos/templates";
+import { getTemplate, touchTemplateUsed } from "@/lib/repos/templates";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { clientUrl } from "@/lib/client-urls";
 import { verifyTurnstile } from "@/lib/turnstile";
@@ -45,6 +45,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
   if (!template || template.archivedAt) return Response.json({ error: "not_found" }, { status: 404 });
   const formSchema = parseFormSchema(template.body);
   if (!formSchema) return Response.json({ error: "unavailable" }, { status: 404 });
+  await touchTemplateUsed(response.organizationId, template.id);
 
   const validated = validateFormAnswers(formSchema, body);
   if (!validated.ok) return Response.json({ error: "invalid_answers", fields: validated.errors.map((e) => e.field) }, { status: 400 });

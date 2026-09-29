@@ -886,6 +886,8 @@ export const templates = sqliteTable(
     meta: text("meta").notNull().default("{}"),
     isDefault: integer("is_default").notNull().default(0),
     archivedAt: integer("archived_at", { mode: "timestamp" }),
+    /** WEB-255: set when a client submits through / the studio applies this template. */
+    lastUsedAt: integer("last_used_at", { mode: "timestamp" }),
     createdAt: ts("created_at"),
     updatedAt: ts("updated_at"),
   },
