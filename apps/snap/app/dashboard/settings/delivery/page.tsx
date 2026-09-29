@@ -1,21 +1,36 @@
 import { redirect } from "next/navigation";
 
-import { SettingsForm } from "@/components/settings-form";
-import { getStudioProfile, getStudioSlug } from "@/lib/repos/studios";
+import { SettingsDelivery } from "@/components/settings-delivery";
+import { getPlanEntitlements } from "@/lib/plans";
+import { getStudioProfile } from "@/lib/repos/studios";
 import { getOrgContext } from "@/lib/session";
-
-import { settingsFormInitial } from "../form-initial";
 
 export const metadata = { title: "Settings · Delivery" };
 
 export default async function SettingsDeliveryPage() {
   const ctx = await getOrgContext();
   if (!ctx) redirect("/login");
-  const [profile, slug] = await Promise.all([
+  const [profile, ent] = await Promise.all([
     getStudioProfile(ctx.organizationId),
-    getStudioSlug(ctx.organizationId),
+    getPlanEntitlements(ctx.organizationId),
   ]);
   if (!profile) redirect("/onboarding");
 
-  return <SettingsForm brandRevision={String(profile.updatedAt?.getTime() ?? "")} initial={settingsFormInitial(profile, slug)} />;
+  const rejected = JSON.parse(profile.rejectedPolicy || "{}") as {
+    enabled?: boolean;
+    retainDays?: number;
+  };
+
+  return (
+    <SettingsDelivery
+      rejectedRetentionDays={rejected.enabled ? (rejected.retainDays ?? 30) : 0}
+      exifStripDerived={profile.exifStripDerived}
+      rawStatus={{
+        rawAllowed: ent?.rawAllowed ?? false,
+        rawTrialBytes: ent?.rawTrialBytes ?? null,
+        rawBytesUsed: ent?.rawBytesUsed ?? 0,
+        planName: ent?.name ?? "Free",
+      }}
+    />
+  );
 }

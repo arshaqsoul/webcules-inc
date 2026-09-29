@@ -1,21 +1,34 @@
 import { redirect } from "next/navigation";
 
-import { SettingsForm } from "@/components/settings-form";
-import { getStudioProfile, getStudioSlug } from "@/lib/repos/studios";
+import { SettingsBrand } from "@/components/settings-brand";
+import { getStudioProfile } from "@/lib/repos/studios";
 import { getOrgContext } from "@/lib/session";
-
-import { settingsFormInitial } from "../form-initial";
 
 export const metadata = { title: "Settings · Brand" };
 
 export default async function SettingsBrandPage() {
   const ctx = await getOrgContext();
   if (!ctx) redirect("/login");
-  const [profile, slug] = await Promise.all([
-    getStudioProfile(ctx.organizationId),
-    getStudioSlug(ctx.organizationId),
-  ]);
+  const profile = await getStudioProfile(ctx.organizationId);
   if (!profile) redirect("/onboarding");
 
-  return <SettingsForm brandRevision={String(profile.updatedAt?.getTime() ?? "")} initial={settingsFormInitial(profile, slug)} />;
+  const brand = JSON.parse(profile.brand || "{}") as {
+    accent?: string;
+    fontFamily?: string;
+    theme?: string;
+    tokens?: unknown;
+  };
+
+  return (
+    <SettingsBrand
+      embedKey={profile.embedKey ?? ""}
+      hasLogo={Boolean(profile.logoKey)}
+      logoUrl={profile.logoKey ? `/api/embed/logo?key=${profile.embedKey}` : null}
+      accentColor={brand.accent ?? "#5e6ad2"}
+      fontFamily={brand.fontFamily ?? ""}
+      theme={brand.theme ?? "light"}
+      tokens={JSON.stringify(brand.tokens ?? {}, null, 1)}
+      brandRevision={String(profile.updatedAt?.getTime() ?? "")}
+    />
+  );
 }

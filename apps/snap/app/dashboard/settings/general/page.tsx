@@ -1,10 +1,8 @@
 import { redirect } from "next/navigation";
 
-import { SettingsForm } from "@/components/settings-form";
+import { SettingsGeneral } from "@/components/settings-general";
 import { getStudioProfile, getStudioSlug } from "@/lib/repos/studios";
 import { getOrgContext } from "@/lib/session";
-
-import { settingsFormInitial } from "../form-initial";
 
 export const metadata = { title: "Settings · General" };
 
@@ -17,5 +15,12 @@ export default async function SettingsGeneralPage() {
   ]);
   if (!profile) redirect("/onboarding");
 
-  return <SettingsForm brandRevision={String(profile.updatedAt?.getTime() ?? "")} initial={settingsFormInitial(profile, slug)} />;
+  return (
+    <SettingsGeneral
+      studioName={profile.studioName}
+      slug={slug}
+      timezone={profile.timezone}
+      contactEmail={profile.contactEmail ?? ""}
+    />
+  );
 }
