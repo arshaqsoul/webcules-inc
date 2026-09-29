@@ -200,22 +200,22 @@ export async function transitionProject(params: {
       )[0];
       const profile = await getStudioProfile(params.organizationId);
       if (client && profile && (await clientWantsEmail(params.organizationId, client.email))) {
-        const brand = JSON.parse(profile.brand || "{}") as { accent?: string };
-        const { isWhiteLabeled } = await import("@/lib/branding");
-        const { getPlanEntitlements } = await import("@/lib/plans");
-        const wl = isWhiteLabeled(await getPlanEntitlements(params.organizationId), profile.brand);
+        const { getEmailBrand } = await import("@/lib/branding");
+        const b = await getEmailBrand(params.organizationId);
         const tmpl = projectCompleteClientEmail(profile.studioName, {
-          accent: safeHexColor(brand.accent) ?? "#5e6ad2",
+          accent: b.accent,
           projectTitle: project.title,
           portalUrl: await clientUrl(params.organizationId, "/portal/login"),
-          whiteLabel: wl,
+          whiteLabel: b.whiteLabel,
+          emailHeaderUrl: b.emailHeaderUrl,
+          contactEmail: b.contactEmail,
         });
         await sendEmail({
           to: client.email,
           subject: tmpl.subject,
           html: tmpl.html,
           text: tmpl.text,
-          ...(wl ? { fromName: profile.studioName } : {}),
+          ...(b.whiteLabel ? { fromName: profile.studioName } : {}),
           organizationId: params.organizationId,
           template: "client.project_complete",
           refId: params.projectId,

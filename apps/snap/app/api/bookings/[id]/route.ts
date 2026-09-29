@@ -1,9 +1,8 @@
 /* Booking cancellation (org-context guarded) — frees the slot via the partial
  * index and emails the client. */
 import { bookingCanceledEmail, sendEmail } from "@/lib/email";
-import { isWhiteLabeled } from "@/lib/branding";
+import { getEmailBrand } from "@/lib/branding";
 import { safeHexColor } from "@/lib/embed";
-import { getPlanEntitlements } from "@/lib/plans";
 import { cancelBooking } from "@/lib/repos/bookings";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { getOrgContext } from "@/lib/session";
@@ -20,21 +19,22 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   const profile = await getStudioProfile(ctx.organizationId);
   if (profile) {
-    const accent = safeHexColor(JSON.parse(profile.brand || "{}").accent) ?? "#5e6ad2";
-    const wl = isWhiteLabeled(await getPlanEntitlements(ctx.organizationId), profile.brand);
+    const b = await getEmailBrand(ctx.organizationId);
     const template = bookingCanceledEmail(profile.studioName, {
       clientName: result.booking.clientName ?? result.booking.clientEmail,
       startAt: result.booking.startAt,
       tz: result.booking.timezone,
-      accent,
-      whiteLabel: wl,
+      accent: b.accent,
+      whiteLabel: b.whiteLabel,
+      emailHeaderUrl: b.emailHeaderUrl,
+      contactEmail: b.contactEmail,
     });
     await sendEmail({
       to: result.booking.clientEmail,
       subject: template.subject,
       html: template.html,
       text: template.text,
-      ...(wl ? { fromName: profile.studioName } : {}),
+      ...(b.whiteLabel ? { fromName: profile.studioName } : {}),
       organizationId: ctx.organizationId,
       template: "booking.canceled_client",
       refId: result.booking.id,

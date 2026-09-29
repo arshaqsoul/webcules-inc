@@ -81,8 +81,10 @@ describe("brand-assets metadata helpers (WEB-239)", () => {
     // serving 404s harmlessly until regenerated; favicon presence gates.
   });
 
-  it("og image only when the card exists", () => {
+  it("og image only when the card exists (absolute — scrapers need a full URL)", () => {
     expect(brandOgImage({}, org)).toBeNull();
-    expect(brandOgImage({ rev: "r1", ogCard: "k" }, org)).toBe(`/api/brand/${org}/og-card.png?rev=r1`);
+    expect(brandOgImage({ rev: "r1", ogCard: "k" }, org)).toMatch(
+      new RegExp(`^https?://.+/api/brand/${org}/og-card\\.png\\?rev=r1$`),
+    );
   });
 });

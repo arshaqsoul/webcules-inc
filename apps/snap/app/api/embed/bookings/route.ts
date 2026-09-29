@@ -4,8 +4,7 @@ import { z } from "zod";
 
 import { originAllowed, resolveStudioByEmbedKey, safeHexColor } from "@/lib/embed";
 import { bookingConfirmedEmails, sendEmail } from "@/lib/email";
-import { isWhiteLabeled } from "@/lib/branding";
-import { getPlanEntitlements } from "@/lib/plans";
+import { getEmailBrand } from "@/lib/branding";
 import { getBookingSettings } from "@/lib/repos/availability";
 import { createBookingFromWidget } from "@/lib/repos/bookings";
 import { getStudioProfile } from "@/lib/repos/studios";
@@ -136,7 +135,7 @@ export async function POST(req: Request) {
   const accent = safeHexColor(studio.brand.accent) ?? "#5e6ad2";
   const bookingStart = new Date(body.slotStart);
   const icsUrl = `${url.origin}/api/embed/ics?booking=${result.bookingId}&key=${studio.embedKey}`;
-  const wl = isWhiteLabeled(await getPlanEntitlements(studio.organizationId), studio.brand);
+  const b = await getEmailBrand(studio.organizationId);
   const templates = bookingConfirmedEmails(studio.studioName, {
     clientName: body.name,
     startAt: bookingStart,
@@ -144,7 +143,9 @@ export async function POST(req: Request) {
     tz: profile?.timezone ?? "UTC",
     icsUrl,
     accent,
-    whiteLabel: wl,
+    whiteLabel: b.whiteLabel,
+    emailHeaderUrl: b.emailHeaderUrl,
+    contactEmail: b.contactEmail,
   });
   await Promise.all([
     sendEmail({
@@ -152,7 +153,7 @@ export async function POST(req: Request) {
       subject: templates.client.subject,
       html: templates.client.html,
       text: templates.client.text,
-      ...(wl ? { fromName: studio.studioName } : {}),
+      ...(b.whiteLabel ? { fromName: studio.studioName } : {}),
       organizationId: studio.organizationId,
       template: "booking.confirmed_client",
       refId: result.bookingId,

@@ -16,6 +16,7 @@ import {
   galleryOtpEmail,
   inquiryAckEmail,
   invoiceEmail,
+  portalCodeEmail,
   projectCompleteClientEmail,
   refundClientEmail,
 } from "@/lib/email";
@@ -203,6 +204,71 @@ describe("client email templates (WEB-238)", () => {
       whiteLabel: true,
     });
     expect(studio.html).toContain("Snap"); // header wordmark stays — internal email
+  });
+});
+
+describe("branded email shell (WEB-240)", () => {
+  const HDR = "https://snap.webcules.com/api/brand/org1/email-header.png?rev=r1";
+
+  it("white-label + logo header asset → <img> header with studio alt", () => {
+    const out = galleryLinkEmail("Willow & Pine", {
+      clientName: "Ada",
+      galleryUrl: "https://example.com/g/x",
+      photoCount: 5,
+      expiresAt: null,
+      accent: "#5e6ad2",
+      whiteLabel: true,
+      emailHeaderUrl: HDR,
+    });
+    expect(out.html).toContain(`<img src="${HDR}" alt="Willow & Pine" height="40"`);
+    expect(out.html).not.toContain(">Snap<");
+  });
+
+  it("white-label without the asset → studio-name wordmark fallback in accent", () => {
+    const out = inquiryAckEmail("Willow & Pine", "Ada", "#123456", true);
+    expect(out.html).not.toContain("<img");
+    expect(out.html).toContain('color:#123456;">Willow & Pine</span>');
+    expect(out.html).not.toContain(">Snap<");
+  });
+
+  it("white-label + contact email → footer carries the studio mailto", () => {
+    const out = invoiceEmail("Willow & Pine", {
+      accent: "#5e6ad2",
+      invoiceNumber: "INV-9",
+      amountLabel: "$1.00",
+      dueLabel: null,
+      invoiceUrl: "https://example.com/i/x",
+      whiteLabel: true,
+      contactEmail: "hi@willow.test",
+    });
+    expect(out.html).toContain('href="mailto:hi@willow.test"');
+    expect(out.html).not.toContain("Snap");
+  });
+
+  it("branded mode → wordmark header, no img, no mailto injection (byte-shape unchanged)", () => {
+    const out = invoiceEmail("Willow & Pine", {
+      accent: "#5e6ad2",
+      invoiceNumber: "INV-9",
+      amountLabel: "$1.00",
+      dueLabel: null,
+      invoiceUrl: "https://example.com/i/x",
+      whiteLabel: false,
+      emailHeaderUrl: HDR, // ignored when not white-labeled
+      contactEmail: "hi@willow.test",
+    });
+    expect(out.html).not.toContain("<img");
+    expect(out.html).toContain(">Snap<");
+    expect(out.html).not.toContain("mailto:hi@willow.test");
+  });
+
+  it("portalCodeEmail: neutral (zero Snap) when all studios white-labeled, branded otherwise", () => {
+    const neutral = portalCodeEmail("123456", true);
+    expect(neutral.subject).not.toContain("Snap");
+    expect(neutral.html).not.toContain("Snap");
+    expect(neutral.text).not.toContain("Snap");
+    const branded = portalCodeEmail("123456", false);
+    expect(branded.subject).toContain("Snap");
+    expect(branded.html).toContain("Snap");
   });
 });
 

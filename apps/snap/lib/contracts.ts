@@ -10,8 +10,7 @@ import { putObject } from "./storage/service";
 import { renderContractPdf } from "./pdf";
 import { sendEmail, contractSignRequestEmail, contractSignedEmail } from "./email";
 import { clientUrl } from "./client-urls";
-import { isWhiteLabeled } from "./branding";
-import { getPlanEntitlements } from "./plans";
+import { getEmailBrand } from "./branding";
 import { getStudioProfile } from "./repos/studios";
 import { safeHexColor } from "./embed";
 
@@ -19,14 +18,23 @@ export type ContractRow = typeof schema.contracts.$inferSelect;
 
 export const MERGE_FIELDS = ["client_name", "studio_name", "date", "event_date", "package"] as const;
 
-async function studioAccent(organizationId: string): Promise<{ name: string; accent: string; contactEmail: string | null; whiteLabel: boolean }> {
-  const profile = await getStudioProfile(organizationId);
-  const brand = JSON.parse(profile?.brand || "{}") as { accent?: string };
+type StudioBrand = {
+  name: string;
+  accent: string;
+  contactEmail: string | null;
+  whiteLabel: boolean;
+  emailHeaderUrl: string | null;
+};
+
+/** WEB-240: one getEmailBrand read feeds emails + PDFs here. */
+async function studioAccent(organizationId: string): Promise<StudioBrand> {
+  const b = await getEmailBrand(organizationId);
   return {
-    name: profile?.studioName ?? "The studio",
-    accent: safeHexColor(brand.accent) ?? "#5e6ad2",
-    contactEmail: profile?.contactEmail ?? null,
-    whiteLabel: isWhiteLabeled(await getPlanEntitlements(organizationId), profile?.brand),
+    name: b.studioName,
+    accent: b.accent,
+    contactEmail: b.contactEmail,
+    whiteLabel: b.whiteLabel,
+    emailHeaderUrl: b.emailHeaderUrl,
   };
 }
 
@@ -131,6 +139,8 @@ export async function sendContract(organizationId: string, contractId: string): 
     title: contract.title,
     signUrl: url,
     whiteLabel: studio.whiteLabel,
+    emailHeaderUrl: studio.emailHeaderUrl,
+    contactEmail: studio.contactEmail,
   });
   const sent = await sendEmail({
     to: contract.clientEmail,
@@ -250,6 +260,8 @@ export async function signContract(
     signedAt,
     contractUrl: url,
     whiteLabel: studio.whiteLabel,
+    emailHeaderUrl: studio.emailHeaderUrl,
+    contactEmail: studio.contactEmail,
   });
   const recipients = [contract.clientEmail, studio.contactEmail].filter((e): e is string => Boolean(e));
   for (const to of recipients) {

@@ -10,8 +10,7 @@ import { encryptToken, hashToken, mintToken } from "./shares/grants";
 import { putObject } from "./storage/service";
 import { renderInvoicePdf, type PdfLine } from "./pdf";
 import { sendEmail, invoiceEmail } from "./email";
-import { isWhiteLabeled } from "./branding";
-import { getPlanEntitlements } from "./plans";
+import { getEmailBrand } from "./branding";
 import { getStudioProfile } from "./repos/studios";
 import { safeHexColor } from "./embed";
 import { getStripe } from "./stripe";
@@ -97,7 +96,7 @@ async function generateAndArchivePdf(invoice: InvoiceRow, projectTitle: string |
     totalMinor: invoice.totalMinor,
     currency: invoice.currency,
     status: invoice.status,
-    whiteLabel: isWhiteLabeled(await getPlanEntitlements(invoice.organizationId), profile?.brand),
+    whiteLabel: (await getEmailBrand(invoice.organizationId)).whiteLabel,
   });
   // putObject takes the org-relative suffix and prefixes {orgId}/ itself.
   const suffix = `${invoice.projectId}/invoices/${invoice.id}.pdf`;
@@ -187,24 +186,24 @@ export async function sendInvoice(organizationId: string, invoiceId: string): Pr
     })
     .where(and(eq(schema.invoices.organizationId, organizationId), eq(schema.invoices.id, invoiceId)));
 
-  const profile = await getStudioProfile(organizationId);
-  const brand = JSON.parse(profile?.brand || "{}") as { accent?: string };
+  const b = await getEmailBrand(organizationId);
   const url = await clientUrl(organizationId, `/inv/${token}`);
-  const wl = isWhiteLabeled(await getPlanEntitlements(organizationId), profile?.brand);
-  const tmpl = invoiceEmail(profile?.studioName ?? "the studio", {
-    accent: safeHexColor(brand.accent) ?? "#5e6ad2",
+  const tmpl = invoiceEmail(b.studioName, {
+    accent: b.accent,
     invoiceNumber: invoice.number,
     amountLabel: new Intl.NumberFormat("en-US", { style: "currency", currency: invoice.currency.toUpperCase() }).format(invoice.totalMinor / 100),
     dueLabel: invoice.dueAt ? invoice.dueAt.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : null,
     invoiceUrl: url,
-    whiteLabel: wl,
+    whiteLabel: b.whiteLabel,
+    emailHeaderUrl: b.emailHeaderUrl,
+    contactEmail: b.contactEmail,
   });
   const sent = await sendEmail({
     to: invoice.clientEmail,
     subject: tmpl.subject,
     html: tmpl.html,
     text: tmpl.text,
-    ...(wl ? { fromName: profile?.studioName ?? undefined } : {}),
+    ...(b.whiteLabel ? { fromName: b.studioName } : {}),
     organizationId,
     template: "invoice.sent",
     refId: invoiceId,

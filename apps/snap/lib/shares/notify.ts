@@ -2,8 +2,7 @@
  * Same From pattern as lead replies (hello+{slug}@) so client replies thread
  * back into the studio's inbox via the sender trail. */
 import { galleryLinkEmail, galleryOtpEmail, sendEmail } from "@/lib/email";
-import { isWhiteLabeled } from "@/lib/branding";
-import { getPlanEntitlements } from "@/lib/plans";
+import { getEmailBrand } from "@/lib/branding";
 import { getStudioProfile, getStudioSlug } from "@/lib/repos/studios";
 import { safeHexColor } from "@/lib/embed";
 import { clientWantsEmail } from "@/lib/notify-client";
@@ -23,17 +22,17 @@ export async function sendGrantEmail(params: {
   // WEB-136: per-studio client opt-out — the gallery itself stays live and
   // visible in the portal; only the notification email is suppressed.
   if (!(await clientWantsEmail(params.organizationId, params.clientEmail))) return false;
-  const brand = JSON.parse(profile.brand || "{}") as { accent?: string };
-  const accent = safeHexColor(brand.accent) ?? "#5e6ad2";
-  const wl = isWhiteLabeled(await getPlanEntitlements(params.organizationId), profile.brand);
+  const b = await getEmailBrand(params.organizationId);
   const tmpl = galleryLinkEmail(profile.studioName, {
     clientName: params.clientName,
     galleryUrl: params.galleryUrl,
     photoCount: params.photoCount,
     expiresAt: params.expiresAt,
-    accent,
+    accent: b.accent,
     fresh: params.fresh,
-    whiteLabel: wl,
+    whiteLabel: b.whiteLabel,
+    emailHeaderUrl: b.emailHeaderUrl,
+    contactEmail: b.contactEmail,
   });
   const slug = await getStudioSlug(params.organizationId);
   return sendEmail({
@@ -41,10 +40,10 @@ export async function sendGrantEmail(params: {
     subject: tmpl.subject,
     html: tmpl.html,
     text: tmpl.text,
-    fromOverride: wl
+    fromOverride: b.whiteLabel
       ? `hello+${slug}@snap.webcules.com`
       : `${profile.studioName} via Snap <hello+${slug}@snap.webcules.com>`,
-    ...(wl ? { fromName: profile.studioName } : {}),
+    ...(b.whiteLabel ? { fromName: profile.studioName } : {}),
     replyTo: profile.contactEmail ?? undefined,
     organizationId: params.organizationId,
     template: "gallery_link",
@@ -61,16 +60,21 @@ export async function sendGalleryOtpEmail(params: {
 }): Promise<boolean> {
   const profile = await getStudioProfile(params.organizationId);
   if (!profile) return false;
-  const brand = JSON.parse(profile.brand || "{}") as { accent?: string };
-  const accent = safeHexColor(brand.accent) ?? "#5e6ad2";
-  const wl = isWhiteLabeled(await getPlanEntitlements(params.organizationId), profile.brand);
-  const tmpl = galleryOtpEmail(profile.studioName, { code: params.code, galleryUrl: "", accent, whiteLabel: wl });
+  const b = await getEmailBrand(params.organizationId);
+  const tmpl = galleryOtpEmail(profile.studioName, {
+    code: params.code,
+    galleryUrl: "",
+    accent: b.accent,
+    whiteLabel: b.whiteLabel,
+    emailHeaderUrl: b.emailHeaderUrl,
+    contactEmail: b.contactEmail,
+  });
   return sendEmail({
     to: params.to,
     subject: tmpl.subject,
     html: tmpl.html,
     text: tmpl.text,
-    ...(wl ? { fromName: profile.studioName } : {}),
+    ...(b.whiteLabel ? { fromName: profile.studioName } : {}),
     organizationId: params.organizationId,
     template: "gallery_otp",
     refId: params.grantId,

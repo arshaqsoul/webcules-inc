@@ -97,19 +97,37 @@ export async function sendEmail(params: {
   return true;
 }
 
-/** WEB-238: white-label context for client templates — header wordmark +
- * the snap.webcules.com pre-footer line flip; footers are per-template. */
-export type EmailBrand = { studioName: string; whiteLabel: boolean };
+/** WEB-238/240: white-label context for client templates — header (logo
+ * image when the 2/8 email-header asset exists, studio-name wordmark
+ * otherwise), the snap.webcules.com pre-footer line, and the footer
+ * contact mailto flip; per-template footer copy stays with each template. */
+export type EmailBrand = {
+  studioName: string;
+  whiteLabel: boolean;
+  /** Absolute public URL of the generated email-header logo (nullable —
+   * image-blocking clients and logo-less studios get the wordmark). */
+  emailHeaderUrl?: string | null;
+  /** Studio contact address appended to white-labeled footers (mailto). */
+  contactEmail?: string | null;
+};
 
 function shell(accent: string, title: string, bodyHtml: string, footer: string, brand?: EmailBrand): string {
-  const wordmark = brand?.whiteLabel ? brand.studioName : "Snap";
+  const headerHtml = brand?.whiteLabel
+    ? brand.emailHeaderUrl
+      ? `<img src="${brand.emailHeaderUrl}" alt="${brand.studioName}" height="40" style="height:40px;display:block;border:0;max-width:220px;object-fit:contain;" />`
+      : `<span style="font-size:13px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:${accent};">${brand.studioName}</span>`
+    : `<span style="font-size:13px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:${accent};">Snap</span>`;
+  const footerHtml =
+    brand?.whiteLabel && brand.contactEmail
+      ? `${footer} · <a href="mailto:${brand.contactEmail}" style="color:#8a8f98;text-decoration:underline;">${brand.contactEmail}</a>`
+      : footer;
   return `<!doctype html><html><body style="margin:0;padding:0;background:#f7f8f8;font-family:Inter,-apple-system,system-ui,'Segoe UI',Roboto,sans-serif;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f8f8;padding:40px 16px;"><tr><td align="center">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#ffffff;border:1px solid #e3e5e8;border-radius:12px;padding:40px 32px;">
-      <tr><td style="padding-bottom:8px;"><span style="font-size:13px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:${accent};">${wordmark}</span></td></tr>
+      <tr><td style="padding-bottom:8px;">${headerHtml}</td></tr>
       <tr><td style="padding-bottom:24px;"><h1 style="margin:0;font-size:22px;line-height:1.3;font-weight:600;color:#0f1011;">${title}</h1></td></tr>
       <tr><td style="font-size:15px;line-height:1.6;color:#3f4149;">${bodyHtml}</tr>
-      <tr><td style="padding-top:32px;border-top:1px solid #e3e5e8;"><p style="margin:0;font-size:12px;line-height:1.5;color:#8a8f98;">${footer}</p></td></tr>
+      <tr><td style="padding-top:32px;border-top:1px solid #e3e5e8;"><p style="margin:0;font-size:12px;line-height:1.5;color:#8a8f98;">${footerHtml}</p></td></tr>
     </table>
     ${brand?.whiteLabel ? "" : `<p style="margin:16px 0 0;font-size:12px;color:#8a8f98;">snap.webcules.com</p>`}
   </td></tr></table></body></html>`;
@@ -144,7 +162,14 @@ export function inquiryReceivedEmail(studioName: string, lead: {
   };
 }
 
-export function inquiryAckEmail(studioName: string, leadName: string, accent: string, whiteLabel = false) {
+export function inquiryAckEmail(
+  studioName: string,
+  leadName: string,
+  accent: string,
+  whiteLabel = false,
+  emailHeaderUrl?: string | null,
+  contactEmail?: string | null,
+) {
   return {
     subject: `We got your inquiry — ${studioName}`,
     html: shell(
@@ -153,7 +178,7 @@ export function inquiryAckEmail(studioName: string, leadName: string, accent: st
       `<p style="margin:0 0 16px;">Your inquiry to <strong>${studioName}</strong> is in. They typically reply within a day — keep an eye on your inbox.</p>
        <p style="margin:0;">If you didn't expect this email, you can safely ignore it.</p>`,
       `Sent by ${studioName}${whiteLabel ? "." : " via Snap."}`,
-      { studioName, whiteLabel },
+      { studioName, whiteLabel, emailHeaderUrl, contactEmail },
     ),
     text: `Thanks, ${leadName}! Your inquiry to ${studioName} is in. They typically reply within a day.`,
   };
@@ -167,6 +192,9 @@ export function bookingConfirmedEmails(studioName: string, params: {
   icsUrl: string;
   accent: string;
   whiteLabel?: boolean;
+  /** WEB-240: logo header + footer contact from the 2/8 asset bundle. */
+  emailHeaderUrl?: string | null;
+  contactEmail?: string | null;
 }) {
   const when = new Intl.DateTimeFormat("en-US", {
     timeZone: params.tz,
@@ -187,7 +215,7 @@ export function bookingConfirmedEmails(studioName: string, params: {
        ${whenBlock}
        ${button("Add to calendar")}`,
       `Booked with ${studioName}${wl ? "." : " via Snap."}`,
-      { studioName, whiteLabel: wl },
+      { studioName, whiteLabel: wl, emailHeaderUrl: params.emailHeaderUrl, contactEmail: params.contactEmail },
     ),
     text: `Hi ${params.clientName}, your session with ${studioName} is confirmed for ${when} (${params.tz}). Add to calendar: ${params.icsUrl}`,
   };
@@ -212,6 +240,9 @@ export function bookingCanceledEmail(studioName: string, params: {
   tz: string;
   accent: string;
   whiteLabel?: boolean;
+  /** WEB-240: logo header + footer contact from the 2/8 asset bundle. */
+  emailHeaderUrl?: string | null;
+  contactEmail?: string | null;
 }): { subject: string; html: string; text: string } {
   const when = new Intl.DateTimeFormat("en-US", {
     timeZone: params.tz, weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit",
@@ -225,7 +256,7 @@ export function bookingCanceledEmail(studioName: string, params: {
       `<p style="margin:0 0 12px;">Hi ${params.clientName}, your session with <strong style="color:#0f1011;">${studioName}</strong> scheduled for <strong style="color:#0f1011;">${when}</strong> has been canceled.</p>
        <p style="margin:0;">Questions? Just reply to this email.</p>`,
       `Sent by ${studioName}${wl ? "." : " via Snap."}`,
-      { studioName, whiteLabel: wl },
+      { studioName, whiteLabel: wl, emailHeaderUrl: params.emailHeaderUrl, contactEmail: params.contactEmail },
     ),
     text: `Hi ${params.clientName}, your session with ${studioName} on ${when} has been canceled.`,
   };
@@ -242,6 +273,9 @@ export function refundClientEmail(studioName: string, params: {
   projectTitle: string | null;
   contentDeleted: boolean;
   whiteLabel?: boolean;
+  /** WEB-240: logo header + footer contact from the 2/8 asset bundle. */
+  emailHeaderUrl?: string | null;
+  contactEmail?: string | null;
 }): { subject: string; html: string; text: string } {
   const when = params.startAt
     ? new Intl.DateTimeFormat("en-US", {
@@ -265,7 +299,7 @@ export function refundClientEmail(studioName: string, params: {
        <p style="margin:0 0 12px;">Your session with <strong style="color:#0f1011;">${studioName}</strong>${sessionLine} has been canceled.${projectLine}${contentLine}</p>
        <p style="margin:0;">Refunds take 5–10 business days to appear on your statement. Questions? Just reply to this email.</p>`,
       `Sent by ${studioName}${wl ? "." : " via Snap."}`,
-      { studioName, whiteLabel: wl },
+      { studioName, whiteLabel: wl, emailHeaderUrl: params.emailHeaderUrl, contactEmail: params.contactEmail },
     ),
     text: `Hi ${params.clientName}, a refund of ${params.amountLabel} has been issued. Your session with ${studioName}${when ? ` on ${when}` : ""} has been canceled.${params.projectTitle ? ` The project ${params.projectTitle} has been canceled as well.` : ""}${params.contentDeleted ? " The uploaded photos from this project have been deleted." : " Any gallery links you received stay available until they expire."} Refunds take 5-10 business days to appear on your statement.`,
   };
@@ -419,8 +453,27 @@ export function marginAlertEmail(lines: string[], params: {
   };
 }
 
-/** Portal magic-code login (WEB-131) — neutral Snap branding (cross-studio). */
-export function portalCodeEmail(code: string): { subject: string; html: string; text: string } {
+/** Portal magic-code login (WEB-131) — cross-studio surface. WEB-240: when
+ * EVERY studio this client works with is white-labeled (computed by the
+ * caller from the client's org rows), the code email goes studio-neutral
+ * with zero Snap mentions; otherwise platform-branded as today. No logo
+ * header possible — no single org to attribute. */
+export function portalCodeEmail(code: string, allWhiteLabeled = false): { subject: string; html: string; text: string } {
+  if (allWhiteLabeled) {
+    return {
+      subject: "Your client portal code",
+      html: shell(
+        "#5e6ad2",
+        "Sign in to your client portal",
+        `<p style="margin:0 0 16px;">Enter this code to open your client portal:</p>
+       <p style="margin:0 0 16px;padding:16px;background:#f7f8f8;border-radius:8px;text-align:center;font-size:30px;letter-spacing:8px;font-weight:600;color:#0f1011;">${code}</p>
+       <p style="margin:0;font-size:13px;color:#8a8f98;">It expires in 10 minutes. If you didn't request it, you can ignore this email.</p>`,
+        `One code signs you into every studio you work with.`,
+        { studioName: "your studios", whiteLabel: true },
+      ),
+      text: `Your client portal code: ${code}\n\nIt expires in 10 minutes.`,
+    };
+  }
   return {
     subject: "Your Snap portal code",
     html: shell(
@@ -456,6 +509,9 @@ export function bookingConfirmedClientEmail(studioName: string, params: {
   when: Date;
   portalUrl: string;
   whiteLabel?: boolean;
+  /** WEB-240: logo header + footer contact from the 2/8 asset bundle. */
+  emailHeaderUrl?: string | null;
+  contactEmail?: string | null;
 }): { subject: string; html: string; text: string } {
   const wl = params.whiteLabel === true;
   return {
@@ -469,7 +525,7 @@ export function bookingConfirmedClientEmail(studioName: string, params: {
       wl
         ? `You can turn these emails off inside your client portal.`
         : `You can turn these emails off per studio inside your Snap portal.`,
-      { studioName, whiteLabel: wl },
+      { studioName, whiteLabel: wl, emailHeaderUrl: params.emailHeaderUrl, contactEmail: params.contactEmail },
     ),
     text: `${studioName} confirmed your session for ${params.when.toLocaleString()}. Portal: ${params.portalUrl}`,
   };
@@ -481,6 +537,9 @@ export function projectCompleteClientEmail(studioName: string, params: {
   projectTitle: string;
   portalUrl: string;
   whiteLabel?: boolean;
+  /** WEB-240: logo header + footer contact from the 2/8 asset bundle. */
+  emailHeaderUrl?: string | null;
+  contactEmail?: string | null;
 }): { subject: string; html: string; text: string } {
   const wl = params.whiteLabel === true;
   return {
@@ -494,7 +553,7 @@ export function projectCompleteClientEmail(studioName: string, params: {
       wl
         ? `You can turn these emails off inside your client portal.`
         : `You can turn these emails off per studio inside your Snap portal.`,
-      { studioName, whiteLabel: wl },
+      { studioName, whiteLabel: wl, emailHeaderUrl: params.emailHeaderUrl, contactEmail: params.contactEmail },
     ),
     text: `${studioName} marked "${params.projectTitle}" as delivered. Portal: ${params.portalUrl}`,
   };
@@ -508,6 +567,9 @@ export function invoiceEmail(studioName: string, params: {
   dueLabel: string | null;
   invoiceUrl: string;
   whiteLabel?: boolean;
+  /** WEB-240: logo header + footer contact from the 2/8 asset bundle. */
+  emailHeaderUrl?: string | null;
+  contactEmail?: string | null;
 }): { subject: string; html: string; text: string } {
   const wl = params.whiteLabel === true;
   return {
@@ -521,7 +583,7 @@ export function invoiceEmail(studioName: string, params: {
       wl
         ? `Invoices open via secure links unique to you.`
         : `Invoices from Snap studios open via secure links unique to you.`,
-      { studioName, whiteLabel: wl },
+      { studioName, whiteLabel: wl, emailHeaderUrl: params.emailHeaderUrl, contactEmail: params.contactEmail },
     ),
     text: `${studioName} sent invoice ${params.invoiceNumber} for ${params.amountLabel}${params.dueLabel ? ` (due ${params.dueLabel})` : ""}. View it: ${params.invoiceUrl}`,
   };
@@ -533,6 +595,9 @@ export function contractSignRequestEmail(studioName: string, params: {
   title: string;
   signUrl: string;
   whiteLabel?: boolean;
+  /** WEB-240: logo header + footer contact from the 2/8 asset bundle. */
+  emailHeaderUrl?: string | null;
+  contactEmail?: string | null;
 }): { subject: string; html: string; text: string } {
   const wl = params.whiteLabel === true;
   return {
@@ -546,7 +611,7 @@ export function contractSignRequestEmail(studioName: string, params: {
       wl
         ? `Contracts are signed electronically via secure links unique to you.`
         : `Snap contracts are signed electronically via secure links unique to you.`,
-      { studioName, whiteLabel: wl },
+      { studioName, whiteLabel: wl, emailHeaderUrl: params.emailHeaderUrl, contactEmail: params.contactEmail },
     ),
     text: `${studioName} sent you "${params.title}" for signature. Review & sign: ${params.signUrl}`,
   };
@@ -560,6 +625,9 @@ export function contractSignedEmail(studioName: string, params: {
   signedAt: Date;
   contractUrl: string;
   whiteLabel?: boolean;
+  /** WEB-240: logo header + footer contact from the 2/8 asset bundle. */
+  emailHeaderUrl?: string | null;
+  contactEmail?: string | null;
 }): { subject: string; html: string; text: string } {
   const wl = params.whiteLabel === true;
   return {
@@ -573,7 +641,7 @@ export function contractSignedEmail(studioName: string, params: {
       wl
         ? `Electronically signed — date, time and IP recorded for both parties.`
         : `Electronically signed via Snap — date, time and IP recorded for both parties.`,
-      { studioName, whiteLabel: wl },
+      { studioName, whiteLabel: wl, emailHeaderUrl: params.emailHeaderUrl, contactEmail: params.contactEmail },
     ),
     text: `"${params.title}" was signed by ${params.signerName} on ${params.signedAt.toISOString()}. View: ${params.contractUrl}`,
   };
@@ -585,6 +653,9 @@ export function galleryOtpEmail(studioName: string, params: {
   galleryUrl: string;
   accent: string;
   whiteLabel?: boolean;
+  /** WEB-240: logo header + footer contact from the 2/8 asset bundle. */
+  emailHeaderUrl?: string | null;
+  contactEmail?: string | null;
 }): { subject: string; html: string; text: string } {
   const wl = params.whiteLabel === true;
   return {
@@ -598,7 +669,7 @@ export function galleryOtpEmail(studioName: string, params: {
       wl
         ? `Verification code for your ${studioName} gallery.`
         : `Verification code for your ${studioName} gallery, sent via Snap.`,
-      { studioName, whiteLabel: wl },
+      { studioName, whiteLabel: wl, emailHeaderUrl: params.emailHeaderUrl, contactEmail: params.contactEmail },
     ),
     text: `Your verification code for the ${studioName} gallery: ${params.code}\n\nIt expires in 10 minutes.`,
   };
@@ -613,6 +684,9 @@ export function galleryLinkEmail(studioName: string, params: {
   accent: string;
   fresh?: boolean; // false = re-send of an existing link
   whiteLabel?: boolean;
+  /** WEB-240: logo header + footer contact from the 2/8 asset bundle. */
+  emailHeaderUrl?: string | null;
+  contactEmail?: string | null;
 }): { subject: string; html: string; text: string } {
   const wl = params.whiteLabel === true;
   const expires = params.expiresAt
@@ -636,7 +710,7 @@ export function galleryLinkEmail(studioName: string, params: {
        <p style="margin:16px 0 0;font-size:12px;color:#8a8f98;">Or paste this link into your browser:<br><a href="${params.galleryUrl}" style="color:${params.accent};word-break:break-all;">${params.galleryUrl}</a></p>
        ${expiryNote}`,
       `Gallery from ${studioName}${wl ? "." : ", delivered via Snap."}`,
-      { studioName, whiteLabel: wl },
+      { studioName, whiteLabel: wl, emailHeaderUrl: params.emailHeaderUrl, contactEmail: params.contactEmail },
     ),
     text: `Hi ${params.clientName}, ${studioName} shared ${params.photoCount} photo${params.photoCount === 1 ? "" : "s"} with you. View gallery: ${params.galleryUrl}${expires ? `\n\nThis link expires ${expires}.` : ""}`,
   };

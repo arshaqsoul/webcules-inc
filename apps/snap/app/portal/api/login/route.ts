@@ -4,6 +4,7 @@
 import { z } from "zod";
 
 import { sendEmail, portalCodeEmail, portalStaffRedirectEmail } from "@/lib/email";
+import { resolveWhiteLabel } from "@/lib/branding";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { clientIp } from "@/lib/shares/gallery-auth";
 import { getClientRows } from "@/lib/portal";
@@ -41,7 +42,12 @@ export async function POST(req: Request) {
   if (!issued.ok) return Response.json({ ok: true }); // capped — stay silent
 
   try {
-    const tmpl = portalCodeEmail(issued.code);
+    // WEB-240: cross-studio code email — studio-neutral (zero Snap) only
+    // when EVERY studio this client works with is white-labeled.
+    const allWl =
+      clientRows.length > 0 &&
+      (await Promise.all(clientRows.map((c) => resolveWhiteLabel(c.organizationId)))).every(Boolean);
+    const tmpl = portalCodeEmail(issued.code, allWl);
     await sendEmail({ to: email, subject: tmpl.subject, html: tmpl.html, text: tmpl.text, template: "portal.login_code" });
   } catch {
     // logged send; client can retry

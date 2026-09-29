@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import { eq } from "drizzle-orm";
 
-import { isWhiteLabeled, resolveWhiteLabel } from "@/lib/branding";
+import { getEmailBrand, isWhiteLabeled, resolveWhiteLabel } from "@/lib/branding";
 import { getDb, schema } from "@/lib/db";
 import { getPlanEntitlements } from "@/lib/plans";
 import { getStudioProfile } from "@/lib/repos/studios";
@@ -83,5 +83,46 @@ describe("brand PATCH path (WEB-238)", () => {
       (await getStudioProfile(studio.organizationId))?.brand ?? "{}",
     ) as { removeBranding?: boolean };
     expect(brand.removeBranding).toBe(false);
+  });
+});
+
+describe("getEmailBrand (WEB-240)", () => {
+  it("bundles name/accent/flag/contact + email-header URL from the asset bag", async () => {
+    const studio = await seedStudio({ plan: "studio", name: "Willow & Pine" });
+    await setBrand(studio.organizationId, { accent: "#112233", removeBranding: true });
+    await getDb()
+      .update(schema.studioProfiles)
+      .set({
+        contactEmail: "hi@willow.test",
+        brandAssets: JSON.stringify({
+          rev: "rv1",
+          emailHeader: `${studio.organizationId}/branding/assets/email-header-rv1.png`,
+        }),
+      })
+      .where(eq(schema.studioProfiles.organizationId, studio.organizationId));
+
+    const b = await getEmailBrand(studio.organizationId);
+    expect(b.studioName).toBe("Willow & Pine");
+    expect(b.accent).toBe("#112233");
+    expect(b.whiteLabel).toBe(true);
+    expect(b.contactEmail).toBe("hi@willow.test");
+    // The origin follows the test env's NEXT_PUBLIC_APP_URL — assert shape.
+    expect(b.emailHeaderUrl).toMatch(new RegExp(`^https?://.+/api/brand/${studio.organizationId}/email-header\\.png\\?rev=rv1$`));
+  });
+
+  it("no email-header asset → null URL; not white-labeled → null regardless", async () => {
+    const studio = await seedStudio({ plan: "studio" });
+    await setBrand(studio.organizationId, { removeBranding: true });
+    expect((await getEmailBrand(studio.organizationId)).emailHeaderUrl).toBeNull();
+
+    // Asset present but the toggle is OFF → still null.
+    await setBrand(studio.organizationId, { removeBranding: false });
+    await getDb()
+      .update(schema.studioProfiles)
+      .set({
+        brandAssets: JSON.stringify({ rev: "rv1", emailHeader: "x" }),
+      })
+      .where(eq(schema.studioProfiles.organizationId, studio.organizationId));
+    expect((await getEmailBrand(studio.organizationId)).emailHeaderUrl).toBeNull();
   });
 });
