@@ -2,10 +2,10 @@ import { redirect } from "next/navigation";
 
 import { SettingsBrand } from "@/components/settings-brand";
 import { brandAssetUrl, parseBrandAssets } from "@/lib/brand-assets";
-import { getPlanEntitlements } from "@/lib/plans";
+import { getPlanEntitlements, PLANS } from "@/lib/plans";
 import { parseWatermarkConfig } from "@/lib/watermark";
 import { deterrentsOn } from "@/lib/branding";
-import { getStudioProfile } from "@/lib/repos/studios";
+import { getStudioProfile, getStudioSlug } from "@/lib/repos/studios";
 import { getOrgContext } from "@/lib/session";
 
 export const metadata = { title: "Settings · Brand" };
@@ -28,6 +28,8 @@ export default async function SettingsBrandPage() {
   const assetBag = parseBrandAssets(profile.brandAssets);
   // WEB-242: watermark card state (null config → mode off).
   const wm = parseWatermarkConfig(profile.brand);
+  // WEB-244: white-label card context.
+  const slug = (await getStudioSlug(ctx.organizationId)) ?? "";
 
   return (
     <SettingsBrand
@@ -52,6 +54,17 @@ export default async function SettingsBrandPage() {
       }}
       watermarkLogoUrl={assetBag.watermark ? brandAssetUrl(ctx.organizationId, "watermark", assetBag.rev) : null}
       deterrentsOn={deterrentsOn(ent, profile.brand)}
+      slug={slug}
+      plan={(PLANS[profile.plan as keyof typeof PLANS] ? (profile.plan as "free" | "lite" | "studio" | "pro") : "free")}
+      brandSteps={{
+        logoDone: Boolean(profile.logoKey) && Boolean(assetBag.favicon && assetBag.ogCard),
+        brandDone: Boolean(brand.accent) || Boolean(brand.fontFamily),
+      }}
+      chips={{
+        favicon: assetBag.favicon ? brandAssetUrl(ctx.organizationId, "favicon", assetBag.rev) : null,
+        emailHeader: assetBag.emailHeader ? brandAssetUrl(ctx.organizationId, "emailHeader", assetBag.rev) : null,
+        ogCard: assetBag.ogCard ? brandAssetUrl(ctx.organizationId, "ogCard", assetBag.rev) : null,
+      }}
     />
   );
 }

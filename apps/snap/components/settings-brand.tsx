@@ -15,6 +15,7 @@ import { Label } from "@webcules/ui/components/label";
 
 import { generateAndUploadBrandAssets } from "@/components/brand-asset-generator";
 import { WatermarkCard } from "@/components/watermark-card";
+import { WhiteLabelCard } from "@/components/white-label-card";
 
 export function SettingsBrand({
   embedKey,
@@ -26,12 +27,16 @@ export function SettingsBrand({
   tokens: initialTokens,
   brandRevision,
   whiteLabelEntitled,
-  removeBranding: initialRemoveBranding,
   hasBrandAssets: initialHasBrandAssets,
   studioName,
   watermark,
   watermarkLogoUrl,
   deterrentsOn: initialDeterrents,
+  removeBranding: initialRemoveBrandingProp,
+  slug,
+  plan,
+  brandSteps,
+  chips,
 }: {
   embedKey: string;
   hasLogo: boolean;
@@ -43,7 +48,6 @@ export function SettingsBrand({
   brandRevision: string;
   /** WEB-238: plan grants white-label (Studio/Pro); false renders the upsell. */
   whiteLabelEntitled: boolean;
-  removeBranding: boolean;
   /** WEB-239: a generated bundle exists (favicon/OG/etc.). */
   hasBrandAssets: boolean;
   studioName: string;
@@ -52,6 +56,12 @@ export function SettingsBrand({
   watermarkLogoUrl: string | null;
   /** WEB-243: gallery protection deterrents enabled. */
   deterrentsOn: boolean;
+  /** WEB-244: white-label card context. */
+  removeBranding: boolean;
+  slug: string;
+  plan: "free" | "lite" | "studio" | "pro";
+  brandSteps: { logoDone: boolean; brandDone: boolean };
+  chips: { favicon: string | null; emailHeader: string | null; ogCard: string | null };
 }) {
   const router = useRouter();
   const [accentColor, setAccentColor] = useState(initialAccent);
@@ -62,7 +72,6 @@ export function SettingsBrand({
   const [logoUrl, setLogoUrl] = useState(initialLogoUrl);
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [removeBranding, setRemoveBranding] = useState(initialRemoveBranding);
   const [deterrents, setDeterrents] = useState(initialDeterrents);
   const [hasBrandAssets, setHasBrandAssets] = useState(initialHasBrandAssets);
   const [assetsBusy, setAssetsBusy] = useState(false);
@@ -80,7 +89,7 @@ export function SettingsBrand({
         // what made a saved font impossible to remove.
         fontFamily,
         theme: theme === "light" || theme === "dark" || theme === "auto" ? theme : undefined,
-        ...(whiteLabelEntitled ? { removeBranding } : {}),
+        // WEB-244: removeBranding saves itself from the white-label card.
         ...(whiteLabelEntitled ? { deterrents: { rightClick: deterrents } } : {}),
         tokens: (() => {
           try {
@@ -217,60 +226,17 @@ export function SettingsBrand({
       </div>
       {status && <p className="mt-2 text-sm text-ink-subtle">{status}</p>}
 
-      {/* WEB-238: white-label toggle (Studio/Pro) — effective only when both
-       * the plan grants it and the studio turns it on. Upsell for Free/Lite. */}
-      <div className="mt-5 rounded-[12px] border border-hairline bg-surface-1 p-4">
-        {whiteLabelEntitled ? (
-          <>
-            <label htmlFor="removeBranding" className="flex cursor-pointer items-start gap-3">
-              <input
-                id="removeBranding"
-                type="checkbox"
-                checked={removeBranding}
-                onChange={(e) => setRemoveBranding(e.target.checked)}
-                className="mt-0.5 h-4 w-4"
-              />
-              <span>
-                <span className="block text-sm font-medium text-ink">Remove Snap branding</span>
-                <span className="mt-1 block text-xs leading-relaxed text-ink-subtle">
-                  Your clients stop seeing Snap everywhere: gallery and booking footers, email headers and footers,
-                  browser tab titles, invoice and contract PDFs. Emails still arrive from a snap.webcules.com address
-                  (signed domain) but show your studio name. Save to apply.
-                </span>
-              </span>
-            </label>
-            <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-hairline pt-4">
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-ink">Brand assets</p>
-                <p className="mt-1 text-xs leading-relaxed text-ink-subtle">
-                  {hasBrandAssets
-                    ? "Favicon, browser share cards, email header and watermark source generated from your logo."
-                    : "Generate your favicon, browser share cards, email header and watermark source from your logo — one click, no design work."}
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => void generateAssets()}
-                disabled={assetsBusy || !hasLogo}
-              >
-                {assetsBusy ? "Generating…" : hasBrandAssets ? "Regenerate" : "Generate brand assets"}
-              </Button>
-            </div>
-          </>
-        ) : (
-          <>
-            <p className="text-sm font-medium text-ink">Remove Snap branding</p>
-            <p className="mt-1 text-xs leading-relaxed text-ink-subtle">
-              Make the platform invisible to your clients — galleries, emails, invoices and tab titles carry only your
-              studio. Included on the Studio and Pro plans.
-            </p>
-            <a href="/dashboard/settings/billing" className="mt-3 inline-block text-xs font-medium text-primary hover:underline">
-              Upgrade to Studio →
-            </a>
-          </>
-        )}
-      </div>
+      <WhiteLabelCard
+        studioName={studioName}
+        slug={slug}
+        plan={plan}
+        entitled={whiteLabelEntitled}
+        removeBranding={initialRemoveBrandingProp}
+        steps={brandSteps}
+        chips={chips}
+        onGenerateAssets={() => void generateAssets()}
+        assetsBusy={assetsBusy}
+      />
 
       {/* WEB-243: gallery protection deterrents — honest scope copy is the
        * product requirement, not legal fine print. */}
