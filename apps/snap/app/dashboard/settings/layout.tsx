@@ -6,7 +6,8 @@ import { getOrgContext } from "@/lib/session";
 /* Settings shell (WEB-234) — auth + profile guards live here once for every
  * section route. Section navigation lives in the MAIN dashboard nav (the
  * collapsible Settings group in dashboard-nav.tsx); these pages render
- * content only. */
+ * content only, full width like the other dashboard surfaces (main owns the
+ * padding). */
 export const metadata = { title: "Settings" };
 
 export default async function SettingsLayout({ children }: { children: React.ReactNode }) {
@@ -16,7 +17,7 @@ export default async function SettingsLayout({ children }: { children: React.Rea
   if (!profile) redirect("/onboarding");
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 md:px-6">
+    <div className="flex w-full flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-[-0.6px] text-ink">Settings</h1>
         <p className="mt-1 text-sm text-ink-subtle">
