@@ -137,3 +137,55 @@ export function txtMatches(token: string, records: string[] | null): boolean {
   if (!records) return false;
   return records.some((r) => r.trim() === token);
 }
+
+/* ---------------- Serving guard (WEB-227) ---------------- */
+
+/** Hosts that are the app itself, never a studio custom hostname. The
+ * fallback origin is included: it routes traffic for custom hostnames but
+ * its own name is not a client surface. */
+export const DEFAULT_APP_HOSTS = new Set(["snap.webcules.com", "snap-fallback.webcules.com"]);
+
+function bareHost(host: string): string {
+  return host.toLowerCase().replace(/^\[|\]$/g, "").split(":")[0];
+}
+
+export function isLocalDevHost(host: string): boolean {
+  const h = bareHost(host);
+  return h === "localhost" || h.endsWith(".localhost") || h === "127.0.0.1" || h === "::1" || h === "0.0.0.0";
+}
+
+/** vinext preview deployments (`<something>.workers.dev`). */
+export function isWorkersPreviewHost(host: string): boolean {
+  return /(^|\.)workers\.dev$/.test(bareHost(host));
+}
+
+/** True when the request host is neither the app's own, nor a dev/preview
+ * host — i.e. it can only be a custom hostname (active or spoofed; the DB
+ * decides at resolution time). */
+export function isCustomAppHost(host: string): boolean {
+  const h = bareHost(host);
+  return !DEFAULT_APP_HOSTS.has(h) && !isLocalDevHost(h) && !isWorkersPreviewHost(h);
+}
+
+/** Paths that must NEVER serve by hostname: the studio dashboard, auth, and
+ * the embed widget routes (widgets always load from the main origin).
+ * `/api/embed/logo` + `/api/embed/ics` are deliberately NOT here — client
+ * pages load those same-origin. */
+const NON_CLIENT_PREFIXES = [
+  "/dashboard", "/login", "/signup", "/onboarding",
+  "/api/studio", "/api/admin", "/api/auth",
+  "/embed", "/docs",
+];
+
+/** WEB-227 guard: a non-default host asking for a non-client-facing path
+ * gets a 302 to the same path on the main origin. Returns the absolute
+ * redirect URL, or null to pass through. Pure — unit-tested, called by
+ * middleware. */
+export function nonClientPathRedirect(host: string, pathname: string): string | null {
+  if (!isCustomAppHost(host)) return null;
+  const hit = NON_CLIENT_PREFIXES.some(
+    (p) => pathname === p || pathname.startsWith(p + "/"),
+  );
+  if (!hit) return null;
+  return `https://snap.webcules.com${pathname}`;
+}

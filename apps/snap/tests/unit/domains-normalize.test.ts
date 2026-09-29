@@ -9,6 +9,8 @@ import {
   normalizeHostname,
   txtMatches,
   verificationTxtName,
+  isCustomAppHost,
+  nonClientPathRedirect,
 } from "@/lib/domains";
 
 describe("normalizeHostname", () => {
@@ -113,5 +115,36 @@ describe("verification records", () => {
 
   it("CNAME target is the fallback origin hostname", () => {
     expect(CNAME_TARGET).toBe("snap-fallback.webcules.com");
+  });
+});
+
+describe("serving guard (WEB-227)", () => {
+  it("custom host + non-client path → 302 target on the main origin", () => {
+    expect(nonClientPathRedirect("gallery.studio.com", "/dashboard")).toBe("https://snap.webcules.com/dashboard");
+    expect(nonClientPathRedirect("gallery.studio.com", "/dashboard/settings/general")).toBe("https://snap.webcules.com/dashboard/settings/general");
+    expect(nonClientPathRedirect("gallery.studio.com", "/login")).toBe("https://snap.webcules.com/login");
+    expect(nonClientPathRedirect("gallery.studio.com", "/embed/loader.js")).toBe("https://snap.webcules.com/embed/loader.js");
+    expect(nonClientPathRedirect("gallery.studio.com", "/api/studio/brand")).toBe("https://snap.webcules.com/api/studio/brand");
+    expect(nonClientPathRedirect("gallery.studio.com", "/docs/embeds")).toBe("https://snap.webcules.com/docs/embeds");
+  });
+
+  it("client-facing paths pass through on ANY host", () => {
+    for (const p of ["/g/abc123", "/b/studio-slug", "/inv/tok", "/c/tok", "/portal/login", "/api/assets/x", "/api/embed/logo", "/api/embed/ics", "/api/g/x", "/", "/booking/success"]) {
+      expect(nonClientPathRedirect("gallery.studio.com", p)).toBeNull();
+    }
+  });
+
+  it("default/dev/preview hosts never redirect", () => {
+    for (const h of ["snap.webcules.com", "snap-fallback.webcules.com", "localhost:8787", "127.0.0.1", "snap.webcules-inc.workers.dev"]) {
+      expect(nonClientPathRedirect(h, "/dashboard")).toBeNull();
+      expect(isCustomAppHost(h)).toBe(false);
+    }
+    expect(isCustomAppHost("gallery.studio.com")).toBe(true);
+    expect(isCustomAppHost("GALLERY.Studio.COM")).toBe(true);
+  });
+
+  it("prefix matching is exact — /dashboardx and /loginx pass through", () => {
+    expect(nonClientPathRedirect("gallery.studio.com", "/dashboardx")).toBeNull();
+    expect(nonClientPathRedirect("gallery.studio.com", "/loginx")).toBeNull();
   });
 });

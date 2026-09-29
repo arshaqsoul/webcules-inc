@@ -1,6 +1,11 @@
 import Link from "next/link";
+import { headers } from "next/headers";
+import { notFound, redirect } from "next/navigation";
 
 import { PricingTiers } from "@/components/pricing-tiers";
+import { isCustomAppHost } from "@/lib/domains";
+import { resolveStudioByHost } from "@/lib/repos/domains";
+import { getStudioSlug } from "@/lib/repos/studios";
 import { getSessionUser } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -47,6 +52,19 @@ const usps = [
 ];
 
 export default async function Home() {
+  // WEB-227: a studio's custom hostname IS the client surface — `/` there is
+  // the studio's booking page, not our marketing landing. Unknown hosts (no
+  // active domain row) get a neutral 404: no tenant data by hostname alone.
+  const host = (await headers()).get("host");
+  if (host && isCustomAppHost(host)) {
+    const studio = await resolveStudioByHost(host);
+    if (studio) {
+      const slug = await getStudioSlug(studio.organizationId);
+      if (slug) redirect(`/b/${slug}`);
+    }
+    notFound();
+  }
+
   const user = await getSessionUser();
   return (
     <main className="flex min-h-screen flex-col">
