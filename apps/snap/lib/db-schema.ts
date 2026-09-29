@@ -208,6 +208,8 @@ export const studioProfiles = sqliteTable("studio_profile", {
   /** WEB-231: the studio cancelled the add-on — entitlement holds until
    * plan_period_end, then the item is deleted and this clears. */
   pendingAddonRemoval: integer("pending_addon_removal", { mode: "boolean" }).notNull().default(false),
+  /** WEB-252: invoice designer settings JSON (numbering/tax/terms). */
+  invoiceSettings: text("invoice_settings"),
   createdAt: ts("created_at"),
   updatedAt: ts("updated_at"),
 });
@@ -745,6 +747,11 @@ export const invoices = sqliteTable(
     dueAt: integer("due_at", { mode: "timestamp" }),
     /** R2 key of the generated branded PDF (org-prefixed). */
     pdfKey: text("pdf_key"),
+    /** WEB-252 snapshots — frozen at creation so old invoices never change. */
+    taxLabel: text("tax_label"),
+    taxRateBps: integer("tax_rate_bps"),
+    terms: text("terms"),
+    memo: text("memo"),
     /** WEB-137: recipient + secure-link token (grant pattern: hash lookup). */
     clientEmail: text("client_email"),
     accessTokenHash: text("access_token_hash"),
@@ -817,6 +824,9 @@ export const formResponses = sqliteTable(
 export const orgCounters = sqliteTable("org_counter", {
   organizationId: text("organization_id").primaryKey(),
   invoiceSeq: integer("invoice_seq").notNull().default(0),
+  /** WEB-252 reset-yearly numbering: the year the year-seq belongs to. */
+  invoiceYear: text("invoice_year"),
+  invoiceYearSeq: integer("invoice_year_seq").notNull().default(0),
 });
 
 

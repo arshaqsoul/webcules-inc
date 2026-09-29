@@ -9,6 +9,7 @@ import * as schema from "./db-schema";
 import { encryptToken, hashToken, mintToken } from "./shares/grants";
 import { putObject } from "./storage/service";
 import { renderInvoicePdf, type PdfLine } from "./pdf";
+import { renderMergeFrom } from "./merge";
 import { fetchEmailHeaderLogo } from "./brand-assets";
 import { sendEmail, invoiceEmail } from "./email";
 import { getEmailBrand } from "./branding";
@@ -22,8 +23,27 @@ export type InvoiceRow = typeof schema.invoices.$inferSelect;
 
 /** Sequential per-org number — one atomic upsert-and-increment; gaps only on
  * voided invoices (standard accounting behavior). Format: 2026-0001. */
-async function nextInvoiceNumber(organizationId: string): Promise<string> {
+async function nextInvoiceNumber(organizationId: string, settings?: import("./invoice-settings").InvoiceSettings): Promise<string> {
   const db = getDb();
+  const s = settings ?? (await getStudioInvoiceSettings(organizationId));
+  const year = String(new Date().getUTCFullYear());
+  if (s.resetYearly) {
+    // Per-year counter: first invoice of a year resets the year sequence.
+    const rows = await db
+      .insert(schema.orgCounters)
+      .values({ organizationId, invoiceSeq: 1, invoiceYear: year, invoiceYearSeq: 1 })
+      .onConflictDoUpdate({
+        target: schema.orgCounters.organizationId,
+        set: {
+          invoiceSeq: sql`${schema.orgCounters.invoiceSeq} + 1`,
+          invoiceYearSeq: sql`CASE WHEN ${schema.orgCounters.invoiceYear} = ${year} THEN ${schema.orgCounters.invoiceYearSeq} + 1 ELSE 1 END`,
+          invoiceYear: year,
+        },
+      })
+      .returning({ seq: schema.orgCounters.invoiceYearSeq });
+    const seq = rows[0]?.seq ?? 1;
+    return `${s.numberPrefix}${year}-${String(seq).padStart(s.numberPadding, "0")}`;
+  }
   // Drizzle's typed upsert-with-returning — the raw `db.all(INSERT…RETURNING)`
   // form silently stopped executing after a drizzle upgrade, minting
   // duplicate numbers into a unique-violation 500.
@@ -36,7 +56,15 @@ async function nextInvoiceNumber(organizationId: string): Promise<string> {
     })
     .returning({ seq: schema.orgCounters.invoiceSeq });
   const seq = rows[0]?.seq ?? 1;
-  return `${new Date().getUTCFullYear()}-${String(seq).padStart(4, "0")}`;
+  return `${s.numberPrefix}${String(seq).padStart(s.numberPadding, "0")}`;
+}
+
+/** The studio's invoice settings (validated defaults when unset). */
+export async function getStudioInvoiceSettings(organizationId: string): Promise<import("./invoice-settings").InvoiceSettings> {
+  const { getStudioProfile } = await import("./repos/studios");
+  const profile = await getStudioProfile(organizationId);
+  const { parseInvoiceSettings } = await import("./invoice-settings");
+  return parseInvoiceSettings(profile?.invoiceSettings);
 }
 
 export async function createInvoice(params: {
@@ -45,11 +73,25 @@ export async function createInvoice(params: {
   lines: InvoiceLine[];
   dueAt?: Date | null;
   clientEmail?: string | null;
+  /** WEB-252 per-invoice overrides (defaults snapshot from studio settings). */
+  taxLabel?: string | null;
+  taxRateBps?: number | null;
+  terms?: string | null;
+  memo?: string | null;
 }): Promise<InvoiceRow> {
   const db = getDb();
-  const totalMinor = params.lines.reduce((n, l) => n + (l.qty > 0 ? l.amountMinor * l.qty : l.amountMinor), 0);
+  const { subtotalOf, taxFor } = await import("./invoice-settings");
+  const subtotal = subtotalOf(params.lines);
+  // WEB-252: snapshot the studio's tax/terms at creation — later settings
+  // changes never touch existing invoices. Explicit params win over defaults.
+  const settings = await getStudioInvoiceSettings(params.organizationId);
+  const taxLabel = params.taxLabel !== undefined ? params.taxLabel : settings.taxLabel;
+  const taxRateBps = params.taxRateBps !== undefined ? params.taxRateBps : settings.taxRateBps;
+  const tax = taxFor(subtotal, taxRateBps || 0);
+  const totalMinor = subtotal + tax;
   const id = crypto.randomUUID();
-  const number = await nextInvoiceNumber(params.organizationId);
+  const number = await nextInvoiceNumber(params.organizationId, settings);
+  const dueAt = params.dueAt ?? (settings.dueDays > 0 ? new Date(Date.now() + settings.dueDays * 86_400_000) : null);
   await db.insert(schema.invoices).values({
     id,
     organizationId: params.organizationId,
@@ -59,8 +101,12 @@ export async function createInvoice(params: {
     lines: JSON.stringify(params.lines),
     totalMinor,
     currency: "usd",
-    dueAt: params.dueAt ?? null,
+    dueAt,
     clientEmail: params.clientEmail?.toLowerCase() ?? null,
+    taxLabel: taxLabel || null,
+    taxRateBps: taxRateBps || null,
+    terms: (params.terms !== undefined ? params.terms : settings.termsText) || null,
+    memo: (params.memo !== undefined ? params.memo : settings.memo) || null,
   });
   return (await getInvoice(params.organizationId, id))!;
 }
@@ -99,6 +145,11 @@ async function generateAndArchivePdf(invoice: InvoiceRow, projectTitle: string |
     status: invoice.status,
     whiteLabel: (await getEmailBrand(invoice.organizationId)).whiteLabel,
     logoPng: (await fetchEmailHeaderLogo(invoice.organizationId, profile?.brandAssets)) ?? undefined,
+    taxLabel: invoice.taxLabel,
+    taxRateBps: invoice.taxRateBps,
+    // Merge fields in terms/memo render with the invoice's own context.
+    terms: invoice.terms ? await renderMergeFrom({ organizationId: invoice.organizationId, projectId: invoice.projectId, invoiceId: invoice.id }, invoice.terms, { surface: "plain" }) : null,
+    memo: invoice.memo ? await renderMergeFrom({ organizationId: invoice.organizationId, projectId: invoice.projectId, invoiceId: invoice.id }, invoice.memo, { surface: "plain" }) : null,
   });
   // putObject takes the org-relative suffix and prefixes {orgId}/ itself.
   const suffix = `${invoice.projectId}/invoices/${invoice.id}.pdf`;

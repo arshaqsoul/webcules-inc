@@ -94,12 +94,30 @@ export default async function InvoicePage({ params }: { params: Promise<{ token:
               </div>
             ))}
           </div>
+          {invoice.taxRateBps && invoice.taxLabel ? (
+            <div className="flex flex-col gap-1 border-t border-hairline px-6 py-3 text-sm">
+              <div className="flex justify-between text-ink-subtle">
+                <span>Subtotal</span>
+                <span>{money(lines.reduce((n, l) => n + (l.qty > 0 ? l.amountMinor * l.qty : l.amountMinor), 0), invoice.currency)}</span>
+              </div>
+              <div className="flex justify-between text-ink">
+                <span>{invoice.taxLabel}</span>
+                <span>{money(invoice.totalMinor - lines.reduce((n, l) => n + (l.qty > 0 ? l.amountMinor * l.qty : l.amountMinor), 0), invoice.currency)}</span>
+              </div>
+            </div>
+          ) : null}
           <div className="flex items-center justify-between border-t border-hairline px-6 py-4">
             <span className="text-sm text-ink-subtle">Total due</span>
             <span className="text-lg font-semibold" style={{ color: accent }}>
               {money(invoice.totalMinor, invoice.currency)}
             </span>
           </div>
+          {(invoice.memo || invoice.terms) && (
+            <div className="flex flex-col gap-2 border-t border-hairline px-6 py-4 text-xs leading-relaxed">
+              {invoice.memo ? <p className="whitespace-pre-wrap text-ink">{invoice.memo}</p> : null}
+              {invoice.terms ? <p className="whitespace-pre-wrap text-ink-subtle">{invoice.terms}</p> : null}
+            </div>
+          )}
         </div>
         <div className="mt-4 text-center">
           {invoice.status === "sent" && invoice.paymentUrl && (

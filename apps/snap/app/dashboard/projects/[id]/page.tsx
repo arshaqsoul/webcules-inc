@@ -25,6 +25,7 @@ import { ProjectQuestionnaires } from "@/components/project-questionnaires";
 import { listProjectFormResponses, unpackFormAnswers } from "@/lib/repos/forms";
 import { listTemplates } from "@/lib/repos/templates";
 import { parseFormSchema } from "@/lib/forms";
+import { parsePresetLines } from "@/lib/invoice-settings";
 
 export const metadata = { title: "Project" };
 
@@ -76,7 +77,7 @@ export default async function ProjectDetailPage({
 
   // Load only what the active tab renders — the Files workspace fetches its
   // own asset grid client-side.
-  const [events, shareActivity, auditEvents, assets, grants, deliverFolders, payments, paymentSummary, invoices, contractsRows, formResponses, questionnaireTemplates, contractTemplates] =
+  const [events, shareActivity, auditEvents, assets, grants, deliverFolders, payments, paymentSummary, invoices, contractsRows, formResponses, questionnaireTemplates, contractTemplates, invoicePresets] =
     await Promise.all([
       tab === "overview" || tab === "activity"
         ? db
@@ -99,6 +100,7 @@ export default async function ProjectDetailPage({
       tab === "overview" ? listProjectFormResponses(ctx.organizationId, id) : Promise.resolve([]),
       tab === "overview" ? listTemplates(ctx.organizationId, "questionnaire") : Promise.resolve([]),
       tab === "contracts" ? listTemplates(ctx.organizationId, "contract") : Promise.resolve([]),
+      tab === "payments" ? listTemplates(ctx.organizationId, "invoice_preset") : Promise.resolve([]),
     ]);
 
   return (
@@ -306,6 +308,7 @@ export default async function ProjectDetailPage({
             <h2 className="text-[15px] font-medium text-ink">Invoices</h2>
             <p className="mb-4 mt-1 text-xs text-ink-subtle">Branded, numbered invoices with secure client links.</p>
             <ProjectInvoices
+            presets={invoicePresets.filter((t) => parsePresetLines(t.body).length > 0).map((t) => ({ id: t.id, name: t.name, lines: parsePresetLines(t.body) }))}
               projectId={id}
               invoices={invoices.map((inv) => ({
                 id: inv.id,

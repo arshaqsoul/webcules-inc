@@ -36,11 +36,13 @@ export function ProjectInvoices({
   invoices,
   clientEmail,
   quotedTotalMinor,
+  presets,
 }: {
   projectId: string;
   invoices: InvoiceItem[];
   clientEmail: string | null;
   quotedTotalMinor: number | null;
+  presets: Array<{ id: string; name: string; lines: Array<{ description: string; qty: number; amountMinor: number }> }>;
 }) {
   const router = useRouter();
   const confirm = useConfirm();
@@ -53,13 +55,15 @@ export function ProjectInvoices({
   const [email, setEmail] = useState(clientEmail ?? "");
   // Sensible default: net-14 (UTC date — day precision is what matters here).
   const [due, setDue] = useState(() => new Date(Date.now() + 14 * 864e5).toISOString().slice(0, 10));
+  // WEB-252: an applied package preset overrides the single-line composer.
+  const [preset, setPreset] = useState<{ name: string; lines: Array<{ description: string; qty: number; amountMinor: number }> } | null>(null);
 
   async function create() {
     setBusy("create");
     setError("");
     try {
       const minor = Math.round(Number(amount) * 100);
-      if (!Number.isFinite(minor) || minor <= 0) throw new Error();
+      if (!preset && (!Number.isFinite(minor) || minor <= 0)) throw new Error();
       if (due && new Date(due).getTime() < new Date().setUTCHours(0, 0, 0, 0)) {
         setError("Due date can't be in the past.");
         return;
@@ -68,7 +72,7 @@ export function ProjectInvoices({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          lines: [{ description: desc, qty: 1, amountMinor: minor }],
+          lines: preset ? preset.lines : [{ description: desc, qty: 1, amountMinor: minor }],
           dueAt: due ? new Date(due).toISOString() : null,
           clientEmail: email || null,
         }),
@@ -126,6 +130,42 @@ export function ProjectInvoices({
 
       {showCompose && (
         <div className="flex flex-col gap-2 rounded-[12px] border border-hairline bg-surface-1 px-4 py-3">
+          {presets.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <select
+                className="snap-select rounded-md border border-hairline bg-canvas px-2 py-1.5 text-xs text-ink-muted outline-none"
+                value=""
+                onChange={(e) => {
+                  const p = presets.find((x) => x.id === e.target.value);
+                  setPreset(p ? { name: p.name, lines: p.lines } : null);
+                }}
+                aria-label="Apply a package preset"
+              >
+                <option value="">Apply a package preset…</option>
+                {presets.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+              {preset && (
+                <>
+                  <span className="text-xs text-ink-subtle">
+                    {preset.name} · {money(preset.lines.reduce((n, l) => n + l.amountMinor * l.qty, 0), "usd")}
+                  </span>
+                  <button type="button" className="text-xs font-medium text-primary hover:underline" onClick={() => setPreset(null)}>Clear</button>
+                </>
+              )}
+            </div>
+          )}
+          {preset && (
+            <ul className="flex flex-col gap-1 rounded-md border border-hairline bg-canvas px-3 py-2 text-xs text-ink">
+              {preset.lines.map((l, i) => (
+                <li key={i} className="flex justify-between gap-3">
+                  <span>{l.description} ×{l.qty}</span>
+                  <span className="text-ink-subtle">{money(l.amountMinor * l.qty, "usd")}</span>
+                </li>
+              ))}
+            </ul>
+          )}
           <div className="flex flex-wrap gap-2">
             <input
               value={desc}

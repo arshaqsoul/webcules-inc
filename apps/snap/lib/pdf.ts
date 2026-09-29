@@ -103,6 +103,11 @@ export async function renderInvoicePdf(params: {
   /** WEB-241: studio logo PNG bytes (the 2/8 email-header asset) for the
    * accent header bar; absent → today's text-only header. */
   logoPng?: Uint8Array;
+  /** WEB-252: tax snapshot (label + bps) + terms/memo text. */
+  taxLabel?: string | null;
+  taxRateBps?: number | null;
+  terms?: string | null;
+  memo?: string | null;
 }): Promise<Uint8Array> {
   // Sanitize at the boundary — wrap()/widthOfTextAtSize also encode.
   params = {
@@ -169,13 +174,41 @@ export async function renderInvoicePdf(params: {
     y -= 18 * wrapped.length + 8;
   }
 
-  // Total
+  // WEB-252: tax row (snapshot) between the lines and the total.
+  const subtotalMinor = params.lines.reduce((n, l) => n + (l.qty > 0 ? l.amountMinor * l.qty : l.amountMinor), 0);
+  const taxMinor = params.taxRateBps ? Math.round((subtotalMinor * params.taxRateBps) / 10000) : 0;
   y -= 10;
+  if (params.taxRateBps && params.taxLabel) {
+    page.drawText(winAnsiSafe(params.taxLabel), { x: 330, y, size: 10, font: regular, color: ink });
+    const tax = money(taxMinor, params.currency);
+    page.drawText(tax, { x: 547.28 - regular.widthOfTextAtSize(tax, 10), y, size: 10, font: regular, color: ink });
+    y -= 18;
+    page.drawText("Subtotal", { x: 330, y, size: 10, font: regular, color: subtle });
+    const sub = money(subtotalMinor, params.currency);
+    page.drawText(sub, { x: 547.28 - regular.widthOfTextAtSize(sub, 10), y, size: 10, font: regular, color: subtle });
+    y -= 6;
+  }
   page.drawLine({ start: { x: 330, y }, end: { x: 547.28, y }, thickness: 1, color: rgb(0.88, 0.89, 0.9) });
   y -= 24;
   page.drawText("TOTAL DUE", { x: 400, y, size: 9, font: bold, color: subtle });
   const total = money(params.totalMinor, params.currency);
   page.drawText(total, { x: 547.28 - bold.widthOfTextAtSize(total, 14), y, size: 14, font: bold, color: rgb(accent.r, accent.g, accent.b) });
+
+  // WEB-252: terms + memo (snapshot at creation; merge fields pre-rendered).
+  y -= 34;
+  if (params.memo) {
+    for (const line of wrap(winAnsiSafe(params.memo), regular, 9, 499).slice(0, 4)) {
+      page.drawText(line, { x: 48, y, size: 9, font: regular, color: ink });
+      y -= 12;
+    }
+    y -= 4;
+  }
+  if (params.terms) {
+    for (const line of wrap(winAnsiSafe(params.terms), regular, 8, 499).slice(0, 5)) {
+      page.drawText(line, { x: 48, y, size: 8, font: regular, color: subtle });
+      y -= 11;
+    }
+  }
 
   // Footer
   page.drawText(pdfFooterLine(params.studioName, params.whiteLabel === true), { x: 48, y: 56, size: 8, font: regular, color: subtle });

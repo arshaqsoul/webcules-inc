@@ -57,6 +57,21 @@ export async function POST(req: Request) {
     const capOk = ent?.id === "studio" || ent?.id === "pro" || countCustomFields(schema) <= FREE_CUSTOM_FIELD_CAP;
     if (!capOk) return Response.json({ error: "custom_fields_limit", limit: FREE_CUSTOM_FIELD_CAP }, { status: 403 });
   }
+  // WEB-252: package presets are Lite+; body must parse to preset lines.
+  if (body.kind === "invoice_preset") {
+    const lite = ent && ent.id !== "free";
+    if (!lite) return Response.json({ error: "presets_require_lite" }, { status: 403 });
+    const { parsePresetLines } = await import("@/lib/invoice-settings");
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(body.body);
+    } catch {
+      return Response.json({ error: "invalid_json" }, { status: 400 });
+    }
+    if (!Array.isArray(parsed) || !parsePresetLines(body.body).length) {
+      return Response.json({ error: "invalid_preset" }, { status: 400 });
+    }
+  }
   // WEB-251: contract-template gate (Free/Lite 2, Studio+ unlimited).
   // Clauses are ungated — they're just text snippets.
   if (body.kind === "contract") {
