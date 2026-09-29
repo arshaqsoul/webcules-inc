@@ -202,6 +202,9 @@ export const studioProfiles = sqliteTable("studio_profile", {
   /** WEB-224: Studio-tier custom-domain add-on ($5/mo) — flipped by the
    * Stripe webhook on subscription-item add/remove; entitlements only read. */
   addonCustomDomain: integer("addon_custom_domain", { mode: "boolean" }).notNull().default(false),
+  /** WEB-231: the studio cancelled the add-on — entitlement holds until
+   * plan_period_end, then the item is deleted and this clears. */
+  pendingAddonRemoval: integer("pending_addon_removal", { mode: "boolean" }).notNull().default(false),
   createdAt: ts("created_at"),
   updatedAt: ts("updated_at"),
 });

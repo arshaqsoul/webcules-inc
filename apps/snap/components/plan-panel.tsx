@@ -49,6 +49,11 @@ type PlanStatus = {
   familyStudioCount: number;
   maxLinkedStudios: number | null;
   isFamilyChild: boolean;
+  /** WEB-224 custom domains. */
+  maxCustomDomains: number;
+  activeCustomDomains: number;
+  addonCustomDomain: boolean;
+  pendingAddonRemoval: boolean;
 };
 
 const GB = 1024 ** 3;
@@ -123,6 +128,34 @@ export function PlanPanel({ returnHint }: { returnHint?: string }) {
       } else {
         setNotice("Couldn't change the plan — try again in a moment.");
       }
+    } catch {
+      setNotice("Network error — try again.");
+    }
+    setBusy(false);
+  }
+
+  /** WEB-231: subscribe/cancel the $5/mo custom-domain add-on on the
+   * existing subscription (one bill — never a second subscription). */
+  async function addon(enable: boolean) {
+    if (!st) return;
+    if (!enable) {
+      const ok = await confirm({
+        title: "Cancel the domain add-on?",
+        body: "It stays active until the end of your billing period (links keep working), then your bill drops by $5/mo. Your domain settings are preserved.",
+        confirmLabel: "Cancel add-on",
+      });
+      if (!ok) return;
+    }
+    setBusy(true);
+    try {
+      const res = await fetch("/api/studio/plan/addon", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enable }),
+      });
+      const body = (await res.json().catch(() => ({}))) as { message?: string };
+      setNotice(body.message ?? (res.ok ? "Done." : "Couldn't reach Stripe — try again."));
+      if (res.ok) await refresh();
     } catch {
       setNotice("Network error — try again.");
     }
@@ -302,7 +335,39 @@ export function PlanPanel({ returnHint }: { returnHint?: string }) {
           <span className="rounded-full bg-surface-2 px-2.5 py-1 text-ink-tertiary line-through">RAW uploads</span>
         )}
         <span className={`rounded-full px-2.5 py-1 ${st.whiteLabel ? "bg-surface-2 text-ink-muted" : "bg-surface-2 text-ink-tertiary line-through"}`}>White-label</span>
+        <span className={`rounded-full px-2.5 py-1 ${st.maxCustomDomains > 0 ? "bg-surface-2 text-ink-muted" : "bg-surface-2 text-ink-tertiary line-through"}`}>
+          {st.plan === "pro"
+            ? `Custom domains · ${st.activeCustomDomains}/2`
+            : st.addonCustomDomain
+              ? "Domain add-on active"
+              : "Custom domain"}
+        </span>
       </div>
+
+      {/* WEB-231: Studio add-on — second item on the existing subscription. */}
+      {st.plan === "studio" && (
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-hairline bg-canvas p-3">
+          <div>
+            <p className="text-sm text-ink">Custom domain add-on · $5/mo</p>
+            <p className="text-xs text-ink-tertiary">
+              {st.addonCustomDomain
+                ? st.pendingAddonRemoval
+                  ? "Cancelling — stays active until the end of your billing period."
+                  : "Active — one domain on your own hostname, billed with your plan."
+                : "Put your galleries on gallery.yourstudio.com. Billed on this subscription, cancel anytime."}
+            </p>
+          </div>
+          {st.addonCustomDomain ? (
+            <Button size="sm" variant="secondary" disabled={busy || st.pendingAddonRemoval} onClick={() => void addon(false)}>
+              {st.pendingAddonRemoval ? "Cancelling at period end" : "Cancel add-on"}
+            </Button>
+          ) : (
+            <Button size="sm" variant="outline" disabled={busy || !st.hasSubscription} onClick={() => void addon(true)}>
+              Add for $5/mo
+            </Button>
+          )}
+        </div>
+      )}
 
       {returnHint === "return" && <p className="mt-2 text-xs text-success-text">Subscription active — welcome aboard.</p>}
       {notice && <p className="mt-2 text-xs text-ink-muted">{notice}</p>}

@@ -309,3 +309,59 @@ describe("daily domain sweep (WEB-230)", () => {
     expect(r.errors).toBe(0);
   });
 });
+
+describe("custom-domain add-on entitlement (WEB-231)", () => {
+  type FakeSub = {
+    status: string;
+    metadata: { organizationId: string; plan?: string };
+    items: { data: { id: string; current_period_end?: number; price: { metadata?: Record<string, string> } }[] };
+  };
+
+  function fakeSub(org: string, opts: { addon?: boolean; status?: string; periodEnd?: number } = {}): FakeSub {
+    const items: FakeSub["items"]["data"] = [
+      { id: "it_plan", current_period_end: opts.periodEnd, price: { metadata: { snap_plan: "studio" } } },
+      ...(opts.addon ? [{ id: "it_addon", current_period_end: opts.periodEnd, price: { metadata: { snap_addon: "custom_domain" } } }] : []),
+    ];
+    return {
+      status: opts.status ?? "active",
+      metadata: { organizationId: org, plan: "studio" },
+      items: { data: items },
+    };
+  }
+
+  it("webhook recompute: addon item flips the flag on; removal inside a paid period keeps it", async () => {
+    const { applySubscriptionState } = await import("@/lib/billing");
+    const s = await seedStudio({ plan: "studio" });
+    await applySubscriptionState(fakeSub(s.organizationId, { addon: true }) as never);
+    expect((await getStudioProfileRow(s.organizationId))?.addonCustomDomain).toBe(true);
+
+    // item removed but cancellation pending inside the period → still on
+    const future = Math.floor(Date.now() / 1000) + 20 * 86400;
+    await getDb().update(schema.studioProfiles).set({ pendingAddonRemoval: true, planPeriodEnd: future }).where(eq(schema.studioProfiles.organizationId, s.organizationId));
+    await applySubscriptionState(fakeSub(s.organizationId, { periodEnd: future }) as never);
+    expect((await getStudioProfileRow(s.organizationId))?.addonCustomDomain).toBe(true);
+
+    // period passed, item gone → off
+    const past = Math.floor(Date.now() / 1000) - 86400;
+    await getDb().update(schema.studioProfiles).set({ planPeriodEnd: past }).where(eq(schema.studioProfiles.organizationId, s.organizationId));
+    await applySubscriptionState(fakeSub(s.organizationId, { periodEnd: past }) as never);
+    expect((await getStudioProfileRow(s.organizationId))?.addonCustomDomain).toBe(false);
+  });
+
+  it("canceled subscription clears the addon + pending flags", async () => {
+    const { applySubscriptionState } = await import("@/lib/billing");
+    const s = await seedStudio({ plan: "studio" });
+    await getDb().update(schema.studioProfiles).set({ addonCustomDomain: true, pendingAddonRemoval: true }).where(eq(schema.studioProfiles.organizationId, s.organizationId));
+    await applySubscriptionState(fakeSub(s.organizationId, { status: "canceled", addon: true }) as never);
+    const row = await getStudioProfileRow(s.organizationId);
+    expect(row?.addonCustomDomain).toBe(false);
+    expect(row?.pendingAddonRemoval).toBe(false);
+    expect(row?.plan).toBe("free");
+  });
+});
+
+async function getStudioProfileRow(org: string) {
+  return (
+    await getDb().select().from(schema.studioProfiles).where(eq(schema.studioProfiles.organizationId, org)).limit(1)
+  )[0];
+}

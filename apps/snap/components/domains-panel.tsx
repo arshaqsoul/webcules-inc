@@ -35,6 +35,7 @@ type PanelData = {
   activeCustomDomains: number;
   plan: string;
   addonCustomDomain: boolean;
+  hasSubscription: boolean;
 };
 
 const PENDING_STATUSES = new Set(["pending_verification", "verified", "cert_pending"]);
@@ -205,12 +206,36 @@ export function DomainsPanel({
           )}
         </div>
         <div className="mt-4">
-          <Button variant="secondary" size="sm" onClick={() => router.push("/dashboard/settings/billing")}>
-            {studioAddOn ? "Get the domain add-on" : "Upgrade to Pro"}
-          </Button>
+          {studioAddOn && data.hasSubscription ? (
+            <Button size="sm" disabled={busy} onClick={() => void buyAddon()}>
+              Add a custom domain for $5/mo
+            </Button>
+          ) : (
+            <Button variant="secondary" size="sm" onClick={() => router.push("/dashboard/settings/billing")}>
+              {studioAddOn ? "Get the domain add-on" : "Upgrade to Pro"}
+            </Button>
+          )}
         </div>
+        {status && <p className="mt-3 text-sm text-ink-subtle">{status}</p>}
       </section>
     );
+  }
+
+  async function buyAddon() {
+    setBusy(true);
+    setStatus(null);
+    const res = await fetch("/api/studio/plan/addon", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ enable: true }),
+    });
+    setBusy(false);
+    const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+    setStatus(String(body.message ?? (res.ok ? "Add-on added." : "Couldn't complete — try again.")));
+    if (res.ok) {
+      await refresh();
+      router.refresh();
+    }
   }
 
   const recordBlock = (d: DomainRow) => (

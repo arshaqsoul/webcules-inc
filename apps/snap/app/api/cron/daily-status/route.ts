@@ -210,7 +210,7 @@ export async function POST(req: Request) {
     console.error("rejected-retention sweep failed:", String(err));
   }
 
-  // WEB-224/230: custom-domain sweep — stale-pending expiry + CF cleanup,
+  // WEB-224/231: custom-domain sweep — stale-pending expiry + CF cleanup,
   // entitlement suspension/re-activation, DNS health re-checks with
   // degraded/recovery studio emails (7-day throttle per domain).
   let domains: Awaited<ReturnType<typeof import("@/lib/domain-sweep").runDomainSweep>> | null = null;
@@ -221,5 +221,15 @@ export async function POST(req: Request) {
     console.error("domains sweep failed:", String(err));
   }
 
-  return Response.json({ ok: true, moved: due.length, warned, downgraded, expiredHolds, vault, dormancy, margin, expiredUploads, rejectedPurged, domains });
+  // WEB-231: add-on cancellations that reached period end — the Stripe item
+  // drops (no proration; the cycle was paid) and the flag clears.
+  let addonSettled = 0;
+  try {
+    const { settlePendingAddonRemovals } = await import("@/lib/billing");
+    addonSettled = await settlePendingAddonRemovals();
+  } catch (err) {
+    console.error("addon settle failed:", String(err));
+  }
+
+  return Response.json({ ok: true, moved: due.length, warned, downgraded, expiredHolds, vault, dormancy, margin, expiredUploads, rejectedPurged, domains, addonSettled });
 }

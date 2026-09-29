@@ -5,6 +5,7 @@
  * CF side is created lazily at verify time). */
 import { getOrgContext } from "@/lib/session";
 import { getPlanEntitlements } from "@/lib/plans";
+import { getStudioProfile } from "@/lib/repos/studios";
 import { createCustomHostname, getCfConfig } from "@/lib/cf-hostnames";
 import { CNAME_TARGET } from "@/lib/domains";
 import { createDomain, listDomains } from "@/lib/repos/domains";
@@ -19,6 +20,7 @@ export async function GET() {
     getPlanEntitlements(ctx.organizationId),
   ]);
   if (!ent) return Response.json({ error: "no_profile" }, { status: 404 });
+  const profile = await getStudioProfile(ctx.organizationId);
   return Response.json({
     domains,
     cnameTarget: CNAME_TARGET,
@@ -26,6 +28,7 @@ export async function GET() {
     activeCustomDomains: ent.activeCustomDomains,
     plan: ent.id,
     addonCustomDomain: ent.addonCustomDomain,
+    hasSubscription: Boolean(profile?.stripeSubscriptionId),
   });
 }
 

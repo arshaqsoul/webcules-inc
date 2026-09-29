@@ -371,11 +371,19 @@ export async function applySubscriptionState(sub: Stripe.Subscription): Promise<
   const pendingStillValid =
     Boolean(profile?.pendingPlan) && sub.status !== "canceled" && (profile?.planPeriodEnd ?? 0) * 1000 > Date.now();
   const planChanged = Boolean(plan && PLANS[plan] && !pendingStillValid && profile?.plan !== plan);
+  // WEB-231: add-on entitlement recompute from subscription items (the
+  // add-on price's metadata rides inside events). A pending removal inside
+  // its paid period keeps the entitlement on until the settle clears it.
+  const addonOn = subscriptionHasAddon(sub, "custom_domain") !== null;
+  const keepAddon =
+    (sub.status === "active" || sub.status === "trialing") &&
+    (addonOn || (Boolean(profile?.pendingAddonRemoval) && (profile?.planPeriodEnd ?? 0) * 1000 > Date.now()));
   await db
     .update(schema.studioProfiles)
     .set({
       ...(plan && PLANS[plan] && !pendingStillValid ? { plan, pendingPlan: null } : {}),
       ...(planChanged ? { planChangedAt: Math.floor(Date.now() / 1000) } : {}),
+      addonCustomDomain: keepAddon,
       planStatus: status,
       stripeSubscriptionId: sub.status === "canceled" ? null : sub.id,
       planPeriodEnd: (sub.items.data[0] as { current_period_end?: number } | undefined)?.current_period_end ?? null,
@@ -390,10 +398,151 @@ export async function applySubscriptionState(sub: Stripe.Subscription): Promise<
       .set({
         plan: "free",
         pendingPlan: null,
+        addonCustomDomain: false,
+        pendingAddonRemoval: false,
         planStatus: "active",
         planChangedAt: Math.floor(Date.now() / 1000),
         updatedAt: new Date(),
       })
       .where(eq(schema.studioProfiles.organizationId, organizationId));
   }
+}
+
+/* ---------------- Custom-domain add-on (WEB-224/231) ----------------
+ * A second line item on the SAME parent subscription (WEB-152/217: one
+ * bill per family). Lazy price creation keyed by metadata — the price's
+ * metadata travels inside webhook events, so the entitlement recompute
+ * needs no product expansion. Cancellation holds the entitlement through
+ * the paid cycle (pending_addon_removal), mirroring plan-downgrade timing. */
+
+export const ADDON_CUSTOM_DOMAIN_USD = 5;
+export type AddonId = "custom_domain";
+
+async function ensureAddonPrice(stripe: Stripe, addon: AddonId): Promise<Stripe.Price | null> {
+  const unit = ADDON_CUSTOM_DOMAIN_USD * 100;
+  const existing = await stripe.prices.list({ active: true, limit: 100 });
+  for (const p of existing.data) {
+    if (p.recurring?.interval === "month" && p.unit_amount === unit && p.metadata?.snap_addon === addon) {
+      return p;
+    }
+  }
+  try {
+    const product = await stripe.products.create({
+      name: "Snap Custom Domain add-on",
+      description: "One custom domain for your client galleries, booking page, and portal.",
+      metadata: { snap_addon: addon },
+    });
+    return await stripe.prices.create({
+      product: product.id,
+      currency: "usd",
+      unit_amount: unit,
+      recurring: { interval: "month" },
+      metadata: { snap_addon: addon },
+    });
+  } catch (err) {
+    console.error(`billing: addon price ensure failed (${addon}):`, String(err));
+    return null;
+  }
+}
+
+/** Does this subscription carry the add-on item? Price metadata only — no
+ * product expansion needed (metadata rides on the price object). */
+function subscriptionHasAddon(sub: Stripe.Subscription, addon: AddonId): string | null {
+  for (const item of sub.items.data ?? []) {
+    const price = typeof item.price === "object" ? item.price : null;
+    if (price?.metadata?.snap_addon === addon) return item.id;
+  }
+  return null;
+}
+
+export async function setCustomDomainAddon(
+  organizationId: string,
+  enable: boolean,
+): Promise<{ ok: boolean; message?: string }> {
+  const stripe = await getStripe();
+  const profile = await getStudioProfile(organizationId);
+  if (!stripe || !profile?.stripeSubscriptionId) {
+    return { ok: false, message: "The add-on rides on your Snap subscription — pick a plan first (Billing → upgrade), then add the domain." };
+  }
+  try {
+    const sub = await stripe.subscriptions.retrieve(profile.stripeSubscriptionId);
+    const itemId = subscriptionHasAddon(sub, "custom_domain");
+    if (enable) {
+      if (itemId) {
+        await getDb()
+          .update(schema.studioProfiles)
+          .set({ addonCustomDomain: true, pendingAddonRemoval: false, updatedAt: new Date() })
+          .where(eq(schema.studioProfiles.organizationId, organizationId));
+        return { ok: true, message: "The domain add-on is already on your bill." };
+      }
+      const price = await ensureAddonPrice(stripe, "custom_domain");
+      if (!price) return { ok: false, message: "Stripe price setup failed — try again in a minute." };
+      // Append the second item — existing items are untouched when omitted.
+      await stripe.subscriptions.update(sub.id, {
+        items: [{ price: price.id, quantity: 1 }],
+        proration_behavior: "create_prorations",
+      });
+      await getDb()
+        .update(schema.studioProfiles)
+        .set({ addonCustomDomain: true, pendingAddonRemoval: false, updatedAt: new Date() })
+        .where(eq(schema.studioProfiles.organizationId, organizationId));
+      return { ok: true, message: `Custom domain add-on added — $${ADDON_CUSTOM_DOMAIN_USD}/mo on your existing bill (prorated from today).` };
+    }
+    // Cancel: keep the entitlement through the paid cycle; the item drops at
+    // renewal (settlePendingAddonRemovals) — WEB-152 next-cycle semantics.
+    if (!itemId) {
+      await getDb()
+        .update(schema.studioProfiles)
+        .set({ addonCustomDomain: false, pendingAddonRemoval: false, updatedAt: new Date() })
+        .where(eq(schema.studioProfiles.organizationId, organizationId));
+      return { ok: true, message: "The add-on isn't on your bill." };
+    }
+    if (profile.pendingAddonRemoval) {
+      return { ok: true, message: "Already cancelling — the add-on stays active until the end of your billing period." };
+    }
+    await getDb()
+      .update(schema.studioProfiles)
+      .set({ pendingAddonRemoval: true, updatedAt: new Date() })
+      .where(eq(schema.studioProfiles.organizationId, organizationId));
+    const until = profile.planPeriodEnd ? new Date(profile.planPeriodEnd * 1000).toLocaleDateString("en-US", { month: "long", day: "numeric" }) : "the end of your billing period";
+    return { ok: true, message: `The add-on stays active until ${until}; your bill drops by $${ADDON_CUSTOM_DOMAIN_USD}/mo after that.` };
+  } catch (err) {
+    console.error("billing: addon change failed:", String(err));
+    return { ok: false, message: "Stripe rejected the change — try again in a minute." };
+  }
+}
+
+/** Daily cron: profiles whose add-on cancellation reached period end —
+ * delete the item (no proration; the cycle was paid) and clear the flag. */
+export async function settlePendingAddonRemovals(): Promise<number> {
+  const stripe = await getStripe();
+  if (!stripe) return 0;
+  const db = getDb();
+  const rows = await db
+    .select({
+      organizationId: schema.studioProfiles.organizationId,
+      subscriptionId: schema.studioProfiles.stripeSubscriptionId,
+      periodEnd: schema.studioProfiles.planPeriodEnd,
+    })
+    .from(schema.studioProfiles)
+    .where(eq(schema.studioProfiles.pendingAddonRemoval, true))
+    .limit(100);
+  let settled = 0;
+  for (const row of rows) {
+    if (!row.subscriptionId || !row.periodEnd || row.periodEnd * 1000 > Date.now()) continue;
+    try {
+      const sub = await stripe.subscriptions.retrieve(row.subscriptionId);
+      const itemId = subscriptionHasAddon(sub, "custom_domain");
+      if (itemId) await stripe.subscriptionItems.del(itemId, { proration_behavior: "none" });
+    } catch (err) {
+      console.error(`billing: addon settle failed (${row.organizationId}):`, String(err));
+      continue;
+    }
+    await db
+      .update(schema.studioProfiles)
+      .set({ addonCustomDomain: false, pendingAddonRemoval: false, updatedAt: new Date() })
+      .where(eq(schema.studioProfiles.organizationId, row.organizationId));
+    settled++;
+  }
+  return settled;
 }

@@ -42,6 +42,7 @@ export default async function SettingsDomainsPage() {
         activeCustomDomains: ent?.activeCustomDomains ?? 0,
         plan: ent?.id ?? "free",
         addonCustomDomain: ent?.addonCustomDomain ?? false,
+        hasSubscription: Boolean(profile?.stripeSubscriptionId),
       }}
     />
   );
