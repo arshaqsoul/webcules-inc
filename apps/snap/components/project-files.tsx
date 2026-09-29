@@ -7,7 +7,7 @@
  * (WEB-113). Fast triage lives in <TriageMode> (WEB-122). */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { Check, ChevronDown, ChevronRight, ChevronUp, Folder, FolderPlus, Grid2x2, Grid3x3, ListFilter, Share2, Square, X } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, ChevronUp, Folder, FolderPlus, Grid2x2, Grid3x3, ListFilter, Share2, Square, Upload, X, Zap } from "lucide-react";
 
 import { Button } from "@webcules/ui/components/button";
 import {
@@ -214,6 +214,9 @@ export function ProjectFiles({ projectId, clientEmail, initial }: { projectId: s
   const folderMenuRef = useRef<HTMLDivElement>(null);
   // Share side panel (WEB-223): deliver approved/folders without leaving Files.
   const [shareOpen, setShareOpen] = useState(false);
+  // Mobile actions menu (Select/Triage/Share/Upload live behind one button).
+  const [actionsOpen, setActionsOpen] = useState(false);
+  const actionsRef = useRef<HTMLDivElement>(null);
   // Culling filters: rating ("unrated" | "1".."5" = ≥N), color ("none" | "1".."5").
   const [rating, setRating] = useState("");
   const [colorSel, setColorSel] = useState("");
@@ -1228,6 +1231,23 @@ export function ProjectFiles({ projectId, clientEmail, initial }: { projectId: s
 
   /* ---------------- Render ---------------- */
 
+  // Close the mobile actions menu on outside click / Escape.
+  useEffect(() => {
+    if (!actionsOpen) return;
+    function onDown(e: MouseEvent) {
+      if (actionsRef.current && !actionsRef.current.contains(e.target as Node)) setActionsOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setActionsOpen(false);
+    }
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [actionsOpen]);
+
   // Close the folder dropdown on outside click / Escape.
   useEffect(() => {
     if (!folderMenuOpen) return;
@@ -1267,11 +1287,22 @@ export function ProjectFiles({ projectId, clientEmail, initial }: { projectId: s
 
   return (
     <div className="flex flex-col gap-4">
+      {/* Toolbar — mobile keeps only the essentials (Filter · Select · Triage
+       * · Share · Upload); density/view toggles, Auto-advance and the purge
+       * button are desktop controls (no keyboard, no hover on touch). */}
+      <div className="flex flex-wrap items-center gap-1.5 rounded-[12px] border border-hairline bg-surface-1 p-2 sm:gap-2 sm:p-3">
+        <div className="mr-2 hidden text-sm text-ink-subtle sm:block">
+          {Object.values(counts).reduce((a, b) => a + b, 0)} file{Object.values(counts).reduce((a, b) => a + b, 0) === 1 ? "" : "s"}
+          {counts.approved ? ` · ${counts.approved} approved` : ""}
+          {counts.rejected ? ` · ${counts.rejected} rejected` : ""}
+          {counts.shared ? ` · ${counts.shared} shared` : ""}
+        </div>
+
       {/* Folder dropdown (WEB-216/223) — same pattern as Filter: one compact
        * trigger (with a folder icon before created folder names) instead of a
        * chip rail that ate toolbar space. Rows filter the feed and accept
        * dragged cards; folders are free on every tier. */}
-      <div className="relative self-start" ref={folderMenuRef}>
+      <div className="relative shrink-0" ref={folderMenuRef}>
         <button
           type="button"
           onClick={() => setFolderMenuOpen((o) => !o)}
@@ -1400,19 +1431,6 @@ export function ProjectFiles({ projectId, clientEmail, initial }: { projectId: s
           </div>
         )}
       </div>
-
-      {/* Toolbar — mobile keeps only the essentials (Filter · Select · Triage
-       * · Share · Upload); density/view toggles, Auto-advance and the purge
-       * button are desktop controls (no keyboard, no hover on touch). */}
-      <div className="flex flex-wrap items-center gap-1.5 rounded-[12px] border border-hairline bg-surface-1 p-2 sm:gap-2 sm:p-3">
-        <div className="mr-2 text-xs text-ink-subtle sm:text-sm">
-          {Object.values(counts).reduce((a, b) => a + b, 0)} file{Object.values(counts).reduce((a, b) => a + b, 0) === 1 ? "" : "s"}
-          <span className="hidden sm:inline">
-            {counts.approved ? ` · ${counts.approved} approved` : ""}
-            {counts.rejected ? ` · ${counts.rejected} rejected` : ""}
-            {counts.shared ? ` · ${counts.shared} shared` : ""}
-          </span>
-        </div>
 
         <div className="relative" ref={filterRef}>
           <button
@@ -1555,12 +1573,14 @@ export function ProjectFiles({ projectId, clientEmail, initial }: { projectId: s
               {autoAdvance ? "Auto ⏩ on" : "Auto ⏩ off"}
             </Button>
           </div>
-          <Button size="sm" variant="outline" onClick={() => { setSelectMode((s) => !s); setSelected(new Set()); }}>
-            {selectMode ? "Done" : "Select"}
-          </Button>
-          <Button size="sm" variant="outline" disabled={!feed.items.length} onClick={() => setTriageOpen(true)}>
-            Triage
-          </Button>
+          <div className="hidden items-center gap-1.5 sm:flex">
+            <Button size="sm" variant="outline" onClick={() => { setSelectMode((s) => !s); setSelected(new Set()); }}>
+              {selectMode ? "Done" : "Select"}
+            </Button>
+            <Button size="sm" variant="outline" disabled={!feed.items.length} onClick={() => setTriageOpen(true)}>
+              Triage
+            </Button>
+          </div>
           {(feed.counts.rejected ?? 0) > 0 && (
             <Button
               size="sm"
@@ -1573,21 +1593,81 @@ export function ProjectFiles({ projectId, clientEmail, initial }: { projectId: s
               {purging ? "Deleting…" : `Delete rejected (${feed.counts.rejected})`}
             </Button>
           )}
-          <Button size="sm" variant="outline" disabled={!(counts.approved || counts.shared) && !folders.length} onClick={() => setShareOpen(true)} title="Send a secure gallery link to the client — approved files or specific folders">
-            <Share2 className="h-3.5 w-3.5 sm:mr-1" aria-hidden />
-            <span className="hidden sm:inline">Share</span>
-          </Button>
-          <input
-            ref={inputRef}
-            type="file"
-            multiple
-            accept=".jpg,.jpeg,.png,.webp,.avif,.heic,.gif,.mp4,.mov,.webm,.lrf,.cr2,.cr3,.nef,.arw,.dng,.rwl,.lfr"
-            className="hidden"
-            onChange={(e) => e.target.files?.length && enqueueWithStore(e.target.files)}
-          />
-          <Button size="sm" disabled={uploading} onClick={() => inputRef.current?.click()}>
-            {uploading ? "Uploading…" : "Upload"}
-          </Button>
+          <div className="hidden items-center gap-1.5 sm:flex">
+            <Button size="sm" variant="outline" disabled={!(counts.approved || counts.shared) && !folders.length} onClick={() => setShareOpen(true)} title="Send a secure gallery link to the client — approved files or specific folders">
+              <Share2 className="h-3.5 w-3.5 sm:mr-1" aria-hidden />
+              <span className="hidden sm:inline">Share</span>
+            </Button>
+            <input
+              ref={inputRef}
+              type="file"
+              multiple
+              accept=".jpg,.jpeg,.png,.webp,.avif,.heic,.gif,.mp4,.mov,.webm,.lrf,.cr2,.cr3,.nef,.arw,.dng,.rwl,.lfr"
+              className="hidden"
+              onChange={(e) => e.target.files?.length && enqueueWithStore(e.target.files)}
+            />
+            <Button size="sm" disabled={uploading} onClick={() => inputRef.current?.click()}>
+              {uploading ? "Uploading…" : "Upload"}
+            </Button>
+          </div>
+
+          {/* Mobile: one Actions button instead of the four desktop controls. */}
+          <div className="relative sm:hidden" ref={actionsRef}>
+            <button
+              type="button"
+              onClick={() => setActionsOpen((o) => !o)}
+              aria-expanded={actionsOpen}
+              aria-label="Actions"
+              className="flex items-center gap-1 rounded-md border border-hairline bg-canvas px-2.5 py-1.5 text-xs text-ink-muted transition-colors hover:bg-surface-2"
+            >
+              <Zap className="h-3.5 w-3.5" aria-hidden />
+              Actions
+              <ChevronDown className="h-3 w-3" aria-hidden />
+            </button>
+            {actionsOpen && (
+              <div className="absolute right-0 top-full z-40 mt-1.5 w-48 rounded-[10px] border border-hairline bg-surface-1 p-1 shadow-lg" role="menu" aria-label="Actions">
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => { setSelectMode((x) => !x); setSelected(new Set()); setActionsOpen(false); }}
+                  className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-[13px] text-ink-muted transition-colors hover:bg-surface-2"
+                >
+                  <Square className="h-4 w-4" aria-hidden />
+                  {selectMode ? "Done selecting" : "Select"}
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  disabled={!feed.items.length}
+                  onClick={() => { setTriageOpen(true); setActionsOpen(false); }}
+                  className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-[13px] text-ink-muted transition-colors hover:bg-surface-2 disabled:opacity-50"
+                >
+                  <Zap className="h-4 w-4" aria-hidden />
+                  Triage
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  disabled={!(counts.approved || counts.shared) && !folders.length}
+                  onClick={() => { setShareOpen(true); setActionsOpen(false); }}
+                  className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-[13px] text-ink-muted transition-colors hover:bg-surface-2 disabled:opacity-50"
+                >
+                  <Share2 className="h-4 w-4" aria-hidden />
+                  Share with client
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  disabled={uploading}
+                  onClick={() => { setActionsOpen(false); inputRef.current?.click(); }}
+                  className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-[13px] text-ink-muted transition-colors hover:bg-surface-2 disabled:opacity-50"
+                >
+                  <Upload className="h-4 w-4" aria-hidden />
+                  {uploading ? "Uploading…" : "Upload"}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
