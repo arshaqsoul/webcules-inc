@@ -9,6 +9,7 @@ import { Input } from "@webcules/ui/components/input";
 import { Label } from "@webcules/ui/components/label";
 
 import { signIn } from "@/lib/auth-client";
+import { SnapMark } from "@/components/snap-mark";
 
 export function LoginForm() {
   const router = useRouter();
@@ -36,7 +37,7 @@ export function LoginForm() {
     <main className="flex min-h-screen items-center justify-center px-6">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex items-center gap-2">
-          <span aria-hidden className="inline-block h-4 w-4 rounded-[4px] bg-primary" />
+          <SnapMark className="h-6 w-6" />
           <span className="text-sm font-medium text-ink">Snap</span>
         </div>
         <div className="rounded-[12px] border border-hairline bg-surface-1 p-6">

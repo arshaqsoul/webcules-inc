@@ -2,6 +2,7 @@
  * delivery, no transcoding, the supported format set, and the 4 GB cap.
  * Public (no auth). */
 import type { Metadata } from "next";
+import { SnapMark } from "@/components/snap-mark";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,10 @@ export default function VideoDocsPage() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-10">
       <header className="flex flex-col gap-3">
+        <div className="flex items-center gap-2">
+          <SnapMark className="h-5 w-5" />
+          <span className="text-sm font-medium text-ink">Snap docs</span>
+        </div>
         <h1 className="text-3xl font-semibold tracking-[-.8px] text-ink">Films &amp; video delivery</h1>
         <p className="text-sm leading-relaxed text-ink-subtle">
           We deliver your films bit-exact, like your photos. No transcoding, no re-encoding, no quality loss — the

@@ -14,6 +14,7 @@ import { DashboardNavLinks } from "@/components/dashboard-nav";
 import { SignOutButton } from "@/components/sign-out-button";
 import { StudioSwitcher, type SwitcherStudio } from "@/components/studio-switcher";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { SnapMark } from "@/components/snap-mark";
 
 export function DashboardSidebar({
   studios,
@@ -50,7 +51,7 @@ export function DashboardSidebar({
             aria-label="Expand sidebar"
             className="flex h-9 w-full items-center justify-center rounded-md transition-colors hover:bg-surface-2"
           >
-            <span aria-hidden className="inline-block h-4 w-4 rounded-[4px] bg-primary" />
+            <SnapMark className="h-4 w-4 rounded-[5px]" />
           </button>
         ) : (
           <>

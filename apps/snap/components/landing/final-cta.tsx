@@ -61,7 +61,13 @@ export function FinalCta({ signedIn }: { signedIn: boolean }) {
           <span className="flex items-center gap-2">
             <span aria-hidden className="grid h-5 w-5 place-items-center rounded-md bg-primary text-white">
               <svg viewBox="0 0 24 24" fill="none" className="h-3 w-3" aria-hidden>
-                <circle cx="12" cy="12" r="9.5" stroke="currentColor" strokeWidth="2" />
+                <circle cx="12" cy="12" r="9.75" stroke="currentColor" strokeWidth="1.9" />
+                <path
+                  d="M12 8.2 15.65 21.04M15.29 10.1 6 19.68M15.29 13.9 2.34 10.64M12 15.8 8.35 2.96M8.71 13.9 18 4.32M8.71 10.1 21.66 13.36"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                />
               </svg>
             </span>
             snap.webcules.com — a Webcules platform

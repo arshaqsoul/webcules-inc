@@ -2,6 +2,7 @@
  * write: layered defense with zero false claims. Public (no auth). */
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SnapMark } from "@/components/snap-mark";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,10 @@ export default function ProtectionDocsPage() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-10">
       <header className="flex flex-col gap-3">
+        <div className="flex items-center gap-2">
+          <SnapMark className="h-5 w-5" />
+          <span className="text-sm font-medium text-ink">Snap docs</span>
+        </div>
         <h1 className="text-3xl font-semibold tracking-[-.8px] text-ink">Photo protection, honestly</h1>
         <p className="text-sm leading-relaxed text-ink-subtle">
           Every gallery platform markets &quot;protection.&quot; Some of it is real, and some of it is theater —

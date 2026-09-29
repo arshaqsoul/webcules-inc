@@ -13,6 +13,7 @@ import { DocsCode } from "@/components/docs-code";
 import { DocsLiveDemo } from "@/components/docs-live-demo";
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
+import { SnapMark } from "@/components/snap-mark";
 
 export const dynamic = "force-dynamic";
 
@@ -60,6 +61,10 @@ export default async function EmbedDocsPage() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-10">
       <header className="flex flex-col gap-3">
+        <div className="flex items-center gap-2">
+          <SnapMark className="h-5 w-5" />
+          <span className="text-sm font-medium text-ink">Snap docs</span>
+        </div>
         <h1 className="text-3xl font-semibold tracking-[-.8px] text-ink">Embed Snap anywhere</h1>
         <p className="text-sm leading-relaxed text-ink-subtle">
           The contact form, booking calendar and booking button are one script tag each — they work on any website.

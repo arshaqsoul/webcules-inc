@@ -7,6 +7,7 @@ import Link from "next/link";
 
 import { DocsCode } from "@/components/docs-code";
 import { CNAME_TARGET } from "@/lib/domains";
+import { SnapMark } from "@/components/snap-mark";
 
 export const metadata: Metadata = {
   title: "Custom domains — Snap guide",
@@ -45,6 +46,10 @@ export default function DomainsDocsPage() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-10">
       <header className="flex flex-col gap-3">
+        <div className="flex items-center gap-2">
+          <SnapMark className="h-5 w-5" />
+          <span className="text-sm font-medium text-ink">Snap docs</span>
+        </div>
         <h1 className="text-3xl font-semibold tracking-[-.8px] text-ink">Your galleries on your own domain</h1>
         <p className="text-sm leading-relaxed text-ink-subtle">
           A custom domain puts your client surface on your branding — the gallery links you email, the booking page,

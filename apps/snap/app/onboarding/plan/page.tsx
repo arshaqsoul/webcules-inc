@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { PricingTiers, type TierId } from "@/components/pricing-tiers";
+import { SnapMark } from "@/components/snap-mark";
 
 export default function PlanOnboardingPage() {
   const router = useRouter();
@@ -61,7 +62,7 @@ export default function PlanOnboardingPage() {
   return (
     <main className="flex min-h-screen flex-col items-center px-6 py-12">
       <div className="mb-8 flex items-center gap-2">
-        <span aria-hidden className="inline-block h-4 w-4 rounded-[4px] bg-primary" />
+        <SnapMark className="h-6 w-6" />
         <span className="text-sm font-medium text-ink">Snap</span>
       </div>
       <div className="w-full max-w-5xl">

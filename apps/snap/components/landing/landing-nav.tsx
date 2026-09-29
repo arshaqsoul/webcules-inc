@@ -74,10 +74,16 @@ export function LandingNav({ signedIn }: { signedIn: boolean }) {
 }
 
 function ApertureMark() {
+  // Same geometry as public/icon.svg — six-blade iris, 60° symmetry.
   return (
     <svg viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5" aria-hidden>
-      <circle cx="12" cy="12" r="9.5" stroke="currentColor" strokeWidth="1.8" />
-      <path d="M12 2.5 17 11M21.5 12 12.7 12.6M17 20.9 11.6 13M7 21.5 11.3 12.7M2.5 12l8.8-.6M7 2.5l5.4 7.9" stroke="currentColor" strokeWidth="1.6" />
+      <circle cx="12" cy="12" r="9.75" stroke="currentColor" strokeWidth="1.8" />
+      <path
+        d="M12 8.2 15.65 21.04M15.29 10.1 6 19.68M15.29 13.9 2.34 10.64M12 15.8 8.35 2.96M8.71 13.9 18 4.32M8.71 10.1 21.66 13.36"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }

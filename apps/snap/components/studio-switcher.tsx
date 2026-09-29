@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { Check, ChevronDown, Plus } from "lucide-react";
 
 import { authClient } from "@/lib/auth-client";
+import { SnapMark } from "@/components/snap-mark";
 
 export type SwitcherStudio = {
   organizationId: string;
@@ -141,7 +142,7 @@ export function StudioSwitcher({
         className="flex min-w-0 items-center gap-1.5 rounded-md px-1.5 py-1 text-left transition-colors hover:bg-surface-2"
         title="Switch studio"
       >
-        <span aria-hidden className="inline-block h-4 w-4 shrink-0 rounded-[4px] bg-primary" />
+        <SnapMark className="h-4 w-4 rounded-[5px]" />
         <span className="truncate text-sm font-medium text-ink">{current?.name ?? "Studio"}</span>
         <ChevronDown className="h-3.5 w-3.5 shrink-0 text-ink-tertiary" aria-hidden />
       </button>

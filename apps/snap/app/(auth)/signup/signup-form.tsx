@@ -9,6 +9,7 @@ import { Input } from "@webcules/ui/components/input";
 import { Label } from "@webcules/ui/components/label";
 
 import { authClient, signUp } from "@/lib/auth-client";
+import { SnapMark } from "@/components/snap-mark";
 
 type PlanChoice = "free" | "lite" | "studio" | "pro";
 
@@ -110,7 +111,7 @@ export function SignupForm({ initialPlan }: { initialPlan: PlanChoice | null }) 
     <main className="flex min-h-screen items-center justify-center px-6 py-12">
       <div className="w-full max-w-md">
         <div className="mb-8 flex items-center gap-2">
-          <span aria-hidden className="inline-block h-4 w-4 rounded-[4px] bg-primary" />
+          <SnapMark className="h-6 w-6" />
           <span className="text-sm font-medium text-ink">Snap</span>
         </div>
         <div className="rounded-[12px] border border-hairline bg-surface-1 p-6">

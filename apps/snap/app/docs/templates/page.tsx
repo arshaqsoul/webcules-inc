@@ -1,6 +1,7 @@
 /* /docs/templates (WEB-256) — the templates guide: one screen per designer,
  * where each artifact lives and applies. */
 import Link from "next/link";
+import { SnapMark } from "@/components/snap-mark";
 
 export const metadata = { title: { absolute: "Templates guide · Snap" } };
 
@@ -27,6 +28,10 @@ function Designer({
 export default function DocsTemplatesPage() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-10">
+      <div className="flex items-center gap-2">
+        <SnapMark className="h-5 w-5" />
+        <span className="text-sm font-medium text-ink">Snap docs</span>
+      </div>
       <h1 className="text-2xl font-semibold tracking-[-0.6px] text-ink">Templates</h1>
       <p className="text-sm leading-relaxed text-ink-subtle">
         One library for everything reusable in your studio. Manage it all from{" "}
