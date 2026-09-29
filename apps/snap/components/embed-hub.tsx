@@ -192,7 +192,7 @@ export function EmbedHub({ embedKey, slug, bookingUrl, studioTheme, studioAccent
       <div className="mt-4 grid gap-3 rounded-lg border border-hairline bg-background p-4 sm:grid-cols-4">
         <label className="flex flex-col gap-1 text-xs text-ink-subtle">
           Theme
-          <select value={theme} onChange={(e) => setTheme(e.target.value)} className={inputCls}>
+          <select value={theme} onChange={(e) => setTheme(e.target.value)} className={`${inputCls} snap-select`}>
             <option value="brand">Studio default</option>
             <option value="light">Light</option>
             <option value="dark">Dark</option>

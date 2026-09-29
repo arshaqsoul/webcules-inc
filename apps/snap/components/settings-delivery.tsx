@@ -66,7 +66,7 @@ export function SettingsDelivery({
         <div className="mt-4 flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <label htmlFor="rejectedRetention" className="text-sm text-ink">Rejected files</label>
-            <select id="rejectedRetention" className="max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm"
+            <select id="rejectedRetention" className="snap-select max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm"
               value={retentionDays} onChange={(e) => setRetentionDays(e.target.value)}>
               <option value="0">Keep forever</option>
               <option value="7">Delete after 7 days</option>

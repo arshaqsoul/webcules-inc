@@ -233,7 +233,7 @@ export function ProjectPayments({ projectId, payments, summary }: { projectId: s
             <select
               value={method}
               onChange={(e) => setMethod(e.target.value)}
-              className="rounded-md border border-hairline bg-canvas px-2 py-1.5 text-sm text-ink"
+              className="snap-select rounded-md border border-hairline bg-canvas px-2 py-1.5 text-sm text-ink"
             >
               {METHODS.map((m) => (
                 <option key={m.value} value={m.value}>

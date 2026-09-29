@@ -213,7 +213,7 @@ export function AvailabilityEditor({ initial }: { initial: Initial }) {
               value={payKind}
               onChange={(e) => setPayKind(e.target.value as "deposit" | "full")}
               disabled={!payEnabled}
-              className="rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
+              className="snap-select rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
             >
               <option value="deposit">Deposit</option>
               <option value="full">Full session</option>

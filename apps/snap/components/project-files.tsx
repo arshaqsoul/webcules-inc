@@ -1969,7 +1969,7 @@ export function ProjectFiles({ projectId, clientEmail, initial }: { projectId: s
                     <select
                       value={renamePad}
                       onChange={(e) => setRenamePad(Number(e.target.value))}
-                      className="rounded-md border border-hairline bg-canvas px-2.5 py-2 text-sm text-ink"
+                      className="snap-select rounded-md border border-hairline bg-canvas px-2.5 py-2 text-sm text-ink"
                     >
                       {[1, 2, 3, 4, 5].map((d) => (
                         <option key={d} value={d}>{d} ({String(1).padStart(d, "0")})</option>

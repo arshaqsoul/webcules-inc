@@ -105,7 +105,7 @@ export function SettingsBrand({
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="snapTheme">Widget theme</Label>
-          <select id="snapTheme" className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+          <select id="snapTheme" className="snap-select rounded-md border border-input bg-background px-3 py-2 text-sm"
             value={theme} onChange={(e) => setTheme(e.target.value)}>
             <option value="light">Light</option>
             <option value="dark">Dark</option>

@@ -89,7 +89,7 @@ export function SettingsGeneral({
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="timezone">Timezone</Label>
-          <select id="timezone" className="input rounded-md border border-input bg-background px-3 py-2 text-sm"
+          <select id="timezone" className="input snap-select rounded-md border border-input bg-background px-3 py-2 text-sm"
             value={timezone} onChange={(e) => setTimezone(e.target.value)}>
             {(zones.length ? zones : [timezone]).map((z) => <option key={z} value={z}>{z}</option>)}
           </select>
