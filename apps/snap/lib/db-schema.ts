@@ -598,6 +598,8 @@ export const shareGrants = sqliteTable(
     /** WEB-261: downloads 2.0 controls (PIN hash, count limit, approval
      * toggle, web-size option) as validated JSON. NULL = plain downloads. */
     downloadSettings: text("download_settings"),
+    /** WEB-262: per-photo social sharing allowed (default on). */
+    allowSharing: integer("allow_sharing", { mode: "boolean" }).notNull().default(true),
     /** WEB-261: expiry-reminder email sent (epoch seconds, once per grant). */
     expiryRemindedAt: integer("expiry_reminded_at"),
     createdAt: ts("created_at"),
@@ -638,6 +640,33 @@ export const downloadRequests = sqliteTable(
   (t) => [
     index("download_request_grant_idx").on(t.grantId, t.state, t.createdAt),
     index("download_request_org_idx").on(t.organizationId, t.state, t.createdAt),
+  ],
+);
+
+/** WEB-262: per-photo share tokens — children of the gallery grant. The
+ * parent's status/expiry/sharing-toggle is re-checked on every resolve, so
+ * revoking or regenerating the gallery kills every photo link with it. */
+export const photoShares = sqliteTable(
+  "photo_share",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    grantId: text("grant_id")
+      .notNull()
+      .references(() => shareGrants.id, { onDelete: "cascade" }),
+    assetId: text("asset_id")
+      .notNull()
+      .references(() => assets.id, { onDelete: "cascade" }),
+    tokenHash: text("token_hash").notNull().unique(),
+    tokenEnc: text("token_enc").notNull(),
+    expiresAt: ts("expires_at").notNull(),
+    createdAt: ts("created_at"),
+  },
+  (t) => [
+    index("photo_share_grant_idx").on(t.grantId, t.createdAt),
+    index("photo_share_asset_idx").on(t.assetId),
   ],
 );
 

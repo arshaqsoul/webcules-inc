@@ -835,7 +835,7 @@ function GalleryTile(props: {
 }
 
 
-export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLabel, watermarked, deterrents, assets, allowDownload, expiresAt, selectionMode, selectionLimit, selectionDeadline, initialFavorites, submittedSelection, clientToken, design, slideshow }: Brand & {
+export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLabel, watermarked, deterrents, assets, allowDownload, expiresAt, selectionMode, selectionLimit, selectionDeadline, initialFavorites, submittedSelection, clientToken, design, slideshow, allowSharing }: Brand & {
   assets: GalleryAsset[];
   allowDownload: boolean;
   expiresAt: string | null;
@@ -850,6 +850,8 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
   design?: GalleryDesign | null;
   /** WEB-259: slideshow (server-resolved: Free tier arrives musicless). */
   slideshow?: SlideshowProps | null;
+  /** WEB-262: per-photo sharing allowed (Lite+ AND the studio toggle). */
+  allowSharing?: boolean;
 }) {
   const [open, setOpen] = useState<number | null>(null);
   // WEB-259: slideshow start index into the photos-only slide list.
@@ -863,6 +865,8 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
   const [dlFlash, setDlFlash] = useState("");
   const [pinPrompt, setPinPrompt] = useState<{ retry: () => void } | null>(null);
   const [pinValue, setPinValue] = useState("");
+  // WEB-262: native share sheet (fallback menu) for the current lightbox photo.
+  const [shareSheet, setShareSheet] = useState<{ url: string } | null>(null);
 
   const refreshDownloads = useCallback(async () => {
     try {
@@ -948,6 +952,35 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
       setTimeout(() => setDlFlash(""), 3000);
     }
     setDlBusy(false);
+  }
+
+  async function sharePhoto(assetId: string) {
+    try {
+      const res = await fetch(`/api/g/${clientToken}/share`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assetId }),
+      });
+      const body = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
+      if (!res.ok || !body.url) {
+        setDlFlash(body.error === "rate_limited" ? "That's a lot of sharing today — try again tomorrow." : "Couldn't create the share link — try again.");
+        setTimeout(() => setDlFlash(""), 3500);
+        return;
+      }
+      const shareData = { title: studioName, text: `A photo from ${studioName}`, url: body.url };
+      if (typeof navigator !== "undefined" && navigator.share) {
+        try {
+          await navigator.share(shareData);
+          return;
+        } catch {
+          // user dismissed or the sheet failed — fall through to the menu
+        }
+      }
+      setShareSheet({ url: body.url });
+    } catch {
+      setDlFlash("Network error — try again.");
+      setTimeout(() => setDlFlash(""), 3000);
+    }
   }
 
   async function verifyPin() {
@@ -1531,6 +1564,39 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
         </div>
       )}
 
+      {shareSheet && (
+        <div role="dialog" aria-modal="true" aria-label="Share this photo" className="fixed inset-0 z-[70] flex items-end justify-center bg-black/50 p-4 sm:items-center" onClick={() => setShareSheet(null)}>
+          <div className="w-full max-w-sm rounded-[16px] bg-surface-1 p-5" onClick={(e) => e.stopPropagation()}>
+            <p className="text-sm font-semibold text-ink">Share this photo</p>
+            <p className="mt-1 truncate text-xs text-ink-tertiary">{shareSheet.url}</p>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  void navigator.clipboard?.writeText(shareSheet.url);
+                  setShareSheet(null);
+                  setDlFlash("Link copied ✓");
+                  setTimeout(() => setDlFlash(""), 2500);
+                }}
+                className="rounded-lg bg-surface-2 px-3 py-2.5 text-sm font-medium text-ink hover:bg-surface-3"
+              >
+                Copy link
+              </button>
+              <a href={`https://wa.me/?text=${encodeURIComponent("Look at this photo ") + encodeURIComponent(shareSheet.url)}`} target="_blank" rel="noreferrer" className="rounded-lg bg-surface-2 px-3 py-2.5 text-center text-sm font-medium text-ink hover:bg-surface-3">
+                WhatsApp
+              </a>
+              <a href={`mailto:?subject=${encodeURIComponent("A photo from " + studioName)}&body=${encodeURIComponent(shareSheet.url)}`} className="rounded-lg bg-surface-2 px-3 py-2.5 text-center text-sm font-medium text-ink hover:bg-surface-3">
+                Email
+              </a>
+              <button type="button" onClick={() => setShareSheet(null)} className="rounded-lg border border-hairline px-3 py-2.5 text-sm text-ink-muted">
+                Close
+              </button>
+            </div>
+            <p className="mt-3 text-[11px] leading-relaxed text-ink-tertiary">Anyone with the link sees this photo (watermarked if your gallery uses watermarks). The link lives as long as the gallery does.</p>
+          </div>
+        </div>
+      )}
+
       {pinPrompt && (
         <div role="dialog" aria-modal="true" aria-label="Enter download PIN" className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-sm rounded-[16px] bg-surface-1 p-6">
@@ -1601,6 +1667,16 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M18 6 6 18M6 6l12 12" /></svg>
             </button>
             <span className="min-w-0 flex-1 truncate text-sm">{open !== null ? `${open + 1} / ${visible.length} · ` : ""}{current.filename}</span>
+            {allowSharing && current.kind === "image" && (
+              <button
+                type="button"
+                onClick={() => void sharePhoto(current.id)}
+                className="rounded-md px-2.5 py-1.5 text-xs font-medium underline-offset-2 hover:bg-white/10 hover:underline"
+                title="Share this photo"
+              >
+                Share
+              </button>
+            )}
             {allowDownload && (
               <span className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                 <button

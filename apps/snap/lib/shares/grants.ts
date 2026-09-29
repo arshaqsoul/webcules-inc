@@ -438,6 +438,7 @@ export async function regenerateShareGrant(params: {
     allowDownload: old.allowDownload,
     // WEB-261: download controls carry over to the fresh link.
     downloadSettings: old.downloadSettings,
+    allowSharing: old.allowSharing,
   });
   for (const row of assetRows) {
     await db.insert(schema.shareGrantAssets).values({ grantId: newId, assetId: row.assetId, folderName: row.folderName ?? null });

@@ -217,6 +217,7 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
         clientToken={token}
         design={design}
         slideshow={slideshow}
+        allowSharing={grant.allowSharing && (ent?.id ?? "free") !== "free"}
       />
     );
   }
@@ -261,6 +262,7 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
       clientToken={token}
       design={design}
       slideshow={slideshow}
+      allowSharing={grant.allowSharing && (ent?.id ?? "free") !== "free"}
     />
   );
 }

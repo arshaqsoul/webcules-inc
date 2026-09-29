@@ -614,17 +614,19 @@ function GrantDownloadSettings({ grantId, canLite, canStudio }: { grantId: strin
   const [approval, setApproval] = useState(false);
   const [webSize, setWebSize] = useState(false);
   const [hasPin, setHasPin] = useState(false);
+  const [sharing, setSharing] = useState(true);
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
 
   async function load() {
     const res = await fetch(`/api/grants/${grantId}/download-settings`);
     if (!res.ok) return;
-    const body = (await res.json()) as { settings: { pin: boolean; limit: number | null; approval: boolean; webSize: boolean } };
+    const body = (await res.json()) as { settings: { pin: boolean; limit: number | null; approval: boolean; webSize: boolean }; allowSharing?: boolean };
     setHasPin(body.settings.pin);
     setLimit(body.settings.limit === null ? "" : String(body.settings.limit));
     setApproval(body.settings.approval);
     setWebSize(body.settings.webSize);
+    setSharing(body.allowSharing !== false);
   }
 
   useEffect(() => {
@@ -641,6 +643,7 @@ function GrantDownloadSettings({ grantId, canLite, canStudio }: { grantId: strin
         body: JSON.stringify({
           settings: { limit: limit === "" ? null : Number(limit), approval, webSize },
           ...(clearPin ? { clearPin: true } : pin ? { pin } : {}),
+          allowSharing: sharing,
         }),
       });
       const body = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
@@ -705,6 +708,10 @@ function GrantDownloadSettings({ grantId, canLite, canStudio }: { grantId: strin
             <label className="flex items-center gap-2 text-ink-subtle" title="Offer a 2048px web-size option">
               <input type="checkbox" checked={webSize} onChange={(e) => setWebSize(e.target.checked)} disabled={!canLite} className="h-4 w-4" />
               Web size
+            </label>
+            <label className="flex items-center gap-2 text-ink-subtle" title="Clients can share single photos as link cards (they die with this gallery)">
+              <input type="checkbox" checked={sharing} onChange={(e) => setSharing(e.target.checked)} className="h-4 w-4" />
+              Social sharing
             </label>
             <Button size="sm" disabled={busy} onClick={() => void save()} className="ml-auto">
               {busy ? "Saving…" : "Save"}

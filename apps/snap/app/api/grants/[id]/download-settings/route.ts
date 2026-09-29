@@ -19,6 +19,8 @@ const bodySchema = z.object({
   /** When changing the PIN: the plaintext 4–8 digits (hashed server-side). */
   pin: z.string().optional(),
   clearPin: z.boolean().optional(),
+  /** WEB-262: per-gallery social sharing kill-switch (any tier). */
+  allowSharing: z.boolean().optional(),
 });
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -61,7 +63,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   const ok = await saveDownloadSettings(ctx.organizationId, grant.id, settings);
   if (!ok) return Response.json({ error: "not_found" }, { status: 404 });
-  return Response.json({ ok: true, settings: { pin: Boolean(settings.pinHash), limit: settings.limit, approval: settings.approval, webSize: settings.webSize } });
+  if (parsed.data.allowSharing !== undefined) {
+    await getDb()
+      .update(schema.shareGrants)
+      .set({ allowSharing: parsed.data.allowSharing })
+      .where(eq(schema.shareGrants.id, grant.id));
+  }
+  return Response.json({ ok: true, settings: { pin: Boolean(settings.pinHash), limit: settings.limit, approval: settings.approval, webSize: settings.webSize }, allowSharing: parsed.data.allowSharing ?? grant.allowSharing });
 }
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -77,5 +85,5 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   )[0];
   if (!grant) return Response.json({ error: "not_found" }, { status: 404 });
   const s = downloadSettingsOf(grant);
-  return Response.json({ settings: { pin: Boolean(s.pinHash), limit: s.limit, approval: s.approval, webSize: s.webSize } });
+  return Response.json({ settings: { pin: Boolean(s.pinHash), limit: s.limit, approval: s.approval, webSize: s.webSize }, allowSharing: grant.allowSharing });
 }
