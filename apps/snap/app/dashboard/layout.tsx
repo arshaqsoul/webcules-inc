@@ -8,6 +8,7 @@ import { BookOpen } from "lucide-react";
 import { getOrgContext } from "@/lib/session";
 import { getStudioProfile, listUserStudios } from "@/lib/repos/studios";
 import { getPlanEntitlements } from "@/lib/plans";
+import { Button } from "@webcules/ui/components/button";
 import { SignOutButton } from "@/components/sign-out-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { DormancyBanner } from "@/components/dormancy-banner";
@@ -58,16 +59,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <DashboardNavLinks includeDocs={false} />
         <div className="mt-auto flex flex-col gap-0.5 border-t border-hairline p-2">
           {/* Docs opens beside the app (external tab) — kept in the bottom
-           * utility group, above theme/logout, out of the studio nav. */}
-          <a
-            href="/docs/embeds"
-            target="_blank"
-            rel="noreferrer"
-            className="flex w-full items-center rounded-md px-2 py-1.5 text-sm text-ink-subtle transition-colors hover:bg-surface-2 hover:text-ink"
-          >
-            <BookOpen className="h-4 w-4 shrink-0" aria-hidden />
-            <span className="ml-2.5">Docs</span>
-          </a>
+           * utility group, above theme/logout, out of the studio nav. Same
+           * ghost button styles so the group aligns and reads identically. */}
+          <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
+            <a href="/docs/embeds" target="_blank" rel="noreferrer">
+              <BookOpen className="h-4 w-4 shrink-0" aria-hidden />
+              <span className="ml-2.5">Docs</span>
+            </a>
+          </Button>
           <ThemeToggle />
           <SignOutButton />
         </div>
