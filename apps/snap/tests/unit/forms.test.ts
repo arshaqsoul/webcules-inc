@@ -4,6 +4,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  countCustomFields,
+  FREE_CUSTOM_FIELD_CAP,
   LEAD_FIELD_MAPPINGS,
   mapLeadColumns,
   packLeadCustomFields,
@@ -173,5 +175,24 @@ describe("lead mapping (WEB-248)", () => {
   it("lead mappings cover the standard set with matching kinds", () => {
     const kinds: Record<string, string> = Object.fromEntries(Object.entries(LEAD_FIELD_MAPPINGS).map(([k, v]) => [k, v.kind]));
     expect(kinds).toEqual({ name: "text", email: "email", phone: "phone", eventDate: "date", eventType: "select", message: "textarea" });
+  });
+});
+
+describe("custom-field cap (WEB-249)", () => {
+  it("counts non-lead-column fields", () => {
+    const schema = validateFormSchema({
+      v: 1,
+      fields: [
+        { id: "f_name", kind: "text", label: "Name", required: true },
+        { id: "f_email", kind: "email", label: "Email", required: true },
+        { id: "f_venue", kind: "text", label: "Venue", required: false },
+        { id: "f_ig", kind: "text", label: "Instagram", required: false },
+        { id: "f_dogs", kind: "text", label: "Dogs", required: false },
+      ],
+    })!;
+    expect(FREE_CUSTOM_FIELD_CAP).toBe(2);
+    expect(countCustomFields(schema)).toBe(3);
+    const within = validateFormSchema({ v: 1, fields: schema.fields.slice(0, 4) })!;
+    expect(countCustomFields(within)).toBe(2);
   });
 });

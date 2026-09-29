@@ -19,6 +19,7 @@ export function SettingsEmbeds({
   studioFontFamily,
   embedOrigins,
   brandRevision,
+  forms,
 }: {
   embedKey: string;
   slug: string;
@@ -28,6 +29,7 @@ export function SettingsEmbeds({
   studioFontFamily: string;
   embedOrigins: string[];
   brandRevision: string;
+  forms: Array<{ id: string; name: string; isDefault: boolean }>;
 }) {
   const router = useRouter();
   const [origins, setOrigins] = useState(embedOrigins.join("\n"));
@@ -68,6 +70,7 @@ export function SettingsEmbeds({
         originsCount={embedOrigins.length}
         revision={brandRevision}
         onKeyRotated={(newKey) => setKey(newKey)}
+        forms={forms}
       />
 
       <section className={card} id="origins">

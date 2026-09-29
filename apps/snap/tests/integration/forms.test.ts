@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import { eq } from "drizzle-orm";
 
-import { GET as embedFormRoute } from "@/app/embed/form/route";
+import { GET as embedFormRoute } from "@/app/embed/contact/route";
 import { POST as embedFormSubmit } from "@/app/api/embed/forms/[templateId]/route";
 import { POST as embedFilePresign } from "@/app/api/embed/forms/[templateId]/file/route";
 import { GET as questionnairePage } from "@/app/q/[token]/route";
@@ -41,7 +41,7 @@ describe("embeddable form round trip (WEB-248)", () => {
     const studio = await seedStudio({ name: "Willow & Pine" });
     const template = await seedFormTemplate(studio.organizationId);
 
-    const page = await embedFormRoute(new Request(`https://snap.test/embed/form?key=${studio.embedKey}`));
+    const page = await embedFormRoute(new Request(`https://snap.test/embed/contact?key=${studio.embedKey}`));
     expect(page.status).toBe(200);
     const html = await page.text();
     expect(html).toContain('name="data-f_name"');

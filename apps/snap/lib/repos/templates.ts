@@ -9,6 +9,7 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import { getDb } from "../db";
 import * as schema from "../db-schema";
 import { sanitizeRichText } from "../sanitize";
+import { DEFAULT_CONTACT_FORM_BODY } from "../forms";
 
 export type TemplateRow = typeof schema.templates.$inferSelect;
 export type TemplateInsert = typeof schema.templates.$inferInsert;
@@ -289,23 +290,7 @@ Payment. The session fee is due at booking and reserves the date.
 
 By signing below, both parties agree to these terms.`,
     ),
-    row(
-      "form",
-      "General intake",
-      JSON.stringify({
-        v: 1,
-        fields: [
-          { id: "f_name", kind: "text", label: "Your name", required: true },
-          { id: "f_email", kind: "email", label: "Email", required: true },
-          { id: "f_phone", kind: "phone", label: "Phone", required: false },
-          { id: "f_date", kind: "date", label: "Preferred date", required: false },
-          { id: "f_how", kind: "select", label: "How did you hear about us?", required: false, options: ["Instagram", "Google", "A friend", "Other"] },
-          { id: "f_notes", kind: "textarea", label: "Anything we should know?", required: false },
-        ],
-      }),
-      {},
-      1,
-    ),
+    row("form", "General intake", DEFAULT_CONTACT_FORM_BODY, {}, 1),
     row(
       "email_snippet",
       "Inquiry reply",

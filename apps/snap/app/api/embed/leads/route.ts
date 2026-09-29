@@ -34,6 +34,21 @@ export async function POST(req: Request) {
   } catch {
     return Response.json({ error: "invalid_json" }, { status: 400 });
   }
+  // WEB-249: the schema-driven widget posts the f_* field-id convention —
+  // map the standard set onto the legacy payload keys (fallback path only;
+  // template-backed forms use /api/embed/forms/{id}).
+  if (typeof (body as Record<string, unknown>).f_name === "string") {
+    const b = body as Record<string, string>;
+    body = {
+      ...b,
+      name: b.f_name ?? "",
+      email: b.f_email ?? "",
+      phone: b.f_phone ?? "",
+      eventDate: b.f_eventDate ?? "",
+      eventType: b.f_eventType ?? "",
+      message: b.f_message ?? "",
+    };
+  }
   const parsed = leadSchema.safeParse(body);
   if (!parsed.success) return Response.json({ error: "invalid_input" }, { status: 400 });
   const input = parsed.data;

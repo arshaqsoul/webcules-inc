@@ -13,6 +13,18 @@ export const dynamic = "force-dynamic";
 
 export const metadata = { title: { absolute: "Forms · Snap" } };
 
+function safeMeta(raw: string): { submitLabel?: string; redirectUrl?: string } {
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    return {
+      ...(typeof parsed.submitLabel === "string" ? { submitLabel: parsed.submitLabel } : {}),
+      ...(typeof parsed.redirectUrl === "string" ? { redirectUrl: parsed.redirectUrl } : {}),
+    };
+  } catch {
+    return {};
+  }
+}
+
 export default async function FormsPage({ searchParams }: { searchParams: Promise<{ edit?: string }> }) {
   const ctx = await getOrgContext();
   if (!ctx) return null;
@@ -34,7 +46,14 @@ export default async function FormsPage({ searchParams }: { searchParams: Promis
           </div>
           <Link href="/dashboard/templates/forms" className="text-xs font-medium text-primary hover:underline">← All forms</Link>
         </div>
-        <FormBuilder templateId={editing.id} initialName={editing.name} initialSchema={schema} allowFile={allowFile} />
+        <FormBuilder
+            templateId={editing.id}
+            initialName={editing.name}
+            initialSchema={schema}
+            initialMeta={safeMeta(editing.meta)}
+            allowFile={allowFile}
+            customFieldCap={allowFile ? null : 2}
+          />
       </div>
     );
   }

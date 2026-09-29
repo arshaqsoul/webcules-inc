@@ -261,3 +261,33 @@ export function unpackLeadCustomFields(json: string | null | undefined): Array<{
     return [];
   }
 }
+
+/** The canonical contact-form schema (WEB-249): byte-parity with the
+ * pre-designer hardcoded widget — the starter "General intake" template and
+ * the widget's no-template fallback both render exactly this. Copy fields/
+ * labels/options stay lead-column compatible. */
+export const DEFAULT_CONTACT_FORM_BODY = JSON.stringify({
+  v: 1,
+  title: "Get in touch",
+  intro: "Tell us about your shoot — we usually reply within a day.",
+  thankYou: "Thank you — your inquiry is in! We'll get back to you shortly.",
+  fields: [
+    { id: "f_name", kind: "text", label: "Name", required: true, half: true },
+    { id: "f_email", kind: "email", label: "Email", required: true, half: true },
+    { id: "f_phone", kind: "phone", label: "Phone", required: false, half: true },
+    { id: "f_eventDate", kind: "date", label: "Event date", required: false, half: true },
+    { id: "f_eventType", kind: "select", label: "What kind of shoot?", required: false, options: ["Wedding", "Engagement", "Family", "Portrait", "Event", "Commercial", "Other"] },
+    { id: "f_message", kind: "textarea", label: "Tell us more", required: false },
+  ],
+} satisfies FormSchema);
+
+/** Free/Lite cap: custom (non-lead-column) fields allowed on a form. */
+export const FREE_CUSTOM_FIELD_CAP = 2;
+
+/** Count a schema's custom fields (everything that is not a standard lead
+ * column mapping). */
+export function countCustomFields(schema: FormSchema): number {
+  const { standard } = mapLeadColumns(schema);
+  const mapped = new Set(Object.values(standard));
+  return schema.fields.filter((f) => !mapped.has(f.id)).length;
+}

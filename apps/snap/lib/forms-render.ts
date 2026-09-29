@@ -31,6 +31,8 @@ export type RenderFormOptions = {
   honeypotName?: string;
   /** False for the builder's preview iframe (no script/submit). */
   interactive?: boolean;
+  /** Optional https URL navigated to after a successful submit. */
+  redirectUrl?: string;
 };
 
 /** One field's markup — inline styles only (widget budget contract). */
@@ -173,6 +175,11 @@ export function renderFormHtml(schema: FormSchema, opts: RenderFormOptions): str
       });
       var body = await res.json().catch(function () { return {}; });
       if (res.ok) {
+        var redirect = ${JSON.stringify(opts.redirectUrl ?? "")};
+        if (redirect) {
+          try { window.top.location.href = redirect; } catch (e) { window.location.href = redirect; }
+          return;
+        }
         form.style.display = "none";
         msg.className = "msg ok";
         msg.textContent = ${JSON.stringify(schema.thankYou ?? "Thank you — we got it! We'll be in touch shortly.")};

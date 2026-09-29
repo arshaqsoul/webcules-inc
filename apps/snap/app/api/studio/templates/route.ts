@@ -6,7 +6,7 @@ import { z } from "zod";
 
 import { getOrgContext } from "@/lib/session";
 import { getPlanEntitlements } from "@/lib/plans";
-import { validateFormSchema } from "@/lib/forms";
+import { countCustomFields, FREE_CUSTOM_FIELD_CAP, validateFormSchema } from "@/lib/forms";
 import { createTemplate, isTemplateKind, listTemplates, type TemplateKind } from "@/lib/repos/templates";
 
 export const dynamic = "force-dynamic";
@@ -54,6 +54,12 @@ export async function POST(req: Request) {
     }
     const schema = validateFormSchema(parsed, { allowFile });
     if (!schema) return Response.json({ error: allowFile ? "invalid_schema" : "file_fields_require_studio" }, { status: 400 });
+    const capOk = ent?.id === "studio" || ent?.id === "pro" || countCustomFields(schema) <= FREE_CUSTOM_FIELD_CAP;
+    if (!capOk) return Response.json({ error: "custom_fields_limit", limit: FREE_CUSTOM_FIELD_CAP }, { status: 403 });
+  }
+  if ((body.meta as Record<string, unknown> | undefined)?.redirectUrl !== undefined) {
+    const r = String((body.meta as Record<string, unknown>).redirectUrl);
+    if (r !== "" && !/^https:\/\//i.test(r)) return Response.json({ error: "invalid_redirect" }, { status: 400 });
   }
 
   const result = await createTemplate({

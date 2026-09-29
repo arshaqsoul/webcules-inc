@@ -54,14 +54,7 @@ FROM organization;
 
 INSERT INTO template (id, organization_id, kind, name, body, meta, is_default)
 SELECT lower(hex(randomblob(16))), id, 'form', 'General intake',
-'{"v":1,"fields":[
-{"id":"f_name","kind":"text","label":"Your name","required":true},
-{"id":"f_email","kind":"email","label":"Email","required":true},
-{"id":"f_phone","kind":"phone","label":"Phone","required":false},
-{"id":"f_date","kind":"date","label":"Preferred date","required":false},
-{"id":"f_how","kind":"select","label":"How did you hear about us?","required":false,"options":["Instagram","Google","A friend","Other"]},
-{"id":"f_notes","kind":"textarea","label":"Anything we should know?","required":false}
-]}', '{}', 1
+'{"v": 1, "title": "Get in touch", "intro": "Tell us about your shoot — we usually reply within a day.", "thankYou": "Thank you — your inquiry is in! We''ll get back to you shortly.", "fields": [{"id": "f_name", "kind": "text", "label": "Name", "required": true, "half": true}, {"id": "f_email", "kind": "email", "label": "Email", "required": true, "half": true}, {"id": "f_phone", "kind": "phone", "label": "Phone", "required": false, "half": true}, {"id": "f_eventDate", "kind": "date", "label": "Event date", "required": false, "half": true}, {"id": "f_eventType", "kind": "select", "label": "What kind of shoot?", "required": false, "options": ["Wedding", "Engagement", "Family", "Portrait", "Event", "Commercial", "Other"]}, {"id": "f_message", "kind": "textarea", "label": "Tell us more", "required": false}]}', '{}', 1
 FROM organization;
 
 INSERT INTO template (id, organization_id, kind, name, body, meta, is_default)

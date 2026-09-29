@@ -33,6 +33,8 @@ type Props = {
   liveTokens?: Record<string, unknown>;
   /** Lets the parent (settings form) refresh its logo URL after a rotation. */
   onKeyRotated?: (newKey: string) => void;
+  /** WEB-249: the studio's contact forms (multi-form, Studio tier). */
+  forms?: Array<{ id: string; name: string; isDefault: boolean }>;
 };
 
 const APP_ORIGIN = "https://snap.webcules.com";
@@ -43,7 +45,7 @@ const inputCls =
 
 type WidgetKind = "contact" | "calendar" | "calendar-button";
 
-export function EmbedHub({ embedKey, slug, bookingUrl, studioTheme, studioAccent, studioFontFamily, originsCount, revision, liveTokens, onKeyRotated }: Props) {
+export function EmbedHub({ embedKey, slug, bookingUrl, studioTheme, studioAccent, studioFontFamily, originsCount, revision, liveTokens, onKeyRotated, forms = [] }: Props) {
   const router = useRouter();
   const confirm = useConfirm();
   const [theme, setTheme] = useState("brand"); // brand | light | dark | auto
@@ -64,11 +66,12 @@ export function EmbedHub({ embedKey, slug, bookingUrl, studioTheme, studioAccent
   if (/^#[0-9a-f]{6}$/.test(a)) attrs.push(`data-snap-accent="${a}"`);
   const attrStr = attrs.length > 0 ? ` ${attrs.join(" ")}` : "";
 
-  function snippet(kind: WidgetKind): string {
+  function snippet(kind: WidgetKind, formId?: string): string {
     const labelAttr = kind === "calendar-button" ? ` data-snap-label="${label.replace(/"/g, "&quot;")}"` : "";
+    const formAttr = formId ? ` data-snap-form="${formId}"` : "";
     return [
       `<!-- Snap · ${kind === "contact" ? "contact form" : kind === "calendar" ? "booking calendar" : "booking button"} -->`,
-      `<div data-snap-widget="${kind}" data-snap-key="${key}"${labelAttr}${attrStr}></div>`,
+      `<div data-snap-widget="${kind}" data-snap-key="${key}"${labelAttr}${formAttr}${attrStr}></div>`,
       `<script src="${LOADER}" async></script>`,
     ].join("\n");
   }
@@ -78,8 +81,9 @@ export function EmbedHub({ embedKey, slug, bookingUrl, studioTheme, studioAccent
    * `rev` busts the iframe when a save lands; live token edits ride along as
    * query overrides (the widget re-sanitizes and layers them over the brand).
    */
-  function previewSrc(kind: "contact" | "calendar"): string {
+  function previewSrc(kind: "contact" | "calendar", formId?: string): string {
     const q = new URLSearchParams({ key });
+    if (formId) q.set("form", formId);
     const resolved = theme === "brand" ? studioTheme : theme;
     q.set("theme", resolved === "dark" ? "dark" : "light"); // previews are static: auto → light
     if (studioFontFamily) q.set("fontFamily", studioFontFamily);
@@ -123,16 +127,16 @@ export function EmbedHub({ embedKey, slug, bookingUrl, studioTheme, studioAccent
 
   const studioBookingUrl = bookingUrl ?? `${APP_ORIGIN}/b/${slug}`;
 
-  const snippetBlock = (id: string, kind: WidgetKind) => (
+  const snippetBlock = (id: string, kind: WidgetKind, formId?: string) => (
     <div className="flex items-start gap-2">
       <code className="flex-1 overflow-x-auto whitespace-pre rounded-md bg-canvas px-3 py-2 font-mono text-[11px] leading-relaxed text-ink-muted">
-        {snippet(kind)}
+        {snippet(kind, formId)}
       </code>
       <Button
         variant="secondary"
         size="icon"
         aria-label={`Copy ${id} snippet`}
-        onClick={() => void copy(id, snippet(kind))}
+        onClick={() => void copy(id, snippet(kind, formId))}
       >
         {copied === id ? <Check className="h-4 w-4" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />}
       </Button>
@@ -227,6 +231,22 @@ export function EmbedHub({ embedKey, slug, bookingUrl, studioTheme, studioAccent
             <iframe title="Contact form preview" src={previewSrc("contact")} className="h-80 w-full border-0" />
           </div>
           {snippetBlock("contact", "contact")}
+          {forms.filter((f) => !f.isDefault).length > 0 && (
+            <div className="mt-3 flex flex-col gap-3 border-t border-hairline pt-3">
+              <p className="text-xs font-medium text-ink">More forms</p>
+              {forms
+                .filter((f) => !f.isDefault)
+                .map((f) => (
+                  <div key={f.id}>
+                    <p className="mb-1 text-xs text-ink-subtle">{f.name}</p>
+                    <div className="overflow-hidden rounded-lg border border-hairline">
+                      <iframe title={`Preview · ${f.name}`} src={previewSrc("contact", f.id)} className="h-72 w-full border-0" />
+                    </div>
+                    {snippetBlock(`contact-${f.id}`, "contact", f.id)}
+                  </div>
+                ))}
+            </div>
+          )}
         </div>
 
         <div className={subcard}>

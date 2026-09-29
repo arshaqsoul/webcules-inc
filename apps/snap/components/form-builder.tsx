@@ -33,12 +33,16 @@ export function FormBuilder({
   templateId,
   initialName,
   initialSchema,
+  initialMeta,
   allowFile,
+  customFieldCap,
 }: {
   templateId: string;
   initialName: string;
   initialSchema: FormSchema;
+  initialMeta: { submitLabel?: string; redirectUrl?: string };
   allowFile: boolean;
+  customFieldCap: number | null;
 }) {
   const router = useRouter();
   const [name, setName] = useState(initialName);
@@ -46,6 +50,8 @@ export function FormBuilder({
   const [intro, setIntro] = useState(initialSchema.intro ?? "");
   const [thankYou, setThankYou] = useState(initialSchema.thankYou ?? "");
   const [fields, setFields] = useState<DraftField[]>(() => toDraft(initialSchema));
+  const [submitLabel, setSubmitLabel] = useState(initialMeta.submitLabel ?? "");
+  const [redirectUrl, setRedirectUrl] = useState(initialMeta.redirectUrl ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [previewKey, setPreviewKey] = useState(0);
@@ -96,11 +102,28 @@ export function FormBuilder({
       const res = await fetch(`/api/studio/templates/${templateId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim() || "Untitled form", body: JSON.stringify(schema) }),
+        body: JSON.stringify({
+          name: name.trim() || "Untitled form",
+          body: JSON.stringify(schema),
+          meta: {
+            ...(submitLabel.trim() ? { submitLabel: submitLabel.trim().slice(0, 40) } : {}),
+            ...(redirectUrl.trim() ? { redirectUrl: redirectUrl.trim() } : {}),
+          },
+        }),
       });
       const body = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {
-        setError(body.error === "invalid_schema" ? "Some fields are invalid — check ids, labels and options." : body.error === "file_fields_require_studio" ? "File fields need the Studio plan." : "Couldn't save — try again.");
+        setError(
+          body.error === "invalid_schema"
+            ? "Some fields are invalid — check ids, labels and options."
+            : body.error === "file_fields_require_studio"
+              ? "File fields need the Studio plan."
+              : body.error === "custom_fields_limit"
+                ? `Free plans allow ${customFieldCap} custom questions — upgrade to Studio for unlimited.`
+                : body.error === "invalid_redirect"
+                  ? "Redirect URL must start with https://"
+                  : "Couldn't save — try again.",
+        );
         return;
       }
       if (preview) setPreviewKey((k) => k + 1);
@@ -133,6 +156,16 @@ export function FormBuilder({
               Thank-you message
               <input value={thankYou} onChange={(e) => setThankYou(e.target.value)} placeholder="Thank you — we got it!" className="rounded-md border border-hairline bg-canvas px-3 py-2 text-sm text-ink outline-none focus:border-primary" />
             </label>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className="flex flex-col gap-1 text-xs text-ink-subtle">
+                Submit button label
+                <input value={submitLabel} onChange={(e) => setSubmitLabel(e.target.value)} placeholder="Send inquiry" className="rounded-md border border-hairline bg-canvas px-3 py-2 text-sm text-ink outline-none focus:border-primary" />
+              </label>
+              <label className="flex flex-col gap-1 text-xs text-ink-subtle">
+                Redirect after submit (https, optional)
+                <input value={redirectUrl} onChange={(e) => setRedirectUrl(e.target.value)} placeholder="https://yourstudio.com/thanks" className="rounded-md border border-hairline bg-canvas px-3 py-2 text-sm text-ink outline-none focus:border-primary" />
+              </label>
+            </div>
           </div>
         </section>
 

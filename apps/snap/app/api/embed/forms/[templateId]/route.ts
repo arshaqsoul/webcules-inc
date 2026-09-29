@@ -112,7 +112,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ templat
       eventDate: eventDate ? new Date(`${eventDate}T12:00:00Z`) : null,
       eventType: eventType || null,
       message: message || null,
-      source: "contact_form",
+      source: template.isDefault ? "contact_form" : template.name.slice(0, 40),
       embedOrigin: embedOrigin || null,
       customFields,
     });

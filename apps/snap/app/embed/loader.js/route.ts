@@ -68,8 +68,9 @@ const LOADER_JS = `(function () {
     } catch (e) {}
     return out;
   }
-  function buildSrc(widget, key, tokens) {
+  function buildSrc(widget, key, tokens, form) {
     var q = "key=" + encodeURIComponent(key);
+    if (form && /^[a-f0-9-]{8,64}$/i.test(form)) q += "&form=" + encodeURIComponent(form);
     var theme = tokens.theme;
     if (theme === "auto" && window.matchMedia) {
       theme = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
@@ -98,9 +99,9 @@ const LOADER_JS = `(function () {
       }
     });
   }
-  function makeFrame(widget, key, tokens) {
+  function makeFrame(widget, key, tokens, form) {
     var frame = document.createElement("iframe");
-    frame.src = buildSrc(widget, key, tokens);
+    frame.src = buildSrc(widget, key, tokens, form);
     frame.title = widget === "contact" ? "Contact form" : "Booking calendar";
     frame.setAttribute("loading", "lazy");
     frame.setAttribute("style", "width:100%;border:0;display:block;min-height:200px;");
@@ -118,7 +119,8 @@ const LOADER_JS = `(function () {
     var tokens = collectTokens(el);
     if (opts) for (var k in opts) tokens[k] = opts[k];
     if (tokens.inherit === "auto") { var inh = inheritTokens(el); for (var i in inh) if (!(i in tokens)) tokens[i] = inh[i]; }
-    var frame = makeFrame(widget, key, tokens);
+    var formId = el.getAttribute("data-snap-form") || "";
+    var frame = makeFrame(widget, key, tokens, formId);
     el.appendChild(frame);
     el.setAttribute("data-snap-mounted", "1");
     listenResize(frame);

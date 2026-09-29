@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { SettingsEmbeds } from "@/components/settings-embeds";
 import { clientUrl } from "@/lib/client-urls";
 import { getStudioProfile, getStudioSlug } from "@/lib/repos/studios";
+import { listTemplates } from "@/lib/repos/templates";
 import { getOrgContext } from "@/lib/session";
 
 export const metadata = { title: "Settings · Embeds" };
@@ -10,9 +11,10 @@ export const metadata = { title: "Settings · Embeds" };
 export default async function SettingsEmbedsPage() {
   const ctx = await getOrgContext();
   if (!ctx) redirect("/login");
-  const [profile, slug] = await Promise.all([
+  const [profile, slug, formTemplates] = await Promise.all([
     getStudioProfile(ctx.organizationId),
     getStudioSlug(ctx.organizationId),
+    listTemplates(ctx.organizationId, "form"),
   ]);
   if (!profile) redirect("/onboarding");
 
@@ -32,6 +34,7 @@ export default async function SettingsEmbedsPage() {
       studioFontFamily={brand.fontFamily ?? ""}
       embedOrigins={JSON.parse(profile.embedOrigins || "[]") as string[]}
       brandRevision={String(profile.updatedAt?.getTime() ?? "")}
+      forms={formTemplates.map((t) => ({ id: t.id, name: t.name, isDefault: Boolean(t.isDefault) }))}
     />
   );
 }
