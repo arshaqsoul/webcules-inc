@@ -39,6 +39,7 @@ export function LeadThread({
   projectId,
   projectTitle,
   messages,
+  snippets = [],
 }: {
   leadId: string;
   leadName: string;
@@ -50,6 +51,8 @@ export function LeadThread({
   projectId?: string | null;
   projectTitle?: string | null;
   messages: ThreadMessage[];
+  /** WEB-253: canned replies, merge-resolved server-side for this lead. */
+  snippets?: Array<{ id: string; name: string; text: string }>;
 }) {
   const router = useRouter();
   const [reply, setReply] = useState("");
@@ -160,7 +163,23 @@ export function LeadThread({
       </div>
 
       {!converted ? (
-        <div className="rounded-[12px] border border-hairline bg-surface-1 p-4">
+<div className="rounded-[12px] border border-hairline bg-surface-1 p-4">
+          {snippets.length > 0 && (
+            <select
+              className="snap-select mb-2 rounded-md border border-hairline bg-canvas px-2 py-1.5 text-xs text-ink-muted outline-none"
+              value=""
+              onChange={(e) => {
+                const snip = snippets.find((x) => x.id === e.target.value);
+                if (snip) setReply((r) => (r ? `${r}\n\n${snip.text}` : snip.text));
+              }}
+              aria-label="Insert a saved reply"
+            >
+              <option value="">Insert a saved reply…</option>
+              {snippets.map((sn) => (
+                <option key={sn.id} value={sn.id}>{sn.name}</option>
+              ))}
+            </select>
+          )}
           <textarea
             value={reply}
             onChange={(e) => setReply(e.target.value)}

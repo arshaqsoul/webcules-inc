@@ -8,6 +8,8 @@ import { getLeadWithThread } from "@/lib/repos/leads";
 import { getProjectByLeadId } from "@/lib/repos/projects";
 import { getOrgContext } from "@/lib/session";
 import { unpackLeadCustomFields } from "@/lib/forms";
+import { listTemplates } from "@/lib/repos/templates";
+import { buildMergeValues, renderMerge } from "@/lib/merge";
 
 export const metadata = { title: "Lead" };
 
@@ -21,6 +23,14 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
   const { lead, messages } = data;
   const project = lead.status === "converted" ? await getProjectByLeadId(ctx.organizationId, lead.id) : undefined;
   const customFields = unpackLeadCustomFields(lead.customFields);
+  // WEB-253: canned replies resolved for this lead (HTML snippets → text).
+  const snippetRows = await listTemplates(ctx.organizationId, "email_snippet");
+  const mergeValues = await buildMergeValues({ organizationId: ctx.organizationId, clientEmail: lead.email, projectId: project?.id ?? null });
+  const snippets = snippetRows.map((t) => ({
+    id: t.id,
+    name: t.name,
+    text: renderMerge(htmlSnippetToText(t.body), mergeValues, { surface: "plain" }),
+  }));
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-5">
@@ -85,6 +95,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
       )}
 
       <LeadThread
+        snippets={snippets}
         leadId={lead.id}
         leadName={lead.name}
         leadEmail={lead.email}
@@ -103,4 +114,15 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
       />
     </div>
   );
+}
+
+function htmlSnippetToText(html: string): string {
+  return html
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(p|li|h3|h4|blockquote)>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .trim();
 }

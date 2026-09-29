@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
 
 import { SettingsBrand } from "@/components/settings-brand";
+import { EmailsCard } from "@/components/emails-card";
+import { loadEmailOverrides, OVERRIDABLE_TEMPLATES } from "@/lib/email-overrides";
+import { listTemplates } from "@/lib/repos/templates";
 import { brandAssetUrl, parseBrandAssets } from "@/lib/brand-assets";
 import { getPlanEntitlements, PLANS } from "@/lib/plans";
 import { parseWatermarkConfig } from "@/lib/watermark";
@@ -13,6 +16,11 @@ export const metadata = { title: "Settings · Brand" };
 export default async function SettingsBrandPage() {
   const ctx = await getOrgContext();
   if (!ctx) redirect("/login");
+  const [overrides, snippetTemplates] = await Promise.all([
+    loadEmailOverrides(ctx.organizationId),
+    listTemplates(ctx.organizationId, "email_snippet"),
+  ]);
+  const snippets = snippetTemplates.map((t) => ({ id: t.id, name: t.name, subject: (JSON.parse(t.meta || "{}") as { subject?: string }).subject ?? null, body: t.body }));
   const profile = await getStudioProfile(ctx.organizationId);
   if (!profile) redirect("/onboarding");
 
@@ -25,6 +33,7 @@ export default async function SettingsBrandPage() {
   };
   // WEB-238: the entitlement gates the toggle; the toggle gates the surfaces.
   const ent = await getPlanEntitlements(ctx.organizationId);
+  const snippetLimit = ent && ent.id !== "studio" && ent.id !== "pro" ? (ent.maxEmailSnippets ?? 5) : null;
   const assetBag = parseBrandAssets(profile.brandAssets);
   // WEB-242: watermark card state (null config → mode off).
   const wm = parseWatermarkConfig(profile.brand);
@@ -32,6 +41,7 @@ export default async function SettingsBrandPage() {
   const slug = (await getStudioSlug(ctx.organizationId)) ?? "";
 
   return (
+    <div className="flex flex-col gap-5">
     <SettingsBrand
       embedKey={profile.embedKey ?? ""}
       hasLogo={Boolean(profile.logoKey)}
@@ -66,5 +76,13 @@ export default async function SettingsBrandPage() {
         ogCard: assetBag.ogCard ? brandAssetUrl(ctx.organizationId, "ogCard", assetBag.rev) : null,
       }}
     />
+      <EmailsCard
+        templates={OVERRIDABLE_TEMPLATES}
+        initialOverrides={overrides}
+        initialSnippets={snippets}
+        snippetLimit={snippetLimit}
+      />
+    </div>
   );
 }
+

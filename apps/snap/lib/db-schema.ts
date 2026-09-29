@@ -210,6 +210,8 @@ export const studioProfiles = sqliteTable("studio_profile", {
   pendingAddonRemoval: integer("pending_addon_removal", { mode: "boolean" }).notNull().default(false),
   /** WEB-252: invoice designer settings JSON (numbering/tax/terms). */
   invoiceSettings: text("invoice_settings"),
+  /** WEB-253: per-template email copy overrides JSON. */
+  emailOverrides: text("email_overrides"),
   createdAt: ts("created_at"),
   updatedAt: ts("updated_at"),
 });

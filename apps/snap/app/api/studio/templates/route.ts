@@ -57,6 +57,13 @@ export async function POST(req: Request) {
     const capOk = ent?.id === "studio" || ent?.id === "pro" || countCustomFields(schema) <= FREE_CUSTOM_FIELD_CAP;
     if (!capOk) return Response.json({ error: "custom_fields_limit", limit: FREE_CUSTOM_FIELD_CAP }, { status: 403 });
   }
+  // WEB-253: saved snippets — Free/Lite 5, Studio+ unlimited.
+  if (body.kind === "email_snippet") {
+    const limit = ent ? (ent.id === "studio" || ent.id === "pro" ? null : ent.maxEmailSnippets ?? 5) : 5;
+    if (limit !== null && (await countTemplates(ctx.organizationId, "email_snippet")) >= limit) {
+      return Response.json({ error: "limit_reached", limit }, { status: 403 });
+    }
+  }
   // WEB-252: package presets are Lite+; body must parse to preset lines.
   if (body.kind === "invoice_preset") {
     const lite = ent && ent.id !== "free";

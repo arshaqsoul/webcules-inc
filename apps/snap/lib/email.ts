@@ -51,6 +51,28 @@ export async function sendEmail(params: {
       throw new Error("fromOverride must be on the snap.webcules.com domain");
     }
   }
+  // WEB-253: studio copy overrides (subject + intro) for client-facing
+  // templates. Merge fields resolve with studio + recipient context; the
+  // shell (logo, buttons, footer) is never touched.
+  let subject = params.subject;
+  let html = params.html;
+  let text = params.text;
+  if (params.organizationId) {
+    try {
+      const { loadEmailOverrides, applyEmailOverride } = await import("./email-overrides");
+      const { buildMergeValues } = await import("./merge");
+      const override = (await loadEmailOverrides(params.organizationId))[params.template];
+      if (override) {
+        const values = await buildMergeValues({ organizationId: params.organizationId, clientEmail: params.to });
+        const applied = applyEmailOverride({ subject, html, text }, override, values);
+        subject = applied.subject;
+        html = applied.html;
+        text = applied.text;
+      }
+    } catch {
+      /* overrides are cosmetic — never block a send */
+    }
+  }
   let from = params.fromOverride ?? env.EMAIL_FROM ?? "Snap <hello@snap.webcules.com>";
   if (params.fromName) {
     const addr = from.match(/<(.+)>/)?.[1] ?? from;
@@ -60,9 +82,9 @@ export async function sendEmail(params: {
     await env.EMAIL.send({
       to: params.to,
       from,
-      subject: params.subject,
-      html: params.html,
-      text: params.text,
+      subject,
+      html,
+      text,
       ...(params.replyTo ? { replyTo: params.replyTo } : {}),
     } as Parameters<typeof env.EMAIL.send>[0]);
   } catch (err) {
@@ -111,7 +133,8 @@ export type EmailBrand = {
   contactEmail?: string | null;
 };
 
-function shell(accent: string, title: string, bodyHtml: string, footer: string, brand?: EmailBrand): string {
+/** WEB-253: exported for the preview renderer + same-function tests. */
+export function shell(accent: string, title: string, bodyHtml: string, footer: string, brand?: EmailBrand): string {
   const headerHtml = brand?.whiteLabel
     ? brand.emailHeaderUrl
       ? `<img src="${brand.emailHeaderUrl}" alt="${brand.studioName}" height="40" style="height:40px;display:block;border:0;max-width:220px;object-fit:contain;" />`
