@@ -48,7 +48,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
       />
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-14 items-center justify-between gap-2 border-b border-hairline px-4 md:hidden">
-          <MobileNav studioName={profile.studioName} />
+          <MobileNav
+            studios={studios}
+            currentOrganizationId={ctx.organizationId}
+            rootOrganizationId={ent?.rootOrganizationId ?? ctx.organizationId}
+            familyStudioCount={ent?.familyStudioCount ?? 1}
+            maxLinkedStudios={ent?.maxLinkedStudios ?? 1}
+          />
           <span className="min-w-0 flex-1 truncate text-center text-sm font-medium text-ink">{profile.studioName}</span>
           <SignOutButton compact />
         </header>
