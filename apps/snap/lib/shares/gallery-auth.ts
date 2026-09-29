@@ -171,7 +171,7 @@ export async function verifyGalleryOtp(params: {
 
 export async function logShareAccess(
   grantId: string,
-  event: "view" | "otp_sent" | "otp_success" | "otp_fail" | "download",
+  event: "view" | "otp_sent" | "otp_success" | "otp_fail" | "download" | "zip_download" | "pin_fail",
   req?: Request,
 ): Promise<void> {
   try {

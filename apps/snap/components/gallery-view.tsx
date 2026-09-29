@@ -350,6 +350,29 @@ export type SlideshowProps = {
   musicStartAt: number;
 };
 
+/** WEB-261: downloads 2.0 — server-resolved controls + request list. */
+export type DlControls = {
+  allowDownload: boolean;
+  zip: boolean;
+  approval: boolean;
+  webSize: boolean;
+  limit: number | null;
+  limitUsed: number;
+  pin: boolean;
+};
+export type DlRequest = {
+  id: string;
+  scope: string;
+  folderName: string | null;
+  sizePref: string;
+  state: string;
+  fileCount: number | null;
+  zipBytes: number | null;
+  downloadCount: number;
+  expiresAt: number | null;
+  createdAt: string;
+};
+
 /** Autoplay slideshow: crossfade + optional Ken Burns drift per slide, pace
    * 3/5/8 s, arrows/swipe/keyboard, progress bar, 9:16 vertical (social)
    * mode, optional BYO music streamed from R2. Autoplay-policy-safe: audio
@@ -833,6 +856,124 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
   const [slideshowStart, setSlideshowStart] = useState<number | null>(null);
   // WEB-260: the video already counted a view this session (per lightbox).
   const countedVideo = useRef<string | null>(null);
+  // WEB-261: downloads 2.0 — controls + request list from the server.
+  const [dl, setDl] = useState<{ requests: DlRequest[]; controls: DlControls } | null>(null);
+  const [dlMenuOpen, setDlMenuOpen] = useState(false);
+  const [dlBusy, setDlBusy] = useState(false);
+  const [dlFlash, setDlFlash] = useState("");
+  const [pinPrompt, setPinPrompt] = useState<{ retry: () => void } | null>(null);
+  const [pinValue, setPinValue] = useState("");
+
+  const refreshDownloads = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/g/${clientToken}/download-request`);
+      if (!res.ok) return;
+      setDl((await res.json()) as { requests: DlRequest[]; controls: DlControls });
+    } catch {
+      // downloads UI is progressive enhancement — never block the gallery
+    }
+  }, [clientToken]);
+  useEffect(() => {
+    void refreshDownloads();
+  }, [refreshDownloads]);
+
+  /** Fetch a download as a blob (so a 401 pin_required can open the PIN
+   * modal instead of silently failing) and save it. */
+  const downloadVia = useCallback(
+    async (url: string, fallbackName: string) => {
+      setDlBusy(true);
+      try {
+        const res = await fetch(url);
+        if (res.status === 401 && ((await res.json().catch(() => ({}))) as { error?: string }).error === "pin_required") {
+          setDlBusy(false);
+          setPinPrompt({ retry: () => void downloadVia(url, fallbackName) });
+          return;
+        }
+        if (!res.ok) {
+          setDlFlash(res.status === 403 ? "You've reached the download limit for this gallery — your photographer can lift it." : "Download failed — try again.");
+          setTimeout(() => setDlFlash(""), 4000);
+          return;
+        }
+        const blob = await res.blob();
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = fallbackName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 30_000);
+      } catch {
+        setDlFlash("Network error — try again.");
+        setTimeout(() => setDlFlash(""), 3000);
+      }
+      setDlBusy(false);
+    },
+    [],
+  );
+
+  async function requestZip(scope: "all" | "folder" | "favorites", sizePref: "full" | "web") {
+    setDlMenuOpen(false);
+    setDlBusy(true);
+    try {
+      const res = await fetch(`/api/g/${clientToken}/download-request`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          scope,
+          ...(scope === "folder" ? { folderName: activeFolder } : {}),
+          sizePref,
+        }),
+      });
+      const body = (await res.json().catch(() => ({}))) as { id?: string; state?: string; error?: string; fileCount?: number };
+      if (!res.ok || !body.id) {
+        setDlFlash(
+          body.error === "too_many_active" ? "Too many pending requests — wait for one to finish."
+          : body.error === "empty_scope" ? "Nothing to download in that selection yet."
+          : body.error === "too_many_files" ? `That's over the 1,000-photo limit (${body.fileCount}) — download by folder.`
+          : body.error === "zip_requires_lite" ? "Bulk downloads aren't available on this gallery's plan."
+          : "Couldn't request the download — try again.",
+        );
+        setTimeout(() => setDlFlash(""), 4500);
+      } else {
+        setDlFlash(
+          body.state === "requested"
+            ? "Request sent — your photographer will approve it shortly."
+            : `We're preparing your ZIP of ${body.fileCount} photo${body.fileCount === 1 ? "" : "s"} — we'll email you when it's ready.`,
+        );
+        setTimeout(() => setDlFlash(""), 5000);
+        await refreshDownloads();
+      }
+    } catch {
+      setDlFlash("Network error — try again.");
+      setTimeout(() => setDlFlash(""), 3000);
+    }
+    setDlBusy(false);
+  }
+
+  async function verifyPin() {
+    if (!pinPrompt) return;
+    setDlBusy(true);
+    try {
+      const res = await fetch(`/api/g/${clientToken}/download-request/verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin: pinValue }),
+      });
+      if (res.ok) {
+        const retry = pinPrompt.retry;
+        setPinPrompt(null);
+        setPinValue("");
+        retry();
+      } else {
+        setDlFlash("That PIN isn't right — try again.");
+        setTimeout(() => setDlFlash(""), 3000);
+      }
+    } catch {
+      setDlFlash("Network error — try again.");
+      setTimeout(() => setDlFlash(""), 3000);
+    }
+    setDlBusy(false);
+  }
   const [favorites, setFavorites] = useState<Set<string>>(new Set(initialFavorites));
   const [picks, setPicks] = useState<Set<string>>(new Set(submittedSelection?.items ?? []));
   const [submitted, setSubmitted] = useState<{ items: string[]; note: string | null; submittedAt: string } | null>(submittedSelection);
@@ -1056,6 +1197,54 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
           <span className="text-xs text-ink-tertiary">
             {assets.length} item{assets.length === 1 ? "" : "s"}
           </span>
+          {dl?.controls.allowDownload && (
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setDlMenuOpen((o) => !o)}
+                className="flex items-center gap-1.5 rounded-full bg-surface-1 px-3 py-1.5 text-xs font-medium text-ink-muted transition-colors hover:text-ink"
+                aria-expanded={dlMenuOpen}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
+                Download
+              </button>
+              {dlMenuOpen && (
+                <div className="absolute left-0 top-full z-30 mt-2 w-64 rounded-[12px] border border-hairline bg-surface-1 p-3 shadow-lg" style={{ colorScheme: "light" }}>
+                  {dl.controls.zip ? (
+                    <>
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-tertiary">All photos (ZIP)</p>
+                      <button type="button" disabled={dlBusy} onClick={() => void requestZip("all", "full")} className="mt-1.5 w-full rounded-md bg-surface-2 px-3 py-2 text-left text-xs font-medium text-ink hover:bg-surface-3 disabled:opacity-60">
+                        Download everything · full resolution
+                      </button>
+                      {dl.controls.webSize && (
+                        <button type="button" disabled={dlBusy} onClick={() => void requestZip("all", "web")} className="mt-1.5 w-full rounded-md bg-surface-2 px-3 py-2 text-left text-xs font-medium text-ink hover:bg-surface-3 disabled:opacity-60">
+                          Download everything · web size (2048px)
+                        </button>
+                      )}
+                      {activeFolder && (
+                        <button type="button" disabled={dlBusy} onClick={() => void requestZip("folder", "full")} className="mt-1.5 w-full rounded-md bg-surface-2 px-3 py-2 text-left text-xs font-medium text-ink hover:bg-surface-3 disabled:opacity-60">
+                          Just “{activeFolder}”
+                        </button>
+                      )}
+                      {heartsOn && (
+                        <button type="button" disabled={dlBusy} onClick={() => void requestZip("favorites", "full")} className="mt-1.5 w-full rounded-md bg-surface-2 px-3 py-2 text-left text-xs font-medium text-ink hover:bg-surface-3 disabled:opacity-60">
+                          My favorites ({favorites.size})
+                        </button>
+                      )}
+                      {dl.controls.approval && <p className="mt-2 text-[11px] leading-relaxed text-ink-tertiary">Requests wait for your photographer's approval.</p>}
+                    </>
+                  ) : (
+                    <p className="text-[11px] leading-relaxed text-ink-tertiary">Single photos download from the full-screen view. Bulk ZIP downloads aren't enabled for this gallery.</p>
+                  )}
+                  {dl.controls.limit !== null && (
+                    <p className="mt-2 border-t border-hairline pt-2 text-[11px] text-ink-tertiary">
+                      {Math.max(0, dl.controls.limit - dl.controls.limitUsed)} of {dl.controls.limit} downloads left
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
           {slideshow && slideEntries.length > 0 && (
             <button
               type="button"
@@ -1306,6 +1495,73 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
         </div>
       )}
 
+      {dl && dl.requests.length > 0 && (
+        <div className="mx-auto max-w-6xl px-5 pt-3">
+          {dl.requests.slice(0, 2).map((r) => (
+            <div key={r.id} className="flex flex-wrap items-center gap-3 rounded-[12px] border border-hairline bg-surface-1 px-4 py-3 text-sm">
+              {r.state === "ready" ? (
+                <>
+                  <span className="text-ink">Your ZIP is ready{r.fileCount ? ` — ${r.fileCount} photos` : ""}</span>
+                  <button
+                    type="button"
+                    disabled={dlBusy}
+                    onClick={() => void downloadVia(`/api/g/${clientToken}/download/${r.id}`, "photos.zip")}
+                    className="rounded-md px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
+                    style={{ background: "var(--accent)" }}
+                  >
+                    Download
+                  </button>
+                  {r.expiresAt ? <span className="text-xs text-ink-tertiary">link expires {new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(new Date(r.expiresAt * 1000))}</span> : null}
+                </>
+              ) : r.state === "delivered" ? (
+                <span className="text-ink-subtle">ZIP downloaded{r.expiresAt ? " — link still open " + new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(new Date(r.expiresAt * 1000)) : ""}</span>
+              ) : r.state === "requested" ? (
+                <span className="text-ink-subtle">Download requested — waiting for your photographer's approval.</span>
+              ) : r.state === "rejected" ? (
+                <span className="text-ink-subtle">Your photographer declined this download request{r.scope === "favorites" ? " — individual favorites still download from the full-screen view" : ""}.</span>
+              ) : r.state === "expired" ? (
+                <span className="text-ink-subtle">That download link expired — request a fresh one.</span>
+              ) : r.state === "failed" ? (
+                <span className="text-ink-subtle">Something went wrong building that ZIP — request it again or ask your photographer.</span>
+              ) : (
+                <span className="text-ink-subtle">Preparing your ZIP{r.fileCount ? ` of ${r.fileCount} photos` : ""} — we'll email you when it's ready.</span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {pinPrompt && (
+        <div role="dialog" aria-modal="true" aria-label="Enter download PIN" className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm rounded-[16px] bg-surface-1 p-6">
+            <h2 className="text-base font-semibold text-ink">Enter the download PIN</h2>
+            <p className="mt-1 text-sm text-ink-subtle">Your photographer set a PIN for downloads — it's in their message.</p>
+            <input
+              inputMode="numeric"
+              maxLength={8}
+              value={pinValue}
+              onChange={(e) => setPinValue(e.target.value.replace(/\D/g, ""))}
+              placeholder="••••"
+              className="mt-4 w-full rounded-lg border border-hairline-strong bg-canvas px-3 py-2.5 text-center text-xl tracking-[0.4em] text-ink outline-none focus:border-[var(--accent)]"
+            />
+            <div className="mt-4 flex gap-2">
+              <button type="button" onClick={() => { setPinPrompt(null); setPinValue(""); }} className="flex-1 rounded-lg border border-hairline px-4 py-2 text-sm text-ink-muted">
+                Cancel
+              </button>
+              <button type="button" disabled={dlBusy || pinValue.length < 4} onClick={() => void verifyPin()} className="flex-1 rounded-lg px-4 py-2 text-sm font-semibold text-white disabled:opacity-60" style={{ background: "var(--accent)" }}>
+                {dlBusy ? "Checking…" : "Unlock downloads"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {dlFlash && (
+        <div className="pointer-events-none fixed bottom-20 left-1/2 z-50 -translate-x-1/2 rounded-full bg-ink px-4 py-2 text-xs text-canvas shadow-lg">
+          {dlFlash}
+        </div>
+      )}
+
       {flash && (
         <div className="pointer-events-none fixed bottom-20 left-1/2 z-50 -translate-x-1/2 rounded-full bg-ink px-4 py-2 text-xs text-canvas shadow-lg">
           {flash}
@@ -1346,14 +1602,27 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
             </button>
             <span className="min-w-0 flex-1 truncate text-sm">{open !== null ? `${open + 1} / ${visible.length} · ` : ""}{current.filename}</span>
             {allowDownload && (
-              <a
-                href={`/api/assets/${current.id}?download=1`}
-                onClick={(e) => e.stopPropagation()}
-                className="rounded-md px-2.5 py-1.5 text-xs font-medium underline-offset-2 hover:bg-white/10 hover:underline"
-                download
-              >
-                Download
-              </a>
+              <span className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                <button
+                  type="button"
+                  disabled={dlBusy}
+                  onClick={() => void downloadVia(`/api/assets/${current.id}?download=1`, current.filename)}
+                  className="rounded-md px-2.5 py-1.5 text-xs font-medium underline-offset-2 hover:bg-white/10 hover:underline disabled:opacity-60"
+                >
+                  Download
+                </button>
+                {dl?.controls.webSize && current.kind === "image" && (
+                  <button
+                    type="button"
+                    disabled={dlBusy}
+                    onClick={() => void downloadVia(`/api/assets/${current.id}?download=1&size=web`, current.filename)}
+                    className="rounded-md px-2.5 py-1.5 text-xs text-white/70 underline-offset-2 hover:bg-white/10 hover:underline disabled:opacity-60"
+                    title="2048px web size — great for sharing"
+                  >
+                    Web
+                  </button>
+                )}
+              </span>
             )}
           </div>
 

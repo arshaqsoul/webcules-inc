@@ -10,6 +10,8 @@ import { getOrgContext } from "@/lib/session";
 import { clientIp, logShareAccess, resolveGalleryAccess } from "@/lib/shares/gallery-auth";
 import { assetInGrant, getGrantById } from "@/lib/shares/grants";
 import { checkImageView } from "@/lib/limits";
+import { downloadSettingsOf, photoDownloadCount } from "@/lib/repos/downloads";
+import { downloadCookieOk } from "@/app/api/g/[token]/download-request/verify/route";
 
 export const dynamic = "force-dynamic";
 
@@ -119,9 +121,29 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     }
 
     if (wantsDownload && grant.allowDownload) {
+      // WEB-261: download PIN (remembered per client via the snap-dl cookie
+      // minted by the verify route) + the soft per-client cap.
+      const settings = downloadSettingsOf(grant);
+      if (settings.pinHash && !(await downloadCookieOk(grant.id, req.headers.get("cookie")?.match(/(?:^|;\s*)snap-dl=([^;]+)/)?.[1] ?? null))) {
+        return Response.json({ error: "pin_required" }, { status: 401 });
+      }
+      if (settings.limit && (await photoDownloadCount(grant.id)) >= settings.limit) {
+        return Response.json({ error: "download_limit_reached", limit: settings.limit }, { status: 403 });
+      }
       await logShareAccess(grant.id, "download", req);
     }
     const dk = variantKey(asset, url.searchParams.get("variant"));
+
+    // WEB-261: web-size download = the ~2048px preview derivative with
+    // download headers (zero server processing; derivative is clean by
+    // construction, so the EXIF strip below never applies).
+    if (wantsDownload && grant.allowDownload && url.searchParams.get("size") === "web" && asset.previewKey) {
+      return serveAsset(
+        req,
+        { ...asset, storageKey: asset.previewKey, mimeType: "image/jpeg" },
+        true,
+      );
+    }
 
     // WEB-242 proofing mode: downloads deliver the watermarked preview
     // (pre-sale delivery) — original bytes never leave in proofing grants.

@@ -595,9 +595,50 @@ export const shareGrants = sqliteTable(
     selectionLimit: integer("selection_limit"),
     /** Selection deadline, epoch seconds; null = none. */
     selectionDeadline: integer("selection_deadline"),
+    /** WEB-261: downloads 2.0 controls (PIN hash, count limit, approval
+     * toggle, web-size option) as validated JSON. NULL = plain downloads. */
+    downloadSettings: text("download_settings"),
+    /** WEB-261: expiry-reminder email sent (epoch seconds, once per grant). */
+    expiryRemindedAt: integer("expiry_reminded_at"),
     createdAt: ts("created_at"),
   },
   (t) => [index("share_grant_org_project_idx").on(t.organizationId, t.projectId, t.status)],
+);
+
+/** WEB-261: async whole-gallery download requests — queued client-side,
+ * built into R2 by the daily cron (never in the request path), served as a
+ * 7-day ZIP link. State machine in lib/gallery-downloads.ts. */
+export const downloadRequests = sqliteTable(
+  "download_request",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    grantId: text("grant_id")
+      .notNull()
+      .references(() => shareGrants.id, { onDelete: "cascade" }),
+    clientEmail: text("client_email").notNull(),
+    scope: text("scope").notNull().default("all"),
+    folderName: text("folder_name"),
+    assetIds: text("asset_ids"),
+    sizePref: text("size_pref").notNull().default("full"),
+    state: text("state").notNull().default("requested"),
+    note: text("note"),
+    zipKey: text("zip_key"),
+    zipBytes: integer("zip_bytes"),
+    fileCount: integer("file_count"),
+    downloadCount: integer("download_count").notNull().default(0),
+    decidedAt: integer("decided_at"),
+    builtAt: integer("built_at"),
+    expiresAt: integer("expires_at"),
+    createdAt: ts("created_at"),
+    updatedAt: ts("updated_at"),
+  },
+  (t) => [
+    index("download_request_grant_idx").on(t.grantId, t.state, t.createdAt),
+    index("download_request_org_idx").on(t.organizationId, t.state, t.createdAt),
+  ],
 );
 
 export const shareGrantAssets = sqliteTable(

@@ -3,7 +3,7 @@
 /* Client gallery panel — share links for this project: create (emails the
  * client), re-send, regenerate (old link dies), revoke, expiry editing. */
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { ChevronDown, ChevronRight } from "lucide-react";
 
@@ -64,6 +64,8 @@ export function ProjectGalleries({
   folders,
   grants,
   watermarkOverride: initialOverride,
+  canLite,
+  canStudio,
 }: {
   projectId: string;
   clientEmail: string;
@@ -73,6 +75,10 @@ export function ProjectGalleries({
   grants: GrantItem[];
   /** WEB-242: per-project watermark override. */
   watermarkOverride: "inherit" | "on" | "off";
+  /** WEB-261: tier flags for the download controls (PIN/web-size Lite+,
+   * approvals hub Studio+). */
+  canLite?: boolean;
+  canStudio?: boolean;
 }) {
   const router = useRouter();
   const confirm = useConfirm();
@@ -93,6 +99,38 @@ export function ProjectGalleries({
   const [flash, setFlash] = useState<{ url: string; emailed: boolean } | null>(null);
   // WEB-223: expandable "what was sent" grid per grant.
   const [expanded, setExpanded] = useState<string | null>(null);
+  // WEB-261: download requests awaiting decision (this project's grants).
+  const [pendingDl, setPendingDl] = useState<{ id: string; grantId: string; clientEmail: string; scope: string; folderName: string | null; sizePref: string; fileCount: number | null; note: string | null; createdAt: string }[]>([]);
+  const grantIds = useMemo(() => new Set(grants.map((g) => g.id)), [grants]);
+
+  const loadPending = useCallback(async () => {
+    try {
+      const res = await fetch("/api/studio/download-requests?state=requested");
+      if (!res.ok) return;
+      const body = (await res.json()) as { requests?: { id: string; grantId: string; clientEmail: string; scope: string; folderName: string | null; sizePref: string; fileCount: number | null; note: string | null; createdAt: string }[] };
+      setPendingDl((body.requests ?? []).filter((r) => grantIds.has(r.grantId)));
+    } catch {
+      // hub is progressive — the list just stays empty on failure
+    }
+  }, [grantIds]);
+  useEffect(() => {
+    void loadPending();
+  }, [loadPending]);
+
+  async function decideDownload(id: string, action: "approve" | "reject") {
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/studio/download-requests/${id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      if (res.ok) setPendingDl((cur) => cur.filter((r) => r.id !== id));
+    } catch {
+      // keep the row; retry on next render
+    }
+    setBusy(false);
+  }
 
   async function setOverride(next: "inherit" | "on" | "off") {
     setWmOverride(next);
@@ -389,11 +427,34 @@ export function ProjectGalleries({
 
       {grants.length > 0 && (
         <div className="flex flex-col divide-y divide-hairline rounded-[12px] border border-hairline bg-surface-1">
+          {pendingDl.length > 0 && (
+            <div className="rounded-[12px] border border-primary/40 bg-primary/5 p-4">
+              <p className="text-sm font-medium text-ink">Download requests awaiting your approval</p>
+              <ul className="mt-2 flex flex-col gap-2">
+                {pendingDl.map((r) => (
+                  <li key={r.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-hairline bg-surface-1 px-3 py-2 text-sm">
+                    <span className="text-ink">
+                      {r.scope === "all" ? "Whole gallery" : r.scope === "folder" ? `Folder “${r.folderName ?? "?"}”` : r.scope === "favorites" ? "Their favorites" : "Selected photos"}
+                      {r.fileCount ? ` · ${r.fileCount} photos` : ""} · {r.sizePref === "web" ? "web size" : "full size"}
+                    </span>
+                    {r.note ? <span className="text-xs italic text-ink-subtle">“{r.note}”</span> : null}
+                    <span className="ml-auto flex gap-1.5">
+                      <Button size="sm" disabled={busy} onClick={() => void decideDownload(r.id, "approve")}>Approve</Button>
+                      <Button size="sm" variant="ghost" disabled={busy} onClick={() => void decideDownload(r.id, "reject")}>Decline</Button>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-2 text-xs text-ink-tertiary">Approved ZIPs build overnight and email the client automatically.</p>
+            </div>
+          )}
+
           {grants.map((g) => {
             const live = g.state === "active" || g.state === "expiring_soon";
             const isOpen = expanded === g.id;
             return (
               <div key={g.id} className="flex flex-col">
+              <GrantDownloadSettings grantId={g.id} canLite={canLite !== false} canStudio={canStudio !== false} />
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 p-4">
                 <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ${STATE_BADGE[g.state]}`}>
                   {g.state.replace("_", " ")}
@@ -539,6 +600,121 @@ export function ProjectGalleries({
           </div>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+/** WEB-261: per-grant download controls — PIN, soft cap, approvals toggle,
+ * web-size option. Tier gates mirror the API (PIN/web-size Lite+, approval
+ * Studio+); hidden entirely for view-only grants. */
+function GrantDownloadSettings({ grantId, canLite, canStudio }: { grantId: string; canLite: boolean; canStudio: boolean }) {
+  const [open, setOpen] = useState(false);
+  const [pin, setPin] = useState("");
+  const [limit, setLimit] = useState("");
+  const [approval, setApproval] = useState(false);
+  const [webSize, setWebSize] = useState(false);
+  const [hasPin, setHasPin] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState("");
+
+  async function load() {
+    const res = await fetch(`/api/grants/${grantId}/download-settings`);
+    if (!res.ok) return;
+    const body = (await res.json()) as { settings: { pin: boolean; limit: number | null; approval: boolean; webSize: boolean } };
+    setHasPin(body.settings.pin);
+    setLimit(body.settings.limit === null ? "" : String(body.settings.limit));
+    setApproval(body.settings.approval);
+    setWebSize(body.settings.webSize);
+  }
+
+  useEffect(() => {
+    if (open) void load();
+  }, [open, grantId]);
+
+  async function save(clearPin = false) {
+    setBusy(true);
+    setNote("");
+    try {
+      const res = await fetch(`/api/grants/${grantId}/download-settings`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          settings: { limit: limit === "" ? null : Number(limit), approval, webSize },
+          ...(clearPin ? { clearPin: true } : pin ? { pin } : {}),
+        }),
+      });
+      const body = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      if (!res.ok || !body.ok) {
+        setNote(
+          body.error === "pin_requires_lite" || body.error === "web_size_requires_lite" ? "PIN and web-size are Lite features."
+          : body.error === "approvals_require_studio" ? "Download approvals are a Studio feature."
+          : body.error === "invalid_pin" ? "PIN is 4–8 digits."
+          : "Couldn't save — try again.",
+        );
+      } else {
+        setPin("");
+        setNote("Saved ✓");
+        await load();
+      }
+    } catch {
+      setNote("Network error — try again.");
+    }
+    setBusy(false);
+    setTimeout(() => setNote(""), 3500);
+  }
+
+  return (
+    <div className="border-t border-hairline px-4 py-2">
+      <button type="button" onClick={() => setOpen((o) => !o)} className="text-xs font-medium text-ink-subtle hover:text-ink">
+        {open ? "▾" : "▸"} Download controls
+      </button>
+      {open && (
+        <div className="mt-2 flex flex-col gap-2 pb-2">
+          <div className="flex flex-wrap items-center gap-3 text-sm">
+            <label className="flex items-center gap-2 text-ink-subtle">
+              PIN
+              <input
+                inputMode="numeric"
+                maxLength={8}
+                value={pin}
+                onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
+                placeholder={hasPin ? "•••• (set)" : "none"}
+                disabled={!canLite}
+                className="w-24 rounded-md border border-hairline bg-canvas px-2 py-1 text-sm text-ink disabled:opacity-50"
+              />
+              {hasPin && (
+                <button type="button" disabled={busy || !canLite} onClick={() => void save(true)} className="text-xs text-ink-tertiary underline underline-offset-2">
+                  clear
+                </button>
+              )}
+            </label>
+            <label className="flex items-center gap-2 text-ink-subtle">
+              Max downloads
+              <input
+                inputMode="numeric"
+                value={limit}
+                onChange={(e) => setLimit(e.target.value.replace(/\D/g, ""))}
+                placeholder="∞"
+                className="w-20 rounded-md border border-hairline bg-canvas px-2 py-1 text-sm text-ink"
+              />
+            </label>
+            <label className="flex items-center gap-2 text-ink-subtle" title="Client ZIP requests wait for your approval">
+              <input type="checkbox" checked={approval} onChange={(e) => setApproval(e.target.checked)} disabled={!canStudio} className="h-4 w-4" />
+              Approvals
+            </label>
+            <label className="flex items-center gap-2 text-ink-subtle" title="Offer a 2048px web-size option">
+              <input type="checkbox" checked={webSize} onChange={(e) => setWebSize(e.target.checked)} disabled={!canLite} className="h-4 w-4" />
+              Web size
+            </label>
+            <Button size="sm" disabled={busy} onClick={() => void save()} className="ml-auto">
+              {busy ? "Saving…" : "Save"}
+            </Button>
+          </div>
+          {!canLite && <p className="text-xs text-ink-tertiary">PIN and web-size downloads are Lite features — upgrade to unlock.</p>}
+          {canLite && !canStudio && <p className="text-xs text-ink-tertiary">Download approvals are a Studio feature.</p>}
+          {note && <p className="text-xs text-ink-subtle">{note}</p>}
+        </div>
+      )}
     </div>
   );
 }

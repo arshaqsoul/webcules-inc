@@ -294,6 +294,8 @@ export default async function ProjectDetailPage({
                 ? project.watermarkOverride
                 : "inherit"
             }
+            canLite={(ent?.id ?? "free") !== "free"}
+            canStudio={ent?.id === "studio" || ent?.id === "pro"}
           />
         </section>
         </>

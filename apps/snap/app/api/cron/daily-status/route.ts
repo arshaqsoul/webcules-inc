@@ -231,5 +231,15 @@ export async function POST(req: Request) {
     console.error("addon settle failed:", String(err));
   }
 
-  return Response.json({ ok: true, moved: due.length, warned, downgraded, expiredHolds, vault, dormancy, margin, expiredUploads, rejectedPurged, domains, addonSettled });
+  // WEB-261: async download pipeline — build approved ZIPs into R2, email
+  // ready links, sweep expired archives, fire 3-days-out expiry reminders.
+  let downloads = { built: 0, failed: 0, expired: 0, reminded: 0 };
+  try {
+    const { downloadsDailySweep } = await import("@/lib/repos/downloads-build");
+    downloads = await downloadsDailySweep();
+  } catch (err) {
+    console.error("downloads sweep failed:", String(err));
+  }
+
+  return Response.json({ ok: true, moved: due.length, warned, downgraded, expiredHolds, vault, dormancy, margin, expiredUploads, rejectedPurged, domains, addonSettled, downloads });
 }
