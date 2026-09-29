@@ -1,10 +1,14 @@
 "use client";
 
 /* Shared dashboard navigation (WEB-171) — one source of truth consumed by
- * the desktop aside and the mobile drawer; highlights the active route. */
+ * the desktop aside and the mobile drawer; highlights the active route.
+ * Settings nests as a collapsible group (WEB-234 follow-up): the parent row
+ * links to the settings redirect (→ general) and the chevron toggles the
+ * section list; landing on any settings route auto-expands the group. */
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, CreditCard, Images, LayoutGrid, Link2, Settings, Snowflake, Users , BookOpen } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Banknote, CalendarDays, ChevronDown, Code2, CreditCard, Globe, Images, LayoutGrid, Link2, PackageCheck, Settings, SlidersHorizontal, Snowflake, Users, BookOpen, Palette } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export const NAV_ITEMS: { href: string; label: string; icon: LucideIcon }[] = [
@@ -15,19 +19,116 @@ export const NAV_ITEMS: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/dashboard/galleries", label: "Galleries", icon: Link2 },
   { href: "/dashboard/raw-vault", label: "RAW Vault", icon: Snowflake },
   { href: "/dashboard/transactions", label: "Transactions", icon: CreditCard },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
   { href: "/docs/embeds", label: "Docs", icon: BookOpen },
+];
+
+/** Settings sections (WEB-224/234) — rendered as the collapsible group's
+ * children; the routes live under /dashboard/settings/*. */
+export const SETTINGS_ITEMS: { href: string; label: string; icon: LucideIcon }[] = [
+  { href: "/dashboard/settings/general", label: "General", icon: SlidersHorizontal },
+  { href: "/dashboard/settings/brand", label: "Brand", icon: Palette },
+  { href: "/dashboard/settings/domains", label: "Domains", icon: Globe },
+  { href: "/dashboard/settings/embeds", label: "Embeds", icon: Code2 },
+  { href: "/dashboard/settings/delivery", label: "Delivery", icon: PackageCheck },
+  { href: "/dashboard/settings/billing", label: "Billing", icon: CreditCard },
+  { href: "/dashboard/settings/payouts", label: "Payouts", icon: Banknote },
 ];
 
 export function isActivePath(pathname: string, href: string): boolean {
   return href === "/dashboard" ? pathname === href : pathname.startsWith(href);
 }
 
-export function DashboardNavLinks({ onNavigate, includeDocs = true, collapsed = false }: { onNavigate?: () => void; /** desktop aside groups Docs with theme/logout instead */ includeDocs?: boolean; /** icon rail: icons only, labels become tooltips */ collapsed?: boolean }) {
+function SettingsGroup({
+  pathname,
+  collapsed,
+  onNavigate,
+  onExpand,
+}: {
+  pathname: string;
+  collapsed: boolean;
+  onNavigate?: () => void;
+  /** Collapsed rail: opening settings also expands the sidebar so the
+   * section list becomes visible. */
+  onExpand?: () => void;
+}) {
+  const active = pathname === "/dashboard/settings" || pathname.startsWith("/dashboard/settings/");
+  const [open, setOpen] = useState(false);
+  // Landing on (or navigating between) settings routes keeps the group open;
+  // the user can still fold it away manually.
+  useEffect(() => {
+    if (active) setOpen(true);
+  }, [active]);
+
+  const rowCls = `flex w-full items-center gap-2.5 rounded-md text-sm transition-colors ${collapsed ? "justify-center py-2" : "px-3 py-2"}`;
+
+  if (collapsed) {
+    return (
+      <Link
+        href="/dashboard/settings"
+        onClick={() => {
+          onNavigate?.();
+          onExpand?.();
+        }}
+        title="Settings"
+        aria-label="Settings"
+        className={rowCls + ` ${active ? "bg-surface-2 font-medium text-ink" : "text-ink-subtle hover:bg-surface-2 hover:text-ink"}`}
+      >
+        <Settings className="h-4 w-4 shrink-0" aria-hidden />
+      </Link>
+    );
+  }
+
+  return (
+    <div className="flex flex-col">
+      <div className="relative">
+        <Link
+          href="/dashboard/settings"
+          onClick={onNavigate}
+          className={`${rowCls} ${active ? "bg-surface-2 font-medium text-ink" : "text-ink-subtle hover:bg-surface-2 hover:text-ink"} pr-9`}
+        >
+          <Settings className="h-4 w-4 shrink-0" aria-hidden />
+          Settings
+        </Link>
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          aria-label={open ? "Collapse settings sections" : "Expand settings sections"}
+          className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-ink-tertiary transition-colors hover:bg-surface-2 hover:text-ink"
+        >
+          <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "" : "-rotate-90"}`} aria-hidden />
+        </button>
+      </div>
+      {open && (
+        <div className="ml-5 mt-0.5 flex flex-col gap-0.5 border-l border-hairline pl-2.5">
+          {SETTINGS_ITEMS.map((item) => {
+            const itemActive = pathname === item.href || pathname.startsWith(item.href + "/");
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onNavigate}
+                aria-current={itemActive ? "page" : undefined}
+                className={`flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-[13px] transition-colors ${
+                  itemActive ? "bg-surface-2 font-medium text-ink" : "text-ink-subtle hover:bg-surface-2 hover:text-ink"
+                }`}
+              >
+                <item.icon className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                {item.label}
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function DashboardNavLinks({ onNavigate, includeDocs = true, collapsed = false, onExpandSidebar }: { onNavigate?: () => void; /** desktop aside groups Docs with theme/logout instead */ includeDocs?: boolean; /** icon rail: icons only, labels become tooltips */ collapsed?: boolean; /** collapsed rail: opening settings expands the sidebar */ onExpandSidebar?: () => void }) {
   const pathname = usePathname();
   const items = includeDocs ? NAV_ITEMS : NAV_ITEMS.filter((i) => !i.href.startsWith("/docs"));
   return (
-    <nav className="flex flex-1 flex-col gap-0.5 p-2">
+    <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-2">
       {items.map((item) => {
         const active = isActivePath(pathname, item.href);
         const rowCls = `flex w-full items-center gap-2.5 rounded-md text-sm transition-colors ${collapsed ? "justify-center py-2" : "px-3 py-2"}`;
@@ -65,6 +166,7 @@ export function DashboardNavLinks({ onNavigate, includeDocs = true, collapsed = 
           </Link>
         );
       })}
+      <SettingsGroup pathname={pathname} collapsed={collapsed} onNavigate={onNavigate} onExpand={onExpandSidebar} />
     </nav>
   );
 }

@@ -76,7 +76,7 @@ export function DashboardSidebar({
         )}
       </div>
 
-      <DashboardNavLinks includeDocs={false} collapsed={collapsed} />
+      <DashboardNavLinks includeDocs={false} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)} />
 
       <div className={`mt-auto flex flex-col gap-0.5 border-t border-hairline ${collapsed ? "px-1.5 py-2" : "p-2"}`}>
         {collapsed ? (
