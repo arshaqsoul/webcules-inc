@@ -5,6 +5,8 @@
  * styling (no dashboard chrome) — accent comes from the studio's brand. */
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { FileTypeIcon } from "@/components/file-type-icon";
+
 declare global {
   interface Window {
     turnstile?: {
@@ -561,9 +563,8 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
                   </span>
                 </>
               ) : (
-                <span className="flex h-full w-full flex-col items-center justify-center gap-1 text-ink-tertiary">
-                  <span className="text-[10px] font-semibold uppercase tracking-widest">{a.kind}</span>
-                  <span className="text-[10px]">.{a.filename.split(".").pop()}</span>
+                <span className="flex h-full w-full flex-col items-center justify-center gap-1.5 bg-surface-2/50 text-ink-tertiary">
+                  <FileTypeIcon kind={a.kind} filename={a.filename} className="h-9 w-9" />
                   <span className="text-[10px]">{fmtBytes(a.bytes)}</span>
                 </span>
               )}

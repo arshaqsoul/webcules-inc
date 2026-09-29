@@ -64,7 +64,11 @@ export async function POST(req: Request) {
     }
     const head0 = new Uint8Array(await probe.arrayBuffer());
     const sniffed = sniffKind(head0);
-    if (sniffed !== session.kind) {
+    // "other" (studio/design/docs: psd, pdf, ai, aep, audio…) has no single
+    // magic to verify — accept an unrecognized payload, but still refuse a
+    // KNOWN family (renamed media must not sneak in as a "document").
+    const ok = sniffed === session.kind || (session.kind === "other" && sniffed === null);
+    if (!ok) {
       await deleteObject(ctx.organizationId, session.storageKey);
       await deleteUploadSession(session.id);
       return Response.json({ error: "type_mismatch", declared: session.kind, detected: sniffed ?? "unknown" }, { status: 409 });

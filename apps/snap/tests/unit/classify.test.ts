@@ -29,6 +29,18 @@ describe("classifyUpload", () => {
     }
   });
 
+  it("classifies the studio/design/document set as other (bypasses RAW/video gates)", () => {
+    for (const ext of ["psd", "psb", "ai", "ait", "eps", "aep", "aepx", "prproj", "indd", "pdf", "svg", "mp3", "wav", "m4a", "aif", "aiff", "flac"]) {
+      expect(classifyUpload(`asset.${ext}`)).toEqual({ ext, kind: "other" });
+    }
+  });
+
+  it("classifies TIFF as raw (print delivery, vault lifecycle) and BMP as image", () => {
+    expect(classifyUpload("print.tiff")).toEqual({ ext: "tiff", kind: "raw" });
+    expect(classifyUpload("scan.tif")).toEqual({ ext: "tif", kind: "raw" });
+    expect(classifyUpload("x.bmp")).toEqual({ ext: "bmp", kind: "image" });
+  });
+
   it("DJI .lrf is a VIDEO proxy, Lytro .lfr is RAW (the confusable pair)", () => {
     // .lrf = DJI "Low Resolution File": an MP4 proxy — sniffed as video, so
     // it must DECLARE video or confirm 409s (verified on prod 2026-09-28).
@@ -39,7 +51,7 @@ describe("classifyUpload", () => {
 
   it("rejects unknown extensions (no 'other' leaks through the gate)", () => {
     expect(classifyUpload("archive.zip")).toBeNull();
-    expect(classifyUpload("doc.pdf")).toBeNull();
+    expect(classifyUpload("doc.docx")).toBeNull();
     expect(classifyUpload("script.exe")).toBeNull();
     expect(classifyUpload("noext")).toBeNull();
   });
@@ -47,6 +59,13 @@ describe("classifyUpload", () => {
 
 describe("sniffKind (magic bytes)", () => {
   const bytes = (...arr: number[]) => new Uint8Array(arr);
+
+  it("studio formats sniff as other (PSD/PDF/PS) and BMP as image", () => {
+    expect(sniffKind(bytes(0x38, 0x42, 0x50, 0x53))).toBe("other"); // 8BPS (PSD/PSB)
+    expect(sniffKind(bytes(0x25, 0x50, 0x44, 0x46, 0x2d))).toBe("other"); // %PDF- (PDF, AI)
+    expect(sniffKind(bytes(0x25, 0x21, 0x50, 0x53))).toBe("other"); // %!PS (EPS, legacy AI)
+    expect(sniffKind(bytes(0x42, 0x4d))).toBe("image"); // BM (BMP)
+  });
 
   it("Lytro light-field magic (0x89 LFP/LFR) sniffs as raw; DJI lrf payload sniffs as video", () => {
     expect(sniffKind(bytes(0x89, 0x4c, 0x46, 0x50))).toBe("raw"); // LFP

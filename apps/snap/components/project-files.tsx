@@ -19,6 +19,7 @@ import {
   DialogTitle,
 } from "@webcules/ui/components/dialog";
 import { AssetManage } from "@/components/asset-manage";
+import { FileTypeIcon } from "@/components/file-type-icon";
 import { useConfirm } from "@/components/confirm-provider";
 import { SharePanel } from "@/components/share-panel";
 import { TriageMode } from "@/components/triage-mode";
@@ -100,7 +101,7 @@ async function fingerprintFile(file: File): Promise<string | null> {
  * policy while originals stay untouched; RAW/HEIC (no browser decoder) and
  * failures simply serve the original. */
 
-const DERIV_IMAGE_EXTS = new Set(["jpg", "jpeg", "png", "webp", "avif", "gif"]);
+const DERIV_IMAGE_EXTS = new Set(["jpg", "jpeg", "png", "webp", "avif", "gif", "bmp"]);
 const DERIV_VIDEO_EXTS = new Set(["mp4", "webm", "mov"]);
 
 function canvasToBlob(bitmap: ImageBitmap | HTMLVideoElement, maxDim: number, quality: number): Promise<Blob | null> {
@@ -191,6 +192,49 @@ async function generateDerivatives(assetId: string, file: File): Promise<boolean
   return false;
 }
 
+/* Video tile: poster frame at rest (the upload pipeline generates a JPEG
+ * thumb for videos; without one it falls back to the original's first frame
+ * via <video preload=metadata>), and plays muted inline on hover — a real
+ * grid preview without leaving curation. */
+function VideoTile({ id, hover }: { id: string; hover: boolean }) {
+  const [noPoster, setNoPoster] = useState(false);
+  const vref = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const v = vref.current;
+    if (!v) return;
+    if (hover) void v.play().catch(() => undefined);
+    else {
+      v.pause();
+      try {
+        v.currentTime = 0.5;
+      } catch { /* not seekable yet — fine */ }
+    }
+  }, [hover]);
+  return (
+    <span className="relative block h-full w-full">
+      {!noPoster && !hover ? (
+        // eslint-disable-next-line @next/next/no-img-element -- authorized proxy, no optimizer
+        <img
+          src={`/api/assets/${id}?variant=thumb`}
+          alt=""
+          loading="lazy"
+          draggable={false}
+          onError={() => setNoPoster(true)}
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        // eslint-disable-next-line jsx-a11y/media-has-caption -- muted hover preview
+        <video ref={vref} src={`/api/assets/${id}#t=0.5`} preload="metadata" muted playsInline className="h-full w-full object-cover" />
+      )}
+      <span aria-hidden className={`absolute inset-0 flex items-center justify-center transition-opacity ${hover ? "opacity-0" : "opacity-100"}`}>
+        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-sm">
+          <svg width="12" height="14" viewBox="0 0 14 16" fill="currentColor" aria-hidden><path d="M0 0l14 8-14 8z" /></svg>
+        </span>
+      </span>
+    </span>
+  );
+}
+
 export function ProjectFiles({ projectId, clientEmail, initial }: { projectId: string; clientEmail?: string; initial?: AssetItem[] }) {
   const confirm = useConfirm();
   const [feed, setFeed] = useState<Feed>({ items: initial ?? [], nextCursor: null, counts: {}, tags: [] });
@@ -216,6 +260,8 @@ export function ProjectFiles({ projectId, clientEmail, initial }: { projectId: s
   const [shareOpen, setShareOpen] = useState(false);
   // Mobile actions menu (Select/Triage/Share/Upload live behind one button).
   const [actionsOpen, setActionsOpen] = useState(false);
+  // Asset id whose video tile is hovered (plays inline).
+  const [videoHover, setVideoHover] = useState<string | null>(null);
   const actionsRef = useRef<HTMLDivElement>(null);
   // Culling filters: rating ("unrated" | "1".."5" = ≥N), color ("none" | "1".."5").
   const [rating, setRating] = useState("");
@@ -597,11 +643,76 @@ export function ProjectFiles({ projectId, clientEmail, initial }: { projectId: s
     }
   }
 
-  function moveFocus(delta: 1 | -1) {
-    setFocusIndex((i) => {
-      const n = feed.items.length;
-      if (!n) return null;
-      return i === null ? (delta > 0 ? 0 : n - 1) : (i + delta + n) % n;
+  /* Spatial arrow navigation. The masonry grids are CSS multi-columns, which
+   * lay out column-major — plain index±1 walked DOWN a column and jumped to
+   * the next one's top (a nightmare on long lists). Instead, read the
+   * rendered card rects and build visual columns (left-aligned stacks); then
+   * left/right move to the nearest card in the adjacent column and up/down
+   * move within the current column. Works for every density, no layout
+   * change. */
+  function spatialColumns(): { i: number; top: number }[][] {
+    const cells = [...document.querySelectorAll<HTMLElement>("[data-asset-idx]")]
+      .map((el) => {
+        const r = el.getBoundingClientRect();
+        return { i: Number(el.getAttribute("data-asset-idx")), left: r.left, top: r.top };
+      })
+      .filter((c) => Number.isFinite(c.i))
+      .sort((a, b) => a.left - b.left || a.top - b.top);
+    const cols: { i: number; top: number }[][] = [];
+    let col: { i: number; top: number }[] = [];
+    let colLeft = -Infinity;
+    for (const c of cells) {
+      if (col.length && Math.abs(c.left - colLeft) > 24) {
+        cols.push(col);
+        col = [];
+      }
+      if (!col.length) colLeft = c.left;
+      col.push(c);
+    }
+    if (col.length) cols.push(col);
+    return cols;
+  }
+
+  function nearestToTop(col: { i: number; top: number }[], top: number): number {
+    let best = col[0].i;
+    let bestD = Infinity;
+    for (const c of col) {
+      const d = Math.abs(c.top - top);
+      if (d < bestD) {
+        bestD = d;
+        best = c.i;
+      }
+    }
+    return best;
+  }
+
+  function moveFocus(delta: 1 | -1, axis: "x" | "y" = "x") {
+    setFocusIndex((cur) => {
+      const cols = spatialColumns();
+      if (!cols.length) return null;
+      if (cur === null) return delta > 0 ? cols[0][0].i : cols[cols.length - 1][cols[cols.length - 1].length - 1].i;
+      let ci = 0;
+      let ri = -1;
+      let top = 0;
+      for (let c = 0; c < cols.length && ri === -1; c++) {
+        const idx = cols[c].findIndex((cell) => cell.i === cur);
+        if (idx !== -1) {
+          ci = c;
+          ri = idx;
+          top = cols[c][idx].top;
+        }
+      }
+      if (ri === -1) return cols[0][0].i; // focused card not rendered — reset to first
+      if (axis === "y") {
+        const r = ri + delta;
+        if (r >= 0 && r < cols[ci].length) return cols[ci][r].i;
+        return cur; // column edge — stay put so page scroll stays natural
+      }
+      const next = cols[ci + delta];
+      if (next) return nearestToTop(next, top);
+      // past the board edge — wrap to the far column
+      const wrapCol = cols[delta > 0 ? 0 : cols.length - 1];
+      return delta > 0 ? wrapCol[0].i : wrapCol[wrapCol.length - 1].i;
     });
   }
 
@@ -653,8 +764,10 @@ export function ProjectFiles({ projectId, clientEmail, initial }: { projectId: s
       }
 
       // Grid culling on the focused card (first action key focuses card 0).
-      if (e.key === "ArrowRight") { e.preventDefault(); moveFocus(1); return; }
-      if (e.key === "ArrowLeft") { e.preventDefault(); moveFocus(-1); return; }
+      if (e.key === "ArrowRight") { e.preventDefault(); moveFocus(1, "x"); return; }
+      if (e.key === "ArrowLeft") { e.preventDefault(); moveFocus(-1, "x"); return; }
+      if (e.key === "ArrowDown") { e.preventDefault(); moveFocus(1, "y"); return; }
+      if (e.key === "ArrowUp") { e.preventDefault(); moveFocus(-1, "y"); return; }
       const idx = focusIndex ?? 0;
       const item = feed.items[idx];
       if (!item) return;
@@ -1602,7 +1715,7 @@ export function ProjectFiles({ projectId, clientEmail, initial }: { projectId: s
               ref={inputRef}
               type="file"
               multiple
-              accept=".jpg,.jpeg,.png,.webp,.avif,.heic,.gif,.mp4,.mov,.webm,.lrf,.cr2,.cr3,.nef,.arw,.dng,.rwl,.lfr"
+              accept=".jpg,.jpeg,.png,.webp,.avif,.heic,.gif,.bmp,.mp4,.mov,.webm,.lrf,.tif,.tiff,.psd,.psb,.ai,.eps,.aep,.pdf,.svg,.mp3,.wav,.cr2,.cr3,.nef,.arw,.dng,.rwl,.lfr"
               className="hidden"
               onChange={(e) => e.target.files?.length && enqueueWithStore(e.target.files)}
             />
@@ -1923,6 +2036,8 @@ export function ProjectFiles({ projectId, clientEmail, initial }: { projectId: s
                       draggable={false}
                       title={selectMode ? undefined : "Manage this file"}
                       className={`relative block ${compact ? "bg-canvas" : ""} ${selectMode ? "" : "cursor-zoom-in"}`}
+                      onMouseEnter={() => a.kind === "video" && setVideoHover(a.id)}
+                      onMouseLeave={() => setVideoHover((v) => (v === a.id ? null : v))}
                       onClick={(e) => {
                         if (selectMode) e.preventDefault();
                         else {
@@ -1940,10 +2055,13 @@ export function ProjectFiles({ projectId, clientEmail, initial }: { projectId: s
                           draggable={false}
                           className={`block w-full object-cover ${compact ? "aspect-square" : "aspect-square sm:aspect-auto"}`}
                         />
+                      ) : a.kind === "video" ? (
+                        <span className={`block w-full ${compact ? "aspect-square" : "aspect-square sm:aspect-auto"}`}>
+                          <VideoTile id={a.id} hover={videoHover === a.id} />
+                        </span>
                       ) : (
-                        <span className={`flex w-full flex-col items-center justify-center gap-1 text-ink-tertiary ${compact ? "aspect-square" : "aspect-square sm:min-h-32"}`}>
-                          <span className="text-xs uppercase">{a.kind}</span>
-                          <span className="text-[10px]">.{a.filename.split(".").pop()}</span>
+                        <span className={`flex w-full items-center justify-center bg-surface-2/60 ${compact ? "aspect-square" : "aspect-square sm:min-h-32"}`}>
+                          <FileTypeIcon kind={a.kind} filename={a.filename} className="h-8 w-8" />
                         </span>
                       )}
                       {/* image-only indicators (small density + mobile):
@@ -2065,7 +2183,9 @@ export function ProjectFiles({ projectId, clientEmail, initial }: { projectId: s
                           className="h-9 w-9 shrink-0 rounded-md object-cover"
                         />
                       ) : (
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-surface-2 text-[9px] uppercase text-ink-tertiary">{a.kind}</span>
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-surface-2">
+                          <FileTypeIcon kind={a.kind} filename={a.filename} className="h-4.5 w-4.5" badge={false} />
+                        </span>
                       )}
                       <a
                         href={`/api/assets/${a.id}`}

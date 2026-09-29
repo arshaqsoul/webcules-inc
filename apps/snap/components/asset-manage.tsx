@@ -15,6 +15,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, ChevronUp, Heart, Star, X } from "lucide-react";
 
 import type { AssetItem } from "@/components/project-files";
+import { FileTypeIcon } from "@/components/file-type-icon";
 
 type Exif = { make?: string; model?: string; taken?: string } | null;
 
@@ -367,7 +368,9 @@ export function AssetManage({
             className="h-full w-full object-cover"
           />
         ) : (
-          <span className="flex h-full w-full items-center justify-center text-[8px] uppercase text-ink-tertiary">{t.kind}</span>
+          <span className="flex h-full w-full items-center justify-center">
+            <FileTypeIcon kind={t.kind} filename={t.filename} className="h-5 w-5" badge={false} />
+          </span>
         )}
         {t.status === "rejected" && <span className="absolute inset-0 bg-canvas/50" aria-hidden />}
       </button>
@@ -597,9 +600,9 @@ export function AssetManage({
             // eslint-disable-next-line jsx-a11y/media-has-caption -- managed video
             <video src={`/api/assets/${item.id}`} controls playsInline preload="metadata" className="max-h-full max-w-full" />
           ) : (
-            <div className="flex flex-col items-center gap-2 text-ink-tertiary">
-              <span className="text-xs uppercase tracking-wide">{item.kind}</span>
-              <span className="text-xs">.{item.filename.split(".").pop()} — no inline preview</span>
+            <div className="flex flex-col items-center gap-3 rounded-[12px] border border-hairline bg-surface-1 px-10 py-8 text-ink-tertiary">
+              <FileTypeIcon kind={item.kind} filename={item.filename} className="h-10 w-10" />
+              <span className="max-w-xs truncate text-xs">{item.filename} — no inline preview</span>
             </div>
           )}
           {item.status === "rejected" && (

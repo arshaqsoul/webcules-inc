@@ -10,7 +10,16 @@ import { buildKey, deleteObject, putObject } from "@/lib/storage/service";
 export const ASKINDS = ["image", "video", "raw", "other"] as const;
 
 const EXT_KIND: Record<string, (typeof ASKINDS)[number]> = {
-  jpg: "image", jpeg: "image", png: "image", webp: "image", avif: "image", heic: "image", gif: "image",
+  jpg: "image", jpeg: "image", png: "image", webp: "image", avif: "image", heic: "image", gif: "image", bmp: "image",
+  /* Studio/design/document set (kind "other"): no derivatives, icon +
+   * download only; "other" bypasses the free-tier RAW/video gates, same as
+   * every delivery platform treats supporting documents. */
+  psd: "other", psb: "other", // Photoshop
+  ai: "other", ait: "other", eps: "other", // Illustrator / PostScript
+  aep: "other", aepx: "other", prproj: "other", // After Effects / Premiere
+  indd: "other", // InDesign
+  pdf: "other", svg: "other",
+  mp3: "other", wav: "other", m4a: "other", aif: "other", aiff: "other", flac: "other", // slideshow audio
   mp4: "video", mov: "video", webm: "video",
   /* DJI Low Resolution File — a compressed MP4 proxy recorded alongside the
    * footage on drones/Osmo/Pocket (it sniffs as ISO-BMFF video; DJI's own
@@ -26,6 +35,7 @@ const EXT_KIND: Record<string, (typeof ASKINDS)[number]> = {
   raf: "raw", // Fuji
   orf: "raw", // Olympus / OM System
   rw2: "raw", raw: "raw", // Panasonic (+ generic RAW containers)
+  tif: "raw", tiff: "raw", // TIFF — uncompressed print delivery (TIFF-container magic, RAW-vault lifecycle)
   rwl: "raw", // Leica
   lfr: "raw", // Lytro Light Field RAW (Illum) — PNG-chunk magic, sniffed separately
   pef: "raw", // Pentax

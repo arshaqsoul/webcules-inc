@@ -108,13 +108,16 @@ function ascii(b: Uint8Array, from: number, to: number): string {
 /** Family sniffed from the first bytes — deliberately coarse (jpeg vs png vs
  * TIFF-based RAW vs ISO-BMFF); the check is that the SNIFFED kind matches the
  * DECLARED extension's kind, catching renamed/mislabeled payloads. */
-export function sniffKind(b: Uint8Array): "image" | "video" | "raw" | null {
+export function sniffKind(b: Uint8Array): "image" | "video" | "raw" | "other" | null {
   if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return "image"; // JPEG
   if (b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) return "image"; // PNG
   if (ascii(b, 0, 4) === "RIFF" && ascii(b, 8, 12) === "WEBP") return "image"; // WebP
+  if (ascii(b, 0, 2) === "BM") return "image"; // BMP
   if (ascii(b, 0, 4) === "GIF8") return "image"; // GIF
   if (ascii(b, 0, 3) === "FOV") return "raw"; // Sigma X3F (FOVb/FOVc…)
   if (b[0] === 0x89 && (ascii(b, 1, 4) === "LFP" || ascii(b, 1, 4) === "LFR")) return "raw"; // Lytro light field (PNG-style chunk container)
+  if (ascii(b, 0, 4) === "8BPS") return "other"; // Photoshop PSD/PSB
+  if (ascii(b, 0, 5) === "%PDF-" || ascii(b, 0, 4) === "%!PS") return "other"; // PDF, AI (PDF-compatible + legacy PostScript), EPS
   if (ascii(b, 4, 8) === "ftyp") {
     const brand = ascii(b, 8, 12);
     if (brand.startsWith("avif") || brand.startsWith("avis")) return "image"; // AVIF
