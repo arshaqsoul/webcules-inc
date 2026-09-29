@@ -6,7 +6,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { FileTypeIcon } from "@/components/file-type-icon";
-import { captionOf, focalPosition, themeVars, type GalleryDesign } from "@/lib/gallery-design";
+import { captionOf, fmtDuration, focalPosition, themeVars, type GalleryDesign } from "@/lib/gallery-design";
 
 declare global {
   interface Window {
@@ -43,6 +43,8 @@ export type GalleryAsset = {
    * cascade aspect map without waiting for thumbs to load. */
   width?: number | null;
   height?: number | null;
+  /** WEB-260: video duration ms (browser decoder at upload). */
+  durationMs?: number | null;
 };
 
 /** WEB-160: gallery image with 429 backoff — a rate-limited load retries
@@ -96,6 +98,7 @@ function BackoffImage(props: {
 function fmtBytes(bytes: number): string {
   return bytes > 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
 }
+
 
 /* ---------------- Denied / expired / revoked ---------------- */
 
@@ -551,6 +554,36 @@ function Slideshow({ slides, startIndex, cfg, watermarked, deterrents, onOpenLig
   );
 }
 
+/** WEB-260: lightbox video — native controls, plays inline, streams via
+ * range requests. A decode failure (HEVC/MOV on a device without the codec)
+ * degrades to an honest note instead of a black box. */
+function LightboxVideo({ assetId, filename, onFirstPlay }: { assetId: string; filename: string; onFirstPlay: () => void }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) {
+    return (
+      <div className="rounded-[12px] bg-white/5 px-10 py-8 text-center text-white/80" onClick={(e) => e.stopPropagation()}>
+        <p className="text-sm font-medium">{filename}</p>
+        <p className="mt-2 max-w-xs text-xs leading-relaxed text-white/60">
+          This video&apos;s format may not play on this device. Ask your photographer for an MP4 (H.264) copy — or download it below if downloads are on.
+        </p>
+      </div>
+    );
+  }
+  return (
+    // eslint-disable-next-line jsx-a11y/media-has-caption -- gallery video
+    <video
+      src={`/api/assets/${assetId}`}
+      controls
+      autoPlay
+      playsInline
+      className="max-h-full max-w-full"
+      onError={() => setFailed(true)}
+      onPlay={onFirstPlay}
+      onClick={(e) => e.stopPropagation()}
+    />
+  );
+}
+
 /* ---------------- WEB-258: designed gallery (cover, layouts, theme) ---------------- */
 
 /** Cover hero — three styles, all CSS (Ken Burns is keyframes-only and
@@ -638,7 +671,7 @@ function GalleryTile(props: {
   pickedLocked: boolean;
   captions: "off" | "hover" | "always";
   radiusCls: string;
-  size: "square" | "natural" | "row";
+  size: "square" | "natural" | "row" | "wide";
   rowAspect?: number;
   deterrents?: boolean;
   onOpen: () => void;
@@ -652,7 +685,10 @@ function GalleryTile(props: {
       ? `group relative block w-full overflow-hidden border bg-surface-1 ${props.radiusCls}`
       : size === "row"
         ? `group relative h-44 overflow-hidden border bg-surface-1 sm:h-56 lg:h-64 ${props.radiusCls}`
-        : `group relative aspect-square overflow-hidden border bg-surface-1 ${props.radiusCls}`;
+        : size === "wide"
+          ? `group relative aspect-video overflow-hidden border bg-surface-1 ${props.radiusCls}`
+          : `group relative aspect-square overflow-hidden border bg-surface-1 ${props.radiusCls}`;
+  const duration = props.asset.kind === "video" && props.asset.durationMs ? fmtDuration(props.asset.durationMs) : null;
   const imgCls =
     size === "natural"
       ? "w-full h-auto object-cover"
@@ -765,6 +801,11 @@ function GalleryTile(props: {
           <span className="text-[10px]">{fmtBytes(a.bytes)}</span>
         </span>
       )}
+      {duration && (
+        <span className="pointer-events-none absolute bottom-2 right-2 z-[5] rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">
+          {duration}
+        </span>
+      )}
       {caption}
     </button>
   );
@@ -790,6 +831,8 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
   const [open, setOpen] = useState<number | null>(null);
   // WEB-259: slideshow start index into the photos-only slide list.
   const [slideshowStart, setSlideshowStart] = useState<number | null>(null);
+  // WEB-260: the video already counted a view this session (per lightbox).
+  const countedVideo = useRef<string | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set(initialFavorites));
   const [picks, setPicks] = useState<Set<string>>(new Set(submittedSelection?.items ?? []));
   const [submitted, setSubmitted] = useState<{ items: string[]; note: string | null; submittedAt: string } | null>(submittedSelection);
@@ -841,21 +884,36 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
   // WEB-258: designed galleries group folders as section headers (the
   // folderless block leads without one). Classic mode stays a flat grid.
   // Tiles carry their flat index into `visible` — the lightbox walks that.
+  const filmsOn = Boolean(design?.films) && assets.some((a) => a.kind === "video");
   const sections = useMemo(() => {
-    if (!themed || activeFolder) return [{ name: null as string | null, items: visible.map((a, idx) => ({ a, idx })) }];
+    // WEB-260: with the Films flag, videos leave the photo flow entirely —
+    // they render in a dedicated Films section (reels strip first).
+    const photosOf = (list: { a: GalleryAsset; idx: number }[]) => (filmsOn ? list.filter((e) => e.a.kind !== "video") : list);
+    const all = visible.map((a, idx) => ({ a, idx }));
+    const films = filmsOn ? all.filter((e) => e.a.kind === "video") : [];
+    if (!themed || activeFolder) {
+      return [...(photosOf(all).length ? [{ name: null as string | null, items: photosOf(all) }] : []), ...(films.length ? [{ name: "Films" as string | null, items: films, films: true }] : [])];
+    }
     const byFolder = new Map<string | null, { a: GalleryAsset; idx: number }[]>();
-    visible.forEach((a, idx) => {
-      const key = a.folder ?? null;
+    photosOf(all).forEach((entry) => {
+      const key = entry.a.folder ?? null;
       const list = byFolder.get(key) ?? [];
-      list.push({ a, idx });
+      list.push(entry);
       byFolder.set(key, list);
     });
     const loose = byFolder.get(null) ?? [];
     return [
       ...(loose.length ? [{ name: null as string | null, items: loose }] : []),
       ...folderNames.map((f) => ({ name: f as string | null, items: byFolder.get(f) ?? [] })),
+      ...(films.length ? [{ name: "Films" as string | null, items: films, films: true }] : []),
     ];
-  }, [themed, activeFolder, visible, folderNames]);
+  }, [themed, activeFolder, visible, folderNames, filmsOn]);
+
+  // WEB-260: vertical clips (h/w ≥ 1.5, dims known) get the reels treatment.
+  const reels = useMemo(
+    () => (filmsOn ? visible.filter((a) => a.kind === "video" && a.width && a.height && a.height / a.width >= 1.5) : []),
+    [filmsOn, visible],
+  );
 
   // Justified ("cascade") rows: close a row once its accumulated aspect
   // reaches the target fill for the current column count; flex-grow per tile
@@ -1072,7 +1130,62 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
                   </span>
                 </div>
               )}
-              {layout === "grid" && (
+              {"films" in section && section.films && (
+                <div className="flex flex-col gap-4">
+                  {reels.length > 0 && (
+                    <div>
+                      <p className="mb-2 text-xs font-medium text-ink-tertiary">Reels</p>
+                      <div className="no-scrollbar -mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-1">
+                        {reels.map((a) => {
+                          const i = visible.indexOf(a);
+                          return (
+                            <button
+                              key={a.id}
+                              type="button"
+                              onClick={() => setOpen(i)}
+                              aria-label={`Play reel ${a.filename}`}
+                              className={`group relative aspect-[9/16] w-28 shrink-0 snap-start overflow-hidden border border-hairline bg-surface-1 sm:w-36 ${radiusCls}`}
+                            >
+                              <video src={`/api/assets/${a.id}?variant=thumb#t=0.5`} preload="metadata" muted playsInline className="h-full w-full object-cover" />
+                              <span className="absolute inset-0 flex items-center justify-center">
+                                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-black/55 text-white">
+                                  <svg width="12" height="14" viewBox="0 0 14 16" fill="currentColor" aria-hidden><path d="M0 0l14 8-14 8z" /></svg>
+                                </span>
+                              </span>
+                              {a.durationMs ? (
+                                <span className="absolute bottom-2 right-2 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">{fmtDuration(a.durationMs)}</span>
+                              ) : null}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                  <div className="grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2">
+                    {section.items
+                      .filter((it) => !reels.some((r) => r.id === it.a.id))
+                      .map(({ a, idx }) => (
+                        <GalleryTile
+                          key={a.id}
+                          asset={a}
+                          size="wide"
+                          heartsOn={heartsOn}
+                          favorited={favorites.has(a.id)}
+                          picking={picking}
+                          picked={picks.has(a.id)}
+                          pickedLocked={selectionMode === "selection" && !picking && picks.has(a.id)}
+                          captions={captions}
+                          radiusCls={radiusCls}
+                          deterrents={deterrents}
+                          onOpen={() => setOpen(idx)}
+                          onHeart={() => void heart(a.id)}
+                          onPick={() => togglePick(a.id)}
+                        />
+                      ))}
+                  </div>
+                </div>
+              )}
+              {!("films" in section) && layout === "grid" && (
                 <div className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 ${spacing.gap}`}>
                   {section.items.map(({ a, idx }) => (
                     <GalleryTile
@@ -1094,7 +1207,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
                   ))}
                 </div>
               )}
-              {layout === "masonry" && (
+              {!("films" in section) && layout === "masonry" && (
                 <div className={`columns-2 sm:columns-3 lg:columns-4 ${spacing.gap}`}>
                   {section.items.map(({ a, idx }) => (
                     <div key={a.id} className={spacing.mb}>
@@ -1117,7 +1230,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
                   ))}
                 </div>
               )}
-              {layout === "cascade" && (
+              {!("films" in section) && layout === "cascade" && (
                 <div className={`flex flex-col ${spacing.gap}`}>
                   {justifiedRows(section.items).map((row, ri) => (
                     <div key={ri} className={`flex ${spacing.gap}`}>
@@ -1255,15 +1368,18 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
               </button>
             )}
             {current.kind === "video" ? (
-              // eslint-disable-next-line jsx-a11y/media-has-caption -- gallery video
-              <video
+              <LightboxVideo
                 key={current.id}
-                src={`/api/assets/${current.id}`}
-                controls
-                autoPlay
-                playsInline
-                className="max-h-full max-w-full"
-                onClick={(e) => e.stopPropagation()}
+                assetId={current.id}
+                filename={current.filename}
+                onFirstPlay={() => {
+                  // WEB-260: one playback session = one counted view — the
+                  // beacon is a no-cache thumb GET (scrubbing ranges stay
+                  // exempt, so seeking never multiplies the count).
+                  if (countedVideo.current === current.id) return;
+                  countedVideo.current = current.id;
+                  void fetch(`/api/assets/${current.id}?variant=thumb&r=${Date.now()}`);
+                }}
               />
             ) : current.kind === "image" ? (
               <BackoffImage

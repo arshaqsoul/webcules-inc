@@ -16,6 +16,9 @@ export const THEME_CAPTIONS = ["off", "hover", "always"] as const;
 export type CoverStyle = (typeof COVER_STYLES)[number];
 export type GalleryLayout = (typeof GALLERY_LAYOUTS)[number];
 export type GalleryDesign = {
+  /** WEB-260: group videos into a dedicated Films section (with a reels
+   * strip for vertical clips) instead of interleaving them with photos. */
+  films?: boolean;
   cover?: {
     /** Project asset shown as the gallery cover ("" = text-only gradient
      * hero). Must also be in the grant's delivered set to render as an
@@ -68,6 +71,7 @@ export function parseGalleryDesign(input: unknown): GalleryDesign | null {
   if (!input || typeof input !== "object" || Array.isArray(input)) return null;
   const raw = input as Record<string, unknown>;
   const design: GalleryDesign = {
+    films: raw.films === true,
     layout: pick(GALLERY_LAYOUTS, raw.layout, CLASSIC_LAYOUT),
     theme: {
       background: pick(THEME_BACKGROUNDS, raw.theme && typeof raw.theme === "object" ? (raw.theme as Record<string, unknown>).background : undefined, "light"),
@@ -172,4 +176,13 @@ export function focalPosition(focal: { x: number; y: number }): string {
 /** Caption text for a tile — the filename without its extension. */
 export function captionOf(filename: string): string {
   return filename.replace(/\.[^.]+$/, "");
+}
+
+/** WEB-260: video duration label — m:ss / h:mm:ss. */
+export function fmtDuration(ms: number): string {
+  const total = Math.max(0, Math.round(ms / 1000));
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const sec = total % 60;
+  return h > 0 ? `${h}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}` : `${m}:${String(sec).padStart(2, "0")}`;
 }

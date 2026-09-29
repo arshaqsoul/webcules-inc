@@ -423,7 +423,18 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
           </fieldset>
 
           <fieldset>
-            <legend className="text-xs font-semibold uppercase tracking-wide text-ink-tertiary">Theme</legend>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+              <legend className="text-xs font-semibold uppercase tracking-wide text-ink-tertiary">Theme</legend>
+              <label className="ml-auto flex items-center gap-2 text-sm text-ink" title="Videos leave the photo flow and get their own Films section (with a Reels strip for vertical clips)">
+                <input
+                  type="checkbox"
+                  checked={draft.films === true}
+                  onChange={(e) => edit({ films: e.target.checked })}
+                  className="h-4 w-4"
+                />
+                Films section for videos
+              </label>
+            </div>
             <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Seg
                 label="Background"

@@ -167,11 +167,22 @@ async function canvasToBlobWatermarked(
   }
 }
 
-async function uploadDerivative(assetId: string, kind: "thumb" | "preview" | "preview_wm", blob: Blob, replace = false): Promise<boolean> {
+async function uploadDerivative(
+  assetId: string,
+  kind: "thumb" | "preview" | "preview_wm",
+  blob: Blob,
+  replace = false,
+  meta?: { width?: number; height?: number; durationMs?: number },
+): Promise<boolean> {
   const form = new FormData();
   form.set("kind", kind);
   form.set("file", blob, `${kind}.jpg`);
   if (replace) form.set("replace", "1");
+  // WEB-260: report the decoder's intrinsic size (+ video duration) — the
+  // server stores them set-if-null (cascade layouts, reels detection, labels).
+  if (meta?.width) form.set("width", String(Math.round(meta.width)));
+  if (meta?.height) form.set("height", String(Math.round(meta.height)));
+  if (meta?.durationMs) form.set("durationMs", String(Math.round(meta.durationMs)));
   try {
     const res = await fetch(`/api/assets/${assetId}/derivative`, { method: "POST", body: form });
     return res.ok;
@@ -181,7 +192,8 @@ async function uploadDerivative(assetId: string, kind: "thumb" | "preview" | "pr
 }
 
 /** Grab a decodable video frame (~25% in, capped at 1s) as a bitmap. */
-function videoFrame(file: File): Promise<ImageBitmap | null> {
+type VideoMeta = { bitmap: ImageBitmap; width: number; height: number; durationMs: number | null };
+function videoFrame(file: File): Promise<VideoMeta | null> {
   return new Promise((resolve) => {
     const video = document.createElement("video");
     video.muted = true;
@@ -189,11 +201,16 @@ function videoFrame(file: File): Promise<ImageBitmap | null> {
     video.preload = "metadata";
     const url = URL.createObjectURL(file);
     let settled = false;
-    const done = (result: ImageBitmap | null) => {
+    const done = (bitmap: ImageBitmap | null) => {
       if (settled) return;
       settled = true;
       URL.revokeObjectURL(url);
-      resolve(result);
+      // WEB-260: carry the decoder's dimensions + duration up to the caller.
+      resolve(
+        bitmap
+          ? { bitmap, width: video.videoWidth, height: video.videoHeight, durationMs: Number.isFinite(video.duration) && video.duration > 0 ? video.duration * 1000 : null }
+          : null,
+      );
     };
     video.onloadeddata = () => {
       try {
@@ -221,10 +238,11 @@ async function generateDerivatives(assetId: string, file: File): Promise<boolean
         canvasToBlob(bitmap, 320, 0.82),
         canvasToBlob(bitmap, 1600, 0.85),
       ]);
+      const dims = { width: bitmap.width, height: bitmap.height };
       bitmap.close();
       let any = false;
-      if (thumb) any = (await uploadDerivative(assetId, "thumb", thumb)) || any;
-      if (preview) any = (await uploadDerivative(assetId, "preview", preview)) || any;
+      if (thumb) any = (await uploadDerivative(assetId, "thumb", thumb, false, dims)) || any;
+      if (preview) any = (await uploadDerivative(assetId, "preview", preview, false, dims)) || any;
       // WEB-242: watermarked preview for client galleries (best-effort —
       // the bulk regenerate action in Settings backfills any misses).
       const wm = await watermarkContext();
@@ -242,9 +260,15 @@ async function generateDerivatives(assetId: string, file: File): Promise<boolean
     if (DERIV_VIDEO_EXTS.has(ext)) {
       const frame = await videoFrame(file);
       if (!frame) return false;
-      const thumb = await canvasToBlob(frame, 640, 0.82);
-      frame.close();
-      return thumb ? uploadDerivative(assetId, "thumb", thumb) : false;
+      const thumb = await canvasToBlob(frame.bitmap, 640, 0.82);
+      frame.bitmap.close();
+      return thumb
+        ? uploadDerivative(assetId, "thumb", thumb, false, {
+            width: frame.width,
+            height: frame.height,
+            ...(frame.durationMs ? { durationMs: frame.durationMs } : {}),
+          })
+        : false;
     }
   } catch {
     return false;

@@ -18,6 +18,7 @@ import { seedAsset, seedProject, seedStudio } from "../helpers/seed";
 beforeEach(resetDb);
 
 const DESIGN = {
+  films: true,
   cover: { assetId: "", focal: { x: 0.5, y: 0.4 }, style: "kenburns" as const, title: "{{client_name}}", subtitle: "by {{studio_name}}" },
   layout: "cascade" as const,
   theme: { background: "dark" as const, padding: "normal" as const, radius: "0px" as const, captions: "hover" as const },
@@ -117,7 +118,7 @@ describe("effectiveGalleryDesign", () => {
 describe("gallery_preset template kind", () => {
   it("normalizes the body to a canonical design; junk bodies are rejected", async () => {
     expect(parseGalleryDesign(JSON.parse(normalizeTemplateBody("gallery_preset", JSON.stringify(DESIGN)) ?? "null"))).toEqual(DESIGN);
-    expect(normalizeTemplateBody("gallery_preset", '{"layout":"nope"}')).toBe('{"layout":"grid","theme":{"background":"light","padding":"normal","radius":"16px","captions":"off"}}');
+    expect(normalizeTemplateBody("gallery_preset", '{"layout":"nope"}')).toBe('{"films":false,"layout":"grid","theme":{"background":"light","padding":"normal","radius":"16px","captions":"off"}}');
     expect(normalizeTemplateBody("gallery_preset", "not json")).toBeNull();
     expect(normalizeTemplateBody("gallery_preset", "[]")).toBeNull();
   });

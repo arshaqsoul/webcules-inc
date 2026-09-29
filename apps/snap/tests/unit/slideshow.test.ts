@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   audioMimeOf,
+  type SlideshowConfig,
   MUSIC_MAX_BYTES,
   parseSlideshowConfig,
   parseSlideshowConfigJson,
@@ -14,7 +15,7 @@ import {
 } from "@/lib/slideshow";
 import { slideshowForTier } from "@/lib/repos/slideshow";
 
-const CFG = { enabled: true, pace: 5, transition: "kenburns", music: "track-1", musicStartAt: 12 };
+const CFG: SlideshowConfig = { enabled: true, pace: 5, transition: "kenburns", music: "track-1", musicStartAt: 12 };
 
 describe("parseSlideshowConfig (WEB-259)", () => {
   it("round-trips a valid config", () => {

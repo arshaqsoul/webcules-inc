@@ -5,13 +5,13 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import { createTrack, deleteTrack, getProjectSlideshow, getTrack, listTracks, saveProjectSlideshow, slideshowForTier } from "@/lib/repos/slideshow";
 import { checkImageView, IP_VIEWS_PER_MIN } from "@/lib/limits";
-import { MUSIC_MAX_BYTES, parseSlideshowConfigJson, serializeSlideshowConfig } from "@/lib/slideshow";
+import { MUSIC_MAX_BYTES, parseSlideshowConfigJson, serializeSlideshowConfig, type SlideshowConfig } from "@/lib/slideshow";
 import { resetDb } from "../helpers/db";
 import { seedProject, seedStudio } from "../helpers/seed";
 
 beforeEach(resetDb);
 
-const CFG = { enabled: true, pace: 5, transition: "kenburns", music: "", musicStartAt: 0 };
+const CFG: SlideshowConfig = { enabled: true, pace: 5, transition: "kenburns", music: "", musicStartAt: 0 };
 
 async function seedTrack(organizationId: string, name = "First dance.mp3", bytes = 1024) {
   return createTrack({ organizationId, name, storageKey: `${organizationId}/audio/t1/${name}`, mimeType: "audio/mpeg", bytes });

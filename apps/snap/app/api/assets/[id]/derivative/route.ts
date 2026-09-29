@@ -36,6 +36,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (file.size > MAX_DERIVATIVE_BYTES) return Response.json({ error: "too_large" }, { status: 413 });
   if (!file.type.startsWith("image/")) return Response.json({ error: "unsupported_type" }, { status: 400 });
 
+  // WEB-260: intrinsic size + video duration from the uploader's decoder
+  // (set-if-null server-side; sane bounds only).
+  const intField = (name: string): number | undefined => {
+    const n = Number(form.get(name));
+    return Number.isFinite(n) && n > 0 && n < 100_000 ? Math.round(n) : undefined;
+  };
+  const width = intField("width");
+  const height = intField("height");
+  const durationMsRaw = Number(form.get("durationMs"));
+  const durationMs = Number.isFinite(durationMsRaw) && durationMsRaw > 0 && durationMsRaw < 24 * 3600_000 ? Math.round(durationMsRaw) : undefined;
+
   const result = await attachDerivative({
     organizationId: ctx.organizationId,
     assetId: id,
@@ -43,6 +54,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     bytes: await file.arrayBuffer(),
     contentType: file.type,
     ...(replace ? { replace: true } : {}),
+    ...(width ? { width } : {}),
+    ...(height ? { height } : {}),
+    ...(durationMs ? { durationMs } : {}),
     // WEB-117: with the studio's strip policy on, a derivative carrying
     // EXIF/GPS is rejected — canvas output always passes, this is the guard.
     verifyNoExif: (await getStudioProfile(ctx.organizationId))?.exifStripDerived ?? false,

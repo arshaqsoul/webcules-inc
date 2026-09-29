@@ -16,6 +16,7 @@ import {
 import { coverLink, verifyCoverSig } from "@/lib/cover-link";
 
 const FULL = {
+  films: false,
   cover: { assetId: "abc123", focal: { x: 0.25, y: 0.75 }, style: "kenburns", title: "Sarah & Jonah", subtitle: "A film from your day" },
   layout: "cascade",
   theme: { background: "dark", padding: "airy", radius: "0px", captions: "hover" },

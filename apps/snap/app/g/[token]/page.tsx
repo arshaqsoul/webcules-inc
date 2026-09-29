@@ -205,6 +205,7 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
           folder: a.folder,
           width: a.width,
           height: a.height,
+          durationMs: a.durationMs,
         }))}
         allowDownload={grant.allowDownload}
         expiresAt={grant.expiresAt ? grant.expiresAt.toISOString() : null}
@@ -248,6 +249,7 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
         folder: a.folder,
         width: a.width,
         height: a.height,
+        durationMs: a.durationMs,
       }))}
       allowDownload={grant.allowDownload}
       expiresAt={grant.expiresAt ? grant.expiresAt.toISOString() : null}

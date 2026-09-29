@@ -482,6 +482,8 @@ export const assets = sqliteTable(
     bytes: integer("bytes").notNull().default(0),
     width: integer("width"),
     height: integer("height"),
+    /** WEB-260: video duration ms (browser decoder at upload). */
+    durationMs: integer("duration_ms"),
     checksum: text("checksum"),
     /** fp1:sha256(size + first 1MB) — duplicate-upload detection. */
     fingerprint: text("fingerprint"),

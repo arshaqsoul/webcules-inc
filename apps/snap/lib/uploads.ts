@@ -20,6 +20,10 @@ import { objectUrl, s3Client } from "@/lib/storage/r2s3";
 
 /** Hard ceiling per file (S3 multipart: ≤10,000 parts — we stay far under). */
 export const DIRECT_MAX_BYTES = 5 * 1024 * 1024 * 1024;
+
+/** WEB-260: videos cap at 4 GB per file (clear error at session create);
+ * photos/RAW keep the 5 GB session ceiling. */
+export const VIDEO_MAX_BYTES = 4 * 1024 * 1024 * 1024;
 /** Above this, uploads go presigned multipart (below: single presigned PUT). */
 export const MULTIPART_THRESHOLD = 100 * 1024 * 1024;
 /** Presigned single-PUT window (WEB-111 spec: ≤300s). */
@@ -156,6 +160,12 @@ export async function createUploadSession(params: {
   }
   const classified = classifyUpload(params.filename);
   if (!classified) return { ok: false, error: "unsupported_type", status: 400 };
+
+  // WEB-260: videos cap at 4 GB/file (no transcoding — originals stream via
+  // range requests; the cap bounds a single object's streaming footprint).
+  if (classified.kind === "video" && params.bytes > VIDEO_MAX_BYTES) {
+    return { ok: false, error: "video_too_large", status: 400, extra: { maxBytes: VIDEO_MAX_BYTES } };
+  }
 
   const gate = await checkUploadGate(params.organizationId, params.filename, params.bytes);
   if (!gate.ok) return gate;

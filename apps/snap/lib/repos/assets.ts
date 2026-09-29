@@ -518,6 +518,11 @@ export async function attachDerivative(params: {
    * changes re-run the bulk path); the first write per upload stays
    * unique-guarded like thumb/preview. */
   replace?: boolean;
+  /** WEB-260: intrinsic size + video duration, reported by the uploader's
+   * decoder — stored set-if-null (never overwrites, never rewritten). */
+  width?: number;
+  height?: number;
+  durationMs?: number;
 }): Promise<
   | { ok: true }
   | { ok: false; error: "not_found" | "unsupported_type" | "metadata_present" | "already_present" }
@@ -550,6 +555,9 @@ export async function attachDerivative(params: {
           ? { previewKey: key }
           : { previewWmKey: key }),
       ...(params.verifyNoExif ? { exifStripped: true } : {}),
+      ...(params.width && !asset.width ? { width: Math.round(params.width) } : {}),
+      ...(params.height && !asset.height ? { height: Math.round(params.height) } : {}),
+      ...(params.durationMs && !asset.durationMs ? { durationMs: Math.round(params.durationMs) } : {}),
     })
     .where(and(eq(schema.assets.id, asset.id), eq(schema.assets.organizationId, params.organizationId)));
   return { ok: true };
