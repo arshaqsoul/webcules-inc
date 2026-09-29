@@ -46,7 +46,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       {/* Viewport-pinned sidebar: sticky + h-dvh keeps it from stretching with
        * the content column, so the theme/logout block stays on screen while
        * long pages scroll; the nav scrolls internally on short viewports. */}
-      <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col overflow-y-auto border-r border-hairline bg-surface-1 md:flex">
+      <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col overflow-y-auto overflow-x-hidden border-r border-hairline bg-surface-1 md:flex">
         <div className="flex h-14 shrink-0 items-center border-b border-hairline px-3">
           <StudioSwitcher
             studios={studios}
