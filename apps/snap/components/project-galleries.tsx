@@ -93,7 +93,8 @@ export function ProjectGalleries({
   // WEB-216: empty set = deliver everything approved; otherwise only the
   // checked folders' approved files ship in this link.
   const [deliverFolders, setDeliverFolders] = useState<Set<string>>(new Set());
-  const [feedback, setFeedback] = useState<{ grant: GrantItem; favorites: string[]; selection: { items: string[]; note: string | null; submittedAt: string } | null } | null>(null);
+  const [feedback, setFeedback] = useState<{ grant: GrantItem; favorites: string[]; details: { assetId: string; listId: string; listName: string; note: string | null }[]; selection: { items: string[]; note: string | null; submittedAt: string; seen?: boolean } | null } | null>(null);
+  const [flashNote, setFlashNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [flash, setFlash] = useState<{ url: string; emailed: boolean } | null>(null);
@@ -116,6 +117,49 @@ export function ProjectGalleries({
   useEffect(() => {
     void loadPending();
   }, [loadPending]);
+
+  async function exportFavorites(zip: boolean) {
+    if (!feedback) return;
+    setBusy(true);
+    setFlashNote("");
+    try {
+      const res = await fetch(`/api/grants/${feedback.grant.id}/favorites/export`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(zip ? { zip: true, sizePref: "web" } : {}),
+      });
+      if (res.ok && !zip) {
+        const blob = await res.blob();
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "favorites.csv";
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 30_000);
+        setFlashNote("CSV downloaded.");
+      } else if (res.ok) {
+        const body = (await res.json()) as { fileCount?: number };
+        setFlashNote(`ZIP of ${body.fileCount} previews queued — the client gets the link by email.`);
+      } else {
+        const body = (await res.json().catch(() => ({}))) as { error?: string };
+        setFlashNote(body.error === "exports_require_studio" ? "Exports are a Studio feature." : body.error === "empty" ? "Nothing to export." : "Export failed — try again.");
+      }
+    } catch {
+      setFlashNote("Export failed — try again.");
+    }
+    setBusy(false);
+  }
+
+  async function markSeen() {
+    if (!feedback?.selection) return;
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/grants/${feedback.grant.id}/selection-seen`, { method: "POST" });
+      if (res.ok) setFeedback({ ...feedback, selection: { ...feedback.selection, seen: true } });
+    } catch {
+      // keep button; retry next open
+    }
+    setBusy(false);
+  }
 
   async function decideDownload(id: string, action: "approve" | "reject") {
     setBusy(true);
@@ -245,7 +289,7 @@ export function ProjectGalleries({
       const res = await fetch(`/api/grants/${g.id}/feedback`);
       if (res.ok) {
         const body = (await res.json()) as { favorites: string[]; selection: { items: string[]; note: string | null; submittedAt: string } | null };
-        setFeedback({ grant: g, favorites: body.favorites, selection: body.selection });
+        setFeedback({ grant: g, favorites: body.favorites, details: (body as { details?: { assetId: string; listId: string; listName: string; note: string | null }[] }).details ?? [], selection: (body as { selection: { items: string[]; note: string | null; submittedAt: string; seen?: boolean } | null }).selection });
       }
     } catch { /* ignore */ }
     setBusy(false);
@@ -583,21 +627,53 @@ export function ProjectGalleries({
           {feedback?.selection?.note && (
             <p className="rounded-md bg-surface-2 p-3 text-sm text-ink">“{feedback.selection.note}”</p>
           )}
-          <div className="grid max-h-80 grid-cols-4 gap-2 overflow-y-auto sm:grid-cols-6">
-            {(feedback?.selection?.items ?? feedback?.favorites ?? []).map((assetId) => (
-              // eslint-disable-next-line @next/next/no-img-element -- authorized proxy, no optimizer
-              <img
-                key={assetId}
-                src={`/api/assets/${assetId}?variant=thumb`}
-                alt=""
-                loading="lazy"
-                className="aspect-square w-full rounded-md border border-hairline object-cover"
-              />
-            ))}
-            {((feedback?.selection?.items ?? feedback?.favorites ?? []).length === 0) && (
-              <p className="col-span-full py-6 text-center text-sm text-ink-subtle">Nothing picked yet.</p>
+          {(feedback?.selection?.items ?? feedback?.favorites ?? []).length === 0 && (feedback?.details.length ?? 0) === 0 && (
+            <p className="py-6 text-center text-sm text-ink-subtle">Nothing picked yet.</p>
+          )}
+          {feedback?.selection && (
+            <div className="grid max-h-44 grid-cols-4 gap-2 overflow-y-auto sm:grid-cols-6">
+              {feedback.selection.items.map((assetId) => (
+                // eslint-disable-next-line @next/next/no-img-element -- authorized proxy, no optimizer
+                <img key={assetId} src={`/api/assets/${assetId}?variant=thumb`} alt="" loading="lazy" className="aspect-square w-full rounded-md border border-hairline object-cover" />
+              ))}
+            </div>
+          )}
+          {(feedback?.details.length ?? 0) > 0 && feedback && (
+            <div className="max-h-80 space-y-3 overflow-y-auto">
+              {Array.from(new Set(feedback.details.map((d) => d.listName))).map((listName) => {
+                const items = feedback.details.filter((d) => d.listName === listName);
+                return (
+                  <div key={listName}>
+                    <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-ink-tertiary">{listName} · {items.length}</p>
+                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                      {items.map((d) => (
+                        <figure key={d.assetId} className="overflow-hidden rounded-md border border-hairline">
+                          {/* eslint-disable-next-line @next/next/no-img-element -- authorized proxy, no optimizer */}
+                          <img src={`/api/assets/${d.assetId}?variant=thumb`} alt="" loading="lazy" className="aspect-square w-full object-cover" />
+                          {d.note ? <figcaption className="bg-surface-2 p-1.5 text-[11px] leading-snug text-ink-subtle">{d.note}</figcaption> : null}
+                        </figure>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          <div className="flex flex-wrap items-center gap-2 border-t border-hairline pt-3">
+            <Button size="sm" variant="outline" disabled={busy || !feedback?.details.length} onClick={() => void exportFavorites(false)}>
+              Export CSV
+            </Button>
+            <Button size="sm" variant="outline" disabled={busy || !feedback?.details.length} onClick={() => void exportFavorites(true)}>
+              Export ZIP (previews)
+            </Button>
+            {feedback?.selection && !feedback.selection.seen && (
+              <Button size="sm" variant="ghost" disabled={busy} onClick={() => void markSeen()}>
+                Mark seen
+              </Button>
             )}
+            {feedback?.selection?.seen ? <span className="text-xs text-ink-tertiary">selection seen ✓</span> : null}
           </div>
+          {flashNote ? <p className="text-xs text-ink-subtle">{flashNote}</p> : null}
         </DialogContent>
       </Dialog>
     </div>

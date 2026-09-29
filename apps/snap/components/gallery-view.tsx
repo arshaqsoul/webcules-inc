@@ -836,7 +836,7 @@ function GalleryTile(props: {
 }
 
 
-export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLabel, watermarked, deterrents, assets, allowDownload, expiresAt, selectionMode, selectionLimit, selectionDeadline, initialFavorites, submittedSelection, clientToken, design, slideshow, allowSharing }: Brand & {
+export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLabel, watermarked, deterrents, assets, allowDownload, expiresAt, selectionMode, selectionLimit, selectionDeadline, initialFavorites, submittedSelection, clientToken, design, slideshow, allowSharing, favoriteLists = [], initialNotes = {}, canMakeLists, canNote }: Brand & {
   assets: GalleryAsset[];
   allowDownload: boolean;
   expiresAt: string | null;
@@ -853,10 +853,21 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
   slideshow?: SlideshowProps | null;
   /** WEB-262: per-photo sharing allowed (Lite+ AND the studio toggle). */
   allowSharing?: boolean;
+  /** WEB-264: favorite lists (first = active) + per-photo notes for it. */
+  favoriteLists?: { id: string; name: string }[];
+  initialNotes?: Record<string, string>;
+  canMakeLists?: boolean;
+  canNote?: boolean;
 }) {
   const [open, setOpen] = useState<number | null>(null);
   // WEB-259: slideshow start index into the photos-only slide list.
   const [slideshowStart, setSlideshowStart] = useState<number | null>(null);
+  // WEB-264: favorite lists — hearts operate on the active list.
+  const [lists, setLists] = useState(favoriteLists);
+  const [activeListId, setActiveListId] = useState(favoriteLists[0]?.id ?? null);
+  const [favNotes, setFavNotes] = useState<Record<string, string>>(initialNotes);
+  const [newListName, setNewListName] = useState("");
+  const [listBusy, setListBusy] = useState(false);
   // WEB-260: the video already counted a view this session (per lightbox).
   const countedVideo = useRef<string | null>(null);
   // WEB-261: downloads 2.0 — controls + request list from the server.
@@ -981,6 +992,63 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
     } catch {
       setDlFlash("Network error — try again.");
       setTimeout(() => setDlFlash(""), 3000);
+    }
+  }
+
+  async function switchList(id: string) {
+    if (id === activeListId) return;
+    setListBusy(true);
+    try {
+      const res = await fetch(`/api/g/${clientToken}/lists?active=${id}`);
+      if (res.ok) {
+        const body = (await res.json()) as { favorites: string[] };
+        setFavorites(new Set(body.favorites));
+        setActiveListId(id);
+        setOpen(null);
+      }
+    } catch {
+      // stay on the current list
+    }
+    setListBusy(false);
+  }
+
+  async function addList() {
+    const name = newListName.trim();
+    if (!name || listBusy) return;
+    setListBusy(true);
+    try {
+      const res = await fetch(`/api/g/${clientToken}/lists`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      const body = (await res.json().catch(() => ({}))) as { id?: string; name?: string; error?: string };
+      if (res.ok && body.id) {
+        setLists((cur) => [...cur, { id: body.id!, name: body.name ?? name }]);
+        setNewListName("");
+        await switchList(body.id);
+      } else {
+        setDlFlash(body.error === "lists_require_lite" ? "Multiple lists are a Lite feature." : "Couldn't create the list.");
+        setTimeout(() => setDlFlash(""), 3000);
+      }
+    } catch {
+      setDlFlash("Network error — try again.");
+      setTimeout(() => setDlFlash(""), 3000);
+    }
+    setListBusy(false);
+  }
+
+  async function saveNote(assetId: string, note: string) {
+    if (!activeListId) return;
+    try {
+      const res = await fetch(`/api/g/${clientToken}/favorite`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assetId, listId: activeListId, note }),
+      });
+      if (res.ok) setFavNotes((cur) => ({ ...cur, [assetId]: note }));
+    } catch {
+      // notes are best-effort on the client side
     }
   }
 
@@ -1131,7 +1199,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
       const res = await fetch(`/api/g/${clientToken}/favorite`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assetId, favorited: desired }),
+        body: JSON.stringify({ assetId, favorited: desired, ...(activeListId ? { listId: activeListId } : {}) }),
       });
       if (!res.ok) throw new Error();
       const body = (await res.json()) as { favorited: boolean };
@@ -1300,6 +1368,49 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
           </span>
         </div>
       </header>
+
+      {/* WEB-264: favorite lists — pills + create (Lite+). */}
+      {heartsOn && (lists.length > 1 || canMakeLists) && (
+        <nav aria-label="Favorite lists" className="mx-auto flex max-w-6xl flex-wrap items-center gap-1.5 px-5 pt-3">
+          {lists.map((l) => (
+            <button
+              key={l.id}
+              type="button"
+              onClick={() => void switchList(l.id)}
+              disabled={listBusy}
+              aria-pressed={activeListId === l.id}
+              className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${activeListId === l.id ? "text-white" : "bg-surface-1 text-ink-muted hover:text-ink"}`}
+              style={activeListId === l.id ? { background: "var(--accent)" } : undefined}
+            >
+              {l.name}
+            </button>
+          ))}
+          {canMakeLists && (
+            <span className="flex items-center gap-1">
+              <input
+                value={newListName}
+                onChange={(e) => setNewListName(e.target.value.slice(0, 60))}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    void addList();
+                  }
+                }}
+                placeholder="New list…"
+                className="w-28 rounded-full border border-hairline bg-canvas px-3 py-1.5 text-xs text-ink placeholder:text-ink-tertiary"
+              />
+              <button
+                type="button"
+                onClick={() => void addList()}
+                disabled={listBusy || !newListName.trim()}
+                className="rounded-full bg-surface-1 px-3 py-1.5 text-xs font-medium text-ink-muted transition-colors hover:text-ink disabled:opacity-50"
+              >
+                Add
+              </button>
+            </span>
+          )}
+        </nav>
+      )}
 
       {/* Folder navigation (WEB-216) — only when the delivery was foldered. */}
       {folderNames.length > 0 && (
@@ -1709,6 +1820,17 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
             )}
           </div>
 
+          {canNote && activeListId && current.kind === "image" && favorites.has(current.id) && (
+            <div className="flex items-center gap-2 px-4 pb-1" onClick={(e) => e.stopPropagation()}>
+              <input
+                key={current.id}
+                defaultValue={favNotes[current.id] ?? ""}
+                onBlur={(e) => void saveNote(current.id, e.target.value.slice(0, 280))}
+                placeholder="Note for your photographer (optional) — e.g. the one for grandma"
+                className="w-full max-w-xl rounded-md border border-white/20 bg-white/10 px-3 py-1.5 text-xs text-white placeholder:text-white/40"
+              />
+            </div>
+          )}
           <div className="relative flex min-h-0 flex-1 items-center justify-center px-4 pb-6" onClick={close}>
             {visible.length > 1 && (
               <button

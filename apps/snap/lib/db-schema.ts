@@ -710,6 +710,24 @@ export const shareGrantAssets = sqliteTable(
 
 /* ---------------- Client favorites & selections (WEB-209 P1) ---------------- */
 
+/** WEB-264: named favorite lists per grant (the default list is created
+ * lazily per grant; legacy favorites backfilled into it by 0046). */
+export const favoriteLists = sqliteTable(
+  "favorite_list",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    grantId: text("grant_id")
+      .notNull()
+      .references(() => shareGrants.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    createdAt: ts("created_at"),
+  },
+  (t) => [index("favorite_list_grant_idx").on(t.grantId)],
+);
+
 export const galleryFavorites = sqliteTable(
   "gallery_favorite",
   {
@@ -719,12 +737,17 @@ export const galleryFavorites = sqliteTable(
     assetId: text("asset_id")
       .notNull()
       .references(() => assets.id, { onDelete: "cascade" }),
+    listId: text("list_id")
+      .notNull()
+      .references(() => favoriteLists.id, { onDelete: "cascade" }),
     organizationId: text("organization_id")
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),
+    /** WEB-264: per-photo note (plain text, ≤280, photographer-only). */
+    note: text("note"),
     createdAt: ts("created_at"),
   },
-  (t) => [primaryKey({ columns: [t.grantId, t.assetId] }), index("gallery_favorite_asset_idx").on(t.organizationId, t.assetId)],
+  (t) => [primaryKey({ columns: [t.grantId, t.assetId, t.listId] }), index("gallery_favorite_asset_idx").on(t.organizationId, t.assetId)],
 );
 
 export const gallerySelections = sqliteTable(
@@ -742,6 +765,8 @@ export const gallerySelections = sqliteTable(
     /** JSON array of asset ids. */
     itemsJson: text("items_json").notNull(),
     submittedAt: ts("submitted_at"),
+    /** WEB-264: studio's completion flag — stale selections stay obvious. */
+    seen: integer("seen", { mode: "boolean" }).notNull().default(false),
   },
   (t) => [index("gallery_selection_grant_idx").on(t.grantId, t.submittedAt)],
 );

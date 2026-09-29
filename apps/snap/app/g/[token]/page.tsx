@@ -21,7 +21,7 @@ import type { SlideshowProps } from "@/components/gallery-view";
 import { getPlanEntitlements } from "@/lib/plans";
 import { logShareAccess, resolveGalleryAccess } from "@/lib/shares/gallery-auth";
 import { getGrantAssets, getGrantByTokenHashAny, resolveGrantByToken } from "@/lib/shares/grants";
-import { getFavorites, getLatestSelection } from "@/lib/shares/selections";
+import { ensureFavoriteLists, getFavoritesForList, getLatestSelection, listFavoriteDetails } from "@/lib/shares/selections";
 import { safeHexColor } from "@/lib/embed";
 import { countGalleryOpen } from "@/lib/limits";
 import { buildMergeValues, renderMerge } from "@/lib/merge";
@@ -139,11 +139,16 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
     return <GalleryDenied reason="unknown" />;
   }
 
-  const [profile, assets, ent, favorites, selection, projectOverride, design, slideshowCfg] = await Promise.all([
+  // WEB-264: favorite lists — default created lazily; the view starts on
+  // the first list with its own favorites + notes.
+  const favLists = grant.selectionMode !== "off" ? await ensureFavoriteLists(grant.id, grant.organizationId) : [];
+  const activeList = favLists[0] ?? null;
+  const [profile, assets, ent, favorites, favNotes, selection, projectOverride, design, slideshowCfg] = await Promise.all([
     getStudioProfile(grant.organizationId),
     getGrantAssets(grant),
     getPlanEntitlements(grant.organizationId),
-    getFavorites(grant.id),
+    activeList ? getFavoritesForList(grant.id, activeList.id) : Promise.resolve([]),
+    activeList ? listFavoriteDetails(grant.id) : Promise.resolve([]),
     getLatestSelection(grant.id),
     // WEB-242: per-project watermark override.
     getDb()
@@ -215,6 +220,10 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
         initialFavorites={favorites}
         submittedSelection={selection ? { items: selection.items, note: selection.note, submittedAt: selection.submittedAt.toISOString() } : null}
         clientToken={token}
+        favoriteLists={favLists.map((l) => ({ id: l.id, name: l.name }))}
+        initialNotes={Object.fromEntries(favNotes.filter((f) => f.listId === activeList?.id).map((f) => [f.assetId, f.note ?? ""]))}
+        canMakeLists={(ent?.id ?? "free") !== "free"}
+        canNote={ent?.id === "studio" || ent?.id === "pro"}
         design={design}
         slideshow={slideshow}
         allowSharing={grant.allowSharing && (ent?.id ?? "free") !== "free"}
@@ -260,6 +269,10 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
       initialFavorites={favorites}
       submittedSelection={selection ? { items: selection.items, note: selection.note, submittedAt: selection.submittedAt.toISOString() } : null}
       clientToken={token}
+      favoriteLists={favLists.map((l) => ({ id: l.id, name: l.name }))}
+      initialNotes={Object.fromEntries(favNotes.filter((f) => f.listId === activeList?.id).map((f) => [f.assetId, f.note ?? ""]))}
+      canMakeLists={(ent?.id ?? "free") !== "free"}
+      canNote={ent?.id === "studio" || ent?.id === "pro"}
       design={design}
       slideshow={slideshow}
       allowSharing={grant.allowSharing && (ent?.id ?? "free") !== "free"}
