@@ -70,6 +70,8 @@ export function FinalCta({ signedIn }: { signedIn: boolean }) {
             <a href="#pricing" className="transition-colors hover:text-white">Pricing</a>
             <Link href="/docs/embeds" className="transition-colors hover:text-white">Docs</Link>
             <Link href="/login" className="transition-colors hover:text-white">Sign in</Link>
+            <Link href="/terms" className="transition-colors hover:text-white">Terms</Link>
+            <Link href="/privacy" className="transition-colors hover:text-white">Privacy</Link>
             <Link href="https://webcules.com" className="transition-colors hover:text-white">webcules.com</Link>
           </nav>
           <span>Payments by Stripe · Storage on Cloudflare R2</span>

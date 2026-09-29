@@ -162,6 +162,11 @@ export function SignupForm({ initialPlan }: { initialPlan: PlanChoice | null }) 
             <Button type="submit" disabled={Boolean(pending)} className="w-full">
               {pending ?? (initialPlan && initialPlan !== "free" ? `Continue — ${PLAN_INFO[initialPlan].name} plan` : "Create studio")}
             </Button>
+            <p className="text-center text-xs text-ink-tertiary">
+              By creating an account you agree to our{" "}
+              <Link href="/terms" className="text-primary hover:underline">Terms</Link> and{" "}
+              <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
+            </p>
           </form>
         </div>
         <p className="mt-4 text-center text-sm text-ink-subtle">

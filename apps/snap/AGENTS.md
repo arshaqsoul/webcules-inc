@@ -30,7 +30,7 @@ node scripts/deploy.mjs production --staging-verified  # ONLY after verifying
 |---|---|---|
 | URL | https://snap.webcules.com | https://snap-staging.webcules.com |
 | Worker | `webcules-snap` | `webcules-snap-staging` |
-| D1 | `webcules-snap` (`daf6fd47-5885-414e-bcbb-1c045ee60f12`) | `webcules-snap-staging` (`9b850d02-67d3-4c1b-a7ed-482cc587b2d5`) |
+| D1 | `webcules-snap` (`badece16-2231-4b37-81ac-54f7c4bbf464` — recreated fresh 2026-09-29 at launch; pre-launch backup in repo `.backups/`) | `webcules-snap-staging` (`9b850d02-67d3-4c1b-a7ed-482cc587b2d5`) |
 | R2 | `snap-webcules` | `snap-staging` |
 | Stripe | TEST keys today; live keys at launch (see below) | TEST keys (sandbox) |
 | Cron | `webcules-snap-email` daily 06:00 UTC → `POST /api/cron/daily-status` | none — call the endpoint manually (below) |
