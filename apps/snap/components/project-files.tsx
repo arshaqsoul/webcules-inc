@@ -2089,21 +2089,21 @@ export function ProjectFiles({ projectId, clientEmail, initial }: { projectId: s
                       {/* image-only indicators (small density + mobile):
                          * overlays on the image, never card chrome */}
                       {a.status === "rejected" && (
-                        <span className={`absolute inset-0 z-[5] bg-canvas/45 ${compact ? "" : "sm:hidden"}`} aria-hidden />
+                        <span className={`absolute inset-0 z-[5] bg-canvas/45 `} aria-hidden />
                       )}
                       {a.status === "approved" && (
-                        <span className={`absolute inset-x-0 bottom-0 z-[5] h-[3px] bg-emerald-500 ${compact ? "" : "sm:hidden"}`} aria-hidden />
+                        <span className={`absolute inset-x-0 bottom-0 z-[5] h-[3px] bg-emerald-500 `} aria-hidden />
                       )}
                       {a.color > 0 && (
-                        <span className={`absolute inset-y-0 left-0 z-[5] w-[3px] ${compact ? "" : "sm:hidden"}`} style={{ background: COLOR_HEX[a.color] }} aria-hidden />
+                        <span className={`absolute inset-y-0 left-0 z-[5] w-[3px] `} style={{ background: COLOR_HEX[a.color] }} aria-hidden />
                       )}
                       {a.stars > 0 && (
-                        <span className={`absolute right-1 top-1 z-[6] rounded-full bg-black/55 px-1.5 py-0.5 text-[9px] font-medium leading-none text-amber-400 ${compact ? "" : "sm:hidden"}`}>
+                        <span className={`absolute right-1 top-1 z-[6] rounded-full bg-black/55 px-1.5 py-0.5 text-[9px] font-medium leading-none text-amber-400 `}>
                           {"★".repeat(a.stars)}
                         </span>
                       )}
                       {a.tags.includes("favorite") && (
-                        <span className={`absolute left-1 top-1 z-[6] text-[10px] leading-none text-amber-400 drop-shadow ${compact ? "" : "sm:hidden"}`} aria-hidden>
+                        <span className={`absolute left-1 top-1 z-[6] text-[10px] leading-none text-amber-400 drop-shadow `} aria-hidden>
                           ♥
                         </span>
                       )}
@@ -2158,27 +2158,6 @@ export function ProjectFiles({ projectId, clientEmail, initial }: { projectId: s
                         </div>
                       )}
                     </a>
-                    {/* m/l card chrome (sm+): persistent indications under the
-                     * image — the image overlays above are small-density and
-                     * mobile only. The hover toolbar stays interaction-only. */}
-                    {!compact && (
-                      <div className="hidden items-center justify-between gap-2 px-1 pb-1 pt-1 sm:flex">
-                        <span className="flex min-w-0 items-center gap-1.5 text-[11px] leading-none">
-                          {a.stars > 0 && <span className="text-amber-400">{"★".repeat(a.stars)}</span>}
-                          {a.tags.includes("favorite") && <span className="text-amber-400">♥</span>}
-                          {a.color > 0 && (
-                            <span
-                              aria-label={`${COLOR_NAMES[a.color]} label`}
-                              className="h-2.5 w-2.5 shrink-0 rounded-full border border-hairline-strong"
-                              style={{ background: COLOR_HEX[a.color] }}
-                            />
-                          )}
-                        </span>
-                        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${STATUS_BADGE[a.status] ?? "bg-surface-2 text-ink-subtle"}`}>
-                          {a.status}
-                        </span>
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
