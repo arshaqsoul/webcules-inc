@@ -15,6 +15,7 @@ import * as schema from "@/lib/db-schema";
 import { isWhiteLabeled } from "@/lib/branding";
 import { brandIcons, brandOgImage, parseBrandAssets } from "@/lib/brand-assets";
 import { getPlanEntitlements } from "@/lib/plans";
+import { parseBookingPageConfig } from "@/lib/booking-page";
 import { safeHexColor } from "@/lib/embed";
 
 export const dynamic = "force-dynamic";
@@ -32,6 +33,7 @@ async function studioBySlug(slug: string) {
       logoKey: schema.studioProfiles.logoKey,
       embedKey: schema.studioProfiles.embedKey,
       contactEmail: schema.studioProfiles.contactEmail,
+      bookingPage: schema.studioProfiles.bookingPage,
     })
     .from(schema.studioProfiles)
     .innerJoin(schema.organization, eq(schema.organization.id, schema.studioProfiles.organizationId))
@@ -51,6 +53,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const studio = await studioBySlug(slug);
   if (!studio) return { title: "Book a session" };
   const title = `Book ${studio.studioName}`;
+  const metaPage = parseBookingPageConfig(studio.bookingPage ?? null);
   // WEB-238: white-labeled — absolute title skips the `· Snap` template suffix.
   const wl = await studioWhiteLabeled(studio);
   const bag = parseBrandAssets(studio.brandAssets);
@@ -58,12 +61,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const ogImage = brandOgImage(bag, studio.organizationId);
   return {
     title: wl ? { absolute: title } : title,
-    description: `See availability and book a session with ${studio.studioName}.`,
+    description: metaPage.hero.subtitle || `See availability and book a session with ${studio.studioName}.`,
     robots: { index: false },
     ...(icons ? { icons } : {}),
     openGraph: {
       title,
-      description: `See availability and book a session with ${studio.studioName}.`,
+      description: metaPage.hero.subtitle || `See availability and book a session with ${studio.studioName}.`,
       images: [
         ...(ogImage ? [ogImage] : []),
         ...(studio.logoKey && !ogImage ? [`/api/embed/logo?key=${studio.embedKey}`] : []),
@@ -88,6 +91,7 @@ export default async function PublicBookingPage({
   const brand = JSON.parse(studio.brand || "{}") as { accent?: string; fontFamily?: string; theme?: string; tokens?: Record<string, string> };
   const accent = safeHexColor(brand.accent) ?? "#5e6ad2";
   const wl = await studioWhiteLabeled(studio);
+  const page = parseBookingPageConfig(studio.bookingPage ?? null);
 
   // Brand-layer tokens flow into the widget via query params (server
   // sanitizes again inside the widget route).
@@ -110,7 +114,10 @@ export default async function PublicBookingPage({
           ) : (
             <p className="text-xl font-semibold tracking-[-0.4px] text-[#0f1011]">{studio.studioName}</p>
           )}
-          <p className="text-sm text-[#62666d]">Pick a time that works for you — booking takes under a minute.</p>
+          {page.hero.title && !studio.logoKey ? (
+            <p className="text-xl font-semibold tracking-[-0.4px] text-[#0f1011]">{page.hero.title}</p>
+          ) : null}
+          <p className="text-sm text-[#62666d]">{page.hero.subtitle || "Pick a time that works for you — booking takes under a minute."}</p>
         </div>
         <div className="overflow-hidden rounded-2xl border border-[#e3e5e8] bg-white shadow-sm">
           <iframe
@@ -120,6 +127,40 @@ export default async function PublicBookingPage({
             id="snap-booking-frame"
           />
         </div>
+        {page.intro && (page.intro.heading || page.intro.body) && (
+          <section className="mt-6 rounded-2xl border border-[#e3e5e8] bg-white p-6 shadow-sm">
+            {page.intro.heading ? <h2 className="text-base font-semibold text-[#0f1011]">{page.intro.heading}</h2> : null}
+            {page.intro.body ? <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-[#3f4149]">{page.intro.body}</p> : null}
+          </section>
+        )}
+        {page.faq.length > 0 && (
+          <section className="mt-4 rounded-2xl border border-[#e3e5e8] bg-white p-6 shadow-sm">
+            <h2 className="mb-3 text-base font-semibold text-[#0f1011]">Good to know</h2>
+            <div className="flex flex-col gap-2">
+              {page.faq.map((f, i) => (
+                <details key={i} className="group rounded-lg border border-[#eceef0] px-4 py-3">
+                  <summary className="cursor-pointer list-none text-sm font-medium text-[#0f1011] marker:hidden">{f.q}</summary>
+                  <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-[#62666d]">{f.a}</p>
+                </details>
+              ))}
+            </div>
+          </section>
+        )}
+        {page.socials.length > 0 && (
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+            {page.socials.map((soc, i) => (
+              <a
+                key={i}
+                href={soc.url}
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+                className="rounded-full border border-[#e3e5e8] bg-white px-4 py-1.5 text-xs font-medium text-[#3f4149] shadow-sm hover:border-[#5e6ad2]"
+              >
+                {soc.kind === "website" ? "Website" : soc.kind === "email" ? "Email" : soc.kind.charAt(0).toUpperCase() + soc.kind.slice(1)}
+              </a>
+            ))}
+          </div>
+        )}
         <p className="mt-4 text-center text-xs text-[#8a8f98]">
           Bookings handled securely by {studio.studioName}
           {wl ? "" : " via Snap"}

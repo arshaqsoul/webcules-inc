@@ -212,6 +212,8 @@ export const studioProfiles = sqliteTable("studio_profile", {
   invoiceSettings: text("invoice_settings"),
   /** WEB-253: per-template email copy overrides JSON. */
   emailOverrides: text("email_overrides"),
+  /** WEB-254: booking page designer JSON (hero/intro/FAQ/socials/thanks). */
+  bookingPage: text("booking_page"),
   createdAt: ts("created_at"),
   updatedAt: ts("updated_at"),
 });

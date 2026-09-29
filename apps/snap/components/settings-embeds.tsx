@@ -9,6 +9,8 @@ import { useState } from "react";
 import { Button } from "@webcules/ui/components/button";
 
 import { EmbedHub } from "@/components/embed-hub";
+import { BookingPageCard } from "@/components/booking-page-card";
+import { parseBookingPageConfig, type BookingPageConfig } from "@/lib/booking-page";
 
 export function SettingsEmbeds({
   embedKey,
@@ -20,6 +22,7 @@ export function SettingsEmbeds({
   embedOrigins,
   brandRevision,
   forms,
+  bookingPage,
 }: {
   embedKey: string;
   slug: string;
@@ -30,6 +33,7 @@ export function SettingsEmbeds({
   embedOrigins: string[];
   brandRevision: string;
   forms: Array<{ id: string; name: string; isDefault: boolean }>;
+  bookingPage: { config: BookingPageConfig; canEdit: boolean; url: string };
 }) {
   const router = useRouter();
   const [origins, setOrigins] = useState(embedOrigins.join("\n"));
@@ -89,6 +93,8 @@ export function SettingsEmbeds({
           <Button onClick={saveOrigins} disabled={busy} size="sm">Save origins</Button>
         </div>
       </section>
+
+      <BookingPageCard initial={bookingPage.config} canEdit={bookingPage.canEdit} bookingUrl={bookingPage.url} />
 
       {status && <p className="text-sm text-ink-subtle">{status}</p>}
     </div>
