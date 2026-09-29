@@ -125,7 +125,10 @@ if (target === "staging") {
   console.log("== SNAP PRODUCTION DEPLOY (staging-verified) ==");
   build();
   console.log("• deploying production worker (snap.webcules.com)");
-  run("pnpm deploy");
+  // Plain wrangler deploy on the generated config — `pnpm deploy`
+  // (vinext-cloudflare) currently crashes on Windows (libuv assertion in
+  // wrangler) and would also rebuild, discarding the cache-clean build above.
+  run("npx wrangler deploy --config dist/server/wrangler.json");
   console.log("• smoke check:");
   const ok = await smoke(PROD_URL);
   console.log(ok ? "✅ production live at " + PROD_URL : "⚠️  smoke check failed — CHECK IMMEDIATELY");
