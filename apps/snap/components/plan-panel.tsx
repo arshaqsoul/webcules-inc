@@ -54,6 +54,8 @@ type PlanStatus = {
   activeCustomDomains: number;
   addonCustomDomain: boolean;
   pendingAddonRemoval: boolean;
+  /** WEB-245: white-label toggle state (chip shows on/off + links Brand). */
+  removeBranding: boolean;
 };
 
 const GB = 1024 ** 3;
@@ -334,7 +336,18 @@ export function PlanPanel({ returnHint }: { returnHint?: string }) {
         ) : (
           <span className="rounded-full bg-surface-2 px-2.5 py-1 text-ink-tertiary line-through">RAW uploads</span>
         )}
-        <span className={`rounded-full px-2.5 py-1 ${st.whiteLabel ? "bg-surface-2 text-ink-muted" : "bg-surface-2 text-ink-tertiary line-through"}`}>White-label</span>
+        {st.whiteLabel ? (
+          <a
+            href="/dashboard/settings/brand"
+            className="rounded-full bg-surface-2 px-2.5 py-1 text-ink-muted hover:text-ink"
+            title="White-label settings"
+          >
+            White-label · {st.removeBranding ? "on" : "off"}
+          </a>
+        ) : (
+          <span className="rounded-full bg-surface-2 px-2.5 py-1 text-ink-tertiary line-through">White-label</span>
+        )}
+        <span className={`rounded-full px-2.5 py-1 ${st.whiteLabel ? "bg-surface-2 text-ink-muted" : "bg-surface-2 text-ink-tertiary line-through"}`}>Watermarks</span>
         <span className={`rounded-full px-2.5 py-1 ${st.maxCustomDomains > 0 ? "bg-surface-2 text-ink-muted" : "bg-surface-2 text-ink-tertiary line-through"}`}>
           {st.plan === "pro"
             ? `Custom domains · ${st.activeCustomDomains}/2`

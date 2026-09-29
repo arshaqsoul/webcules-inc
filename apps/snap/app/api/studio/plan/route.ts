@@ -52,6 +52,7 @@ export async function GET() {
     rawTrialBytes: ent.rawTrialBytes ?? null,
     rawBytesUsed: ent.rawBytesUsed,
     whiteLabel: ent.whiteLabel,
+    removeBranding: (JSON.parse(profile?.brand ?? "{}") as { removeBranding?: boolean }).removeBranding === true,
     familyStudioCount: ent.familyStudioCount,
     maxLinkedStudios: ent.maxLinkedStudios,
     isFamilyChild: ent.isFamilyChild,

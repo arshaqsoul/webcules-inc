@@ -191,6 +191,10 @@ describe("deterrentsOn (WEB-243)", () => {
   });
 });
 
+/* WEB-245 launch gate — the CI-side zero-Snap audit: every client-facing
+ * template × white-labeled mode must carry zero platform mentions, and the
+ * branded mode must keep them (byte-compat). The live-surface half of the
+ * audit is scripts/whitelabel-audit.ts. */
 describe("client email templates (WEB-238)", () => {
   for (const t of TEMPLATES) {
     it(`${t.name}: white-labeled → zero Snap mentions, studio wordmark header`, () => {
