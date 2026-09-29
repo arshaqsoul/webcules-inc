@@ -26,6 +26,11 @@ import { listProjectFormResponses, unpackFormAnswers } from "@/lib/repos/forms";
 import { listTemplates } from "@/lib/repos/templates";
 import { parseFormSchema } from "@/lib/forms";
 import { parsePresetLines } from "@/lib/invoice-settings";
+import { GalleryDesigner } from "@/components/gallery-designer";
+import { getProjectGalleryDesign } from "@/lib/repos/gallery-design";
+import { getDefaultTemplate } from "@/lib/repos/templates";
+import { parseGalleryDesignJson } from "@/lib/gallery-design";
+import { getPlanEntitlements } from "@/lib/plans";
 
 export const metadata = { title: "Project" };
 
@@ -77,7 +82,7 @@ export default async function ProjectDetailPage({
 
   // Load only what the active tab renders — the Files workspace fetches its
   // own asset grid client-side.
-  const [events, shareActivity, auditEvents, assets, grants, deliverFolders, payments, paymentSummary, invoices, contractsRows, formResponses, questionnaireTemplates, contractTemplates, invoicePresets] =
+  const [events, shareActivity, auditEvents, assets, grants, deliverFolders, payments, paymentSummary, invoices, contractsRows, formResponses, questionnaireTemplates, contractTemplates, invoicePresets, design, inheritedDesign, ent] =
     await Promise.all([
       tab === "overview" || tab === "activity"
         ? db
@@ -101,6 +106,13 @@ export default async function ProjectDetailPage({
       tab === "overview" ? listTemplates(ctx.organizationId, "questionnaire") : Promise.resolve([]),
       tab === "contracts" ? listTemplates(ctx.organizationId, "contract") : Promise.resolve([]),
       tab === "payments" ? listTemplates(ctx.organizationId, "invoice_preset") : Promise.resolve([]),
+      // WEB-258: gallery design — the project's own + the org default preset
+      // (inherited), plus entitlements for the Lite+ design gate.
+      tab === "gallery" ? getProjectGalleryDesign(ctx.organizationId, id) : Promise.resolve(null),
+      tab === "gallery"
+        ? (async () => (await getDefaultTemplate(ctx.organizationId, "gallery_preset"))?.body ?? null)().then((b) => parseGalleryDesignJson(b))
+        : Promise.resolve(null),
+      tab === "gallery" ? getPlanEntitlements(ctx.organizationId) : Promise.resolve(null),
     ]);
 
   return (
@@ -254,6 +266,13 @@ export default async function ProjectDetailPage({
       )}
 
       {tab === "gallery" && (
+        <>
+        <GalleryDesigner
+          projectId={id}
+          initialDesign={design}
+          inherited={inheritedDesign}
+          canDesign={(ent?.id ?? "free") !== "free"}
+        />
         <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
           <h2 className="text-[15px] font-medium text-ink">Client gallery</h2>
           <p className="mb-4 mt-1 text-xs text-ink-subtle">
@@ -272,6 +291,7 @@ export default async function ProjectDetailPage({
             }
           />
         </section>
+        </>
       )}
 
       {tab === "payments" && paymentSummary && (

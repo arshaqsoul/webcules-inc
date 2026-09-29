@@ -15,19 +15,26 @@ import { brandIcons, brandOgImage, parseBrandAssets } from "@/lib/brand-assets";
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { getStudioProfile } from "@/lib/repos/studios";
+import { effectiveGalleryDesign } from "@/lib/repos/gallery-design";
 import { getPlanEntitlements } from "@/lib/plans";
 import { logShareAccess, resolveGalleryAccess } from "@/lib/shares/gallery-auth";
 import { getGrantAssets, getGrantByTokenHashAny, resolveGrantByToken } from "@/lib/shares/grants";
 import { getFavorites, getLatestSelection } from "@/lib/shares/selections";
 import { safeHexColor } from "@/lib/embed";
 import { countGalleryOpen } from "@/lib/limits";
+import { buildMergeValues, renderMerge } from "@/lib/merge";
+import { coverLink } from "@/lib/cover-link";
+import { clientUrl } from "@/lib/client-urls";
+import type { GalleryDesign } from "@/lib/gallery-design";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Your gallery", robots: { index: false } };
 
 /** WEB-238/239: white-labeled galleries title the tab `{project} · {studio}`
  * (absolute — skips the root layout's `· Snap` template suffix); generated
- * brand assets add the studio favicon + og:image (studio OG card). */
+ * brand assets add the studio favicon + og:image (studio OG card).
+ * WEB-258: a designed cover takes over the og card — image via the signed
+ * public cover route (crawlers carry no cookies), title = cover title. */
 export async function generateMetadata({ params }: { params: Promise<{ token: string }> }): Promise<Metadata> {
   const { token } = await params;
   if (!TOKEN_RE.test(token)) return {};
@@ -39,11 +46,34 @@ export async function generateMetadata({ params }: { params: Promise<{ token: st
   const bag = parseBrandAssets(profile.brandAssets);
   const icons = brandIcons(bag, grant.organizationId);
   const og = brandOgImage(bag, grant.organizationId);
-  const title = `${(await galleryTitle(grant.projectId)) ?? "Your gallery"} · ${profile.studioName}`;
+
+  // WEB-258: cover og card — only when the cover photo is actually in this
+  // grant's delivered set (folder-scoped grants show the studio card).
+  let coverOg: string | null = null;
+  let coverTitle: string | null = null;
+  const eff = await effectiveGalleryDesign(grant.organizationId, grant.projectId);
+  if (eff.design?.cover?.assetId) {
+    const assets = await getGrantAssets(grant);
+    if (assets.some((a) => a.id === eff.design?.cover?.assetId)) {
+      const values = await buildMergeValues({
+        organizationId: grant.organizationId,
+        projectId: grant.projectId,
+        clientEmail: grant.clientEmail,
+      });
+      coverTitle = renderMerge(eff.design.cover.title, values, { surface: "plain" }) || null;
+      coverOg = await clientUrl(grant.organizationId, await coverLink(eff.design.cover.assetId, grant.id));
+    }
+  }
+
+  const title = coverTitle ?? `${(await galleryTitle(grant.projectId)) ?? "Your gallery"} · ${profile.studioName}`;
   return {
     ...(isWhiteLabeled(ent, profile.brand) ? { title: { absolute: title } } : {}),
     ...(icons ? { icons } : {}),
-    ...(og ? { openGraph: { title, images: [og] } } : {}),
+    ...(coverOg
+      ? { openGraph: { title, images: [coverOg] }, twitter: { card: "summary_large_image", images: [coverOg] } }
+      : og
+        ? { openGraph: { title, images: [og] } }
+        : {}),
     robots: { index: false },
   };
 }
@@ -59,6 +89,26 @@ async function galleryTitle(projectId: string): Promise<string | null> {
 }
 
 const TOKEN_RE = /^[A-Za-z0-9_-]{20,64}$/;
+
+/** WEB-258: the effective design with cover text merge-rendered (unknown
+ * fields pass through — drafts stay editable). */
+async function designedGallery(grant: { organizationId: string; projectId: string; clientEmail: string }): Promise<GalleryDesign | null> {
+  const eff = await effectiveGalleryDesign(grant.organizationId, grant.projectId);
+  if (!eff.design?.cover) return eff.design;
+  const values = await buildMergeValues({
+    organizationId: grant.organizationId,
+    projectId: grant.projectId,
+    clientEmail: grant.clientEmail,
+  });
+  return {
+    ...eff.design,
+    cover: {
+      ...eff.design.cover,
+      title: renderMerge(eff.design.cover.title, values, { surface: "plain" }),
+      subtitle: renderMerge(eff.design.cover.subtitle, values, { surface: "plain" }),
+    },
+  };
+}
 
 type DeniedProps = { studioName?: string; contactEmail?: string | null; reason: "dead" | "unknown" };
 
@@ -87,7 +137,7 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
     return <GalleryDenied reason="unknown" />;
   }
 
-  const [profile, assets, ent, favorites, selection, projectOverride] = await Promise.all([
+  const [profile, assets, ent, favorites, selection, projectOverride, design] = await Promise.all([
     getStudioProfile(grant.organizationId),
     getGrantAssets(grant),
     getPlanEntitlements(grant.organizationId),
@@ -99,6 +149,8 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
       .from(schema.projects)
       .where(eq(schema.projects.id, grant.projectId))
       .limit(1),
+    // WEB-258: effective design (project → org default preset → classic).
+    designedGallery(grant),
   ]);
   const brand = JSON.parse(profile?.brand || "{}") as { accent?: string };
   const shared = {
@@ -136,6 +188,8 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
           mimeType: a.mimeType,
           bytes: a.bytes,
           folder: a.folder,
+          width: a.width,
+          height: a.height,
         }))}
         allowDownload={grant.allowDownload}
         expiresAt={grant.expiresAt ? grant.expiresAt.toISOString() : null}
@@ -145,6 +199,7 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
         initialFavorites={favorites}
         submittedSelection={selection ? { items: selection.items, note: selection.note, submittedAt: selection.submittedAt.toISOString() } : null}
         clientToken={token}
+        design={design}
       />
     );
   }
@@ -175,6 +230,8 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
         mimeType: a.mimeType,
         bytes: a.bytes,
         folder: a.folder,
+        width: a.width,
+        height: a.height,
       }))}
       allowDownload={grant.allowDownload}
       expiresAt={grant.expiresAt ? grant.expiresAt.toISOString() : null}
@@ -184,6 +241,7 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
       initialFavorites={favorites}
       submittedSelection={selection ? { items: selection.items, note: selection.note, submittedAt: selection.submittedAt.toISOString() } : null}
       clientToken={token}
+      design={design}
     />
   );
 }

@@ -20,6 +20,7 @@ const KIND_TABS = [
   { kind: "form", label: "Forms & questionnaires" },
   { kind: "email_snippet", label: "Email snippets" },
   { kind: "invoice_preset", label: "Invoice presets" },
+  { kind: "gallery_preset", label: "Gallery presets" },
   { kind: "contract_clause", label: "Clauses" },
 ] as const;
 
@@ -28,6 +29,7 @@ const APPLY_HINTS: Record<string, string> = {
   form: "Embed from Settings → Embeds & links; questionnaires send from a project's Overview.",
   email_snippet: "Insert from any lead thread's reply box.",
   invoice_preset: "Apply when composing an invoice on a project's Payments tab.",
+  gallery_preset: "Save designs from a project's Gallery tab → Design, then apply to any gallery.",
   contract_clause: "Insert at the cursor in the contract editor.",
 };
 

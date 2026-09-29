@@ -363,6 +363,9 @@ export const projects = sqliteTable(
     quotedCurrency: text("quoted_currency").notNull().default("usd"),
     /** WEB-242: per-project watermark override — null/'inherit' | 'on' | 'off'. */
     watermarkOverride: text("watermark_override"),
+    /** WEB-258: gallery design JSON (cover/layout/theme), <= 16 KB, app-validated.
+     * NULL = classic gallery (or the org's default gallery_preset template). */
+    galleryDesign: text("gallery_design"),
     createdAt: ts("created_at"),
     updatedAt: ts("updated_at"),
   },

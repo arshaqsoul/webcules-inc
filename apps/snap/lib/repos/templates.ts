@@ -10,11 +10,12 @@ import { getDb } from "../db";
 import * as schema from "../db-schema";
 import { sanitizeRichText } from "../sanitize";
 import { DEFAULT_CONTACT_FORM_BODY } from "../forms";
+import { GALLERY_DESIGN_MAX_BYTES, parseGalleryDesign, serializeGalleryDesign } from "../gallery-design";
 
 export type TemplateRow = typeof schema.templates.$inferSelect;
 export type TemplateInsert = typeof schema.templates.$inferInsert;
 
-export const TEMPLATE_KINDS = ["contract", "contract_clause", "form", "email_snippet", "invoice_preset", "questionnaire"] as const;
+export const TEMPLATE_KINDS = ["contract", "contract_clause", "form", "email_snippet", "invoice_preset", "questionnaire", "gallery_preset"] as const;
 export type TemplateKind = (typeof TEMPLATE_KINDS)[number];
 
 /** Body byte caps — D1-row friendly (epic contract: ≤256 KB documents,
@@ -26,6 +27,7 @@ const BODY_CAPS: Record<TemplateKind, number> = {
   email_snippet: 256 * 1024,
   invoice_preset: 64 * 1024,
   questionnaire: 64 * 1024,
+  gallery_preset: GALLERY_DESIGN_MAX_BYTES,
 };
 
 const NAME_CAP = 120;
@@ -39,6 +41,16 @@ export function isTemplateKind(kind: string): kind is TemplateKind {
 export function normalizeTemplateBody(kind: TemplateKind, body: string): string | null {
   const trimmed = body.slice(0, BODY_CAPS[kind] + 1);
   if (trimmed.length > BODY_CAPS[kind]) return null;
+  // WEB-258: gallery presets hold a design config — must parse to a valid
+  // design; re-serialized canonically (strict body, like the project column).
+  if (kind === "gallery_preset") {
+    try {
+      const design = parseGalleryDesign(JSON.parse(trimmed));
+      return design ? serializeGalleryDesign(design) : null;
+    } catch {
+      return null;
+    }
+  }
   if (kind === "form" || kind === "invoice_preset" || kind === "questionnaire") {
     try {
       JSON.parse(trimmed);
@@ -362,6 +374,23 @@ By signing below, both parties agree to these terms.`,
       {},
       1,
     ),
+    // WEB-258: starter gallery presets — none pinned default (a fresh org's
+    // galleries keep the classic look until the studio chooses one).
+    row("gallery_preset", "Editorial dark", JSON.stringify({
+      cover: { assetId: "", focal: { x: 0.5, y: 0.4 }, style: "kenburns", title: "{{client_name}}", subtitle: "A film from your day with {{studio_name}}" },
+      layout: "cascade",
+      theme: { background: "dark", padding: "normal", radius: "0px", captions: "hover" },
+    })),
+    row("gallery_preset", "Clean light", JSON.stringify({
+      cover: { assetId: "", focal: { x: 0.5, y: 0.5 }, style: "static", title: "Your photos are ready", subtitle: "for {{client_name}} · {{event_date}}" },
+      layout: "grid",
+      theme: { background: "light", padding: "normal", radius: "16px", captions: "off" },
+    })),
+    row("gallery_preset", "Brand story", JSON.stringify({
+      cover: { assetId: "", focal: { x: 0.5, y: 0.35 }, style: "split", title: "{{client_name}}", subtitle: "captured by {{studio_name}}" },
+      layout: "masonry",
+      theme: { background: "brand", padding: "airy", radius: "8px", captions: "hover" },
+    })),
   ];
 }
 

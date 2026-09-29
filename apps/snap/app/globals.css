@@ -192,3 +192,24 @@ body {
 .snap-select:disabled {
   background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23c3c7cf' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 }
+
+/* WEB-258: Ken Burns cover — slow scale/pan drift on the gallery hero.
+ * Pure CSS (no JS, no image processing); disabled for users who prefer
+ * reduced motion. */
+@keyframes snap-kenburns {
+  from {
+    transform: scale(1.02) translate(0, 0);
+  }
+  to {
+    transform: scale(1.14) translate(-1.5%, -1.5%);
+  }
+}
+.snap-kenburns {
+  animation: snap-kenburns 26s ease-in-out infinite alternate;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .snap-kenburns {
+    animation: none;
+  }
+}

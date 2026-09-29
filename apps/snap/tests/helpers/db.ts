@@ -42,10 +42,11 @@ import m36 from "../../migrations/0036_invoice_designer.sql?raw";
 import m37 from "../../migrations/0037_email_overrides.sql?raw";
 import m38 from "../../migrations/0038_booking_page.sql?raw";
 import m39 from "../../migrations/0039_last_used.sql?raw";
+import m40 from "../../migrations/0040_gallery_design.sql?raw";
 
 const MIGRATIONS = [
   m01, m02, m03, m04, m05, m06, m07, m08, m09, m10, m11, m12, m13, m14, m15,
-  m16, m17, m18, m19, m20, m21, m22, m23, m24, m25, m26, m27, m28, m29, m30, m31, m32, m33, m34, m35, m36, m37, m38, m39,
+  m16, m17, m18, m19, m20, m21, m22, m23, m24, m25, m26, m27, m28, m29, m30, m31, m32, m33, m34, m35, m36, m37, m38, m39, m40,
 ];
 
 /** Every table, in an order that satisfies FK constraints when deleting. */

@@ -20,7 +20,18 @@ export async function GET(req: Request) {
   const includeArchived = url.searchParams.get("archived") === "1";
   const templates = await listTemplates(ctx.organizationId, kind, { includeArchived });
   return Response.json({
-    templates: templates.map((t) => ({ id: t.id, kind: t.kind, name: t.name, isDefault: t.isDefault, archivedAt: t.archivedAt, updatedAt: t.updatedAt })),
+    templates: templates.map((t) => ({
+      id: t.id,
+      kind: t.kind,
+      name: t.name,
+      // sqlite integer → real boolean (clients do `{isDefault && …}` renders)
+      isDefault: Boolean(t.isDefault),
+      archivedAt: t.archivedAt,
+      updatedAt: t.updatedAt,
+      // WEB-258: gallery presets apply from the dashboard designer, which
+      // needs the design body (≤16 KB rows — the only kind that ships it).
+      ...(t.kind === "gallery_preset" ? { body: t.body } : {}),
+    })),
   });
 }
 
@@ -86,6 +97,12 @@ export async function POST(req: Request) {
     if (!Array.isArray(parsed) || !parsePresetLines(body.body).length) {
       return Response.json({ error: "invalid_preset" }, { status: 400 });
     }
+  }
+  // WEB-258: gallery presets are Lite+ (the design layer); the body itself
+  // is validated + canonicalized by the repo (must parse to a design).
+  if (body.kind === "gallery_preset") {
+    const lite = ent && ent.id !== "free";
+    if (!lite) return Response.json({ error: "presets_require_lite" }, { status: 403 });
   }
   // WEB-251: contract-template gate (Free/Lite 2, Studio+ unlimited).
   // Clauses are ungated — they're just text snippets.

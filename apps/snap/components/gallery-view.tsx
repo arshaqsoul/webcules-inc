@@ -3,9 +3,10 @@
 /* Public gallery surface (WEB-125 + WEB-132): the OTP gate, the granted-assets
  * grid + lightbox, and the denied/expired/revoked states. Self-contained
  * styling (no dashboard chrome) — accent comes from the studio's brand. */
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { FileTypeIcon } from "@/components/file-type-icon";
+import { captionOf, focalPosition, themeVars, type GalleryDesign } from "@/lib/gallery-design";
 
 declare global {
   interface Window {
@@ -38,6 +39,10 @@ export type GalleryAsset = {
   bytes: number;
   /** WEB-216: folder label snapshotted at delivery — the gallery groups by it. */
   folder?: string | null;
+  /** WEB-258: intrinsic pixels when known (recorded at upload) — seeds the
+   * cascade aspect map without waiting for thumbs to load. */
+  width?: number | null;
+  height?: number | null;
 };
 
 /** WEB-160: gallery image with 429 backoff — a rate-limited load retries
@@ -52,8 +57,13 @@ function BackoffImage(props: {
   onClick?: React.MouseEventHandler<HTMLImageElement>;
   /** WEB-243: media protection — drag/long-press suppression (deterrents on). */
   protectedMedia?: boolean;
+  /** WEB-258: natural-size report (cascade justified rows). */
+  onLoaded?: (aspect: number) => void;
+  /** WEB-258: inline styles (object-position for cover focal). */
+  style?: React.CSSProperties;
 }) {
   const [attempt, setAttempt] = useState(0);
+  const reported = useRef(false);
   const src = `/api/assets/${props.id}?variant=${props.variant ?? "thumb"}${attempt ? `&r=${attempt}` : ""}`;
   return (
     // eslint-disable-next-line @next/next/no-img-element -- authorized proxy, no optimizer
@@ -62,11 +72,18 @@ function BackoffImage(props: {
       alt={props.alt}
       loading={props.loading}
       className={props.className}
+      style={props.style}
       draggable={props.protectedMedia !== true}
       {...(props.protectedMedia === true
         ? { style: { WebkitTouchCallout: "none", userSelect: "none" } as React.CSSProperties }
         : {})}
       onClick={props.onClick}
+      onLoad={(e) => {
+        if (reported.current || !props.onLoaded) return;
+        reported.current = true;
+        const img = e.currentTarget;
+        props.onLoaded(img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : 1);
+      }}
       onError={() => {
         if (attempt < 3) {
           setTimeout(() => setAttempt((a) => a + 1), 5000 + attempt * 10000);
@@ -321,9 +338,227 @@ export function GalleryGate({ studioName, accent, logoUrl, whiteLabel, token, ma
   );
 }
 
-/* ---------------- Gallery view ---------------- */
+/* ---------------- WEB-258: designed gallery (cover, layouts, theme) ---------------- */
 
-export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLabel, watermarked, deterrents, assets, allowDownload, expiresAt, selectionMode, selectionLimit, selectionDeadline, initialFavorites, submittedSelection, clientToken }: Brand & {
+/** Cover hero — three styles, all CSS (Ken Burns is keyframes-only and
+ * respects prefers-reduced-motion via the .snap-kenburns class). Space is
+ * reserved by aspect wrappers (CLS-safe); the focal point drives
+ * object-position. `coverAssetId` is only passed when the cover photo is in
+ * this grant's delivered set — otherwise a text-only gradient hero renders. */
+export function GalleryHero({ design, studioName, coverAssetId }: {
+  design: GalleryDesign;
+  studioName: string;
+  coverAssetId: string | null;
+}) {
+  const c = design.cover;
+  if (!c) return null;
+  const hasText = Boolean(c.title || c.subtitle);
+  if (!hasText && !coverAssetId) return null;
+  const pos = focalPosition(c.focal);
+  const kicker = <span className="text-[11px] font-semibold uppercase tracking-[0.22em] opacity-80">{studioName}</span>;
+  const title = c.title ? <h1 className="mt-2 text-2xl font-semibold leading-tight sm:text-4xl">{c.title}</h1> : null;
+  const subtitle = c.subtitle ? <p className="mt-2 max-w-xl text-sm leading-relaxed opacity-85 sm:text-base">{c.subtitle}</p> : null;
+
+  if (c.style === "split") {
+    return (
+      <section className="w-full">
+        <div className="grid md:grid-cols-[1fr,minmax(300px,38%)]">
+          <div className="relative aspect-[4/3] overflow-hidden md:aspect-auto md:min-h-[400px]">
+            {coverAssetId ? (
+              <BackoffImage
+                id={coverAssetId}
+                alt={c.title || studioName}
+                loading="eager"
+                variant="preview"
+                className="absolute inset-0 h-full w-full object-cover"
+                style={{ objectPosition: pos }}
+              />
+            ) : (
+              <div className="absolute inset-0 bg-gradient-to-br from-[color-mix(in_srgb,var(--accent)_55%,#22222b)] to-[#101014]" />
+            )}
+          </div>
+          <div className="flex items-center bg-surface-2 p-7 sm:p-10 md:min-h-[400px]">
+            <div style={{ color: "var(--ink)" }}>
+              {kicker}
+              {title}
+              {subtitle}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  const kenburns = c.style === "kenburns";
+  return (
+    <section className="relative aspect-[4/3] w-full overflow-hidden sm:aspect-[21/10]">
+      {coverAssetId ? (
+        <BackoffImage
+          id={coverAssetId}
+          alt={c.title || studioName}
+          loading="eager"
+          variant="preview"
+          className={`absolute inset-0 h-full w-full object-cover ${kenburns ? "snap-kenburns" : ""}`}
+          style={{ objectPosition: pos }}
+        />
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-[color-mix(in_srgb,var(--accent)_55%,#22222b)] to-[#101014]" />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-black/10" />
+      <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-10">
+        {kicker}
+        {title}
+        {subtitle}
+      </div>
+    </section>
+  );
+}
+
+/** One gallery tile across the three layouts: square (grid), natural-height
+ * (masonry), fixed-height justified (cascade). Badges/captions identical. */
+function GalleryTile(props: {
+  asset: GalleryAsset;
+  heartsOn: boolean;
+  favorited: boolean;
+  picking: boolean;
+  picked: boolean;
+  pickedLocked: boolean;
+  captions: "off" | "hover" | "always";
+  radiusCls: string;
+  size: "square" | "natural" | "row";
+  rowAspect?: number;
+  deterrents?: boolean;
+  onOpen: () => void;
+  onHeart: () => void;
+  onPick: () => void;
+  onMeasured?: (aspect: number) => void;
+}) {
+  const { asset: a, size } = props;
+  const wrapCls =
+    size === "natural"
+      ? `group relative block w-full overflow-hidden border bg-surface-1 ${props.radiusCls}`
+      : size === "row"
+        ? `group relative h-44 overflow-hidden border bg-surface-1 sm:h-56 lg:h-64 ${props.radiusCls}`
+        : `group relative aspect-square overflow-hidden border bg-surface-1 ${props.radiusCls}`;
+  const imgCls =
+    size === "natural"
+      ? "w-full h-auto object-cover"
+      : "h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]";
+  const caption =
+    props.captions === "off" ? null : (
+      <span
+        className={`pointer-events-none absolute inset-x-0 bottom-0 z-[5] bg-gradient-to-t from-black/70 to-transparent px-2.5 pb-1.5 pt-7 text-[11px] leading-tight text-white transition-opacity ${
+          props.captions === "hover" ? "opacity-0 group-hover:opacity-100" : ""
+        }`}
+      >
+        {captionOf(a.filename)}
+      </span>
+    );
+  return (
+    <button
+      type="button"
+      onClick={props.onOpen}
+      {...(size === "row" && props.rowAspect ? { style: { flexGrow: props.rowAspect, flexBasis: 0, maxWidth: 560 } as React.CSSProperties } : {})}
+      className={`${wrapCls} ${props.picked ? "border-[var(--accent)] ring-2 ring-[var(--accent)]" : "border-hairline"}`}
+      aria-label={`Open ${a.filename}`}
+    >
+      {props.heartsOn && (
+        <span
+          role="button"
+          tabIndex={0}
+          aria-label={props.favorited ? `Unfavorite ${a.filename}` : `Favorite ${a.filename}`}
+          aria-pressed={props.favorited}
+          onClick={(e) => {
+            e.stopPropagation();
+            props.onHeart();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              e.stopPropagation();
+              props.onHeart();
+            }
+          }}
+          className={`absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full backdrop-blur transition-colors ${
+            props.favorited ? "bg-[var(--accent)] text-white" : "bg-black/35 text-white/85 hover:bg-black/55"
+          }`}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill={props.favorited ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" aria-hidden>
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+          </svg>
+        </span>
+      )}
+      {props.picking && (
+        <span
+          role="button"
+          tabIndex={0}
+          aria-label={props.picked ? `Remove ${a.filename} from selection` : `Add ${a.filename} to selection`}
+          aria-pressed={props.picked}
+          onClick={(e) => {
+            e.stopPropagation();
+            props.onPick();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              e.stopPropagation();
+              props.onPick();
+            }
+          }}
+          className={`absolute left-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 backdrop-blur transition-colors ${
+            props.picked
+              ? "border-transparent bg-[var(--accent)] text-white"
+              : "border-white/70 bg-black/30 text-white/80 hover:bg-black/50"
+          }`}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+            <path d="M20 6 9 17l-5-5" />
+          </svg>
+        </span>
+      )}
+      {props.pickedLocked && (
+        <span className="absolute left-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-[var(--accent)] text-xs font-bold text-white">✓</span>
+      )}
+      {a.kind === "image" ? (
+        <BackoffImage
+          id={a.id}
+          alt={a.filename}
+          loading="lazy"
+          className={imgCls}
+          protectedMedia={props.deterrents}
+          onLoaded={props.onMeasured}
+        />
+      ) : a.kind === "video" ? (
+        <>
+          {/* eslint-disable-next-line jsx-a11y/media-has-caption -- gallery video, caption N/A */}
+          {/* WEB-116: poster thumb when the upload generated one; falls
+              back to the video itself with a #t frame hint. */}
+          <video
+            src={`/api/assets/${a.id}?variant=thumb#t=0.5`}
+            preload="metadata"
+            muted
+            playsInline
+            className={size === "natural" ? "w-full h-auto object-cover" : "h-full w-full object-cover"}
+          />
+          <span className="absolute inset-0 flex items-center justify-center">
+            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-black/55 text-white">
+              <svg width="14" height="16" viewBox="0 0 14 16" fill="currentColor" aria-hidden><path d="M0 0l14 8-14 8z" /></svg>
+            </span>
+          </span>
+        </>
+      ) : (
+        <span className={`flex flex-col items-center justify-center gap-1.5 bg-surface-2/50 text-ink-tertiary ${size === "natural" ? "min-h-40 w-full py-10" : "h-full w-full"}`}>
+          <FileTypeIcon kind={a.kind} filename={a.filename} className="h-9 w-9" />
+          <span className="text-[10px]">{fmtBytes(a.bytes)}</span>
+        </span>
+      )}
+      {caption}
+    </button>
+  );
+}
+
+
+export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLabel, watermarked, deterrents, assets, allowDownload, expiresAt, selectionMode, selectionLimit, selectionDeadline, initialFavorites, submittedSelection, clientToken, design }: Brand & {
   assets: GalleryAsset[];
   allowDownload: boolean;
   expiresAt: string | null;
@@ -334,6 +569,8 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
   initialFavorites: string[];
   submittedSelection: { items: string[]; note: string | null; submittedAt: string } | null;
   clientToken: string;
+  /** WEB-258: gallery design (cover/layout/theme) — null = classic look. */
+  design?: GalleryDesign | null;
 }) {
   const [open, setOpen] = useState<number | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set(initialFavorites));
@@ -345,9 +582,83 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
   // WEB-216: folder navigation — null = all photos. Favorites/selection stay
   // gallery-wide; only the grid + lightbox walk the visible slice.
   const [activeFolder, setActiveFolder] = useState<string | null>(null);
+  // WEB-258 cascade: aspect map (id → w/h) seeded from stored dimensions,
+  // refined lazily as unmeasured thumbs load; unknown tiles assume square.
+  const [aspects, setAspects] = useState<Record<string, number>>(() => {
+    const seed: Record<string, number> = {};
+    for (const a of assets) {
+      if (a.width && a.height) seed[a.id] = Math.min(2.4, Math.max(0.45, a.width / a.height));
+    }
+    return seed;
+  });
+  const [cols, setCols] = useState(4);
+
+  const layout = design?.layout ?? "grid";
+  const themed = Boolean(design);
+  const padding = design?.theme.padding ?? "normal";
+  const spacing = { compact: { gap: "gap-2", mb: "mb-2", pad: "p-3" }, normal: { gap: "gap-3", mb: "mb-3", pad: "p-5" }, airy: { gap: "gap-5", mb: "mb-5", pad: "p-6 sm:p-10" } }[padding];
+  const radiusCls = design ? ({ "0px": "rounded-none", "8px": "rounded-[8px]", "16px": "rounded-[16px]" } as const)[design.theme.radius] : "rounded-[12px]";
+  const captions = design?.theme.captions ?? "off";
+
+  useEffect(() => {
+    if (layout !== "cascade") return;
+    const mq = () => setCols(window.innerWidth >= 1024 ? 4 : window.innerWidth >= 640 ? 3 : 2);
+    mq();
+    window.addEventListener("resize", mq);
+    return () => window.removeEventListener("resize", mq);
+  }, [layout]);
+
+  const measureAspect = useCallback((id: string, aspect: number) => {
+    setAspects((cur) => (cur[id] ? cur : { ...cur, [id]: Math.min(2.4, Math.max(0.45, aspect)) }));
+  }, []);
 
   const folderNames = Array.from(new Set(assets.map((a) => a.folder).filter((f): f is string => Boolean(f))));
   const visible = activeFolder ? assets.filter((a) => a.folder === activeFolder) : assets;
+
+  // WEB-258: designed galleries group folders as section headers (the
+  // folderless block leads without one). Classic mode stays a flat grid.
+  // Tiles carry their flat index into `visible` — the lightbox walks that.
+  const sections = useMemo(() => {
+    if (!themed || activeFolder) return [{ name: null as string | null, items: visible.map((a, idx) => ({ a, idx })) }];
+    const byFolder = new Map<string | null, { a: GalleryAsset; idx: number }[]>();
+    visible.forEach((a, idx) => {
+      const key = a.folder ?? null;
+      const list = byFolder.get(key) ?? [];
+      list.push({ a, idx });
+      byFolder.set(key, list);
+    });
+    const loose = byFolder.get(null) ?? [];
+    return [
+      ...(loose.length ? [{ name: null as string | null, items: loose }] : []),
+      ...folderNames.map((f) => ({ name: f as string | null, items: byFolder.get(f) ?? [] })),
+    ];
+  }, [themed, activeFolder, visible, folderNames]);
+
+  // Justified ("cascade") rows: close a row once its accumulated aspect
+  // reaches the target fill for the current column count; flex-grow per tile
+  // keeps rows flush at any container width (no JS layout lib, no measure
+  // of the container — only the photos' own aspect ratios).
+  const justifiedRows = useCallback(
+    (items: { a: GalleryAsset; idx: number }[]): { a: GalleryAsset; idx: number }[][] => {
+      const target = cols * 1.08;
+      const rows: { a: GalleryAsset; idx: number }[][] = [];
+      let row: { a: GalleryAsset; idx: number }[] = [];
+      let sum = 0;
+      for (const it of items) {
+        const ar = aspects[it.a.id] ?? 1;
+        row.push(it);
+        sum += ar;
+        if (sum >= target) {
+          rows.push(row);
+          row = [];
+          sum = 0;
+        }
+      }
+      if (row.length) rows.push(row);
+      return rows;
+    },
+    [aspects, cols],
+  );
 
   const deadlinePassed = selectionDeadline !== null && selectionDeadline < Date.now();
   const heartsOn = selectionMode !== "off";
@@ -440,12 +751,19 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
   return (
     <main
       className="min-h-screen bg-canvas"
-      style={{ ["--accent" as string]: accent }}
+      style={{ ["--accent" as string]: accent, ...(design ? themeVars(design.theme.background) : {}) } as React.CSSProperties}
       onContextMenu={(e) => {
         // WEB-243: deterrent on MEDIA only — UI chrome keeps the normal menu.
         if (deterrents && (e.target as HTMLElement).tagName === "IMG") e.preventDefault();
       }}
     >
+      {design && (
+        <GalleryHero
+          design={design}
+          studioName={studioName}
+          coverAssetId={design.cover?.assetId && assets.some((a) => a.id === design.cover?.assetId) ? design.cover.assetId : null}
+        />
+      )}
       <header className="sticky top-0 z-10 border-b border-hairline bg-canvas/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3.5">
           {logoUrl ? (
@@ -498,100 +816,89 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
           No photos in this folder.
         </div>
       ) : (
-        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-3 p-5 sm:grid-cols-3 lg:grid-cols-4">
-          {visible.map((a, i) => (
-            <button
-              key={a.id}
-              onClick={() => setOpen(i)}
-              className={`group relative aspect-square overflow-hidden rounded-[12px] border bg-surface-1 ${
-                picks.has(a.id) ? "border-[var(--accent)] ring-2 ring-[var(--accent)]" : "border-hairline"
-              }`}
-              aria-label={`Open ${a.filename}`}
-            >
-              {heartsOn && (
-                <span
-                  role="button"
-                  tabIndex={0}
-                  aria-label={favorites.has(a.id) ? `Unfavorite ${a.filename}` : `Favorite ${a.filename}`}
-                  aria-pressed={favorites.has(a.id)}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    void heart(a.id);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      void heart(a.id);
-                    }
-                  }}
-                  className={`absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full backdrop-blur transition-colors ${
-                    favorites.has(a.id) ? "bg-[var(--accent)] text-white" : "bg-black/35 text-white/85 hover:bg-black/55"
-                  }`}
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill={favorites.has(a.id) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" aria-hidden>
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-                  </svg>
-                </span>
+        <div className={`mx-auto max-w-6xl ${spacing.pad} ${themed ? "space-y-10" : ""}`}>
+          {sections.map((section) => (
+            <section key={section.name ?? "__loose"} aria-label={section.name ?? undefined}>
+              {section.name && themed && (
+                <div className="mb-3 flex items-baseline justify-between">
+                  <h2 className="text-[15px] font-medium text-ink">{section.name}</h2>
+                  <span className="text-xs text-ink-tertiary">{section.items.length} item{section.items.length === 1 ? "" : "s"}</span>
+                </div>
               )}
-              {picking && (
-                <span
-                  role="button"
-                  tabIndex={0}
-                  aria-label={picks.has(a.id) ? `Remove ${a.filename} from selection` : `Add ${a.filename} to selection`}
-                  aria-pressed={picks.has(a.id)}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    togglePick(a.id);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      togglePick(a.id);
-                    }
-                  }}
-                  className={`absolute left-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 backdrop-blur transition-colors ${
-                    picks.has(a.id)
-                      ? "border-transparent bg-[var(--accent)] text-white"
-                      : "border-white/70 bg-black/30 text-white/80 hover:bg-black/50"
-                  }`}
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
-                    <path d="M20 6 9 17l-5-5" />
-                  </svg>
-                </span>
+              {layout === "grid" && (
+                <div className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 ${spacing.gap}`}>
+                  {section.items.map(({ a, idx }) => (
+                    <GalleryTile
+                      key={a.id}
+                      asset={a}
+                      size="square"
+                      heartsOn={heartsOn}
+                      favorited={favorites.has(a.id)}
+                      picking={picking}
+                      picked={picks.has(a.id)}
+                      pickedLocked={selectionMode === "selection" && !picking && picks.has(a.id)}
+                      captions={captions}
+                      radiusCls={radiusCls}
+                      deterrents={deterrents}
+                      onOpen={() => setOpen(idx)}
+                      onHeart={() => void heart(a.id)}
+                      onPick={() => togglePick(a.id)}
+                    />
+                  ))}
+                </div>
               )}
-              {selectionMode === "selection" && !picking && picks.has(a.id) && (
-                <span className="absolute left-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-[var(--accent)] text-xs font-bold text-white">✓</span>
+              {layout === "masonry" && (
+                <div className={`columns-2 sm:columns-3 lg:columns-4 ${spacing.gap}`}>
+                  {section.items.map(({ a, idx }) => (
+                    <div key={a.id} className={spacing.mb}>
+                      <GalleryTile
+                        asset={a}
+                        size="natural"
+                        heartsOn={heartsOn}
+                        favorited={favorites.has(a.id)}
+                        picking={picking}
+                        picked={picks.has(a.id)}
+                        pickedLocked={selectionMode === "selection" && !picking && picks.has(a.id)}
+                        captions={captions}
+                        radiusCls={radiusCls}
+                        deterrents={deterrents}
+                        onOpen={() => setOpen(idx)}
+                        onHeart={() => void heart(a.id)}
+                        onPick={() => togglePick(a.id)}
+                      />
+                    </div>
+                  ))}
+                </div>
               )}
-              {a.kind === "image" ? (
-                <BackoffImage
-                  id={a.id}
-                  alt={a.filename}
-                  loading="lazy"
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                  protectedMedia={deterrents}
-                />
-              ) : a.kind === "video" ? (
-                <>
-                  {/* eslint-disable-next-line jsx-a11y/media-has-caption -- gallery video, caption N/A */}
-                  {/* WEB-116: poster thumb when the upload generated one; falls
-                      back to the video itself with a #t frame hint. */}
-                  <video src={`/api/assets/${a.id}?variant=thumb#t=0.5`} preload="metadata" muted playsInline className="h-full w-full object-cover" />
-                  <span className="absolute inset-0 flex items-center justify-center">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-black/55 text-white">
-                      <svg width="14" height="16" viewBox="0 0 14 16" fill="currentColor" aria-hidden><path d="M0 0l14 8-14 8z" /></svg>
-                    </span>
-                  </span>
-                </>
-              ) : (
-                <span className="flex h-full w-full flex-col items-center justify-center gap-1.5 bg-surface-2/50 text-ink-tertiary">
-                  <FileTypeIcon kind={a.kind} filename={a.filename} className="h-9 w-9" />
-                  <span className="text-[10px]">{fmtBytes(a.bytes)}</span>
-                </span>
+              {layout === "cascade" && (
+                <div className={`flex flex-col ${spacing.gap}`}>
+                  {justifiedRows(section.items).map((row, ri) => (
+                    <div key={ri} className={`flex ${spacing.gap}`}>
+                      {row.map(({ a, idx }) => (
+                        <GalleryTile
+                          key={a.id}
+                          asset={a}
+                          size="row"
+                          rowAspect={aspects[a.id] ?? 1}
+                          heartsOn={heartsOn}
+                          favorited={favorites.has(a.id)}
+                          picking={picking}
+                          picked={picks.has(a.id)}
+                          pickedLocked={selectionMode === "selection" && !picking && picks.has(a.id)}
+                          captions={captions}
+                          radiusCls={radiusCls}
+                          deterrents={deterrents}
+                          onOpen={() => setOpen(idx)}
+                          onHeart={() => void heart(a.id)}
+                          onPick={() => togglePick(a.id)}
+                          onMeasured={(aspect) => measureAspect(a.id, aspect)}
+                        />
+                      ))}
+                    </div>
+                  ))}
+                </div>
               )}
-            </button>
+            </section>
           ))}
         </div>
       )}

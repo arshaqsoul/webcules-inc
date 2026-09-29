@@ -162,7 +162,7 @@ describe("starter library (WEB-247)", () => {
     const userId = await seedUser();
     const created = await createStudioForUser({ userId, studioName: "New Studio", timezone: "UTC" });
     const rows = await listTemplates(created.organizationId, undefined, { includeArchived: true });
-    expect(rows.length).toBe(16);
+    expect(rows.length).toBe(19); // WEB-258: +3 gallery preset starters
     expect(rows.filter((r) => r.kind === "contract").length).toBe(2);
     expect(rows.filter((r) => r.kind === "form").length).toBe(1);
     expect(rows.filter((r) => r.kind === "email_snippet").length).toBe(3);
@@ -179,16 +179,16 @@ describe("starter library (WEB-247)", () => {
 
   it("seedStarterTemplates is idempotent", async () => {
     const studio = await seedStudio();
-    expect(await seedStarterTemplates(studio.organizationId)).toBe(16);
+    expect(await seedStarterTemplates(studio.organizationId)).toBe(19);
     expect(await seedStarterTemplates(studio.organizationId)).toBe(0);
     const after = await getDb().select().from(schema.templates).where(eq(schema.templates.organizationId, studio.organizationId));
-    expect(after.length).toBe(16);
+    expect(after.length).toBe(19);
   });
 
   it("starter rows match the migration's backfill shape", () => {
     const orgId = "org-x";
     const rows = starterTemplateRows(orgId);
-    expect(rows.length).toBe(16);
+    expect(rows.length).toBe(19); // WEB-258: +3 gallery preset starters
     for (const r of rows) {
       expect(r.organizationId).toBe(orgId);
       expect(r.name?.length).toBeGreaterThan(0);
