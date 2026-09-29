@@ -148,3 +148,15 @@ describe("serving guard (WEB-227)", () => {
     expect(nonClientPathRedirect("gallery.studio.com", "/loginx")).toBeNull();
   });
 });
+
+describe("gallery cookie scoping (WEB-227)", () => {
+  it("minted cookies are host-only — no Domain attribute pins them to snap.webcules.com", async () => {
+    const { mintGalleryCookie } = await import("@/lib/shares/gallery-auth");
+    const cookie = await mintGalleryCookie("9f1c2d3e-4a5b-4c6d-8e9f-0a1b2c3d4e5f");
+    expect(cookie).toContain("snap-g=");
+    expect(cookie).toContain("HttpOnly");
+    expect(cookie).toContain("Secure");
+    expect(cookie).toContain("SameSite=Lax");
+    expect(cookie).not.toContain("Domain="); // host-only: scopes to the custom host that served it
+  });
+});

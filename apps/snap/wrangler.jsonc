@@ -40,6 +40,14 @@
     {
       "pattern": "snap-fallback.webcules.com",
       "custom_domain": true
+    },
+    // WEB-224/233: staging probe host — exercises the serving guard and the
+    // neutral org-less 404 on a live third-party-shaped hostname (our zone's
+    // own subdomain, so no external DNS needed). Harmless: no custom_domain
+    // ROW ever resolves it, so it 404s/redirects forever.
+    {
+      "pattern": "gallery-test.webcules.com",
+      "custom_domain": true
     }
   ],
   "observability": { "enabled": true },
