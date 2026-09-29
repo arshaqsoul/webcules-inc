@@ -10,6 +10,7 @@ import { env } from "cloudflare:workers";
 
 import { GalleryDenied, GalleryGate, GalleryView } from "@/components/gallery-view";
 import { isWhiteLabeled } from "@/lib/branding";
+import { brandIcons, brandOgImage, parseBrandAssets } from "@/lib/brand-assets";
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { getStudioProfile } from "@/lib/repos/studios";
@@ -23,8 +24,9 @@ import { countGalleryOpen } from "@/lib/limits";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Your gallery", robots: { index: false } };
 
-/** WEB-238: white-labeled galleries title the tab `{project} · {studio}`
- * (absolute — skips the root layout's `· Snap` template suffix). */
+/** WEB-238/239: white-labeled galleries title the tab `{project} · {studio}`
+ * (absolute — skips the root layout's `· Snap` template suffix); generated
+ * brand assets add the studio favicon + og:image (studio OG card). */
 export async function generateMetadata({ params }: { params: Promise<{ token: string }> }): Promise<Metadata> {
   const { token } = await params;
   if (!TOKEN_RE.test(token)) return {};
@@ -32,18 +34,27 @@ export async function generateMetadata({ params }: { params: Promise<{ token: st
   if (!grant) return {};
   const profile = await getStudioProfile(grant.organizationId);
   if (!profile) return {};
-  if (!isWhiteLabeled(await getPlanEntitlements(grant.organizationId), profile.brand)) return {};
-  const projectTitle = (
+  const ent = await getPlanEntitlements(grant.organizationId);
+  const bag = parseBrandAssets(profile.brandAssets);
+  const icons = brandIcons(bag, grant.organizationId);
+  const og = brandOgImage(bag, grant.organizationId);
+  const title = `${(await galleryTitle(grant.projectId)) ?? "Your gallery"} · ${profile.studioName}`;
+  return {
+    ...(isWhiteLabeled(ent, profile.brand) ? { title: { absolute: title } } : {}),
+    ...(icons ? { icons } : {}),
+    ...(og ? { openGraph: { title, images: [og] } } : {}),
+    robots: { index: false },
+  };
+}
+
+async function galleryTitle(projectId: string): Promise<string | null> {
+  return (
     await getDb()
       .select({ title: schema.projects.title })
       .from(schema.projects)
-      .where(eq(schema.projects.id, grant.projectId))
+      .where(eq(schema.projects.id, projectId))
       .limit(1)
-  )[0]?.title;
-  return {
-    title: { absolute: `${projectTitle ?? "Your gallery"} · ${profile.studioName}` },
-    robots: { index: false },
-  };
+  )[0]?.title ?? null;
 }
 
 const TOKEN_RE = /^[A-Za-z0-9_-]{20,64}$/;

@@ -13,6 +13,7 @@ import { notFound } from "next/navigation";
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { isWhiteLabeled } from "@/lib/branding";
+import { brandIcons, brandOgImage, parseBrandAssets } from "@/lib/brand-assets";
 import { getPlanEntitlements } from "@/lib/plans";
 import { safeHexColor } from "@/lib/embed";
 
@@ -27,6 +28,7 @@ async function studioBySlug(slug: string) {
       organizationId: schema.studioProfiles.organizationId,
       studioName: schema.studioProfiles.studioName,
       brand: schema.studioProfiles.brand,
+      brandAssets: schema.studioProfiles.brandAssets,
       logoKey: schema.studioProfiles.logoKey,
       embedKey: schema.studioProfiles.embedKey,
       contactEmail: schema.studioProfiles.contactEmail,
@@ -51,14 +53,21 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const title = `Book ${studio.studioName}`;
   // WEB-238: white-labeled — absolute title skips the `· Snap` template suffix.
   const wl = await studioWhiteLabeled(studio);
+  const bag = parseBrandAssets(studio.brandAssets);
+  const icons = brandIcons(bag, studio.organizationId);
+  const ogImage = brandOgImage(bag, studio.organizationId);
   return {
     title: wl ? { absolute: title } : title,
     description: `See availability and book a session with ${studio.studioName}.`,
     robots: { index: false },
+    ...(icons ? { icons } : {}),
     openGraph: {
       title,
       description: `See availability and book a session with ${studio.studioName}.`,
-      ...(studio.logoKey ? { images: [`/api/embed/logo?key=${studio.embedKey}`] } : {}),
+      images: [
+        ...(ogImage ? [ogImage] : []),
+        ...(studio.logoKey && !ogImage ? [`/api/embed/logo?key=${studio.embedKey}`] : []),
+      ],
     },
   };
 }

@@ -6,6 +6,7 @@ import { env } from "cloudflare:workers";
 
 import { resolveContractByToken } from "@/lib/contracts";
 import { isWhiteLabeled } from "@/lib/branding";
+import { brandIcons, parseBrandAssets } from "@/lib/brand-assets";
 import { getPlanEntitlements } from "@/lib/plans";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { safeHexColor } from "@/lib/embed";
@@ -14,16 +15,21 @@ import { ContractSignForm } from "@/components/contract-sign";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Contract", robots: { index: false } };
 
-/** WEB-238: white-labeled — absolute title skips the `· Snap` template suffix. */
+/** WEB-238/239: white-labeled — absolute title skips the `· Snap` template
+ * suffix; generated brand assets add the studio favicon. */
 export async function generateMetadata({ params }: { params: Promise<{ token: string }> }): Promise<Metadata> {
   const { token } = await params;
   const contract = await resolveContractByToken(token);
   if (!contract) return {};
   const profile = await getStudioProfile(contract.organizationId);
   if (!profile) return {};
-  if (!isWhiteLabeled(await getPlanEntitlements(contract.organizationId), profile.brand)) return {};
+  const bag = parseBrandAssets(profile.brandAssets);
+  const icons = brandIcons(bag, contract.organizationId);
   return {
-    title: { absolute: `${contract.title} · ${profile.studioName}` },
+    ...(isWhiteLabeled(await getPlanEntitlements(contract.organizationId), profile.brand)
+      ? { title: { absolute: `${contract.title} · ${profile.studioName}` } }
+      : {}),
+    ...(icons ? { icons } : {}),
     robots: { index: false },
   };
 }

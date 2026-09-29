@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { SettingsBrand } from "@/components/settings-brand";
+import { parseBrandAssets } from "@/lib/brand-assets";
 import { getPlanEntitlements } from "@/lib/plans";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { getOrgContext } from "@/lib/session";
@@ -22,6 +23,7 @@ export default async function SettingsBrandPage() {
   };
   // WEB-238: the entitlement gates the toggle; the toggle gates the surfaces.
   const ent = await getPlanEntitlements(ctx.organizationId);
+  const assetBag = parseBrandAssets(profile.brandAssets);
 
   return (
     <SettingsBrand
@@ -35,6 +37,8 @@ export default async function SettingsBrandPage() {
       brandRevision={String(profile.updatedAt?.getTime() ?? "")}
       whiteLabelEntitled={ent?.whiteLabel ?? false}
       removeBranding={brand.removeBranding === true}
+      hasBrandAssets={Boolean(assetBag.favicon && assetBag.ogCard)}
+      studioName={profile.studioName}
     />
   );
 }

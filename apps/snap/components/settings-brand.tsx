@@ -4,13 +4,16 @@
  * the advanced token JSON with a live preview iframe. The brandRevision prop
  * (profile updatedAt) is appended to the preview src as `&rev=` so a save
  * reloads the iframe — the re-mount trick that moved here from the monolith.
- * Watermark controls are documented to land in this section later. */
+ * WEB-238/239: white-label toggle + browser-side brand asset generation
+ * (favicon/email-header/OG/watermark from the one logo). */
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@webcules/ui/components/button";
 import { Input } from "@webcules/ui/components/input";
 import { Label } from "@webcules/ui/components/label";
+
+import { generateAndUploadBrandAssets } from "@/components/brand-asset-generator";
 
 export function SettingsBrand({
   embedKey,
@@ -23,6 +26,8 @@ export function SettingsBrand({
   brandRevision,
   whiteLabelEntitled,
   removeBranding: initialRemoveBranding,
+  hasBrandAssets: initialHasBrandAssets,
+  studioName,
 }: {
   embedKey: string;
   hasLogo: boolean;
@@ -35,6 +40,9 @@ export function SettingsBrand({
   /** WEB-238: plan grants white-label (Studio/Pro); false renders the upsell. */
   whiteLabelEntitled: boolean;
   removeBranding: boolean;
+  /** WEB-239: a generated bundle exists (favicon/OG/etc.). */
+  hasBrandAssets: boolean;
+  studioName: string;
 }) {
   const router = useRouter();
   const [accentColor, setAccentColor] = useState(initialAccent);
@@ -46,6 +54,8 @@ export function SettingsBrand({
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [removeBranding, setRemoveBranding] = useState(initialRemoveBranding);
+  const [hasBrandAssets, setHasBrandAssets] = useState(initialHasBrandAssets);
+  const [assetsBusy, setAssetsBusy] = useState(false);
 
   async function save() {
     setBusy(true);
@@ -75,6 +85,32 @@ export function SettingsBrand({
     if (res.ok) router.refresh();
   }
 
+  /** WEB-239: one logo → favicon + apple-touch + email header + OG card +
+   * watermark source, canvas-composited in the browser and posted as a
+   * bundle. Runs on demand (button) and automatically after a logo upload. */
+  async function generateAssets(freshLogoUrl?: string) {
+    const url = freshLogoUrl ?? logoUrl;
+    if (!url) {
+      setStatus("Upload a logo first — brand assets generate from it.");
+      return;
+    }
+    setAssetsBusy(true);
+    setStatus("Generating brand assets…");
+    const out = await generateAndUploadBrandAssets({ logoUrl: url, studioName, accent: accentColor });
+    setAssetsBusy(false);
+    if (out.ok) {
+      setHasBrandAssets(true);
+      setStatus("Brand assets generated — favicon, share cards and email header updated.");
+      router.refresh();
+    } else if (out.error === "no_logo") {
+      setStatus("Upload a logo first — brand assets generate from it.");
+    } else if (out.error === "plan_required") {
+      setStatus("Brand assets are part of white-label (Studio & Pro).");
+    } else {
+      setStatus(`Brand asset generation failed: ${out.error}`);
+    }
+  }
+
   async function uploadLogo(file: File) {
     setBusy(true);
     setStatus(null);
@@ -83,9 +119,16 @@ export function SettingsBrand({
     const res = await fetch("/api/studio/logo", { method: "POST", body: form });
     setBusy(false);
     if (res.ok) {
-      setLogoUrl(`/api/embed/logo?key=${embedKey}`);
+      const fresh = `/api/embed/logo?key=${embedKey}`;
+      setLogoUrl(fresh);
       setStatus("Logo uploaded.");
       router.refresh();
+      if (whiteLabelEntitled) {
+        // Regenerate the derived kit immediately — the browser already has
+        // the decoded image warm. Failure here only means the retro-fill
+        // button stays available.
+        void generateAssets(`${fresh}&r=${Date.now()}`);
+      }
     } else {
       const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
       setStatus(`Logo upload failed: ${String(body.error ?? "unknown")}`);
@@ -185,6 +228,24 @@ export function SettingsBrand({
                 </span>
               </span>
             </label>
+            <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-hairline pt-4">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-ink">Brand assets</p>
+                <p className="mt-1 text-xs leading-relaxed text-ink-subtle">
+                  {hasBrandAssets
+                    ? "Favicon, browser share cards, email header and watermark source generated from your logo."
+                    : "Generate your favicon, browser share cards, email header and watermark source from your logo — one click, no design work."}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => void generateAssets()}
+                disabled={assetsBusy || !hasLogo}
+              >
+                {assetsBusy ? "Generating…" : hasBrandAssets ? "Regenerate" : "Generate brand assets"}
+              </Button>
+            </div>
           </>
         ) : (
           <>

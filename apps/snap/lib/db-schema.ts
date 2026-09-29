@@ -153,6 +153,9 @@ export const studioProfiles = sqliteTable("studio_profile", {
   logoKey: text("logo_key"),
   /** JSON: { accent: "#rrggbb", fontFamily?: string } */
   brand: text("brand").notNull().default("{}"),
+  /** WEB-239: JSON bag of generated brand-asset R2 keys + revision stamp —
+   * { rev, favicon, appleTouch, emailHeader, ogCard, watermark }. */
+  brandAssets: text("brand_assets"),
   /** JSON: booking rules snapshot (slot length default, buffers, lead time) */
   bookingSettings: text("booking_settings").notNull().default("{}"),
   /** Public, rotatable embed key — resolves widgets to this studio. */

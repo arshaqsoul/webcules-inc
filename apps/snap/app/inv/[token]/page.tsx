@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 
 import { resolveInvoiceByToken } from "@/lib/invoices";
 import { isWhiteLabeled } from "@/lib/branding";
+import { brandIcons, brandOgImage, parseBrandAssets } from "@/lib/brand-assets";
 import { getPlanEntitlements } from "@/lib/plans";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { safeHexColor } from "@/lib/embed";
@@ -12,16 +13,22 @@ import { safeHexColor } from "@/lib/embed";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Invoice", robots: { index: false } };
 
-/** WEB-238: white-labeled — absolute title skips the `· Snap` template suffix. */
+/** WEB-238/239: white-labeled — absolute title skips the `· Snap` template
+ * suffix; generated brand assets add favicon + og:image. */
 export async function generateMetadata({ params }: { params: Promise<{ token: string }> }): Promise<Metadata> {
   const { token } = await params;
   const invoice = await resolveInvoiceByToken(token);
   if (!invoice) return {};
   const profile = await getStudioProfile(invoice.organizationId);
   if (!profile) return {};
-  if (!isWhiteLabeled(await getPlanEntitlements(invoice.organizationId), profile.brand)) return {};
+  const bag = parseBrandAssets(profile.brandAssets);
+  const icons = brandIcons(bag, invoice.organizationId);
+  const og = brandOgImage(bag, invoice.organizationId);
+  const wl = isWhiteLabeled(await getPlanEntitlements(invoice.organizationId), profile.brand);
   return {
-    title: { absolute: `Invoice ${invoice.number} · ${profile.studioName}` },
+    ...(wl ? { title: { absolute: `Invoice ${invoice.number} · ${profile.studioName}` } } : {}),
+    ...(icons ? { icons } : {}),
+    ...(og ? { openGraph: { title: `Invoice ${invoice.number} — ${profile.studioName}`, images: [og] } } : {}),
     robots: { index: false },
   };
 }
