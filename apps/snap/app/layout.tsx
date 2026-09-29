@@ -32,6 +32,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
          * the native frame win whenever frames exist, and fires a one-shot
          * timer chaser otherwise; cancelAnimationFrame stays honest by
          * clearing the chaser too, so animation loops keep native timing. */}
+        {/* Snap aperture mark as favicon — vinext doesn't implement Next's
+         * metadata file conventions, so the links are explicit. SVG for
+         * modern tabs, ICO fallback, PNGs for Android/iOS home screens. */}
+        <link rel="icon" href="/favicon.ico" sizes="48x48" />
+        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+        <link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192" />
+        <link rel="apple-touch-icon" href="/apple-icon.png" />
         <script
           dangerouslySetInnerHTML={{
             __html:
