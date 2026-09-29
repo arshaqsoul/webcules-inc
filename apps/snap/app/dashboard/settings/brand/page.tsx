@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { SettingsBrand } from "@/components/settings-brand";
+import { getPlanEntitlements } from "@/lib/plans";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { getOrgContext } from "@/lib/session";
 
@@ -17,7 +18,10 @@ export default async function SettingsBrandPage() {
     fontFamily?: string;
     theme?: string;
     tokens?: unknown;
+    removeBranding?: boolean;
   };
+  // WEB-238: the entitlement gates the toggle; the toggle gates the surfaces.
+  const ent = await getPlanEntitlements(ctx.organizationId);
 
   return (
     <SettingsBrand
@@ -29,6 +33,8 @@ export default async function SettingsBrandPage() {
       theme={brand.theme ?? "light"}
       tokens={JSON.stringify(brand.tokens ?? {}, null, 1)}
       brandRevision={String(profile.updatedAt?.getTime() ?? "")}
+      whiteLabelEntitled={ent?.whiteLabel ?? false}
+      removeBranding={brand.removeBranding === true}
     />
   );
 }

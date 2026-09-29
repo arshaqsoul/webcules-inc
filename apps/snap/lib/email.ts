@@ -1,6 +1,21 @@
 /* Transactional email via the Cloudflare Email Service `send_email` binding.
  * Every send logs to email_log. Branded per studio (accent + name); the auth
- * OTP template lives in auth.server.ts. */
+ * OTP template lives in auth.server.ts.
+ *
+ * WEB-237/238 white-label split — CLIENT templates drop every Snap mention
+ * when the org is white-labeled (shell wordmark, "via Snap" footers, portal
+ * copy); INTERNAL templates keep Snap identity:
+ *   client: inquiryAckEmail, bookingConfirmedEmails(.client),
+ *           bookingCanceledEmail, refundClientEmail,
+ *           bookingConfirmedClientEmail, projectCompleteClientEmail,
+ *           invoiceEmail, contractSignRequestEmail, contractSignedEmail,
+ *           galleryOtpEmail, galleryLinkEmail
+ *   internal (Snap stays): inquiryReceivedEmail, usageWarningEmail,
+ *           rawRenewalEmail, rawArchivedEmail, rawPurgeWarningEmail,
+ *           dormancyEmail, marginAlertEmail, domainDegraded/RecoveredEmail,
+ *           bookingConfirmedEmails(.studio)
+ *   cross-studio platform emails (no single org to attribute — honest limit,
+ *   like the from-address): portalCodeEmail, portalStaffRedirectEmail */
 import { env } from "cloudflare:workers";
 
 import { getDb } from "./db";
@@ -14,6 +29,10 @@ export async function sendEmail(params: {
   replyTo?: string;
   /** Override the From address (must be @snap.webcules.com, e.g. hello+{leadId}@). */
   fromOverride?: string;
+  /** WEB-238: From display name for white-labeled studios — the address
+   * stays on snap.webcules.com (signed domain), the visible name is the
+   * studio's. Ignored when absent → default display unchanged. */
+  fromName?: string;
   organizationId?: string | null;
   template: string;
   refId?: string | null;
@@ -32,10 +51,15 @@ export async function sendEmail(params: {
       throw new Error("fromOverride must be on the snap.webcules.com domain");
     }
   }
+  let from = params.fromOverride ?? env.EMAIL_FROM ?? "Snap <hello@snap.webcules.com>";
+  if (params.fromName) {
+    const addr = from.match(/<(.+)>/)?.[1] ?? from;
+    from = `${params.fromName} <${addr}>`;
+  }
   try {
     await env.EMAIL.send({
       to: params.to,
-      from: params.fromOverride ?? env.EMAIL_FROM ?? "Snap <hello@snap.webcules.com>",
+      from,
       subject: params.subject,
       html: params.html,
       text: params.text,
@@ -73,16 +97,21 @@ export async function sendEmail(params: {
   return true;
 }
 
-function shell(accent: string, title: string, bodyHtml: string, footer: string): string {
+/** WEB-238: white-label context for client templates — header wordmark +
+ * the snap.webcules.com pre-footer line flip; footers are per-template. */
+export type EmailBrand = { studioName: string; whiteLabel: boolean };
+
+function shell(accent: string, title: string, bodyHtml: string, footer: string, brand?: EmailBrand): string {
+  const wordmark = brand?.whiteLabel ? brand.studioName : "Snap";
   return `<!doctype html><html><body style="margin:0;padding:0;background:#f7f8f8;font-family:Inter,-apple-system,system-ui,'Segoe UI',Roboto,sans-serif;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f8f8;padding:40px 16px;"><tr><td align="center">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#ffffff;border:1px solid #e3e5e8;border-radius:12px;padding:40px 32px;">
-      <tr><td style="padding-bottom:8px;"><span style="font-size:13px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:${accent};">Snap</span></td></tr>
+      <tr><td style="padding-bottom:8px;"><span style="font-size:13px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:${accent};">${wordmark}</span></td></tr>
       <tr><td style="padding-bottom:24px;"><h1 style="margin:0;font-size:22px;line-height:1.3;font-weight:600;color:#0f1011;">${title}</h1></td></tr>
       <tr><td style="font-size:15px;line-height:1.6;color:#3f4149;">${bodyHtml}</tr>
       <tr><td style="padding-top:32px;border-top:1px solid #e3e5e8;"><p style="margin:0;font-size:12px;line-height:1.5;color:#8a8f98;">${footer}</p></td></tr>
     </table>
-    <p style="margin:16px 0 0;font-size:12px;color:#8a8f98;">snap.webcules.com</p>
+    ${brand?.whiteLabel ? "" : `<p style="margin:16px 0 0;font-size:12px;color:#8a8f98;">snap.webcules.com</p>`}
   </td></tr></table></body></html>`;
 }
 
@@ -115,7 +144,7 @@ export function inquiryReceivedEmail(studioName: string, lead: {
   };
 }
 
-export function inquiryAckEmail(studioName: string, leadName: string, accent: string) {
+export function inquiryAckEmail(studioName: string, leadName: string, accent: string, whiteLabel = false) {
   return {
     subject: `We got your inquiry — ${studioName}`,
     html: shell(
@@ -123,7 +152,8 @@ export function inquiryAckEmail(studioName: string, leadName: string, accent: st
       `Thanks, ${leadName}!`,
       `<p style="margin:0 0 16px;">Your inquiry to <strong>${studioName}</strong> is in. They typically reply within a day — keep an eye on your inbox.</p>
        <p style="margin:0;">If you didn't expect this email, you can safely ignore it.</p>`,
-      `Sent by ${studioName} via Snap.`,
+      `Sent by ${studioName}${whiteLabel ? "." : " via Snap."}`,
+      { studioName, whiteLabel },
     ),
     text: `Thanks, ${leadName}! Your inquiry to ${studioName} is in. They typically reply within a day.`,
   };
@@ -136,6 +166,7 @@ export function bookingConfirmedEmails(studioName: string, params: {
   tz: string;
   icsUrl: string;
   accent: string;
+  whiteLabel?: boolean;
 }) {
   const when = new Intl.DateTimeFormat("en-US", {
     timeZone: params.tz,
@@ -145,6 +176,7 @@ export function bookingConfirmedEmails(studioName: string, params: {
   const button = (label: string) =>
     `<p style="margin:24px 0 0;"><a href="${params.icsUrl}" style="display:inline-block;background:${params.accent};color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">${label}</a></p>`;
   const whenBlock = `<p style="margin:0 0 16px;padding:12px 16px;background:#f7f8f8;border-radius:8px;"><strong style="color:#0f1011;">${when}</strong> <span style="color:#8a8f98;">(${params.tz})</span></p>`;
+  const wl = params.whiteLabel === true;
 
   const client = {
     subject: `Booking confirmed — ${studioName}`,
@@ -154,7 +186,8 @@ export function bookingConfirmedEmails(studioName: string, params: {
       `<p style="margin:0 0 16px;">Hi ${params.clientName}, your session with <strong>${studioName}</strong> is confirmed for:</p>
        ${whenBlock}
        ${button("Add to calendar")}`,
-      `Booked with ${studioName} via Snap.`,
+      `Booked with ${studioName}${wl ? "." : " via Snap."}`,
+      { studioName, whiteLabel: wl },
     ),
     text: `Hi ${params.clientName}, your session with ${studioName} is confirmed for ${when} (${params.tz}). Add to calendar: ${params.icsUrl}`,
   };
@@ -178,10 +211,12 @@ export function bookingCanceledEmail(studioName: string, params: {
   startAt: Date;
   tz: string;
   accent: string;
+  whiteLabel?: boolean;
 }): { subject: string; html: string; text: string } {
   const when = new Intl.DateTimeFormat("en-US", {
     timeZone: params.tz, weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit",
   }).format(params.startAt);
+  const wl = params.whiteLabel === true;
   return {
     subject: `Booking canceled — ${studioName}`,
     html: shell(
@@ -189,7 +224,8 @@ export function bookingCanceledEmail(studioName: string, params: {
       "Booking canceled",
       `<p style="margin:0 0 12px;">Hi ${params.clientName}, your session with <strong style="color:#0f1011;">${studioName}</strong> scheduled for <strong style="color:#0f1011;">${when}</strong> has been canceled.</p>
        <p style="margin:0;">Questions? Just reply to this email.</p>`,
-      `Sent by ${studioName} via Snap.`,
+      `Sent by ${studioName}${wl ? "." : " via Snap."}`,
+      { studioName, whiteLabel: wl },
     ),
     text: `Hi ${params.clientName}, your session with ${studioName} on ${when} has been canceled.`,
   };
@@ -205,6 +241,7 @@ export function refundClientEmail(studioName: string, params: {
   amountLabel: string;
   projectTitle: string | null;
   contentDeleted: boolean;
+  whiteLabel?: boolean;
 }): { subject: string; html: string; text: string } {
   const when = params.startAt
     ? new Intl.DateTimeFormat("en-US", {
@@ -218,6 +255,7 @@ export function refundClientEmail(studioName: string, params: {
   const contentLine = params.contentDeleted
     ? " The uploaded photos from this project have been deleted."
     : " Any gallery links you received stay available until they expire.";
+  const wl = params.whiteLabel === true;
   return {
     subject: `Refund processed — ${studioName}`,
     html: shell(
@@ -226,7 +264,8 @@ export function refundClientEmail(studioName: string, params: {
       `<p style="margin:0 0 12px;">Hi ${params.clientName}, a refund of <strong style="color:#0f1011;">${params.amountLabel}</strong> has been issued.</p>
        <p style="margin:0 0 12px;">Your session with <strong style="color:#0f1011;">${studioName}</strong>${sessionLine} has been canceled.${projectLine}${contentLine}</p>
        <p style="margin:0;">Refunds take 5–10 business days to appear on your statement. Questions? Just reply to this email.</p>`,
-      `Sent by ${studioName} via Snap.`,
+      `Sent by ${studioName}${wl ? "." : " via Snap."}`,
+      { studioName, whiteLabel: wl },
     ),
     text: `Hi ${params.clientName}, a refund of ${params.amountLabel} has been issued. Your session with ${studioName}${when ? ` on ${when}` : ""} has been canceled.${params.projectTitle ? ` The project ${params.projectTitle} has been canceled as well.` : ""}${params.contentDeleted ? " The uploaded photos from this project have been deleted." : " Any gallery links you received stay available until they expire."} Refunds take 5-10 business days to appear on your statement.`,
   };
@@ -416,16 +455,21 @@ export function bookingConfirmedClientEmail(studioName: string, params: {
   accent: string;
   when: Date;
   portalUrl: string;
+  whiteLabel?: boolean;
 }): { subject: string; html: string; text: string } {
+  const wl = params.whiteLabel === true;
   return {
     subject: `Your session is booked with ${studioName}`,
     html: shell(
       params.accent,
       "You're booked!",
       `<p style="margin:0 0 16px;"><strong style="color:#0f1011;">${studioName}</strong> has confirmed your session for <strong style="color:#0f1011;">${params.when.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</strong> at ${params.when.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}.</p>
-       <p style="margin:0 0 16px;">Payment is confirmed — nothing more to do. You can follow your project any time from your Snap portal.</p>
+       <p style="margin:0 0 16px;">Payment is confirmed — nothing more to do. You can follow your project any time from your ${wl ? "client portal" : "Snap portal"}.</p>
        <p style="margin:24px 0 0;"><a href="${params.portalUrl}" style="display:inline-block;background:${params.accent};color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">Open your portal</a></p>`,
-      `You can turn these emails off per studio inside your Snap portal.`,
+      wl
+        ? `You can turn these emails off inside your client portal.`
+        : `You can turn these emails off per studio inside your Snap portal.`,
+      { studioName, whiteLabel: wl },
     ),
     text: `${studioName} confirmed your session for ${params.when.toLocaleString()}. Portal: ${params.portalUrl}`,
   };
@@ -436,7 +480,9 @@ export function projectCompleteClientEmail(studioName: string, params: {
   accent: string;
   projectTitle: string;
   portalUrl: string;
+  whiteLabel?: boolean;
 }): { subject: string; html: string; text: string } {
+  const wl = params.whiteLabel === true;
   return {
     subject: `Your photos from ${studioName} are ready`,
     html: shell(
@@ -445,7 +491,10 @@ export function projectCompleteClientEmail(studioName: string, params: {
       `<p style="margin:0 0 16px;">Your project <strong style="color:#0f1011;">${params.projectTitle}</strong> with <strong style="color:#0f1011;">${studioName}</strong> has been marked delivered.</p>
        <p style="margin:0 0 16px;">Any galleries they've shared with you are live now — open your portal to view and download.</p>
        <p style="margin:24px 0 0;"><a href="${params.portalUrl}" style="display:inline-block;background:${params.accent};color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">View your photos</a></p>`,
-      `You can turn these emails off per studio inside your Snap portal.`,
+      wl
+        ? `You can turn these emails off inside your client portal.`
+        : `You can turn these emails off per studio inside your Snap portal.`,
+      { studioName, whiteLabel: wl },
     ),
     text: `${studioName} marked "${params.projectTitle}" as delivered. Portal: ${params.portalUrl}`,
   };
@@ -458,7 +507,9 @@ export function invoiceEmail(studioName: string, params: {
   amountLabel: string;
   dueLabel: string | null;
   invoiceUrl: string;
+  whiteLabel?: boolean;
 }): { subject: string; html: string; text: string } {
+  const wl = params.whiteLabel === true;
   return {
     subject: `Invoice ${params.invoiceNumber} from ${studioName}`,
     html: shell(
@@ -467,7 +518,10 @@ export function invoiceEmail(studioName: string, params: {
       `<p style="margin:0 0 16px;"><strong style="color:#0f1011;">${studioName}</strong> has sent you an invoice for <strong style="color:#0f1011;">${params.amountLabel}</strong>${params.dueLabel ? `, due ${params.dueLabel}` : ""}.</p>
        <p style="margin:0 0 16px;">Open the secure link to view the details and download the PDF.</p>
        <p style="margin:24px 0 0;"><a href="${params.invoiceUrl}" style="display:inline-block;background:${params.accent};color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">View invoice</a></p>`,
-      `Invoices from Snap studios open via secure links unique to you.`,
+      wl
+        ? `Invoices open via secure links unique to you.`
+        : `Invoices from Snap studios open via secure links unique to you.`,
+      { studioName, whiteLabel: wl },
     ),
     text: `${studioName} sent invoice ${params.invoiceNumber} for ${params.amountLabel}${params.dueLabel ? ` (due ${params.dueLabel})` : ""}. View it: ${params.invoiceUrl}`,
   };
@@ -478,7 +532,9 @@ export function contractSignRequestEmail(studioName: string, params: {
   accent: string;
   title: string;
   signUrl: string;
+  whiteLabel?: boolean;
 }): { subject: string; html: string; text: string } {
+  const wl = params.whiteLabel === true;
   return {
     subject: `Please review & sign: ${params.title} — ${studioName}`,
     html: shell(
@@ -487,7 +543,10 @@ export function contractSignRequestEmail(studioName: string, params: {
       `<p style="margin:0 0 16px;"><strong style="color:#0f1011;">${studioName}</strong> has sent you <strong style="color:#0f1011;">${params.title}</strong> for review and signature.</p>
        <p style="margin:0 0 16px;">Open the secure link to read the full contract and sign it — no account needed. Your signature records the date, time and IP address for both parties' records.</p>
        <p style="margin:24px 0 0;"><a href="${params.signUrl}" style="display:inline-block;background:${params.accent};color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">Review & sign</a></p>`,
-      `Snap contracts are signed electronically via secure links unique to you.`,
+      wl
+        ? `Contracts are signed electronically via secure links unique to you.`
+        : `Snap contracts are signed electronically via secure links unique to you.`,
+      { studioName, whiteLabel: wl },
     ),
     text: `${studioName} sent you "${params.title}" for signature. Review & sign: ${params.signUrl}`,
   };
@@ -500,7 +559,9 @@ export function contractSignedEmail(studioName: string, params: {
   signerName: string;
   signedAt: Date;
   contractUrl: string;
+  whiteLabel?: boolean;
 }): { subject: string; html: string; text: string } {
+  const wl = params.whiteLabel === true;
   return {
     subject: `Signed: ${params.title}`,
     html: shell(
@@ -509,7 +570,10 @@ export function contractSignedEmail(studioName: string, params: {
       `<p style="margin:0 0 16px;"><strong style="color:#0f1011;">${params.title}</strong> was signed by <strong style="color:#0f1011;">${params.signerName}</strong> on ${params.signedAt.toLocaleString("en-US", { dateStyle: "long", timeStyle: "short" })} UTC.</p>
        <p style="margin:0 0 16px;">The signed copy is archived — open the link any time to view or download the PDF.</p>
        <p style="margin:24px 0 0;"><a href="${params.contractUrl}" style="display:inline-block;background:${params.accent};color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">View signed contract</a></p>`,
-      `Electronically signed via Snap — date, time and IP recorded for both parties.`,
+      wl
+        ? `Electronically signed — date, time and IP recorded for both parties.`
+        : `Electronically signed via Snap — date, time and IP recorded for both parties.`,
+      { studioName, whiteLabel: wl },
     ),
     text: `"${params.title}" was signed by ${params.signerName} on ${params.signedAt.toISOString()}. View: ${params.contractUrl}`,
   };
@@ -520,7 +584,9 @@ export function galleryOtpEmail(studioName: string, params: {
   code: string;
   galleryUrl: string;
   accent: string;
+  whiteLabel?: boolean;
 }): { subject: string; html: string; text: string } {
+  const wl = params.whiteLabel === true;
   return {
     subject: `Your verification code — ${studioName} gallery`,
     html: shell(
@@ -529,7 +595,10 @@ export function galleryOtpEmail(studioName: string, params: {
       `<p style="margin:0 0 16px;">Enter this code to open your gallery from <strong style="color:#0f1011;">${studioName}</strong>:</p>
        <p style="margin:0 0 16px;padding:16px;background:#f7f8f8;border-radius:8px;text-align:center;font-size:30px;letter-spacing:8px;font-weight:600;color:#0f1011;">${params.code}</p>
        <p style="margin:0;font-size:13px;color:#8a8f98;">This code expires in 10 minutes. If you didn't request it, you can ignore this email.</p>`,
-      `Verification code for your ${studioName} gallery, sent via Snap.`,
+      wl
+        ? `Verification code for your ${studioName} gallery.`
+        : `Verification code for your ${studioName} gallery, sent via Snap.`,
+      { studioName, whiteLabel: wl },
     ),
     text: `Your verification code for the ${studioName} gallery: ${params.code}\n\nIt expires in 10 minutes.`,
   };
@@ -543,7 +612,9 @@ export function galleryLinkEmail(studioName: string, params: {
   expiresAt: Date | null;
   accent: string;
   fresh?: boolean; // false = re-send of an existing link
+  whiteLabel?: boolean;
 }): { subject: string; html: string; text: string } {
+  const wl = params.whiteLabel === true;
   const expires = params.expiresAt
     ? new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" }).format(params.expiresAt)
     : null;
@@ -564,7 +635,8 @@ export function galleryLinkEmail(studioName: string, params: {
        <p style="margin:24px 0 0;"><a href="${params.galleryUrl}" style="display:inline-block;background:${params.accent};color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">View gallery</a></p>
        <p style="margin:16px 0 0;font-size:12px;color:#8a8f98;">Or paste this link into your browser:<br><a href="${params.galleryUrl}" style="color:${params.accent};word-break:break-all;">${params.galleryUrl}</a></p>
        ${expiryNote}`,
-      `Gallery from ${studioName}, delivered via Snap.`,
+      `Gallery from ${studioName}${wl ? "." : ", delivered via Snap."}`,
+      { studioName, whiteLabel: wl },
     ),
     text: `Hi ${params.clientName}, ${studioName} shared ${params.photoCount} photo${params.photoCount === 1 ? "" : "s"} with you. View gallery: ${params.galleryUrl}${expires ? `\n\nThis link expires ${expires}.` : ""}`,
   };

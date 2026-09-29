@@ -12,6 +12,8 @@ import { notFound } from "next/navigation";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
+import { isWhiteLabeled } from "@/lib/branding";
+import { getPlanEntitlements } from "@/lib/plans";
 import { safeHexColor } from "@/lib/embed";
 
 export const dynamic = "force-dynamic";
@@ -36,16 +38,25 @@ async function studioBySlug(slug: string) {
   return rows[0] ?? null;
 }
 
+/** WEB-238: effective white-label flag for this studio (entitlement AND toggle). */
+async function studioWhiteLabeled(studio: { organizationId: string; brand: string } | null): Promise<boolean> {
+  if (!studio) return false;
+  return isWhiteLabeled(await getPlanEntitlements(studio.organizationId), studio.brand);
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const studio = await studioBySlug(slug);
   if (!studio) return { title: "Book a session" };
+  const title = `Book ${studio.studioName}`;
+  // WEB-238: white-labeled — absolute title skips the `· Snap` template suffix.
+  const wl = await studioWhiteLabeled(studio);
   return {
-    title: `Book ${studio.studioName}`,
+    title: wl ? { absolute: title } : title,
     description: `See availability and book a session with ${studio.studioName}.`,
     robots: { index: false },
     openGraph: {
-      title: `Book ${studio.studioName}`,
+      title,
       description: `See availability and book a session with ${studio.studioName}.`,
       ...(studio.logoKey ? { images: [`/api/embed/logo?key=${studio.embedKey}`] } : {}),
     },
@@ -60,6 +71,7 @@ export default async function PublicBookingPage({ params }: { params: Promise<{ 
 
   const brand = JSON.parse(studio.brand || "{}") as { accent?: string; fontFamily?: string; theme?: string; tokens?: Record<string, string> };
   const accent = safeHexColor(brand.accent) ?? "#5e6ad2";
+  const wl = await studioWhiteLabeled(studio);
 
   // Brand-layer tokens flow into the widget via query params (server
   // sanitizes again inside the widget route).
@@ -92,7 +104,8 @@ export default async function PublicBookingPage({ params }: { params: Promise<{ 
           />
         </div>
         <p className="mt-4 text-center text-xs text-[#8a8f98]">
-          Bookings handled securely by {studio.studioName} via Snap
+          Bookings handled securely by {studio.studioName}
+          {wl ? "" : " via Snap"}
           {studio.contactEmail ? (
             <>
               {" · "}

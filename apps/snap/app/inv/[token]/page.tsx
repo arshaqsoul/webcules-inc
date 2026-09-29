@@ -1,13 +1,30 @@
 /* Public invoice view at /inv/{token} (WEB-137) — 256-bit token possession
  * is the gate (same trust model as gallery links; voided invoices vanish). */
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { resolveInvoiceByToken } from "@/lib/invoices";
+import { isWhiteLabeled } from "@/lib/branding";
+import { getPlanEntitlements } from "@/lib/plans";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { safeHexColor } from "@/lib/embed";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Invoice", robots: { index: false } };
+
+/** WEB-238: white-labeled — absolute title skips the `· Snap` template suffix. */
+export async function generateMetadata({ params }: { params: Promise<{ token: string }> }): Promise<Metadata> {
+  const { token } = await params;
+  const invoice = await resolveInvoiceByToken(token);
+  if (!invoice) return {};
+  const profile = await getStudioProfile(invoice.organizationId);
+  if (!profile) return {};
+  if (!isWhiteLabeled(await getPlanEntitlements(invoice.organizationId), profile.brand)) return {};
+  return {
+    title: { absolute: `Invoice ${invoice.number} · ${profile.studioName}` },
+    robots: { index: false },
+  };
+}
 
 const STATUS_TONE: Record<string, string> = {
   draft: "bg-amber-500/10 text-amber-600 dark:text-amber-400",

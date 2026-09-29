@@ -1,7 +1,9 @@
 /* ICS calendar file for a booking — one-click "Add to calendar" from emails.
  * Addressed by unguessable booking UUID + embed key; booking times are UTC
  * with a TZID-less UTC form (imported correctly by all major clients). */
+import { isWhiteLabeled } from "@/lib/branding";
 import { resolveStudioByEmbedKey } from "@/lib/embed";
+import { getPlanEntitlements } from "@/lib/plans";
 import { getBookingByRef } from "@/lib/repos/bookings";
 
 export const dynamic = "force-dynamic";
@@ -26,6 +28,10 @@ export async function GET(req: Request) {
     return new Response("not found", { status: 404 });
   }
 
+  // WEB-238: the visible DESCRIPTION drops "via Snap" for white-labeled
+  // studios. PRODID stays the producing software (standard ICS practice);
+  // UID stays on our domain (stability + uniqueness).
+  const wl = isWhiteLabeled(await getPlanEntitlements(studio.organizationId), studio.brand);
   const ics = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
@@ -38,7 +44,7 @@ export async function GET(req: Request) {
     `DTSTART:${icsStamp(booking.startAt)}`,
     `DTEND:${icsStamp(booking.endAt)}`,
     `SUMMARY:${esc(`Photo session — ${studio.studioName}`)}`,
-    `DESCRIPTION:${esc(`Session with ${studio.studioName}. Booked via Snap.`)}`,
+    `DESCRIPTION:${esc(wl ? `Session with ${studio.studioName}.` : `Session with ${studio.studioName}. Booked via Snap.`)}`,
     `STATUS:${booking.status === "confirmed" ? "CONFIRMED" : "TENTATIVE"}`,
     "END:VEVENT",
     "END:VCALENDAR",

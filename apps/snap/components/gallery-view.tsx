@@ -71,10 +71,12 @@ function fmtBytes(bytes: number): string {
 
 /* ---------------- Denied / expired / revoked ---------------- */
 
-export function GalleryDenied({ reason, studioName, contactEmail }: {
+export function GalleryDenied({ reason, studioName, contactEmail, whiteLabel }: {
   reason: "dead" | "unknown";
   studioName?: string;
   contactEmail?: string | null;
+  /** WEB-238: white-labeled studios get `© {studio}` instead of the Snap footer. */
+  whiteLabel?: boolean;
 }) {
   return (
     <main className="flex min-h-screen items-center justify-center bg-canvas p-6" style={{ ["--accent" as string]: "#5e6ad2" }}>
@@ -102,7 +104,9 @@ export function GalleryDenied({ reason, studioName, contactEmail }: {
             .
           </p>
         )}
-        <p className="mt-6 text-xs text-ink-tertiary">Delivered by Snap · snap.webcules.com</p>
+        <p className="mt-6 text-xs text-ink-tertiary">
+          {whiteLabel && studioName ? `© ${studioName}` : "Delivered by Snap · snap.webcules.com"}
+        </p>
       </div>
     </main>
   );
@@ -110,12 +114,12 @@ export function GalleryDenied({ reason, studioName, contactEmail }: {
 
 /* ---------------- OTP gate ---------------- */
 
-export function GalleryGate({ studioName, accent, logoUrl, token, maskedEmail, turnstileSiteKey }: Brand & {
+export function GalleryGate({ studioName, accent, logoUrl, whiteLabel, token, maskedEmail, turnstileSiteKey }: Brand & {
   token: string;
   maskedEmail: string;
   turnstileSiteKey: string;
 }) {
-  const whiteLabel = false; // gate footer stays Snap-branded until verified
+  // WEB-238: effective flag arrives from the server (entitlement AND toggle).
   const [step, setStep] = useState<"email" | "code">("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");

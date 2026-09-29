@@ -4,9 +4,14 @@
  * OTP-verified snap-g cookie (WEB-132) or, under the email-shock contingency
  * (GALLERY_OTP_MODE=off), link possession alone. */
 import { headers } from "next/headers";
+import type { Metadata } from "next";
+import { eq } from "drizzle-orm";
 import { env } from "cloudflare:workers";
 
 import { GalleryDenied, GalleryGate, GalleryView } from "@/components/gallery-view";
+import { isWhiteLabeled } from "@/lib/branding";
+import { getDb } from "@/lib/db";
+import * as schema from "@/lib/db-schema";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { getPlanEntitlements } from "@/lib/plans";
 import { logShareAccess, resolveGalleryAccess } from "@/lib/shares/gallery-auth";
@@ -17,6 +22,29 @@ import { countGalleryOpen } from "@/lib/limits";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Your gallery", robots: { index: false } };
+
+/** WEB-238: white-labeled galleries title the tab `{project} · {studio}`
+ * (absolute — skips the root layout's `· Snap` template suffix). */
+export async function generateMetadata({ params }: { params: Promise<{ token: string }> }): Promise<Metadata> {
+  const { token } = await params;
+  if (!TOKEN_RE.test(token)) return {};
+  const grant = await resolveGrantByToken(token);
+  if (!grant) return {};
+  const profile = await getStudioProfile(grant.organizationId);
+  if (!profile) return {};
+  if (!isWhiteLabeled(await getPlanEntitlements(grant.organizationId), profile.brand)) return {};
+  const projectTitle = (
+    await getDb()
+      .select({ title: schema.projects.title })
+      .from(schema.projects)
+      .where(eq(schema.projects.id, grant.projectId))
+      .limit(1)
+  )[0]?.title;
+  return {
+    title: { absolute: `${projectTitle ?? "Your gallery"} · ${profile.studioName}` },
+    robots: { index: false },
+  };
+}
 
 const TOKEN_RE = /^[A-Za-z0-9_-]{20,64}$/;
 
@@ -40,6 +68,7 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
           reason="dead"
           studioName={profile?.studioName}
           contactEmail={profile?.contactEmail ?? null}
+          whiteLabel={isWhiteLabeled(await getPlanEntitlements(dead.organizationId), profile?.brand)}
         />
       );
     }
@@ -59,7 +88,7 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
     accent: safeHexColor(brand.accent) ?? "#5e6ad2",
     logoUrl: profile?.logoKey && profile?.embedKey ? `/api/embed/logo?key=${profile.embedKey}` : null,
     contactEmail: profile?.contactEmail ?? null,
-    whiteLabel: ent?.whiteLabel ?? false,
+    whiteLabel: isWhiteLabeled(ent, profile?.brand),
   };
 
   // Email-shock contingency: OTPs off, the link itself is the gate.

@@ -8,8 +8,10 @@ import { z } from "zod";
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { getAuth } from "@/lib/auth.server";
+import { isWhiteLabeled } from "@/lib/branding";
 import { inquiryAckEmail, inquiryReceivedEmail, sendEmail } from "@/lib/email";
 import { originAllowed, resolveStudioByEmbedKey, safeHexColor } from "@/lib/embed";
+import { getPlanEntitlements } from "@/lib/plans";
 import { verifyTurnstile } from "@/lib/turnstile";
 
 export const dynamic = "force-dynamic";
@@ -142,12 +144,14 @@ export async function POST(req: Request) {
       refId: leadId,
     });
   }
-  const ack = inquiryAckEmail(studio.studioName, input.name.split(" ")[0] || "there", accent);
+  const wl = isWhiteLabeled(await getPlanEntitlements(studio.organizationId), studio.brand);
+  const ack = inquiryAckEmail(studio.studioName, input.name.split(" ")[0] || "there", accent, wl);
   await sendEmail({
     to: email,
     subject: ack.subject,
     html: ack.html,
     text: ack.text,
+    ...(wl ? { fromName: studio.studioName } : {}),
     organizationId: studio.organizationId,
     template: "lead.ack",
     refId: leadId,

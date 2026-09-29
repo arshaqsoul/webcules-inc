@@ -201,16 +201,21 @@ export async function transitionProject(params: {
       const profile = await getStudioProfile(params.organizationId);
       if (client && profile && (await clientWantsEmail(params.organizationId, client.email))) {
         const brand = JSON.parse(profile.brand || "{}") as { accent?: string };
+        const { isWhiteLabeled } = await import("@/lib/branding");
+        const { getPlanEntitlements } = await import("@/lib/plans");
+        const wl = isWhiteLabeled(await getPlanEntitlements(params.organizationId), profile.brand);
         const tmpl = projectCompleteClientEmail(profile.studioName, {
           accent: safeHexColor(brand.accent) ?? "#5e6ad2",
           projectTitle: project.title,
           portalUrl: await clientUrl(params.organizationId, "/portal/login"),
+          whiteLabel: wl,
         });
         await sendEmail({
           to: client.email,
           subject: tmpl.subject,
           html: tmpl.html,
           text: tmpl.text,
+          ...(wl ? { fromName: profile.studioName } : {}),
           organizationId: params.organizationId,
           template: "client.project_complete",
           refId: params.projectId,

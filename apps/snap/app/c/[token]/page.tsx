@@ -1,15 +1,32 @@
 /* Public contract view + signing at /c/{token} (WEB-158). Token possession
  * is the gate; signing is Turnstile-protected; voided/draft tokens vanish. */
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { env } from "cloudflare:workers";
 
 import { resolveContractByToken } from "@/lib/contracts";
+import { isWhiteLabeled } from "@/lib/branding";
+import { getPlanEntitlements } from "@/lib/plans";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { safeHexColor } from "@/lib/embed";
 import { ContractSignForm } from "@/components/contract-sign";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Contract", robots: { index: false } };
+
+/** WEB-238: white-labeled — absolute title skips the `· Snap` template suffix. */
+export async function generateMetadata({ params }: { params: Promise<{ token: string }> }): Promise<Metadata> {
+  const { token } = await params;
+  const contract = await resolveContractByToken(token);
+  if (!contract) return {};
+  const profile = await getStudioProfile(contract.organizationId);
+  if (!profile) return {};
+  if (!isWhiteLabeled(await getPlanEntitlements(contract.organizationId), profile.brand)) return {};
+  return {
+    title: { absolute: `${contract.title} · ${profile.studioName}` },
+    robots: { index: false },
+  };
+}
 
 export default async function ContractPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;

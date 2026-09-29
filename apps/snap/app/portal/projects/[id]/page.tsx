@@ -4,12 +4,15 @@
  * is a 404 — existence itself is not revealed. Fields are a shared-safe
  * allowlist: internal notes, finances, and other clients never leave the
  * repository. Gallery entries reuse the secure /g/{token} experience. */
+import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { and, asc, eq } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
+import { isWhiteLabeled } from "@/lib/branding";
+import { getPlanEntitlements } from "@/lib/plans";
 import { getClientRow } from "@/lib/portal";
 import { resolvePortalSession } from "@/lib/portal-auth";
 import { getGrantToken, grantIsEffectivelyActive } from "@/lib/shares/grants";
@@ -19,6 +22,31 @@ import { PortalSignOut } from "@/components/portal-dashboard";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Project — Snap", robots: { index: false } };
+
+/** WEB-238: white-labeled studio → `{project} · {studio}` absolute title
+ * (skips the `· Snap` template suffix); otherwise today's static title. */
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const email = await resolvePortalSession(await headers());
+  if (!email) return {};
+  const project = (
+    await getDb()
+      .select({ organizationId: schema.projects.organizationId, clientId: schema.projects.clientId, title: schema.projects.title })
+      .from(schema.projects)
+      .where(eq(schema.projects.id, id))
+      .limit(1)
+  )[0];
+  if (!project) return {};
+  const client = await getClientRow(email, project.organizationId);
+  if (!client || client.id !== project.clientId) return {}; // same 404 rule as the page
+  const profile = await getStudioProfile(project.organizationId);
+  if (!profile) return {};
+  if (!isWhiteLabeled(await getPlanEntitlements(project.organizationId), profile.brand)) return {};
+  return {
+    title: { absolute: `${project.title} · ${profile.studioName}` },
+    robots: { index: false },
+  };
+}
 
 const STATUS_COPY: Record<string, string> = {
   booked: "Booked",

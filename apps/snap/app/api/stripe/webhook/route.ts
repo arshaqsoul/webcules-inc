@@ -16,7 +16,9 @@ import { env } from "cloudflare:workers";
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { refundClientEmail, sendEmail } from "@/lib/email";
+import { isWhiteLabeled } from "@/lib/branding";
 import { safeHexColor } from "@/lib/embed";
+import { getPlanEntitlements } from "@/lib/plans";
 import { applySubscriptionState } from "@/lib/billing";
 import { cancelBooking, confirmBookingPaid } from "@/lib/repos/bookings";
 import { getStudioProfile } from "@/lib/repos/studios";
@@ -204,6 +206,7 @@ export async function POST(req: Request) {
         const profile = await getStudioProfile(payment.organizationId);
         if (profile && booking) {
           const accent = safeHexColor(JSON.parse(profile.brand || "{}").accent) ?? "#5e6ad2";
+          const wl = isWhiteLabeled(await getPlanEntitlements(payment.organizationId), profile.brand);
           const contentDeleted =
             (
               await db
@@ -231,12 +234,14 @@ export async function POST(req: Request) {
             amountLabel,
             projectTitle: project?.title ?? null,
             contentDeleted,
+            whiteLabel: wl,
           });
           await sendEmail({
             to: booking.clientEmail,
             subject: template.subject,
             html: template.html,
             text: template.text,
+            ...(wl ? { fromName: profile.studioName } : {}),
             organizationId: payment.organizationId,
             template: "booking.refund_client",
             refId: booking.id,

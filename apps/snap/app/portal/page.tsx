@@ -1,12 +1,17 @@
 /* /portal (WEB-130) — the client dashboard: every studio the session email
  * has a client record with, and nothing else. Cross-studio isolation comes
- * from the resolver: queries start from client rows for THIS email. */
+ * from the resolver: queries start from client rows for THIS email.
+ * WEB-238: the portal is cross-studio, so the platform wordmark drops only
+ * when EVERY studio in this client's portal is white-labeled. */
+import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { and, desc, eq, inArray } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
+import { isWhiteLabeled } from "@/lib/branding";
+import { getPlanEntitlements } from "@/lib/plans";
 import { getClientRows } from "@/lib/portal";
 import { resolvePortalSession } from "@/lib/portal-auth";
 import { getStudioProfile } from "@/lib/repos/studios";
@@ -14,7 +19,28 @@ import { safeHexColor } from "@/lib/embed";
 import { NotifyToggle, PortalSignOut } from "@/components/portal-dashboard";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Your studios — Snap", robots: { index: false } };
+
+export async function generateMetadata(): Promise<Metadata> {
+  // WEB-238: all studios white-labeled → absolute title skips the template.
+  const email = await resolvePortalSession(await headers());
+  if (!email) return { title: "Your studios — Snap", robots: { index: false } };
+  const rows = await getClientRows(email);
+  const profiles = await getDb()
+    .select({ organizationId: schema.studioProfiles.organizationId, brand: schema.studioProfiles.brand })
+    .from(schema.studioProfiles)
+    .where(inArray(schema.studioProfiles.organizationId, rows.map((c) => c.organizationId)));
+  const allWl =
+    profiles.length > 0 &&
+    (
+      await Promise.all(
+        profiles.map(async (p) => isWhiteLabeled(await getPlanEntitlements(p.organizationId), p.brand)),
+      )
+    ).every(Boolean);
+  return {
+    title: allWl ? { absolute: "Your studios" } : "Your studios — Snap",
+    robots: { index: false },
+  };
+}
 
 export default async function PortalPage() {
   const email = await resolvePortalSession(await headers());
@@ -53,6 +79,15 @@ export default async function PortalPage() {
   ]);
 
   const now = Date.now();
+  // WEB-238: cross-studio wordmark rule — Snap drops only when every studio
+  // in this portal is white-labeled.
+  const allWhiteLabeled =
+    profiles.length > 0 &&
+    (
+      await Promise.all(
+        profiles.map(async (p) => isWhiteLabeled(await getPlanEntitlements(p.organizationId), p.brand)),
+      )
+    ).every(Boolean);
   const sections = clientRows.map((client) => {
     const profile = profiles.find((p) => p.organizationId === client.organizationId);
     if (!profile) return null;
@@ -90,8 +125,10 @@ export default async function PortalPage() {
     <main className="mx-auto max-w-3xl px-5 py-10">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[#5e6ad2]">Snap</span>
-          <h1 className="mt-1 text-2xl font-semibold tracking-[-0.6px] text-ink">Your studios</h1>
+          {!allWhiteLabeled && (
+            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[#5e6ad2]">Snap</span>
+          )}
+          <h1 className={`text-2xl font-semibold tracking-[-0.6px] text-ink${allWhiteLabeled ? "" : " mt-1"}`}>Your studios</h1>
           <p className="mt-1 text-sm text-ink-subtle">Signed in as {email}</p>
         </div>
         <PortalSignOut />

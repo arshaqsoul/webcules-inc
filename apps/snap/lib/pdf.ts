@@ -24,6 +24,12 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
   return { r: ((n >> 16) & 255) / 255, g: ((n >> 8) & 255) / 255, b: (n & 255) / 255 };
 }
 
+/** WEB-238: PDF footer line — white-labeled studios get `© {studio}`
+ * instead of the platform mention. Exported for the zero-Snap audit test. */
+export function pdfFooterLine(studioName: string, whiteLabel: boolean): string {
+  return whiteLabel ? `© ${studioName}` : "Powered by Snap - snap.webcules.com";
+}
+
 function money(amountMinor: number, currency: string): string {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: currency.toUpperCase() }).format(amountMinor / 100);
 }
@@ -57,6 +63,8 @@ export async function renderInvoicePdf(params: {
   totalMinor: number;
   currency: string;
   status: string;
+  /** WEB-238: white-labeled studios get `© {studio}` instead of the platform footer. */
+  whiteLabel?: boolean;
 }): Promise<Uint8Array> {
   // Sanitize at the boundary — wrap()/widthOfTextAtSize also encode.
   params = {
@@ -130,10 +138,10 @@ export async function renderInvoicePdf(params: {
   page.drawText(total, { x: 547.28 - bold.widthOfTextAtSize(total, 14), y, size: 14, font: bold, color: rgb(accent.r, accent.g, accent.b) });
 
   // Footer
-  page.drawText("Powered by Snap - snap.webcules.com", { x: 48, y: 56, size: 8, font: regular, color: subtle });
+  page.drawText(pdfFooterLine(params.studioName, params.whiteLabel === true), { x: 48, y: 56, size: 8, font: regular, color: subtle });
   page.drawText("Thank you for your business.", { x: 48, y: 68, size: 9, font: regular, color: subtle });
 
-  return doc.save();
+  return doc.save({ useObjectStreams: false });
 }
 
 /* ---------------- Contract PDF (WEB-158) ---------------- */
@@ -149,6 +157,8 @@ export async function renderContractPdf(params: {
   signedAt: Date | null;
   signerIp: string | null;
   clientEmail: string | null;
+  /** WEB-238: white-labeled studios get `© {studio}` instead of the platform footer. */
+  whiteLabel?: boolean;
 }): Promise<Uint8Array> {
   const sanitize = (v: string) => winAnsiSafe(v);
   const doc = await PDFDocument.create();
@@ -206,7 +216,7 @@ export async function renderContractPdf(params: {
     : "Awaiting signature";
   page.drawText(signed, { x: MARGIN, y, size: 9, font: regular, color: rgb(0.54, 0.56, 0.6) });
   y -= 14;
-  page.drawText("Powered by Snap - snap.webcules.com", { x: MARGIN, y, size: 8, font: regular, color: rgb(0.54, 0.56, 0.6) });
+  page.drawText(pdfFooterLine(sanitize(params.studioName), params.whiteLabel === true), { x: MARGIN, y, size: 8, font: regular, color: rgb(0.54, 0.56, 0.6) });
 
-  return doc.save();
+  return doc.save({ useObjectStreams: false });
 }

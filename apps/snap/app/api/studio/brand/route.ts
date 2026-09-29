@@ -6,6 +6,7 @@ import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { safeHexColor } from "@/lib/embed";
 import { safeFontStack, safeTheme, sanitizeTokenBag } from "@/lib/embed-tokens";
+import { getPlanEntitlements } from "@/lib/plans";
 import { updateStudioSlug } from "@/lib/repos/studios";
 import { getOrgContext } from "@/lib/session";
 
@@ -23,6 +24,9 @@ const bodySchema = z.object({
   accentColor: z.string().trim().regex(/^#[0-9a-fA-F]{6}$/).optional(),
   fontFamily: z.string().trim().max(160).optional(),
   theme: z.enum(["light", "dark", "auto"]).optional(),
+  /** WEB-238: remove Snap branding from client surfaces (Studio/Pro only —
+   * enforced server-side against the entitlement, not just the UI lock). */
+  removeBranding: z.boolean().optional(),
   /** Advanced token presets (WEB-163) — sanitized per-kind, invalid dropped. */
   tokens: z.record(z.string(), z.unknown()).optional(),
   /** WEB-118: rejected auto-delete policy — { enabled, retainDays }. */
@@ -71,11 +75,21 @@ export async function PATCH(req: Request) {
   )[0];
   if (!existing) return Response.json({ error: "no_studio" }, { status: 404 });
 
+  // WEB-238: turning the toggle ON requires the whiteLabel entitlement
+  // (Studio/Pro); turning it OFF is always allowed (downgrade-safe).
+  if (parsed.data.removeBranding === true) {
+    const ent = await getPlanEntitlements(ctx.organizationId);
+    if (!ent?.whiteLabel) {
+      return Response.json({ error: "plan_required" }, { status: 403 });
+    }
+  }
+
   const brand = JSON.parse(existing.brand || "{}") as {
     accent?: string;
     fontFamily?: string;
     theme?: string;
     tokens?: Record<string, unknown>;
+    removeBranding?: boolean;
   };
   if (parsed.data.accentColor) brand.accent = safeHexColor(parsed.data.accentColor) ?? brand.accent;
   if (parsed.data.fontFamily !== undefined) {
@@ -85,6 +99,7 @@ export async function PATCH(req: Request) {
   }
   if (parsed.data.theme) brand.theme = safeTheme(parsed.data.theme) ?? undefined;
   if (parsed.data.tokens) brand.tokens = sanitizeTokenBag(parsed.data.tokens) as Record<string, unknown>;
+  if (parsed.data.removeBranding !== undefined) brand.removeBranding = parsed.data.removeBranding;
 
   await db
     .update(schema.studioProfiles)

@@ -281,20 +281,25 @@ export async function confirmBookingPaid(params: {
     const { sendEmail, bookingConfirmedClientEmail } = await import("@/lib/email");
     const { getStudioProfile } = await import("@/lib/repos/studios");
     const { clientWantsEmail } = await import("@/lib/notify-client");
+    const { isWhiteLabeled } = await import("@/lib/branding");
+    const { getPlanEntitlements } = await import("@/lib/plans");
     const profile = await getStudioProfile(params.organizationId);
     if (profile && (await clientWantsEmail(params.organizationId, booking.clientEmail))) {
       const brand = JSON.parse(profile.brand || "{}") as { accent?: string };
       const { safeHexColor } = await import("@/lib/embed");
+      const wl = isWhiteLabeled(await getPlanEntitlements(params.organizationId), profile.brand);
       const tmpl = bookingConfirmedClientEmail(profile.studioName, {
         accent: safeHexColor(brand.accent) ?? "#5e6ad2",
         when: booking.startAt,
         portalUrl: await clientUrl(params.organizationId, "/portal/login"),
+        whiteLabel: wl,
       });
       await sendEmail({
         to: booking.clientEmail,
         subject: tmpl.subject,
         html: tmpl.html,
         text: tmpl.text,
+        ...(wl ? { fromName: profile.studioName } : {}),
         organizationId: params.organizationId,
         template: "client.booking_confirmed",
         refId: booking.id,

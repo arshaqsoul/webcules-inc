@@ -21,6 +21,8 @@ export function SettingsBrand({
   theme: initialTheme,
   tokens: initialTokens,
   brandRevision,
+  whiteLabelEntitled,
+  removeBranding: initialRemoveBranding,
 }: {
   embedKey: string;
   hasLogo: boolean;
@@ -30,6 +32,9 @@ export function SettingsBrand({
   theme: string;
   tokens: string;
   brandRevision: string;
+  /** WEB-238: plan grants white-label (Studio/Pro); false renders the upsell. */
+  whiteLabelEntitled: boolean;
+  removeBranding: boolean;
 }) {
   const router = useRouter();
   const [accentColor, setAccentColor] = useState(initialAccent);
@@ -40,6 +45,7 @@ export function SettingsBrand({
   const [logoUrl, setLogoUrl] = useState(initialLogoUrl);
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [removeBranding, setRemoveBranding] = useState(initialRemoveBranding);
 
   async function save() {
     setBusy(true);
@@ -54,6 +60,7 @@ export function SettingsBrand({
         // what made a saved font impossible to remove.
         fontFamily,
         theme: theme === "light" || theme === "dark" || theme === "auto" ? theme : undefined,
+        ...(whiteLabelEntitled ? { removeBranding } : {}),
         tokens: (() => {
           try {
             return tokensJson.trim() ? JSON.parse(tokensJson) : undefined;
@@ -155,6 +162,43 @@ export function SettingsBrand({
         <Button onClick={save} disabled={busy} size="sm">Save brand</Button>
       </div>
       {status && <p className="mt-2 text-sm text-ink-subtle">{status}</p>}
+
+      {/* WEB-238: white-label toggle (Studio/Pro) — effective only when both
+       * the plan grants it and the studio turns it on. Upsell for Free/Lite. */}
+      <div className="mt-5 rounded-[12px] border border-hairline bg-surface-1 p-4">
+        {whiteLabelEntitled ? (
+          <>
+            <label htmlFor="removeBranding" className="flex cursor-pointer items-start gap-3">
+              <input
+                id="removeBranding"
+                type="checkbox"
+                checked={removeBranding}
+                onChange={(e) => setRemoveBranding(e.target.checked)}
+                className="mt-0.5 h-4 w-4"
+              />
+              <span>
+                <span className="block text-sm font-medium text-ink">Remove Snap branding</span>
+                <span className="mt-1 block text-xs leading-relaxed text-ink-subtle">
+                  Your clients stop seeing Snap everywhere: gallery and booking footers, email headers and footers,
+                  browser tab titles, invoice and contract PDFs. Emails still arrive from a snap.webcules.com address
+                  (signed domain) but show your studio name. Save to apply.
+                </span>
+              </span>
+            </label>
+          </>
+        ) : (
+          <>
+            <p className="text-sm font-medium text-ink">Remove Snap branding</p>
+            <p className="mt-1 text-xs leading-relaxed text-ink-subtle">
+              Make the platform invisible to your clients — galleries, emails, invoices and tab titles carry only your
+              studio. Included on the Studio and Pro plans.
+            </p>
+            <a href="/dashboard/settings/billing" className="mt-3 inline-block text-xs font-medium text-primary hover:underline">
+              Upgrade to Studio →
+            </a>
+          </>
+        )}
+      </div>
     </section>
   );
 }

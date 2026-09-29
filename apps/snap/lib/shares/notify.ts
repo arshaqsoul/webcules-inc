@@ -2,6 +2,8 @@
  * Same From pattern as lead replies (hello+{slug}@) so client replies thread
  * back into the studio's inbox via the sender trail. */
 import { galleryLinkEmail, galleryOtpEmail, sendEmail } from "@/lib/email";
+import { isWhiteLabeled } from "@/lib/branding";
+import { getPlanEntitlements } from "@/lib/plans";
 import { getStudioProfile, getStudioSlug } from "@/lib/repos/studios";
 import { safeHexColor } from "@/lib/embed";
 import { clientWantsEmail } from "@/lib/notify-client";
@@ -23,6 +25,7 @@ export async function sendGrantEmail(params: {
   if (!(await clientWantsEmail(params.organizationId, params.clientEmail))) return false;
   const brand = JSON.parse(profile.brand || "{}") as { accent?: string };
   const accent = safeHexColor(brand.accent) ?? "#5e6ad2";
+  const wl = isWhiteLabeled(await getPlanEntitlements(params.organizationId), profile.brand);
   const tmpl = galleryLinkEmail(profile.studioName, {
     clientName: params.clientName,
     galleryUrl: params.galleryUrl,
@@ -30,6 +33,7 @@ export async function sendGrantEmail(params: {
     expiresAt: params.expiresAt,
     accent,
     fresh: params.fresh,
+    whiteLabel: wl,
   });
   const slug = await getStudioSlug(params.organizationId);
   return sendEmail({
@@ -37,7 +41,10 @@ export async function sendGrantEmail(params: {
     subject: tmpl.subject,
     html: tmpl.html,
     text: tmpl.text,
-    fromOverride: `${profile.studioName} via Snap <hello+${slug}@snap.webcules.com>`,
+    fromOverride: wl
+      ? `hello+${slug}@snap.webcules.com`
+      : `${profile.studioName} via Snap <hello+${slug}@snap.webcules.com>`,
+    ...(wl ? { fromName: profile.studioName } : {}),
     replyTo: profile.contactEmail ?? undefined,
     organizationId: params.organizationId,
     template: "gallery_link",
@@ -56,12 +63,14 @@ export async function sendGalleryOtpEmail(params: {
   if (!profile) return false;
   const brand = JSON.parse(profile.brand || "{}") as { accent?: string };
   const accent = safeHexColor(brand.accent) ?? "#5e6ad2";
-  const tmpl = galleryOtpEmail(profile.studioName, { code: params.code, galleryUrl: "", accent });
+  const wl = isWhiteLabeled(await getPlanEntitlements(params.organizationId), profile.brand);
+  const tmpl = galleryOtpEmail(profile.studioName, { code: params.code, galleryUrl: "", accent, whiteLabel: wl });
   return sendEmail({
     to: params.to,
     subject: tmpl.subject,
     html: tmpl.html,
     text: tmpl.text,
+    ...(wl ? { fromName: profile.studioName } : {}),
     organizationId: params.organizationId,
     template: "gallery_otp",
     refId: params.grantId,
