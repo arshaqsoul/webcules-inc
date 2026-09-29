@@ -168,7 +168,7 @@ export function SessionTypesManager({
         <aside
           role="dialog"
           aria-label="Session type"
-          className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col overflow-y-auto border-l border-hairline bg-surface p-5 shadow-2xl"
+          className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col overflow-y-auto border-l border-hairline bg-canvas p-5 shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
           <h3 className="text-sm font-semibold text-ink">{editing === "new" ? "New session type" : "Edit session type"}</h3>

@@ -115,6 +115,7 @@
   /* Snap-native tokens → utilities (bg-surface-1, text-ink-subtle, …) that
    * resolve per theme via the semantic vars above. */
   --color-canvas: var(--canvas);
+  --color-surface: var(--surface-1); /* alias — several card surfaces use bg-surface */
   --color-surface-1: var(--surface-1);
   --color-surface-2: var(--surface-2);
   --color-surface-3: var(--surface-3);
