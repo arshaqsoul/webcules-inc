@@ -1,0 +1,357 @@
+/* Template repository (WEB-247) — the store behind every designer in the
+ * Brand & Templates epic. Bodies are validated + capped per kind at write
+ * time (JSON kinds must parse; email_snippet HTML is sanitized on write),
+ * set-default is transactional (one default per org+kind), and counts feed
+ * the tier gates. Starter library rows double as the onboarding seed —
+ * createStudioForUser spreads starterTemplateRows() into its single batch. */
+import { and, eq, isNull, sql } from "drizzle-orm";
+
+import { getDb } from "../db";
+import * as schema from "../db-schema";
+import { sanitizeRichText } from "../sanitize";
+
+export type TemplateRow = typeof schema.templates.$inferSelect;
+export type TemplateInsert = typeof schema.templates.$inferInsert;
+
+export const TEMPLATE_KINDS = ["contract", "form", "email_snippet", "invoice_preset", "questionnaire"] as const;
+export type TemplateKind = (typeof TEMPLATE_KINDS)[number];
+
+/** Body byte caps — D1-row friendly (epic contract: ≤256 KB documents,
+ * ≤64 KB schemas). */
+const BODY_CAPS: Record<TemplateKind, number> = {
+  contract: 256 * 1024,
+  form: 64 * 1024,
+  email_snippet: 256 * 1024,
+  invoice_preset: 64 * 1024,
+  questionnaire: 64 * 1024,
+};
+
+const NAME_CAP = 120;
+const META_CAP = 16 * 1024;
+
+export function isTemplateKind(kind: string): kind is TemplateKind {
+  return (TEMPLATE_KINDS as readonly string[]).includes(kind);
+}
+
+/** Validate + normalize a body for its kind. Returns null when invalid. */
+export function normalizeTemplateBody(kind: TemplateKind, body: string): string | null {
+  const trimmed = body.slice(0, BODY_CAPS[kind] + 1);
+  if (trimmed.length > BODY_CAPS[kind]) return null;
+  if (kind === "form" || kind === "invoice_preset" || kind === "questionnaire") {
+    try {
+      JSON.parse(trimmed);
+    } catch {
+      return null;
+    }
+    return trimmed;
+  }
+  if (kind === "email_snippet") return sanitizeRichText(trimmed);
+  // Contracts stay plain text (rendered with whitespace-pre-wrap / PDF text):
+  // strip control characters except newlines/tabs.
+  return trimmed.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
+}
+
+export async function listTemplates(organizationId: string, kind?: TemplateKind, opts: { includeArchived?: boolean } = {}): Promise<TemplateRow[]> {
+  const conds = [eq(schema.templates.organizationId, organizationId)];
+  if (kind) conds.push(eq(schema.templates.kind, kind));
+  if (!opts.includeArchived) conds.push(isNull(schema.templates.archivedAt));
+  return getDb()
+    .select()
+    .from(schema.templates)
+    .where(and(...conds))
+    .orderBy(sql`${schema.templates.archivedAt} IS NOT NULL`, sql`${schema.templates.isDefault} DESC`, sql`${schema.templates.createdAt} DESC`);
+}
+
+export async function getTemplate(organizationId: string, id: string): Promise<TemplateRow | null> {
+  const rows = await getDb()
+    .select()
+    .from(schema.templates)
+    .where(and(eq(schema.templates.organizationId, organizationId), eq(schema.templates.id, id)))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+/** Active (non-archived) count for one kind — the entitlement-gate number. */
+export async function countTemplates(organizationId: string, kind: TemplateKind): Promise<number> {
+  const rows = await getDb()
+    .select({ n: sql<number>`count(*)` })
+    .from(schema.templates)
+    .where(and(eq(schema.templates.organizationId, organizationId), eq(schema.templates.kind, kind), isNull(schema.templates.archivedAt)));
+  return rows[0]?.n ?? 0;
+}
+
+/** The org's default template for a kind (null when none is pinned). */
+export async function getDefaultTemplate(organizationId: string, kind: TemplateKind): Promise<TemplateRow | null> {
+  const rows = await getDb()
+    .select()
+    .from(schema.templates)
+    .where(and(eq(schema.templates.organizationId, organizationId), eq(schema.templates.kind, kind), eq(schema.templates.isDefault, 1), isNull(schema.templates.archivedAt)))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+export type CreateTemplateParams = {
+  organizationId: string;
+  kind: TemplateKind;
+  name: string;
+  body: string;
+  meta?: Record<string, unknown>;
+  isDefault?: boolean;
+};
+
+export type TemplateWriteError = "invalid_kind" | "invalid_name" | "invalid_body" | "invalid_json" | "too_large";
+
+export async function createTemplate(params: CreateTemplateParams): Promise<{ ok: true; template: TemplateRow } | { ok: false; error: TemplateWriteError }> {
+  if (!isTemplateKind(params.kind)) return { ok: false, error: "invalid_kind" };
+  const name = params.name.trim().slice(0, NAME_CAP);
+  if (!name) return { ok: false, error: "invalid_name" };
+  const metaJson = JSON.stringify(params.meta ?? {});
+  if (metaJson.length > META_CAP) return { ok: false, error: "too_large" };
+  const body = normalizeTemplateBody(params.kind, params.body);
+  if (body === null) {
+    return { ok: false, error: params.body.length > BODY_CAPS[params.kind] ? "too_large" : params.kind === "email_snippet" ? "invalid_body" : "invalid_json" };
+  }
+  const db = getDb();
+  const id = crypto.randomUUID();
+  const others = and(
+    eq(schema.templates.organizationId, params.organizationId),
+    eq(schema.templates.kind, params.kind),
+    sql`${schema.templates.id} <> ${id}`,
+  );
+  await db.batch(
+    params.isDefault
+      ? [
+          db.insert(schema.templates).values({
+            id,
+            organizationId: params.organizationId,
+            kind: params.kind,
+            name,
+            body,
+            meta: metaJson,
+            isDefault: 1,
+          }),
+          db.update(schema.templates).set({ isDefault: 0 }).where(others),
+        ]
+      : [
+          db.insert(schema.templates).values({
+            id,
+            organizationId: params.organizationId,
+            kind: params.kind,
+            name,
+            body,
+            meta: metaJson,
+          }),
+        ],
+  );
+  return { ok: true, template: (await getTemplate(params.organizationId, id))! };
+}
+
+export async function updateTemplate(
+  organizationId: string,
+  id: string,
+  patch: { name?: string; body?: string; meta?: Record<string, unknown> },
+): Promise<{ ok: true; template: TemplateRow } | { ok: false; error: TemplateWriteError | "not_found" }> {
+  const existing = await getTemplate(organizationId, id);
+  if (!existing) return { ok: false, error: "not_found" };
+  const kind = existing.kind as TemplateKind;
+  const set: Partial<TemplateInsert> = { updatedAt: new Date() };
+  if (patch.name !== undefined) {
+    const name = patch.name.trim().slice(0, NAME_CAP);
+    if (!name) return { ok: false, error: "invalid_name" };
+    set.name = name;
+  }
+  if (patch.body !== undefined) {
+    const body = normalizeTemplateBody(kind, patch.body);
+    if (body === null) {
+      return { ok: false, error: patch.body.length > BODY_CAPS[kind] ? "too_large" : kind === "email_snippet" ? "invalid_body" : "invalid_json" };
+    }
+    set.body = body;
+  }
+  if (patch.meta !== undefined) {
+    const metaJson = JSON.stringify(patch.meta);
+    if (metaJson.length > META_CAP) return { ok: false, error: "too_large" };
+    set.meta = metaJson;
+  }
+  await getDb()
+    .update(schema.templates)
+    .set(set)
+    .where(and(eq(schema.templates.organizationId, organizationId), eq(schema.templates.id, id)));
+  return { ok: true, template: (await getTemplate(organizationId, id))! };
+}
+
+/** One default per org+kind — both statements ride a single D1 batch
+ * (transactional). */
+export async function setDefaultTemplate(organizationId: string, id: string): Promise<{ ok: true } | { ok: false; error: "not_found" }> {
+  const existing = await getTemplate(organizationId, id);
+  if (!existing || existing.archivedAt) return { ok: false, error: "not_found" };
+  const db = getDb();
+  await db.batch([
+    db
+      .update(schema.templates)
+      .set({ isDefault: 0 })
+      .where(and(eq(schema.templates.organizationId, organizationId), eq(schema.templates.kind, existing.kind))),
+    db
+      .update(schema.templates)
+      .set({ isDefault: 1, archivedAt: null })
+      .where(and(eq(schema.templates.organizationId, organizationId), eq(schema.templates.id, id))),
+  ]);
+  return { ok: true };
+}
+
+export async function duplicateTemplate(organizationId: string, id: string): Promise<{ ok: true; template: TemplateRow } | { ok: false; error: "not_found" }> {
+  const existing = await getTemplate(organizationId, id);
+  if (!existing) return { ok: false, error: "not_found" };
+  const newId = crypto.randomUUID();
+  const name = `Copy of ${existing.name}`.slice(0, NAME_CAP);
+  await getDb().insert(schema.templates).values({
+    id: newId,
+    organizationId,
+    kind: existing.kind,
+    name,
+    body: existing.body,
+    meta: existing.meta,
+    isDefault: 0,
+  });
+  return { ok: true, template: (await getTemplate(organizationId, newId))! };
+}
+
+/** Soft delete — the hub can restore; archived defaults release the pin. */
+export async function archiveTemplate(organizationId: string, id: string): Promise<{ ok: true } | { ok: false; error: "not_found" }> {
+  const existing = await getTemplate(organizationId, id);
+  if (!existing) return { ok: false, error: "not_found" };
+  await getDb()
+    .update(schema.templates)
+    .set({ archivedAt: new Date(), isDefault: 0 })
+    .where(and(eq(schema.templates.organizationId, organizationId), eq(schema.templates.id, id)));
+  return { ok: true };
+}
+
+export async function restoreTemplate(organizationId: string, id: string): Promise<{ ok: true } | { ok: false; error: "not_found" }> {
+  const existing = await getTemplate(organizationId, id);
+  if (!existing) return { ok: false, error: "not_found" };
+  await getDb()
+    .update(schema.templates)
+    .set({ archivedAt: null })
+    .where(and(eq(schema.templates.organizationId, organizationId), eq(schema.templates.id, id)));
+  return { ok: true };
+}
+
+/* ---------------- Starter library ---------------- */
+
+/** The seed every new studio receives (kept in sync with the backfill in
+ * migrations/0033_templates.sql). Extras beyond a tier's gates stay dormant
+ * rows — visible on upgrade, never deleted. */
+export function starterTemplateRows(organizationId: string): TemplateInsert[] {
+  const now = new Date();
+  const row = (kind: TemplateKind, name: string, body: string, meta: Record<string, unknown> = {}, isDefault = 0): TemplateInsert => ({
+    id: crypto.randomUUID(),
+    organizationId,
+    kind,
+    name,
+    body,
+    meta: JSON.stringify(meta),
+    isDefault,
+    createdAt: now,
+    updatedAt: now,
+  });
+  return [
+    row(
+      "contract",
+      "Wedding photography agreement",
+      `This agreement is between {{studio_name}} ("the Studio") and {{client_name}} ("the Client") for the wedding photography collection described as {{project_title}}.
+
+Coverage. The Studio will photograph the wedding on {{event_date}} as outlined in the collection details shared with the Client.
+
+Delivery. Edited, gallery-ready images are delivered through a private online gallery within six weeks of the wedding date.
+
+Payment. The retainer reserves the date and is applied toward the total. The remaining balance is due one week before the wedding.
+
+Cancellation. If the Client cancels, the retainer is non-refundable. The Studio will make reasonable efforts to rebook the date.
+
+Creative license. The Studio retains the copyright in all images and may share selected images for portfolio use unless the Client requests otherwise in writing.
+
+By signing below, both parties agree to these terms.`,
+      {},
+      1,
+    ),
+    row(
+      "contract",
+      "Portrait session agreement",
+      `This portrait session agreement is between {{studio_name}} ("the Studio") and {{client_name}} ("the Client").
+
+Session. The portrait session takes place on {{event_date}} at the agreed location and time.
+
+Delivery. The Client receives a private online gallery of fully edited images within two weeks of the session.
+
+Usage. Personal printing and sharing are included. Commercial use of the images requires written permission from the Studio.
+
+Payment. The session fee is due at booking and reserves the date.
+
+By signing below, both parties agree to these terms.`,
+    ),
+    row(
+      "form",
+      "General intake",
+      JSON.stringify({
+        v: 1,
+        fields: [
+          { id: "f_name", kind: "text", label: "Your name", required: true },
+          { id: "f_email", kind: "email", label: "Email", required: true },
+          { id: "f_phone", kind: "tel", label: "Phone", required: false },
+          { id: "f_date", kind: "date", label: "Preferred date", required: false },
+          { id: "f_how", kind: "select", label: "How did you hear about us?", required: false, options: ["Instagram", "Google", "A friend", "Other"] },
+          { id: "f_notes", kind: "textarea", label: "Anything we should know?", required: false },
+        ],
+      }),
+      {},
+      1,
+    ),
+    row(
+      "email_snippet",
+      "Inquiry reply",
+      `<p>Hi {{client_name}},</p>
+<p>thank you for reaching out — it would be great to hear more about {{project_title}}. I will come back to you within one business day with availability and collections.</p>
+<p>Talk soon,<br>{{studio_name}}</p>`,
+      { subject: "Thank you for reaching out to {{studio_name}}" },
+      1,
+    ),
+    row(
+      "email_snippet",
+      "Booking — thank you",
+      `<p>Hi {{client_name}},</p>
+<p>your session on {{event_date}} is confirmed and I am so looking forward to it! If anything changes before then, just reply to this email.</p>
+<p>See you soon,<br>{{studio_name}}</p>`,
+      { subject: "Your booking is confirmed — {{event_date}}" },
+    ),
+    row(
+      "email_snippet",
+      "Gallery delivery note",
+      `<p>Hi {{client_name}},</p>
+<p>your gallery is ready! View and favorite your images here: {{gallery_link}}</p>
+<p>The gallery stays open for 90 days — download your favorites before then.</p>
+<p>Enjoy,<br>{{studio_name}}</p>`,
+      { subject: "Your photos are ready 🎉" },
+    ),
+    row("invoice_preset", "Standard terms", "[]", {
+      terms: "Payment due within 14 days of the invoice date.",
+      notes: "Thank you for your business!",
+    }, 1),
+  ];
+}
+
+/** Onboarding seed — skips orgs that already own any template. */
+export async function seedStarterTemplates(organizationId: string): Promise<number> {
+  const existing = await countAllTemplates(organizationId);
+  if (existing > 0) return 0;
+  const rows = starterTemplateRows(organizationId);
+  await getDb().insert(schema.templates).values(rows);
+  return rows.length;
+}
+
+async function countAllTemplates(organizationId: string): Promise<number> {
+  const rows = await getDb()
+    .select({ n: sql<number>`count(*)` })
+    .from(schema.templates)
+    .where(eq(schema.templates.organizationId, organizationId));
+  return rows[0]?.n ?? 0;
+}

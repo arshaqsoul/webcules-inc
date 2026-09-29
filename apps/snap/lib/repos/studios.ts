@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { PLANS, type PlanId } from "@/lib/plans";
+import { starterTemplateRows } from "./templates";
 
 export type StudioProfile = typeof schema.studioProfiles.$inferSelect;
 
@@ -93,6 +94,8 @@ export async function createStudioForUser(params: {
       targetType: "organization",
       targetId: organizationId,
     }),
+    // WEB-247: starter template library rides the same transaction.
+    ...starterTemplateRows(organizationId).map((row) => db.insert(schema.templates).values(row)),
   ]);
 
   return { organizationId, slug, embedKey, plan: planId };

@@ -14,10 +14,12 @@ import { clientUrl } from "./client-urls";
 import { getEmailBrand } from "./branding";
 import { getStudioProfile } from "./repos/studios";
 import { safeHexColor } from "./embed";
+import { CONTRACT_MERGE_FIELDS, renderMergeFrom } from "./merge";
 
 export type ContractRow = typeof schema.contracts.$inferSelect;
 
-export const MERGE_FIELDS = ["client_name", "studio_name", "date", "event_date", "package"] as const;
+/** WEB-158 field set (unchanged) — now backed by the shared registry. */
+export const MERGE_FIELDS = CONTRACT_MERGE_FIELDS.map((f) => f.id);
 
 type StudioBrand = {
   name: string;
@@ -43,35 +45,20 @@ async function studioAccent(organizationId: string): Promise<StudioBrand> {
   };
 }
 
-/** Fill {{merge_fields}} from the project + client. Unknown fields pass
- * through untouched so drafts stay editable. */
-export async function mergeContractBody(contract: ContractRow): Promise<string> {
-  const db = getDb();
-  const [project] = await db
-    .select({ title: schema.projects.title, eventDate: schema.projects.eventDate, clientId: schema.projects.clientId })
-    .from(schema.projects)
-    .where(eq(schema.projects.id, contract.projectId))
-    .limit(1);
-  let clientName = contract.clientEmail?.split("@")[0] ?? "the client";
-  if (project?.clientId) {
-    const [client] = await db
-      .select({ name: schema.clients.name })
-      .from(schema.clients)
-      .where(eq(schema.clients.id, project.clientId))
-      .limit(1);
-    if (client?.name) clientName = client.name;
-  }
-  const studio = await studioAccent(contract.organizationId);
-  const today = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
-  const event = project?.eventDate
-    ? project.eventDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
-    : "the scheduled date";
-  return contract.body
-    .replaceAll("{{client_name}}", clientName)
-    .replaceAll("{{studio_name}}", studio.name)
-    .replaceAll("{{date}}", today)
-    .replaceAll("{{event_date}}", event)
-    .replaceAll("{{package}}", project?.title ?? "the package");
+/** Fill {{merge_fields}} from the project + client (WEB-247: now the shared
+ * registry/renderer; behavior identical — plain-text surface, unknown fields
+ * pass through untouched so drafts stay editable). */
+export async function mergeContractBody(contract: ContractRow, overrides: Record<string, string> = {}): Promise<string> {
+  return renderMergeFrom(
+    {
+      organizationId: contract.organizationId,
+      projectId: contract.projectId,
+      clientEmail: contract.clientEmail,
+      overrides,
+    },
+    contract.body,
+    { surface: "plain" },
+  );
 }
 
 export async function createContract(params: {
@@ -124,8 +111,10 @@ export async function sendContract(organizationId: string, contractId: string): 
   if (contract.status === "sent") return { ok: false, error: "already_sent" };
   if (!contract.clientEmail) return { ok: false, error: "no_recipient" };
 
-  const merged = await mergeContractBody(contract);
+  // Token first so {{sign_url}} (WEB-251 designer) freezes into the body.
   const token = mintToken();
+  const url = await clientUrl(organizationId, `/c/${token}`);
+  const merged = await mergeContractBody(contract, { sign_url: url });
   await db
     .update(schema.contracts)
     .set({
@@ -138,7 +127,6 @@ export async function sendContract(organizationId: string, contractId: string): 
     .where(and(eq(schema.contracts.organizationId, organizationId), eq(schema.contracts.id, contractId)));
 
   const studio = await studioAccent(organizationId);
-  const url = await clientUrl(organizationId, `/c/${token}`);
   const tmpl = contractSignRequestEmail(studio.name, {
     accent: studio.accent,
     title: contract.title,

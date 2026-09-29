@@ -786,6 +786,31 @@ export const orgCounters = sqliteTable("org_counter", {
 });
 
 
+/* ---------------- Template store (WEB-247) ---------------- */
+
+export const templates = sqliteTable(
+  "template",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    /** contract | form | email_snippet | invoice_preset | questionnaire */
+    kind: text("kind").notNull(),
+    name: text("name").notNull(),
+    /** JSON (form-like kinds) or sanitized HTML / plain text (documents). */
+    body: text("body").notNull(),
+    /** Kind-specific config (email subject, invoice terms…). */
+    meta: text("meta").notNull().default("{}"),
+    isDefault: integer("is_default").notNull().default(0),
+    archivedAt: integer("archived_at", { mode: "timestamp" }),
+    createdAt: ts("created_at"),
+    updatedAt: ts("updated_at"),
+  },
+  (t) => [index("template_org_kind_idx").on(t.organizationId, t.kind, t.archivedAt)],
+);
+
+
 /* ---------------- Logs ---------------- */
 
 export const emailLog = sqliteTable(
