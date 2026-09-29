@@ -16,6 +16,7 @@ import {
 } from "@webcules/ui/components/dialog";
 import { useConfirm } from "@/components/confirm-provider";
 import { TIER_CARDS } from "@/components/pricing-tiers";
+import { planDef } from "@/lib/plans-data";
 
 type PlanStatus = {
   plan: "free" | "lite" | "studio" | "pro";
@@ -327,6 +328,14 @@ export function PlanPanel({ returnHint }: { returnHint?: string }) {
         <span className="rounded-full bg-surface-2 px-2.5 py-1 text-ink-muted">
           {st.maxLinkedStudios === null ? "Unlimited studios" : `${st.familyStudioCount}/${st.maxLinkedStudios} studios`}
         </span>
+        <a href="/dashboard/templates" className="rounded-full bg-surface-2 px-2.5 py-1 text-ink-muted hover:text-ink" title="Template library">
+          {planDef(st.plan).maxSessionTypes === null ? "Unlimited session types" : `Session types · up to ${planDef(st.plan).maxSessionTypes}`}
+        </a>
+        <a href="/dashboard/templates" className="rounded-full bg-surface-2 px-2.5 py-1 text-ink-muted hover:text-ink" title="Template library">
+          {planDef(st.plan).maxContractTemplates === null ? "Unlimited templates" : `Contract templates · up to ${planDef(st.plan).maxContractTemplates}`}
+        </a>
+        <span className={`rounded-full px-2.5 py-1 ${st.plan === "studio" || st.plan === "pro" ? "bg-surface-2 text-ink-muted" : "bg-surface-2 text-ink-tertiary line-through"}`}>Custom form fields</span>
+        <span className={`rounded-full px-2.5 py-1 ${st.plan !== "free" ? "bg-surface-2 text-ink-muted" : "bg-surface-2 text-ink-tertiary line-through"}`}>Booking page designer</span>
         {st.rawAllowed ? (
           <span className="rounded-full bg-surface-2 px-2.5 py-1 text-ink-muted">RAW uploads</span>
         ) : st.rawTrialBytes ? (

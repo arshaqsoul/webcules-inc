@@ -35,7 +35,7 @@ const usps = [
   },
   {
     title: "Branded widgets for YOUR website",
-    body: "Your logo, your colors, on your site. Embeddable contact form and booking calendar that match your brand — unlimited forms, no caps.",
+    body: "Your logo, your colors, on your site. Embeddable booking calendar plus a contact form you can design — your own questions and event types.",
   },
   {
     title: "Galleries built like vaults",

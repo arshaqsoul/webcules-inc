@@ -226,7 +226,9 @@ describe("hub (WEB-255)", () => {
       submittedAt: new Date(),
     });
     expect(await countTemplateUsage(studio.organizationId, q2.template.id, "questionnaire")).toBe(1);
-    expect((await hardDeleteTemplate(studio.organizationId, q2.template.id)).error).toBe("in_use");
+    const blocked = await hardDeleteTemplate(studio.organizationId, q2.template.id);
+    expect(blocked.ok).toBe(false);
+    if (!blocked.ok) expect(blocked.error).toBe("in_use");
     // Archive is always available and removes it from the active list.
     expect((await archiveTemplate(studio.organizationId, q2.template.id)).ok).toBe(true);
     expect(await countTemplates(studio.organizationId, "questionnaire")).toBe(0);

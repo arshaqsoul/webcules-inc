@@ -57,6 +57,14 @@ export async function POST(req: Request) {
     const capOk = ent?.id === "studio" || ent?.id === "pro" || countCustomFields(schema) <= FREE_CUSTOM_FIELD_CAP;
     if (!capOk) return Response.json({ error: "custom_fields_limit", limit: FREE_CUSTOM_FIELD_CAP }, { status: 403 });
   }
+  // WEB-256: contact forms (Free/Lite 1) + questionnaires (Free 1, Lite 3).
+  if (body.kind === "form" || body.kind === "questionnaire") {
+    const unlimited = ent?.id === "studio" || ent?.id === "pro";
+    const limit = unlimited ? null : body.kind === "form" ? (ent?.maxContactForms ?? 1) : (ent?.maxQuestionnaires ?? 1);
+    if (limit !== null && (await countTemplates(ctx.organizationId, body.kind)) >= limit) {
+      return Response.json({ error: "limit_reached", limit, kind: body.kind }, { status: 403 });
+    }
+  }
   // WEB-253: saved snippets — Free/Lite 5, Studio+ unlimited.
   if (body.kind === "email_snippet") {
     const limit = ent ? (ent.id === "studio" || ent.id === "pro" ? null : ent.maxEmailSnippets ?? 5) : 5;
