@@ -12,6 +12,10 @@ export const ASKINDS = ["image", "video", "raw", "other"] as const;
 const EXT_KIND: Record<string, (typeof ASKINDS)[number]> = {
   jpg: "image", jpeg: "image", png: "image", webp: "image", avif: "image", heic: "image", gif: "image",
   mp4: "video", mov: "video", webm: "video",
+  /* DJI Low Resolution File — a compressed MP4 proxy recorded alongside the
+   * footage on drones/Osmo/Pocket (it sniffs as ISO-BMFF video; DJI's own
+   * support page says rename to .mp4 to play it). */
+  lrf: "video",
   /* Camera RAW — the full brand set so every camera lands in the Vault.
    * All TIFF-container formats (II/MM byte-order headers) are caught by
    * sniffKind's TIFF branch; the non-TIFF exceptions (Sigma X3F) have their
@@ -19,11 +23,11 @@ const EXT_KIND: Record<string, (typeof ASKINDS)[number]> = {
   cr2: "raw", cr3: "raw", // Canon
   nef: "raw", nrw: "raw", // Nikon
   arw: "raw", srf: "raw", sr2: "raw", mrw: "raw", // Sony / Minolta
-  lrf: "raw", // Sony R1-era
   raf: "raw", // Fuji
   orf: "raw", // Olympus / OM System
   rw2: "raw", raw: "raw", // Panasonic (+ generic RAW containers)
-  rwl: "raw", lfr: "raw", // Leica
+  rwl: "raw", // Leica
+  lfr: "raw", // Lytro Light Field RAW (Illum) — PNG-chunk magic, sniffed separately
   pef: "raw", // Pentax
   x3f: "raw", // Sigma
   "3fr": "raw", fff: "raw", // Hasselblad

@@ -206,6 +206,8 @@ export function AssetManage({
   // auto-centering doesn't fight their finger.
   useEffect(() => {
     if (Date.now() < scrubUntil.current) return;
+    // Suppress the rails' scrub handlers for the scroll this triggers.
+    scrubUntil.current = Date.now() + 240;
     document.querySelector(`[data-thumb-idx="${index}"]`)?.scrollIntoView({ block: "nearest", inline: "nearest" });
   }, [index]);
 
@@ -226,6 +228,36 @@ export function AssetManage({
       for (let i = 0; i < el.children.length; i++) {
         const c = el.children[i] as HTMLElement;
         const d = Math.abs(c.offsetLeft + c.offsetWidth / 2 - center);
+        if (d < bestD) {
+          bestD = d;
+          best = i;
+        }
+      }
+      if (best !== index) onIndexChange(best);
+    });
+  };
+
+  // Desktop vertical rail scrubbing (WEB-223): scrolling the thumbnail rail
+  // drives the main image too — whichever thumb sits nearest the rail's
+  // vertical center becomes active, live. The programmatic keep-in-view
+  // scroll is suppressed via scrubUntil so the two never fight.
+  const railRef = useRef<HTMLDivElement>(null);
+  const railRaf = useRef(0);
+  const onRailScroll = () => {
+    const el = railRef.current;
+    if (!el) return;
+    scrubUntil.current = Date.now() + 240;
+    if (railRaf.current) return;
+    railRaf.current = requestAnimationFrame(() => {
+      railRaf.current = 0;
+      const el = railRef.current;
+      if (!el) return;
+      const center = el.scrollTop + el.clientHeight / 2;
+      let best = 0;
+      let bestD = Infinity;
+      for (let i = 0; i < el.children.length; i++) {
+        const c = el.children[i] as HTMLElement;
+        const d = Math.abs(c.offsetTop + c.offsetHeight / 2 - center);
         if (d < bestD) {
           bestD = d;
           best = i;
@@ -464,7 +496,7 @@ export function AssetManage({
             value={item.folderId ?? ""}
             onChange={(e) => onMove(item.id, e.target.value || null)}
             aria-label="Move this file to a folder"
-            className="w-full rounded-md border border-hairline bg-canvas px-2.5 py-1.5 text-xs text-ink outline-none focus:border-primary"
+            className="snap-select w-full rounded-md border border-hairline bg-canvas px-2.5 py-1.5 text-xs text-ink outline-none focus:border-primary"
           >
             <option value="">Unfiled</option>
             {(folders ?? []).map((f) => (
@@ -582,7 +614,11 @@ export function AssetManage({
 
         {/* Vertical thumbnail rail — the code-editor "scrollbar" (desktop).
          * No visible scrollbar; wheel/drag still scrolls, click jumps. */}
-        <div className="no-scrollbar hidden w-[76px] shrink-0 flex-col gap-1 overflow-y-auto rounded-[12px] border border-hairline bg-surface-1 p-1.5 lg:flex">
+        <div
+          ref={railRef}
+          onScroll={onRailScroll}
+          className="no-scrollbar hidden w-[76px] shrink-0 flex-col gap-1 overflow-y-auto rounded-[12px] border border-hairline bg-surface-1 p-1.5 lg:flex"
+        >
           {items.map((_, i) => thumb(i))}
         </div>
       </div>

@@ -114,6 +114,7 @@ export function sniffKind(b: Uint8Array): "image" | "video" | "raw" | null {
   if (ascii(b, 0, 4) === "RIFF" && ascii(b, 8, 12) === "WEBP") return "image"; // WebP
   if (ascii(b, 0, 4) === "GIF8") return "image"; // GIF
   if (ascii(b, 0, 3) === "FOV") return "raw"; // Sigma X3F (FOVb/FOVc…)
+  if (b[0] === 0x89 && (ascii(b, 1, 4) === "LFP" || ascii(b, 1, 4) === "LFR")) return "raw"; // Lytro light field (PNG-style chunk container)
   if (ascii(b, 4, 8) === "ftyp") {
     const brand = ascii(b, 8, 12);
     if (brand.startsWith("avif") || brand.startsWith("avis")) return "image"; // AVIF

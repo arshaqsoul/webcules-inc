@@ -5,6 +5,8 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { ChevronDown, ChevronRight } from "lucide-react";
+
 import { Button } from "@webcules/ui/components/button";
 import {
   Dialog,
@@ -14,6 +16,7 @@ import {
   DialogTitle,
 } from "@webcules/ui/components/dialog";
 import { useConfirm } from "@/components/confirm-provider";
+import { MediaLightbox, type LightboxItem } from "@/components/media-lightbox";
 
 export type GrantItem = {
   id: string;
@@ -83,6 +86,10 @@ export function ProjectGalleries({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [flash, setFlash] = useState<{ url: string; emailed: boolean } | null>(null);
+  // WEB-223: expandable "what was sent" grid per grant.
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [sentAssets, setSentAssets] = useState<Record<string, { id: string; filename: string; kind: string; folder: string | null }[]>>({});
+  const [lightbox, setLightbox] = useState<number | null>(null);
 
   const deliverableFolders = folders.filter((f) => f.count > 0);
   const deliverCount = deliverFolders.size
@@ -179,6 +186,23 @@ export function ProjectGalleries({
     setBusy(false);
   }
 
+  async function toggleExpanded(g: GrantItem) {
+    if (expanded === g.id) {
+      setExpanded(null);
+      return;
+    }
+    setExpanded(g.id);
+    if (!sentAssets[g.id]) {
+      try {
+        const res = await fetch(`/api/grants/${g.id}/assets`);
+        if (res.ok) {
+          const body = (await res.json()) as { assets: { id: string; filename: string; kind: string; folder: string | null }[] };
+          setSentAssets((cur) => ({ ...cur, [g.id]: body.assets }));
+        }
+      } catch { /* row just stays empty */ }
+    }
+  }
+
   async function setExpiry(grantId: string, value: string) {
     setBusy(true);
     await fetch(`/api/grants/${grantId}`, {
@@ -231,7 +255,7 @@ export function ProjectGalleries({
           <select
             value={days}
             onChange={(e) => setDays(e.target.value)}
-            className="rounded-md border border-hairline bg-canvas px-3 py-2 text-sm text-ink outline-none focus:border-primary"
+            className="snap-select rounded-md border border-hairline bg-canvas px-3 py-2 text-sm text-ink outline-none focus:border-primary"
           >
             {EXPIRY_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>{o.label}</option>
@@ -252,7 +276,7 @@ export function ProjectGalleries({
           <select
             value={selectionMode}
             onChange={(e) => setSelectionMode(e.target.value as "favorites" | "selection" | "off")}
-            className="rounded-md border border-hairline bg-canvas px-3 py-2 text-sm text-ink outline-none focus:border-primary"
+            className="snap-select rounded-md border border-hairline bg-canvas px-3 py-2 text-sm text-ink outline-none focus:border-primary"
           >
             <option value="favorites">Favorites (♥ anything)</option>
             <option value="selection">Selection (pick for album)</option>
@@ -322,8 +346,10 @@ export function ProjectGalleries({
         <div className="flex flex-col divide-y divide-hairline rounded-[12px] border border-hairline bg-surface-1">
           {grants.map((g) => {
             const live = g.state === "active" || g.state === "expiring_soon";
+            const isOpen = expanded === g.id;
             return (
-              <div key={g.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 p-4">
+              <div key={g.id} className="flex flex-col">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 p-4">
                 <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide ${STATE_BADGE[g.state]}`}>
                   {g.state.replace("_", " ")}
                 </span>
@@ -352,13 +378,22 @@ export function ProjectGalleries({
                     </p>
                   )}
                 </div>
+                <button
+                  type="button"
+                  onClick={() => void toggleExpanded(g)}
+                  aria-expanded={isOpen}
+                  aria-label={isOpen ? `Hide files sent to ${g.clientEmail}` : `Show files sent to ${g.clientEmail}`}
+                  className="rounded-md p-1 text-ink-tertiary transition-colors hover:bg-surface-2 hover:text-ink"
+                >
+                  {isOpen ? <ChevronDown className="h-4 w-4" aria-hidden /> : <ChevronRight className="h-4 w-4" aria-hidden />}
+                </button>
                 {live && (
                   <select
                     aria-label="Edit expiry"
                     defaultValue={g.expiresAt ? String(Math.max(1, Math.round((new Date(g.expiresAt).getTime() - Date.now()) / 86400000))) : ""}
                     disabled={busy}
                     onChange={(e) => setExpiry(g.id, e.target.value)}
-                    className="rounded-md border border-hairline bg-canvas px-2 py-1.5 text-xs text-ink-muted"
+                    className="snap-select rounded-md border border-hairline bg-canvas px-2 py-1.5 text-xs text-ink-muted"
                   >
                     {EXPIRY_OPTIONS.map((o) => (
                       <option key={o.value} value={o.value}>{o.label}</option>
@@ -388,9 +423,45 @@ export function ProjectGalleries({
                   )}
                 </div>
               </div>
+              {isOpen && (
+                <div className="border-t border-hairline px-4 py-3">
+                  {(sentAssets[g.id] ?? []).length === 0 ? (
+                    <p className="py-2 text-center text-xs text-ink-subtle">Loading delivered files…</p>
+                  ) : (
+                    <div className="grid grid-cols-6 gap-1.5 sm:grid-cols-10 md:grid-cols-12">
+                      {(sentAssets[g.id] ?? []).map((a, i) => (
+                        <button
+                          key={a.id}
+                          type="button"
+                          onClick={() => setLightbox(i)}
+                          aria-label={`View ${a.filename}`}
+                          className="group relative aspect-square overflow-hidden rounded-md border border-hairline bg-surface-1"
+                        >
+                          {a.kind === "image" ? (
+                            // eslint-disable-next-line @next/next/no-img-element -- authorized proxy, no optimizer
+                            <img src={`/api/assets/${a.id}?variant=thumb`} alt={a.filename} loading="lazy" className="h-full w-full object-cover" />
+                          ) : (
+                            <span className="flex h-full w-full items-center justify-center text-[8px] uppercase text-ink-tertiary">{a.kind}</span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              </div>
             );
           })}
         </div>
+      )}
+
+      {lightbox !== null && expanded && sentAssets[expanded] && (
+        <MediaLightbox
+          items={sentAssets[expanded].map((a) => ({ id: a.id, filename: a.filename, kind: a.kind }))}
+          index={lightbox}
+          onIndexChange={setLightbox}
+          onClose={() => setLightbox(null)}
+        />
       )}
 
       <Dialog open={feedback !== null} onOpenChange={(v) => !v && setFeedback(null)}>

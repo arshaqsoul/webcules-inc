@@ -7,7 +7,7 @@
  * (WEB-113). Fast triage lives in <TriageMode> (WEB-122). */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { Check, ChevronDown, ChevronRight, ChevronUp, Grid2x2, Grid3x3, ListFilter, Square, X } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, ChevronUp, Folder, FolderPlus, Grid2x2, Grid3x3, ListFilter, Share2, Square, X } from "lucide-react";
 
 import { Button } from "@webcules/ui/components/button";
 import {
@@ -20,6 +20,7 @@ import {
 } from "@webcules/ui/components/dialog";
 import { AssetManage } from "@/components/asset-manage";
 import { useConfirm } from "@/components/confirm-provider";
+import { SharePanel } from "@/components/share-panel";
 import { TriageMode } from "@/components/triage-mode";
 
 export type AssetItem = {
@@ -190,7 +191,7 @@ async function generateDerivatives(assetId: string, file: File): Promise<boolean
   return false;
 }
 
-export function ProjectFiles({ projectId, initial }: { projectId: string; initial?: AssetItem[] }) {
+export function ProjectFiles({ projectId, clientEmail, initial }: { projectId: string; clientEmail?: string; initial?: AssetItem[] }) {
   const confirm = useConfirm();
   const [feed, setFeed] = useState<Feed>({ items: initial ?? [], nextCursor: null, counts: {}, tags: [] });
   const [status, setStatus] = useState("");
@@ -208,6 +209,11 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
   // immediately files the selection into it.
   const [moveNewOpen, setMoveNewOpen] = useState(false);
   const [moveNewDraft, setMoveNewDraft] = useState("");
+  // Folder dropdown open (the rail is a compact Filter-style menu now).
+  const [folderMenuOpen, setFolderMenuOpen] = useState(false);
+  const folderMenuRef = useRef<HTMLDivElement>(null);
+  // Share side panel (WEB-223): deliver approved/folders without leaving Files.
+  const [shareOpen, setShareOpen] = useState(false);
   // Culling filters: rating ("unrated" | "1".."5" = ≥N), color ("none" | "1".."5").
   const [rating, setRating] = useState("");
   const [colorSel, setColorSel] = useState("");
@@ -1222,6 +1228,23 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
 
   /* ---------------- Render ---------------- */
 
+  // Close the folder dropdown on outside click / Escape.
+  useEffect(() => {
+    if (!folderMenuOpen) return;
+    function onDown(e: MouseEvent) {
+      if (folderMenuRef.current && !folderMenuRef.current.contains(e.target as Node)) setFolderMenuOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setFolderMenuOpen(false);
+    }
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [folderMenuOpen]);
+
   // Manage pane swap (Midjourney-style): replaces the whole tab body —
   // inline layout, no modal, no fullscreen mode.
   if (manageIndex !== null && feed.items.length > 0) {
@@ -1244,34 +1267,112 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Folder rail (WEB-216) — delivery outline. Chips filter the feed;
-       * drag cards (or use the bulk bar) to file assets. Folders are free on
-       * every tier: delivery craft is not a tier lever. */}
-      <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Folders">
+      {/* Folder dropdown (WEB-216/223) — same pattern as Filter: one compact
+       * trigger (with a folder icon before created folder names) instead of a
+       * chip rail that ate toolbar space. Rows filter the feed and accept
+       * dragged cards; folders are free on every tier. */}
+      <div className="relative self-start" ref={folderMenuRef}>
         <button
           type="button"
-          onClick={() => setFolder("")}
-          aria-pressed={folder === ""}
-          className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${folder === "" ? "bg-primary/10 text-primary" : "text-ink-subtle hover:bg-surface-2 hover:text-ink"}`}
+          onClick={() => setFolderMenuOpen((o) => !o)}
+          aria-expanded={folderMenuOpen}
+            className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs transition-colors ${
+            folder
+              ? "border-primary/40 bg-primary/10 text-primary"
+              : "border-hairline bg-canvas text-ink-muted hover:bg-surface-2"
+          }`}
         >
-          All files
+          <Folder className="h-3.5 w-3.5" aria-hidden />
+          <span className="max-w-40 truncate">
+            {folder === "none" ? `Unfiled${feed.unfiledCount ? ` · ${feed.unfiledCount}` : ""}` : folder ? `${folderName(folder) ?? "Folder"}${(() => { const f = folders.find((x) => x.id === folder); return f ? ` · ${f.count}` : ""; })()}` : "All files"}
+          </span>
+          <ChevronDown className="h-3 w-3" aria-hidden />
         </button>
-        <button
-          type="button"
-          onClick={() => setFolder("none")}
-          aria-pressed={folder === "none"}
-          onDragOver={(e) => { if (e.dataTransfer.types.includes("application/x-snap-assets")) { e.preventDefault(); setDropFolder("none"); } }}
-          onDragLeave={() => setDropFolder((d) => (d === "none" ? null : d))}
-          onDrop={(e) => folderDrop(e, null)}
-          className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
-            dropFolder === "none" ? "ring-2 ring-primary" : ""
-          } ${folder === "none" ? "bg-primary/10 text-primary" : "text-ink-subtle hover:bg-surface-2 hover:text-ink"}`}
-        >
-          Unfiled{feed.unfiledCount ? ` · ${feed.unfiledCount}` : ""}
-        </button>
-        {folders.map((f) => (
-          <span key={f.id} className="group/folder relative inline-flex items-center">
-            {folderEdit === f.id ? (
+        {folderMenuOpen && (
+          <div className="absolute left-0 top-full z-40 mt-1.5 w-64 rounded-[10px] border border-hairline bg-surface-1 p-1 shadow-lg" role="menu" aria-label="Folders">
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => { setFolder(""); setFolderMenuOpen(false); }}
+              className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] transition-colors hover:bg-surface-2 ${folder === "" ? "text-ink" : "text-ink-muted"}`}
+            >
+              <Folder className="h-3.5 w-3.5 text-ink-tertiary" aria-hidden />
+              <span className="flex-1">All files</span>
+              {folder === "" && <Check className="h-3.5 w-3.5 text-ink-tertiary" aria-hidden />}
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => { setFolder("none"); setFolderMenuOpen(false); }}
+              onDragOver={(e) => { if (e.dataTransfer.types.includes("application/x-snap-assets")) { e.preventDefault(); setDropFolder("none"); } }}
+              onDragLeave={() => setDropFolder((d) => (d === "none" ? null : d))}
+              onDrop={(e) => folderDrop(e, null)}
+              className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] transition-colors hover:bg-surface-2 ${
+                dropFolder === "none" ? "ring-2 ring-primary" : ""
+              } ${folder === "none" ? "text-ink" : "text-ink-muted"}`}
+            >
+              <span className="flex-1">Unfiled{feed.unfiledCount ? ` · ${feed.unfiledCount}` : ""}</span>
+              {folder === "none" && <Check className="h-3.5 w-3.5 text-ink-tertiary" aria-hidden />}
+            </button>
+            {folders.length > 0 && <div className="my-1 border-t border-hairline" />}
+            {folders.map((f) => (
+              <div key={f.id} className="group/frow flex items-center">
+                {folderEdit === f.id ? (
+                  <input
+                    autoFocus
+                    value={folderDraft}
+                    onChange={(e) => setFolderDraft(e.target.value)}
+                    onBlur={() => void submitFolderEdit()}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") void submitFolderEdit();
+                      if (e.key === "Escape") { setFolderEdit(null); setFolderDraft(""); }
+                    }}
+                    aria-label="Rename folder"
+                    className="my-1 w-full rounded-md border border-primary bg-canvas px-2 py-1 text-xs text-ink outline-none"
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => { setFolder(f.id); setFolderMenuOpen(false); }}
+                    onDragOver={(e) => { if (e.dataTransfer.types.includes("application/x-snap-assets")) { e.preventDefault(); setDropFolder(f.id); } }}
+                    onDragLeave={() => setDropFolder((d) => (d === f.id ? null : d))}
+                    onDrop={(e) => folderDrop(e, f.id)}
+                    className={`flex min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] transition-colors hover:bg-surface-2 ${
+                      dropFolder === f.id ? "ring-2 ring-primary" : ""
+                    } ${folder === f.id ? "text-ink" : "text-ink-muted"}`}
+                  >
+                    <Folder className="h-3.5 w-3.5 shrink-0 text-ink-tertiary" aria-hidden />
+                    <span className="flex-1 truncate">
+                      {f.name} <span className="text-[11px] text-ink-tertiary">· {f.count}</span>
+                    </span>
+                    {folder === f.id && <Check className="h-3.5 w-3.5 shrink-0 text-ink-tertiary" aria-hidden />}
+                  </button>
+                )}
+                {folderEdit !== f.id && (
+                  <span className="ml-0.5 hidden shrink-0 items-center group-hover/frow:inline-flex">
+                    <button
+                      type="button"
+                      aria-label={`Rename ${f.name}`}
+                      onClick={() => { setFolderEdit(f.id); setFolderDraft(f.name); }}
+                      className="rounded p-0.5 text-ink-tertiary hover:text-ink"
+                    >
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /></svg>
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`Delete ${f.name}`}
+                      onClick={() => void deleteFolderClick(f)}
+                      className="rounded p-0.5 text-ink-tertiary hover:text-destructive"
+                    >
+                      <X className="h-3 w-3" aria-hidden />
+                    </button>
+                  </span>
+                )}
+              </div>
+            ))}
+            <div className="my-1 border-t border-hairline" />
+            {folderEdit === "new" ? (
               <input
                 autoFocus
                 value={folderDraft}
@@ -1281,78 +1382,36 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                   if (e.key === "Enter") void submitFolderEdit();
                   if (e.key === "Escape") { setFolderEdit(null); setFolderDraft(""); }
                 }}
-                aria-label="Rename folder"
-                className="w-32 rounded-full border border-primary bg-canvas px-2.5 py-1 text-xs text-ink outline-none"
+                aria-label="New folder name"
+                placeholder="Folder name"
+                className="my-1 w-full rounded-md border border-primary bg-canvas px-2 py-1 text-xs text-ink outline-none"
               />
             ) : (
               <button
                 type="button"
-                onClick={() => setFolder(f.id)}
-                aria-pressed={folder === f.id}
-                onDragOver={(e) => { if (e.dataTransfer.types.includes("application/x-snap-assets")) { e.preventDefault(); setDropFolder(f.id); } }}
-                onDragLeave={() => setDropFolder((d) => (d === f.id ? null : d))}
-                onDrop={(e) => folderDrop(e, f.id)}
-                className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
-                  dropFolder === f.id ? "ring-2 ring-primary" : ""
-                } ${folder === f.id ? "bg-primary/10 text-primary" : "text-ink-subtle hover:bg-surface-2 hover:text-ink"}`}
+                role="menuitem"
+                onClick={() => { setFolderEdit("new"); setFolderDraft(""); }}
+                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] text-ink-tertiary transition-colors hover:bg-surface-2 hover:text-primary"
               >
-                {f.name} · {f.count}
+                <FolderPlus className="h-3.5 w-3.5" aria-hidden />
+                New folder
               </button>
             )}
-            {folderEdit !== f.id && (
-              <span className="ml-0.5 hidden items-center group-hover/folder:inline-flex">
-                <button
-                  type="button"
-                  aria-label={`Rename ${f.name}`}
-                  onClick={() => { setFolderEdit(f.id); setFolderDraft(f.name); }}
-                  className="rounded p-0.5 text-ink-tertiary hover:text-ink"
-                >
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /></svg>
-                </button>
-                <button
-                  type="button"
-                  aria-label={`Delete ${f.name}`}
-                  onClick={() => void deleteFolderClick(f)}
-                  className="rounded p-0.5 text-ink-tertiary hover:text-destructive"
-                >
-                  <X className="h-3 w-3" aria-hidden />
-                </button>
-              </span>
-            )}
-          </span>
-        ))}
-        {folderEdit === "new" ? (
-          <input
-            autoFocus
-            value={folderDraft}
-            onChange={(e) => setFolderDraft(e.target.value)}
-            onBlur={() => void submitFolderEdit()}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") void submitFolderEdit();
-              if (e.key === "Escape") { setFolderEdit(null); setFolderDraft(""); }
-            }}
-            aria-label="New folder name"
-            placeholder="Folder name"
-            className="w-36 rounded-full border border-primary bg-canvas px-2.5 py-1 text-xs text-ink outline-none"
-          />
-        ) : (
-          <button
-            type="button"
-            onClick={() => { setFolderEdit("new"); setFolderDraft(""); }}
-            className="rounded-full border border-dashed border-hairline-strong px-2.5 py-1 text-xs text-ink-tertiary transition-colors hover:border-primary hover:text-primary"
-          >
-            + Folder
-          </button>
+          </div>
         )}
       </div>
 
-      {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-2 rounded-[12px] border border-hairline bg-surface-1 p-3">
-        <div className="mr-2 text-sm text-ink-subtle">
+      {/* Toolbar — mobile keeps only the essentials (Filter · Select · Triage
+       * · Share · Upload); density/view toggles, Auto-advance and the purge
+       * button are desktop controls (no keyboard, no hover on touch). */}
+      <div className="flex flex-wrap items-center gap-1.5 rounded-[12px] border border-hairline bg-surface-1 p-2 sm:gap-2 sm:p-3">
+        <div className="mr-2 text-xs text-ink-subtle sm:text-sm">
           {Object.values(counts).reduce((a, b) => a + b, 0)} file{Object.values(counts).reduce((a, b) => a + b, 0) === 1 ? "" : "s"}
-          {counts.approved ? ` · ${counts.approved} approved` : ""}
-          {counts.rejected ? ` · ${counts.rejected} rejected` : ""}
-          {counts.shared ? ` · ${counts.shared} shared` : ""}
+          <span className="hidden sm:inline">
+            {counts.approved ? ` · ${counts.approved} approved` : ""}
+            {counts.rejected ? ` · ${counts.rejected} rejected` : ""}
+            {counts.shared ? ` · ${counts.shared} shared` : ""}
+          </span>
         </div>
 
         <div className="relative" ref={filterRef}>
@@ -1376,7 +1435,7 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
               {FILTER_ROOT.map((g) => {
                 const def = filterGroupDef(g.key);
                 return (
-                  <div key={g.key} className="relative">
+                  <div key={g.key} className="relative" onMouseEnter={() => filterOpen && setFilterGroup(g.key)}>
                     <div className="flex items-center">
                       <button
                         type="button"
@@ -1454,49 +1513,50 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
         </div>
 
         <div className="ml-auto flex flex-wrap items-center justify-end gap-1.5">
-          {view === "grid" && (
-            <div className="flex overflow-hidden rounded-md border border-hairline" role="group" aria-label="Grid size">
-              {([
-                ["s", Grid3x3, "Small — dense contact sheet"],
-                ["m", Grid2x2, "Medium — balanced masonry"],
-                ["l", Square, "Large — review tiles"],
-              ] as const).map(([d, Icon, title]) => (
+          <div className="hidden items-center gap-1.5 md:flex">
+            {view === "grid" && (
+              <div className="flex overflow-hidden rounded-md border border-hairline" role="group" aria-label="Grid size">
+                {([
+                  ["s", Grid3x3, "Small — dense contact sheet"],
+                  ["m", Grid2x2, "Medium — balanced masonry"],
+                  ["l", Square, "Large — review tiles"],
+                ] as const).map(([d, Icon, title]) => (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => setDensity(d)}
+                    aria-pressed={density === d}
+                    title={title}
+                    aria-label={title}
+                    className={`px-2 py-1.5 transition-colors ${density === d ? "bg-primary/10 text-primary" : "text-ink-tertiary hover:bg-surface-2 hover:text-ink-muted"}`}
+                  >
+                    <Icon className="h-3.5 w-3.5" aria-hidden />
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="flex overflow-hidden rounded-md border border-hairline">
+              {(["grid", "list"] as const).map((v) => (
                 <button
-                  key={d}
-                  type="button"
-                  onClick={() => setDensity(d)}
-                  aria-pressed={density === d}
-                  title={title}
-                  aria-label={title}
-                  className={`px-2 py-1.5 transition-colors ${density === d ? "bg-primary/10 text-primary" : "text-ink-tertiary hover:bg-surface-2 hover:text-ink-muted"}`}
+                  key={v}
+                  onClick={() => setView(v)}
+                  className={`px-2.5 py-1.5 text-xs ${view === v ? "bg-primary/10 text-primary" : "text-ink-muted hover:bg-surface-2"}`}
                 >
-                  <Icon className="h-3.5 w-3.5" aria-hidden />
+                  {v === "grid" ? "Grid" : "List"}
                 </button>
               ))}
             </div>
-          )}
-          <div className="flex overflow-hidden rounded-md border border-hairline">
-            {(["grid", "list"] as const).map((v) => (
-              <button
-                key={v}
-                onClick={() => setView(v)}
-                className={`px-2.5 py-1.5 text-xs ${view === v ? "bg-primary/10 text-primary" : "text-ink-muted hover:bg-surface-2"}`}
-              >
-                {v === "grid" ? "Grid" : "List"}
-              </button>
-            ))}
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setAutoAdvance((v) => !v)}
+              title="Keyboard culling: ←/→ focus · P approve · X reject · U reset · 0-5 stars · 6-9 color labels · F favorite · V open viewer · A toggles auto-advance"
+            >
+              {autoAdvance ? "Auto ⏩ on" : "Auto ⏩ off"}
+            </Button>
           </div>
-          <Button
-            size="sm"
-            variant="outline"
-            className="hidden sm:inline-flex"
-            onClick={() => setAutoAdvance((v) => !v)}
-            title="Keyboard culling: ←/→ focus · P approve · X reject · U reset · 0-5 stars · 6-9 color labels · F favorite · V open viewer · A toggles auto-advance"
-          >
-            {autoAdvance ? "Auto ⏩ on" : "Auto ⏩ off"}
-          </Button>
           <Button size="sm" variant="outline" onClick={() => { setSelectMode((s) => !s); setSelected(new Set()); }}>
-            {selectMode ? "Done selecting" : "Select"}
+            {selectMode ? "Done" : "Select"}
           </Button>
           <Button size="sm" variant="outline" disabled={!feed.items.length} onClick={() => setTriageOpen(true)}>
             Triage
@@ -1506,17 +1566,22 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
               size="sm"
               variant="outline"
               disabled={purging}
+              className="hidden sm:inline-flex"
               onClick={() => void purgeRejected()}
               title="Permanently delete this project's rejected files now — files in an active client gallery are skipped"
             >
               {purging ? "Deleting…" : `Delete rejected (${feed.counts.rejected})`}
             </Button>
           )}
+          <Button size="sm" variant="outline" disabled={!(counts.approved || counts.shared) && !folders.length} onClick={() => setShareOpen(true)} title="Send a secure gallery link to the client — approved files or specific folders">
+            <Share2 className="h-3.5 w-3.5 sm:mr-1" aria-hidden />
+            <span className="hidden sm:inline">Share</span>
+          </Button>
           <input
             ref={inputRef}
             type="file"
             multiple
-            accept=".jpg,.jpeg,.png,.webp,.avif,.heic,.gif,.mp4,.mov,.webm,.cr2,.cr3,.nef,.arw,.dng,.rwl"
+            accept=".jpg,.jpeg,.png,.webp,.avif,.heic,.gif,.mp4,.mov,.webm,.lrf,.cr2,.cr3,.nef,.arw,.dng,.rwl,.lfr"
             className="hidden"
             onChange={(e) => e.target.files?.length && enqueueWithStore(e.target.files)}
           />
@@ -1624,7 +1689,7 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                   setSelected(new Set());
                 }
               }}
-              className="h-8 rounded-md border border-hairline bg-canvas px-2 text-xs text-ink-muted outline-none disabled:opacity-50"
+              className="snap-select h-8 rounded-md border border-hairline bg-canvas px-2 text-xs text-ink-muted outline-none disabled:opacity-50"
             >
               <option value="">Move to…</option>
               <option value="__none">Unfiled</option>
@@ -1749,12 +1814,11 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                       e.dataTransfer.setData("application/x-snap-assets", JSON.stringify(ids));
                       e.dataTransfer.effectAllowed = "move";
                     }}
-                    className={`group relative flex break-inside-avoid flex-col overflow-hidden transition-opacity ${
+                    className={`group relative flex break-inside-avoid flex-col transition-opacity ${
                       compact
-                        ? `rounded-[4px] ${selected.has(a.id) ? "ring-2 ring-primary" : focusIndex === i ? "ring-2 ring-primary/70" : ""}`
-                        : `rounded-[6px] border border-transparent sm:rounded-[10px] sm:border-hairline sm:bg-surface-1 ${
-                            selected.has(a.id) ? "ring-2 ring-primary sm:border-primary" : focusIndex === i ? "ring-2 ring-primary/70" : ""
-                          }`
+                        ? `overflow-hidden rounded-[4px] ${selected.has(a.id) ? "ring-2 ring-primary" : focusIndex === i ? "ring-2 ring-primary/70" : ""}`
+                        : // m/l: just the image — the hover popover carries the meta
+                          `rounded-[4px] sm:rounded-none ${selected.has(a.id) ? "ring-2 ring-primary" : focusIndex === i ? "ring-2 ring-primary/70" : ""}`
                     } ${deleting.has(a.id) ? "opacity-40 saturate-50" : ""}`}
                   >
                     {deleting.has(a.id) && (
@@ -1778,7 +1842,7 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                       rel="noreferrer"
                       draggable={false}
                       title={selectMode ? undefined : "Manage this file"}
-                      className={`relative block bg-canvas ${selectMode ? "" : "cursor-zoom-in"}`}
+                      className={`relative block ${compact ? "bg-canvas" : ""} ${selectMode ? "" : "cursor-zoom-in"}`}
                       onClick={(e) => {
                         if (selectMode) e.preventDefault();
                         else {
@@ -1828,11 +1892,21 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                           {a.filename}
                         </span>
                       )}
-                      {/* hover quick actions (culling without leaving the grid) */}
+                      {!compact && (
+                        <span className="pointer-events-none absolute inset-x-2 top-1.5 z-10 truncate rounded bg-black/55 px-1.5 py-0.5 text-[9px] text-white opacity-0 transition-opacity group-hover:opacity-0 sm:group-hover:opacity-100">
+                          {a.filename}
+                        </span>
+                      )}
+                      {/* hover quick actions (culling without leaving the grid).
+                       * Buttons reflect live state: ✓ stays emerald once
+                       * approved, ✕ red once rejected, ♥ amber when favorite. */}
                       {!selectMode && (
                         <div className={`pointer-events-none absolute z-20 flex items-center gap-1 rounded-lg bg-black/60 px-1.5 py-1 opacity-0 backdrop-blur-sm transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 ${micro ? "inset-x-1 bottom-1" : "inset-x-1.5 bottom-1.5"}`}>
-                          <button type="button" title="Reject (X)" aria-label={`Reject ${a.filename}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); void flagAsset(a.id, "reject"); }} className="rounded p-0.5 text-white/80 hover:text-red-400">✕</button>
-                          <button type="button" title="Approve (P)" aria-label={`Approve ${a.filename}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); void flagAsset(a.id, "approve"); }} className="rounded p-0.5 text-white/80 hover:text-emerald-400">✓</button>
+                          <span className="mr-0.5 hidden text-[9px] font-medium uppercase tracking-wide text-white/60 sm:inline" aria-hidden>
+                            {a.status === "shared" ? "shared" : a.status === "approved" ? "approved" : a.status === "rejected" ? "rejected" : ""}
+                          </span>
+                          <button type="button" title="Reject (X)" aria-label={`Reject ${a.filename}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); void flagAsset(a.id, "reject"); }} className={`rounded p-0.5 ${a.status === "rejected" ? "text-red-400" : "text-white/80 hover:text-red-400"}`}>✕</button>
+                          <button type="button" title="Approve (P)" aria-label={`Approve ${a.filename}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); void flagAsset(a.id, "approve"); }} className={`rounded p-0.5 ${a.status === "approved" || a.status === "shared" ? "text-emerald-400" : "text-white/80 hover:text-emerald-400"}`}>✓</button>
                           <button type="button" title="Favorite (F)" aria-label={`Favorite ${a.filename}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); void toggleFavorite(a.id); }} className={`rounded p-0.5 ${a.tags.includes("favorite") ? "text-amber-400" : "text-white/80 hover:text-amber-300"}`}>♥</button>
                           {!micro && (
                           <span className="ml-1 flex items-center" role="group" aria-label={`Rate ${a.filename}`}>
@@ -1864,23 +1938,6 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
                         </div>
                       )}
                     </a>
-                    {/* meta row — desktop m/l cards only (mobile is image-only) */}
-                    {!compact && (
-                      <div className="hidden flex-col gap-1.5 p-2 sm:flex">
-                        <div className="flex items-center justify-between gap-1">
-                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${STATUS_BADGE[a.status] ?? ""}`}>{a.status}</span>
-                          {a.stars > 0 && <span title={`${a.stars} stars`} className="text-[10px] leading-none text-amber-500">{"★".repeat(a.stars)}</span>}
-                          {a.color > 0 && <span aria-hidden title={COLOR_NAMES[a.color]} className="h-2 w-2 rounded-full" style={{ background: COLOR_HEX[a.color] }} />}
-                          {a.rawArchivedAt && <a href="/dashboard/raw-vault" title="In RAW vault cold storage — restorable from the RAW Vault page" className="rounded-full bg-sky-500/10 px-2 py-0.5 text-[10px] font-medium text-sky-600 dark:text-sky-400">❄ cold</a>}
-                          {a.tags.includes("favorite") && <span title="Favorite" className="text-[10px] text-amber-500">♥</span>}
-                          <span className="text-[10px] text-ink-tertiary">{mb(a.bytes)}</span>
-                        </div>
-                        <p className="truncate text-[11px] text-ink-muted" title={a.filename}>{a.filename}</p>
-                        {a.status === "shared" && (
-                          <p className="text-[10px] text-ink-tertiary" title="In an active client gallery — revoke the gallery link to edit or delete">🔒 locked</p>
-                        )}
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
@@ -1987,6 +2044,15 @@ export function ProjectFiles({ projectId, initial }: { projectId: string; initia
             {loading ? "Loading…" : "Load more"}
           </Button>
         </div>
+      )}
+
+      {shareOpen && (
+        <SharePanel
+          projectId={projectId}
+          clientEmail={clientEmail}
+          approvedCount={(counts.approved ?? 0) + (counts.shared ?? 0)}
+          onClose={() => setShareOpen(false)}
+        />
       )}
 
       {triageOpen && (

@@ -215,7 +215,7 @@ export default async function ProjectDetailPage({
           <p className="mb-4 mt-1 text-xs text-ink-subtle">
             Upload the shoot, triage with Triage, curate in the grid — shared files are locked.
           </p>
-          <ProjectFiles projectId={id} />
+          <ProjectFiles projectId={id} clientEmail={client?.email} />
         </section>
       )}
 

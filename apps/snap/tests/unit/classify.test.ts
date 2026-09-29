@@ -24,9 +24,17 @@ describe("classifyUpload", () => {
     for (const ext of ["jpg", "jpeg", "png", "webp", "avif", "heic", "gif"]) {
       expect(classifyUpload(`x.${ext}`)?.kind).toBe("image");
     }
-    for (const ext of ["mp4", "mov", "webm"]) {
+    for (const ext of ["mp4", "mov", "webm", "lrf"]) {
       expect(classifyUpload(`x.${ext}`)?.kind).toBe("video");
     }
+  });
+
+  it("DJI .lrf is a VIDEO proxy, Lytro .lfr is RAW (the confusable pair)", () => {
+    // .lrf = DJI "Low Resolution File": an MP4 proxy — sniffed as video, so
+    // it must DECLARE video or confirm 409s (verified on prod 2026-09-28).
+    expect(classifyUpload("DJI_0001.lrf")).toEqual({ ext: "lrf", kind: "video" });
+    // .lfr = Lytro light-field RAW (PNG-chunk magic, sniffed separately).
+    expect(classifyUpload("illum_0001.lfr")).toEqual({ ext: "lfr", kind: "raw" });
   });
 
   it("rejects unknown extensions (no 'other' leaks through the gate)", () => {
@@ -39,6 +47,13 @@ describe("classifyUpload", () => {
 
 describe("sniffKind (magic bytes)", () => {
   const bytes = (...arr: number[]) => new Uint8Array(arr);
+
+  it("Lytro light-field magic (0x89 LFP/LFR) sniffs as raw; DJI lrf payload sniffs as video", () => {
+    expect(sniffKind(bytes(0x89, 0x4c, 0x46, 0x50))).toBe("raw"); // LFP
+    expect(sniffKind(bytes(0x89, 0x4c, 0x46, 0x52))).toBe("raw"); // LFR
+    // DJI .lrf body: ISO-BMFF with a plain video brand
+    expect(sniffKind(bytes(0, 0, 0, 0x18, 0x66, 0x74, 0x79, 0x70, 0x69, 0x73, 0x6f, 0x6d))).toBe("video");
+  });
 
   it("detects jpeg/png/gif/webp", () => {
     expect(sniffKind(bytes(0xff, 0xd8, 0xff, 0xe0))).toBe("image");
