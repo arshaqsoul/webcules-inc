@@ -117,13 +117,19 @@ export default async function ProjectDetailPage({
         </div>
       </div>
 
-      <nav className="flex flex-wrap gap-1.5" aria-label="Project sections">
+      {/* Mobile: one scrollable row (bleeds edge-to-edge under the page
+       * padding) instead of wrapping to a second line; desktop wraps as
+       * before since the tabs fit. */}
+      <nav
+        className="no-scrollbar -mx-6 flex gap-1.5 overflow-x-auto px-6 pb-0.5 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0"
+        aria-label="Project sections"
+      >
         {TABS.map((t) => (
           <Link
             key={t.key}
             href={`/dashboard/projects/${id}?tab=${t.key}`}
             aria-current={tab === t.key ? "page" : undefined}
-            className={`rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
+            className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
               tab === t.key ? "bg-surface-2 text-ink" : "text-ink-subtle hover:bg-surface-1 hover:text-ink"
             }`}
           >
