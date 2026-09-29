@@ -1,90 +1,27 @@
 import { redirect } from "next/navigation";
 
-import { PayoutsPanel } from "@/components/payouts-panel";
-import { PlanPanel } from "@/components/plan-panel";
-import { SettingsForm } from "@/components/settings-form";
-import { getStudioProfile, getStudioSlug } from "@/lib/repos/studios";
-import { getOrgContext } from "@/lib/session";
-
+/* Legacy entry (WEB-235): /dashboard/settings and its Stripe/Connect return
+ * links fan out to the section routes. Legacy param mapping:
+ *   ?plan=return        → /billing?return=1   (checkout success return)
+ *   ?plan=<other>       → /billing            (checkout cancel)
+ *   ?payouts=return     → /payouts?return=1   (Connect onboarding return)
+ *   ?payouts=refresh    → /payouts?refresh=1  (Connect refresh)
+ *   ?payouts=<other>    → /payouts
+ * Call sites that built these links (lib/billing.ts, lib/connect.ts) were
+ * updated to the new paths in the same change; this redirect keeps every
+ * already-sent email and bookmark working. */
 export const metadata = { title: "Settings" };
 
-export default async function SettingsPage({
+export default async function SettingsRedirectPage({
   searchParams,
 }: {
-  searchParams: Promise<{ payouts?: string; plan?: string }>;
+  searchParams: Promise<{ plan?: string; payouts?: string }>;
 }) {
-  const ctx = await getOrgContext();
-  if (!ctx) redirect("/login");
-  const [profile, slug] = await Promise.all([
-    getStudioProfile(ctx.organizationId),
-    getStudioSlug(ctx.organizationId),
-  ]);
-  if (!profile) redirect("/onboarding");
-  const { payouts, plan } = await searchParams;
-
-  return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-[-0.6px] text-ink">
-          Settings
-        </h1>
-        <p className="mt-1 text-sm text-ink-subtle">
-          Studio profile, branding, and embed configuration.
-        </p>
-      </div>
-      <PlanPanel returnHint={plan === "return" ? "return" : undefined} />
-      <SettingsForm
-        brandRevision={String(profile.updatedAt?.getTime() ?? "")}
-        initial={{
-          slug,
-          studioName: profile.studioName,
-          timezone: profile.timezone,
-          contactEmail: profile.contactEmail ?? "",
-          accentColor:
-            (JSON.parse(profile.brand || "{}") as { accent?: string }).accent ??
-            "#5e6ad2",
-          fontFamily:
-            (JSON.parse(profile.brand || "{}") as { fontFamily?: string })
-              .fontFamily ?? "",
-          theme:
-            (JSON.parse(profile.brand || "{}") as { theme?: string }).theme ??
-            "light",
-          tokens: JSON.stringify(
-            (JSON.parse(profile.brand || "{}") as { tokens?: unknown })
-              .tokens ?? {},
-            null,
-            1,
-          ),
-          embedKey: profile.embedKey ?? "",
-          embedOrigins: JSON.parse(profile.embedOrigins || "[]") as string[],
-          hasLogo: Boolean(profile.logoKey),
-          logoUrl: profile.logoKey
-            ? `/api/embed/logo?key=${profile.embedKey}`
-            : null,
-          rejectedRetentionDays: (
-            JSON.parse(profile.rejectedPolicy || "{}") as {
-              enabled?: boolean;
-              retainDays?: number;
-            }
-          ).enabled
-            ? ((
-                JSON.parse(profile.rejectedPolicy || "{}") as {
-                  retainDays?: number;
-                }
-              ).retainDays ?? 30)
-            : 0,
-          exifStripDerived: profile.exifStripDerived,
-        }}
-      />
-      <PayoutsPanel
-        returnHint={
-          payouts === "return"
-            ? "return"
-            : payouts === "refresh"
-              ? "refresh"
-              : undefined
-        }
-      />
-    </div>
-  );
+  const { plan, payouts } = await searchParams;
+  if (plan === "return") redirect("/dashboard/settings/billing?return=1");
+  if (plan !== undefined) redirect("/dashboard/settings/billing");
+  if (payouts === "return") redirect("/dashboard/settings/payouts?return=1");
+  if (payouts === "refresh") redirect("/dashboard/settings/payouts?refresh=1");
+  if (payouts !== undefined) redirect("/dashboard/settings/payouts");
+  redirect("/dashboard/settings/general");
 }

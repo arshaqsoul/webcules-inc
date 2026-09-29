@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Button } from "@webcules/ui/components/button";
-import { EmbedHub } from "@/components/embed-hub";
 import { Input } from "@webcules/ui/components/input";
 import { Label } from "@webcules/ui/components/label";
 
@@ -17,8 +16,9 @@ type Initial = {
   fontFamily: string;
   theme: string;
   tokens: string;
+  /** Embed key — the widget preview + logo URL still live in this monolith
+   * until WEB-236 carves the brand section out. */
   embedKey: string;
-  embedOrigins: string[];
   hasLogo: boolean;
   logoUrl: string | null;
   /** WEB-118: rejected auto-delete policy — days, 0 = keep forever. */
@@ -40,8 +40,6 @@ export function SettingsForm({ initial, brandRevision }: { initial: Initial; bra
   const [theme, setTheme] = useState(initial.theme);
   const [tokensJson, setTokensJson] = useState(initial.tokens);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [origins, setOrigins] = useState(initial.embedOrigins.join("\n"));
-  const [embedKey, setEmbedKey] = useState(initial.embedKey);
   const [logoUrl, setLogoUrl] = useState(initial.logoUrl);
   const [retentionDays, setRetentionDays] = useState(String(initial.rejectedRetentionDays));
   const [stripExif, setStripExif] = useState(initial.exifStripDerived);
@@ -95,25 +93,6 @@ export function SettingsForm({ initial, brandRevision }: { initial: Initial; bra
     if (res.ok) router.refresh();
   }
 
-  async function saveOrigins() {
-    setBusy(true);
-    setStatus(null);
-    const list = origins.split("\n").map((l) => l.trim()).filter(Boolean);
-    const res = await fetch("/api/studio/embed", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ origins: list }),
-    });
-    setBusy(false);
-    const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
-    setStatus(
-      res.ok
-        ? `Origins saved (${((body.origins as string[] | undefined)?.length ?? 0)}). ${list.length === 0 ? "Embeds are open from any site until you add origins." : "Embeds now restricted to these sites."}`
-        : `Save failed: ${String(body.error ?? "unknown")}`,
-    );
-    if (res.ok) router.refresh();
-  }
-
   async function uploadLogo(file: File) {
     setBusy(true);
     setStatus(null);
@@ -122,7 +101,7 @@ export function SettingsForm({ initial, brandRevision }: { initial: Initial; bra
     const res = await fetch("/api/studio/logo", { method: "POST", body: form });
     setBusy(false);
     if (res.ok) {
-      setLogoUrl(`/api/embed/logo?key=${embedKey}`);
+      setLogoUrl(`/api/embed/logo?key=${initial.embedKey}`);
       setStatus("Logo uploaded.");
       router.refresh();
     } else {
@@ -269,45 +248,7 @@ export function SettingsForm({ initial, brandRevision }: { initial: Initial; bra
           </div>
           <Button onClick={saveProfile} disabled={busy} size="sm">Save profile</Button>
         </div>
-      </section>
-
-      <EmbedHub
-        embedKey={embedKey}
-        slug={initial.slug}
-        studioTheme={theme}
-        studioAccent={profile.accentColor}
-        studioFontFamily={fontFamily}
-        originsCount={initial.embedOrigins.length}
-        revision={brandRevision}
-        liveTokens={(() => {
-          try {
-            return tokensJson.trim() ? (JSON.parse(tokensJson) as Record<string, unknown>) : undefined;
-          } catch {
-            return undefined;
-          }
-        })()}
-        onKeyRotated={(newKey) => {
-          setEmbedKey(newKey);
-          setLogoUrl(`/api/embed/logo?key=${newKey}`);
-        }}
-      />
-
-      <section className={card} id="origins">
-        <h2 className="text-[15px] font-medium text-ink">Allowed embed sites</h2>
-        <p className="mt-1 text-xs text-ink-subtle">
-          One origin per line (e.g. https://yourstudio.com). Empty = widgets embed from any site —
-          add your website to lock them to it.
-        </p>
-        <textarea
-          className="mt-3 min-h-[72px] w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-xs text-ink"
-          value={origins}
-          placeholder={"https://yourstudio.com\nhttps://www.yourstudio.com"}
-          onChange={(e) => setOrigins(e.target.value)}
-        />
-        <div className="mt-3 flex justify-end">
-          <Button onClick={saveOrigins} disabled={busy} size="sm">Save origins</Button>
-        </div>
-      </section>
+        </section>
 
       {status && <p className="text-sm text-ink-subtle">{status}</p>}
     </div>

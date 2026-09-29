@@ -204,8 +204,8 @@ export async function createPlanCheckout(
     line_items: [{ price: price.id, quantity: 1 }],
     subscription_data: { metadata: { organizationId, plan: planId } },
     metadata: { organizationId, plan: planId, kind: "plan_checkout" },
-    success_url: `${baseUrl}/dashboard/settings?plan=return`,
-    cancel_url: `${baseUrl}/dashboard/settings?plan=cancelled`,
+    success_url: `${baseUrl}/dashboard/settings/billing?return=1`,
+    cancel_url: `${baseUrl}/dashboard/settings/billing`,
   });
   return { url: session.url, mode: "checkout" };
 }

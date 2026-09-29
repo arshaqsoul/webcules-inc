@@ -69,8 +69,8 @@ export async function createAccountLink(
   const make = (type: "account_onboarding" | "account_update") =>
     stripe.accountLinks.create({
       account: accountId,
-      refresh_url: `${baseUrl}/dashboard/settings?payouts=refresh`,
-      return_url: `${baseUrl}/dashboard/settings?payouts=return`,
+      refresh_url: `${baseUrl}/dashboard/settings/payouts?refresh=1`,
+      return_url: `${baseUrl}/dashboard/settings/payouts?return=1`,
       type,
     });
   try {

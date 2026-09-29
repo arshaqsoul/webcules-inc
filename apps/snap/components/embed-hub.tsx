@@ -15,6 +15,10 @@ import { useConfirm } from "@/components/confirm-provider";
 type Props = {
   embedKey: string;
   slug: string;
+  /** WEB-228: the org-scoped booking link (primary custom domain when the
+   * studio has one) — computed server-side by the settings page. Falls back
+   * to the main origin when omitted. */
+  bookingUrl?: string;
   /** Studio-level widget theme from the brand profile (fallback when no override). */
   studioTheme: string;
   /** Saved brand accent — the booking-button preview's fallback color. */
@@ -39,7 +43,7 @@ const inputCls =
 
 type WidgetKind = "contact" | "calendar" | "calendar-button";
 
-export function EmbedHub({ embedKey, slug, studioTheme, studioAccent, studioFontFamily, originsCount, revision, liveTokens, onKeyRotated }: Props) {
+export function EmbedHub({ embedKey, slug, bookingUrl, studioTheme, studioAccent, studioFontFamily, originsCount, revision, liveTokens, onKeyRotated }: Props) {
   const router = useRouter();
   const confirm = useConfirm();
   const [theme, setTheme] = useState("brand"); // brand | light | dark | auto
@@ -117,7 +121,7 @@ export function EmbedHub({ embedKey, slug, studioTheme, studioAccent, studioFont
     }
   }
 
-  const bookingUrl = `${APP_ORIGIN}/b/${slug}`;
+  const studioBookingUrl = bookingUrl ?? `${APP_ORIGIN}/b/${slug}`;
 
   const snippetBlock = (id: string, kind: WidgetKind) => (
     <div className="flex items-start gap-2">
@@ -270,9 +274,9 @@ export function EmbedHub({ embedKey, slug, studioTheme, studioAccent, studioFont
               rel="noreferrer"
               className="flex-1 truncate rounded-md bg-canvas px-3 py-2 font-mono text-xs text-primary underline-offset-2 hover:underline"
             >
-              {bookingUrl}
+              {studioBookingUrl}
             </a>
-            <Button variant="secondary" size="icon" aria-label="Copy booking link" onClick={() => void copy("link", bookingUrl)}>
+            <Button variant="secondary" size="icon" aria-label="Copy booking link" onClick={() => void copy("link", studioBookingUrl)}>
               {copied === "link" ? <Check className="h-4 w-4" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />}
             </Button>
             <a
