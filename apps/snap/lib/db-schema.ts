@@ -646,6 +646,23 @@ export const downloadRequests = sqliteTable(
   ],
 );
 
+/** WEB-265: per-photo interest counters (heat overlay) — upsert pattern
+ * twin of gallery_view_monthly, keyed by asset+month. */
+export const assetViewMonthly = sqliteTable(
+  "asset_view_monthly",
+  {
+    organizationId: text("organization_id").notNull(),
+    grantId: text("grant_id").notNull(),
+    assetId: text("asset_id").notNull(),
+    month: text("month").notNull(),
+    views: integer("views").notNull().default(0),
+  },
+  (t) => [
+    primaryKey({ columns: [t.organizationId, t.grantId, t.assetId, t.month] }),
+    index("asset_view_monthly_org_idx").on(t.organizationId, t.month),
+  ],
+);
+
 /** WEB-262: per-photo share tokens — children of the gallery grant. The
  * parent's status/expiry/sharing-toggle is re-checked on every resolve, so
  * revoking or regenerating the gallery kills every photo link with it. */

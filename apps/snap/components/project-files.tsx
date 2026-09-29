@@ -416,6 +416,22 @@ export function ProjectFiles({ projectId, clientEmail, initial }: { projectId: s
   const activeXhrs = useRef<Map<string, Set<XMLHttpRequest>>>(new Map());
   const itemById = useRef<Map<string, QueueItem>>(new Map());
   const [triageOpen, setTriageOpen] = useState(false);
+  // WEB-265: per-photo interest heat (Studio+) — fetched lazily on toggle.
+  const [heatOn, setHeatOn] = useState(false);
+  const [heat, setHeat] = useState<Record<string, number> | null>(null);
+  const heatMax = heat ? Math.max(1, ...Object.values(heat)) : 1;
+
+  useEffect(() => {
+    if (!heatOn || heat) return;
+    fetch(`/api/projects/${projectId}/asset-views`)
+      .then((r) => (r.ok ? (r.json() as Promise<{ views?: { assetId: string; views: number }[] }>) : Promise.resolve({})))
+      .then((b: { views?: { assetId: string; views: number }[] }) => {
+        const map: Record<string, number> = {};
+        for (const v of b.views ?? []) map[v.assetId] = v.views;
+        setHeat(map);
+      })
+      .catch(() => setHeat({}));
+  }, [heatOn, heat, projectId]);
   const [notice, setNotice] = useState("");
   const [purging, setPurging] = useState(false);
   // Ids being deleted right now — cards dim + badge until the server replies.
@@ -1818,6 +1834,9 @@ export function ProjectFiles({ projectId, clientEmail, initial }: { projectId: s
             <Button size="sm" variant="outline" disabled={!feed.items.length} onClick={() => setTriageOpen(true)}>
               Triage
             </Button>
+            <Button size="sm" variant={heatOn ? "default" : "outline"} disabled={!feed.items.length} onClick={() => setHeatOn((v) => !v)} title="Heat: which photos your client looked at most (Studio)">
+              {heatOn ? "Heat on" : "Heat"}
+            </Button>
           </div>
           {(feed.counts.rejected ?? 0) > 0 && (
             <Button
@@ -2141,6 +2160,15 @@ export function ProjectFiles({ projectId, clientEmail, initial }: { projectId: s
                           `rounded-[4px] sm:rounded-none ${selected.has(a.id) ? "ring-2 ring-primary" : focusIndex === i ? "ring-2 ring-primary/70" : ""}`
                     } ${deleting.has(a.id) ? "opacity-40 saturate-50" : ""}`}
                   >
+                    {heatOn && heat && heat[a.id] ? (
+                      <span
+                        className="pointer-events-none absolute bottom-1 left-1 z-20 rounded px-1.5 py-0.5 text-[9px] font-bold text-white"
+                        style={{ background: `rgba(225,29,72,${0.35 + 0.65 * Math.min(1, heat[a.id] / heatMax)})` }}
+                        title={`${heat[a.id]} view${heat[a.id] === 1 ? "" : "s"}`}
+                      >
+                        {heat[a.id]}
+                      </span>
+                    ) : null}
                     {deleting.has(a.id) && (
                       <span className="absolute left-1/2 top-1/2 z-30 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black/60 px-2 py-0.5 text-[9px] font-medium text-white">
                         Deleting…

@@ -9,7 +9,7 @@ import { stripJpegExif } from "@/lib/exif";
 import { getOrgContext } from "@/lib/session";
 import { clientIp, logShareAccess, resolveGalleryAccess } from "@/lib/shares/gallery-auth";
 import { assetInGrant, getGrantById } from "@/lib/shares/grants";
-import { checkImageView } from "@/lib/limits";
+import { checkImageView, countAssetView } from "@/lib/limits";
 import { downloadSettingsOf, photoDownloadCount } from "@/lib/repos/downloads";
 import { downloadCookieOk } from "@/app/api/g/[token]/download-request/verify/route";
 
@@ -112,6 +112,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const rangeReq = req.headers.has("Range");
     if (ip && !rangeReq) {
       const limit = await checkImageView(ip, grant.organizationId, grant.id);
+      // WEB-265: per-photo interest counter (heat overlay) — only admitted
+      // views count, same moment as the budget.
+      await countAssetView(grant.organizationId, grant.id, id);
       if (!limit.ok) {
         return Response.json(
           { error: limit.reason === "ip" ? "rate_limited" : "view_budget_exceeded" },

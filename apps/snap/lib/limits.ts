@@ -53,6 +53,32 @@ export async function checkImageView(ip: string, organizationId: string, grantId
   return { ok: true };
 }
 
+/** WEB-265: per-photo interest counter (heat overlay) — rides the same
+ * admitted-view moment as the budget counters; months roll like the
+ * gallery counter. */
+export async function countAssetView(organizationId: string, grantId: string, assetId: string): Promise<void> {
+  try {
+    const db = getDb();
+    await db.all(sql`
+      INSERT INTO asset_view_monthly (organization_id, grant_id, asset_id, month, views)
+      VALUES (${organizationId}, ${grantId}, ${assetId}, ${monthKey()}, 1)
+      ON CONFLICT (organization_id, grant_id, asset_id, month) DO UPDATE SET views = views + 1
+    `);
+  } catch (err) {
+    console.error("asset view counter failed:", String(err)); // analytics must never break serving
+  }
+}
+
+/** All-time per-asset view totals for a grant's delivered set (aggregates,
+ * not row scans — the heat overlay source). */
+export async function assetViewTotals(grantId: string): Promise<Map<string, number>> {
+  const db = getDb();
+  const rows = await db.all<{ asset_id: string; n: number }>(sql`
+    SELECT asset_id, SUM(views) AS n FROM asset_view_monthly WHERE grant_id = ${grantId} GROUP BY asset_id
+  `);
+  return new Map(rows.map((r) => [r.asset_id, r.n]));
+}
+
 /** Gallery page open — counts toward the monthly budget only. */
 export async function countGalleryOpen(organizationId: string, grantId: string): Promise<boolean> {
   const rows = await getDb().all<{ views: number }>(sql`

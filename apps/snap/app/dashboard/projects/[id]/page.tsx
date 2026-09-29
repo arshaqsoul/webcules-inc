@@ -27,6 +27,8 @@ import { listTemplates } from "@/lib/repos/templates";
 import { parseFormSchema } from "@/lib/forms";
 import { parsePresetLines } from "@/lib/invoice-settings";
 import { GalleryDesigner } from "@/components/gallery-designer";
+import { GalleryActivity } from "@/components/gallery-activity";
+import { getGalleryAnalytics } from "@/lib/repos/gallery-analytics";
 import { getProjectGalleryDesign } from "@/lib/repos/gallery-design";
 import { getProjectSlideshow } from "@/lib/repos/slideshow";
 import { getDefaultTemplate } from "@/lib/repos/templates";
@@ -277,6 +279,11 @@ export default async function ProjectDetailPage({
           canDesign={(ent?.id ?? "free") !== "free"}
           initialSlideshow={slideshowCfg}
           canMusic={(ent?.id ?? "free") !== "free"}
+        />
+        <GalleryActivity
+          analytics={await getGalleryAnalytics(ctx.organizationId, id)}
+          grants={grants.map((g) => ({ id: g.id, clientEmail: g.clientEmail, state: g.state }))}
+          canNudge={(ent?.id ?? "free") !== "free"}
         />
         <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
           <h2 className="text-[15px] font-medium text-ink">Client gallery</h2>
