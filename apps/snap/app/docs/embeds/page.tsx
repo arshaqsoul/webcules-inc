@@ -67,7 +67,11 @@ export default async function EmbedDocsPage() {
           <Link href="/dashboard/settings" className="text-primary hover:underline">
             Settings → Embeds
           </Link>{" "}
-          in your dashboard, or paste the examples below.
+          in your dashboard, or paste the examples below. Want the pages themselves on{" "}
+          <Link href="/docs/domains" className="text-primary hover:underline">
+            your own domain
+          </Link>
+          ?
         </p>
         <div className="rounded-md bg-amber-500/10 px-3.5 py-2.5 text-[13px] leading-relaxed text-amber-600 dark:text-amber-400">
           <strong>Before you embed:</strong> widgets render inside an iframe guarded by <code>frame-ancestors</code>.
