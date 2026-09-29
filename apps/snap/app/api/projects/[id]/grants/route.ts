@@ -6,6 +6,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { getOrgContext } from "@/lib/session";
+import { clientUrl } from "@/lib/client-urls";
 import { createShareGrant, listProjectGrants, normalizeExpiry } from "@/lib/shares/grants";
 import { sendGrantEmail } from "@/lib/shares/notify";
 import { getPlanEntitlements } from "@/lib/plans";
@@ -152,7 +153,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   });
   if (!created.ok) return Response.json({ error: created.error }, { status: 400 });
 
-  const galleryUrl = `${new URL(req.url).origin}/g/${created.token}`;
+  const galleryUrl = await clientUrl(ctx.organizationId, `/g/${created.token}`);
   const emailed = await sendGrantEmail({
     organizationId: ctx.organizationId,
     clientEmail,
