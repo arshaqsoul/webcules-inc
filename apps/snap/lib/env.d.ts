@@ -18,6 +18,11 @@ declare namespace Cloudflare {
     GALLERY_OTP_MODE?: string;
     /** Comma-separated founder emails — gates the margin report + alerts. */
     FOUNDER_EMAILS?: string;
+    /** WEB-224/226: Custom Hostnames API token (Zone → Custom Hostnames →
+     * Edit on the webcules.com zone). Secret — wrangler secret put. */
+    CLOUDFLARE_API_TOKEN?: string;
+    /** webcules.com zone id — public var in wrangler.jsonc. */
+    CLOUDFLARE_ZONE_ID?: string;
   }
 }
 
@@ -32,4 +37,6 @@ interface Env {
   R2_S3_ACCOUNT_ID?: string;
   GALLERY_OTP_MODE?: string;
   FOUNDER_EMAILS?: string;
+  CLOUDFLARE_API_TOKEN?: string;
+  CLOUDFLARE_ZONE_ID?: string;
 }
