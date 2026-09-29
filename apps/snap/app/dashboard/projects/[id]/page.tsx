@@ -21,6 +21,10 @@ import { ProjectNotes } from "@/components/project-notes";
 import { getProjectShareActivity, listProjectGrants } from "@/lib/shares/grants";
 import { getOrgContext } from "@/lib/session";
 import { and, eq } from "drizzle-orm";
+import { ProjectQuestionnaires } from "@/components/project-questionnaires";
+import { listProjectFormResponses, unpackFormAnswers } from "@/lib/repos/forms";
+import { listTemplates } from "@/lib/repos/templates";
+import { parseFormSchema } from "@/lib/forms";
 
 export const metadata = { title: "Project" };
 
@@ -72,7 +76,7 @@ export default async function ProjectDetailPage({
 
   // Load only what the active tab renders — the Files workspace fetches its
   // own asset grid client-side.
-  const [events, shareActivity, auditEvents, assets, grants, deliverFolders, payments, paymentSummary, invoices, contractsRows] =
+  const [events, shareActivity, auditEvents, assets, grants, deliverFolders, payments, paymentSummary, invoices, contractsRows, formResponses, questionnaireTemplates] =
     await Promise.all([
       tab === "overview" || tab === "activity"
         ? db
@@ -91,6 +95,9 @@ export default async function ProjectDetailPage({
       tab === "payments" ? getProjectPaymentSummary(ctx.organizationId, id) : Promise.resolve(null),
       tab === "payments" ? listProjectInvoices(ctx.organizationId, id) : Promise.resolve([]),
       tab === "contracts" ? listProjectContracts(ctx.organizationId, id) : Promise.resolve([]),
+      // WEB-248: questionnaires live on the overview tab.
+      tab === "overview" ? listProjectFormResponses(ctx.organizationId, id) : Promise.resolve([]),
+      tab === "overview" ? listTemplates(ctx.organizationId, "questionnaire") : Promise.resolve([]),
     ]);
 
   return (
@@ -212,6 +219,24 @@ export default async function ProjectDetailPage({
               ))}
             </div>
           </section>
+
+          <ProjectQuestionnaires
+            projectId={id}
+            defaultClientEmail={client?.email ?? null}
+            templates={questionnaireTemplates.map((t) => ({ id: t.id, name: t.name }))}
+            initial={formResponses.map((r) => {
+              const template = questionnaireTemplates.find((t) => t.id === r.templateId);
+              const labels = Object.fromEntries((parseFormSchema(template?.body ?? "")?.fields ?? []).map((f) => [f.id, f.label]));
+              return {
+                id: r.id,
+                templateName: template?.name ?? "Questionnaire",
+                status: r.submittedAt ? ("submitted" as const) : ("pending" as const),
+                submittedAt: r.submittedAt ? r.submittedAt.toISOString() : null,
+                clientEmail: r.clientEmail,
+                answers: unpackFormAnswers(r.answers, labels),
+              };
+            })}
+          />
         </>
       )}
 

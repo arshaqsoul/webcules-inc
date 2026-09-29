@@ -8,7 +8,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Banknote, CalendarDays, ChevronDown, Code2, CreditCard, Globe, Images, LayoutGrid, Link2, PackageCheck, Settings, SlidersHorizontal, Snowflake, Users, BookOpen, Palette } from "lucide-react";
+import { Banknote, CalendarDays, ChevronDown, Code2, CreditCard, Globe, Images, LayoutGrid, LayoutTemplate, Link2, PackageCheck, Settings, SlidersHorizontal, Snowflake, Users, BookOpen, Palette } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export const NAV_ITEMS: { href: string; label: string; icon: LucideIcon }[] = [
@@ -17,6 +17,7 @@ export const NAV_ITEMS: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/dashboard/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/dashboard/projects", label: "Projects", icon: Images },
   { href: "/dashboard/galleries", label: "Galleries", icon: Link2 },
+  { href: "/dashboard/templates", label: "Templates", icon: LayoutTemplate },
   { href: "/dashboard/raw-vault", label: "RAW Vault", icon: Snowflake },
   { href: "/dashboard/transactions", label: "Transactions", icon: CreditCard },
   { href: "/docs/embeds", label: "Docs", icon: BookOpen },

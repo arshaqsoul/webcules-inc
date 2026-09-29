@@ -750,3 +750,72 @@ export function domainRecoveredEmail(studioName: string, params: {
     text: `Your gallery domain ${params.hostname} is back online.`,
   };
 }
+
+/* ---------------- Questionnaires (WEB-248) ---------------- */
+
+export function questionnaireLinkEmail(studioName: string, params: {
+  projectName: string;
+  url: string;
+  accent: string;
+  whiteLabel?: boolean;
+  emailHeaderUrl?: string | null;
+  contactEmail?: string | null;
+}) {
+  return {
+    subject: `A few questions about ${params.projectName} — ${studioName}`,
+    html: shell(
+      params.accent,
+      `A few quick questions`,
+      `<p style="margin:0 0 16px;"><strong>${studioName}</strong> shared a short questionnaire for <strong>${params.projectName}</strong> — your answers help them prepare and plan.</p>
+       <p style="margin:24px 0;"><a href="${params.url}" style="display:inline-block;background:${params.accent};color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">Open the questionnaire</a></p>
+       <p style="margin:0;font-size:13px;color:#8a8f98;">The link is private to you — no account needed.</p>`,
+      `Sent by ${studioName}${params.whiteLabel ? "." : " via Snap."}`,
+      { studioName, whiteLabel: params.whiteLabel ?? false, emailHeaderUrl: params.emailHeaderUrl, contactEmail: params.contactEmail },
+    ),
+    text: `${studioName} shared a questionnaire for ${params.projectName} — open it here: ${params.url}`,
+  };
+}
+
+export function questionnaireAckEmail(studioName: string, projectName: string, params: {
+  accent: string;
+  whiteLabel?: boolean;
+  emailHeaderUrl?: string | null;
+  contactEmail?: string | null;
+}) {
+  return {
+    subject: `Got your answers — ${studioName}`,
+    html: shell(
+      params.accent,
+      `Thank you!`,
+      `<p style="margin:0 0 16px;">Your answers for <strong>${projectName}</strong> are safely with <strong>${studioName}</strong>. They will reach out if anything needs clarifying.</p>`,
+      `Sent by ${studioName}${params.whiteLabel ? "." : " via Snap."}`,
+      { studioName, whiteLabel: params.whiteLabel ?? false, emailHeaderUrl: params.emailHeaderUrl, contactEmail: params.contactEmail },
+    ),
+    text: `Thank you! Your answers for ${projectName} are with ${studioName}.`,
+  };
+}
+
+export function questionnaireAnsweredEmail(studioName: string, projectName: string, answers: { answers: Record<string, string>; files: Record<string, { name: string; bytes: number }> }, schema: { fields: Array<{ id: string; label: string }> }, params: {
+  accent: string;
+  dashboardUrl: string;
+}) {
+  const labels = new Map(schema.fields.map((f) => [f.id, f.label]));
+  const rows = [
+    ...Object.entries(answers.answers)
+      .filter(([, v]) => v && v !== "no")
+      .map(([id, v]) => row(labels.get(id) ?? id, v === "yes" ? "Yes" : v)),
+    ...Object.entries(answers.files).map(([id, f]) => row(labels.get(id) ?? "File", `${f.name} (${Math.round(f.bytes / 1024)} KB)`)),
+  ].join("");
+  return {
+    subject: `Questionnaire answered — ${projectName}`,
+    html: shell(
+      params.accent,
+      `Questionnaire answered`,
+      `<p style="margin:0 0 16px;">The client just submitted their answers for <strong>${projectName}</strong>.</p>
+       <table cellpadding="0" cellspacing="0">${rows}</table>
+       <p style="margin:24px 0 0;"><a href="${params.dashboardUrl}" style="display:inline-block;background:${params.accent};color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">Open the project</a></p>`,
+      `You received this because a client submitted a questionnaire.`,
+    ),
+    text: `The client submitted their questionnaire for ${projectName}. Open the project: ${params.dashboardUrl}`,
+  };
+}

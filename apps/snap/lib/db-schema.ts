@@ -304,6 +304,8 @@ export const leads = sqliteTable(
     /** new | replied | converted | archived */
     status: text("status").notNull().default("new"),
     embedOrigin: text("embed_origin"),
+    /** WEB-248: custom form answers — JSON { fieldId: {label, value} }. */
+    customFields: text("custom_fields"),
     createdAt: ts("created_at"),
     updatedAt: ts("updated_at"),
   },
@@ -777,6 +779,30 @@ export const contracts = sqliteTable(
     createdAt: ts("created_at"),
   },
   (t) => [index("contract_org_project_idx").on(t.organizationId, t.projectId)],
+);
+
+/* ---------------- Form responses / questionnaires (WEB-248) ---------------- */
+
+export const formResponses = sqliteTable(
+  "form_response",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    templateId: text("template_id").notNull(),
+    /** JSON: { answers: {fieldId: string|boolean}, files: {fieldId: {key,name,bytes}} } */
+    answers: text("answers"),
+    clientEmail: text("client_email"),
+    accessTokenHash: text("access_token_hash"),
+    tokenEnc: text("token_enc"),
+    submittedAt: integer("submitted_at", { mode: "timestamp" }),
+    createdAt: ts("created_at"),
+  },
+  (t) => [index("form_response_org_project_idx").on(t.organizationId, t.projectId)],
 );
 
 /** Per-org sequential counters (invoice numbering). */

@@ -57,7 +57,7 @@ SELECT lower(hex(randomblob(16))), id, 'form', 'General intake',
 '{"v":1,"fields":[
 {"id":"f_name","kind":"text","label":"Your name","required":true},
 {"id":"f_email","kind":"email","label":"Email","required":true},
-{"id":"f_phone","kind":"tel","label":"Phone","required":false},
+{"id":"f_phone","kind":"phone","label":"Phone","required":false},
 {"id":"f_date","kind":"date","label":"Preferred date","required":false},
 {"id":"f_how","kind":"select","label":"How did you hear about us?","required":false,"options":["Instagram","Google","A friend","Other"]},
 {"id":"f_notes","kind":"textarea","label":"Anything we should know?","required":false}
@@ -93,4 +93,19 @@ INSERT INTO template (id, organization_id, kind, name, body, meta, is_default)
 SELECT lower(hex(randomblob(16))), id, 'invoice_preset', 'Standard terms',
 '[]',
 '{"terms":"Payment due within 14 days of the invoice date.","notes":"Thank you for your business!"}', 1
+FROM organization;
+
+INSERT INTO template (id, organization_id, kind, name, body, meta, is_default)
+SELECT lower(hex(randomblob(16))), id, 'questionnaire', 'Client questionnaire',
+'{"v":1,"title":"A few questions","intro":"Your answers help us plan the session perfectly.","thankYou":"Thank you — your answers are in!","fields":[
+{"id":"f_name","kind":"text","label":"Your name","required":true,"half":true},
+{"id":"f_email","kind":"email","label":"Email","required":true,"half":true},
+{"id":"f_phone","kind":"phone","label":"Best phone for day-of","required":false,"half":true},
+{"id":"f_date","kind":"date","label":"Session date (if set)","required":false,"half":true},
+{"id":"f_venue","kind":"text","label":"Venue / location","required":false,"help":"Address or name of the place","half":true},
+{"id":"f_arrival","kind":"text","label":"Who should we ask for on arrival?","required":false,"half":true},
+{"id":"f_style","kind":"select","label":"Which photos matter most?","required":false,"options":["Candids + in-between moments","Formal groupings","Couple portraits","Detail shots","A mix of everything"]},
+{"id":"f_must","kind":"textarea","label":"Any must-have shots?","required":false,"help":"Family groupings, heirlooms, pets — anything that simply cannot be missed"},
+{"id":"f_notes","kind":"textarea","label":"Anything else we should know?","required":false}
+]}', '{}', 1
 FROM organization;

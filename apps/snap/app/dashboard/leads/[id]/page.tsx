@@ -7,6 +7,7 @@ import { LeadThread } from "@/components/lead-thread";
 import { getLeadWithThread } from "@/lib/repos/leads";
 import { getProjectByLeadId } from "@/lib/repos/projects";
 import { getOrgContext } from "@/lib/session";
+import { unpackLeadCustomFields } from "@/lib/forms";
 
 export const metadata = { title: "Lead" };
 
@@ -19,6 +20,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
   if (!data) notFound();
   const { lead, messages } = data;
   const project = lead.status === "converted" ? await getProjectByLeadId(ctx.organizationId, lead.id) : undefined;
+  const customFields = unpackLeadCustomFields(lead.customFields);
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-5">
@@ -59,6 +61,28 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
           }}
         />
       </div>
+
+      {customFields.length > 0 && (
+        <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
+          <h2 className="text-[15px] font-medium text-ink">Form answers</h2>
+          <dl className="mt-3 grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
+            {customFields.map((f, i) => (
+              <div key={i}>
+                <dt className="text-xs text-ink-tertiary">{f.label}</dt>
+                <dd className="whitespace-pre-wrap text-sm text-ink">
+                  {f.file ? (
+                    <a href={`/api/studio/forms/file?key=${encodeURIComponent(f.file.key)}`} className="font-medium text-primary hover:underline">
+                      {f.value}
+                    </a>
+                  ) : (
+                    f.value
+                  )}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      )}
 
       <LeadThread
         leadId={lead.id}
