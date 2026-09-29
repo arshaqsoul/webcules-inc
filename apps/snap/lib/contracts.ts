@@ -8,6 +8,7 @@ import * as schema from "./db-schema";
 import { encryptToken, hashToken, mintToken } from "./shares/grants";
 import { putObject } from "./storage/service";
 import { renderContractPdf } from "./pdf";
+import { fetchEmailHeaderLogo } from "./brand-assets";
 import { sendEmail, contractSignRequestEmail, contractSignedEmail } from "./email";
 import { clientUrl } from "./client-urls";
 import { getEmailBrand } from "./branding";
@@ -24,17 +25,21 @@ type StudioBrand = {
   contactEmail: string | null;
   whiteLabel: boolean;
   emailHeaderUrl: string | null;
+  /** WEB-241: logo PNG bytes for the contract PDF header (null → text-only). */
+  logoPng: Uint8Array | null;
 };
 
-/** WEB-240: one getEmailBrand read feeds emails + PDFs here. */
+/** WEB-240/241: one getEmailBrand read + one R2 fetch feeds emails + PDFs. */
 async function studioAccent(organizationId: string): Promise<StudioBrand> {
   const b = await getEmailBrand(organizationId);
+  const logoPng = await fetchEmailHeaderLogo(organizationId, (await getStudioProfile(organizationId))?.brandAssets);
   return {
     name: b.studioName,
     accent: b.accent,
     contactEmail: b.contactEmail,
     whiteLabel: b.whiteLabel,
     emailHeaderUrl: b.emailHeaderUrl,
+    logoPng,
   };
 }
 
@@ -222,6 +227,7 @@ export async function signContract(
     signerIp: signer.ip,
     clientEmail: contract.clientEmail,
     whiteLabel: studio.whiteLabel,
+    logoPng: studio.logoPng ?? undefined,
   });
   const suffix = `${contract.projectId}/contracts/${contract.id}-signed.pdf`;
   await putObject(contract.organizationId, suffix, pdf.slice().buffer as ArrayBuffer, "application/pdf");

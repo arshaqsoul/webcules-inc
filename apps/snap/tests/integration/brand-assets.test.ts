@@ -9,7 +9,7 @@ import { eq } from "drizzle-orm";
 
 import { GET as serveBrandAsset } from "@/app/api/brand/[orgId]/[asset]/route";
 import { getDb, schema } from "@/lib/db";
-import { brandAssetKeySuffix, parseBrandAssets } from "@/lib/brand-assets";
+import { brandAssetKeySuffix, fetchEmailHeaderLogo, parseBrandAssets } from "@/lib/brand-assets";
 import { putObject } from "@/lib/storage/service";
 import { resetDb } from "../helpers/db";
 import { seedStudio } from "../helpers/seed";
@@ -65,5 +65,16 @@ describe("brand asset serving (WEB-239)", () => {
     const bag = parseBrandAssets(row.brandAssets);
     expect(bag.favicon).toBe(faviconKey);
     expect(bag.rev).toBe(rev);
+  });
+
+  it("WEB-241: fetchEmailHeaderLogo streams bytes from R2, null when absent", async () => {
+    const studio = await seedStudio({ plan: "studio" });
+    expect(await fetchEmailHeaderLogo(studio.organizationId, null)).toBeNull();
+    expect(await fetchEmailHeaderLogo(studio.organizationId, JSON.stringify({ rev: "r" }))).toBeNull();
+
+    const png = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 1]);
+    const key = await putObject(studio.organizationId, brandAssetKeySuffix("emailHeader", "r3"), png.buffer as ArrayBuffer, "image/png");
+    const bytes = await fetchEmailHeaderLogo(studio.organizationId, JSON.stringify({ rev: "r3", emailHeader: key }));
+    expect(bytes ? Array.from(bytes) : null).toEqual(Array.from(png));
   });
 });

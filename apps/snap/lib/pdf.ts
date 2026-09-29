@@ -30,6 +30,40 @@ export function pdfFooterLine(studioName: string, whiteLabel: boolean): string {
   return whiteLabel ? `© ${studioName}` : "Powered by Snap - snap.webcules.com";
 }
 
+/** WEB-241: draw the studio logo (PNG bytes, usually the 2/8 email-header
+ * asset) into the accent header bar, height-fitted. Returns the x where the
+ * studio-name text should start (right of the logo) — or the fallback x
+ * unchanged when there is no logo. Transparent PNGs keep their alpha. */
+async function drawHeaderLogo(
+  doc: PDFDocument,
+  page: ReturnType<PDFDocument["addPage"]>,
+  logoPng: Uint8Array | undefined,
+  opts: { x: number; centerY: number; maxHeight: number },
+): Promise<number> {
+  if (!logoPng || logoPng.length === 0) return opts.x;
+  try {
+    const img = await doc.embedPng(logoPng);
+    const h = Math.min(opts.maxHeight, 28);
+    const w = (img.width / img.height) * h;
+    // Skip absurdly wide logos that would eat the whole bar.
+    if (w > 240) return opts.x;
+    page.drawImage(img, { x: opts.x, y: opts.centerY - h / 2, width: w, height: h });
+    return opts.x + w + 12;
+  } catch (err) {
+    console.error("logo embed failed (falling back to text header):", String(err));
+    return opts.x;
+  }
+}
+
+/** WEB-241: studio-owned document metadata — title/author are the studio's,
+ * never the platform (pdf-lib's own defaults would leak "pdf-lib"). */
+function setStudioMetadata(doc: PDFDocument, title: string, studioName: string): void {
+  doc.setTitle(title);
+  doc.setAuthor(studioName);
+  doc.setCreator(studioName);
+  doc.setProducer(studioName);
+}
+
 function money(amountMinor: number, currency: string): string {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: currency.toUpperCase() }).format(amountMinor / 100);
 }
@@ -65,6 +99,9 @@ export async function renderInvoicePdf(params: {
   status: string;
   /** WEB-238: white-labeled studios get `© {studio}` instead of the platform footer. */
   whiteLabel?: boolean;
+  /** WEB-241: studio logo PNG bytes (the 2/8 email-header asset) for the
+   * accent header bar; absent → today's text-only header. */
+  logoPng?: Uint8Array;
 }): Promise<Uint8Array> {
   // Sanitize at the boundary — wrap()/widthOfTextAtSize also encode.
   params = {
@@ -81,10 +118,12 @@ export async function renderInvoicePdf(params: {
   const accent = hexToRgb(params.accent);
   const ink = rgb(0.06, 0.06, 0.07);
   const subtle = rgb(0.54, 0.56, 0.6);
+  setStudioMetadata(doc, `${params.studioName} — Invoice ${params.invoiceNumber}`, params.studioName);
 
-  // Header: accent bar + studio name + INVOICE
+  // Header: accent bar + (logo →) studio name + INVOICE
   page.drawRectangle({ x: 0, y: 781.89, width: 595.28, height: 60, color: rgb(accent.r, accent.g, accent.b) });
-  page.drawText(winAnsiSafe(params.studioName), { x: 48, y: 815, size: 20, font: bold, color: rgb(1, 1, 1) });
+  const nameX = await drawHeaderLogo(doc, page, params.logoPng, { x: 48, centerY: 811.89, maxHeight: 28 });
+  page.drawText(winAnsiSafe(params.studioName), { x: nameX, y: 815, size: 20, font: bold, color: rgb(1, 1, 1) });
   const invoiceLabel = "INVOICE";
   page.drawText(invoiceLabel, { x: 595.28 - 48 - bold.widthOfTextAtSize(invoiceLabel, 22), y: 813, size: 22, font: bold, color: rgb(1, 1, 1) });
 
@@ -159,12 +198,15 @@ export async function renderContractPdf(params: {
   clientEmail: string | null;
   /** WEB-238: white-labeled studios get `© {studio}` instead of the platform footer. */
   whiteLabel?: boolean;
+  /** WEB-241: studio logo PNG bytes for the accent header bar. */
+  logoPng?: Uint8Array;
 }): Promise<Uint8Array> {
   const sanitize = (v: string) => winAnsiSafe(v);
   const doc = await PDFDocument.create();
   const regular = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
   const accent = hexToRgb(params.accent);
+  setStudioMetadata(doc, `${params.studioName} — ${params.title}`, params.studioName);
 
   const MARGIN = 56;
   const WIDTH = 595.28;
@@ -182,7 +224,8 @@ export async function renderContractPdf(params: {
 
   // Header
   page.drawRectangle({ x: 0, y: 781.89, width: WIDTH, height: 60, color: rgb(accent.r, accent.g, accent.b) });
-  page.drawText(sanitize(params.studioName), { x: MARGIN, y: 815, size: 18, font: bold, color: rgb(1, 1, 1) });
+  const nameX = await drawHeaderLogo(doc, page, params.logoPng, { x: MARGIN, centerY: 811.89, maxHeight: 26 });
+  page.drawText(sanitize(params.studioName), { x: nameX, y: 815, size: 18, font: bold, color: rgb(1, 1, 1) });
   y = 741.89;
   page.drawText(sanitize(params.title), { x: MARGIN, y, size: 15, font: bold, color: rgb(0.06, 0.06, 0.07) });
   y -= 22;

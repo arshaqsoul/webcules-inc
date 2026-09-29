@@ -20,6 +20,7 @@ import {
   projectCompleteClientEmail,
   refundClientEmail,
 } from "@/lib/email";
+import { PDFDocument } from "pdf-lib";
 import { renderContractPdf, renderInvoicePdf, pdfFooterLine } from "@/lib/pdf";
 
 const ENT_ON = { whiteLabel: true };
@@ -297,5 +298,67 @@ describe("PDF footers (WEB-238)", () => {
     expect(a.length).toBeGreaterThan(0);
     expect(b.length).toBeGreaterThan(0);
     expect(Buffer.compare(Buffer.from(a), Buffer.from(b))).not.toBe(0); // footer differs → bytes differ
+  });
+});
+
+describe("PDF logo embed + metadata audit (WEB-241)", () => {
+  // 1×1 transparent PNG.
+  const TINY_PNG = new Uint8Array(
+    atob("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==")
+      .split("")
+      .map((c) => c.charCodeAt(0)),
+  );
+
+  const INV = {
+    studioName: "Willow & Pine",
+    accent: "#5e6ad2",
+    invoiceNumber: "INV-001",
+    issuedAt: new Date("2026-10-01T10:00:00Z"),
+    dueAt: null,
+    clientEmail: "client@example.com",
+    projectTitle: "Autumn shoot",
+    lines: [{ description: "Session", qty: 1, amountMinor: 10000 }],
+    totalMinor: 10000,
+    currency: "usd",
+    status: "sent",
+  };
+
+  it("logo bytes embed without throwing and change the document", async () => {
+    const withLogo = await renderInvoicePdf({ ...INV, whiteLabel: true, logoPng: TINY_PNG });
+    const without = await renderInvoicePdf({ ...INV, whiteLabel: true });
+    expect(withLogo.length).toBeGreaterThan(0);
+    expect(Buffer.compare(Buffer.from(withLogo), Buffer.from(without))).not.toBe(0);
+  });
+
+  it("garbage logo bytes degrade gracefully to the text header", async () => {
+    const out = await renderInvoicePdf({ ...INV, logoPng: new Uint8Array([1, 2, 3]) });
+    expect(out.length).toBeGreaterThan(0); // no throw — fallback path
+  });
+
+  it("metadata is studio-owned: title/author/creator never mention Snap", async () => {
+    const inv = await PDFDocument.load(await renderInvoicePdf({ ...INV, whiteLabel: true }));
+    expect(inv.getTitle()).toBe("Willow & Pine — Invoice INV-001");
+    expect(inv.getAuthor()).toBe("Willow & Pine");
+    expect(inv.getCreator()).toBe("Willow & Pine");
+    // pdf-lib force-stamps its own Producer at save() — a library signature,
+    // not platform branding; the audit rule is "no Snap".
+    expect(String(inv.getProducer())).not.toMatch(/snap|webcules/i);
+
+    const contract = await PDFDocument.load(
+      await renderContractPdf({
+        studioName: "Willow & Pine",
+        accent: "#5e6ad2",
+        title: "Portrait agreement",
+        body: "The parties agree.",
+        signerName: "Ada",
+        signedAt: new Date("2026-10-01T10:00:00Z"),
+        signerIp: null,
+        clientEmail: null,
+        whiteLabel: true,
+      }),
+    );
+    expect(contract.getTitle()).toBe("Willow & Pine — Portrait agreement");
+    expect(contract.getAuthor()).toBe("Willow & Pine");
+    expect(String(contract.getProducer())).not.toMatch(/snap|webcules/i);
   });
 });

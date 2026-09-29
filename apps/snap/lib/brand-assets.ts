@@ -4,6 +4,8 @@
  * Generation happens in the BROWSER (canvas) — the margin rule; the server
  * only validates kinds/sizes and stores. */
 import { env } from "cloudflare:workers";
+
+import { getObject } from "./storage/service";
 export const BRAND_ASSET_NAMES = ["favicon", "appleTouch", "emailHeader", "ogCard", "watermark"] as const;
 export type BrandAssetName = (typeof BRAND_ASSET_NAMES)[number];
 
@@ -97,4 +99,22 @@ export function brandOgImage(bag: BrandAssetBag, organizationId: string): string
   if (!bag.ogCard) return null;
   const origin = env.NEXT_PUBLIC_APP_URL ?? "https://snap.webcules.com";
   return `${origin}${brandAssetUrl(organizationId, "ogCard", bag.rev)}`;
+}
+
+/** WEB-241: the email-header logo as PNG bytes, straight from R2 (in-worker,
+ * never the public proxy) for PDF embedding. Null when absent/unreadable. */
+export async function fetchEmailHeaderLogo(
+  organizationId: string,
+  brandAssetsJson: string | null | undefined,
+): Promise<Uint8Array | null> {
+  const bag = parseBrandAssets(brandAssetsJson);
+  if (!bag.emailHeader) return null;
+  try {
+    const obj = await getObject(organizationId, bag.emailHeader);
+    if (!obj) return null;
+    return new Uint8Array(await obj.arrayBuffer());
+  } catch (err) {
+    console.error("email-header logo fetch failed:", String(err));
+    return null;
+  }
 }

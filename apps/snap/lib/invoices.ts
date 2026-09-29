@@ -9,6 +9,7 @@ import * as schema from "./db-schema";
 import { encryptToken, hashToken, mintToken } from "./shares/grants";
 import { putObject } from "./storage/service";
 import { renderInvoicePdf, type PdfLine } from "./pdf";
+import { fetchEmailHeaderLogo } from "./brand-assets";
 import { sendEmail, invoiceEmail } from "./email";
 import { getEmailBrand } from "./branding";
 import { getStudioProfile } from "./repos/studios";
@@ -97,6 +98,7 @@ async function generateAndArchivePdf(invoice: InvoiceRow, projectTitle: string |
     currency: invoice.currency,
     status: invoice.status,
     whiteLabel: (await getEmailBrand(invoice.organizationId)).whiteLabel,
+    logoPng: (await fetchEmailHeaderLogo(invoice.organizationId, profile?.brandAssets)) ?? undefined,
   });
   // putObject takes the org-relative suffix and prefixes {orgId}/ itself.
   const suffix = `${invoice.projectId}/invoices/${invoice.id}.pdf`;
