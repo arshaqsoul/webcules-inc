@@ -1,7 +1,8 @@
 /* PDF generation on Workers (WEB-137/158) — pdf-lib (pure JS, no native
  * deps). Standard fonts only; brand accent applied as a header bar. */
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import { PDFDocument, PDFString, StandardFonts, rgb, type PDFPage } from "pdf-lib";
 import { contractBodyToText } from "./contract-body";
+import { snapBrandUrl } from "./snap-url";
 
 export type PdfLine = { description: string; qty: number; amountMinor: number };
 
@@ -29,6 +30,32 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
  * instead of the platform mention. Exported for the zero-Snap audit test. */
 export function pdfFooterLine(studioName: string, whiteLabel: boolean): string {
   return whiteLabel ? `© ${studioName}` : "Powered by Snap - snap.webcules.com";
+}
+
+/** Overlay a URI link annotation on a drawn footer line — pdf-lib has no
+ * drawLink, so the clickable area is the text rect itself (the free-tier
+ * growth loop: the footer "Powered by Snap" opens the homepage). */
+function linkFooterText(
+  doc: PDFDocument,
+  page: PDFPage,
+  text: string,
+  x: number,
+  y: number,
+  font: { widthOfTextAtSize: (t: string, s: number) => number },
+  medium: string,
+): void {
+  const ref = doc.context.nextRef();
+  doc.context.assign(
+    ref,
+    doc.context.obj({
+      Type: "Annot",
+      Subtype: "Link",
+      Rect: [x, y - 1.5, x + font.widthOfTextAtSize(text, 8), y + 9],
+      Border: [0, 0, 0],
+      A: { Type: "Action", S: "URI", URI: PDFString.of(snapBrandUrl(medium)) },
+    }),
+  );
+  page.node.addAnnot(ref);
 }
 
 /** WEB-241: draw the studio logo (PNG bytes, usually the 2/8 email-header
@@ -211,7 +238,9 @@ export async function renderInvoicePdf(params: {
   }
 
   // Footer
-  page.drawText(pdfFooterLine(params.studioName, params.whiteLabel === true), { x: 48, y: 56, size: 8, font: regular, color: subtle });
+  const footer = pdfFooterLine(params.studioName, params.whiteLabel === true);
+  page.drawText(footer, { x: 48, y: 56, size: 8, font: regular, color: subtle });
+  if (params.whiteLabel !== true) linkFooterText(doc, page, footer, 48, 56, regular, "invoice");
   page.drawText("Thank you for your business.", { x: 48, y: 68, size: 9, font: regular, color: subtle });
 
   return doc.save({ useObjectStreams: false });
@@ -293,7 +322,9 @@ export async function renderContractPdf(params: {
     : "Awaiting signature";
   page.drawText(signed, { x: MARGIN, y, size: 9, font: regular, color: rgb(0.54, 0.56, 0.6) });
   y -= 14;
-  page.drawText(pdfFooterLine(sanitize(params.studioName), params.whiteLabel === true), { x: MARGIN, y, size: 8, font: regular, color: rgb(0.54, 0.56, 0.6) });
+  const cFooter = pdfFooterLine(sanitize(params.studioName), params.whiteLabel === true);
+  page.drawText(cFooter, { x: MARGIN, y, size: 8, font: regular, color: rgb(0.54, 0.56, 0.6) });
+  if (params.whiteLabel !== true) linkFooterText(doc, page, cFooter, MARGIN, y, regular, "contract");
 
   return doc.save({ useObjectStreams: false });
 }

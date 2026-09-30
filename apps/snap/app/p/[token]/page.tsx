@@ -12,6 +12,7 @@ import { eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { deterrentsOn, isWhiteLabeled } from "@/lib/branding";
+import { SnapBadge } from "@/components/snap-badge";
 import { effectiveWatermark } from "@/lib/watermark";
 import { getStudioProfile, getStudioSlug } from "@/lib/repos/studios";
 import { getPlanEntitlements } from "@/lib/plans";
@@ -124,7 +125,7 @@ export default async function SharedPhotoPage({ params }: { params: Promise<{ to
         ) : (
           <p className="text-sm text-white/70">Photographed by {studioName}</p>
         )}
-        {!whiteLabel ? <p className="mt-1 text-[11px] text-white/40">Delivered by Snap · snap.webcules.com</p> : null}
+          {!whiteLabel ? <p className="mt-1 text-[11px] text-white/40"><SnapBadge medium="portal">Delivered by Snap · snap.webcules.com</SnapBadge></p> : null}
       </footer>
     </main>
   );

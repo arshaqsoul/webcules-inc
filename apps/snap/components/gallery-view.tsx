@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { FileTypeIcon } from "@/components/file-type-icon";
 import { PwaRuntime, queueFavoriteOp, recordFavoriteState } from "@/components/my-pwa";
+import { SnapBadge } from "@/components/snap-badge";
 import { captionOf, fmtDuration, focalPosition, themeVars, type GalleryDesign } from "@/lib/gallery-design";
 
 declare global {
@@ -137,7 +138,7 @@ export function GalleryDenied({ reason, studioName, contactEmail, whiteLabel }: 
           </p>
         )}
         <p className="mt-6 text-xs text-ink-tertiary">
-          {whiteLabel && studioName ? `© ${studioName}` : "Delivered by Snap · snap.webcules.com"}
+          {whiteLabel && studioName ? `© ${studioName}` : <SnapBadge medium="gallery">Delivered by Snap · snap.webcules.com</SnapBadge>}
         </p>
       </div>
     </main>
@@ -335,7 +336,7 @@ export function GalleryGate({ studioName, accent, logoUrl, whiteLabel, token, ma
         </form>
 
         <p className="mt-6 border-t border-hairline pt-4 text-xs text-ink-tertiary">
-          {whiteLabel ? `© ${studioName}` : "Delivered by Snap · snap.webcules.com"}
+          {whiteLabel ? `© ${studioName}` : <SnapBadge medium="gallery">Delivered by Snap · snap.webcules.com</SnapBadge>}
         </p>
       </div>
     </main>
@@ -1753,7 +1754,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
       )}
 
       <footer className="mx-auto max-w-6xl px-5 pb-10 pt-2 text-center text-xs text-ink-tertiary">
-        {whiteLabel ? `© ${studioName}` : <>Delivered by {studioName} via Snap</>}
+        {whiteLabel ? `© ${studioName}` : <>Delivered by {studioName} via <SnapBadge medium="gallery-photo">Snap</SnapBadge></>}
         {!whiteLabel && contactEmail ? <> · <a href={`mailto:${contactEmail}`} className="underline underline-offset-2">Contact the studio</a></> : null}
       </footer>
 

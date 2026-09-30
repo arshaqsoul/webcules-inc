@@ -10,6 +10,7 @@ import { env } from "cloudflare:workers";
 
 import { MyGate } from "@/components/my-gate";
 import { MyInstallBanner, PwaRuntime } from "@/components/my-pwa";
+import { SnapBadge } from "@/components/snap-badge";
 import { resolveMySession } from "@/lib/shares/my-auth";
 import { listMyGalleries, listMyPeeks } from "@/lib/repos/my-home";
 
@@ -116,7 +117,7 @@ export default async function MyHomePage() {
           )}
         </section>
 
-        <p className="text-center text-xs text-ink-tertiary">Delivered by Snap · snap.webcules.com</p>
+        <p className="text-center text-xs text-ink-tertiary"><SnapBadge medium="my">Delivered by Snap · snap.webcules.com</SnapBadge></p>
       </div>
     </main>
   );
