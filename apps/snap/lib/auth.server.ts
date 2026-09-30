@@ -44,6 +44,52 @@ function otpEmailHtml(code: string, purpose: string): string {
   </td></tr></table></body></html>`;
 }
 
+function resetPasswordEmailHtml(url: string): string {
+  return `<!doctype html><html><body style="margin:0;padding:0;background:${SNAP_BRAND.canvas};font-family:Inter,-apple-system,system-ui,'Segoe UI',Roboto,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${SNAP_BRAND.canvas};padding:40px 16px;"><tr><td align="center">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:${SNAP_BRAND.surface};border:1px solid ${SNAP_BRAND.hairline};border-radius:12px;padding:40px 32px;">
+      <tr><td style="padding-bottom:8px;"><span style="font-size:13px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:${SNAP_BRAND.lavender};">Snap</span></td></tr>
+      <tr><td style="padding-bottom:24px;"><h1 style="margin:0;font-size:22px;line-height:1.3;font-weight:600;color:${SNAP_BRAND.ink};">Reset your password</h1></td></tr>
+      <tr><td style="font-size:15px;line-height:1.6;color:${SNAP_BRAND.inkSubtle};">
+        <p style="margin:0 0 24px;">Click the button below to choose a new password for your Snap account. The link expires in 60 minutes and can only be used once.</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
+          <a href="${url}" style="display:inline-block;background:${SNAP_BRAND.lavender};color:${SNAP_BRAND.ink};font-size:15px;font-weight:600;text-decoration:none;border-radius:8px;padding:12px 24px;">Choose a new password</a>
+        </td></tr></table>
+        <p style="margin:24px 0 0;font-size:12px;line-height:1.5;word-break:break-all;">Or paste this link into your browser: ${url}</p>
+      </td></tr>
+      <tr><td style="padding-top:32px;border-top:1px solid ${SNAP_BRAND.hairline};"><p style="margin:0;font-size:12px;line-height:1.5;color:${SNAP_BRAND.inkSubtle};">If you didn&rsquo;t request this, you can safely ignore this email &mdash; your current password stays unchanged.</p></td></tr>
+    </table>
+    <p style="margin:16px 0 0;font-size:12px;color:${SNAP_BRAND.inkSubtle};">snap.webcules.com</p>
+  </td></tr></table></body></html>`;
+}
+
+async function deliverResetLink(to: string, url: string): Promise<void> {
+  if (!env.EMAIL) {
+    console.log(
+      `[auth:dev-delivery] EMAIL binding unavailable — printing instead.\n[auth:dev-delivery] to=${to}\n[auth:dev-delivery] reset=${url}`,
+    );
+    return;
+  }
+  await env.EMAIL.send({
+    to,
+    from: env.EMAIL_FROM || "Snap <hello@snap.webcules.com>",
+    subject: "Reset your Snap password",
+    html: resetPasswordEmailHtml(url),
+    text: `Reset your Snap password: ${url} — the link expires in 60 minutes and can only be used once.`,
+  });
+  try {
+    const db = getDb();
+    await db.insert(schema.emailLog).values({
+      id: crypto.randomUUID(),
+      toEmail: to,
+      template: "reset",
+      status: "sent",
+    });
+  } catch (err) {
+    console.error("email_log insert failed:", String(err));
+  }
+}
+
 async function deliverOtp(to: string, code: string, purpose: string): Promise<void> {
   if (!env.EMAIL) {
     console.log(
@@ -86,6 +132,13 @@ async function createAuthInstance() {
       minPasswordLength: 8,
       // Email verification lands with the auth-hardening story.
       requireEmailVerification: false,
+      // WEB-287: staff password reset. Reset links ride the same EMAIL binding
+      // as OTP codes; every active session is revoked on reset so a stolen
+      // session can't outlive a recovered account.
+      sendResetPassword: async ({ user, url }) => {
+        await deliverResetLink(user.email, url);
+      },
+      revokeSessionsOnPasswordReset: true,
     },
     session: {
       expiresIn: 60 * 60 * 24 * 30, // 30 days
