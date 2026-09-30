@@ -30,6 +30,8 @@ export function InvoicePresetEditor({
   const [lines, setLines] = useState<PresetLine[]>(initialLines?.length ? initialLines : [{ description: "", qty: 1, amountMinor: 0 }]);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+  /** WEB-252: presets_require_lite arrives as a 403 — upsell, don't error. */
+  const [upsell, setUpsell] = useState(false);
   const [previewKey, setPreviewKey] = useState(0);
 
   const total = lines.reduce((n, l) => n + l.qty * l.amountMinor, 0);
@@ -57,9 +59,17 @@ export function InvoicePresetEditor({
     const body = (await res.json().catch(() => ({}))) as { id?: string; error?: string };
     setBusy(false);
     if (!res.ok || (templateId ? false : !body.id)) {
-      setStatus(body.error === "limit_reached" ? "Plan limit reached — upgrade for unlimited templates." : "Couldn't save — try again.");
+      setUpsell(body.error === "presets_require_lite" || body.error === "limit_reached");
+      setStatus(
+        body.error === "presets_require_lite"
+          ? "Invoice presets are included with Lite."
+          : body.error === "limit_reached"
+            ? "Plan limit reached."
+            : "Couldn't save — try again.",
+      );
       return;
     }
+    setUpsell(false);
     setPreviewKey((k) => k + 1);
     if (templateId) {
       setStatus("Saved — preview refreshed.");
@@ -120,6 +130,11 @@ export function InvoicePresetEditor({
             {busy ? "Saving…" : templateId ? "Save preset" : "Create preset"}
           </Button>
           {status && <span className="text-xs text-ink-subtle">{status}</span>}
+          {upsell && (
+            <a href="/dashboard/settings/billing" className="text-xs font-medium text-primary underline underline-offset-2">
+              Upgrade to Lite — $15/mo
+            </a>
+          )}
         </div>
       </section>
 

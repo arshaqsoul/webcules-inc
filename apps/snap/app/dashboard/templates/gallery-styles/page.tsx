@@ -3,9 +3,11 @@
 import Link from "next/link";
 
 import { getOrgContext } from "@/lib/session";
+import { getPlanEntitlements } from "@/lib/plans";
 import { getTemplate, listTemplates } from "@/lib/repos/templates";
 import { parseGalleryDesignJson } from "@/lib/gallery-design";
 import { GalleryStyleEditor } from "@/components/gallery-style-editor";
+import { LiteUpsell } from "@/components/lite-upsell";
 import { TemplateHubRows } from "@/components/template-hub";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +19,10 @@ export default async function GalleryStylesPage({ searchParams }: { searchParams
   if (!ctx) return null;
   const { edit, archived } = await searchParams;
   const showArchived = archived === "1";
+  // WEB-258: the design layer (gallery presets included) is Lite+ — upsell
+  // card instead of a form that fails on save.
+  const ent = await getPlanEntitlements(ctx.organizationId);
+  const lite = ent ? ent.id !== "free" : false;
 
   const editing = edit ? await getTemplate(ctx.organizationId, edit) : null;
   if (editing && editing.kind === "gallery_preset" && !editing.archivedAt) {
@@ -29,7 +35,11 @@ export default async function GalleryStylesPage({ searchParams }: { searchParams
           </div>
           <Link href="/dashboard/templates/gallery-styles" className="text-xs font-medium text-primary hover:underline">← Gallery styles</Link>
         </div>
-        <GalleryStyleEditor templateId={editing.id} initialName={editing.name} initialDesign={parseGalleryDesignJson(editing.body)} />
+        {lite ? (
+          <GalleryStyleEditor templateId={editing.id} initialName={editing.name} initialDesign={parseGalleryDesignJson(editing.body)} />
+        ) : (
+          <LiteUpsell feature="Gallery styles" note="Cover treatments, editorial layouts and themes — the design layer." />
+        )}
       </div>
     );
   }
@@ -58,7 +68,7 @@ export default async function GalleryStylesPage({ searchParams }: { searchParams
           {showArchived ? "Hide archived" : "Show archived"}
         </Link>
       </div>
-      {!edit && <GalleryStyleEditor />}
+      {!edit && (lite ? <GalleryStyleEditor /> : <LiteUpsell feature="Gallery styles" note="Cover treatments, editorial layouts and themes — the design layer." />)}
       <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
         <TemplateHubRows templates={rows} activeKind="gallery_preset" editBase="/dashboard/templates/gallery-styles" />
       </section>

@@ -3,9 +3,11 @@
 import Link from "next/link";
 
 import { getOrgContext } from "@/lib/session";
+import { getPlanEntitlements } from "@/lib/plans";
 import { getTemplate, listTemplates } from "@/lib/repos/templates";
 import { parsePresetLines } from "@/lib/invoice-settings";
 import { InvoicePresetEditor } from "@/components/invoice-preset-editor";
+import { LiteUpsell } from "@/components/lite-upsell";
 import { TemplateHubRows } from "@/components/template-hub";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +19,10 @@ export default async function InvoicePresetsPage({ searchParams }: { searchParam
   if (!ctx) return null;
   const { edit, archived } = await searchParams;
   const showArchived = archived === "1";
+  // WEB-252: presets are Lite+ — gate the editor with an upgrade card
+  // instead of letting a Free studio fill the form and fail on save.
+  const ent = await getPlanEntitlements(ctx.organizationId);
+  const lite = ent ? ent.id !== "free" : false;
 
   const editing = edit ? await getTemplate(ctx.organizationId, edit) : null;
   if (editing && editing.kind === "invoice_preset" && !editing.archivedAt) {
@@ -29,7 +35,11 @@ export default async function InvoicePresetsPage({ searchParams }: { searchParam
           </div>
           <Link href="/dashboard/templates/invoice-presets" className="text-xs font-medium text-primary hover:underline">← Invoice presets</Link>
         </div>
-        <InvoicePresetEditor templateId={editing.id} initialName={editing.name} initialLines={parsePresetLines(editing.body)} />
+        {lite ? (
+          <InvoicePresetEditor templateId={editing.id} initialName={editing.name} initialLines={parsePresetLines(editing.body)} />
+        ) : (
+          <LiteUpsell feature="Invoice presets" note="Pick a preset when composing an invoice and the lines pre-fill — yours to tweak per project." />
+        )}
       </div>
     );
   }
@@ -58,7 +68,7 @@ export default async function InvoicePresetsPage({ searchParams }: { searchParam
           {showArchived ? "Hide archived" : "Show archived"}
         </Link>
       </div>
-      {!edit && <InvoicePresetEditor />}
+      {!edit && (lite ? <InvoicePresetEditor /> : <LiteUpsell feature="Invoice presets" />)}
       <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
         <TemplateHubRows templates={rows} activeKind="invoice_preset" editBase="/dashboard/templates/invoice-presets" />
       </section>

@@ -60,6 +60,8 @@ export function GalleryStyleEditor({
   const [design, setDesign] = useState<GalleryDesign>(initialDesign ?? { layout: CLASSIC_LAYOUT, theme: CLASSIC_THEME });
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+  /** WEB-258: the design layer is Lite+ — a 403 upsells instead of erroring. */
+  const [upsell, setUpsell] = useState(false);
 
   const setCover = (patch: Partial<NonNullable<GalleryDesign["cover"]>>) =>
     setDesign((d) => ({ ...d, cover: { assetId: "", focal: { x: 0.5, y: 0.5 }, style: "static", title: "", subtitle: "", ...d.cover, ...patch } }));
@@ -76,9 +78,17 @@ export function GalleryStyleEditor({
     const body = (await res.json().catch(() => ({}))) as { id?: string; error?: string };
     setBusy(false);
     if (!res.ok || (templateId ? false : !body.id)) {
-      setStatus(body.error === "limit_reached" ? "Plan limit reached — upgrade for unlimited templates." : "Couldn't save — try again.");
+      setUpsell(body.error === "presets_require_lite" || body.error === "limit_reached");
+      setStatus(
+        body.error === "presets_require_lite"
+          ? "Gallery styles are part of the design layer — included with Lite."
+          : body.error === "limit_reached"
+            ? "Plan limit reached."
+            : "Couldn't save — try again.",
+      );
       return;
     }
+    setUpsell(false);
     if (templateId) {
       setStatus("Saved — previews updated.");
     } else {
@@ -125,6 +135,11 @@ export function GalleryStyleEditor({
             {busy ? "Saving…" : templateId ? "Save style" : "Create style"}
           </Button>
           {status && <span className="text-xs text-ink-subtle">{status}</span>}
+          {upsell && (
+            <a href="/dashboard/settings/billing" className="text-xs font-medium text-primary underline underline-offset-2">
+              Upgrade to Lite — $15/mo
+            </a>
+          )}
         </div>
       </section>
 

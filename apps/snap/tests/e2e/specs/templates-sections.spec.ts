@@ -91,3 +91,37 @@ test("old hub URLs redirect to their section", async ({ page }) => {
   await page.goto("/dashboard/templates");
   await expect(page).toHaveURL(/templates\/contracts/);
 });
+
+test("free tier sees the upgrade card, not a failing editor (WEB-252/258)", async ({ page }) => {
+  await gotoWithRetry(page, "/login");
+  await page.fill("#email", seed.userEmail);
+  await page.fill("#password", "TestPass123!x");
+  await page.waitForLoadState("networkidle");
+  for (let i = 0; ; i++) {
+    await page.click("button[type=submit]");
+    try {
+      await page.waitForURL(/dashboard/, { timeout: 8_000 });
+      break;
+    } catch {
+      if (i >= 2) throw new Error("login did not reach the dashboard after retries");
+      await gotoWithRetry(page, "/login");
+      await page.fill("#email", seed.userEmail);
+      await page.fill("#password", "TestPass123!x");
+      await page.waitForLoadState("networkidle");
+    }
+  }
+  await page.evaluate(async (orgId) => {
+    const res = await fetch("/api/auth/organization/set-active", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ organizationId: orgId }),
+    });
+    if (!res.ok) throw new Error(`set-active failed: ${res.status}`);
+  }, seed.freeOrgId);
+
+  for (const path of ["/dashboard/templates/invoice-presets", "/dashboard/templates/gallery-styles"]) {
+    await gotoWithRetry(page, path);
+    await expect(page.getByText("included with Lite"), path).toBeVisible();
+    await expect(page.getByRole("link", { name: "Upgrade to Lite — $15/mo" }), path).toBeVisible();
+  }
+});
