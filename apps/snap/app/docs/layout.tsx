@@ -7,6 +7,7 @@ import "./docs.css";
 import { DocsSidebar } from "@/components/docs/sidebar";
 import { DocsHeader } from "@/components/docs/header";
 import { DocsSearch } from "@/components/docs/search";
+import { DocsLightbox } from "@/components/docs/lightbox";
 
 export const metadata: Metadata = {
   title: { absolute: "Snap docs" },
@@ -30,6 +31,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
         <main>{children}</main>
       </div>
       <DocsSearch />
+      <DocsLightbox />
     </div>
   );
 }

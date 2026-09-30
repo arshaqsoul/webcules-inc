@@ -142,7 +142,7 @@ function CopyPage({ slug }: { slug: string }) {
           </button>
           <a
             role="menuitem"
-            href={MARKDOWN_URL(slug)}
+            href={`/docs/${slug}.md`}
             target="_blank"
             rel="noreferrer"
             className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-[13px] text-ink-muted transition-colors hover:bg-surface-1 hover:text-ink"

@@ -282,6 +282,18 @@
   white-space: nowrap;
 }
 
+/* Screenshots zoom, Linear-style. */
+.docs-shell .docs-shot-img {
+  cursor: zoom-in;
+}
+
+/* The search field is chrome, not a form — Linear shows no focus ring on it
+ * (the global :focus-visible rule is unlayered, so an unlayered override is
+ * required to win). */
+.docs-search-input:focus-visible {
+  outline: none;
+}
+
 /* TOC clicks glide to the section, Linear-style (anchor jumps otherwise). */
 html:has(.docs-shell) {
   scroll-behavior: smooth;

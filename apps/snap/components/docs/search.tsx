@@ -107,7 +107,7 @@ export function DocsSearch() {
               if (e.key === "Enter" && hits[0]) go(hits[0]);
             }}
             placeholder="Search the docs…"
-            className="h-full flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-tertiary"
+            className="docs-search-input h-full flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-tertiary"
           />
           <kbd className="hidden rounded border border-hairline bg-surface-1 px-1.5 py-0.5 font-sans text-[10.5px] text-ink-tertiary sm:block">esc</kbd>
         </div>
@@ -152,7 +152,7 @@ export function SearchTrigger() {
     <button
       type="button"
       onClick={openDocsSearch}
-      className="flex h-10 w-full max-w-[560px] items-center gap-2.5 rounded-lg border border-hairline bg-canvas px-3.5 text-[13.5px] text-ink-tertiary transition-colors hover:border-hairline-strong hover:text-ink-subtle"
+      className="docs-search-input flex h-10 w-full max-w-[560px] items-center gap-2.5 rounded-lg border border-hairline bg-canvas px-3.5 text-[13.5px] text-ink-tertiary transition-colors hover:border-hairline-strong hover:text-ink-subtle"
     >
       <Search className="h-4 w-4" aria-hidden />
       <span className="flex-1 text-left">Search the documentation…</span>
