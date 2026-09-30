@@ -1,9 +1,14 @@
 "use client";
 
 /* Right-hand "on this page" rail with scroll-spy — Linear's docs inner
- * navigation: a single 2px indicator that SLIDES between sections (never
- * per-item bars blinking), H2 entries darker, H3 indented and muted, rail
- * fixed 240px with a ~76px gap from the article column. Hidden below xl. */
+ * navigation: a single 2px indicator that SLIDES between sections, H2
+ * entries darker, H3 indented and muted, rail fixed 240px with a ~76px gap
+ * from the article column. Hidden below xl.
+ *
+ * Click-activation (the standard docs behavior): clicking an entry sets it
+ * active immediately and suppresses the spy until the click-scroll settles —
+ * no threshold math can guess intent at max scroll, so the click wins and
+ * the spy resumes only on the user's next manual scroll. */
 import { useEffect, useRef, useState } from "react";
 
 import type { TocItem } from "@/lib/docs/extract";
@@ -12,12 +17,15 @@ export function DocsToc({ items }: { items: TocItem[] }) {
   const [active, setActive] = useState<string | null>(items[0]?.id ?? null);
   const [indicator, setIndicator] = useState<{ top: number; height: number } | null>(null);
   const linkRefs = useRef<Map<string, HTMLAnchorElement>>(new Map());
+  /** Timestamp until which spy updates are suppressed (click-scroll in flight). */
+  const clickLockRef = useRef(0);
 
   useEffect(() => {
     if (!items.length) return;
     let raf = 0;
     const update = () => {
       raf = 0;
+      if (performance.now() < clickLockRef.current) return;
       let current: string | null = null;
       for (const item of items) {
         const el = document.getElementById(item.id);
@@ -26,10 +34,10 @@ export function DocsToc({ items }: { items: TocItem[] }) {
         else break;
       }
       // At max scroll a bottom-of-page target can never cross the top
-      // threshold (the page runs out of scroll first). Linear-style: when the
-      // threshold section has scrolled off the top, the last heading on
-      // screen wins; while it's still on screen it keeps the highlight, so
-      // nested sections on short pages keep getting their turn.
+      // threshold (the page runs out of scroll first). When the threshold
+      // section has scrolled off the top, take the last heading in the upper
+      // 70% of the viewport — bounded so a main title *below* the section
+      // you're reading can never steal the highlight.
       if (current) {
         const el = document.getElementById(current);
         if (el && el.getBoundingClientRect().top < 0) {
@@ -39,7 +47,7 @@ export function DocsToc({ items }: { items: TocItem[] }) {
             let last = current;
             for (const item of items) {
               const e2 = document.getElementById(item.id);
-              if (e2 && e2.getBoundingClientRect().top < window.innerHeight) last = item.id;
+              if (e2 && e2.getBoundingClientRect().top < window.innerHeight * 0.7) last = item.id;
             }
             current = last;
           }
@@ -61,7 +69,7 @@ export function DocsToc({ items }: { items: TocItem[] }) {
   }, [items]);
 
   // One continuous indicator: measured from the active link, animated with a
-  // CSS transition so it GLIDES to the next section as you scroll.
+  // compositor transform so it GLIDES to the next section as you scroll.
   useEffect(() => {
     const el = active ? linkRefs.current.get(active) : null;
     if (!el) {
@@ -73,6 +81,13 @@ export function DocsToc({ items }: { items: TocItem[] }) {
 
   if (items.length < 2) return null;
 
+  const onNavClick = (item: TocItem) => {
+    setActive(item.id);
+    // Hold the spy off through the smooth scroll; it resumes on the next
+    // manual scroll after the lock expires.
+    clickLockRef.current = performance.now() + 1200;
+  };
+
   return (
     <aside
       className="sticky top-16 hidden max-h-[calc(100vh-4rem)] w-[240px] shrink-0 overflow-y-auto py-12 xl:ml-[76px] xl:block"
@@ -80,8 +95,6 @@ export function DocsToc({ items }: { items: TocItem[] }) {
     >
       <div className="relative border-l border-hairline">
         {indicator && (
-          /* Transform-driven (compositor) so the glide stays smooth even on
-           * throttled surfaces where top/height transitions skip frames. */
           <span
             aria-hidden
             className="absolute left-[-1px] top-0 w-[2px] bg-ink transition-transform duration-300 ease-out will-change-transform"
@@ -99,6 +112,7 @@ export function DocsToc({ items }: { items: TocItem[] }) {
                     else linkRefs.current.delete(item.id);
                   }}
                   href={`#${item.id}`}
+                  onClick={() => onNavClick(item)}
                   aria-current={isActive ? "location" : undefined}
                   className={`block py-[5px] text-[13px] leading-[1.45] transition-colors duration-200 ${
                     item.level === 3 ? "pl-7" : "pl-4"
