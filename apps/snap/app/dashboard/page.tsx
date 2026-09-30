@@ -10,6 +10,7 @@ import { Suspense } from "react";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
+import { SetupGuideCard, type SetupStepView } from "@/components/setup-guide-card";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { getOrgContext } from "@/lib/session";
 
@@ -44,6 +45,22 @@ async function Overview() {
   monthStart.setUTCDate(1);
   monthStart.setUTCHours(0, 0, 0, 0);
   const now = new Date();
+
+  // WEB-270: the first-login setup panel — shown while the guide is
+  // unfinished and the membership is fresh (≤14 days post-signup), until
+  // dismissed. Dismissal is permanent; the sidebar card carries progress
+  // from there.
+  const [setupState, memberRow] = await Promise.all([
+    import("@/lib/repos/setup").then((m) => m.getSetupState(ctx.organizationId)),
+    db
+      .select({ createdAt: schema.member.createdAt })
+      .from(schema.member)
+      .where(and(eq(schema.member.organizationId, ctx.organizationId), eq(schema.member.userId, ctx.user.id)))
+      .limit(1),
+  ]);
+  const membershipAgeMs = memberRow[0]?.createdAt ? Date.now() - memberRow[0].createdAt.getTime() : Infinity;
+  const showSetupPanel =
+    !setupState.dismissed && setupState.done < setupState.total && membershipAgeMs <= 14 * 86400_000;
 
   const [profile, leadTotal, leadNew, upcomingBookings, projectTotal, projectActive, galleries, projectsByStatus] =
     await Promise.all([
@@ -116,6 +133,16 @@ async function Overview() {
         </p>
       </div>
 
+      {showSetupPanel && (
+        <Suspense fallback={null}>
+          <SetupFirstLoginPanel
+            steps={setupState.steps.map((s) => ({ id: s.id, title: s.title, why: s.why, href: s.href, done: s.done }))}
+            done={setupState.done}
+            total={setupState.total}
+          />
+        </Suspense>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((c) => (
           <Link
@@ -156,6 +183,13 @@ async function Overview() {
       </Suspense>
     </div>
   );
+}
+
+/** WEB-270: the first-login checklist panel — the client card in its panel
+ * variant (interactive dismiss + demo action), isolated so the Overview's
+ * own stream stays untouched. */
+function SetupFirstLoginPanel({ steps, done, total }: { steps: SetupStepView[]; done: number; total: number }) {
+  return <SetupGuideCard steps={steps} done={done} total={total} variant="panel" />;
 }
 
 async function OverviewLists({ organizationId, tz, now }: { organizationId: string; tz: string; now: string }) {

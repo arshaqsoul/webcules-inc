@@ -249,5 +249,24 @@ export async function POST(req: Request) {
     console.error("downloads sweep failed:", String(err));
   }
 
-  return Response.json({ ok: true, moved: due.length, warned, downgraded, expiredHolds, vault, dormancy, margin, expiredUploads, rejectedPurged, domains, addonSettled, downloads });
+  // WEB-273: booking reminders — exact-once per (booking, offset).
+  let reminders = { due: 0, sent: 0, skippedOptOut: 0 };
+  try {
+    const { runBookingReminderSweep } = await import("@/lib/booking-reminders");
+    reminders = await runBookingReminderSweep();
+  } catch (err) {
+    console.error("booking reminders sweep failed:", String(err));
+  }
+
+  // WEB-269: activation rollup — how far new studios got through the setup
+  // guide (the founder's free activation dashboard).
+  let setup = { orgs: 0, atLeastSeven: 0, medianDone: 0 };
+  try {
+    const { setupCompletionRollup } = await import("@/lib/repos/setup");
+    setup = await setupCompletionRollup();
+  } catch (err) {
+    console.error("setup rollup failed:", String(err));
+  }
+
+  return Response.json({ ok: true, moved: due.length, warned, downgraded, expiredHolds, vault, dormancy, margin, expiredUploads, rejectedPurged, domains, addonSettled, downloads, reminders, setup });
 }

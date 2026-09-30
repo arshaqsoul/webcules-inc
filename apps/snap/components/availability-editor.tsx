@@ -39,6 +39,12 @@ type Initial = {
       cancelCutoffHours?: number;
       refundPolicyText?: string;
     };
+    /** WEB-273: reminder policy. */
+    reminders?: {
+      enabled: boolean;
+      offsetsHours: number[];
+      sendTo: "client" | "client+studio";
+    };
   };
 };
 
@@ -64,6 +70,19 @@ export function AvailabilityEditor({ initial }: { initial: Initial }) {
   const [reschedCutoff, setReschedCutoff] = useState(String(initial.settings.policy?.rescheduleCutoffHours ?? 24));
   const [cancelCutoff, setCancelCutoff] = useState(String(initial.settings.policy?.cancelCutoffHours ?? 48));
   const [refundPolicy, setRefundPolicy] = useState(initial.settings.policy?.refundPolicyText ?? "");
+  const initialReminders = initial.settings.reminders;
+  const [remEnabled, setRemEnabled] = useState(initialReminders?.enabled ?? true);
+  const [remPreset, setRemPreset] = useState<string>(() => {
+    const offsets = initialReminders?.offsetsHours ?? [24];
+    return offsets.length === 2 && offsets.includes(24) && offsets.includes(1)
+      ? "24+1"
+      : offsets.length === 1 && offsets[0] === 24
+        ? "24"
+        : offsets.length === 1 && offsets[0] === 48
+          ? "48"
+          : String(offsets[0] ?? 24);
+  });
+  const [remSendTo, setRemSendTo] = useState<"client" | "client+studio">(initialReminders?.sendTo ?? "client");
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -99,6 +118,11 @@ export function AvailabilityEditor({ initial }: { initial: Initial }) {
           rescheduleCutoffHours: Math.max(0, Math.round(Number(reschedCutoff) || 0)),
           cancelCutoffHours: Math.max(0, Math.round(Number(cancelCutoff) || 0)),
           ...(refundPolicy.trim() ? { refundPolicyText: refundPolicy.trim().slice(0, 2000) } : {}),
+        },
+        reminders: {
+          enabled: remEnabled,
+          offsetsHours: remPreset === "24+1" ? [24, 1] : [Math.min(Math.max(Math.round(Number(remPreset) || 24), 1), 168)],
+          sendTo: remSendTo,
         },
       },
       blackouts,
@@ -283,6 +307,66 @@ export function AvailabilityEditor({ initial }: { initial: Initial }) {
             Refunds themselves stay in your hands — issue them from Stripe when you're ready.
           </p>
         </div>
+      </section>
+
+      <section className={card}>
+        <h2 className="text-[15px] font-medium text-ink">Reminders</h2>
+        <p className="mt-1 text-xs text-ink-subtle">
+          Automatic email reminders before each session — the single best fix for no-shows. Each reminder sends exactly once.
+        </p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="remEnabled">Send reminders</Label>
+            <button
+              id="remEnabled"
+              type="button"
+              role="switch"
+              aria-checked={remEnabled}
+              onClick={() => setRemEnabled((v) => !v)}
+              className={`relative h-6 w-11 rounded-full transition-colors ${remEnabled ? "bg-primary" : "bg-surface-2 shadow-[inset_0_0_0_1px_var(--hairline)]"}`}
+            >
+              <span
+                className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${remEnabled ? "translate-x-5" : "translate-x-0"}`}
+              />
+            </button>
+            <p className="text-xs text-ink-tertiary">{remEnabled ? "On — clients hear from you before every session" : "Off"}</p>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="remPreset">When</Label>
+            <select
+              id="remPreset"
+              value={remPreset}
+              onChange={(e) => setRemPreset(e.target.value)}
+              disabled={!remEnabled}
+              className="snap-select rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
+            >
+              <option value="24">24 hours before</option>
+              <option value="24+1">24 hours + 1 hour before</option>
+              <option value="48">48 hours before</option>
+              <option value="12">12 hours before</option>
+              <option value="4">4 hours before</option>
+              <option value="72">72 hours before</option>
+            </select>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="remSendTo">Also notify</Label>
+            <select
+              id="remSendTo"
+              value={remSendTo}
+              onChange={(e) => setRemSendTo(e.target.value as "client" | "client+studio")}
+              disabled={!remEnabled}
+              className="snap-select rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
+            >
+              <option value="client">Just the client</option>
+              <option value="client+studio">Client + me</option>
+            </select>
+            <p className="text-xs text-ink-tertiary">The client email is branded and includes a calendar invite.</p>
+          </div>
+        </div>
+        <p className="mt-3 text-xs text-ink-tertiary">
+          Reminders ride the daily 6:00 UTC pass — a “24 hours before” reminder may land a few hours early when the timing straddles
+          the daily run. You can edit the copy under Settings → Emails.
+        </p>
       </section>
 
       <section className={card}>

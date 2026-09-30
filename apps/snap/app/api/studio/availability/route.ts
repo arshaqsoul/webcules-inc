@@ -46,6 +46,14 @@ const bodySchema = z.object({
           refundPolicyText: z.string().trim().max(2000).optional(),
         })
         .optional(),
+      /** WEB-273: reminder policy. */
+      reminders: z
+        .object({
+          enabled: z.boolean(),
+          offsetsHours: z.array(z.number().int().min(1).max(168)).min(1).max(3),
+          sendTo: z.enum(["client", "client+studio"]),
+        })
+        .optional(),
     })
     .optional(),
   blackouts: z.array(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)).max(100),

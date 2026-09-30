@@ -1,22 +1,18 @@
-/* ICS calendar file for a booking — one-click "Add to calendar" from emails.
- * Addressed by unguessable booking UUID + embed key; booking times are UTC
- * with a TZID-less UTC form (imported correctly by all major clients). */
-import { isWhiteLabeled } from "@/lib/branding";
+/* ICS calendar file for a booking — one-click "Add to calendar" from emails
+ * and the manage page. Addressed by unguessable booking UUID + embed key;
+ * built by the shared generator (lib/ics.ts) so the feed and email
+ * attachments can never drift. Booking times are UTC in TZID-less form
+ * (imported correctly by all major clients). */
 import { eq } from "drizzle-orm";
+
 import { getDb, schema } from "@/lib/db";
+import { buildSingleEventIcs } from "@/lib/ics";
+import { isWhiteLabeled } from "@/lib/branding";
 import { resolveStudioByEmbedKey } from "@/lib/embed";
 import { getPlanEntitlements } from "@/lib/plans";
 import { getBookingByRef } from "@/lib/repos/bookings";
 
 export const dynamic = "force-dynamic";
-
-function icsStamp(d: Date): string {
-  return d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
-}
-
-function esc(s: string): string {
-  return s.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
-}
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -31,31 +27,26 @@ export async function GET(req: Request) {
   }
 
   // WEB-238: the visible DESCRIPTION drops "via Snap" for white-labeled
-  // studios. PRODID stays the producing software (standard ICS practice);
-  // UID stays on our domain (stability + uniqueness).
+  // studios.
   const wl = isWhiteLabeled(await getPlanEntitlements(studio.organizationId), studio.brand);
   const sessionTypeName = booking.sessionTypeId
     ? ((await getDb().select({ name: schema.sessionTypes.name }).from(schema.sessionTypes).where(eq(schema.sessionTypes.id, booking.sessionTypeId)).limit(1))[0]?.name ?? null)
     : null;
   const sessionTitle = sessionTypeName ? `${sessionTypeName} — ${studio.studioName}` : `Photo session — ${studio.studioName}`;
-  const ics = [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
-    "PRODID:-//Snap//Bookings//EN",
-    "CALSCALE:GREGORIAN",
-    "METHOD:PUBLISH",
-    "BEGIN:VEVENT",
-    `UID:${booking.id}@snap.webcules.com`,
-    `DTSTAMP:${icsStamp(new Date())}`,
 
-    `DTSTART:${icsStamp(booking.startAt)}`,
-    `DTEND:${icsStamp(booking.endAt)}`,
-    `SUMMARY:${esc(sessionTitle)}`,
-    `DESCRIPTION:${esc(wl ? `Session with ${studio.studioName}.` : `Session with ${studio.studioName}. Booked via Snap.`)}`,
-    `STATUS:${booking.status === "confirmed" ? "CONFIRMED" : "TENTATIVE"}`,
-    "END:VEVENT",
-    "END:VCALENDAR",
-  ].join("\r\n");
+  const ics = buildSingleEventIcs(
+    {
+      uid: booking.id,
+      startAt: booking.startAt,
+      endAt: booking.endAt,
+      summary: sessionTitle,
+      description: wl
+        ? `Session with ${studio.studioName}.`
+        : `Session with ${studio.studioName}. Booked via Snap.`,
+      status: booking.status === "confirmed" ? "CONFIRMED" : "TENTATIVE",
+    },
+    { whiteLabel: wl },
+  );
 
   return new Response(ics, {
     headers: {

@@ -36,6 +36,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const { getDormancyBanner } = await import("@/lib/dormancy");
   const dormancy = await getDormancyBanner(ctx.organizationId);
 
+  // WEB-270: setup guide — always derived for the ACTIVE studio; hidden
+  // (null) once dismissed or complete, reopenable while unfinished.
+  const { getSetupState } = await import("@/lib/repos/setup");
+  const setupState = await getSetupState(ctx.organizationId);
+  const setupVisible = !setupState.dismissed && setupState.done < setupState.total;
+
   return (
     <ConfirmProvider>
     <div className="flex min-h-screen">
@@ -45,6 +51,16 @@ export default async function DashboardLayout({ children }: { children: React.Re
         rootOrganizationId={ent?.rootOrganizationId ?? ctx.organizationId}
         familyStudioCount={ent?.familyStudioCount ?? 1}
         maxLinkedStudios={ent?.maxLinkedStudios ?? 1}
+        setup={
+          setupVisible
+            ? {
+                steps: setupState.steps.map((s) => ({ id: s.id, title: s.title, why: s.why, href: s.href, done: s.done })),
+                done: setupState.done,
+                total: setupState.total,
+              }
+            : null
+        }
+        setupReopenable={setupState.dismissed && setupState.done < setupState.total}
       />
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-14 items-center justify-between gap-2 border-b border-hairline px-4 md:hidden">

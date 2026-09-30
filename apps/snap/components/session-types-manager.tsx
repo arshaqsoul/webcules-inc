@@ -184,6 +184,7 @@ export function SessionTypesManager({
             formTemplates={formTemplates}
             busy={busy}
             error={error}
+            upsell={upsell}
             onCancel={() => setEditing(null)}
             onSave={save}
           />
@@ -198,6 +199,7 @@ function TypeForm({
   formTemplates,
   busy,
   error,
+  upsell,
   onCancel,
   onSave,
 }: {
@@ -205,6 +207,8 @@ function TypeForm({
   formTemplates: Array<{ id: string; name: string }>;
   busy: boolean;
   error: string;
+  /** WEB-250: plan-limit hit — upgrade CTA rides along with the message. */
+  upsell: boolean;
   onCancel: () => void;
   onSave: (t: SessionTypeView) => void;
 }) {

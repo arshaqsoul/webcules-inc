@@ -3,13 +3,14 @@
 import { z } from "zod";
 
 import { originAllowed, resolveStudioByEmbedKey, safeHexColor } from "@/lib/embed";
-import { bookingConfirmedEmails, sendEmail } from "@/lib/email";
+import { bookingConfirmedEmails, icsCopyFor, sendEmail } from "@/lib/email";
 import { getEmailBrand } from "@/lib/branding";
+import { buildSingleEventIcs, icsAttachment } from "@/lib/ics";
 import { getBookingSettings } from "@/lib/repos/availability";
 import { effectiveBookingPayment, getSessionTypeBySlug } from "@/lib/repos/session-types";
 import { getTemplate } from "@/lib/repos/templates";
 import { parseFormSchema, validateFormAnswers } from "@/lib/forms";
-import { createBookingFromWidget } from "@/lib/repos/bookings";
+import { createBookingFromWidget, getBookingByRef } from "@/lib/repos/bookings";
 import { ensureManageToken } from "@/lib/repos/booking-manage";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { getStripe } from "@/lib/stripe";
@@ -159,27 +160,42 @@ export async function POST(req: Request) {
     return Response.json({ error: result.error }, { status });
   }
 
-  // Confirmation emails (+ ICS link) — failures never break the booking.
-  // WEB-272: mint the manage token up front so both the email link and any
-  // later re-issue resolve to this booking from the first send.
+  // Confirmation emails (+ ICS link + attached invite — WEB-273) — failures
+  // never break the booking. The manage token is minted up front so both the
+  // email link and any later re-issue resolve to this booking from the first
+  // send.
   const profile = await getStudioProfile(studio.organizationId);
   const accent = safeHexColor(studio.brand.accent) ?? "#5e6ad2";
   const bookingStart = new Date(body.slotStart);
   const icsUrl = `${url.origin}/api/embed/ics?booking=${result.bookingId}&key=${studio.embedKey}`;
   const manageToken = await ensureManageToken(result.bookingId);
+  const manageUrl = manageToken ? `${url.origin}/booking/${manageToken}` : null;
+  const bookingRow = await getBookingByRef(result.bookingId);
   const b = await getEmailBrand(studio.organizationId);
   const templates = bookingConfirmedEmails(studio.studioName, {
     clientName: body.name,
     startAt: bookingStart,
-    endAt: new Date(bookingStart.getTime() + 60 * 60_000),
+    endAt: bookingRow?.endAt ?? new Date(bookingStart.getTime() + 60 * 60_000),
     tz: profile?.timezone ?? "UTC",
     icsUrl,
     accent,
     whiteLabel: b.whiteLabel,
     emailHeaderUrl: b.emailHeaderUrl,
     contactEmail: b.contactEmail,
-    ...(manageToken ? { manageUrl: `${url.origin}/booking/${manageToken}` } : {}),
+    ...(manageUrl ? { manageUrl } : {}),
   });
+  const icsAttach = bookingRow
+    ? icsAttachment(
+        buildSingleEventIcs({
+          uid: bookingRow.id,
+          startAt: bookingRow.startAt,
+          endAt: bookingRow.endAt,
+          ...icsCopyFor(studio.studioName, { sessionTypeName: type?.name ?? null, manageUrl, whiteLabel: b.whiteLabel }),
+          status: "CONFIRMED",
+        }),
+        bookingRow.id,
+      )
+    : undefined;
   await Promise.all([
     sendEmail({
       to: body.email.toLowerCase(),
@@ -190,6 +206,7 @@ export async function POST(req: Request) {
       organizationId: studio.organizationId,
       template: "booking.confirmed_client",
       refId: result.bookingId,
+      ...(icsAttach ? { attachments: [icsAttach] } : {}),
     }),
     profile?.contactEmail
       ? sendEmail({

@@ -423,6 +423,22 @@ export async function notifyRescheduled(params: {
     });
     const sends: Promise<unknown>[] = [];
     if (await clientWantsEmail(params.booking.organizationId, params.booking.clientEmail)) {
+      // WEB-273: the updated invite rides as an attachment (same UID —
+      // calendar clients treat it as an update of the same event).
+      const { buildSingleEventIcs, icsAttachment } = await import("@/lib/ics");
+      const { icsCopyFor } = await import("@/lib/email");
+      const sessionTypeName = params.booking.sessionTypeId
+        ? ((await getDb().select({ name: schema.sessionTypes.name }).from(schema.sessionTypes).where(eq(schema.sessionTypes.id, params.booking.sessionTypeId)).limit(1))[0]?.name ?? null)
+        : null;
+      const copy = icsCopyFor(profile.studioName, { sessionTypeName, manageUrl: params.urls.manageUrl, whiteLabel: b.whiteLabel });
+      const ics = buildSingleEventIcs({
+        uid: params.booking.id,
+        startAt: params.booking.startAt,
+        endAt: params.endAt,
+        summary: copy.summary,
+        description: copy.description,
+        status: params.booking.status === "confirmed" ? "CONFIRMED" : "TENTATIVE",
+      });
       sends.push(
         sendEmail({
           to: params.booking.clientEmail,
@@ -433,6 +449,7 @@ export async function notifyRescheduled(params: {
           organizationId: params.booking.organizationId,
           template: "booking.rescheduled_client",
           refId: params.booking.id,
+          attachments: [icsAttachment(ics, params.booking.id)],
         }),
       );
     }

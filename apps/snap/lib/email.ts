@@ -22,6 +22,13 @@ import { getDb } from "./db";
 import * as schema from "./db-schema";
 import { snapBrandUrl } from "./snap-url";
 
+export type EmailAttachment = {
+  filename: string;
+  type: string;
+  content: string;
+  disposition: "attachment";
+};
+
 export async function sendEmail(params: {
   to: string;
   subject: string;
@@ -37,6 +44,9 @@ export async function sendEmail(params: {
   organizationId?: string | null;
   template: string;
   refId?: string | null;
+  /** WEB-273: file attachments (ICS invites) — passed through to the Email
+   * Service binding; no-op where the binding is absent (dev/tests). */
+  attachments?: EmailAttachment[];
 }): Promise<boolean> {
   if (!env.EMAIL) {
     console.log(
@@ -87,6 +97,7 @@ export async function sendEmail(params: {
       html,
       text,
       ...(params.replyTo ? { replyTo: params.replyTo } : {}),
+      ...(params.attachments?.length ? { attachments: params.attachments } : {}),
     } as Parameters<typeof env.EMAIL.send>[0]);
   } catch (err) {
     console.error(`email send failed (${params.template} → ${params.to}):`, String(err));
@@ -386,6 +397,90 @@ export function bookingRescheduledEmails(studioName: string, params: {
     text: `${params.clientName}'s session moved from ${oldWhen} to ${newWhen} (${params.tz})${params.initiator === "client" ? " (rescheduled by the client)" : ""}. Project event date updated; payment unchanged.`,
   };
   return { client, studio };
+}
+
+/** WEB-273: booking reminder — the no-show fix. Same when-block as the
+ * confirmation family, manage link for self-serve changes, and the ICS link
+ * (an .ics attachment rides along on the send itself). */
+export function bookingReminderEmail(studioName: string, params: {
+  clientName: string;
+  startAt: Date;
+  endAt: Date;
+  tz: string;
+  icsUrl: string;
+  manageUrl: string | null;
+  accent: string;
+  whiteLabel?: boolean;
+  emailHeaderUrl?: string | null;
+  contactEmail?: string | null;
+}): { subject: string; html: string; text: string } {
+  const when = new Intl.DateTimeFormat("en-US", {
+    timeZone: params.tz,
+    weekday: "long", month: "long", day: "numeric",
+    hour: "numeric", minute: "2-digit", timeZoneName: "short",
+  }).format(params.startAt);
+  const wl = params.whiteLabel === true;
+  const whenBlock = `<p style="margin:0 0 16px;padding:12px 16px;background:#f7f8f8;border-radius:8px;"><strong style="color:#0f1011;">${when}</strong> <span style="color:#8a8f98;">(${params.tz})</span></p>`;
+  const manageLine = params.manageUrl
+    ? `<p style="margin:12px 0 0;font-size:13px;color:#8a8f98;">Need a different time? <a href="${params.manageUrl}" style="color:${params.accent};">Manage your booking</a>.</p>`
+    : "";
+  return {
+    subject: `Coming up — your session with ${studioName} on ${when}`,
+    html: shell(
+      params.accent,
+      "Your session is coming up",
+      `<p style="margin:0 0 16px;">Hi ${params.clientName}, a quick reminder — your session with <strong>${studioName}</strong> is scheduled for:</p>
+       ${whenBlock}
+       <p style="margin:0 0 8px;">See you there. Questions? Just reply to this email.</p>
+       <p style="margin:16px 0 0;"><a href="${params.icsUrl}" style="display:inline-block;background:${params.accent};color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">Add to calendar</a></p>
+       ${manageLine}`,
+      `Sent by ${studioName}${wl ? "." : " via Snap."}`,
+      { studioName, whiteLabel: wl, emailHeaderUrl: params.emailHeaderUrl, contactEmail: params.contactEmail },
+    ),
+    text: `Hi ${params.clientName}, a reminder: your session with ${studioName} is on ${when} (${params.tz}). Add to calendar: ${params.icsUrl}${params.manageUrl ? `\nManage your booking: ${params.manageUrl}` : ""}`,
+  };
+}
+
+/** WEB-273: studio-side copy of a reminder (sendTo "client+studio") — a
+ * heads-up, not a call to action. */
+export function bookingReminderStudioEmail(studioName: string, params: {
+  clientName: string;
+  startAt: Date;
+  tz: string;
+  accent: string;
+}): { subject: string; html: string; text: string } {
+  const when = new Intl.DateTimeFormat("en-US", {
+    timeZone: params.tz, weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit",
+  }).format(params.startAt);
+  return {
+    subject: `Reminder sent — ${params.clientName} · ${when}`,
+    html: shell(
+      params.accent,
+      "Reminder sent",
+      `<p style="margin:0;">Your client <strong style="color:#0f1011;">${params.clientName}</strong> was reminded about their session on <strong style="color:#0f1011;">${when}</strong> (${params.tz}).</p>`,
+      "Sent by the daily reminder pass.",
+    ),
+    text: `${params.clientName} was reminded about their session on ${when} (${params.tz}).`,
+  };
+}
+
+/** WEB-273: ICS attachment/body summary shared by confirmation, reschedule
+ * and reminder sends — SUMMARY "{Session type} — {Studio}", DESCRIPTION with
+ * the manage link. */
+export function icsCopyFor(studioName: string, opts: {
+  sessionTypeName: string | null;
+  manageUrl: string | null;
+  whiteLabel: boolean;
+}): { summary: string; description: string } {
+  const base = opts.sessionTypeName ?? "Photo session";
+  const desc = [
+    `Session with ${studioName}.`,
+    opts.manageUrl ? `Manage your booking: ${opts.manageUrl}` : null,
+    !opts.whiteLabel ? "Booked via Snap." : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
+  return { summary: `${base} — ${studioName}`, description: desc };
 }
 
 /** Refund confirmation (WEB-141) — sent when charge.refunded lands: states

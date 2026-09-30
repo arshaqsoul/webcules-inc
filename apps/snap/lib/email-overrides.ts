@@ -21,6 +21,7 @@ export const OVERRIDABLE_TEMPLATES: Array<{ key: string; label: string }> = [
   { key: "booking.confirmed_client", label: "Booking confirmed (client)" },
   { key: "booking.canceled_client", label: "Booking canceled" },
   { key: "booking.rescheduled_client", label: "Booking rescheduled (client)" },
+  { key: "booking.reminder_client", label: "Booking reminder" },
   { key: "booking.refund_client", label: "Refund issued" },
   { key: "gallery_link", label: "Gallery delivered" },
   { key: "invoice.sent", label: "Invoice sent" },

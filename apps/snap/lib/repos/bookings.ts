@@ -308,6 +308,7 @@ export async function confirmBookingPaid(params: {
     if (profile && (await clientWantsEmail(params.organizationId, booking.clientEmail))) {
       const b = await getEmailBrand(params.organizationId);
       const manageToken = await ensureManageToken(booking.id);
+      const manageUrl = manageToken ? await clientUrl(params.organizationId, `/booking/${manageToken}`) : null;
       const tmpl = bookingConfirmedClientEmail(profile.studioName, {
         accent: b.accent,
         when: booking.startAt,
@@ -315,7 +316,19 @@ export async function confirmBookingPaid(params: {
         whiteLabel: b.whiteLabel,
         emailHeaderUrl: b.emailHeaderUrl,
         contactEmail: b.contactEmail,
-        ...(manageToken ? { manageUrl: await clientUrl(params.organizationId, `/booking/${manageToken}`) } : {}),
+        ...(manageUrl ? { manageUrl } : {}),
+      });
+      // WEB-273: the paid confirmation carries the real invite attachment.
+      const { buildSingleEventIcs, icsAttachment } = await import("@/lib/ics");
+      const { icsCopyFor } = await import("@/lib/email");
+      const copy = icsCopyFor(profile.studioName, { sessionTypeName: null, manageUrl, whiteLabel: b.whiteLabel });
+      const ics = buildSingleEventIcs({
+        uid: booking.id,
+        startAt: booking.startAt,
+        endAt: booking.endAt,
+        summary: copy.summary,
+        description: copy.description,
+        status: "CONFIRMED",
       });
       await sendEmail({
         to: booking.clientEmail,
@@ -326,6 +339,7 @@ export async function confirmBookingPaid(params: {
         organizationId: params.organizationId,
         template: "client.booking_confirmed",
         refId: booking.id,
+        attachments: [icsAttachment(ics, booking.id)],
       });
     }
   } catch (err) {

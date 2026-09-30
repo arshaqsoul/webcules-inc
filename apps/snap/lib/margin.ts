@@ -22,7 +22,12 @@ export async function rollupUsageSnapshots(): Promise<number> {
     SELECT
       sp.organization_id,
       strftime('%Y-%m', 'now'),
-      COALESCE((SELECT SUM(a.bytes) FROM asset a WHERE a.organization_id = sp.organization_id), 0),
+      COALESCE((SELECT SUM(a.bytes) FROM asset a
+                WHERE a.organization_id = sp.organization_id
+                  -- WEB-269: setup-guide demo bytes count toward the studio's
+                  -- quota but are platform-provided, not studio storage — the
+                  -- margin truth excludes them.
+                  AND NOT EXISTS (SELECT 1 FROM project p WHERE p.id = a.project_id AND p.demo = 1)), 0),
       COALESCE((SELECT SUM(g.views) FROM gallery_view_monthly g
                 WHERE g.organization_id = sp.organization_id AND g.month = strftime('%Y-%m', 'now')), 0),
       COALESCE((SELECT COUNT(*) FROM email_log e

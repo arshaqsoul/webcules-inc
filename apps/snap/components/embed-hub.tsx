@@ -102,6 +102,9 @@ export function EmbedHub({ embedKey, slug, bookingUrl, studioTheme, studioAccent
     await navigator.clipboard.writeText(text);
     setCopied(id);
     setTimeout(() => setCopied(null), 1500);
+    // WEB-269: the setup guide's "put Snap on your website" step derives its
+    // done state from this beacon — fire-and-forget, never blocks the copy.
+    void fetch("/api/studio/setup/embed-copied", { method: "POST" }).catch(() => {});
   }
 
   async function rotateKey() {

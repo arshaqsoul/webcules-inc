@@ -30,6 +30,9 @@ export type BookingSettings = {
    * Absent fields fall back to the engine defaults (24 h reschedule / 48 h
    * cancel — resolved in repos/booking-manage.ts). */
   policy?: BookingPolicySettings;
+  /** WEB-273: reminder policy (absent = shipped defaults — on, [24 h],
+   * client only). */
+  reminders?: BookingReminderSettings;
 };
 
 export type BookingPolicySettings = {
@@ -39,6 +42,20 @@ export type BookingPolicySettings = {
   cancelCutoffHours?: number;
   /** Refund-policy copy surfaced to clients canceling a prepaid booking. */
   refundPolicyText?: string;
+};
+
+/** WEB-273: reminder policy — offsets in hours before start. */
+export type BookingReminderSettings = {
+  enabled: boolean;
+  /** e.g. [24] or [24, 1] — up to 3 offsets, each 1..168 h. */
+  offsetsHours: number[];
+  sendTo: "client" | "client+studio";
+};
+
+export const DEFAULT_BOOKING_REMINDERS: BookingReminderSettings = {
+  enabled: true,
+  offsetsHours: [24],
+  sendTo: "client",
 };
 
 export const DEFAULT_BOOKING_SETTINGS: BookingSettings = {

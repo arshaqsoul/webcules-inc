@@ -214,6 +214,11 @@ export const studioProfiles = sqliteTable("studio_profile", {
   emailOverrides: text("email_overrides"),
   /** WEB-254: booking page designer JSON (hero/intro/FAQ/socials/thanks). */
   bookingPage: text("booking_page"),
+  /** WEB-269/270: setup guide — dismissed hides the card + first-login panel
+   * forever (reopenable); reopened records the undo for ops telemetry.
+   * Nullable by design (null = not dismissed — reopenedSetup clears it). */
+  setupDismissedAt: integer("setup_dismissed_at", { mode: "timestamp" }),
+  setupReopenedAt: integer("setup_reopened_at", { mode: "timestamp" }),
   createdAt: ts("created_at"),
   updatedAt: ts("updated_at"),
 });
@@ -370,6 +375,9 @@ export const projects = sqliteTable(
      * offset), <= 2 KB. Kept out of gallery_design so the basic slideshow
      * stays free while the design layer is Lite+. NULL = no button. */
     gallerySlideshow: text("gallery_slideshow"),
+    /** WEB-269: 1 = the setup guide's demo gallery (excluded from platform
+     * margin rollups; counts toward the studio's storage quota). */
+    demo: integer("demo"),
     createdAt: ts("created_at"),
     updatedAt: ts("updated_at"),
   },
@@ -475,6 +483,23 @@ export const bookings = sqliteTable(
     uniqueIndex("booking_manage_token_hash_unique")
       .on(t.manageTokenHash)
       .where(sql`manage_token_hash IS NOT NULL`),
+  ],
+);
+
+/* WEB-273: booking-reminder exact-once guard — one row per
+ * (booking, offset). The INSERT..ON CONFLICT DO NOTHING claim decides the
+ * sole sender; a repeated sweep can never double-send. */
+export const bookingReminders = sqliteTable(
+  "booking_reminders",
+  {
+    bookingId: text("booking_id").notNull(),
+    organizationId: text("organization_id").notNull(),
+    offsetHours: integer("offset_hours").notNull(),
+    sentAt: ts("sent_at"),
+  },
+  (t) => [
+    primaryKey({ columns: [t.bookingId, t.offsetHours] }),
+    index("booking_reminders_org_idx").on(t.organizationId, t.sentAt),
   ],
 );
 
