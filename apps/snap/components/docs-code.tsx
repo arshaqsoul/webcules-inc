@@ -32,3 +32,6 @@ export function DocsCode({ code, label }: { code: string; label?: string }) {
     </div>
   );
 }
+
+/* Extraction marker — see lib/docs/primitives.tsx. */
+(DocsCode as { docKind?: string }).docKind = "docs-code";

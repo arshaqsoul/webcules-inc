@@ -1,16 +1,24 @@
 /* Snap docs — element-tree extraction (server only).
  *
- * Doc content is a tree of React elements (the primitives above + plain JSX).
- * Two consumers walk the same tree without rendering anything:
+ * Doc content is a tree of React elements (the primitives + plain JSX).
+ * Three consumers walk the same tree without rendering anything:
  *  - extractToc(): H2/H3 list for the right-hand "on this page" rail,
- *  - toMarkdown(): the "Copy page" / "View as Markdown" payload.
- * Async server components and client islands embedded in content are opaque
- * nodes — extraction recurses only into plain elements, arrays, fragments. */
+ *  - toMarkdown(): the "Copy page" / "View as Markdown" payload,
+ *  - extractSections(): the search index (GET /api/docs/search).
+ * Sync function components are invoked so their element trees are visible;
+ * async server components and client islands (hooks) stay opaque. */
 import type { ReactElement, ReactNode } from "react";
 
 import { DocsCode } from "@/components/docs-code";
 
-import { H2, H3, Note, Callout, Shot, Steps, Tier, headingId, headingTextOf } from "./primitives";
+import { headingId, headingTextOf } from "./primitives";
+
+/** Primitive recognition by stable marker, not object identity — bundlers
+ * may duplicate the primitives module across chunks, which would break
+ * `el.type === H2`-style comparisons in the deployed worker. */
+function isKind(el: ReactElement, kind: string): boolean {
+  return (el.type as { docKind?: string })?.docKind === kind;
+}
 
 export type TocItem = { id: string; title: string; level: 2 | 3 };
 
@@ -33,7 +41,12 @@ function childrenOf(el: ReactElement): ReactNode {
   return propsOf(el).children as ReactNode;
 }
 
-/** Depth-first walk yielding every element node (descends arrays/fragments). */
+/** Depth-first walk yielding every element node (descends arrays/fragments).
+ * Function components are INVOKED synchronously to expose their element
+ * tree — doc content modules are sync server components, and without this
+ * the whole tree below <Content /> stays opaque (empty TOC/search/markdown).
+ * Async components (e.g. the embeds live demo) and hookful client islands
+ * return a Promise or throw and stay opaque on purpose. */
 function* walk(node: ReactNode): Generator<ReactElement> {
   if (Array.isArray(node)) {
     for (const child of node) yield* walk(child);
@@ -45,10 +58,18 @@ function* walk(node: ReactNode): Generator<ReactElement> {
     yield* walk(childrenOf(node));
     return;
   }
+  if (typeof node.type === "function") {
+    try {
+      const out = (node.type as (props: unknown) => ReactNode)(propsOf(node));
+      if (out && typeof (out as Promise<unknown>).then === "function") return;
+      yield* walk(out);
+    } catch {
+      // Client island (hooks) or throwing component — stays opaque.
+    }
+    return;
+  }
   const { children } = propsOf(node) as { children?: ReactNode };
-  // Only recurse into containers whose children we can see (plain elements).
-  // Function/class components stay opaque — their internals render later.
-  if (typeof node.type === "string" || isFragment(node)) yield* walk(children);
+  if (typeof node.type === "string") yield* walk(children);
 }
 
 /* ------------------------------------------------------------------ */
@@ -58,10 +79,10 @@ function* walk(node: ReactNode): Generator<ReactElement> {
 export function extractToc(root: ReactNode): TocItem[] {
   const items: TocItem[] = [];
   for (const el of walk(root)) {
-    if (el.type === H2) {
+    if (isKind(el, "h2")) {
       const title = headingTextOf(childrenOf(el)).trim();
       items.push({ id: (propsOf(el).id as string | undefined) ?? headingId(childrenOf(el)), title, level: 2 });
-    } else if (el.type === H3) {
+    } else if (isKind(el, "h3")) {
       const title = headingTextOf(childrenOf(el)).trim();
       items.push({ id: (propsOf(el).id as string | undefined) ?? headingId(childrenOf(el)), title, level: 3 });
     }
@@ -81,7 +102,7 @@ function inline(node: ReactNode): string {
   if (typeof node === "string" || typeof node === "number") return String(node);
   if (Array.isArray(node)) return node.map(inline).join("");
   if (!isElement(node)) return "";
-  if (node.type === Tier) {
+  if (isKind(node, "tier")) {
     const plan = String(propsOf(node).plan ?? "");
     const label = plan.charAt(0).toUpperCase() + plan.slice(1);
     return `**[${label}]**`;
@@ -127,19 +148,19 @@ function flattenBlocks(root: ReactNode): string[] {
   };
 
   for (const el of walk(root)) {
-    if (el.type === H2) {
+    if (isKind(el, "h2")) {
       blocks.push(`## ${headingTextOf(childrenOf(el)).trim()}`);
-    } else if (el.type === H3) {
+    } else if (isKind(el, "h3")) {
       blocks.push(`### ${headingTextOf(childrenOf(el)).trim()}`);
-    } else if (el.type === Shot) {
+    } else if (isKind(el, "shot")) {
       const { src, alt } = propsOf(el) as { src: string; alt: string };
       blocks.push(`![${alt}](https://snap.webcules.com${src})`);
-    } else if (el.type === Note) {
+    } else if (isKind(el, "note")) {
       blocks.push(`> Note: ${inline(childrenOf(el))}`);
-    } else if (el.type === Callout) {
+    } else if (isKind(el, "callout")) {
       const { title, children } = propsOf(el) as { title?: string; children?: ReactNode };
       blocks.push(`> ${title ? `**${title}** — ` : ""}${inline(children)}`);
-    } else if (el.type === Steps) {
+    } else if (isKind(el, "steps")) {
       const { items } = propsOf(el) as { items: ReactNode[] };
       const lines = items.map((item, i) => {
         const parts = flattenBlocks(item);
@@ -148,7 +169,7 @@ function flattenBlocks(root: ReactNode): string[] {
         return `${i + 1}. ${first}${rest ? `\n\n${rest.split("\n").map((l) => `   ${l}`).join("\n")}` : ""}`;
       });
       blocks.push(lines.join("\n\n"));
-    } else if (el.type === DocsCode) {
+    } else if (isKind(el, "docs-code")) {
       const { code, label } = propsOf(el) as { code: string; label?: string };
       blocks.push(`${label ? `${label}\n\n` : ""}\`\`\`\n${code}\n\`\`\``);
     } else if (el.type === "p") {
@@ -225,12 +246,12 @@ export function extractSections(root: ReactNode): DocSection[] {
   };
 
   for (const el of walk(root)) {
-    if (el.type === H2) startNew(el, 2);
-    else if (el.type === H3) startNew(el, 3);
+    if (isKind(el, "h2")) startNew(el, 2);
+    else if (isKind(el, "h3")) startNew(el, 3);
     else if (el.type === "p") current.text += " " + inline(childrenOf(el));
     else if (el.type === "ul" || el.type === "ol") {
       for (const block of flattenBlocks(el)) current.text += " " + block.replace(/\n/g, " ");
-    } else if (el.type === Note || el.type === Callout) {
+    } else if (isKind(el, "note") || isKind(el, "callout")) {
       current.text += " " + inline(childrenOf(el));
     } else if (el.type === "table") {
       const md = tableToMarkdown(el);

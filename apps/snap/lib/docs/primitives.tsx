@@ -33,6 +33,19 @@ export function H3({ id, children }: { id?: string; children: ReactNode }) {
   );
 }
 
+/* Extraction markers — lib/docs/extract.tsx recognizes primitives by these
+ * instead of object identity: bundlers may duplicate this module (relative
+ * vs alias imports land in different bundle chunks), which would make
+ * `el.type === H2` false across the duplicate. */
+type DocKinded = { docKind?: string };
+(H2 as DocKinded).docKind = "h2";
+(H3 as DocKinded).docKind = "h3";
+(Note as DocKinded).docKind = "note";
+(Callout as DocKinded).docKind = "callout";
+(Shot as DocKinded).docKind = "shot";
+(Steps as DocKinded).docKind = "steps";
+(Tier as DocKinded).docKind = "tier";
+
 /* ------------------------------------------------------------------ */
 /* Plan badge                                                          */
 /* ------------------------------------------------------------------ */
@@ -174,7 +187,7 @@ export function headingTextOf(node: ReactNode): string {
   const el = node as ReactElement<{ children?: ReactNode }>;
   // Plan badges inside headings ("Watermarks <Tier studio/>") read as
   // "Watermarks" in the TOC — the badge renders, the text skips it.
-  if (el.type === Tier) return "";
+  if ((el.type as { docKind?: string })?.docKind === "tier") return "";
   if (el.props && typeof el.props === "object" && "children" in el.props) {
     return headingTextOf(el.props.children);
   }
