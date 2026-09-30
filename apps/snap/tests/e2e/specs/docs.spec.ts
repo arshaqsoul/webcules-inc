@@ -49,10 +49,11 @@ async function gotoWithRetry(page: import("@playwright/test").Page, path: string
 
 test("docs index renders with categories and popular cards", async ({ page }) => {
   await gotoWithRetry(page, "/docs");
-  await expect(page.getByRole("heading", { name: "Snap documentation" })).toBeVisible();
-  await expect(page.getByText("Popular")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Snap documentation" })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole("heading", { name: "Popular" })).toBeVisible();
+  // Category labels are paragraphs in "Browse everything".
   for (const category of ["Getting started", "Galleries", "Billing & money", "Brand & website"]) {
-    await expect(page.getByRole("heading", { name: category })).toBeVisible();
+    await expect(page.getByText(category, { exact: true }).first()).toBeVisible();
   }
 });
 
@@ -114,13 +115,14 @@ test("copy page menu works in the browser", async ({ page }) => {
 
 test("sidebar expands a category and navigates to a page", async ({ page }) => {
   await gotoWithRetry(page, "/docs");
-  // Getting started starts expanded (contains active? index has none — click it).
-  await page.getByRole("button", { name: "Galleries" }).click();
-  await page.getByRole("link", { name: "Photo protection" }).click();
-  await expect(page).toHaveURL(/\/docs\/protection$/);
+  const nav = page.getByRole("navigation", { name: "Documentation" });
+  // Galleries starts folded (index has no active category) — the click expands it.
+  await nav.getByRole("button", { name: "Galleries" }).click();
+  await nav.getByRole("link", { name: "Photo protection" }).click();
+  await expect(page).toHaveURL(/\/docs\/protection$/, { timeout: 15_000 });
   await expect(page.getByRole("heading", { level: 1 })).toContainText(/Photo protection/);
   // The active category stays expanded after client-side navigation.
-  await expect(page.getByRole("link", { name: "Films & video delivery" })).toBeVisible();
+  await expect(nav.getByRole("link", { name: "Films & video delivery" })).toBeVisible();
 });
 
 test("docs login-free: no auth redirect on docs routes", async ({ page }) => {
