@@ -48,8 +48,18 @@ node scripts/deploy.mjs production --staging-verified  # ONLY after verifying
 - Staging smoke account: `launch-smoke@webcules.com` / `TestPass123!x` (org
   `37d24772-98e5-4371-bcd1-2e0424361b0d`, plan free). Recreate freely; staging data is disposable.
 - Manual staging cron: `curl -X POST -H "Authorization: Bearer $STAGING_SNAP_INBOUND_WEBHOOK_SECRET" https://snap-staging.webcules.com/api/cron/daily-status`
-- `snap-fallback.webcules.com` and `gallery-test.webcules.com` are PROD-ONLY routes (Custom
-  Hostnames fallback origin + serving-guard probe). They must never appear in the staging config.
+- Custom-hostname serving architecture (WEB-233 runbook, verified live on
+  prairiepeakgear.com 2026-09-30): zone fallback origin = `snap-saas-origin.webcules.com`
+  (ORIGINLESS proxied A → 192.0.2.1 — never a real IP), plus a `*/*` workers route on
+  webcules.com → webcules-snap (declared in wrangler.jsonc — a matching route is REQUIRED or
+  Cloudflare 522s; more-specific routes like webcules.com/* → landing keep precedence). The
+  worker resolves the studio from `x-forwarded-host` (see requestHost in lib/domains.ts).
+  Custom hostname payloads: `ssl: {method: "txt", type: "dv"}` — NO `certificate_authority`
+  (Enterprise-only on our zone) and no `preserve_host_header`.
+- Operator setup (done, one-time): `CLOUDFLARE_ZONE_ID` var in wrangler.jsonc +
+  `CLOUDFLARE_API_TOKEN` worker secret = the `snap-saas-full-prod` user token (SSL and
+  Certificates R/W + Workers Routes R/W, zone-scoped to webcules.com).
+- `gallery-test.webcules.com` is a PROD-ONLY probe route; the staging config never carries it.
 - `snap-staging.webcules.com` is in `DEFAULT_APP_HOSTS` (lib/domains.ts) — required so staging
   auth/dashboard paths don't 302 to the production origin.
 

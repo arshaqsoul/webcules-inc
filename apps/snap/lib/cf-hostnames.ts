@@ -1,7 +1,7 @@
 /* Cloudflare for SaaS — Custom Hostnames API client (WEB-224/226).
  * Mechanism: custom hostname → CF edge (per-hostname cert via Google CA,
- * TXT DCV) → custom_origin_server = snap-fallback.webcules.com (a second
- * custom_domain route on THIS worker) with preserve_host_header → the worker
+ * TXT DCV) → custom_origin_server = snap-saas-origin.webcules.com (a workers
+ * ROUTE on a proxied record in the webcules.com zone) with the worker
  * reads Host to resolve the studio (serving story, WEB-227).
  *
  * Everything takes an injectable fetch + optional token/zone override so the
@@ -10,9 +10,9 @@
  * caller persists as last_error — CF being down never 500s a request.
  *
  * One-time operator steps (runbook — see WEB-226):
- *   1. wrangler.jsonc: snap-fallback.webcules.com custom_domain route (done).
+ *   1. wrangler.jsonc: snap-saas-origin.webcules.com/* workers route (done).
  *   2. CF dashboard → SSL/TLS → Custom Hostnames → fallback origin =
- *      snap-fallback.webcules.com.
+ *      snap-saas-origin.webcules.com.
  *   3. wrangler secret put CLOUDFLARE_API_TOKEN (Zone → Custom Hostnames →
  *      Edit, scoped to webcules.com) + CLOUDFLARE_ZONE_ID var.
  *   4. Turnstile widget hostname allowlist gains each activated hostname
@@ -117,9 +117,13 @@ export async function createCustomHostname(
 ): Promise<CfResult<CfHostname>> {
   return cfCall<CfHostname>(cfg, "POST", `/zones/${cfg.zoneId}/custom_hostnames`, {
     hostname,
-    ssl: { method: "txt", type: "per_hostname", certificate_authority: "google" },
+    // CA selection (google) is Enterprise-only on our zone — leave the default CA;
+    // per-hostname TXT DCV works the same either way.
+    ssl: { method: "txt", type: "dv" },
+    // Host stays the fallback origin so the zone's workers route matches;
+    // the ORIGINAL studio hostname arrives in X-Forwarded-Host (the worker
+    // resolves the studio from it — see requestHost() in lib/domains.ts).
     custom_origin_server: CF_FALLBACK_ORIGIN,
-    preserve_host_header: true,
   }).then((r) => (r.ok ? { ok: true, result: mapHostname(r.result) } : r));
 }
 

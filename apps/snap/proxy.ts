@@ -9,7 +9,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { nonClientPathRedirect } from "@/lib/domains";
 
 export const proxy = (req: NextRequest) => {
-  const host = req.headers.get("host") ?? new URL(req.url).host;
+  const host = req.headers.get("x-forwarded-host")?.split(",")[0].trim() || req.headers.get("host") || new URL(req.url).host;
   const target = nonClientPathRedirect(host, new URL(req.url).pathname);
   if (!target) return NextResponse.next();
   const url = new URL(target);

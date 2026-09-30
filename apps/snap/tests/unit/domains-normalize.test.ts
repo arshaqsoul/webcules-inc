@@ -10,8 +10,7 @@ import {
   txtMatches,
   verificationTxtName,
   isCustomAppHost,
-  nonClientPathRedirect,
-} from "@/lib/domains";
+  nonClientPathRedirect, requestHost } from "@/lib/domains";
 
 describe("normalizeHostname", () => {
   const ok = (input: string, expected: string) =>
@@ -52,6 +51,7 @@ describe("normalizeHostname", () => {
   bad("webcules.com", "reserved");
   bad("snap.webcules.com", "reserved");
   bad("snap-fallback.webcules.com", "reserved");
+  bad("snap-saas-origin.webcules.com", "reserved");
   bad("anything.webcules.com", "reserved");
   bad("localhost", "reserved");
   // rejected — subdomain-only policy
@@ -114,7 +114,18 @@ describe("verification records", () => {
   });
 
   it("CNAME target is the fallback origin hostname", () => {
-    expect(CNAME_TARGET).toBe("snap-fallback.webcules.com");
+    expect(CNAME_TARGET).toBe("snap-saas-origin.webcules.com");
+  });
+});
+
+describe("requestHost (SaaS X-Forwarded-Host)", () => {
+  it("prefers x-forwarded-host — the SaaS fallback-origin leg carries the studio host there", () => {
+    expect(requestHost(new Headers({ host: "snap-saas-origin.webcules.com", "x-forwarded-host": "gallery.studio.com" }))).toBe("gallery.studio.com");
+  });
+  it("first value of a comma list; plain Host when absent", () => {
+    expect(requestHost(new Headers({ "x-forwarded-host": "gallery.studio.com, proxy.example" }))).toBe("gallery.studio.com");
+    expect(requestHost(new Headers({ host: "snap.webcules.com" }))).toBe("snap.webcules.com");
+    expect(requestHost(new Headers({}))).toBeNull();
   });
 });
 
@@ -135,7 +146,7 @@ describe("serving guard (WEB-227)", () => {
   });
 
   it("default/dev/preview hosts never redirect", () => {
-    for (const h of ["snap.webcules.com", "snap-fallback.webcules.com", "localhost:8787", "127.0.0.1", "snap.webcules-inc.workers.dev"]) {
+    for (const h of ["snap.webcules.com", "snap-saas-origin.webcules.com", "localhost:8787", "127.0.0.1", "snap.webcules-inc.workers.dev"]) {
       expect(nonClientPathRedirect(h, "/dashboard")).toBeNull();
       expect(isCustomAppHost(h)).toBe(false);
     }

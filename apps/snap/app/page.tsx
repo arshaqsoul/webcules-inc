@@ -15,6 +15,7 @@ import { SmoothScroll } from "@/components/landing/smooth-scroll";
 import { StackMath } from "@/components/landing/stack-math";
 import { isCustomAppHost } from "@/lib/domains";
 import { resolveStudioByHost } from "@/lib/repos/domains";
+import { requestHost } from "@/lib/domains";
 import { getStudioSlug } from "@/lib/repos/studios";
 import { getSessionUser } from "@/lib/session";
 
@@ -41,7 +42,7 @@ export default async function Home() {
   // WEB-227: a studio's custom hostname IS the client surface — `/` there is
   // the studio's booking page, not our marketing landing. Unknown hosts (no
   // active domain row) get a neutral 404: no tenant data by hostname alone.
-  const host = (await headers()).get("host");
+  const host = requestHost(await headers());
   if (host && isCustomAppHost(host)) {
     const studio = await resolveStudioByHost(host);
     if (studio) {

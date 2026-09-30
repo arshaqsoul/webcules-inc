@@ -32,14 +32,18 @@
       "pattern": "snap.webcules.com",
       "custom_domain": true
     },
-    // WEB-224/226: fallback origin for Cloudflare for SaaS custom hostnames.
-    // Custom hostnames route here at the edge (per-hostname cert) with the
-    // client's Host header preserved; the worker resolves the studio by Host.
-    // CF dashboard → SSL/TLS → Custom Hostnames → fallback origin must point
-    // at this hostname (one-time operator step, see WEB-226).
+    // WEB-224/226: SaaS fallback origin for Cloudflare for SaaS custom
+    // hostnames. Must be a WORKERS ROUTE on a proxied record (see below) —
+    // a worker *custom domain* cannot serve as a fallback origin (the SaaS
+    // edge does an origin connect and 522s: no origin behind it).
     {
-      "pattern": "snap-fallback.webcules.com",
-      "custom_domain": true
+      // WEB-233 (Cloudflare "Worker as fallback origin" pattern): the
+      // wildcard catches SaaS custom hostnames attached to this zone — they
+      // have no enumerable hostname, and a matching route is REQUIRED or
+      // Cloudflare attempts an origin connect and 522s. More-specific routes
+      // (webcules.com/* and www → landing) take precedence over this.
+      "pattern": "*/*",
+      "zone_name": "webcules.com"
     },
     // WEB-224/233: staging probe host — exercises the serving guard and the
     // neutral org-less 404 on a live third-party-shaped hostname (our zone's
@@ -62,6 +66,8 @@
     // S3 endpoint host for storage-class moves (RAW Vault) — keys are secrets.
     "R2_S3_ACCOUNT_ID": "5677ff5e25a4e78485b774931f981681",
     // Founder allowlist — margin report (WEB-161) access + alert recipient.
-    "FOUNDER_EMAILS": "arshaqhishamsl@gmail.com"
+    "FOUNDER_EMAILS": "arshaqhishamsl@gmail.com",
+    // webcules.com zone — Custom Hostnames (Cloudflare for SaaS) target zone.
+    "CLOUDFLARE_ZONE_ID": "5de72a6806708f95960d382acaa466b0"
   }
 }

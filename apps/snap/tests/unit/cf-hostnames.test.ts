@@ -39,9 +39,8 @@ describe("createCustomHostname", () => {
     expect(captured!.method).toBe("POST");
     expect(captured!.body).toEqual({
       hostname: "gallery.studio.com",
-      ssl: { method: "txt", type: "per_hostname", certificate_authority: "google" },
-      custom_origin_server: "snap-fallback.webcules.com",
-      preserve_host_header: true,
+      ssl: { method: "txt", type: "dv" },
+      custom_origin_server: "snap-saas-origin.webcules.com",
     });
   });
 

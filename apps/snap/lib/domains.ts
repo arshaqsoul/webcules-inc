@@ -6,7 +6,20 @@
  * Rules: subdomains only (gallery.yourstudio.com — apex domains can't CNAME),
  * never our own zone (*.webcules.com), no ports/IPs/wildcards; punycode (xn--)
  * accepted and displayed as-is in v1. */
-export const CF_FALLBACK_ORIGIN = "snap-fallback.webcules.com";
+/** The studio-resolving host for a request. On the Cloudflare for SaaS leg
+ * (custom hostname → fallback-origin workers route) the Host header is the
+ * FALLBACK origin and the original studio hostname arrives in
+ * X-Forwarded-Host — prefer it when present. */
+export function requestHost(headers: Headers): string | null {
+  const xfh = headers.get("x-forwarded-host");
+  if (xfh) {
+    const first = xfh.split(",")[0].trim();
+    if (first) return first;
+  }
+  return headers.get("host");
+}
+
+export const CF_FALLBACK_ORIGIN = "snap-saas-origin.webcules.com";
 /** The CNAME record studios publish for their hostname. */
 export const CNAME_TARGET = CF_FALLBACK_ORIGIN;
 /** Pending-verification window before the sweep reclaims the row (30 d). */
@@ -135,7 +148,7 @@ export function txtMatches(token: string, records: string[] | null): boolean {
  * would 302 to the production origin. */
 export const DEFAULT_APP_HOSTS = new Set([
   "snap.webcules.com",
-  "snap-fallback.webcules.com",
+  "snap-saas-origin.webcules.com",
   "snap-staging.webcules.com",
 ]);
 
