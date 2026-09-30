@@ -60,7 +60,7 @@ export default async function InvoicePresetsPage({ searchParams }: { searchParam
       </div>
       {!edit && <InvoicePresetEditor />}
       <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
-        <TemplateHubRows templates={rows} activeKind="invoice_preset" editHref={(t) => `/dashboard/templates/invoice-presets?edit=${t.id}`} />
+        <TemplateHubRows templates={rows} activeKind="invoice_preset" editBase="/dashboard/templates/invoice-presets" />
       </section>
     </div>
   );

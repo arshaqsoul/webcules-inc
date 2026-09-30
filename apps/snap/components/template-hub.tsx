@@ -32,13 +32,14 @@ function usedLabel(iso: string | null): string {
 export function TemplateHubRows({
   templates,
   activeKind,
-  editHref,
+  editBase,
 }: {
   templates: HubTemplate[];
   activeKind: string;
-  /** WEB-286: section pages pass their own row link (e.g. "?edit={id}" on
-   * the same page); the default map handles the legacy kinds. */
-  editHref?: (t: HubTemplate) => string;
+  /** WEB-286: section pages pass their own base path and rows link to
+   * `{editBase}?edit={id}`. MUST stay a string — a function prop here is
+   * unserializable across the RSC boundary and 500s the page render. */
+  editBase?: string;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
@@ -79,7 +80,7 @@ export function TemplateHubRows({
           <li key={t.id} className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">
             <div className="min-w-0 flex-1">
               <a
-                href={editHref ? editHref(t) : hubEditHref(t.kind, t.id)}
+                href={editBase ? `${editBase}?edit=${t.id}` : hubEditHref(t.kind, t.id)}
                 className={`block truncate text-sm font-medium hover:text-primary ${t.archived ? "text-ink-subtle line-through" : "text-ink"}`}
               >
                 {t.name}

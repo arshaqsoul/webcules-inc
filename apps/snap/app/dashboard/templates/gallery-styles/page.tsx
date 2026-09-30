@@ -60,7 +60,7 @@ export default async function GalleryStylesPage({ searchParams }: { searchParams
       </div>
       {!edit && <GalleryStyleEditor />}
       <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
-        <TemplateHubRows templates={rows} activeKind="gallery_preset" editHref={(t) => `/dashboard/templates/gallery-styles?edit=${t.id}`} />
+        <TemplateHubRows templates={rows} activeKind="gallery_preset" editBase="/dashboard/templates/gallery-styles" />
       </section>
     </div>
   );
