@@ -60,10 +60,12 @@ export function DocsToc({ items }: { items: TocItem[] }) {
     >
       <div className="relative border-l border-hairline">
         {indicator && (
+          /* Transform-driven (compositor) so the glide stays smooth even on
+           * throttled surfaces where top/height transitions skip frames. */
           <span
             aria-hidden
-            className="absolute left-[-1px] w-[2px] bg-ink transition-[top,height] duration-300 ease-out"
-            style={{ top: indicator.top, height: indicator.height }}
+            className="absolute left-[-1px] top-0 w-[2px] bg-ink transition-transform duration-300 ease-out will-change-transform"
+            style={{ transform: `translateY(${indicator.top}px)`, height: indicator.height }}
           />
         )}
         <ul className="flex flex-col">
