@@ -29,7 +29,17 @@ function usedLabel(iso: string | null): string {
   return `used ${Math.floor(days / 30)} mo ago`;
 }
 
-export function TemplateHubRows({ templates, activeKind }: { templates: HubTemplate[]; activeKind: string }) {
+export function TemplateHubRows({
+  templates,
+  activeKind,
+  editHref,
+}: {
+  templates: HubTemplate[];
+  activeKind: string;
+  /** WEB-286: section pages pass their own row link (e.g. "?edit={id}" on
+   * the same page); the default map handles the legacy kinds. */
+  editHref?: (t: HubTemplate) => string;
+}) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -69,7 +79,7 @@ export function TemplateHubRows({ templates, activeKind }: { templates: HubTempl
           <li key={t.id} className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">
             <div className="min-w-0 flex-1">
               <a
-                href={hubEditHref(t.kind, t.id)}
+                href={editHref ? editHref(t) : hubEditHref(t.kind, t.id)}
                 className={`block truncate text-sm font-medium hover:text-primary ${t.archived ? "text-ink-subtle line-through" : "text-ink"}`}
               >
                 {t.name}
@@ -141,10 +151,10 @@ export function RestoreStartersBanner({ missingCount }: { missingCount: number }
 function hubEditHref(kind: string, id: string): string {
   if (kind === "contract" || kind === "contract_clause") return `/dashboard/templates/contracts?edit=${id}`;
   if (kind === "form" || kind === "questionnaire") return `/dashboard/templates/forms?edit=${id}`;
-  // These kinds edit in their own surfaces (the hub rows link there); the
-  // old fallthrough to "/dashboard/templates" reset the tab to contracts.
-  if (kind === "email_snippet") return "/dashboard/settings/brand";
-  if (kind === "invoice_preset") return "/dashboard/settings/billing";
-  if (kind === "gallery_preset") return "/dashboard/projects";
+  // WEB-286: every section page owns its rows now; this map only serves
+  // stray cross-surface links.
+  if (kind === "email_snippet") return "/dashboard/templates/emails";
+  if (kind === "invoice_preset") return "/dashboard/templates/invoice-presets";
+  if (kind === "gallery_preset") return "/dashboard/templates/gallery-styles";
   return "/dashboard/templates";
 }

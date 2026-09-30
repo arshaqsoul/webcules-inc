@@ -1,9 +1,7 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 import { SettingsBrand } from "@/components/settings-brand";
-import { EmailsCard } from "@/components/emails-card";
-import { loadEmailOverrides, OVERRIDABLE_TEMPLATES } from "@/lib/email-overrides";
-import { listTemplates } from "@/lib/repos/templates";
 import { brandAssetUrl, parseBrandAssets } from "@/lib/brand-assets";
 import { getPlanEntitlements, PLANS } from "@/lib/plans";
 import { parseWatermarkConfig } from "@/lib/watermark";
@@ -16,11 +14,6 @@ export const metadata = { title: "Settings · Brand" };
 export default async function SettingsBrandPage() {
   const ctx = await getOrgContext();
   if (!ctx) redirect("/login");
-  const [overrides, snippetTemplates] = await Promise.all([
-    loadEmailOverrides(ctx.organizationId),
-    listTemplates(ctx.organizationId, "email_snippet"),
-  ]);
-  const snippets = snippetTemplates.map((t) => ({ id: t.id, name: t.name, subject: (JSON.parse(t.meta || "{}") as { subject?: string }).subject ?? null, body: t.body }));
   const profile = await getStudioProfile(ctx.organizationId);
   if (!profile) redirect("/onboarding");
 
@@ -75,13 +68,17 @@ export default async function SettingsBrandPage() {
         emailHeader: assetBag.emailHeader ? brandAssetUrl(ctx.organizationId, "emailHeader", assetBag.rev) : null,
         ogCard: assetBag.ogCard ? brandAssetUrl(ctx.organizationId, "ogCard", assetBag.rev) : null,
       }}
-    />
-      <EmailsCard
-        templates={OVERRIDABLE_TEMPLATES}
-        initialOverrides={overrides}
-        initialSnippets={snippets}
-        snippetLimit={snippetLimit}
       />
+      <Link
+        href="/dashboard/templates/emails"
+        className="flex items-center justify-between rounded-[12px] border border-hairline bg-surface-1 p-5 text-sm transition-colors hover:border-primary/40"
+      >
+        <span className="text-ink">
+          <strong className="font-medium">Email copy has moved.</strong>{" "}
+          <span className="text-ink-subtle">Saved replies and automatic emails now live under Templates → Emails.</span>
+        </span>
+        <span className="shrink-0 font-medium text-primary">Open →</span>
+      </Link>
     </div>
   );
 }

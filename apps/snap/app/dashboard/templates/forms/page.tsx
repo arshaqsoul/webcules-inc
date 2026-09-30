@@ -44,7 +44,7 @@ export default async function FormsPage({ searchParams }: { searchParams: Promis
             <h1 className="text-lg font-semibold text-ink">Edit form</h1>
             <p className="mt-0.5 text-sm text-ink-subtle">Custom questions flow into the lead record; the preview renders exactly what clients see.</p>
           </div>
-          <Link href="/dashboard/templates/forms" className="text-xs font-medium text-primary hover:underline">← All forms</Link>
+          <Link href="/dashboard/templates/forms" className="text-xs font-medium text-primary hover:underline">← Forms</Link>
         </div>
         <FormBuilder
             templateId={editing.id}

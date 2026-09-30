@@ -6,6 +6,8 @@ import { renderFormHtml } from "@/lib/forms-render";
 import { parseFormSchema } from "@/lib/forms";
 import { getTemplate } from "@/lib/repos/templates";
 import { renderContractBodyHtml } from "@/lib/contract-body";
+import { parsePresetLines } from "@/lib/invoice-settings";
+import { renderInvoicePdf } from "@/lib/pdf";
 import { buildMergeValues } from "@/lib/merge";
 import { renderMerge } from "@/lib/merge";
 import { getStudioProfile } from "@/lib/repos/studios";
@@ -60,6 +62,32 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       <p class="note">Preview with sample data. Merge fields resolve from the real project at send.</p>
     </body></html>`;
     return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
+  }
+
+  // WEB-286: invoice preset preview — the REAL invoice PDF pipeline fed with
+  // the preset's lines and sample client/project data (no preview/send drift).
+  if (template.kind === "invoice_preset") {
+    const lines = parsePresetLines(template.body);
+    const profile = await getStudioProfile(ctx.organizationId);
+    const brand = (profile?.brand ?? {}) as { accent?: string };
+    const accent = /^#[0-9a-fA-F]{6}$/.test(brand.accent ?? "") ? (brand.accent as string).toLowerCase() : "#5e6ad2";
+    const totalMinor = lines.reduce((n, l) => n + l.qty * l.amountMinor, 0);
+    const bytes = await renderInvoicePdf({
+      studioName: profile?.studioName ?? "Your Studio",
+      accent,
+      invoiceNumber: "PREVIEW",
+      issuedAt: new Date(),
+      dueAt: null,
+      clientEmail: "client@example.com",
+      projectTitle: "Sample project",
+      lines,
+      totalMinor,
+      currency: "USD",
+      status: "draft",
+    });
+    return new Response(new Uint8Array(bytes).buffer, {
+      headers: { "Content-Type": "application/pdf", "Content-Disposition": `inline; filename="preset-preview.pdf"`, "Cache-Control": "no-store" },
+    });
   }
 
   const schema = parseFormSchema(template.body);

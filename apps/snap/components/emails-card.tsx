@@ -4,8 +4,14 @@
  * production-renderer preview, plus the saved-snippet (canned reply)
  * manager. Empty override = shipped default. */
 import { useState } from "react";
+import dynamic from "next/dynamic";
+import { Pencil } from "lucide-react";
 
 import { Button } from "@webcules/ui/components/button";
+
+/* WEB-286: the WYSIWYG snippet editor ships lazily — photographers never
+ * see raw HTML and Tiptap's JSON model makes tag soup impossible. */
+const RichTextEditor = dynamic(() => import("@/components/rich-text-editor"), { ssr: false });
 
 type Template = { key: string; label: string };
 type Override = { subject?: string; intro?: string };
@@ -30,6 +36,8 @@ export function EmailsCard({
   const [snippets, setSnippets] = useState(initialSnippets);
   const [newSnippet, setNewSnippet] = useState({ name: "", subject: "", body: "" });
   const [snippetStatus, setSnippetStatus] = useState<string | null>(null);
+  /** Non-null = the form is editing that snippet (PATCH) instead of creating. */
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const current = overrides[key] ?? {};
   const set = (patch: Override) => setOverrides((o) => ({ ...o, [key]: { ...(o[key] ?? {}), ...patch } }));
@@ -52,25 +60,64 @@ export function EmailsCard({
     setBusy(false);
   }
 
-  async function createSnippet() {
-    if (!newSnippet.name.trim() || !newSnippet.body.trim()) return;
+  function startEdit(id: string) {
+    const s = snippets.find((x) => x.id === id);
+    if (!s) return;
+    setEditingId(id);
+    setNewSnippet({ name: s.name, subject: s.subject ?? "", body: s.body });
     setSnippetStatus(null);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setNewSnippet({ name: "", subject: "", body: "" });
+    setSnippetStatus(null);
+  }
+
+  /** HTML bodies count as empty only when they have no visible text. */
+  const snippetBodyEmpty = !newSnippet.body.replace(/<[^>]*>/g, "").trim();
+
+  async function saveSnippet() {
+    if (!newSnippet.name.trim() || snippetBodyEmpty) return;
+    setSnippetStatus(null);
+    const payload = {
+      name: newSnippet.name.trim(),
+      body: newSnippet.body.trim(),
+      ...(newSnippet.subject.trim() ? { meta: { subject: newSnippet.subject.trim() } } : {}),
+    };
+    if (editingId) {
+      const res = await fetch(`/api/studio/templates/${editingId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        setSnippetStatus("Couldn't save the reply.");
+        return;
+      }
+      const saved = { id: editingId, name: payload.name, subject: newSnippet.subject.trim() || null, body: newSnippet.body.trim() };
+      setSnippets((s) => s.map((x) => (x.id === editingId ? saved : x)));
+      cancelEdit();
+      setSnippetStatus("Reply updated.");
+      return;
+    }
     const res = await fetch("/api/studio/templates", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ kind: "email_snippet", name: newSnippet.name.trim(), body: `<p>${newSnippet.body.trim()}</p>`, meta: newSnippet.subject.trim() ? { subject: newSnippet.subject.trim() } : {} }),
+      body: JSON.stringify({ kind: "email_snippet", ...payload }),
     });
     const body = (await res.json().catch(() => ({}))) as { id?: string; error?: string; limit?: number };
     if (!res.ok || !body.id) {
-      setSnippetStatus(body.error === "limit_reached" ? `Your plan includes ${body.limit ?? 5} snippets — upgrade to Studio for unlimited.` : "Couldn't save the snippet.");
+      setSnippetStatus(body.error === "limit_reached" ? `Your plan includes ${body.limit ?? 5} replies — upgrade to Studio for unlimited.` : "Couldn't save the reply.");
       return;
     }
-    setSnippets((s) => [...s, { id: body.id!, name: newSnippet.name.trim(), subject: newSnippet.subject.trim() || null, body: newSnippet.body.trim() }]);
+    setSnippets((s) => [...s, { id: body.id!, name: payload.name, subject: newSnippet.subject.trim() || null, body: newSnippet.body.trim() }]);
     setNewSnippet({ name: "", subject: "", body: "" });
-    setSnippetStatus("Snippet saved — insert it from a lead thread.");
+    setSnippetStatus("Reply saved — insert it from a lead thread.");
   }
 
   async function deleteSnippet(id: string) {
+    if (editingId === id) cancelEdit();
     setSnippets((s) => s.filter((x) => x.id !== id));
     await fetch(`/api/studio/templates/${id}`, { method: "DELETE" });
   }
@@ -80,10 +127,11 @@ export function EmailsCard({
   const atLimit = snippetLimit !== null && snippets.length >= snippetLimit;
 
   return (
-    <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
+    <section id="emails" className="scroll-mt-24 rounded-[12px] border border-hairline bg-surface-1 p-5">
       <h2 className="text-[15px] font-medium text-ink">Emails</h2>
       <p className="mb-4 mt-1 text-xs text-ink-subtle">
-        Your words over the system&apos;s emails — subject and opening line per message. Buttons, links and your branding always stay intact.
+        Automatic emails — your subject and opening line per system send; buttons, links and your branding always stay
+        intact. Saved replies for lead threads live below.
       </p>
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
@@ -110,32 +158,51 @@ export function EmailsCard({
           </div>
 
           <div className="mt-4 border-t border-hairline pt-4">
-            <h3 className="text-sm font-medium text-ink">Saved snippets (canned replies)</h3>
-            <p className="mb-2 mt-0.5 text-xs text-ink-subtle">Insert from any lead thread — merge fields resolve per client.</p>
+            <h3 className="text-sm font-medium text-ink">Saved replies (canned emails)</h3>
+            <p className="mb-2 mt-0.5 text-xs text-ink-subtle">
+              Insert from any lead thread&apos;s reply box — merge fields resolve per client. Edit or add your own here.
+            </p>
             <ul className="mb-2 flex flex-col divide-y divide-hairline">
               {snippets.map((s) => (
-                <li key={s.id} className="flex items-center gap-2 py-2 first:pt-0">
+                <li key={s.id} className={`flex items-center gap-2 py-2 first:pt-0 ${editingId === s.id ? "rounded-md bg-surface-2 px-2" : ""}`}>
                   <span className="min-w-0 flex-1 truncate text-sm text-ink">{s.name}</span>
                   {s.subject && <span className="hidden max-w-40 truncate text-xs text-ink-tertiary sm:block">{s.subject}</span>}
-                  <Button size="sm" variant="ghost" aria-label="Delete snippet" onClick={() => deleteSnippet(s.id)}>✕</Button>
+                  <Button size="sm" variant="ghost" aria-label={`Edit snippet ${s.name}`} title="Edit" onClick={() => startEdit(s.id)}>
+                    <Pencil className="h-3.5 w-3.5" aria-hidden />
+                  </Button>
+                  <Button size="sm" variant="ghost" aria-label="Delete snippet" title="Delete" onClick={() => deleteSnippet(s.id)}>✕</Button>
                 </li>
               ))}
               {snippets.length === 0 && <li className="py-1 text-xs text-ink-subtle">No snippets yet.</li>}
             </ul>
-            {!atLimit && (
+            {(editingId || !atLimit) && (
               <div className="flex flex-col gap-2">
+                {editingId && (
+                  <div className="flex items-center justify-between text-xs font-medium text-primary">
+                    <span>Editing “{snippets.find((x) => x.id === editingId)?.name ?? "snippet"}”</span>
+                    <button type="button" onClick={cancelEdit} className="font-medium text-ink-subtle hover:text-ink">
+                      Cancel edit
+                    </button>
+                  </div>
+                )}
                 <div className="grid gap-2 sm:grid-cols-2">
                   <input value={newSnippet.name} onChange={(e) => setNewSnippet((s) => ({ ...s, name: e.target.value }))} placeholder="Name (e.g. Pricing follow-up)" className={input} />
                   <input value={newSnippet.subject} onChange={(e) => setNewSnippet((s) => ({ ...s, subject: e.target.value }))} placeholder="Subject (optional)" className={input} />
                 </div>
-                <textarea value={newSnippet.body} onChange={(e) => setNewSnippet((s) => ({ ...s, body: e.target.value }))} placeholder="Reply text — merge fields work" className={`${input} min-h-20`} />
+                <RichTextEditor
+                  value={newSnippet.body}
+                  onChange={(html) => setNewSnippet((s) => ({ ...s, body: html }))}
+                  placeholder="Reply text — merge fields like {{client_name}} work"
+                />
                 <div className="flex items-center gap-3">
-                  <Button size="sm" variant="outline" onClick={createSnippet} disabled={!newSnippet.name.trim() || !newSnippet.body.trim()}>Save snippet</Button>
+                  <Button size="sm" variant="outline" onClick={saveSnippet} disabled={!newSnippet.name.trim() || snippetBodyEmpty}>
+                    {editingId ? "Save changes" : "Save reply"}
+                  </Button>
                   {snippetStatus && <span className="text-xs text-ink-subtle">{snippetStatus}</span>}
                 </div>
               </div>
             )}
-            {atLimit && (
+            {atLimit && !editingId && (
               <p className="text-xs text-ink-subtle">
                 Your plan includes {snippetLimit} snippets — <a href="/dashboard/settings/billing" className="font-medium text-primary hover:underline">upgrade to Studio</a> for unlimited.
               </p>

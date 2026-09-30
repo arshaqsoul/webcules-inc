@@ -15,11 +15,11 @@ import {
   parseGalleryDesign,
   presetFromDesign,
   serializeGalleryDesign,
-  themeVars,
   focalPosition,
   type GalleryDesign,
 } from "@/lib/gallery-design";
 import { SLIDESHOW_PACES, SLIDESHOW_TRANSITIONS, type SlideshowConfig } from "@/lib/slideshow";
+import { GalleryDualPreview } from "@/components/gallery-preview";
 
 type PickerAsset = { id: string; filename: string; status: string };
 type PresetRow = { id: string; name: string; isDefault: boolean; body?: string };
@@ -271,7 +271,6 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
   const cover = draft.cover;
   const coverAsset = cover?.assetId ? (picker ?? []).find((a) => a.id === cover.assetId) ?? { id: cover.assetId, filename: "", status: "" } : null;
   const previewTiles = (picker ?? []).slice(0, 6);
-  const radiusCls = ({ "0px": "rounded-none", "8px": "rounded-[8px]", "16px": "rounded-[16px]" } as const)[draft.theme.radius];
   const statusLabel = customized ? "Customized for this gallery" : inherited ? "Using your studio default preset" : "Classic Snap gallery";
 
   return (
@@ -600,15 +599,10 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
           </fieldset>
         </div>
 
-        {/* ---------------- phone preview ---------------- */}
+        {/* ---------------- live preview (shared with Templates → Gallery styles) ---------------- */}
         <div className="lg:sticky lg:top-20 lg:self-start">
           <p className="mb-2 text-xs text-ink-tertiary">Live preview — what the client opens</p>
-          <div
-            className="mx-auto w-[280px] overflow-hidden rounded-[32px] border-[6px] border-ink/80 shadow-xl"
-            style={{ ["--accent" as string]: "#5e6ad2", ...themeVars(draft.theme.background) } as React.CSSProperties}
-          >
-            <PhonePreview design={draft} tiles={previewTiles} radiusCls={radiusCls} />
-          </div>
+          <GalleryDualPreview design={draft} tiles={previewTiles.map((t) => ({ url: `/api/assets/${t.id}?variant=thumb` }))} />
         </div>
       </div>
 
@@ -644,103 +638,6 @@ function Seg({ label, value, options, onChange }: {
   );
 }
 
-/** Miniature of the public gallery inside the phone frame — same shape rules
- * as the real render (hero styles, three layouts, theme vars, captions). */
-function PhonePreview({ design, tiles, radiusCls }: { design: GalleryDesign; tiles: PickerAsset[]; radiusCls: string }) {
-  const c = design.cover;
-  const coverUrl = c?.assetId ? `/api/assets/${c.assetId}?variant=thumb` : null;
-  const tileEls = (aspect: number | null, i: number) => {
-    const t = tiles[i % Math.max(1, tiles.length)];
-    const cls = `overflow-hidden bg-surface-2 ${radiusCls}${aspect === null ? " h-full w-full" : ""}`;
-    return (
-      <div key={i} className={cls} style={aspect !== null ? { aspectRatio: String(aspect) } : undefined}>
-        {t ? (
-          // eslint-disable-next-line @next/next/no-img-element -- authorized proxy
-          <img src={`/api/assets/${t.id}?variant=thumb`} alt="" className="h-full w-full object-cover" loading="lazy" />
-        ) : (
-          <div className="h-full w-full bg-surface-2" />
-        )}
-      </div>
-    );
-  };
-
-  return (
-    <div className="bg-canvas">
-      {c && (c.title || c.subtitle || coverUrl) && (
-        <div className="relative">
-          {c.style === "split" ? (
-            <div className="grid grid-cols-[1.6fr,1fr]">
-              <div className="relative aspect-[4/3]">
-                {coverUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- authorized proxy
-                  <img src={coverUrl} alt="" className="absolute inset-0 h-full w-full object-cover" style={{ objectPosition: focalPosition(c.focal) }} />
-                ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#5e6ad2] to-[#22222b]" />
-                )}
-              </div>
-              <div className="flex flex-col justify-center bg-surface-2 p-3" style={{ color: "var(--ink)" }}>
-                <span className="text-[7px] font-semibold uppercase tracking-[0.2em] opacity-70">Studio</span>
-                <span className="mt-1 text-[13px] font-semibold leading-tight">{c.title || "Title"}</span>
-                <span className="mt-1 text-[9px] leading-snug opacity-75">{c.subtitle || "Subtitle"}</span>
-              </div>
-            </div>
-          ) : (
-            <div className="relative aspect-[16/10]">
-              {coverUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element -- authorized proxy
-                <img src={coverUrl} alt="" className={`absolute inset-0 h-full w-full object-cover ${c.style === "kenburns" ? "snap-kenburns" : ""}`} style={{ objectPosition: focalPosition(c.focal) }} />
-              ) : (
-                <div className="absolute inset-0 bg-gradient-to-br from-[#5e6ad2] to-[#22222b]" />
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-3 text-white">
-                <span className="text-[7px] font-semibold uppercase tracking-[0.2em] opacity-80">Studio</span>
-                <div className="mt-0.5 text-base font-semibold leading-tight">{c.title || "Title"}</div>
-                <div className="text-[9px] opacity-85">{c.subtitle || "Subtitle"}</div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-      <div className="p-3">
-        <div className="mb-2 flex items-center justify-between">
-          <span className="text-[10px] font-medium" style={{ color: "var(--ink)" }}>Favorites</span>
-          <span className="text-[8px]" style={{ color: "var(--ink)" }}>24 items</span>
-        </div>
-        {design.layout === "grid" && <div className="grid grid-cols-3 gap-1.5">{[1, 1, 1, 1, 1, 1].map((a, i) => tileEls(a, i))}</div>}
-        {design.layout === "masonry" && (
-          <div className="columns-3 gap-1.5">
-            {[4 / 5, 3 / 2, 1, 4 / 5, 1, 3 / 2].map((a, i) => (
-              <div key={i} className="mb-1.5">
-                {tileEls(a, i)}
-              </div>
-            ))}
-          </div>
-        )}
-        {design.layout === "cascade" && (
-          <div className="flex flex-col gap-1.5">
-            <div className="flex gap-1.5">
-              {[1.5, 1, 1.1].map((a, i) => (
-                <div key={i} className="h-16 flex-1 overflow-hidden" style={{ flexGrow: a, flexBasis: 0 }}>
-                  {tileEls(null, i)}
-                </div>
-              ))}
-            </div>
-            <div className="flex gap-1.5">
-              {[1, 1.6, 0.9].map((a, i) => (
-                <div key={i} className="h-16 flex-1 overflow-hidden" style={{ flexGrow: a, flexBasis: 0 }}>
-                  {tileEls(null, i + 3)}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-        {design.theme.captions !== "off" && (
-          <div className="mt-1.5 text-[9px]" style={{ color: "var(--ink)" }}>
-            IMG_2041.jpg
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+/** WEB-286: the gallery miniature (phone + desktop frames) now lives in the
+ * shared components/gallery-preview.tsx — the project designer and the
+ * Templates → Gallery styles editor render the exact same preview. */

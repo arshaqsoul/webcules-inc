@@ -4,9 +4,10 @@ import Link from "next/link";
 
 import { getOrgContext } from "@/lib/session";
 import { getPlanEntitlements } from "@/lib/plans";
-import { getTemplate, listTemplates } from "@/lib/repos/templates";
+import { getTemplate, listTemplates, starterTemplateRows } from "@/lib/repos/templates";
 import { ContractTemplateEditor } from "@/components/contract-template-editor";
 import { CreateContractTemplate, ContractTemplateActions } from "@/components/contract-templates-list";
+import { RestoreStartersBanner } from "@/components/template-hub";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +28,9 @@ export default async function ContractTemplatesPage({ searchParams }: { searchPa
 
   const templates = await listTemplates(ctx.organizationId, "contract");
   const clauses = await listTemplates(ctx.organizationId, "contract_clause");
+  const all = await listTemplates(ctx.organizationId, undefined, { includeArchived: true });
+  const starterKeys = new Set(all.map((t) => `${t.kind}::${t.name}`));
+  const missingStarters = starterTemplateRows("probe").filter((r) => !starterKeys.has(`${r.kind}::${r.name}`)).length;
   const ent = await getPlanEntitlements(ctx.organizationId);
   const unlimited = ent?.id === "studio" || ent?.id === "pro";
   const limit = ent?.maxContractTemplates ?? 2;
@@ -40,7 +44,7 @@ export default async function ContractTemplatesPage({ searchParams }: { searchPa
             <h1 className="text-lg font-semibold text-ink">Edit contract template</h1>
             <p className="mt-0.5 text-sm text-ink-subtle">Merge fields resolve from the real project at send; the preview shows sample data.</p>
           </div>
-          <Link href="/dashboard/templates/contracts" className="text-xs font-medium text-primary hover:underline">← All templates</Link>
+          <Link href="/dashboard/templates/contracts" className="text-xs font-medium text-primary hover:underline">← Contracts</Link>
         </div>
         <ContractTemplateEditor
           templateId={editing.id}
@@ -61,6 +65,7 @@ export default async function ContractTemplatesPage({ searchParams }: { searchPa
         </p>
       </div>
       <CreateContractTemplate disabled={!unlimited && templates.length >= limit} limit={limit} blankBody={BLANK} />
+      <RestoreStartersBanner missingCount={missingStarters} />
       <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
         {templates.length === 0 ? (
           <p className="text-sm text-ink-subtle">No contract templates yet — create one above.</p>

@@ -3,11 +3,7 @@ import { redirect } from "next/navigation";
 
 import { CalendarMonth } from "@/components/calendar-month";
 import { AvailabilityEditor } from "@/components/availability-editor";
-import { SessionTypesManager } from "@/components/session-types-manager";
 import { getAvailability } from "@/lib/repos/availability";
-import { listSessionTypes } from "@/lib/repos/session-types";
-import { listTemplates } from "@/lib/repos/templates";
-import { getPlanEntitlements } from "@/lib/plans";
 import { listBookingsInRange } from "@/lib/repos/bookings";
 import { manageLinkState } from "@/lib/repos/booking-manage";
 import { getStudioProfile } from "@/lib/repos/studios";
@@ -70,24 +66,18 @@ export default async function CalendarPage({
 
       {tab === "availability" ? (
         <div className="flex flex-col gap-5">
-          <SessionTypesManager
-            initial={(await listSessionTypes(ctx.organizationId, { includeInactive: true })).map((t) => ({
-              id: t.id,
-              name: t.name,
-              slug: t.slug,
-              description: t.description,
-              color: t.color,
-              slotMinutes: t.slotMinutes,
-              priceMinor: t.priceMinor,
-              depositKind: t.depositKind,
-              depositMinor: t.depositMinor,
-              availabilityMode: t.availabilityMode,
-              bookingFormTemplateId: t.bookingFormTemplateId,
-              active: t.active,
-            }))}
-            formTemplates={(await listTemplates(ctx.organizationId, "form")).map((t) => ({ id: t.id, name: t.name }))}
-            limit={(await getPlanEntitlements(ctx.organizationId))?.maxSessionTypes ?? null}
-          />
+          {/* WEB-286: session type definitions moved to Templates; Calendar
+           * keeps availability + a pointer so the old muscle memory lands. */}
+          <Link
+            href="/dashboard/templates/session-types"
+            className="flex items-center justify-between rounded-[12px] border border-hairline bg-surface-1 p-5 text-sm transition-colors hover:border-primary/40"
+          >
+            <span className="text-ink">
+              <strong className="font-medium">Session types live under Templates now.</strong>{" "}
+              <span className="text-ink-subtle">Duration, price, deposit and booking form — Calendar keeps your availability below.</span>
+            </span>
+            <span className="shrink-0 font-medium text-primary">Manage →</span>
+          </Link>
           <AvailabilityEditor initial={await getAvailability(ctx.organizationId)} />
         </div>
       ) : (
