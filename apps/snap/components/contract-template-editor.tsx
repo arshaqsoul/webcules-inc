@@ -94,8 +94,8 @@ export function ContractTemplateEditor({
 
         <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
           <div className="flex flex-wrap items-center gap-1.5">
-            <button type="button" className={btn} onClick={() => wrap("<strong>")}><strong>B</strong></button>
-            <button type="button" className={btn} onClick={() => wrap("<em>")}><em>I</em></button>
+            <button type="button" className={btn} onClick={() => wrap("<strong>", "</strong>")}><strong>B</strong></button>
+            <button type="button" className={btn} onClick={() => wrap("<em>", "</em>")}><em>I</em></button>
             <button type="button" className={btn} onClick={() => wrap("<h3>", "</h3>")}>Heading</button>
             <button type="button" className={btn} onClick={() => wrap("<ul>\n<li>", "</li>\n</ul>")}>List</button>
             <button type="button" className={btn} onClick={() => wrap('<a href="https://', '">link</a>')}>Link</button>
