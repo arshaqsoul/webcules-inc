@@ -197,6 +197,9 @@ export const studioProfiles = sqliteTable("studio_profile", {
   defaultAllowDownload: integer("default_allow_download", { mode: "boolean" }).notNull().default(true),
   /** WEB-275: "members see RAW vault" per-org toggle (admins always can). */
   memberRawAccess: integer("member_raw_access", { mode: "boolean" }).notNull().default(false),
+  /** WEB-277: business identity JSON — legalName, addressLines, taxId, phone,
+   * website (see lib/business.ts; null = never set → PDFs unchanged). */
+  business: text("business"),
   /** Stripe Connect Express account (KYC/bank data lives in Stripe, never here). */
   stripeAccountId: text("stripe_account_id"),
   /** not_connected | pending | active | restricted — derived from Stripe, cached. */
@@ -318,6 +321,8 @@ export const clients = sqliteTable(
     notes: text("notes"),
     /** Client-notification opt-out for THIS studio (WEB-136; per-row = per-studio). */
     notify: integer("notify", { mode: "boolean" }).notNull().default(true),
+    /** WEB-276: the CSV import batch that created this row (undo bookkeeping). */
+    importBatchId: text("import_batch_id"),
     createdAt: ts("created_at"),
     updatedAt: ts("updated_at"),
   },
@@ -325,6 +330,28 @@ export const clients = sqliteTable(
     uniqueIndex("client_org_email_unique").on(t.organizationId, t.email),
     index("client_user_idx").on(t.userId),
   ],
+);
+
+/* ---------------- CSV import batches (WEB-276) ---------------- */
+
+/** One row per committed clients/leads import — powers reports and the
+ * 7-day undo (rows carry import_batch_id; undo removes only untouched ones). */
+export const importBatch = sqliteTable(
+  "import_batch",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    /** clients | leads */
+    kind: text("kind").notNull(),
+    createdCount: integer("created_count").notNull(),
+    skippedCount: integer("skipped_count").notNull(),
+    updatedCount: integer("updated_count").notNull().default(0),
+    createdBy: text("created_by"),
+    createdAt: ts("created_at"),
+  },
+  (t) => [index("import_batch_org_idx").on(t.organizationId, t.createdAt)],
 );
 
 /* ---------------- Leads (embed contact form) ---------------- */
@@ -351,6 +378,8 @@ export const leads = sqliteTable(
     customFields: text("custom_fields"),
     /** WEB-250: soft link to the session type the inquiry is about. */
     sessionTypeId: text("session_type_id"),
+    /** WEB-276: the CSV import batch that created this row (undo bookkeeping). */
+    importBatchId: text("import_batch_id"),
     createdAt: ts("created_at"),
     updatedAt: ts("updated_at"),
   },

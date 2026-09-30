@@ -113,6 +113,14 @@ function wrap(text: string, font: { widthOfTextAtSize(t: string, s: number): num
   return lines;
 }
 
+/** WEB-277: the invoice/contract "From" identity (absent = today's layout). */
+export type PdfBusiness = {
+  legalName: string;
+  addressLines: string[];
+  /** Small print, e.g. "GST reg. no. 12345" (already label-formatted). */
+  taxLine: string;
+};
+
 export async function renderInvoicePdf(params: {
   studioName: string;
   accent: string;
@@ -121,6 +129,8 @@ export async function renderInvoicePdf(params: {
   dueAt: Date | null;
   clientEmail: string | null;
   projectTitle: string | null;
+  /** WEB-277: business identity for the FROM block + tax small print. */
+  from?: PdfBusiness;
   lines: PdfLine[];
   totalMinor: number;
   currency: string;
@@ -180,6 +190,20 @@ export async function renderInvoicePdf(params: {
       page.drawText(winAnsiSafe(l), { x: 48, y: 697 - i * 14, size: 11, font: regular, color: ink });
     });
   }
+  // WEB-277: FROM block under BILLED TO — legal name, address, tax id.
+  if (params.from) {
+    let fy = 672;
+    page.drawText("FROM", { x: 48, y: fy, size: 8, font: bold, color: subtle });
+    fy -= 13;
+    const fromLines = [params.from.legalName, ...params.from.addressLines].filter(Boolean).slice(0, 4);
+    for (const l of fromLines) {
+      page.drawText(winAnsiSafe(l), { x: 48, y: fy, size: 10, font: regular, color: ink });
+      fy -= 12;
+    }
+    if (params.from.taxLine) {
+      page.drawText(winAnsiSafe(params.from.taxLine), { x: 48, y: fy, size: 8, font: regular, color: subtle });
+    }
+  }
 
   // Lines table — sits below the 4-row meta column (last value ~y 630);
   // starting at 640 collided with the STATUS row and printed "DRAFT" over
@@ -214,6 +238,10 @@ export async function renderInvoicePdf(params: {
     const sub = money(subtotalMinor, params.currency);
     page.drawText(sub, { x: 547.28 - regular.widthOfTextAtSize(sub, 10), y, size: 10, font: regular, color: subtle });
     y -= 6;
+    // WEB-277: compliance detail — tax registration next to the tax lines.
+    if (params.from?.taxLine) {
+      page.drawText(winAnsiSafe(params.from.taxLine), { x: 330, y: y - 8, size: 8, font: regular, color: subtle });
+    }
   }
   page.drawLine({ start: { x: 330, y }, end: { x: 547.28, y }, thickness: 1, color: rgb(0.88, 0.89, 0.9) });
   y -= 24;
@@ -263,6 +291,8 @@ export async function renderContractPdf(params: {
   whiteLabel?: boolean;
   /** WEB-241: studio logo PNG bytes for the accent header bar. */
   logoPng?: Uint8Array;
+  /** WEB-277: business identity for the title block. */
+  from?: PdfBusiness;
 }): Promise<Uint8Array> {
   const sanitize = (v: string) => winAnsiSafe(v);
   const doc = await PDFDocument.create();
@@ -295,6 +325,20 @@ export async function renderContractPdf(params: {
   if (params.clientEmail) {
     page.drawText(`Prepared for: ${sanitize(params.clientEmail)}`, { x: MARGIN, y, size: 10, font: regular, color: rgb(0.54, 0.56, 0.6) });
     y -= 24;
+  }
+  // WEB-277: optional legal identity under the title (legal weight).
+  if (params.from) {
+    for (const l of [params.from.legalName !== params.studioName ? params.from.legalName : null, ...params.from.addressLines]
+      .filter((x): x is string => Boolean(x))
+      .slice(0, 4)) {
+      page.drawText(sanitize(l), { x: MARGIN, y, size: 9, font: regular, color: rgb(0.54, 0.56, 0.6) });
+      y -= 12;
+    }
+    if (params.from.taxLine) {
+      page.drawText(sanitize(params.from.taxLine), { x: MARGIN, y, size: 9, font: regular, color: rgb(0.54, 0.56, 0.6) });
+      y -= 12;
+    }
+    y -= 8;
   }
 
   // Body — paragraph-aware wrapping

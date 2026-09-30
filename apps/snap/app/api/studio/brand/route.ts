@@ -12,6 +12,7 @@ import { updateStudioSlug } from "@/lib/repos/studios";
 import { getOrgContext } from "@/lib/session";
 import { permissionDenied } from "@/lib/permissions";
 import { STUDIO_ALERT_KINDS } from "@/lib/notify-client";
+import { serializeBusiness } from "@/lib/business";
 
 export const dynamic = "force-dynamic";
 
@@ -62,6 +63,17 @@ const bodySchema = z.object({
   defaultAllowDownload: z.boolean().optional(),
   /** WEB-275: per-org "members see RAW vault" toggle. */
   memberRawAccess: z.boolean().optional(),
+  /** WEB-277: business identity (validated ≤ 4 KB via serializeBusiness). */
+  business: z
+    .object({
+      legalName: z.string().max(120),
+      addressLines: z.array(z.string().max(120)).max(3),
+      taxId: z.object({ label: z.string().max(12), value: z.string().max(40) }).nullable(),
+      phone: z.string().max(40),
+      website: z.string().max(120),
+    })
+    .nullable()
+    .optional(),
 });
 
 export async function PATCH(req: Request) {
@@ -189,6 +201,9 @@ export async function PATCH(req: Request) {
         : {}),
       ...(parsed.data.memberRawAccess !== undefined
         ? { memberRawAccess: parsed.data.memberRawAccess }
+        : {}),
+      ...(parsed.data.business !== undefined
+        ? { business: parsed.data.business === null ? null : serializeBusiness(parsed.data.business, existing.studioName) }
         : {}),
       updatedAt: new Date(),
     })

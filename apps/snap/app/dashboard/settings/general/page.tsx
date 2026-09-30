@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { SettingsGeneral } from "@/components/settings-general";
+import { parseBusiness } from "@/lib/business";
 import { getStudioProfile, getStudioSlug } from "@/lib/repos/studios";
 import { getOrgContext } from "@/lib/session";
 import { can } from "@/lib/permissions";
@@ -24,6 +25,7 @@ export default async function SettingsGeneralPage() {
       slug={slug}
       timezone={profile.timezone}
       contactEmail={profile.contactEmail ?? ""}
+      business={parseBusiness(profile.business ?? null, profile.studioName)}
     />
   );
 }

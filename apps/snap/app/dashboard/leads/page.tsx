@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { LeadCreate } from "@/components/lead-create";
+import { LeadsImport } from "@/components/leads-import";
 import { LEAD_STATUSES, listLeads, type LeadStatus } from "@/lib/repos/leads";
 import { getOrgContext } from "@/lib/session";
 
@@ -38,6 +39,7 @@ export default async function LeadsPage({
           <p className="mt-1 text-sm text-ink-subtle">Inquiries from your embedded contact form, plus manual entries.</p>
         </div>
         <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
+          <LeadsImport />
           <form action="/dashboard/leads" method="get" className="flex min-w-0 flex-1 gap-2 sm:flex-none">
             <input type="hidden" name="status" value={activeStatus} />
             <input

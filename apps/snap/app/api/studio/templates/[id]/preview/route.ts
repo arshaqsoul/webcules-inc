@@ -8,6 +8,7 @@ import { getTemplate } from "@/lib/repos/templates";
 import { renderContractBodyHtml } from "@/lib/contract-body";
 import { parsePresetLines } from "@/lib/invoice-settings";
 import { renderInvoicePdf } from "@/lib/pdf";
+import { hasBusinessIdentity, parseBusiness, taxIdLine } from "@/lib/business";
 import { buildMergeValues } from "@/lib/merge";
 import { renderMerge } from "@/lib/merge";
 import { getStudioProfile } from "@/lib/repos/studios";
@@ -72,8 +73,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const brand = (profile?.brand ?? {}) as { accent?: string };
     const accent = /^#[0-9a-fA-F]{6}$/.test(brand.accent ?? "") ? (brand.accent as string).toLowerCase() : "#5e6ad2";
     const totalMinor = lines.reduce((n, l) => n + l.qty * l.amountMinor, 0);
+    // WEB-277: business identity on the preset preview when configured.
+    const biz = parseBusiness(profile?.business ?? null, profile?.studioName ?? "Your Studio");
     const bytes = await renderInvoicePdf({
       studioName: profile?.studioName ?? "Your Studio",
+      ...(hasBusinessIdentity(biz)
+        ? { from: { legalName: biz.legalName, addressLines: biz.addressLines.filter(Boolean), taxLine: taxIdLine(biz) } }
+        : {}),
       accent,
       invoiceNumber: "PREVIEW",
       issuedAt: new Date(),

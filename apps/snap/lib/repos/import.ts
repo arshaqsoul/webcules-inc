@@ -3,11 +3,9 @@
  * never authority). Dedupe is org-scoped by email against the target table;
  * imported people are NEVER emailed (import ≠ consent).
  *
- * @ts-nocheck is TEMPORARY (WEB-294): this WIP references schema.importBatch
  * et al. that db-schema.ts doesn't declare yet, which blocked the repo-wide
  * typecheck gate for unrelated deploys. Remove this marker when the schema
  * catches up. */
-// @ts-nocheck
 import { and, desc, eq, gte, inArray, or, sql } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
@@ -227,7 +225,7 @@ export async function undoImport(
       const used = await db
         .select({ id: schema.projects.id })
         .from(schema.projects)
-        .where(and(eq(schema.projects.organizationId, organizationId), eq(schema.projects.clientEmail, r.email)))
+        .where(and(eq(schema.projects.organizationId, organizationId), eq(schema.projects.clientId, r.id)))
         .limit(1);
       if (used.length) {
         kept++;

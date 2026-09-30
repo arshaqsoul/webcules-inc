@@ -7,7 +7,8 @@ import { getDb } from "./db";
 import * as schema from "./db-schema";
 import { encryptToken, hashToken, mintToken } from "./shares/grants";
 import { putObject } from "./storage/service";
-import { renderContractPdf } from "./pdf";
+import { renderContractPdf, type PdfBusiness } from "./pdf";
+import { hasBusinessIdentity, parseBusiness, taxIdLine } from "./business";
 import { fetchEmailHeaderLogo } from "./brand-assets";
 import { sendEmail, contractSignRequestEmail, contractSignedEmail } from "./email";
 import { studioWantsEmail } from "./notify-client";
@@ -26,6 +27,7 @@ type StudioBrand = {
   name: string;
   accent: string;
   contactEmail: string | null;
+  from?: PdfBusiness;
   whiteLabel: boolean;
   emailHeaderUrl: string | null;
   /** WEB-241: logo PNG bytes for the contract PDF header (null → text-only). */
@@ -33,10 +35,19 @@ type StudioBrand = {
 };
 
 /** WEB-240/241: one getEmailBrand read + one R2 fetch feeds emails + PDFs. */
+/** WEB-277: build the PDF identity block from the stored business bag. */
+function pdfBusinessFrom(businessJson: string | null, studioName: string): PdfBusiness | undefined {
+  const b = parseBusiness(businessJson, studioName);
+  if (!hasBusinessIdentity(b)) return undefined;
+  return { legalName: b.legalName, addressLines: b.addressLines.filter(Boolean), taxLine: taxIdLine(b) };
+}
+
 async function studioAccent(organizationId: string): Promise<StudioBrand> {
   const b = await getEmailBrand(organizationId);
-  const logoPng = await fetchEmailHeaderLogo(organizationId, (await getStudioProfile(organizationId))?.brandAssets);
+  const profile = await getStudioProfile(organizationId);
+  const logoPng = await fetchEmailHeaderLogo(organizationId, profile?.brandAssets);
   return {
+    from: pdfBusinessFrom(profile?.business ?? null, b.studioName),
     name: b.studioName,
     accent: b.accent,
     contactEmail: b.contactEmail,
@@ -217,6 +228,7 @@ export async function signContract(
     clientEmail: contract.clientEmail,
     whiteLabel: studio.whiteLabel,
     logoPng: studio.logoPng ?? undefined,
+    from: studio.from,
   });
   const suffix = `${contract.projectId}/contracts/${contract.id}-signed.pdf`;
   await putObject(contract.organizationId, suffix, pdf.slice().buffer as ArrayBuffer, "application/pdf");

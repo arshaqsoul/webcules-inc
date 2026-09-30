@@ -113,12 +113,22 @@ async function loginPassword(page: Page) {
   await page.fill("#email", seed.userEmail);
   await page.fill("#password", "TestPass123!x");
   await page.waitForLoadState("networkidle");
-  await page.click("button[type=submit]");
-  // 2FA-enabled accounts stay on /login showing the code step instead.
-  await Promise.race([
-    page.waitForURL(/dashboard/, { timeout: 20_000 }).then(() => "dash" as const),
-    page.getByText("Two-factor code").waitFor({ timeout: 20_000 }).then(() => "2fa" as const),
-  ]);
+  // Submit with retry: pre-hydration clicks fall through to a native no-op.
+  for (let i = 0; ; i++) {
+    await page.click("button[type=submit]");
+    const limited = await page.getByText("Too many requests").isVisible({ timeout: 2_000 }).catch(() => false);
+    if (limited) {
+      await page.waitForTimeout(15_000); // transient limiter window
+      continue;
+    }
+    // 2FA-enabled accounts stay on /login showing the code step instead.
+    const result = await Promise.race([
+      page.waitForURL(/dashboard/, { timeout: 20_000 }).then(() => "dash" as const).catch(() => "none" as const),
+      page.getByText("Two-factor code").waitFor({ timeout: 20_000 }).then(() => "2fa" as const).catch(() => "none" as const),
+    ]);
+    if (result !== "none") return;
+    if (i >= 2) throw new Error("sign-in produced neither dashboard nor 2FA step");
+  }
 }
 
 async function logout(page: Page) {
@@ -181,7 +191,13 @@ test("2FA lifecycle: enable → TOTP sign-in → backup-code sign-in → disable
 
   // --- plain password sign-in works again ---
   await logout(page);
-  await loginPassword(page);
+  for (let i = 0; ; i++) {
+    await loginPassword(page);
+    const limited = await page.getByText("Too many requests").isVisible().catch(() => false);
+    if (!limited) break;
+    if (i >= 1) throw new Error("final sign-in stayed rate-limited after cooldown");
+    await page.waitForTimeout(15_000); // transient limiter window — cool down once
+  }
   await expect(page.getByText("Enter the 6-digit code")).toBeHidden();
   await page.waitForURL(/dashboard/, { timeout: 15_000 });
 });

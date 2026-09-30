@@ -15,6 +15,7 @@ import * as schema from "./db-schema";
 import { clientUrl } from "./client-urls";
 import { getStudioProfile, getStudioSlug } from "./repos/studios";
 import { MERGE_FIELDS } from "./merge-fields";
+import { businessAddressLine, parseBusiness, taxIdLine } from "./business";
 
 export { MERGE_FIELDS, CONTRACT_MERGE_FIELDS } from "./merge-fields";
 export type { MergeField } from "./merge-fields";
@@ -106,7 +107,13 @@ export async function buildMergeValues(ctx: MergeContext): Promise<Record<string
   values.package = project?.title ?? "the package";
   values.event_date = project?.eventDate ? longDate(project.eventDate) : "the scheduled date";
   values.event_date_long = values.event_date;
-  values.studio_legal_name = profile?.studioName ?? "the Studio";
+  // WEB-277: business identity (falls back to the studio name gracefully).
+  const business = parseBusiness(profile?.business ?? null, profile?.studioName ?? "the Studio");
+  values.studio_legal_name = business.legalName || (profile?.studioName ?? "the Studio");
+  values.studio_address = businessAddressLine(business);
+  values.studio_tax_id = taxIdLine(business);
+  values.studio_phone = business.phone;
+  values.studio_website = business.website;
   values.client_legal_name = values.client_name;
   values.total = project?.quotedTotalMinor ? formatMoney(project.quotedTotalMinor, project.quotedCurrency) : "the package total";
   values.deposit = await resolveDeposit(ctx.organizationId, project, o.deposit);

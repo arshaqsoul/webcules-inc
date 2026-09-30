@@ -9,6 +9,7 @@ import * as schema from "./db-schema";
 import { encryptToken, hashToken, mintToken } from "./shares/grants";
 import { putObject } from "./storage/service";
 import { renderInvoicePdf, type PdfLine } from "./pdf";
+import { hasBusinessIdentity, parseBusiness, taxIdLine } from "./business";
 import { renderMergeFrom } from "./merge";
 import { fetchEmailHeaderLogo } from "./brand-assets";
 import { sendEmail, invoiceEmail } from "./email";
@@ -131,8 +132,13 @@ export async function listProjectInvoices(organizationId: string, projectId: str
 async function generateAndArchivePdf(invoice: InvoiceRow, projectTitle: string | null): Promise<string> {
   const profile = await getStudioProfile(invoice.organizationId);
   const brand = JSON.parse(profile?.brand || "{}") as { accent?: string };
+  // WEB-277: legal name/address/tax id on the invoice when configured.
+  const biz = parseBusiness(profile?.business ?? null, profile?.studioName ?? "Studio");
   const pdf = await renderInvoicePdf({
     studioName: profile?.studioName ?? "Studio",
+    ...(hasBusinessIdentity(biz)
+      ? { from: { legalName: biz.legalName, addressLines: biz.addressLines.filter(Boolean), taxLine: taxIdLine(biz) } }
+      : {}),
     accent: safeHexColor(brand.accent) ?? "#5e6ad2",
     invoiceNumber: invoice.number,
     issuedAt: invoice.issuedAt ?? new Date(),

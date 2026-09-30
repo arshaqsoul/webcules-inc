@@ -25,7 +25,7 @@ export default defineConfig({
     command: "node tests/e2e/server.mjs",
     url: `${BASE}/login`,
     env: { SNAP_E2E: "1" },
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false, // orphans on Windows serve STALE builds — always boot fresh
     timeout: 240_000,
   },
   globalSetup: "./tests/e2e/global-setup.mjs",

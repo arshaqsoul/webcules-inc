@@ -8,6 +8,7 @@ import { isWhiteLabeled } from "@/lib/branding";
 import { brandIcons, brandOgImage, parseBrandAssets } from "@/lib/brand-assets";
 import { getPlanEntitlements } from "@/lib/plans";
 import { getStudioProfile } from "@/lib/repos/studios";
+import { hasBusinessIdentity, parseBusiness, taxIdLine } from "@/lib/business";
 import { safeHexColor } from "@/lib/embed";
 
 export const dynamic = "force-dynamic";
@@ -53,6 +54,9 @@ export default async function InvoicePage({ params }: { params: Promise<{ token:
   const brand = JSON.parse(profile?.brand || "{}") as { accent?: string };
   const accent = safeHexColor(brand.accent) ?? "#5e6ad2";
   const lines = JSON.parse(invoice.lines) as { description: string; qty: number; amountMinor: number }[];
+  // WEB-277: business identity mirrors the PDF's FROM block when configured.
+  const biz = parseBusiness(profile?.business ?? null, profile?.studioName ?? "Studio");
+  const fromBlock = hasBusinessIdentity(biz) ? biz : null;
 
   return (
     <main className="flex min-h-screen justify-center bg-canvas px-4 py-10">
@@ -72,6 +76,18 @@ export default async function InvoicePage({ params }: { params: Promise<{ token:
               <p className="text-xs text-ink-tertiary">Billed to</p>
               <p className="mt-0.5 truncate text-ink">{invoice.clientEmail ?? "—"}</p>
             </div>
+            {fromBlock && (
+              <div className="col-span-2 sm:col-span-1">
+                <p className="text-xs text-ink-tertiary">From</p>
+                <p className="mt-0.5 text-ink">{fromBlock.legalName}</p>
+                {fromBlock.addressLines.filter(Boolean).length > 0 && (
+                  <p className="text-xs text-ink-subtle">{fromBlock.addressLines.filter(Boolean).join(", ")}</p>
+                )}
+                {fromBlock.taxId && (
+                  <p className="text-xs text-ink-subtle">{taxIdLine(fromBlock)}</p>
+                )}
+              </div>
+            )}
             <div>
               <p className="text-xs text-ink-tertiary">Issued</p>
               <p className="mt-0.5 text-ink">

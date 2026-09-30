@@ -141,18 +141,20 @@ export async function POST(req: Request, { params }: { params: Promise<{ templat
       dashboardUrl,
       brand.accent,
     );
-    // WEB-278: studio may have muted "new inquiry" alerts (form or page).
-    if (!notificationPrefValue(profile?.notificationPrefs, "inquiry")) return;
-    await sendEmail({
-      to: profile?.contactEmail ?? brand.contactEmail ?? email,
-      subject: studioNotify.subject,
-      html: studioNotify.html,
-      text: studioNotify.text,
-      replyTo: email,
-      organizationId: studio.organizationId,
-      template: "lead.form_received",
-      refId: leadId,
-    });
+    // WEB-278: studio may have muted "new inquiry" alerts (form or page) —
+    // skip ONLY the studio copy; the visitor's ack always sends.
+    if (notificationPrefValue(profile?.notificationPrefs, "inquiry")) {
+      await sendEmail({
+        to: profile?.contactEmail ?? brand.contactEmail ?? email,
+        subject: studioNotify.subject,
+        html: studioNotify.html,
+        text: studioNotify.text,
+        replyTo: email,
+        organizationId: studio.organizationId,
+        template: "lead.form_received",
+        refId: leadId,
+      });
+    }
     const ack = inquiryAckEmail(brand.studioName, name.split(" ")[0] || "there", brand.accent, brand.whiteLabel, brand.emailHeaderUrl, brand.contactEmail);
     await sendEmail({
       to: email,
