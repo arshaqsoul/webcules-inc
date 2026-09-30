@@ -7,6 +7,8 @@ import { useCallback, useEffect, useState } from "react";
 
 import { Button } from "@webcules/ui/components/button";
 
+import { DocHint } from "@/components/doc-hint";
+
 type ConnectStatus = {
   state: "not_connected" | "pending" | "active" | "restricted";
   accountId: string | null;
@@ -114,7 +116,10 @@ export function PayoutsPanel({ returnHint }: { returnHint?: string }) {
     <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-[15px] font-medium text-ink">Payouts</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-[15px] font-medium text-ink">Payouts</h2>
+            <DocHint slug="payouts" />
+          </div>
           <p className="mt-0.5 text-xs text-ink-subtle">Get paid directly for bookings via Stripe.</p>
         </div>
         {copy && (

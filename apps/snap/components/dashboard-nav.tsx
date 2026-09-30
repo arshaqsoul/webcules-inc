@@ -8,7 +8,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Banknote, CalendarDays, ChevronDown, Clock, Code2, CreditCard, FileText, Globe, Images, LayoutGrid, LayoutTemplate, Link2, ListChecks, Lock, Mail, PackageCheck, Receipt, Settings, SlidersHorizontal, Snowflake, Users, BookOpen, Palette, Frame } from "lucide-react";
+import { Banknote, CalendarDays, ChevronDown, Clock, Code2, CreditCard, FileText, Globe, Images, LayoutGrid, LayoutTemplate, Link2, ListChecks, Lock, Mail, PackageCheck, Receipt, Settings, SlidersHorizontal, Bell, ShieldCheck, Snowflake, UserPlus, Users, BookOpen, Palette, Frame } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { PlanId } from "@/lib/plans-data";
 
@@ -25,19 +25,24 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard/galleries", label: "Galleries", icon: Link2 },
   { href: "/dashboard/raw-vault", label: "RAW Vault", icon: Snowflake },
   { href: "/dashboard/transactions", label: "Transactions", icon: CreditCard },
-  { href: "/docs/embeds", label: "Docs", icon: BookOpen },
+  { href: "/docs", label: "Docs", icon: BookOpen },
 ];
 
 /** Settings sections (WEB-224/234) — rendered as the collapsible group's
  * children; the routes live under /dashboard/settings/*. */
-export const SETTINGS_ITEMS: { href: string; label: string; icon: LucideIcon }[] = [
+/** WEB-275: `ownerOnly` rows hide for admins (billing surfaces); members
+ * see only Security (their own account) — filtered in DashboardNavLinks. */
+export const SETTINGS_ITEMS: { href: string; label: string; icon: LucideIcon; ownerOnly?: boolean }[] = [
   { href: "/dashboard/settings/general", label: "General", icon: SlidersHorizontal },
+  { href: "/dashboard/settings/team", label: "Team", icon: UserPlus },
+  { href: "/dashboard/settings/security", label: "Security", icon: ShieldCheck },
   { href: "/dashboard/settings/brand", label: "Brand", icon: Palette },
   { href: "/dashboard/settings/domains", label: "Domains", icon: Globe },
   { href: "/dashboard/settings/embeds", label: "Embeds", icon: Code2 },
   { href: "/dashboard/settings/delivery", label: "Delivery", icon: PackageCheck },
-  { href: "/dashboard/settings/billing", label: "Billing", icon: CreditCard },
-  { href: "/dashboard/settings/payouts", label: "Payouts", icon: Banknote },
+  { href: "/dashboard/settings/notifications", label: "Notifications", icon: Bell },
+  { href: "/dashboard/settings/billing", label: "Billing", icon: CreditCard, ownerOnly: true },
+  { href: "/dashboard/settings/payouts", label: "Payouts", icon: Banknote, ownerOnly: true },
 ];
 
 /** Template library sections (WEB-286) — every reusable definition lives
@@ -68,11 +73,12 @@ function NavGroup({
   icon: Icon,
   items,
   plan = "free",
+  role = "owner",
 }: {
   pathname: string;
   collapsed: boolean;
   onNavigate?: () => void;
-  /** Collapsed rail: opening the group also expands the sidebar so the
+  /** Collapsed rail: opening a group also expands the sidebar so the
    * sub-list becomes visible. */
   onExpand?: () => void;
   parentHref: string;
@@ -81,6 +87,8 @@ function NavGroup({
   items: NavItem[];
   /** WEB-286: current plan — items whose `requires` rank above it lock. */
   plan?: PlanId;
+  /** WEB-275: staff role — ownerOnly rows hide below owner. */
+  role?: string;
 }) {
   const active = pathname === parentHref || pathname.startsWith(parentHref + "/");
   const [open, setOpen] = useState(false);
@@ -132,7 +140,9 @@ function NavGroup({
       </div>
       {open && (
         <div className="ml-5 mt-0.5 flex flex-col gap-0.5 border-l border-hairline pl-2.5">
-          {items.map((item) => {
+          {items
+            .filter((item) => !("ownerOnly" in item) || !(item as { ownerOnly?: boolean }).ownerOnly || role === "owner")
+            .map((item) => {
             const itemActive = pathname === item.href || pathname.startsWith(item.href + "/");
             const locked = Boolean(item.requires) && PLAN_RANK[plan] < PLAN_RANK[item.requires!];
             if (locked) {
@@ -174,9 +184,15 @@ function NavGroup({
   );
 }
 
-export function DashboardNavLinks({ onNavigate, includeDocs = true, collapsed = false, onExpandSidebar, plan = "free" }: { onNavigate?: () => void; /** desktop aside groups Docs with theme/logout instead */ includeDocs?: boolean; /** icon rail: icons only, labels become tooltips */ collapsed?: boolean; /** collapsed rail: opening a group expands the sidebar */ onExpandSidebar?: () => void; /** WEB-286: gates nav rows whose `requires` exceeds the plan */ plan?: PlanId }) {
+export function DashboardNavLinks({ onNavigate, includeDocs = true, collapsed = false, onExpandSidebar, plan = "free", role = "owner" }: { onNavigate?: () => void; /** desktop aside groups Docs with theme/logout instead */ includeDocs?: boolean; /** icon rail: icons only, labels become tooltips */ collapsed?: boolean; /** collapsed rail: opening a group expands the sidebar */ onExpandSidebar?: () => void; /** WEB-286: gates nav rows whose `requires` exceeds the plan */ plan?: PlanId; /** WEB-275: staff role — members lose money surfaces + studio settings */ role?: string }) {
   const pathname = usePathname();
-  const items = includeDocs ? NAV_ITEMS : NAV_ITEMS.filter((i) => !i.href.startsWith("/docs"));
+  // WEB-275: money surfaces are owner-only; templates (studio-wide
+  // definitions) are admin+ — members work projects, leads, and calendar.
+  const isOwner = role === "owner";
+  const isAdmin = isOwner || role === "admin";
+  const items = (includeDocs ? NAV_ITEMS : NAV_ITEMS.filter((i) => !i.href.startsWith("/docs"))).filter(
+    (i) => (i.href !== "/dashboard/transactions" || isOwner),
+  );
   return (
     <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-2">
       {items.map((item) => {
@@ -216,8 +232,22 @@ export function DashboardNavLinks({ onNavigate, includeDocs = true, collapsed = 
           </Link>
         );
       })}
-      <NavGroup pathname={pathname} collapsed={collapsed} onNavigate={onNavigate} onExpand={onExpandSidebar} plan={plan} parentHref="/dashboard/templates" label="Templates" icon={LayoutTemplate} items={TEMPLATES_ITEMS} />
-      <NavGroup pathname={pathname} collapsed={collapsed} onNavigate={onNavigate} onExpand={onExpandSidebar} parentHref="/dashboard/settings" label="Settings" icon={Settings} items={SETTINGS_ITEMS} />
+      {isAdmin && (
+        <NavGroup pathname={pathname} collapsed={collapsed} onNavigate={onNavigate} onExpand={onExpandSidebar} plan={plan} role={role} parentHref="/dashboard/templates" label="Templates" icon={LayoutTemplate} items={TEMPLATES_ITEMS} />
+      )}
+      <NavGroup
+        pathname={pathname}
+        collapsed={collapsed}
+        onNavigate={onNavigate}
+        onExpand={onExpandSidebar}
+        plan={plan}
+        role={role}
+        parentHref="/dashboard/settings"
+        label="Settings"
+        icon={Settings}
+        // members keep exactly one settings row: their own Security page
+        items={isAdmin ? SETTINGS_ITEMS : SETTINGS_ITEMS.filter((i) => i.href.endsWith("/security"))}
+      />
     </nav>
   );
 }

@@ -1,0 +1,283 @@
+/* Snap docs prose — Linear-docs-style reading styles. Everything is
+ * namespaced under .docs-shell / .docs-prose so nothing leaks into the app.
+ * Both themes resolve through the semantic tokens (ink, hairline, surface). */
+
+.docs-shell .docs-h1 {
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.7px;
+  line-height: 1.2;
+  color: var(--ink);
+  margin: 0;
+}
+
+.docs-shell .docs-intro {
+  margin: 10px 0 8px;
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: var(--ink-muted);
+}
+
+/* ---- headings ---- */
+
+.docs-shell .docs-h2 {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.35px;
+  line-height: 1.3;
+  color: var(--ink);
+  margin: 44px 0 12px;
+}
+
+.docs-shell .docs-h3 {
+  font-size: 15.5px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  color: var(--ink);
+  margin: 30px 0 8px;
+}
+
+/* ---- body ---- */
+
+.docs-shell .docs-prose {
+  color: var(--ink-muted);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.docs-shell .docs-prose > *:first-child,
+.docs-shell .docs-prose > h1 + p {
+  margin-top: 0;
+}
+
+.docs-shell .docs-prose p {
+  margin: 0 0 14px;
+}
+
+.docs-shell .docs-prose a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--hairline-tertiary);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: text-decoration-color 120ms ease;
+}
+
+.docs-shell .docs-prose a:hover {
+  text-decoration-color: var(--ink);
+}
+
+.docs-shell .docs-prose strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.docs-shell .docs-prose em {
+  font-style: italic;
+}
+
+.docs-shell .docs-prose ul,
+.docs-shell .docs-prose ol {
+  margin: 0 0 16px;
+  padding-left: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.docs-shell .docs-prose ul {
+  list-style: disc;
+}
+
+.docs-shell .docs-prose ol {
+  list-style: decimal;
+}
+
+.docs-shell .docs-prose li::marker {
+  color: var(--ink-tertiary);
+}
+
+.docs-shell .docs-prose li > ul,
+.docs-shell .docs-prose li > ol {
+  margin: 7px 0 0;
+}
+
+/* Inline code — the DocsCode block styles its own <code>, so scope tightly. */
+.docs-shell .docs-prose p code,
+.docs-shell .docs-prose li code,
+.docs-shell .docs-prose td code,
+.docs-shell .docs-prose th code,
+.docs-shell .docs-prose .docs-callout code,
+.docs-shell .docs-prose .docs-note code {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  background: var(--surface-2);
+  border-radius: 5px;
+  padding: 2px 5px;
+  color: var(--ink);
+}
+
+.docs-shell .docs-prose hr {
+  border: 0;
+  border-top: 1px solid var(--hairline);
+  margin: 28px 0;
+}
+
+/* ---- tables ---- */
+
+.docs-shell .docs-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  margin: 6px 0 20px;
+  line-height: 1.5;
+}
+
+.docs-shell .docs-prose th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--ink);
+  border-bottom: 1px solid var(--hairline-strong);
+  padding: 8px 14px 8px 0;
+  white-space: nowrap;
+}
+
+.docs-shell .docs-prose td {
+  border-bottom: 1px solid var(--hairline);
+  padding: 10px 14px 10px 0;
+  vertical-align: top;
+  color: var(--ink-muted);
+}
+
+/* ---- callouts & notes ---- */
+
+.docs-shell .docs-note {
+  color: var(--ink-tertiary);
+  font-size: 13.5px;
+  margin: 2px 0 16px;
+}
+
+.docs-shell .docs-callout {
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin: 4px 0 18px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--ink-muted);
+}
+
+.docs-shell .docs-callout-info {
+  background: color-mix(in srgb, #5e6ad2 6%, transparent);
+  border-color: color-mix(in srgb, #5e6ad2 25%, transparent);
+}
+
+.docs-shell .docs-callout-warn {
+  background: color-mix(in srgb, #d97706 7%, transparent);
+  border-color: color-mix(in srgb, #d97706 32%, transparent);
+}
+
+.docs-shell .docs-callout-body p {
+  margin: 0 0 6px;
+}
+
+.docs-shell .docs-callout-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* ---- screenshots on gradients ---- */
+
+.docs-shell .docs-shot {
+  margin: 10px 0 24px;
+}
+
+.docs-shell .docs-shot-panel {
+  border-radius: 12px;
+  padding: clamp(18px, 4.5vw, 44px);
+}
+
+.docs-shell .docs-shot-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid rgb(0 0 0 / 0.09);
+  box-shadow:
+    0 12px 32px rgb(0 0 0 / 0.2),
+    0 2px 8px rgb(0 0 0 / 0.12);
+}
+
+/* ---- steps ---- */
+
+.docs-shell .docs-steps {
+  margin: 6px 0 20px;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.docs-shell .docs-steps li {
+  display: flex;
+  gap: 12px;
+}
+
+.docs-shell .docs-step-n {
+  flex: 0 0 22px;
+  height: 22px;
+  margin-top: 2px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink-muted);
+  font-size: 12px;
+  font-weight: 600;
+  display: grid;
+  place-items: center;
+}
+
+.docs-shell .docs-step-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.docs-shell .docs-step-body p:last-child {
+  margin-bottom: 0;
+}
+
+.docs-shell .docs-step-body > ul,
+.docs-shell .docs-step-body > ol {
+  margin-bottom: 0;
+}
+
+/* ---- related pills & tier badge ---- */
+
+.docs-shell .docs-related {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 22px 0 8px;
+}
+
+.docs-shell .docs-related-pill {
+  border: 1px solid var(--hairline);
+  background: var(--surface-1);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-muted);
+  text-decoration: none !important;
+  transition:
+    background 120ms ease,
+    color 120ms ease;
+}
+
+.docs-shell .docs-related-pill:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.docs-shell .docs-tier {
+  white-space: nowrap;
+}

@@ -88,8 +88,30 @@ node scripts/deploy.mjs production --staging-verified  # ONLY after browser veri
    Git Bash mangles multiline through cf.
 4. Never write to prod orgs you don't own (below).
 
-## Standing rules (carried from earlier sessions)
+## Docs are part of the feature (docs-as-practice)
 
+Every user-visible feature or behavior change ships together with its documentation in the public
+docs section (`app/docs/*` + `lib/docs/*` — Linear-style shell: sidebar categories, per-page inner
+TOC, Copy page / View-as-Markdown, `⌘K` search).
+
+- New feature or changed behavior → add or update the page in `lib/docs/nav.ts` (title,
+  description, category) and author `lib/docs/content/<slug>.tsx` from the actual code.
+- **Truthfulness rules:** write from the code, not from intent. Every UI label, status, limit,
+  and cap quoted in docs must match the code (plan caps come from `lib/plans-data.ts`; when in
+  doubt, read the repo/gate code). Tier-gated features carry a `<Tier plan="…"/>` badge — reading
+  docs is never gated, features are.
+- **Verify before shipping:** run the affected flow on staging in a browser. If the UI/code and
+  what the docs would claim disagree, that's a product bug — file a Linear issue, fix the product
+  (or the copy), then finalize the doc.
+- **Screenshots** live in `public/docs-shots/<slug>/` and render on a gradient panel via the
+  `<Shot>` primitive — capture the real staging UI (logged in), never mockups.
+- **In-app hints:** surface-level questions link straight to their page via `<DocHint slug="…"/>`
+  (components/doc-hint.tsx) instead of making users ask support.
+- Docs content is code-walkable: `lib/docs/extract.tsx` powers the TOC, search index, and Markdown
+  export — keep content modules sync server components using only the primitives in
+  `lib/docs/primitives.tsx`.
+
+## Standing rules (carried from earlier sessions)
 - Use the global `cf` CLI (authenticated as webculesco@gmail.com) for Cloudflare interaction;
    `npx wrangler` only for gaps (D1 file executes, generated-config deploys) — flag it when you do.
 - Prod data safety: the user's own org `86802869` is read-only; founder org **Willow and Pine

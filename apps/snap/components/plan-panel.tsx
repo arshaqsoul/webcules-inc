@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from "@webcules/ui/components/dialog";
 import { useConfirm } from "@/components/confirm-provider";
+import { DocHint } from "@/components/doc-hint";
 import { TIER_CARDS } from "@/components/pricing-tiers";
 import { planDef } from "@/lib/plans-data";
 
@@ -263,7 +264,10 @@ export function PlanPanel({ returnHint }: { returnHint?: string }) {
     <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-[15px] font-medium text-ink">Plan</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-[15px] font-medium text-ink">Plan</h2>
+            <DocHint slug="billing-plans" />
+          </div>
           <p className="mt-0.5 text-xs text-ink-subtle">
             {st.planName}{st.priceMonthlyUsd ? ` · $${st.priceMonthlyUsd}/mo` : ""}
             {st.planStatus !== "active" ? ` · ${st.planStatus.replace("_", " ")}` : ""}

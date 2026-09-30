@@ -13,6 +13,7 @@ import { Check, Copy, ExternalLink, Globe, Loader2, Plus, RefreshCw, Star, Trash
 import { Button } from "@webcules/ui/components/button";
 import { Input } from "@webcules/ui/components/input";
 import { useConfirm } from "@/components/confirm-provider";
+import { DocHint } from "@/components/doc-hint";
 import { normalizeHostname } from "@/lib/domains";
 
 type DomainRow = {
@@ -268,7 +269,10 @@ export function DomainsPanel({
     <div className="flex flex-col gap-4">
       <section className={card}>
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="text-[15px] font-medium text-ink">Custom domains</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-[15px] font-medium text-ink">Custom domains</h2>
+            <DocHint slug="domains" />
+          </div>
           <span className="text-xs text-ink-tertiary">Studio: {studioName}</span>
         </div>
         <p className="mt-1 text-xs text-ink-subtle">

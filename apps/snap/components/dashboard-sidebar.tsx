@@ -28,6 +28,7 @@ export function DashboardSidebar({
   setup,
   setupReopenable,
   plan = "free",
+  role = "owner",
 }: {
   studios: SwitcherStudio[];
   currentOrganizationId: string;
@@ -41,6 +42,8 @@ export function DashboardSidebar({
   setupReopenable: boolean;
   /** WEB-286: gates nav rows whose `requires` exceeds the plan. */
   plan?: "free" | "lite" | "studio" | "pro";
+  /** WEB-275: staff role — drives the nav's role filtering. */
+  role?: string;
 }) {
   const [collapsed, setCollapsed] = useState(false);
   useEffect(() => {
@@ -90,7 +93,8 @@ export function DashboardSidebar({
         )}
       </div>
 
-      <DashboardNavLinks includeDocs={false} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)} plan={plan} />
+      <DashboardNavLinks includeDocs={false} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)} plan={plan}
+        role={role} />
 
       {/* WEB-270: setup progress card — expanded sidebar only (the rail keeps
        * its icon density); auto-hides at 10/10 or dismissal via `setup`
@@ -103,7 +107,7 @@ export function DashboardSidebar({
         {collapsed ? (
           <>
             <a
-              href="/docs/embeds"
+              href="/docs"
               target="_blank"
               rel="noreferrer"
               title="Docs"
@@ -122,7 +126,7 @@ export function DashboardSidebar({
              * utility group, above theme/logout, out of the studio nav. Same
              * ghost button styles so the group aligns and reads identically. */}
             <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-              <a href="/docs/embeds" target="_blank" rel="noreferrer">
+              <a href="/docs" target="_blank" rel="noreferrer">
                 <BookOpen className="h-4 w-4 shrink-0" aria-hidden />
                 <span className="ml-2.5">Docs</span>
               </a>
