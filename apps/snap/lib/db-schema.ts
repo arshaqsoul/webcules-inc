@@ -455,10 +455,27 @@ export const bookings = sqliteTable(
     sessionTypeId: text("session_type_id"),
     /** WEB-250: booking-question answers (JSON, validated at submit). */
     answers: text("answers"),
+    /** WEB-272: manage-link token — SHA-256 hash is the lookup key; the raw
+     * 256-bit token only ever lives in the client's email link. */
+    manageTokenHash: text("manage_token_hash"),
+    /** WEB-272: AES-GCM(token) under the share-token key — re-email only. */
+    manageTokenEnc: text("manage_token_enc"),
+    /** active | revoked — revoked kills the /booking/{token} page + APIs. */
+    manageTokenStatus: text("manage_token_status").notNull().default("active"),
+    /** Nullable by design (null = not revoked) — plain INTEGER in 0050. */
+    manageRevokedAt: integer("manage_revoked_at", { mode: "timestamp" }),
+    /** WEB-272: set on each reschedule; the row updates in place (same id). */
+    rescheduledAt: ts("rescheduled_at"),
+    previousStartAt: integer("previous_start_at", { mode: "timestamp" }),
     createdAt: ts("created_at"),
     updatedAt: ts("updated_at"),
   },
-  (t) => [index("booking_org_start_idx").on(t.organizationId, t.startAt)],
+  (t) => [
+    index("booking_org_start_idx").on(t.organizationId, t.startAt),
+    uniqueIndex("booking_manage_token_hash_unique")
+      .on(t.manageTokenHash)
+      .where(sql`manage_token_hash IS NOT NULL`),
+  ],
 );
 
 /* ---------------- Assets (R2-backed media) ---------------- */

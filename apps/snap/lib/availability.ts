@@ -26,6 +26,19 @@ export type BookingSettings = {
   leadTimeMinutes: number;
   maxAdvanceDays: number;
   payment?: BookingPaymentSettings;
+  /** WEB-272: self-serve change policy (cutoffs in hours before start).
+   * Absent fields fall back to the engine defaults (24 h reschedule / 48 h
+   * cancel — resolved in repos/booking-manage.ts). */
+  policy?: BookingPolicySettings;
+};
+
+export type BookingPolicySettings = {
+  /** Hours before start until which clients may reschedule (default 24). 0 = until start. */
+  rescheduleCutoffHours?: number;
+  /** Hours before start until which clients may cancel (default 48). 0 = until start. */
+  cancelCutoffHours?: number;
+  /** Refund-policy copy surfaced to clients canceling a prepaid booking. */
+  refundPolicyText?: string;
 };
 
 export const DEFAULT_BOOKING_SETTINGS: BookingSettings = {

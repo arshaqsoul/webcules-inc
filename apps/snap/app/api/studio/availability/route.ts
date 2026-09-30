@@ -38,6 +38,14 @@ const bodySchema = z.object({
           label: z.string().trim().max(80).optional(),
         })
         .optional(),
+      /** WEB-272: client self-serve change policy. */
+      policy: z
+        .object({
+          rescheduleCutoffHours: z.number().int().min(0).max(24 * 30).optional(),
+          cancelCutoffHours: z.number().int().min(0).max(24 * 30).optional(),
+          refundPolicyText: z.string().trim().max(2000).optional(),
+        })
+        .optional(),
     })
     .optional(),
   blackouts: z.array(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)).max(100),

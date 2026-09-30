@@ -1,7 +1,10 @@
 /* GET /api/bookings?month=YYYY-MM — the month's bookings for the caller's
  * studio. Backs the dashboard calendar's client-side refetches (month nav,
- * focus/visibility after bookings made elsewhere, post-cancel truth sync). */
+ * focus/visibility after bookings made elsewhere, post-cancel truth sync).
+ * WEB-272: adds payment state, reschedule bookkeeping, and the manage-link
+ * state the day panel's reschedule/manage-link controls key off. */
 import { listBookingsInRange } from "@/lib/repos/bookings";
+import { manageLinkState } from "@/lib/repos/booking-manage";
 import { getOrgContext } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -25,6 +28,10 @@ export async function GET(req: Request) {
       startAt: b.startAt.toISOString(),
       clientName: b.clientName ?? b.clientEmail,
       status: b.status,
+      paymentStatus: b.paymentStatus,
+      rescheduledAt: b.rescheduledAt ? b.rescheduledAt.toISOString() : null,
+      previousStartAt: b.previousStartAt ? b.previousStartAt.toISOString() : null,
+      manageLink: manageLinkState(b),
     })),
   });
 }

@@ -3,9 +3,9 @@
  * the per-studio record), respected on the NEXT send — no queues to drain.
  *
  * Triggers wired: new gallery link (shares/notify.ts), booking payment
- * confirmed (repos/bookings.ts), project → complete (repos/projects.ts).
- * A reschedule notification hooks in the same way when a reschedule API
- * lands (none exists yet); a digest option is deliberately post-launch. */
+ * confirmed (repos/bookings.ts), project → complete (repos/projects.ts),
+ * booking rescheduled + client-initiated cancel (repos/booking-manage.ts,
+ * WEB-272); a digest option is deliberately post-launch. */
 import { getDb } from "./db";
 import * as schema from "./db-schema";
 import { and, eq } from "drizzle-orm";

@@ -33,6 +33,12 @@ type Initial = {
       amountMinor: number;
       label?: string;
     };
+    /** WEB-272: client self-serve change policy. */
+    policy?: {
+      rescheduleCutoffHours?: number;
+      cancelCutoffHours?: number;
+      refundPolicyText?: string;
+    };
   };
 };
 
@@ -55,6 +61,9 @@ export function AvailabilityEditor({ initial }: { initial: Initial }) {
   const [payAmount, setPayAmount] = useState(
     String(((initial.settings.payment?.amountMinor ?? 2500) / 100).toFixed(2)),
   );
+  const [reschedCutoff, setReschedCutoff] = useState(String(initial.settings.policy?.rescheduleCutoffHours ?? 24));
+  const [cancelCutoff, setCancelCutoff] = useState(String(initial.settings.policy?.cancelCutoffHours ?? 48));
+  const [refundPolicy, setRefundPolicy] = useState(initial.settings.policy?.refundPolicyText ?? "");
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -85,6 +94,11 @@ export function AvailabilityEditor({ initial }: { initial: Initial }) {
           enabled: payEnabled,
           kind: payKind,
           amountMinor: payEnabled ? Math.max(100, minor || 100) : (initial.settings.payment?.amountMinor ?? (minor || 2500)),
+        },
+        policy: {
+          rescheduleCutoffHours: Math.max(0, Math.round(Number(reschedCutoff) || 0)),
+          cancelCutoffHours: Math.max(0, Math.round(Number(cancelCutoff) || 0)),
+          ...(refundPolicy.trim() ? { refundPolicyText: refundPolicy.trim().slice(0, 2000) } : {}),
         },
       },
       blackouts,
@@ -232,6 +246,43 @@ export function AvailabilityEditor({ initial }: { initial: Initial }) {
             : "Charges the full session price at booking time."}{" "}
           Payments go to your Stripe account (Connect Payouts under Settings).
         </p>
+      </section>
+
+      <section className={card}>
+        <h2 className="text-[15px] font-medium text-ink">Client changes</h2>
+        <p className="mt-1 text-xs text-ink-subtle">
+          Clients can reschedule or cancel themselves from their booking email until these cutoffs.
+          Inside the window, their manage page points them to you instead.
+        </p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="reschedCutoff">Reschedule cutoff (hours before)</Label>
+            <Input id="reschedCutoff" type="number" min={0} max={720} value={reschedCutoff}
+              onChange={(e) => setReschedCutoff(e.target.value)} />
+            <p className="text-xs text-ink-tertiary">Default 24 — 0 lets clients move it until start time.</p>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="cancelCutoff">Cancel cutoff (hours before)</Label>
+            <Input id="cancelCutoff" type="number" min={0} max={720} value={cancelCutoff}
+              onChange={(e) => setCancelCutoff(e.target.value)} />
+            <p className="text-xs text-ink-tertiary">Default 48 — 0 lets clients cancel until start time.</p>
+          </div>
+        </div>
+        <div className="mt-4 flex flex-col gap-2">
+          <Label htmlFor="refundPolicy">Refund policy (shown when clients cancel a prepaid session)</Label>
+          <textarea
+            id="refundPolicy"
+            value={refundPolicy}
+            onChange={(e) => setRefundPolicy(e.target.value)}
+            maxLength={2000}
+            rows={3}
+            placeholder="e.g. Deposits are refundable up to 7 days before the session; inside 7 days the deposit transfers to a future date."
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+          />
+          <p className="text-xs text-ink-tertiary">
+            Refunds themselves stay in your hands — issue them from Stripe when you're ready.
+          </p>
+        </div>
       </section>
 
       <section className={card}>

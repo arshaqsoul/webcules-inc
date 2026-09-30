@@ -20,6 +20,7 @@ import { env } from "cloudflare:workers";
 
 import { getDb } from "./db";
 import * as schema from "./db-schema";
+import { snapBrandUrl } from "./snap-url";
 
 export async function sendEmail(params: {
   to: string;
@@ -152,7 +153,7 @@ export function shell(accent: string, title: string, bodyHtml: string, footer: s
       <tr><td style="font-size:15px;line-height:1.6;color:#3f4149;">${bodyHtml}</tr>
       <tr><td style="padding-top:32px;border-top:1px solid #e3e5e8;"><p style="margin:0;font-size:12px;line-height:1.5;color:#8a8f98;">${footerHtml}</p></td></tr>
     </table>
-    ${brand?.whiteLabel ? "" : `<p style="margin:16px 0 0;font-size:12px;color:#8a8f98;">snap.webcules.com</p>`}
+    ${brand?.whiteLabel ? "" : `<p style="margin:16px 0 0;font-size:12px;color:#8a8f98;"><a href="${snapBrandUrl("email")}" style="color:#8a8f98;text-decoration:none;">snap.webcules.com</a></p>`}
   </td></tr></table></body></html>`;
 }
 
@@ -218,6 +219,8 @@ export function bookingConfirmedEmails(studioName: string, params: {
   /** WEB-240: logo header + footer contact from the 2/8 asset bundle. */
   emailHeaderUrl?: string | null;
   contactEmail?: string | null;
+  /** WEB-272: self-serve manage-booking link (reschedule/cancel). */
+  manageUrl?: string | null;
 }) {
   const when = new Intl.DateTimeFormat("en-US", {
     timeZone: params.tz,
@@ -226,6 +229,9 @@ export function bookingConfirmedEmails(studioName: string, params: {
   }).format(params.startAt);
   const button = (label: string) =>
     `<p style="margin:24px 0 0;"><a href="${params.icsUrl}" style="display:inline-block;background:${params.accent};color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">${label}</a></p>`;
+  const manageLine = params.manageUrl
+    ? `<p style="margin:12px 0 0;font-size:13px;color:#8a8f98;">Need a different time? <a href="${params.manageUrl}" style="color:${params.accent};">Manage your booking</a> — reschedule or cancel any time before your studio's cutoff.</p>`
+    : "";
   const whenBlock = `<p style="margin:0 0 16px;padding:12px 16px;background:#f7f8f8;border-radius:8px;"><strong style="color:#0f1011;">${when}</strong> <span style="color:#8a8f98;">(${params.tz})</span></p>`;
   const wl = params.whiteLabel === true;
 
@@ -236,11 +242,12 @@ export function bookingConfirmedEmails(studioName: string, params: {
       "You're booked!",
       `<p style="margin:0 0 16px;">Hi ${params.clientName}, your session with <strong>${studioName}</strong> is confirmed for:</p>
        ${whenBlock}
-       ${button("Add to calendar")}`,
+       ${button("Add to calendar")}
+       ${manageLine}`,
       `Booked with ${studioName}${wl ? "." : " via Snap."}`,
       { studioName, whiteLabel: wl, emailHeaderUrl: params.emailHeaderUrl, contactEmail: params.contactEmail },
     ),
-    text: `Hi ${params.clientName}, your session with ${studioName} is confirmed for ${when} (${params.tz}). Add to calendar: ${params.icsUrl}`,
+    text: `Hi ${params.clientName}, your session with ${studioName} is confirmed for ${when} (${params.tz}). Add to calendar: ${params.icsUrl}${params.manageUrl ? `\nManage your booking: ${params.manageUrl}` : ""}`,
   };
   const studio = {
     subject: `New booking — ${params.clientName} · ${when}`,
@@ -266,23 +273,119 @@ export function bookingCanceledEmail(studioName: string, params: {
   /** WEB-240: logo header + footer contact from the 2/8 asset bundle. */
   emailHeaderUrl?: string | null;
   contactEmail?: string | null;
+  /** WEB-272: prepaid bookings get the refund-policy path — refunds stay a
+   * manual studio action in Stripe, the copy says so. */
+  wasPaid?: boolean;
+  refundPolicyText?: string | null;
 }): { subject: string; html: string; text: string } {
   const when = new Intl.DateTimeFormat("en-US", {
     timeZone: params.tz, weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit",
   }).format(params.startAt);
   const wl = params.whiteLabel === true;
+  const refundBlock = params.wasPaid
+    ? `<p style="margin:12px 0 0;padding:12px 16px;background:#f7f8f8;border-radius:8px;">Since this session was prepaid, <strong style="color:#0f1011;">${studioName}</strong> will process your refund per their policy.${params.refundPolicyText ? `<br /><span style="color:#3f4149;">${params.refundPolicyText}</span>` : ""} Refunds take 5–10 business days to appear on your statement.</p>`
+    : "";
   return {
     subject: `Booking canceled — ${studioName}`,
     html: shell(
       params.accent,
       "Booking canceled",
       `<p style="margin:0 0 12px;">Hi ${params.clientName}, your session with <strong style="color:#0f1011;">${studioName}</strong> scheduled for <strong style="color:#0f1011;">${when}</strong> has been canceled.</p>
-       <p style="margin:0;">Questions? Just reply to this email.</p>`,
+       ${refundBlock}
+       <p style="margin:12px 0 0;">Questions? Just reply to this email.</p>`,
       `Sent by ${studioName}${wl ? "." : " via Snap."}`,
       { studioName, whiteLabel: wl, emailHeaderUrl: params.emailHeaderUrl, contactEmail: params.contactEmail },
     ),
-    text: `Hi ${params.clientName}, your session with ${studioName} on ${when} has been canceled.`,
+    text: `Hi ${params.clientName}, your session with ${studioName} on ${when} has been canceled.${params.wasPaid ? ` Since this session was prepaid, ${studioName} will process your refund per their policy.${params.refundPolicyText ? ` ${params.refundPolicyText}` : ""} Refunds take 5-10 business days to appear on your statement.` : ""}`,
   };
+}
+
+/** WEB-272: studio notification when the CLIENT cancels via the manage link. */
+export function bookingCanceledByClientStudioEmail(studioName: string, params: {
+  clientName: string;
+  startAt: Date;
+  tz: string;
+  accent: string;
+  wasPaid: boolean;
+}): { subject: string; html: string; text: string } {
+  const when = new Intl.DateTimeFormat("en-US", {
+    timeZone: params.tz, weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit",
+  }).format(params.startAt);
+  return {
+    subject: `Booking canceled by client — ${params.clientName} · ${when}`,
+    html: shell(
+      params.accent,
+      "Client canceled a booking",
+      `<p style="margin:0 0 12px;"><strong style="color:#0f1011;">${params.clientName}</strong> canceled their session scheduled for <strong style="color:#0f1011;">${when}</strong> (${params.tz}). The slot is free again.</p>
+       ${params.wasPaid ? `<p style="margin:0 0 12px;padding:12px 16px;background:#f7f8f8;border-radius:8px;">This session was <strong style="color:#0f1011;">prepaid</strong> — the client was shown your refund policy. Issue the refund from Stripe when you're ready (refunding in Stripe cancels the project and emails the client automatically).</p>` : ""}
+       <p style="margin:0;">See the booking on your calendar.</p>`,
+      "Sent because the client used their manage-booking link.",
+    ),
+    text: `${params.clientName} canceled their session on ${when} (${params.tz}). The slot is free again.${params.wasPaid ? " This session was prepaid — the client was shown your refund policy; issue the refund from Stripe when ready." : ""}`,
+  };
+}
+
+/** WEB-272: reschedule emails — client copy shows old → new and re-offers
+ * the (always-current) ICS link; studio copy names who moved it. The ICS
+ * file regenerates from the live booking row, so the same UID re-imports as
+ * an update of the same event in calendar clients. */
+export function bookingRescheduledEmails(studioName: string, params: {
+  clientName: string;
+  previousStartAt: Date;
+  startAt: Date;
+  endAt: Date;
+  tz: string;
+  icsUrl: string;
+  manageUrl: string;
+  /** Who moved it — the studio copy differs ("you" vs "{client} moved"). */
+  initiator: "client" | "studio";
+  accent: string;
+  whiteLabel?: boolean;
+  emailHeaderUrl?: string | null;
+  contactEmail?: string | null;
+}): { client: { subject: string; html: string; text: string }; studio: { subject: string; html: string; text: string } } {
+  const fmt = (d: Date) =>
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: params.tz, weekday: "long", month: "long", day: "numeric",
+      hour: "numeric", minute: "2-digit", timeZoneName: "short",
+    }).format(d);
+  const oldWhen = fmt(params.previousStartAt);
+  const newWhen = fmt(params.startAt);
+  const wl = params.whiteLabel === true;
+  const moveBlock = `<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:0 0 16px;">
+    <tr><td style="padding:10px 16px;background:#f7f8f8;border-radius:8px 8px 0 0;color:#8a8f98;font-size:14px;text-decoration:line-through;">${oldWhen}</td></tr>
+    <tr><td style="padding:10px 16px;background:#f2f6f3;border-radius:0 0 8px 8px;"><strong style="color:#0f1011;font-size:15px;">${newWhen}</strong> <span style="color:#8a8f98;">(${params.tz})</span></td></tr>
+  </table>`;
+
+  const client = {
+    subject: `Your booking moved — now ${newWhen}`,
+    html: shell(
+      params.accent,
+      "Your new session time",
+      `<p style="margin:0 0 16px;">Hi ${params.clientName}, your session with <strong>${studioName}</strong> has been rescheduled:</p>
+       ${moveBlock}
+       ${params.initiator === "studio" ? `<p style="margin:0 0 16px;">${studioName} moved this booking — if the new time doesn't work, you can pick another below.</p>` : ""}
+       <p style="margin:0 0 8px;">Your payment, if any, carries over — nothing to pay again.</p>
+       <p style="margin:16px 0 0;"><a href="${params.icsUrl}" style="display:inline-block;background:${params.accent};color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">Update your calendar</a></p>
+       <p style="margin:12px 0 0;font-size:13px;color:#8a8f98;"><a href="${params.manageUrl}" style="color:${params.accent};">Manage your booking</a></p>`,
+      `Sent by ${studioName}${wl ? "." : " via Snap."}`,
+      { studioName, whiteLabel: wl, emailHeaderUrl: params.emailHeaderUrl, contactEmail: params.contactEmail },
+    ),
+    text: `Hi ${params.clientName}, your session with ${studioName} moved from ${oldWhen} to ${newWhen} (${params.tz}). Your payment, if any, carries over. Updated calendar file: ${params.icsUrl} Manage your booking: ${params.manageUrl}`,
+  };
+  const studio = {
+    subject: `Rescheduled — ${params.clientName} · ${newWhen}`,
+    html: shell(
+      params.accent,
+      "Booking rescheduled",
+      `<p style="margin:0 0 16px;"><strong style="color:#0f1011;">${params.clientName}</strong>${params.initiator === "client" ? " moved their session:" : "'s session was moved by the studio:"}</p>
+       ${moveBlock}
+       <p style="margin:0;">The project's event date was updated automatically. Payment status is unchanged.</p>`,
+      "See your calendar for the new slot.",
+    ),
+    text: `${params.clientName}'s session moved from ${oldWhen} to ${newWhen} (${params.tz})${params.initiator === "client" ? " (rescheduled by the client)" : ""}. Project event date updated; payment unchanged.`,
+  };
+  return { client, studio };
 }
 
 /** Refund confirmation (WEB-141) — sent when charge.refunded lands: states
@@ -535,8 +638,13 @@ export function bookingConfirmedClientEmail(studioName: string, params: {
   /** WEB-240: logo header + footer contact from the 2/8 asset bundle. */
   emailHeaderUrl?: string | null;
   contactEmail?: string | null;
+  /** WEB-272: self-serve manage-booking link (reschedule/cancel). */
+  manageUrl?: string | null;
 }): { subject: string; html: string; text: string } {
   const wl = params.whiteLabel === true;
+  const manageLine = params.manageUrl
+    ? `<p style="margin:12px 0 0;font-size:13px;color:#8a8f98;">Need a different time? <a href="${params.manageUrl}" style="color:${params.accent};">Manage your booking</a> — reschedule or cancel any time before your studio's cutoff.</p>`
+    : "";
   return {
     subject: `Your session is booked with ${studioName}`,
     html: shell(
@@ -544,13 +652,14 @@ export function bookingConfirmedClientEmail(studioName: string, params: {
       "You're booked!",
       `<p style="margin:0 0 16px;"><strong style="color:#0f1011;">${studioName}</strong> has confirmed your session for <strong style="color:#0f1011;">${params.when.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</strong> at ${params.when.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}.</p>
        <p style="margin:0 0 16px;">Payment is confirmed — nothing more to do. You can follow your project any time from your ${wl ? "client portal" : "Snap portal"}.</p>
-       <p style="margin:24px 0 0;"><a href="${params.portalUrl}" style="display:inline-block;background:${params.accent};color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">Open your portal</a></p>`,
+       <p style="margin:24px 0 0;"><a href="${params.portalUrl}" style="display:inline-block;background:${params.accent};color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">Open your portal</a></p>
+       ${manageLine}`,
       wl
         ? `You can turn these emails off inside your client portal.`
         : `You can turn these emails off per studio inside your Snap portal.`,
       { studioName, whiteLabel: wl, emailHeaderUrl: params.emailHeaderUrl, contactEmail: params.contactEmail },
     ),
-    text: `${studioName} confirmed your session for ${params.when.toLocaleString()}. Portal: ${params.portalUrl}`,
+    text: `${studioName} confirmed your session for ${params.when.toLocaleString()}. Portal: ${params.portalUrl}${params.manageUrl ? `\nManage your booking: ${params.manageUrl}` : ""}`,
   };
 }
 

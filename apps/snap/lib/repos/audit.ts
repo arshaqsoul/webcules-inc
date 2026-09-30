@@ -9,6 +9,10 @@ import * as schema from "@/lib/db-schema";
 const SURFACED_ACTIONS = [
   "payment.refund_requested",
   "booking.payment_confirmed",
+  "booking.rescheduled",
+  "booking.canceled",
+  "booking.manage_link_issued",
+  "booking.manage_link_revoked",
   "asset.bulk_approve",
   "asset.bulk_reject",
   "asset.bulk_delete",

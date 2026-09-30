@@ -9,6 +9,7 @@ import { listSessionTypes } from "@/lib/repos/session-types";
 import { listTemplates } from "@/lib/repos/templates";
 import { getPlanEntitlements } from "@/lib/plans";
 import { listBookingsInRange } from "@/lib/repos/bookings";
+import { manageLinkState } from "@/lib/repos/booking-manage";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { getOrgContext } from "@/lib/session";
 
@@ -99,6 +100,10 @@ export default async function CalendarPage({
             startAt: b.startAt.toISOString(),
             clientName: b.clientName ?? b.clientEmail,
             status: b.status,
+            paymentStatus: b.paymentStatus,
+            rescheduledAt: b.rescheduledAt ? b.rescheduledAt.toISOString() : null,
+            previousStartAt: b.previousStartAt ? b.previousStartAt.toISOString() : null,
+            manageLink: manageLinkState(b),
           }))}
         />
       )}

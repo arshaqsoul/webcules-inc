@@ -297,14 +297,17 @@ export async function confirmBookingPaid(params: {
   });
 
   // WEB-136: booking-confirmed client email (per-studio opt-out respected).
+  // WEB-272: the manage link rides along (lazily minted for pre-0050 rows).
   try {
     const { sendEmail, bookingConfirmedClientEmail } = await import("@/lib/email");
     const { getStudioProfile } = await import("@/lib/repos/studios");
     const { clientWantsEmail } = await import("@/lib/notify-client");
     const { getEmailBrand } = await import("@/lib/branding");
+    const { ensureManageToken } = await import("@/lib/repos/booking-manage");
     const profile = await getStudioProfile(params.organizationId);
     if (profile && (await clientWantsEmail(params.organizationId, booking.clientEmail))) {
       const b = await getEmailBrand(params.organizationId);
+      const manageToken = await ensureManageToken(booking.id);
       const tmpl = bookingConfirmedClientEmail(profile.studioName, {
         accent: b.accent,
         when: booking.startAt,
@@ -312,6 +315,7 @@ export async function confirmBookingPaid(params: {
         whiteLabel: b.whiteLabel,
         emailHeaderUrl: b.emailHeaderUrl,
         contactEmail: b.contactEmail,
+        ...(manageToken ? { manageUrl: await clientUrl(params.organizationId, `/booking/${manageToken}`) } : {}),
       });
       await sendEmail({
         to: booking.clientEmail,

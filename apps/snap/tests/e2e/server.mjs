@@ -4,6 +4,7 @@
  * (Playwright starts webServer and globalSetup concurrently; doing setup in
  * globalSetup races wrangler's own miniflare state creation.) */
 import { execSync, spawn } from "node:child_process";
+import { createHash } from "node:crypto";
 import { createServer } from "node:http";
 import { copyFileSync, existsSync, mkdirSync, rmSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -155,6 +156,19 @@ target.setUTCHours(0, 0, 0, 0);
 const weekday = target.getUTCDay();
 const date = target.toISOString().slice(0, 10);
 
+// WEB-272 manage-booking journey: a confirmed 9:00 booking on the target day
+// with a pre-minted manage token (hash-only — resolve needs no ciphertext;
+// format matches lib/shares/grants.ts mintToken).
+const manageToken = Buffer.from(crypto.getRandomValues(new Uint8Array(32)))
+  .toString("base64")
+  .replace(/\+/g, "-")
+  .replace(/\//g, "_")
+  .replace(/=+$/, "");
+const manageTokenHash = createHash("sha256").update(manageToken).digest("hex");
+const manageBookingId = crypto.randomUUID();
+const manageStartEpoch = Math.floor(target.getTime() / 1000) + 540 * 60;
+const manageEndEpoch = manageStartEpoch + 3600;
+
 // Domain-flow studios (WEB-233): one pro + one free, one shared owner — the
 // E2E walks the locked upsell on free, the full lifecycle on pro, and the
 // panel re-scope when switching studios.
@@ -170,6 +184,8 @@ const seedSql = `INSERT INTO organization (id, name, slug, created_at, updated_a
      VALUES ('${orgId}', 'E2E Widget Studio', 'UTC', 'e2e@test.test', '${embedKey}', 'free');
    INSERT INTO availability_rule (id, organization_id, weekday, start_minute, end_minute, slot_minutes, buffer_minutes, active)
      VALUES ('${crypto.randomUUID()}', '${orgId}', ${weekday}, 540, 1020, 60, 0, 1);
+   INSERT INTO booking (id, organization_id, start_at, end_at, timezone, client_email, client_name, status, payment_status, manage_token_hash, manage_token_status, created_at, updated_at)
+     VALUES ('${manageBookingId}', '${orgId}', ${manageStartEpoch}, ${manageEndEpoch}, 'UTC', 'e2e-manage@test.test', 'E2E Manage Client', 'confirmed', 'unpaid', '${manageTokenHash}', 'active', unixepoch(), unixepoch());
    INSERT INTO organization (id, name, slug, created_at, updated_at)
      VALUES ('${proOrgId}', 'E2E Pro Studio', 'e2e-pro-${proOrgId.slice(0, 8)}', unixepoch(), unixepoch());
    INSERT INTO studio_profile (organization_id, studio_name, timezone, contact_email, embed_key, plan)
@@ -190,7 +206,7 @@ writeFileSync(join(root, "tests", "e2e", ".seed.sql"), seedSql, "utf8");
 run("pnpm exec wrangler d1 execute webcules-snap --local --persist-to tests/e2e/.state --file tests/e2e/.seed.sql");
 writeFileSync(
   join(root, "tests", "e2e", ".seed.json"),
-  JSON.stringify({ orgId, embedKey, weekday, date, userId, userEmail, proOrgId, freeOrgId, mockPort }),
+  JSON.stringify({ orgId, embedKey, weekday, date, userId, userEmail, proOrgId, freeOrgId, mockPort, manageToken }),
   "utf8",
 );
 console.log(`[e2e-server] seeded widget + domain studios (weekday ${weekday}, ${date})`);

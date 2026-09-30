@@ -1,6 +1,6 @@
 /* Availability repository — weekly rules + blackouts + booking settings.
  * Replace-all semantics for the editor (small data, atomic swap). */
-import { and, eq, gte, lte, sql } from "drizzle-orm";
+import { and, eq, gte, lte, ne, sql } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
@@ -98,8 +98,18 @@ export async function getAvailability(organizationId: string) {
  * WEB-250: an optional session type scopes the rules ('own' mode = only the
  * type's rules; 'inherit' = shared rules + the type's own) and layers its
  * scheduling overrides over the studio settings — the DST engine itself is
- * untouched. */
-export async function computeDateSlots(organizationId: string, timezone: string, date: string, sessionTypeId?: string | null) {
+ * untouched.
+ * WEB-272: excludeBookingId drops one booking from the conflict set — a
+ * reschedule re-validates through the same engine but must not treat the
+ * booking's OWN current slot as a conflict (its buffer would wrongly block
+ * the neighboring slots the move targets). */
+export async function computeDateSlots(
+  organizationId: string,
+  timezone: string,
+  date: string,
+  sessionTypeId?: string | null,
+  excludeBookingId?: string | null,
+) {
   const db = getDb();
   const [{ rules, blackouts, settings }, profile] = await Promise.all([
     getAvailability(organizationId),
@@ -131,19 +141,24 @@ export async function computeDateSlots(organizationId: string, timezone: string,
     }
   }
   const window = dateWindowUtc(date, tz);
-  const conflicts = (
-    await db
-      .select({ startAt: schema.bookings.startAt, endAt: schema.bookings.endAt })
-      .from(schema.bookings)
-      .where(
-        and(
-          eq(schema.bookings.organizationId, organizationId),
-          gte(schema.bookings.startAt, window.start),
-          lte(schema.bookings.startAt, window.end),
-          and(sql`status != 'canceled'`),
-        ),
+  const conflictFilter = excludeBookingId
+    ? and(
+        eq(schema.bookings.organizationId, organizationId),
+        gte(schema.bookings.startAt, window.start),
+        lte(schema.bookings.startAt, window.end),
+        ne(schema.bookings.id, excludeBookingId),
+        and(sql`status != 'canceled'`),
       )
-  );
+    : and(
+        eq(schema.bookings.organizationId, organizationId),
+        gte(schema.bookings.startAt, window.start),
+        lte(schema.bookings.startAt, window.end),
+        and(sql`status != 'canceled'`),
+      );
+  const conflicts = await db
+    .select({ startAt: schema.bookings.startAt, endAt: schema.bookings.endAt })
+    .from(schema.bookings)
+    .where(conflictFilter);
 
   return {
     tz,

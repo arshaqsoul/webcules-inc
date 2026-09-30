@@ -4,7 +4,11 @@
  * Stacks vertically in narrow iframes, where the form takes over the full
  * row. Branded from the studio profile. First month renders server-side
  * (inline JSON) for instant paint; the visitor's timezone is shown alongside
- * the studio's. */
+ * the studio's.
+ * WEB-272: ?manage={token} = reschedule mode — the same calendar, scoped to
+ * the manage booking's session type, its own slot excluded from conflicts,
+ * and the form collapses to a single "Move booking" action on the manage
+ * API (no name/email/Turnstile: the 256-bit token is the auth). */
 import { monthDates } from "@/lib/availability";
 import { env } from "cloudflare:workers";
 import { frameAncestorsDirective, resolveStudioByEmbedKey, safeHexColor } from "@/lib/embed";
@@ -15,6 +19,7 @@ import { getTemplate } from "@/lib/repos/templates";
 import { parseFormSchema } from "@/lib/forms";
 import { renderFieldsHtml } from "@/lib/forms-render";
 import { getStudioProfile } from "@/lib/repos/studios";
+import { resolveBookingByManageToken } from "@/lib/repos/booking-manage";
 
 export const dynamic = "force-dynamic";
 
@@ -79,18 +84,37 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
     ? `<img src="/api/embed/logo?key=${esc(studio.embedKey)}" alt="${esc(studio.studioName)}" style="max-height:36px;max-width:160px;object-fit:contain;" />`
     : `<span style="font-size:15px;font-weight:600;color:#0f1011;">${esc(studio.studioName)}</span>`;
 
+  // WEB-272 manage mode: ?manage={token} scopes the widget to one booking's
+  // reschedule. A dead/unknown token renders a calm closed page — never a
+  // working calendar that can't submit.
+  const manageTokenRaw = (url.searchParams.get("manage") ?? "").replace(/[^A-Za-z0-9_-]/g, "").slice(0, 64);
+  const manageBooking = manageTokenRaw ? await resolveBookingByManageToken(manageTokenRaw) : null;
+  const manage =
+    manageTokenRaw && manageBooking && manageBooking.organizationId === studio.organizationId && manageBooking.status !== "canceled"
+      ? manageTokenRaw
+      : "";
+  if (manageTokenRaw && !manage) {
+    return new Response(
+      `<!doctype html><html><body style="margin:0;font-family:Inter,system-ui,sans-serif;background:#fff;color:#62666d;display:flex;align-items:center;justify-content:center;min-height:320px;"><p style="font-size:14px;">This booking can no longer be changed online — please contact the studio directly.</p></body></html>`,
+      { status: 404, headers },
+    );
+  }
+
   // WEB-250 session types: 0 types → exactly today's widget; 1 type →
   // applied silently; 2+ → a picker first (?type= deep-links straight in).
+  // Manage mode never shows the picker — the booking's type is fixed.
   const types = await listSessionTypes(studio.organizationId);
   const typeParam = (url.searchParams.get("type") ?? "").replace(/[^a-z0-9-]/gi, "").slice(0, 40);
-  const initialType = types.length === 0
-    ? null
-    : typeParam
-      ? (types.find((t) => t.slug === typeParam) ?? null)
-      : types.length === 1
-        ? types[0]
-        : null;
-  const showPicker = types.length >= 2;
+  const initialType = manage
+    ? (manageBooking!.sessionTypeId ? (types.find((t) => t.id === manageBooking!.sessionTypeId) ?? null) : null)
+    : types.length === 0
+      ? null
+      : typeParam
+        ? (types.find((t) => t.slug === typeParam) ?? null)
+        : types.length === 1
+          ? types[0]
+          : null;
+  const showPicker = types.length >= 2 && !manage;
 
   // Booking questions per type (stored schema → simple inputs, shown only
   // for the selected type's form step).
@@ -103,14 +127,16 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
     }),
   );
 
-  // Server-render the current month's day → slot counts + ISO slots.
+  // Server-render the current month's day → slot counts + ISO slots. In
+  // manage mode the booking's own row is excluded so its current slot (and
+  // buffer halo) doesn't block the move targets.
   const now = new Date();
   const month = new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit" }).format(now);
   const days: Record<string, string[]> = {};
   if (!showPicker || initialType) {
     await Promise.all(
       monthDates(month).map(async (date) => {
-        const { slots } = await computeDateSlots(studio.organizationId, tz, date, initialType?.id ?? null);
+        const { slots } = await computeDateSlots(studio.organizationId, tz, date, initialType?.id ?? null, manageBooking?.id ?? null);
         if (slots.length) days[date] = slots.map((s) => s.startAt.toISOString());
       }),
     );
@@ -233,7 +259,9 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
     <form id="book-form" hidden novalidate>
       <button type="button" class="back" id="back-btn">‹ Back</button>
       <p class="slot-summary" id="slot-summary"></p>
-      <div class="frow">
+      ${manage
+        ? `<p class="muted" style="margin:0 0 4px;">Moving your booking — your details and payment carry over.</p>`
+        : `<div class="frow">
         <div><label for="b-name">Your name</label><input id="b-name" required autocomplete="name" /></div>
         <div><label for="b-email">Email</label><input id="b-email" type="email" required autocomplete="email" /></div>
       </div>
@@ -241,17 +269,17 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
       <label for="b-notes">Anything we should know? (optional)</label><textarea id="b-notes"></textarea>
       ${questionSets.filter((q) => q.html).map((q) => `<div class="qs" data-qs="${esc(q.typeId)}" hidden>${q.html}</div>`).join("")}
       <div class="hp" aria-hidden="true"><label>Leave empty<input name="company_website" tabindex="-1" autocomplete="off" /></label></div>
-      <div id="ts" style="margin:12px 0 0;"></div>
-      <button class="cta" id="book-btn" type="submit">Confirm booking</button>
+      <div id="ts" style="margin:12px 0 0;"></div>`}
+      <button class="cta" id="book-btn" type="submit">${manage ? "Move booking" : "Confirm booking"}</button>
     </form>
     <div id="done-view" hidden>
       <div class="done">
         <div class="done-check" aria-hidden="true">✓</div>
-        <p class="done-title">You're booked!</p>
+        <p class="done-title">${manage ? "Booking moved!" : "You're booked!"}</p>
         <p class="done-when" id="done-when"></p>
         <p class="done-note" id="done-note"></p>
         <a class="done-ics" id="done-ics" href="#" target="_blank" rel="noopener">Add to your calendar</a>
-        <button type="button" class="cta done-again" id="done-again">Book another time</button>
+        ${manage ? "" : `<button type="button" class="cta done-again" id="done-again">Book another time</button>`}
       </div>
     </div>
     <div class="msg" id="msg" role="status"></div>
@@ -272,9 +300,11 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
   var data = ${JSON.stringify({ month, days })};
   var types = ${JSON.stringify(types.map((t) => ({ id: t.id, slug: t.slug, name: t.name, description: t.description, color: t.color, minutes: t.slotMinutes, priceMinor: t.priceMinor })))};
   var typeSlug = ${JSON.stringify(initialType?.slug ?? "")};
+  var manage = ${JSON.stringify(manage)};
+  var bookingRef = ${JSON.stringify(manageBooking?.id ?? "")};
   var selectedDay = null, selectedSlot = null;
   var tsToken = "";
-  var SITE_KEY = ${JSON.stringify(siteKey)};
+  var SITE_KEY = ${JSON.stringify(manage ? "" : siteKey)};
 
   var shell = document.getElementById("shell");
   var panel = document.getElementById("panel");
@@ -290,7 +320,9 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
     doneView.hidden = false;
     shell.classList.remove("form-open");
     document.getElementById("done-when").textContent = when;
-    document.getElementById("done-note").innerHTML = "A confirmation email with all the details is on its way to <b>" + esc2(email) + "</b>. " + studioName + " will see your booking instantly.";
+    document.getElementById("done-note").innerHTML = manage
+      ? "All set — your booking now sits at the time above and an updated confirmation email is on its way."
+      : "A confirmation email with all the details is on its way to <b>" + esc2(email) + "</b>. " + studioName + " will see your booking instantly.";
     var ics = document.getElementById("done-ics");
     if (bookingRef) {
       ics.href = origin + "/api/embed/ics?booking=" + encodeURIComponent(bookingRef) + "&key=" + encodeURIComponent(key);
@@ -306,7 +338,8 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
     return d.innerHTML;
   }
 
-  document.getElementById("done-again").addEventListener("click", function () {
+  var doneAgain = document.getElementById("done-again");
+  if (doneAgain) doneAgain.addEventListener("click", function () {
     doneView.hidden = true;
     panel.hidden = true;
     selectedDay = null; selectedSlot = null;
@@ -318,9 +351,12 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
     // "normal" (300×65) fits and is half the height of "compact" (130×120) —
     // but only where the panel is ≥360px wide (≥860px iframe). Below that the
     // normal widget overflows the 248px panel and forces a horizontal
-    // scrollbar, so it falls back to compact.
+    // scrollbar, so it falls back to compact. Manage mode renders no widget
+    // (the token is the auth) — #ts doesn't exist there.
+    var tsEl = document.getElementById("ts");
+    if (!tsEl) return;
     var wide = window.matchMedia && window.matchMedia("(min-width:860px)").matches;
-    if (SITE_KEY && window.turnstile && !document.getElementById("ts").hasChildNodes()) {
+    if (SITE_KEY && window.turnstile && !tsEl.hasChildNodes()) {
       turnstile.render("#ts", { sitekey: SITE_KEY, callback: function (t) { tsToken = t; }, size: wide ? "normal" : "compact" });
     }
   }
@@ -378,10 +414,12 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
     initTs();
     // Turnstile injects its iframe asynchronously, after this frame's height
     // was already reported — re-measure when it lands (and once late, in
-    // case the challenge script itself was still loading).
-    if (window.MutationObserver && !showForm.tsObs) {
+    // case the challenge script itself was still loading). No element in
+    // manage mode — nothing to observe.
+    var tsEl = document.getElementById("ts");
+    if (window.MutationObserver && tsEl && !showForm.tsObs) {
       showForm.tsObs = new MutationObserver(function () { setTimeout(postHeight, 50); });
-      showForm.tsObs.observe(document.getElementById("ts"), { childList: true, subtree: true });
+      showForm.tsObs.observe(tsEl, { childList: true, subtree: true });
     }
     setTimeout(postHeight, 400);
   }
@@ -436,7 +474,8 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
         selectedSlot = iso;
         document.getElementById("slot-summary").textContent = dayLabel(date) + " · " + fmtTime(iso);
         showForm();
-        document.getElementById("b-name").focus();
+        var nameEl = document.getElementById("b-name");
+        if (nameEl) nameEl.focus();
         postHeight();
       });
       slotsWrap.appendChild(b);
@@ -455,7 +494,7 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
 
   function load(month) {
     if (data.month === month && data.days && data.type === typeSlug) return Promise.resolve();
-    return fetch(origin + "/api/embed/availability?key=" + encodeURIComponent(key) + "&month=" + month + (typeSlug ? "&type=" + encodeURIComponent(typeSlug) : ""))
+    return fetch(origin + "/api/embed/availability?key=" + encodeURIComponent(key) + "&month=" + month + (typeSlug ? "&type=" + encodeURIComponent(typeSlug) : "") + (manage ? "&manage=" + encodeURIComponent(manage) : ""))
       .then(function (r) {
         if (!r.ok) throw new Error("http " + r.status);
         return r.json();
@@ -487,6 +526,60 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
     var btn = document.getElementById("book-btn");
     btn.disabled = true;
     clearMsg();
+    if (manage) {
+      // WEB-272 reschedule: the manage token is the auth — no identity or
+      // captcha fields, just the picked slot on the manage API.
+      try {
+        var res = await fetch(origin + "/api/booking-manage/" + encodeURIComponent(manage) + "/reschedule", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ slotStart: selectedSlot })
+        });
+        var body = await res.json().catch(function () { return {}; });
+        if (res.ok && body.checkoutUrl) {
+          msg.className = "msg ok";
+          msg.textContent = "Redirecting to secure payment…";
+          if (window.parent === window) {
+            window.location.href = body.checkoutUrl;
+          } else {
+            try { window.top.location.href = body.checkoutUrl; } catch (err2) { window.location.href = body.checkoutUrl; }
+          }
+        } else if (res.ok) {
+          showDone(document.getElementById("slot-summary").textContent || "", "", bookingRef);
+          selectedDay = null; selectedSlot = null;
+          var movedMonth = data.month;
+          data = { month: null, days: null };
+          load(movedMonth);
+          // The manage page re-renders server-side with the new time.
+          parent.postMessage({ type: "snap:rescheduled" }, hostOrigin || "*");
+        } else if (body.error === "cutoff_passed" || body.error === "canceled") {
+          msg.className = "msg err";
+          msg.textContent = "This booking can no longer be changed online — please contact the studio directly.";
+        } else if (body.error === "slot_unavailable" || body.error === "conflict") {
+          timesView.hidden = true;
+          form.hidden = true;
+          shell.classList.remove("form-open");
+          selectedDay = null; selectedSlot = null;
+          msg.className = "msg err";
+          msg.textContent = "That slot was just taken — please pick another.";
+          var goneM = data.month;
+          data = { month: null, days: null };
+          load(goneM);
+        } else if (body.error === "rate_limited") {
+          msg.className = "msg err";
+          msg.textContent = "Too many tries — please wait a minute.";
+          btn.disabled = false;
+        } else {
+          msg.className = "msg err";
+          msg.textContent = "Couldn't move the booking — please try again.";
+          btn.disabled = false;
+        }
+      } catch (err) {
+        msg.className = "msg err"; msg.textContent = "Network error — please try again."; btn.disabled = false;
+      }
+      postHeight();
+      return;
+    }
     var f = new FormData(e.target);
     function collectAnswers() {
       var out = {};

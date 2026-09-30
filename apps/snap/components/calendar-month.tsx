@@ -5,10 +5,14 @@
  * its data: it refetches the month on navigation, whenever the tab regains
  * focus (bookings made elsewhere — e.g. the widget in another tab — appear
  * without a manual refresh), and after actions, so the view can never drift
- * from the server for longer than one fetch. */
+ * from the server for longer than one fetch.
+ * WEB-272: the day panel also shows payment state + reschedule bookkeeping,
+ * lets the studio reschedule a client (same slot engine as the manage page)
+ * and control the client's manage-booking link. */
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button } from "@webcules/ui/components/button";
+import { Input } from "@webcules/ui/components/input";
 import { useConfirm } from "@/components/confirm-provider";
 
 type BookingItem = {
@@ -16,9 +20,19 @@ type BookingItem = {
   startAt: string;
   clientName: string;
   status: string;
+  paymentStatus: string;
+  rescheduledAt: string | null;
+  previousStartAt: string | null;
+  manageLink: "none" | "active" | "revoked";
 };
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+const PAYMENT_LABEL: Record<string, string> = {
+  unpaid: "unpaid",
+  deposit_paid: "deposit",
+  paid: "paid",
+};
 
 export function CalendarMonth({
   tz,
@@ -116,7 +130,7 @@ export function CalendarMonth({
   const dayBookings = selectedDay ? (byDay.get(selectedDay) ?? []) : [];
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
+    <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
       <div className="rounded-[12px] border border-hairline bg-surface-1 p-4">
         <div className="mb-3 flex items-center justify-between">
           <button onClick={() => goMonth(-1)} className="rounded-md px-2 py-1 text-sm text-ink-subtle hover:bg-surface-2 hover:text-ink" aria-label="Previous month">
@@ -176,24 +190,201 @@ export function CalendarMonth({
             <p className="text-sm text-ink-subtle">No bookings this day.</p>
           )}
           {dayBookings.map((b) => (
-            <div key={b.id} className="rounded-md border border-hairline bg-background p-3">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-sm font-medium text-ink">
-                  {new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "numeric", minute: "2-digit" }).format(new Date(b.startAt))}
-                </span>
-                {b.status !== "canceled" && (
-                  <Button size="sm" variant="ghost" className="text-destructive" disabled={busy === b.id} onClick={() => cancel(b.id)}>
-                    {busy === b.id ? "Canceling…" : "Cancel"}
-                  </Button>
-                )}
-              </div>
-              <p className="mt-1 text-sm text-ink-muted">{b.clientName}</p>
-              {b.status === "canceled" && <span className="text-xs text-ink-tertiary">canceled</span>}
-            </div>
+            <BookingCard key={b.id} booking={b} tz={tz} busy={busy === b.id} onCanceled={(id) => { setBookings((prev) => prev.filter((x) => x.id !== id)); void load(month); }} onCancel={cancel} />
           ))}
         </div>
         {notice && <p className="mt-3 text-xs text-amber-600 dark:text-amber-400">{notice}</p>}
       </div>
+    </div>
+  );
+}
+
+function fmtTime(iso: string, tz: string): string {
+  return new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "numeric", minute: "2-digit" }).format(new Date(iso));
+}
+
+function fmtDayTime(iso: string, tz: string): string {
+  return new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(iso));
+}
+
+/** WEB-272: day-panel booking card — cancel (existing), studio reschedule
+ * (engine-validated slot chips), and the client manage-link controls. */
+function BookingCard({
+  booking,
+  tz,
+  busy,
+  onCancel,
+  onCanceled,
+}: {
+  booking: BookingItem;
+  tz: string;
+  busy: boolean;
+  onCancel: (id: string) => void;
+  onCanceled: (id: string) => void;
+}) {
+  const confirm = useConfirm();
+  const [rescheduling, setRescheduling] = useState(false);
+  const [pickDate, setPickDate] = useState(booking.startAt.slice(0, 10));
+  const [slots, setSlots] = useState<{ startAt: string }[]>([]);
+  const [slotsBusy, setSlotsBusy] = useState(false);
+  const [msg, setMsg] = useState("");
+  const [linkUrl, setLinkUrl] = useState<string | null>(null);
+  const canceled = booking.status === "canceled";
+
+  async function loadSlots(date: string) {
+    setSlotsBusy(true);
+    setMsg("");
+    try {
+      const res = await fetch(`/api/bookings/${booking.id}/slots?date=${date}`, { cache: "no-store" });
+      const body = (await res.json().catch(() => ({}))) as { slots?: { startAt: string }[] };
+      setSlots(res.ok ? body.slots ?? [] : []);
+      if (res.ok && !(body.slots?.length)) setMsg("No open slots that day.");
+    } catch {
+      setSlots([]);
+      setMsg("Couldn't load slots — try again.");
+    }
+    setSlotsBusy(false);
+  }
+
+  async function reschedule(slotStart: string) {
+    setMsg("Moving…");
+    try {
+      const res = await fetch(`/api/bookings/${booking.id}/reschedule`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slotStart }),
+      });
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      if (res.ok) {
+        setRescheduling(false);
+        setLinkUrl(null);
+        onCanceled(booking.id); // reload via parent (also collapses stale cards)
+        return;
+      }
+      setMsg(
+        body.error === "slot_unavailable"
+          ? "That slot is no longer open — pick another."
+          : body.error === "conflict"
+            ? "Someone just took that slot — pick another."
+            : body.error === "canceled"
+              ? "This booking was canceled."
+              : "Couldn't move the booking — try again.",
+      );
+      void loadSlots(pickDate);
+    } catch {
+      setMsg("Network error — try again.");
+    }
+  }
+
+  async function manageLink(action: "revoke" | "reissue") {
+    if (action === "revoke") {
+      if (!(await confirm({ title: "Turn off the manage link?", body: "The client's Manage booking page stops working immediately.", destructive: true }))) return;
+    }
+    setMsg("");
+    try {
+      const res = await fetch(`/api/bookings/${booking.id}/manage-link`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      const body = (await res.json().catch(() => ({}))) as { url?: string; manageLink?: string; error?: string };
+      if (!res.ok) {
+        setMsg("Couldn't update the link — try again.");
+        return;
+      }
+      if (action === "reissue" && body.url) {
+        setLinkUrl(body.url);
+        try {
+          await navigator.clipboard.writeText(body.url);
+          setMsg("Fresh manage link copied to clipboard.");
+        } catch {
+          setMsg("Fresh manage link below — copy it to the client.");
+        }
+      } else {
+        setLinkUrl(null);
+        setMsg("Manage link turned off.");
+      }
+    } catch {
+      setMsg("Network error — try again.");
+    }
+  }
+
+  return (
+    <div className="rounded-md border border-hairline bg-background p-3">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-sm font-medium text-ink">{fmtTime(booking.startAt, tz)}</span>
+        {!canceled && (
+          <div className="flex gap-1">
+            <Button size="sm" variant="ghost" disabled={rescheduling} onClick={() => { setRescheduling((v) => !v); if (!rescheduling) { setPickDate(booking.startAt.slice(0, 10)); void loadSlots(booking.startAt.slice(0, 10)); } }}>
+              {rescheduling ? "Close" : "Reschedule"}
+            </Button>
+            <Button size="sm" variant="ghost" className="text-destructive" disabled={busy} onClick={() => onCancel(booking.id)}>
+              {busy ? "Canceling…" : "Cancel"}
+            </Button>
+          </div>
+        )}
+      </div>
+      <p className="mt-1 text-sm text-ink-muted">{booking.clientName}</p>
+      <div className="mt-1 flex flex-wrap items-center gap-1.5">
+        <span className={`rounded-full px-2 py-0.5 text-[11px] ${canceled ? "bg-surface-2 text-ink-tertiary line-through" : booking.paymentStatus !== "unpaid" ? "bg-success/10 text-success" : "bg-surface-2 text-ink-tertiary"}`}>
+          {canceled ? "canceled" : (PAYMENT_LABEL[booking.paymentStatus] ?? booking.paymentStatus)}
+        </span>
+        {booking.previousStartAt && !canceled && (
+          <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] text-ink-tertiary">
+            moved from {fmtDayTime(booking.previousStartAt, tz)}
+          </span>
+        )}
+      </div>
+
+      {rescheduling && !canceled && (
+        <div className="mt-3 rounded-md border border-hairline bg-surface-1 p-3">
+          <p className="text-xs font-medium text-ink">Pick a new slot ({tz})</p>
+          <div className="mt-2 flex items-center gap-2">
+            <Input
+              type="date"
+              value={pickDate}
+              onChange={(e) => { setPickDate(e.target.value); if (/^\d{4}-\d{2}-\d{2}$/.test(e.target.value)) void loadSlots(e.target.value); }}
+              className="w-40"
+            />
+            {slotsBusy && <span className="text-xs text-ink-tertiary">Loading…</span>}
+          </div>
+          {slots.length > 0 && (
+            <div className="mt-2 flex max-h-40 flex-wrap gap-1.5 overflow-y-auto">
+              {slots.map((s) => (
+                <button
+                  key={s.startAt}
+                  onClick={() => void reschedule(s.startAt)}
+                  className="rounded-md border border-hairline px-2.5 py-1 text-xs text-ink hover:border-primary hover:text-primary"
+                >
+                  {fmtTime(s.startAt, tz)}
+                </button>
+              ))}
+            </div>
+          )}
+          {msg && <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">{msg}</p>}
+        </div>
+      )}
+
+      {!canceled && (
+        <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-hairline pt-2">
+          <span className="text-[11px] uppercase tracking-wide text-ink-tertiary">
+            Client manage link: {booking.manageLink === "active" ? "on" : booking.manageLink === "revoked" ? "off" : "never issued"}
+          </span>
+          {booking.manageLink === "active" ? (
+            <button onClick={() => void manageLink("revoke")} className="text-[11px] font-medium text-ink-subtle hover:text-destructive">
+              Turn off
+            </button>
+          ) : (
+            <button onClick={() => void manageLink("reissue")} className="text-[11px] font-medium text-primary hover:underline">
+              {booking.manageLink === "revoked" ? "Reissue" : "Issue link"}
+            </button>
+          )}
+        </div>
+      )}
+      {linkUrl && (
+        <input readOnly value={linkUrl} onFocus={(e) => e.target.select()} className="mt-2 w-full rounded-md border border-hairline bg-surface-1 px-2 py-1 text-[11px] text-ink-subtle" />
+      )}
+      {msg && !rescheduling && <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">{msg}</p>}
     </div>
   );
 }

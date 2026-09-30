@@ -415,6 +415,10 @@ function ActivityTab({
   const AUDIT_EVENT_LABEL: Record<string, (meta: Record<string, unknown>) => string> = {
     "payment.refund_requested": () => "issued a refund",
     "booking.payment_confirmed": () => "booking payment confirmed",
+    "booking.rescheduled": (m) => `booking rescheduled${m.by === "client-token" ? " by the client" : ""}${m.previousStartAt ? ` from ${new Date(String(m.previousStartAt)).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}` : ""}`,
+    "booking.canceled": (m) => `booking canceled${m.by === "client-token" ? " by the client" : ""}`,
+    "booking.manage_link_issued": () => "issued a client manage-booking link",
+    "booking.manage_link_revoked": () => "turned off the client manage-booking link",
     "asset.bulk_approve": (m) => `bulk approved ${m.count ?? ""} files`.trim(),
     "asset.bulk_reject": (m) => `bulk rejected ${m.count ?? ""} files`.trim(),
     "asset.bulk_delete": (m) => `bulk deleted ${m.count ?? ""} files`.trim(),

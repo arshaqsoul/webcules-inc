@@ -10,6 +10,7 @@ import { effectiveBookingPayment, getSessionTypeBySlug } from "@/lib/repos/sessi
 import { getTemplate } from "@/lib/repos/templates";
 import { parseFormSchema, validateFormAnswers } from "@/lib/forms";
 import { createBookingFromWidget } from "@/lib/repos/bookings";
+import { ensureManageToken } from "@/lib/repos/booking-manage";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { getStripe } from "@/lib/stripe";
 import { verifyTurnstile } from "@/lib/turnstile";
@@ -159,10 +160,13 @@ export async function POST(req: Request) {
   }
 
   // Confirmation emails (+ ICS link) — failures never break the booking.
+  // WEB-272: mint the manage token up front so both the email link and any
+  // later re-issue resolve to this booking from the first send.
   const profile = await getStudioProfile(studio.organizationId);
   const accent = safeHexColor(studio.brand.accent) ?? "#5e6ad2";
   const bookingStart = new Date(body.slotStart);
   const icsUrl = `${url.origin}/api/embed/ics?booking=${result.bookingId}&key=${studio.embedKey}`;
+  const manageToken = await ensureManageToken(result.bookingId);
   const b = await getEmailBrand(studio.organizationId);
   const templates = bookingConfirmedEmails(studio.studioName, {
     clientName: body.name,
@@ -174,6 +178,7 @@ export async function POST(req: Request) {
     whiteLabel: b.whiteLabel,
     emailHeaderUrl: b.emailHeaderUrl,
     contactEmail: b.contactEmail,
+    ...(manageToken ? { manageUrl: `${url.origin}/booking/${manageToken}` } : {}),
   });
   await Promise.all([
     sendEmail({
