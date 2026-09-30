@@ -4,25 +4,40 @@ Snap is the multi-tenant photographer SaaS at **https://snap.webcules.com** (vin
 Cloudflare Workers, D1 + R2, Better Auth, Stripe). Everything below is standing policy — follow it
 in every session, and keep this file current when the environment changes.
 
-## Deploy policy — STAGING FIRST, ALWAYS
+## Deploy policy — STAGING FIRST, BROWSER-VERIFIED, CLEAN TREE
 
-**Every change ships to staging and is verified there before production. No exceptions.**
+**Every change ships to staging, is verified in a real browser, and only then goes to production.
+No exceptions. These rules were paid for on 2026-09-30 — see the incident notes below them.**
 
 ```bash
 cd apps/snap
 node scripts/deploy.mjs staging                      # build → deploy → smoke-check
-# …verify your change at https://snap-staging.webcules.com (exercise the real flow)…
-node scripts/deploy.mjs production --staging-verified  # ONLY after verifying
+# …BROWSER-VERIFY at https://snap-staging.webcules.com (rules below)…
+node scripts/deploy.mjs production --staging-verified  # ONLY after browser verification
 ```
 
 - The production command **refuses to run** without `--staging-verified` — that flag is your
-  assertion the same code was deployed to staging and manually exercised (surface the change, hit
-  the API, check D1 rows — not just a 200 on `/`).
+  assertion the same code was deployed to staging and manually exercised.
+- **Browser verification means logged-in and rendered.** Open the affected pages in a browser
+  (staging smoke account: `launch-smoke@webcules.com` / `TestPass123!x`) and see the actual UI —
+  authenticated pages returning `307 → /login` to curl prove nothing. Dashboard/auth-gated pages
+  must be exercised logged in, or covered by an e2e that logs in
+  (`tests/e2e/specs/templates-sections.spec.ts` is the pattern). A `200` on `/` is not verification.
+- **Never deploy a dirty tree you don't fully own.** Run `git status` before every deploy: if any
+  file you didn't write is modified (another agent's in-flight work), STOP — coordinate or wait.
+  Building from a shared working tree ships everyone's half-finished code; this caused a full
+  production outage (all `/dashboard/*` routes 500ing) on 2026-09-30.
+- **`pnpm typecheck` must pass before any deploy.** Type errors anywhere in the tree block the
+  deploy — even "not my files" ones. vinext builds without typechecking, so a red tsc today is a
+  broken worker tonight.
+- **If production breaks: roll back first, diagnose second.** `npx wrangler deployments list` →
+  `npx wrangler rollback <known-good-version-id> --config dist/server/wrangler.json` → verify via
+  `cf observability telemetry query` (error-level events) — then investigate calmly.
 - `scripts/deploy.mjs` clears the stale caches that have burned us before
   (`node_modules/.vite`, `.vinext`, `.vitest`, `*.tsbuildinfo`) before every build. If you deploy
   any other way, clear them yourself.
-- Never deploy from a dirty tree you don't fully own; commit (or stash) first so the deploy is
-  traceable to a commit.
+- Never deploy from an uncommitted state you can't name; commit first so the deploy is traceable
+  to a commit.
 
 ## Environments
 
