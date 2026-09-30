@@ -20,7 +20,7 @@ import {
 } from "@/lib/gallery-design";
 import { SLIDESHOW_PACES, SLIDESHOW_TRANSITIONS, type SlideshowConfig } from "@/lib/slideshow";
 import { GalleryDualPreview } from "@/components/gallery-preview";
-import { UpgradeCta } from "@/components/lite-upsell";
+import { UpgradeCta, LiteUpsell } from "@/components/lite-upsell";
 
 type PickerAsset = { id: string; filename: string; status: string };
 type PresetRow = { id: string; name: string; isDefault: boolean; body?: string };
@@ -287,31 +287,30 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
       <div className="flex flex-wrap items-center gap-3">
         <h3 className="text-[15px] font-medium text-ink">Gallery design</h3>
         <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] text-ink-subtle">{statusLabel}{dirty ? " · unsaved" : ""}</span>
-        <div className="ml-auto flex items-center gap-2">
-          {customized && (
-            <Button size="sm" variant="ghost" disabled={busy} onClick={() => void save(true)}>
-              Reset to default
+        {canDesign && (
+          <div className="ml-auto flex items-center gap-2">
+            {customized && (
+              <Button size="sm" variant="ghost" disabled={busy} onClick={() => void save(true)}>
+                Reset to default
+              </Button>
+            )}
+            <Button size="sm" disabled={busy || !dirty} onClick={() => void save()}>
+              {busy ? "Saving…" : "Save design"}
             </Button>
-          )}
-          <Button size="sm" disabled={!canDesign || busy || !dirty} onClick={() => void save()}>
-            {busy ? "Saving…" : "Save design"}
-          </Button>
-        </div>
+          </div>
+        )}
       </div>
 
-      {!canDesign && (
-        <div className="mt-4 rounded-lg border border-hairline bg-surface-2 p-4 text-sm text-ink-subtle">
-          <p className="font-medium text-ink">Covers, layouts and themes are a Lite feature.</p>
-          <p className="mt-1">Design your galleries — cover photo with a focal point, cinematic Ken Burns hero, editorial layouts, dark or brand-tinted themes, reusable presets.</p>
-          <Link href="/dashboard/settings/billing" className="mt-2 inline-block text-sm font-medium text-primary underline underline-offset-2">
-            Upgrade to Lite — $15/mo
-          </Link>
-        </div>
-      )}
-
-      <div className={`mt-5 grid gap-6 lg:grid-cols-[1fr,320px] ${canDesign ? "" : "pointer-events-none opacity-50"}`}>
+      <div className="mt-5 grid gap-6 lg:grid-cols-[1fr,320px]">
         {/* ---------------- controls ---------------- */}
         <div className="flex flex-col gap-6">
+          {/* WEB-286: the design controls are Lite — free sees only the
+           * upgrade card (slideshow below stays free-tier). */}
+          {!canDesign && (
+            <LiteUpsell feature="Gallery design" note="Cover photo with a focal point, cinematic Ken Burns hero, editorial layouts, dark or brand-tinted themes, reusable presets." />
+          )}
+          {canDesign && (
+          <>
           <fieldset>
             <legend className="text-xs font-semibold uppercase tracking-wide text-ink-tertiary">Cover</legend>
             <div className="mt-2 grid grid-cols-3 gap-2">
@@ -503,7 +502,8 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
               </Button>
             </div>
           </fieldset>
-
+          </>
+          )}
           <fieldset>
             <legend className="text-xs font-semibold uppercase tracking-wide text-ink-tertiary">Slideshow</legend>
             <div className="mt-2 flex flex-wrap items-center gap-3">
@@ -609,10 +609,12 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
         </div>
 
         {/* ---------------- live preview (shared with Templates → Gallery styles) ---------------- */}
-        <div className="lg:sticky lg:top-20 lg:self-start">
-          <p className="mb-2 text-xs text-ink-tertiary">Live preview — what the client opens</p>
-          <GalleryDualPreview design={draft} tiles={previewTiles.map((t) => ({ url: `/api/assets/${t.id}?variant=thumb` }))} />
-        </div>
+        {canDesign && (
+          <div className="lg:sticky lg:top-20 lg:self-start">
+            <p className="mb-2 text-xs text-ink-tertiary">Live preview — what the client opens</p>
+            <GalleryDualPreview design={draft} tiles={previewTiles.map((t) => ({ url: `/api/assets/${t.id}?variant=thumb` }))} />
+          </div>
+        )}
       </div>
 
       {error && (
