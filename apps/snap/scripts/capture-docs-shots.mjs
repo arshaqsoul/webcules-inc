@@ -32,26 +32,34 @@ const PASSWORD = process.env.TEST_PASSWORD ?? "TestPass123!x";
 const SHOTS = [
   // Getting started
   { file: "start-guide/overview.png", path: "/dashboard", selector: "main" },
-  { file: "calendar/month.png", path: "/dashboard/calendar", selector: "main" },
+  { file: "calendar/month.png", path: "/dashboard/calendar", action: (page) => nextMonth(page), selector: "main" },
   { file: "leads/inbox.png", path: "/dashboard/leads", selector: "main" },
-  { file: "booking-page/public.png", path: "/b/willow-and-pine-photo", selector: "body" },
   // Projects
   { file: "projects/pipeline.png", path: "/dashboard/projects", selector: "main" },
-  { file: "project-hub/overview.png", path: "/dashboard/projects", action: openFirstProject, selector: "main" },
+  { file: "project-hub/overview.png", path: "/dashboard/projects/e8d7814d-13a0-4f2c-97c1-b47c2caa1388", selector: "main" },
   // Galleries
   { file: "gallery-delivery/galleries.png", path: "/dashboard/galleries", selector: "main" },
-  { file: "gallery-design/designer.png", path: "/dashboard/projects", action: openGalleryDesigner, selector: "main" },
+  { file: "gallery-design/designer.png", path: "/dashboard/projects/3605a082-a763-4663-9390-9128366e5312?tab=gallery", selector: "main" },
   // Settings
-  { file: "security/two-factor-card.png", path: "/dashboard/settings/security", selector: "section" },
+  { file: "security/two-factor-card.png", path: "/dashboard/settings/security", selector: "main section" },
   { file: "notifications/settings.png", path: "/dashboard/settings/notifications", selector: "main" },
   { file: "billing-plans/panel.png", path: "/dashboard/settings/billing", selector: "main" },
-  { file: "payouts/panel.png", path: "/dashboard/settings/payouts", selector: "main" },
+  { file: "payouts/panel.png", path: "/dashboard/settings/payouts", selector: "main section" },
   { file: "brand/settings.png", path: "/dashboard/settings/brand", selector: "main" },
   { file: "raw-vault/panel.png", path: "/dashboard/raw-vault", selector: "main" },
   // Money + clients
   { file: "transactions/ledger.png", path: "/dashboard/transactions", selector: "main" },
   { file: "client-portal/portal.png", path: "/portal", selector: "body" },
 ];
+
+/** The docs screenshot shows October (bookings + tentative lead + shoot day). */
+async function nextMonth(page) {
+  await page.goto(`${BASE}/dashboard/calendar`, { waitUntil: "networkidle" });
+  await page.evaluate(() => {
+    const el = [...document.querySelectorAll("button, a")].find((b) => (b.textContent || "").trim() === "→");
+    el?.click();
+  });
+}
 
 /** Open the first project's Overview tab (project-hub shot). */
 async function openFirstProject(page) {
