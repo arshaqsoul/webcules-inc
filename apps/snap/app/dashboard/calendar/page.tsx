@@ -5,6 +5,8 @@ import { CalendarMonth } from "@/components/calendar-month";
 import { AvailabilityEditor } from "@/components/availability-editor";
 import { getAvailability } from "@/lib/repos/availability";
 import { listBookingsInRange } from "@/lib/repos/bookings";
+import { listProjectsInRange } from "@/lib/repos/projects";
+import { listLeadsInRange } from "@/lib/repos/leads";
 import { manageLinkState } from "@/lib/repos/booking-manage";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { getOrgContext } from "@/lib/session";
@@ -31,12 +33,13 @@ export default async function CalendarPage({
     { key: "calendar", label: "Calendar" },
     { key: "availability", label: "Availability" },
   ];
-  // Profile and the month's bookings are independent — fetch in parallel.
-  const [profile, bookings] = await Promise.all([
+  // Profile, the month's bookings and the month's committed projects /
+  // dated leads are independent — fetch in parallel.
+  const [profile, bookings, projects, leads] = await Promise.all([
     getStudioProfile(ctx.organizationId),
-    tab === "availability"
-      ? Promise.resolve([])
-      : listBookingsInRange(ctx.organizationId, rangeStart, rangeEnd),
+    tab === "availability" ? Promise.resolve([]) : listBookingsInRange(ctx.organizationId, rangeStart, rangeEnd),
+    tab === "availability" ? Promise.resolve([]) : listProjectsInRange(ctx.organizationId, rangeStart, rangeEnd),
+    tab === "availability" ? Promise.resolve([]) : listLeadsInRange(ctx.organizationId, rangeStart, rangeEnd),
   ]);
   const tz = profile?.timezone ?? "UTC";
 
@@ -95,6 +98,8 @@ export default async function CalendarPage({
             previousStartAt: b.previousStartAt ? b.previousStartAt.toISOString() : null,
             manageLink: manageLinkState(b),
           }))}
+          initialProjects={projects.map((p) => ({ id: p.id, title: p.title, status: p.status, eventDate: p.eventDate ? p.eventDate.toISOString() : null }))}
+          initialLeads={leads.map((l) => ({ id: l.id, name: l.name, status: l.status, eventDate: l.eventDate ? l.eventDate.toISOString() : null }))}
         />
       )}
     </div>

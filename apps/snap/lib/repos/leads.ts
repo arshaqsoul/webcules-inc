@@ -1,7 +1,7 @@
 /* Lead repository — inbox, threading, conversion. Every call is org-scoped
  * by the passed context; inbound email ingest matches sender→lead heuristically
  * (per-studio inbound addresses arrive with the embed-platform follow-up). */
-import { and, desc, eq, ilike, inArray, ne, or } from "drizzle-orm";
+import { and, desc, eq, gte, ilike, inArray, isNotNull, lte, ne, or } from "drizzle-orm";
 
 import { getD1, getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
@@ -476,4 +476,29 @@ export async function ingestInboundEmail(payload: {
     .set({ updatedAt: new Date() })
     .where(eq(schema.leads.id, result.leadId));
   return { matched: true, leadId: result.leadId, organizationId: result.organizationId };
+}
+
+/** Calendar range query (WEB-286): open leads carrying an event date —
+ * shown on the calendar as tentative (not yet booked). */
+export async function listLeadsInRange(organizationId: string, start: Date, end: Date) {
+  return (
+    await getDb()
+      .select({
+        id: schema.leads.id,
+        name: schema.leads.name,
+        status: schema.leads.status,
+        eventDate: schema.leads.eventDate,
+      })
+      .from(schema.leads)
+      .where(
+        and(
+          eq(schema.leads.organizationId, organizationId),
+          inArray(schema.leads.status, ["new", "replied"]),
+          isNotNull(schema.leads.eventDate),
+          gte(schema.leads.eventDate, start),
+          lte(schema.leads.eventDate, end),
+        ),
+      )
+      .orderBy(schema.leads.eventDate)
+  );
 }

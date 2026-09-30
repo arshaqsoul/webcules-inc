@@ -2,7 +2,7 @@
  * booking confirmation (Epic 5). The board is free-form: a project may be
  * moved to any status (and back) — the only automation is the daily cron
  * that advances booked → snapping once the event date arrives. */
-import { and, eq } from "drizzle-orm";
+import { and, eq, gte, inArray, isNotNull, lte } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
 import { clientUrl } from "@/lib/client-urls";
@@ -244,4 +244,30 @@ export async function listProjects(organizationId: string) {
     .leftJoin(schema.clients, eq(schema.clients.id, schema.projects.clientId))
     .where(eq(schema.projects.organizationId, organizationId))
     .orderBy(schema.projects.createdAt);
+}
+
+/** Calendar range query (WEB-286): committed shoots — booked or snapping
+ * projects with an event date in the window. Converted leads land here, so
+ * the calendar reflects everything the studio actually holds. */
+export async function listProjectsInRange(organizationId: string, start: Date, end: Date) {
+  return (
+    await getDb()
+      .select({
+        id: schema.projects.id,
+        title: schema.projects.title,
+        status: schema.projects.status,
+        eventDate: schema.projects.eventDate,
+      })
+      .from(schema.projects)
+      .where(
+        and(
+          eq(schema.projects.organizationId, organizationId),
+          inArray(schema.projects.status, ["booked", "snapping"]),
+          isNotNull(schema.projects.eventDate),
+          gte(schema.projects.eventDate, start),
+          lte(schema.projects.eventDate, end),
+        ),
+      )
+      .orderBy(schema.projects.eventDate)
+  );
 }

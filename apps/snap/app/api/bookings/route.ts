@@ -1,9 +1,13 @@
-/* GET /api/bookings?month=YYYY-MM — the month's bookings for the caller's
- * studio. Backs the dashboard calendar's client-side refetches (month nav,
- * focus/visibility after bookings made elsewhere, post-cancel truth sync).
+/* GET /api/bookings?month=YYYY-MM — the month's calendar for the caller's
+ * studio: widget bookings plus committed projects (booked/snapping —
+ * converted leads land here) and dated open leads (tentative). Backs the
+ * dashboard calendar's client-side refetches (month nav, focus/visibility
+ * after bookings made elsewhere, post-cancel truth sync).
  * WEB-272: adds payment state, reschedule bookkeeping, and the manage-link
  * state the day panel's reschedule/manage-link controls key off. */
 import { listBookingsInRange } from "@/lib/repos/bookings";
+import { listProjectsInRange } from "@/lib/repos/projects";
+import { listLeadsInRange } from "@/lib/repos/leads";
 import { manageLinkState } from "@/lib/repos/booking-manage";
 import { getOrgContext } from "@/lib/session";
 
@@ -20,7 +24,11 @@ export async function GET(req: Request) {
   // month) — correct for 28/29/30-day months and covers tz spill at edges.
   const start = new Date(Date.UTC(y, m - 1, 1, 0, 0, 0));
   const end = new Date(Date.UTC(y, m, 0, 23, 59, 59));
-  const bookings = await listBookingsInRange(ctx.organizationId, start, end);
+  const [bookings, projects, leads] = await Promise.all([
+    listBookingsInRange(ctx.organizationId, start, end),
+    listProjectsInRange(ctx.organizationId, start, end),
+    listLeadsInRange(ctx.organizationId, start, end),
+  ]);
 
   return Response.json({
     bookings: bookings.map((b) => ({
@@ -32,6 +40,18 @@ export async function GET(req: Request) {
       rescheduledAt: b.rescheduledAt ? b.rescheduledAt.toISOString() : null,
       previousStartAt: b.previousStartAt ? b.previousStartAt.toISOString() : null,
       manageLink: manageLinkState(b),
+    })),
+    projects: projects.map((p) => ({
+      id: p.id,
+      title: p.title,
+      status: p.status,
+      eventDate: p.eventDate ? p.eventDate.toISOString() : null,
+    })),
+    leads: leads.map((l) => ({
+      id: l.id,
+      name: l.name,
+      status: l.status,
+      eventDate: l.eventDate ? l.eventDate.toISOString() : null,
     })),
   });
 }

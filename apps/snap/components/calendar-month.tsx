@@ -1,15 +1,19 @@
 "use client";
 
-/* Dashboard calendar — month grid of bookings with day drill-down + cancel.
- * The server seeds the first paint (initialBookings); the component then owns
- * its data: it refetches the month on navigation, whenever the tab regains
- * focus (bookings made elsewhere — e.g. the widget in another tab — appear
+/* Dashboard calendar — month grid with day drill-down + cancel.
+ * The server seeds the first paint; the component then owns its data: it
+ * refetches the month on navigation, whenever the tab regains focus
+ * (bookings made elsewhere — e.g. the widget in another tab — appear
  * without a manual refresh), and after actions, so the view can never drift
  * from the server for longer than one fetch.
+ * WEB-286: the month shows EVERYTHING the studio holds — widget bookings,
+ * committed projects (booked/snapping — converted leads land here) and
+ * dated open leads (tentative, dashed pill).
  * WEB-272: the day panel also shows payment state + reschedule bookkeeping,
  * lets the studio reschedule a client (same slot engine as the manage page)
  * and control the client's manage-booking link. */
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 
 import { Button } from "@webcules/ui/components/button";
 import { Input } from "@webcules/ui/components/input";
@@ -26,6 +30,21 @@ type BookingItem = {
   manageLink: "none" | "active" | "revoked";
 };
 
+type ProjectItem = { id: string; title: string; status: string; eventDate: string | null };
+type LeadItem = { id: string; name: string; status: string; eventDate: string | null };
+
+/** Unified day-cell entry — kind drives the pill style and the panel row. */
+type DayEntry = {
+  kind: "booking" | "project" | "lead";
+  id: string;
+  day: string;
+  at: string;
+  label: string;
+  booking?: BookingItem;
+  project?: ProjectItem;
+  lead?: LeadItem;
+};
+
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const PAYMENT_LABEL: Record<string, string> = {
@@ -34,33 +53,45 @@ const PAYMENT_LABEL: Record<string, string> = {
   paid: "paid",
 };
 
+function dayKeyInTz(iso: string, tz: string): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(iso));
+}
+
 export function CalendarMonth({
   tz,
   initialMonth,
   initialBookings,
+  initialProjects = [],
+  initialLeads = [],
 }: {
   organizationId: string;
   tz: string;
   initialMonth: string;
   initialBookings: BookingItem[];
+  initialProjects?: ProjectItem[];
+  initialLeads?: LeadItem[];
 }) {
   const confirm = useConfirm();
   const [month, setMonth] = useState(initialMonth);
   const [bookings, setBookings] = useState(initialBookings);
+  const [projects, setProjects] = useState(initialProjects);
+  const [leads, setLeads] = useState(initialLeads);
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState("");
   const loadToken = useRef(0);
 
-  /** Fetch a month's bookings; the token drops stale responses (fast nav). */
+  /** Fetch a month's calendar; the token drops stale responses (fast nav). */
   const load = useCallback(async (m: string) => {
     const token = ++loadToken.current;
     try {
       const res = await fetch(`/api/bookings?month=${m}`, { cache: "no-store" });
       if (!res.ok) return; // keep current view; surfaced by the action paths
-      const body = (await res.json()) as { bookings?: BookingItem[] };
-      if (token === loadToken.current && Array.isArray(body.bookings)) {
-        setBookings(body.bookings);
+      const body = (await res.json()) as { bookings?: BookingItem[]; projects?: ProjectItem[]; leads?: LeadItem[] };
+      if (token === loadToken.current) {
+        if (Array.isArray(body.bookings)) setBookings(body.bookings);
+        if (Array.isArray(body.projects)) setProjects(body.projects);
+        if (Array.isArray(body.leads)) setLeads(body.leads);
       }
     } catch {
       /* offline blip — the focus listener will retry */
@@ -115,19 +146,18 @@ export function CalendarMonth({
   const firstWeekday = new Date(Date.UTC(y, m - 1, 1)).getUTCDay();
   const daysInMonth = new Date(Date.UTC(y, m, 0)).getUTCDate();
 
-  const byDay = new Map<string, BookingItem[]>();
-  for (const b of bookings) {
-    const day = new Intl.DateTimeFormat("en-CA", {
-      timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit",
-    }).format(new Date(b.startAt));
-    byDay.set(day, [...(byDay.get(day) ?? []), b]);
-  }
+  // Unified day map: bookings (time pips), projects (committed), leads (tentative).
+  const byDay = new Map<string, DayEntry[]>();
+  const push = (e: DayEntry) => byDay.set(e.day, [...(byDay.get(e.day) ?? []), e]);
+  for (const b of bookings) push({ kind: "booking", id: b.id, day: dayKeyInTz(b.startAt, tz), at: b.startAt, label: b.clientName, booking: b });
+  for (const p of projects) if (p.eventDate) push({ kind: "project", id: p.id, day: dayKeyInTz(p.eventDate, tz), at: p.eventDate, label: p.title, project: p });
+  for (const l of leads) if (l.eventDate) push({ kind: "lead", id: l.id, day: dayKeyInTz(l.eventDate, tz), at: l.eventDate, label: l.name, lead: l });
 
   const monthLabel = new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString("en-US", {
     month: "long", year: "numeric", timeZone: "UTC",
   });
 
-  const dayBookings = selectedDay ? (byDay.get(selectedDay) ?? []) : [];
+  const dayEntries = selectedDay ? (byDay.get(selectedDay) ?? []) : [];
 
   return (
     <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
@@ -149,7 +179,7 @@ export function CalendarMonth({
           {Array.from({ length: daysInMonth }, (_, i) => {
             const date = `${month}-${String(i + 1).padStart(2, "0")}`;
             const dayItems = byDay.get(date) ?? [];
-            const active = dayItems.filter((b) => b.status !== "canceled");
+            const active = dayItems.filter((e) => e.kind !== "booking" || (e.booking && e.booking.status !== "canceled"));
             const canceled = dayItems.length - active.length;
             return (
               <button
@@ -164,9 +194,20 @@ export function CalendarMonth({
                 }`}
               >
                 <span className="text-xs font-medium text-ink">{i + 1}</span>
-                {active.slice(0, 2).map((b) => (
-                  <span key={b.id} className="w-full truncate rounded bg-primary/15 px-1 py-0.5 text-[10px] text-primary">
-                    {new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "numeric", minute: "2-digit" }).format(new Date(b.startAt))}
+                {active.slice(0, 2).map((e) => (
+                  <span
+                    key={`${e.kind}-${e.id}`}
+                    className={`w-full truncate px-1 py-0.5 text-[10px] ${
+                      e.kind === "booking"
+                        ? "rounded bg-primary/15 text-primary"
+                        : e.kind === "project"
+                          ? "rounded bg-success/10 text-success"
+                          : "rounded border border-dashed border-hairline text-ink-tertiary"
+                    }`}
+                  >
+                    {e.kind === "booking" && new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "numeric", minute: "2-digit" }).format(new Date(e.at))}
+                    {e.kind === "booking" ? " " : e.kind === "project" ? "📷 " : "✉ "}
+                    {e.label}
                   </span>
                 ))}
                 {active.length > 2 && <span className="text-[10px] text-ink-tertiary">+{active.length - 2} more</span>}
@@ -186,12 +227,40 @@ export function CalendarMonth({
           {selectedDay ? new Date(`${selectedDay}T12:00:00Z`).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" }) : "Select a day"}
         </h2>
         <div className="mt-3 flex flex-col gap-2">
-          {dayBookings.length === 0 && (
-            <p className="text-sm text-ink-subtle">No bookings this day.</p>
+          {dayEntries.length === 0 && (
+            <p className="text-sm text-ink-subtle">Nothing this day.</p>
           )}
-          {dayBookings.map((b) => (
-            <BookingCard key={b.id} booking={b} tz={tz} busy={busy === b.id} onCanceled={(id) => { setBookings((prev) => prev.filter((x) => x.id !== id)); void load(month); }} onCancel={cancel} />
-          ))}
+          {dayEntries.map((e) =>
+            e.kind === "booking" && e.booking ? (
+              <BookingCard key={`b-${e.booking.id}`} booking={e.booking} tz={tz} busy={busy === e.booking.id} onCanceled={(id) => { setBookings((prev) => prev.filter((x) => x.id !== id)); void load(month); }} onCancel={cancel} />
+            ) : e.kind === "project" && e.project ? (
+              <Link
+                key={`p-${e.project.id}`}
+                href={`/dashboard/projects/${e.project.id}`}
+                className="rounded-md border border-hairline bg-background p-3 transition-colors hover:border-success/50"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-medium text-success">{e.project.status === "snapping" ? "Snapping" : "Booked"} — shoot day</span>
+                  <span className="text-[11px] text-ink-tertiary">project →</span>
+                </div>
+                <p className="mt-1 text-sm text-ink-muted">{e.project.title}</p>
+                <p className="mt-0.5 text-[11px] text-ink-tertiary">Converted from a lead or booked manually — manage it on the project page.</p>
+              </Link>
+            ) : e.lead ? (
+              <Link
+                key={`l-${e.lead.id}`}
+                href="/dashboard/leads"
+                className="rounded-md border border-dashed border-hairline bg-background p-3 transition-colors hover:border-primary/40"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-medium text-ink-subtle">Tentative — lead</span>
+                  <span className="text-[11px] text-ink-tertiary">lead →</span>
+                </div>
+                <p className="mt-1 text-sm text-ink-muted">{e.lead.name}</p>
+                <p className="mt-0.5 text-[11px] text-ink-tertiary">Not booked yet — reply and convert to hold the date.</p>
+              </Link>
+            ) : null,
+          )}
         </div>
         {notice && <p className="mt-3 text-xs text-amber-600 dark:text-amber-400">{notice}</p>}
       </div>
