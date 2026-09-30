@@ -39,8 +39,17 @@ export function CreateFormRow() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ kind: "form", name: name.trim(), body: STARTER_SCHEMA }),
       });
-      const body = (await res.json().catch(() => ({}))) as { id?: string; error?: string };
+      const body = (await res.json().catch(() => ({}))) as { id?: string; error?: string; limit?: number; kind?: string };
       if (!res.ok || !body.id) {
+        if (body.error === "limit_reached") {
+          const what = body.kind === "questionnaire" ? "questionnaire" : "contact form";
+          setError(
+            (body.limit ?? 1) <= 1
+              ? `Your plan includes 1 ${what} — the starter template already counts. Edit it, or upgrade for more.`
+              : `Your plan includes ${body.limit} ${what}s — you're at the limit. Upgrade for more.`,
+          );
+          return;
+        }
         setError("Couldn't create the form — try again.");
         return;
       }
@@ -60,7 +69,14 @@ export function CreateFormRow() {
         </label>
         <Button onClick={create} disabled={busy || !name.trim()}>{busy ? "Creating…" : "Create form"}</Button>
       </div>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && (
+        <p className="text-sm text-red-600">
+          {error}{" "}
+          <a href="/dashboard/settings/billing" className="font-medium text-primary hover:underline">
+            View plans
+          </a>
+        </p>
+      )}
     </div>
   );
 }

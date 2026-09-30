@@ -54,6 +54,13 @@ export type CfHostname = {
     txt_name?: string | null;
     txt_value?: string | null;
   } | null;
+  /** Hostname-level validation trouble (root of the object) — e.g. the
+   * CNAME is missing or hidden behind a proxied record. Surfaced while
+   * the hostname is pending so the panel can show the real cause. */
+  verification_errors?: string[] | null;
+  /** TXT a non-Cloudflare DNS owner can publish to pre-validate the
+   * hostname when the CNAME can't be followed. */
+  ownership_verification?: { type: string; name: string; value: string } | null;
 };
 
 export type CfResult<T> =
@@ -149,4 +156,37 @@ export async function listCustomHostnames(
 
 export async function deleteCustomHostname(cfg: CfConfig, id: string): Promise<CfResult<{ id: string }>> {
   return cfCall<{ id: string }>(cfg, "DELETE", `/zones/${cfg.zoneId}/custom_hostnames/${id}`);
+}
+
+/* Workers route per custom hostname (WEB-233, proven live): the custom
+ * hostname only reaches the Worker through a zone workers route matching
+ * it SPECIFICALLY — the fallback origin's record is originless (no route =
+ * 522), and a wildcard route gets plain-404s at the assets layer. Created
+ * at activation, deleted on removal/expiry, re-ensured after every deploy
+ * (scripts/deploy.mjs — wrangler prunes API-created routes on deploy).
+ * Requires Workers Routes Read+Write on the CF token. */
+
+function findRoute(listed: { id: string; pattern: string }[] | undefined, pattern: string) {
+  return Array.isArray(listed) ? listed.find((r) => r.pattern === pattern) : undefined;
+}
+
+export async function ensureHostnameRoute(cfg: CfConfig, hostname: string): Promise<CfResult<{ id: string }>> {
+  const pattern = `${hostname}/*`;
+  const listed = await cfCall<{ id: string; pattern: string }[]>(cfg, "GET", `/zones/${cfg.zoneId}/workers/routes`);
+  if (!listed.ok) return listed;
+  const existing = findRoute(listed.result, pattern);
+  if (existing) return { ok: true, result: existing };
+  return cfCall<{ id: string }>(cfg, "POST", `/zones/${cfg.zoneId}/workers/routes`, {
+    pattern,
+    script: "webcules-snap",
+  });
+}
+
+export async function removeHostnameRoute(cfg: CfConfig, hostname: string): Promise<CfResult<{ id: string }>> {
+  const pattern = `${hostname}/*`;
+  const listed = await cfCall<{ id: string; pattern: string }[]>(cfg, "GET", `/zones/${cfg.zoneId}/workers/routes`);
+  if (!listed.ok) return listed;
+  const existing = findRoute(listed.result, pattern);
+  if (!existing) return { ok: true, result: { id: "" } };
+  return cfCall<{ id: string }>(cfg, "DELETE", `/zones/${cfg.zoneId}/workers/routes/${existing.id}`);
 }

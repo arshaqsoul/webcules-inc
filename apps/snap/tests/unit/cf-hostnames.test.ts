@@ -111,6 +111,21 @@ describe("ssl.status → lifecycle mapping (table — no unmapped states)", () =
     id: "ch", hostname: "h.x.y", status, ssl: { status: ssl },
   });
 
+  it("cert active but hostname pending → cert_pending with CNAME guidance (the edge 404s until CF flips the hostname — WEB-233)", () => {
+    const m = mapCfToDomainStatus({ id: "x", hostname: "h", status: "pending", ssl: { status: "active" } });
+    expect(m.status).toBe("cert_pending");
+    expect(m.reason).toMatch(/CNAME/i);
+  });
+
+  it("cert active + hostname pending surfaces CF verification_errors verbatim", () => {
+    const m = mapCfToDomainStatus({
+      id: "x", hostname: "h", status: "pending", ssl: { status: "active" },
+      verification_errors: ["custom hostname does not CNAME to this zone."],
+    });
+    expect(m.status).toBe("cert_pending");
+    expect(m.reason).toContain("does not CNAME to this zone");
+  });
+
   it("active+active → active", () => {
     expect(mapCfToDomainStatus(host("active", "active"))).toEqual({ status: "active", reason: null });
   });

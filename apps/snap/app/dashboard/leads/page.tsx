@@ -37,14 +37,14 @@ export default async function LeadsPage({
           <h1 className="text-2xl font-semibold tracking-[-0.6px] text-ink">Leads</h1>
           <p className="mt-1 text-sm text-ink-subtle">Inquiries from your embedded contact form, plus manual entries.</p>
         </div>
-        <div className="flex items-center gap-2">
-          <form action="/dashboard/leads" method="get" className="flex gap-2">
+        <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
+          <form action="/dashboard/leads" method="get" className="flex min-w-0 flex-1 gap-2 sm:flex-none">
             <input type="hidden" name="status" value={activeStatus} />
             <input
               name="q"
               defaultValue={q ?? ""}
               placeholder="Search name or email…"
-              className="w-56 rounded-md border border-input bg-background px-3 py-2 text-sm text-ink placeholder:text-ink-tertiary"
+              className="min-w-0 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-ink placeholder:text-ink-tertiary sm:w-56"
             />
             <button type="submit" className="rounded-md border border-hairline bg-surface-1 px-3 py-2 text-sm font-medium text-ink hover:bg-surface-2">
               Search

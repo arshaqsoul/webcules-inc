@@ -37,12 +37,12 @@
     // a worker *custom domain* cannot serve as a fallback origin (the SaaS
     // edge does an origin connect and 522s: no origin behind it).
     {
-      // WEB-233 (Cloudflare "Worker as fallback origin" pattern): the
-      // wildcard catches SaaS custom hostnames attached to this zone — they
-      // have no enumerable hostname, and a matching route is REQUIRED or
-      // Cloudflare attempts an origin connect and 522s. More-specific routes
-      // (webcules.com/* and www → landing) take precedence over this.
-      "pattern": "*/*",
+      // WEB-233: fallback-origin hostname (originless proxied record). SaaS
+      // custom hostnames ALSO need a per-hostname workers route — created at
+      // activation and re-ensured after every deploy by scripts/deploy.mjs
+      // (wrangler prunes API-created routes on deploy). A wildcard does NOT
+      // work here (asset-layer 404s) and would hijack sibling workers.
+      "pattern": "snap-saas-origin.webcules.com/*",
       "zone_name": "webcules.com"
     },
     // WEB-224/233: staging probe host — exercises the serving guard and the
@@ -63,6 +63,9 @@
     // Email-shock contingency (WEB-132): "off" stops gallery OTP emails entirely;
     // the gallery then opens on link possession alone.
     "GALLERY_OTP_MODE": "otp",
+    // WEB-284: R2 Infrequent Access bills 1M-op blocks ($9/mo min, no free
+    // tier) — keep class moves off until cold RAW volume nears ~2TB.
+    "R2_CLASS_MOVES_ENABLED": "0",
     // S3 endpoint host for storage-class moves (RAW Vault) — keys are secrets.
     "R2_S3_ACCOUNT_ID": "5677ff5e25a4e78485b774931f981681",
     // Founder allowlist — margin report (WEB-161) access + alert recipient.

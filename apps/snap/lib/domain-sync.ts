@@ -26,7 +26,22 @@ export function mapCfToDomainStatus(cf: CfHostname): CfMapping {
     return { status: "degraded", reason: "DNS no longer points this hostname at Snap (record moved)." };
   }
   const ssl = cf.ssl?.status ?? "pending_validation";
-  if (ssl === SSL_ACTIVE && cf.status === "active") return { status: "active", reason: null };
+  // Serving needs BOTH the certificate and CF's hostname-level validation:
+  // a cert can be active while the hostname is still "pending" (missing or
+  // hidden CNAME — e.g. a proxied record shadowing it on a Cloudflare-hosted
+  // domain) and the edge 404s until CF flips the hostname itself (WEB-233
+  // live finding on prairiepeakgear.com).
+  if (cf.status === "active" && ssl === SSL_ACTIVE) return { status: "active", reason: null };
+  if (ssl === SSL_ACTIVE) {
+    const errs = (cf.verification_errors ?? []).filter(Boolean);
+    if (errs.length) {
+      return { status: "cert_pending", reason: `Certificate issued — Cloudflare is still validating the hostname: ${errs.join(" ")}` };
+    }
+    return {
+      status: "cert_pending",
+      reason: "Certificate issued — waiting on Cloudflare to activate the hostname. Check the CNAME points at snap-saas-origin.webcules.com and is DNS-only (grey cloud), not proxied.",
+    };
+  }
   if (SSL_FAILED.has(ssl)) {
     const caa = /CAA/i;
     const raw = cf.ssl && "validation_errors" in (cf.ssl as Record<string, unknown>)
@@ -89,5 +104,11 @@ export async function syncDomainStatus(
     ...(r.result.ssl?.txt_name ? { dcvTxtName: r.result.ssl.txt_name } : {}),
     ...(r.result.ssl?.txt_value ? { dcvTxtValue: r.result.ssl.txt_value } : {}),
   });
+  if (mapped.status === "active") {
+    // WEB-233: serving requires the per-hostname workers route — ensure it
+    // (idempotent) the moment we go active.
+    const { ensureHostnameRoute } = await import("@/lib/cf-hostnames");
+    await ensureHostnameRoute(cfg, r.result.hostname).catch(() => undefined);
+  }
   return { ok: true, status: mapped.status, reason: mapped.reason };
 }

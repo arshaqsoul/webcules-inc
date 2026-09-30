@@ -45,6 +45,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       const cfg = await getCfConfig();
       if (cfg) await import("@/lib/cf-hostnames").then((m) => m.deleteCustomHostname(cfg, domain.cfCustomHostnameId!));
     }
+    {
+      const cfg = await getCfConfig();
+      if (cfg) await import("@/lib/cf-hostnames").then((m) => m.removeHostnameRoute(cfg, domain.hostname));
+    }
     return Response.json({ ok: true });
   }
 

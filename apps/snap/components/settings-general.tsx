@@ -73,13 +73,13 @@ export function SettingsGeneral({
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="slug">Reply address</Label>
-          <div className="flex items-center gap-1 font-mono text-xs text-ink-muted">
+          <div className="flex min-w-0 items-center gap-1 font-mono text-xs text-ink-muted">
             <span>hello+</span>
             <input
               id="slug"
               value={slug}
               onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
-              className="w-40 rounded-md border border-input bg-background px-2 py-1.5 font-mono text-xs text-ink"
+              className="min-w-0 w-full flex-1 rounded-md border border-input bg-background px-2 py-1.5 font-mono text-xs text-ink sm:w-40 sm:flex-none"
               minLength={3}
               maxLength={40}
             />

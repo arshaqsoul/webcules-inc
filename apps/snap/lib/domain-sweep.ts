@@ -61,6 +61,10 @@ export async function runDomainSweep(
         if (row.cfCustomHostnameId && cfCfg) {
           await deleteCustomHostname(cfCfg, row.cfCustomHostnameId).catch(() => undefined);
         }
+        if (cfCfg) {
+          const { removeHostnameRoute } = await import("@/lib/cf-hostnames");
+          await removeHostnameRoute(cfCfg, row.hostname).catch(() => undefined);
+        }
       }
     }
   } catch (err) {

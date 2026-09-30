@@ -141,5 +141,10 @@ export function RestoreStartersBanner({ missingCount }: { missingCount: number }
 function hubEditHref(kind: string, id: string): string {
   if (kind === "contract" || kind === "contract_clause") return `/dashboard/templates/contracts?edit=${id}`;
   if (kind === "form" || kind === "questionnaire") return `/dashboard/templates/forms?edit=${id}`;
+  // These kinds edit in their own surfaces (the hub rows link there); the
+  // old fallthrough to "/dashboard/templates" reset the tab to contracts.
+  if (kind === "email_snippet") return "/dashboard/settings/brand";
+  if (kind === "invoice_preset") return "/dashboard/settings/billing";
+  if (kind === "gallery_preset") return "/dashboard/projects";
   return "/dashboard/templates";
 }

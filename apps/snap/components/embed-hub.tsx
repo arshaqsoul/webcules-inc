@@ -129,7 +129,7 @@ export function EmbedHub({ embedKey, slug, bookingUrl, studioTheme, studioAccent
 
   const snippetBlock = (id: string, kind: WidgetKind, formId?: string) => (
     <div className="flex items-start gap-2">
-      <code className="flex-1 overflow-x-auto whitespace-pre rounded-md bg-canvas px-3 py-2 font-mono text-[11px] leading-relaxed text-ink-muted">
+      <code className="min-w-0 flex-1 overflow-x-auto whitespace-pre rounded-md bg-canvas px-3 py-2 font-mono text-[11px] leading-relaxed text-ink-muted">
         {snippet(kind, formId)}
       </code>
       <Button
@@ -143,7 +143,7 @@ export function EmbedHub({ embedKey, slug, bookingUrl, studioTheme, studioAccent
     </div>
   );
 
-  const subcard = "rounded-lg border border-hairline bg-background p-4 flex flex-col gap-3";
+  const subcard = "min-w-0 rounded-lg border border-hairline bg-background p-4 flex flex-col gap-3";
 
   return (
     <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
