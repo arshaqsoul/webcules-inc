@@ -8,10 +8,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Banknote, CalendarDays, ChevronDown, Clock, Code2, CreditCard, FileText, Globe, Images, LayoutGrid, LayoutTemplate, Link2, ListChecks, Mail, PackageCheck, Receipt, Settings, SlidersHorizontal, Snowflake, Users, BookOpen, Palette, Frame } from "lucide-react";
+import { Banknote, CalendarDays, ChevronDown, Clock, Code2, CreditCard, FileText, Globe, Images, LayoutGrid, LayoutTemplate, Link2, ListChecks, Lock, Mail, PackageCheck, Receipt, Settings, SlidersHorizontal, Snowflake, Users, BookOpen, Palette, Frame } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import type { PlanId } from "@/lib/plans-data";
 
-export const NAV_ITEMS: { href: string; label: string; icon: LucideIcon }[] = [
+/** Plan ladder for nav gating (free < lite < studio < pro). */
+const PLAN_RANK: Record<PlanId, number> = { free: 0, lite: 1, studio: 2, pro: 3 };
+
+type NavItem = { href: string; label: string; icon: LucideIcon; /** WEB-286: minimum plan to use this section; below it the nav row locks and links to billing. */ requires?: PlanId };
+
+export const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Overview", icon: LayoutGrid },
   { href: "/dashboard/leads", label: "Leads", icon: Users },
   { href: "/dashboard/calendar", label: "Calendar", icon: CalendarDays },
@@ -35,13 +41,14 @@ export const SETTINGS_ITEMS: { href: string; label: string; icon: LucideIcon }[]
 ];
 
 /** Template library sections (WEB-286) — every reusable definition lives
- * here; Calendar keeps only a session-type picker. */
-export const TEMPLATES_ITEMS: { href: string; label: string; icon: LucideIcon }[] = [
+ * here; Calendar keeps only a session-type picker. `requires` locks the
+ * nav row below that plan (row becomes an upgrade link to billing). */
+export const TEMPLATES_ITEMS: NavItem[] = [
   { href: "/dashboard/templates/contracts", label: "Contracts", icon: FileText },
   { href: "/dashboard/templates/forms", label: "Forms & Questionnaires", icon: ListChecks },
   { href: "/dashboard/templates/emails", label: "Emails", icon: Mail },
-  { href: "/dashboard/templates/invoice-presets", label: "Invoice presets", icon: Receipt },
-  { href: "/dashboard/templates/gallery-styles", label: "Gallery styles", icon: Frame },
+  { href: "/dashboard/templates/invoice-presets", label: "Invoice presets", icon: Receipt, requires: "lite" },
+  { href: "/dashboard/templates/gallery-styles", label: "Gallery styles", icon: Frame, requires: "lite" },
   { href: "/dashboard/templates/session-types", label: "Session types", icon: Clock },
 ];
 
@@ -60,6 +67,7 @@ function NavGroup({
   label,
   icon: Icon,
   items,
+  plan = "free",
 }: {
   pathname: string;
   collapsed: boolean;
@@ -70,7 +78,9 @@ function NavGroup({
   parentHref: string;
   label: string;
   icon: LucideIcon;
-  items: { href: string; label: string; icon: LucideIcon }[];
+  items: NavItem[];
+  /** WEB-286: current plan — items whose `requires` rank above it lock. */
+  plan?: PlanId;
 }) {
   const active = pathname === parentHref || pathname.startsWith(parentHref + "/");
   const [open, setOpen] = useState(false);
@@ -124,6 +134,25 @@ function NavGroup({
         <div className="ml-5 mt-0.5 flex flex-col gap-0.5 border-l border-hairline pl-2.5">
           {items.map((item) => {
             const itemActive = pathname === item.href || pathname.startsWith(item.href + "/");
+            const locked = Boolean(item.requires) && PLAN_RANK[plan] < PLAN_RANK[item.requires!];
+            if (locked) {
+              // Locked sections never navigate to the page — the row itself
+              // is the upgrade CTA (one click to billing, no dead ends).
+              return (
+                <Link
+                  key={item.href}
+                  href="/dashboard/settings/billing"
+                  onClick={onNavigate}
+                  title={`Included with ${item.requires === "lite" ? "Lite" : item.requires} — click to upgrade`}
+                  aria-label={`${item.label} — upgrade to unlock`}
+                  className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-[13px] text-ink-tertiary transition-colors hover:bg-surface-2 hover:text-ink"
+                >
+                  <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                  <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                  <span className="shrink-0 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">Upgrade</span>
+                </Link>
+              );
+            }
             return (
               <Link
                 key={item.href}
@@ -145,7 +174,7 @@ function NavGroup({
   );
 }
 
-export function DashboardNavLinks({ onNavigate, includeDocs = true, collapsed = false, onExpandSidebar }: { onNavigate?: () => void; /** desktop aside groups Docs with theme/logout instead */ includeDocs?: boolean; /** icon rail: icons only, labels become tooltips */ collapsed?: boolean; /** collapsed rail: opening a group expands the sidebar */ onExpandSidebar?: () => void }) {
+export function DashboardNavLinks({ onNavigate, includeDocs = true, collapsed = false, onExpandSidebar, plan = "free" }: { onNavigate?: () => void; /** desktop aside groups Docs with theme/logout instead */ includeDocs?: boolean; /** icon rail: icons only, labels become tooltips */ collapsed?: boolean; /** collapsed rail: opening a group expands the sidebar */ onExpandSidebar?: () => void; /** WEB-286: gates nav rows whose `requires` exceeds the plan */ plan?: PlanId }) {
   const pathname = usePathname();
   const items = includeDocs ? NAV_ITEMS : NAV_ITEMS.filter((i) => !i.href.startsWith("/docs"));
   return (
@@ -187,7 +216,7 @@ export function DashboardNavLinks({ onNavigate, includeDocs = true, collapsed = 
           </Link>
         );
       })}
-      <NavGroup pathname={pathname} collapsed={collapsed} onNavigate={onNavigate} onExpand={onExpandSidebar} parentHref="/dashboard/templates" label="Templates" icon={LayoutTemplate} items={TEMPLATES_ITEMS} />
+      <NavGroup pathname={pathname} collapsed={collapsed} onNavigate={onNavigate} onExpand={onExpandSidebar} plan={plan} parentHref="/dashboard/templates" label="Templates" icon={LayoutTemplate} items={TEMPLATES_ITEMS} />
       <NavGroup pathname={pathname} collapsed={collapsed} onNavigate={onNavigate} onExpand={onExpandSidebar} parentHref="/dashboard/settings" label="Settings" icon={Settings} items={SETTINGS_ITEMS} />
     </nav>
   );

@@ -27,6 +27,7 @@ export function DashboardSidebar({
   maxLinkedStudios,
   setup,
   setupReopenable,
+  plan = "free",
 }: {
   studios: SwitcherStudio[];
   currentOrganizationId: string;
@@ -38,6 +39,8 @@ export function DashboardSidebar({
    * it against the active org on every render. */
   setup: { steps: SetupStepView[]; done: number; total: number } | null;
   setupReopenable: boolean;
+  /** WEB-286: gates nav rows whose `requires` exceeds the plan. */
+  plan?: "free" | "lite" | "studio" | "pro";
 }) {
   const [collapsed, setCollapsed] = useState(false);
   useEffect(() => {
@@ -87,7 +90,7 @@ export function DashboardSidebar({
         )}
       </div>
 
-      <DashboardNavLinks includeDocs={false} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)} />
+      <DashboardNavLinks includeDocs={false} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)} plan={plan} />
 
       {/* WEB-270: setup progress card — expanded sidebar only (the rail keeps
        * its icon density); auto-hides at 10/10 or dismissal via `setup`

@@ -51,6 +51,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         rootOrganizationId={ent?.rootOrganizationId ?? ctx.organizationId}
         familyStudioCount={ent?.familyStudioCount ?? 1}
         maxLinkedStudios={ent?.maxLinkedStudios ?? 1}
+        plan={ent?.id ?? "free"}
         setup={
           setupVisible
             ? {
@@ -70,6 +71,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             rootOrganizationId={ent?.rootOrganizationId ?? ctx.organizationId}
             familyStudioCount={ent?.familyStudioCount ?? 1}
             maxLinkedStudios={ent?.maxLinkedStudios ?? 1}
+            plan={ent?.id ?? "free"}
           />
           <span className="min-w-0 flex-1 truncate text-center text-sm font-medium text-ink">{profile.studioName}</span>
           <SignOutButton compact />

@@ -21,12 +21,15 @@ export function MobileNav({
   rootOrganizationId,
   familyStudioCount,
   maxLinkedStudios,
+  plan = "free",
 }: {
   studios: SwitcherStudio[];
   currentOrganizationId: string;
   rootOrganizationId: string;
   familyStudioCount: number;
   maxLinkedStudios: number | null;
+  /** WEB-286: gates nav rows whose `requires` exceeds the plan. */
+  plan?: "free" | "lite" | "studio" | "pro";
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -55,7 +58,7 @@ export function MobileNav({
             />
           </div>
         </div>
-        <DashboardNavLinks />
+        <DashboardNavLinks plan={plan} />
         <div className="flex flex-col gap-0.5 border-t border-hairline p-2">
           <ThemeToggle />
           <SignOutButton />

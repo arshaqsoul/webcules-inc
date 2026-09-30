@@ -66,6 +66,8 @@ test("all template sections render for a logged-in studio", async ({ page }) => 
     await gotoWithRetry(page, path);
     await expect(page.getByRole("heading", { level: 1 }), path).toHaveText(heading);
   }
+  // WEB-286: paid org — the gated sections are normal nav links.
+  await expect(page.getByRole("link", { name: "Invoice presets", exact: true })).toBeVisible();
 });
 
 test("old hub URLs redirect to their section", async ({ page }) => {
@@ -124,4 +126,10 @@ test("free tier sees the upgrade card, not a failing editor (WEB-252/258)", asyn
     await expect(page.getByText("included with Lite"), path).toBeVisible();
     await expect(page.getByRole("link", { name: "Upgrade to Lite — $15/mo" }), path).toBeVisible();
   }
+  // WEB-286: the nav rows themselves are locked with an Upgrade chip —
+  // the section is unreachable except by deep link (which still upsells).
+  // (Checked from a templates page — the sidebar group auto-expands there.)
+  await gotoWithRetry(page, "/dashboard/templates/contracts");
+  await expect(page.getByRole("link", { name: "Invoice presets — upgrade to unlock" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Gallery styles — upgrade to unlock" })).toBeVisible();
 });
