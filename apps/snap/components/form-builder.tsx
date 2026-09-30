@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@webcules/ui/components/button";
+import { UpgradeCta } from "@/components/lite-upsell";
 import { FORM_FIELD_KINDS, type FormField, type FormFieldKind, type FormSchema } from "@/lib/forms";
 
 type DraftField = FormField & { key: string };
@@ -54,6 +55,8 @@ export function FormBuilder({
   const [redirectUrl, setRedirectUrl] = useState(initialMeta.redirectUrl ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  /** Studio-gate errors (file fields / custom-question cap) ride with a CTA. */
+  const [upsell, setUpsell] = useState(false);
   const [previewKey, setPreviewKey] = useState(0);
   const nextId = useRef(initialSchema.fields.length);
 
@@ -88,6 +91,7 @@ export function FormBuilder({
   }
 
   async function save(preview: boolean) {
+    setUpsell(false);
     if (busy) return;
     setBusy(true);
     setError("");
@@ -113,13 +117,14 @@ export function FormBuilder({
       });
       const body = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {
+        setUpsell(body.error === "file_fields_require_studio" || body.error === "custom_fields_limit");
         setError(
           body.error === "invalid_schema"
             ? "Some fields are invalid — check ids, labels and options."
             : body.error === "file_fields_require_studio"
               ? "File fields need the Studio plan."
               : body.error === "custom_fields_limit"
-                ? `Free plans allow ${customFieldCap} custom questions — upgrade to Studio for unlimited.`
+                ? `Free plans allow ${customFieldCap} custom questions — Studio is unlimited.`
                 : body.error === "invalid_redirect"
                   ? "Redirect URL must start with https://"
                   : "Couldn't save — try again.",
@@ -248,7 +253,11 @@ export function FormBuilder({
           </div>
         </section>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && (
+          <p className="text-sm text-red-600">
+            {error} {upsell && <UpgradeCta to="studio" />}
+          </p>
+        )}
         <div className="flex gap-2">
           <Button onClick={() => save(false)} disabled={busy}>{busy ? "Saving…" : "Save"}</Button>
           <Button variant="outline" onClick={() => save(true)} disabled={busy}>Save & refresh preview</Button>

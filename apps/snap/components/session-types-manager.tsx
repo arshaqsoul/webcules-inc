@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@webcules/ui/components/button";
+import { UpgradeCta } from "@/components/lite-upsell";
 
 export type SessionTypeView = {
   id: string;
@@ -46,6 +47,8 @@ export function SessionTypesManager({
   const [editing, setEditing] = useState<SessionTypeView | "new" | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  /** WEB-250: plan-limit hit — upgrade CTA rides along with the message. */
+  const [upsell, setUpsell] = useState(false);
 
   const activeCount = types.filter((t) => t.active).length;
   const atLimit = limit !== null && activeCount >= limit;
@@ -98,9 +101,10 @@ export function SessionTypesManager({
       });
       const body = (await res.json().catch(() => ({}))) as { error?: string; limit?: number | null };
       if (!res.ok) {
+        setUpsell(body.error === "limit_reached");
         setError(
           body.error === "limit_reached"
-            ? `Your plan includes ${body.limit ?? limit} session type${body.limit === 1 ? "" : "s"} — upgrade in Settings → Billing for more.`
+            ? `Your plan includes ${body.limit ?? limit} session type${body.limit === 1 ? "" : "s"} — Studio is unlimited.`
             : body.error === "invalid_template"
               ? "That booking form no longer exists."
               : "Couldn't save — check the values.",
@@ -269,7 +273,11 @@ function TypeForm({
         <input type="checkbox" checked={t.active} onChange={(e) => set({ active: e.target.checked })} className="h-4 w-4 accent-[var(--primary)]" />
         Active (bookable)
       </label>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && (
+        <p className="text-sm text-red-600">
+          {error} {upsell && <UpgradeCta to="studio" />}
+        </p>
+      )}
       <div className="mt-2 flex gap-2">
         <Button onClick={() => onSave(t)} disabled={busy || !t.name.trim()}>{busy ? "Saving…" : "Save"}</Button>
         <Button variant="outline" onClick={onCancel}>Cancel</Button>

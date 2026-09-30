@@ -9,6 +9,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@webcules/ui/components/button";
+import { UpgradeCta } from "@/components/lite-upsell";
 import {
   CLASSIC_LAYOUT,
   CLASSIC_THEME,
@@ -135,11 +136,7 @@ export function GalleryStyleEditor({
             {busy ? "Saving…" : templateId ? "Save style" : "Create style"}
           </Button>
           {status && <span className="text-xs text-ink-subtle">{status}</span>}
-          {upsell && (
-            <a href="/dashboard/settings/billing" className="text-xs font-medium text-primary underline underline-offset-2">
-              Upgrade to Lite — $15/mo
-            </a>
-          )}
+          {upsell && <UpgradeCta to="lite" />}
         </div>
       </section>
 

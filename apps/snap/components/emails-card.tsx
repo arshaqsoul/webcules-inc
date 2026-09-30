@@ -8,6 +8,7 @@ import dynamic from "next/dynamic";
 import { Pencil } from "lucide-react";
 
 import { Button } from "@webcules/ui/components/button";
+import { UpgradeCta } from "@/components/lite-upsell";
 
 /* WEB-286: the WYSIWYG snippet editor ships lazily — photographers never
  * see raw HTML and Tiptap's JSON model makes tag soup impossible. */
@@ -38,6 +39,8 @@ export function EmailsCard({
   const [snippetStatus, setSnippetStatus] = useState<string | null>(null);
   /** Non-null = the form is editing that snippet (PATCH) instead of creating. */
   const [editingId, setEditingId] = useState<string | null>(null);
+  /** WEB-253: snippet limit hit — surface the upgrade CTA next to the note. */
+  const [snippetUpsell, setSnippetUpsell] = useState(false);
 
   const current = overrides[key] ?? {};
   const set = (patch: Override) => setOverrides((o) => ({ ...o, [key]: { ...(o[key] ?? {}), ...patch } }));
@@ -108,7 +111,8 @@ export function EmailsCard({
     });
     const body = (await res.json().catch(() => ({}))) as { id?: string; error?: string; limit?: number };
     if (!res.ok || !body.id) {
-      setSnippetStatus(body.error === "limit_reached" ? `Your plan includes ${body.limit ?? 5} replies — upgrade to Studio for unlimited.` : "Couldn't save the reply.");
+      setSnippetUpsell(body.error === "limit_reached");
+      setSnippetStatus(body.error === "limit_reached" ? `Your plan includes ${body.limit ?? 5} replies — Studio is unlimited.` : "Couldn't save the reply.");
       return;
     }
     setSnippets((s) => [...s, { id: body.id!, name: payload.name, subject: newSnippet.subject.trim() || null, body: newSnippet.body.trim() }]);
@@ -199,6 +203,7 @@ export function EmailsCard({
                     {editingId ? "Save changes" : "Save reply"}
                   </Button>
                   {snippetStatus && <span className="text-xs text-ink-subtle">{snippetStatus}</span>}
+                  {snippetUpsell && <UpgradeCta to="studio" />}
                 </div>
               </div>
             )}

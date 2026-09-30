@@ -20,6 +20,7 @@ import {
 } from "@/lib/gallery-design";
 import { SLIDESHOW_PACES, SLIDESHOW_TRANSITIONS, type SlideshowConfig } from "@/lib/slideshow";
 import { GalleryDualPreview } from "@/components/gallery-preview";
+import { UpgradeCta } from "@/components/lite-upsell";
 
 type PickerAsset = { id: string; filename: string; status: string };
 type PresetRow = { id: string; name: string; isDefault: boolean; body?: string };
@@ -47,6 +48,8 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
+  /** Lite-gate saves (design / presets / slideshow music) upsell, not error. */
+  const [upsell, setUpsell] = useState(false);
   const [picker, setPicker] = useState<PickerAsset[] | null>(null);
   const [presets, setPresets] = useState<PresetRow[]>([]);
   const [presetName, setPresetName] = useState("");
@@ -100,6 +103,7 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
   }
 
   async function save(clear = false) {
+    setUpsell(false);
     if (busy) return;
     setBusy(true);
     setError("");
@@ -111,6 +115,7 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
       });
       const body = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
       if (!res.ok || !body.ok) {
+        setUpsell(body.error === "design_requires_lite");
         setError(
           body.error === "design_requires_lite"
             ? "Designing galleries is a Lite feature — upgrade to unlock covers, layouts and themes."
@@ -132,6 +137,7 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
   }
 
   async function savePreset() {
+    setUpsell(false);
     const name = presetName.trim();
     if (!name || busy) return;
     setBusy(true);
@@ -144,6 +150,7 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
       });
       const body = (await res.json().catch(() => ({}))) as { id?: string; error?: string };
       if (!res.ok || !body.id) {
+        setUpsell(body.error === "presets_require_lite");
         setError(body.error === "presets_require_lite" ? "Saving presets is a Lite feature." : "Couldn't save the preset — try again.");
       } else {
         setPresetName("");
@@ -189,6 +196,7 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
   }
 
   async function saveSlideshow() {
+    setUpsell(false);
     if (busy) return;
     setBusy(true);
     setError("");
@@ -200,6 +208,7 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
       });
       const body = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
       if (!res.ok || !body.ok) {
+        setUpsell(body.error === "music_requires_lite");
         setError(body.error === "music_requires_lite" ? "Slideshow music is a Lite feature." : body.error === "track_not_found" ? "That track no longer exists — pick another." : "Couldn't save the slideshow — try again.");
       } else {
         setSlideshowDirty(false);
@@ -606,7 +615,11 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
         </div>
       </div>
 
-      {error && <p className="mt-4 text-xs text-destructive">{error}</p>}
+      {error && (
+        <p className="mt-4 text-xs text-destructive">
+          {error} {upsell && <UpgradeCta to="lite" />}
+        </p>
+      )}
       {note && <p className="mt-4 text-xs text-ink-subtle">{note}</p>}
     </div>
   );

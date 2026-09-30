@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@webcules/ui/components/button";
+import { UpgradeCta } from "@/components/lite-upsell";
 import type { PresetLine } from "@/lib/invoice-settings";
 
 const input = "rounded-md border border-hairline bg-canvas px-3 py-2 text-sm text-ink outline-none focus:border-primary";
@@ -89,16 +90,16 @@ export function InvoicePresetEditor({
         <p className="text-xs text-ink-tertiary">These lines pre-fill the invoice composer when you pick the preset on a project&apos;s Payments tab.</p>
         <div className="flex flex-col divide-y divide-hairline">
           {lines.map((l, i) => (
-            <div key={i} className="grid grid-cols-[minmax(0,1fr)_64px_104px_32px] items-center gap-2 py-2 first:pt-0">
-              <input value={l.description} onChange={(e) => setLine(i, { description: e.target.value })} maxLength={200} placeholder="Line description (e.g. 8-hour coverage)" className={input} />
+            <div key={i} className="grid grid-cols-[minmax(0,1fr)_56px_96px_28px] items-center gap-2 py-2 first:pt-0 sm:grid-cols-[minmax(0,1fr)_64px_104px_32px]">
+              <input value={l.description} onChange={(e) => setLine(i, { description: e.target.value })} maxLength={200} placeholder="Line description (e.g. 8-hour coverage)" className={`${input} w-full min-w-0`} />
               <input
                 value={String(l.qty)}
                 onChange={(e) => setLine(i, { qty: Math.min(999, Math.max(1, Math.floor(Number(e.target.value.replace(/\D/g, "")) || 1))) })}
                 inputMode="numeric"
                 aria-label="Quantity"
-                className={input}
+                className={`${input} w-full min-w-0`}
               />
-              <div className="relative">
+              <div className="relative min-w-0">
                 <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-ink-tertiary">$</span>
                 <input
                   value={fmtUsd(l.amountMinor)}
@@ -108,7 +109,7 @@ export function InvoicePresetEditor({
                   }}
                   inputMode="decimal"
                   aria-label="Amount"
-                  className={`${input} pl-7`}
+                  className={`${input} w-full min-w-0 pl-7`}
                 />
               </div>
               <Button size="sm" variant="ghost" aria-label={`Remove line ${i + 1}`} onClick={() => setLines((ls) => ls.filter((_, idx) => idx !== i))}>
@@ -130,11 +131,7 @@ export function InvoicePresetEditor({
             {busy ? "Saving…" : templateId ? "Save preset" : "Create preset"}
           </Button>
           {status && <span className="text-xs text-ink-subtle">{status}</span>}
-          {upsell && (
-            <a href="/dashboard/settings/billing" className="text-xs font-medium text-primary underline underline-offset-2">
-              Upgrade to Lite — $15/mo
-            </a>
-          )}
+          {upsell && <UpgradeCta to="lite" />}
         </div>
       </section>
 

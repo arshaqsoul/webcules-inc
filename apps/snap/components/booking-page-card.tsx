@@ -6,12 +6,14 @@
 import { useState } from "react";
 
 import { Button } from "@webcules/ui/components/button";
+import { UpgradeCta } from "@/components/lite-upsell";
 import type { BookingPageConfig } from "@/lib/booking-page";
 
 export function BookingPageCard({ initial, canEdit, bookingUrl }: { initial: BookingPageConfig; canEdit: boolean; bookingUrl: string }) {
   const [cfg, setCfg] = useState<BookingPageConfig>(initial);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+  const [upsell, setUpsell] = useState(false);
   const [previewKey, setPreviewKey] = useState(0);
 
   const set = (patch: Partial<BookingPageConfig>) => setCfg((c) => ({ ...c, ...patch }));
@@ -22,6 +24,7 @@ export function BookingPageCard({ initial, canEdit, bookingUrl }: { initial: Boo
     if (busy) return;
     setBusy(true);
     setStatus(null);
+    setUpsell(false);
     try {
       const res = await fetch("/api/studio/booking-page", {
         method: "PUT",
@@ -29,6 +32,7 @@ export function BookingPageCard({ initial, canEdit, bookingUrl }: { initial: Boo
         body: JSON.stringify(cfg),
       });
       const body = (await res.json().catch(() => ({}))) as { error?: string };
+      setUpsell(!res.ok && body.error === "lite_required");
       setStatus(res.ok ? "Saved — refresh the preview to see it live." : body.error === "invalid_config" ? "Some fields are invalid — check URLs (https) and lengths." : body.error === "lite_required" ? "Booking page design is included with Lite and above." : "Couldn't save — try again.");
       if (res.ok) setPreviewKey((k) => k + 1);
     } catch {
@@ -125,6 +129,7 @@ export function BookingPageCard({ initial, canEdit, bookingUrl }: { initial: Boo
           <div className="flex items-center gap-3">
             <Button onClick={save} disabled={busy} size="sm">{busy ? "Saving…" : "Save booking page"}</Button>
             {status && <span className="text-xs text-ink-subtle">{status}</span>}
+            {upsell && <UpgradeCta to="lite" />}
           </div>
         </div>
 
