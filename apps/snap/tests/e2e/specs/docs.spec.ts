@@ -95,6 +95,33 @@ test("markdown API serializes a page with headings and absolute image URLs", asy
   }
 });
 
+test("every page serves clean Markdown at its .md URL (LLM convention)", async ({ request }) => {
+  const res = await request.get("/docs/concepts.md");
+  expect(res.ok()).toBeTruthy();
+  expect(res.headers()["content-type"]).toContain("text/plain");
+  expect(await res.text()).toMatch(/^# Concepts/m);
+});
+
+test("llms.txt indexes every docs page", async ({ request }) => {
+  const res = await request.get("/llms.txt");
+  expect(res.ok()).toBeTruthy();
+  const body = await res.text();
+  expect(body).toMatch(/^# Snap documentation/m);
+  expect(body).toContain("## Getting started");
+  expect(body).toContain("/docs/concepts.md");
+});
+
+test("screenshots open a zoom lightbox, Esc closes it", async ({ page }) => {
+  await gotoWithRetry(page, "/docs/gallery-delivery");
+  const shot = page.locator("img.docs-shot-img").first();
+  await shot.waitFor({ state: "visible", timeout: 3000 });
+  await shot.click();
+  const dialog = page.locator(".docs-lightbox");
+  await dialog.waitFor({ state: "visible", timeout: 3000 });
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+});
+
 test("copy page menu works in the browser", async ({ page }) => {
   await page.addInitScript(() => {
     const texts = new Map<string, string>();
