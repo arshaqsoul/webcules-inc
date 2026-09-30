@@ -43,8 +43,8 @@ export default function Video() {
       </p>
 
       <Shot
-        src="/docs-shots/video/films-section.png"
-        alt="A public client gallery with the Films section on — horizontal films as wide cards above a swipeable Reels strip of vertical clips."
+        src="/docs-shots/gallery-design/designer.png"
+        alt="The gallery designer's live preview — the Films section toggle sits alongside the slideshow and layout controls; the preview shows how the gallery renders for the client."
         grad="night"
         wide
       />

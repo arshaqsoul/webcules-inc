@@ -19,13 +19,15 @@ export function DocShell({ slug }: { slug: string }) {
   const toc = extractToc(<Content />);
 
   return (
-    <div className="mx-auto flex w-full max-w-[1180px] items-start px-6 lg:px-10">
+    <div className="docs-shell mx-auto flex w-full max-w-[1180px] items-start px-6 lg:px-10">
       <article className="docs-prose min-w-0 max-w-[720px] flex-1 pb-24 pt-8 lg:pt-12">
         <h1 className="docs-h1">
           {hit.page.title}
           {hit.page.tier && <Tier plan={TIER_OF[hit.page.tier]} className="ml-3 align-[2px]" />}
         </h1>
-        <p className="docs-intro">{hit.page.description}</p>
+        {/* The nav description feeds <meta> + search only — content modules
+         * open with their own (richer) intro paragraph, so rendering both
+         * duplicates the text. */}
         <Content />
       </article>
       <DocsToc items={toc} />
