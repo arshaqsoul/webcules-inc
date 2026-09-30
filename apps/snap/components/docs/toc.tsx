@@ -18,26 +18,34 @@ export function DocsToc({ items }: { items: TocItem[] }) {
     let raf = 0;
     const update = () => {
       raf = 0;
+      let current: string | null = null;
+      for (const item of items) {
+        const el = document.getElementById(item.id);
+        if (!el) continue;
+        if (el.getBoundingClientRect().top <= 100) current = item.id;
+        else break;
+      }
       // At max scroll a bottom-of-page target can never cross the top
-      // threshold (the page runs out of scroll first) — there, Linear-style,
-      // the last heading on screen wins instead.
-      const atBottom =
-        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
-      let current = items[0]?.id ?? null;
-      if (atBottom) {
-        for (const item of items) {
-          const el = document.getElementById(item.id);
-          if (el && el.getBoundingClientRect().top < window.innerHeight) current = item.id;
-        }
-      } else {
-        for (const item of items) {
-          const el = document.getElementById(item.id);
-          if (!el) continue;
-          if (el.getBoundingClientRect().top <= 100) current = item.id;
-          else break;
+      // threshold (the page runs out of scroll first). Linear-style: when the
+      // threshold section has scrolled off the top, the last heading on
+      // screen wins; while it's still on screen it keeps the highlight, so
+      // nested sections on short pages keep getting their turn.
+      if (current) {
+        const el = document.getElementById(current);
+        if (el && el.getBoundingClientRect().top < 0) {
+          const atBottom =
+            window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+          if (atBottom) {
+            let last = current;
+            for (const item of items) {
+              const e2 = document.getElementById(item.id);
+              if (e2 && e2.getBoundingClientRect().top < window.innerHeight) last = item.id;
+            }
+            current = last;
+          }
         }
       }
-      setActive(current);
+      setActive(current ?? items[0]?.id ?? null);
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(update);
