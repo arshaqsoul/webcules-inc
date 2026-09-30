@@ -51,4 +51,19 @@ describe("TIER_CARDS", () => {
       expect(t.spec.length).toBeGreaterThan(4);
     }
   });
+
+  it("cumulative ladder: paid tiers inherit the one below; features never repeat upward", () => {
+    const [free, lite, studio, pro] = TIER_CARDS;
+    expect(free.inherits).toBeUndefined();
+    expect(lite.inherits).toMatch(/^Everything in Free/);
+    expect(studio.inherits).toMatch(/^Everything in Lite/);
+    expect(pro.inherits).toMatch(/^Everything in Studio/);
+    const seen = new Set(free.features);
+    for (const t of [lite, studio, pro]) {
+      for (const f of t.features) {
+        expect(seen.has(f), `"${f}" repeats on ${t.name}`).toBe(false);
+        seen.add(f);
+      }
+    }
+  });
 });

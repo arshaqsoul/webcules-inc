@@ -50,7 +50,10 @@ export function PricingTiers({
             <span className="text-3xl font-semibold tracking-[-0.8px] text-ink">{t.priceLabel}</span>
             <span className="text-sm text-ink-subtle">{t.cadence}</span>
           </p>
-          <ul className="mt-4 flex flex-1 flex-col gap-2 text-sm text-ink-muted">
+          {t.inherits && (
+            <p className="mt-3 text-xs font-medium text-ink-subtle">{t.inherits}:</p>
+          )}
+          <ul className="mt-3 flex flex-1 flex-col gap-2 text-sm text-ink-muted">
             {t.features.map((f) => (
               <li key={f} className="flex items-start gap-2">
                 <span aria-hidden className="mt-0.5 text-success-text">✓</span>
