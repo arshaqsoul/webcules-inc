@@ -281,3 +281,14 @@
 .docs-shell .docs-tier {
   white-space: nowrap;
 }
+
+/* TOC clicks glide to the section, Linear-style (anchor jumps otherwise). */
+html:has(.docs-shell) {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:has(.docs-shell) {
+    scroll-behavior: auto;
+  }
+}

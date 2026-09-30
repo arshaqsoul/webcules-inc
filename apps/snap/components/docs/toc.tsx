@@ -1,14 +1,17 @@
 "use client";
 
 /* Right-hand "on this page" rail with scroll-spy — Linear's docs inner
- * navigation: H2 entries darker, H3 indented and muted, a 1px rail with the
- * active segment highlighted. Hidden below xl (Linear hides it there too). */
-import { useEffect, useState } from "react";
+ * navigation: a single 2px indicator that SLIDES between sections (never
+ * per-item bars blinking), H2 entries darker, H3 indented and muted, rail
+ * fixed 240px with a ~76px gap from the article column. Hidden below xl. */
+import { useEffect, useRef, useState } from "react";
 
 import type { TocItem } from "@/lib/docs/extract";
 
 export function DocsToc({ items }: { items: TocItem[] }) {
   const [active, setActive] = useState<string | null>(items[0]?.id ?? null);
+  const [indicator, setIndicator] = useState<{ top: number; height: number } | null>(null);
+  const linkRefs = useRef<Map<string, HTMLAnchorElement>>(new Map());
 
   useEffect(() => {
     if (!items.length) return;
@@ -37,23 +40,53 @@ export function DocsToc({ items }: { items: TocItem[] }) {
     };
   }, [items]);
 
+  // One continuous indicator: measured from the active link, animated with a
+  // CSS transition so it GLIDES to the next section as you scroll.
+  useEffect(() => {
+    const el = active ? linkRefs.current.get(active) : null;
+    if (!el) {
+      setIndicator(null);
+      return;
+    }
+    setIndicator({ top: el.offsetTop, height: el.offsetHeight });
+  }, [active, items]);
+
   if (items.length < 2) return null;
 
   return (
-    <aside className="sticky top-16 hidden max-h-[calc(100vh-4rem)] w-[240px] shrink-0 overflow-y-auto py-12 pr-2 xl:block" aria-label="On this page">
-      <div className="border-l border-hairline">
+    <aside
+      className="sticky top-16 hidden max-h-[calc(100vh-4rem)] w-[240px] shrink-0 overflow-y-auto py-12 xl:ml-[76px] xl:block"
+      aria-label="On this page"
+    >
+      <div className="relative border-l border-hairline">
+        {indicator && (
+          <span
+            aria-hidden
+            className="absolute left-[-1px] w-[2px] bg-ink transition-[top,height] duration-300 ease-out"
+            style={{ top: indicator.top, height: indicator.height }}
+          />
+        )}
         <ul className="flex flex-col">
           {items.map((item) => {
             const isActive = item.id === active;
             return (
-              <li key={item.id} className="relative">
-                {isActive && <span className="absolute -left-px top-0 h-full w-[2px] bg-ink" aria-hidden />}
+              <li key={item.id}>
                 <a
+                  ref={(el) => {
+                    if (el) linkRefs.current.set(item.id, el);
+                    else linkRefs.current.delete(item.id);
+                  }}
                   href={`#${item.id}`}
                   aria-current={isActive ? "location" : undefined}
-                  className={`block py-[5px] text-[13px] leading-[1.45] transition-colors ${
+                  className={`block py-[5px] text-[13px] leading-[1.45] transition-colors duration-200 ${
                     item.level === 3 ? "pl-7" : "pl-4"
-                  } ${isActive ? "font-medium text-ink" : item.level === 3 ? "text-ink-tertiary hover:text-ink-muted" : "text-ink-subtle hover:text-ink"}`}
+                  } ${
+                    isActive
+                      ? "font-medium text-ink"
+                      : item.level === 3
+                        ? "text-ink-tertiary hover:text-ink-muted"
+                        : "text-ink-subtle hover:text-ink"
+                  }`}
                 >
                   {item.title}
                 </a>
