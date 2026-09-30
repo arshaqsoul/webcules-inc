@@ -7,6 +7,7 @@ import { getD1, getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { createProjectForLead } from "./projects";
 import { stripQuotedReply } from "../strip-reply";
+import { defaultClientNotify } from "@/lib/notify-client";
 
 export const LEAD_STATUSES = ["new", "replied", "converted", "archived"] as const;
 export type LeadStatus = (typeof LEAD_STATUSES)[number];
@@ -247,6 +248,7 @@ export async function convertLeadToProject(params: {
         email,
         name,
         phone: lead.phone,
+        notify: await defaultClientNotify(params.organizationId),
       })
       .onConflictDoUpdate({
         target: [schema.clients.organizationId, schema.clients.email],

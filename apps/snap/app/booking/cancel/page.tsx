@@ -6,8 +6,8 @@ export default function BookingCancelPage() {
       <div className="w-full max-w-md rounded-[12px] border border-hairline bg-surface-1 p-8 text-center">
         <h1 className="text-xl font-semibold text-ink">Payment canceled</h1>
         <p className="mt-2 text-sm leading-relaxed text-ink-subtle">
-          No charge was made and your slot was released. You can book again anytime from the
-          photographer's website.
+          No charge was made and your booking was canceled. The time it held frees up within a day,
+          and you can book again anytime from the photographer's website.
         </p>
       </div>
     </main>

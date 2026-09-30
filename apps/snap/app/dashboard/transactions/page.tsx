@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { listPayments } from "@/lib/repos/payments";
 import { getOrgContext } from "@/lib/session";
+import { can } from "@/lib/permissions";
 
 export const metadata = { title: "Transactions" };
 
@@ -23,6 +24,8 @@ function money(amountMinor: number, currency: string): string {
 export default async function TransactionsPage() {
   const ctx = await getOrgContext();
   if (!ctx) redirect("/login");
+  // WEB-275: the payments ledger is a money surface — owner only.
+  if (!can(ctx.role, "billing.read")) redirect("/dashboard");
   const payments = await listPayments(ctx.organizationId);
 
   const totals = payments.reduce(

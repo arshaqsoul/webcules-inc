@@ -2,6 +2,7 @@
 import { z } from "zod";
 
 import { getOrgContext } from "@/lib/session";
+import { permissionDenied } from "@/lib/permissions";
 import { sendInvoice, setInvoiceStatus } from "@/lib/invoices";
 
 export const dynamic = "force-dynamic";
@@ -11,6 +12,9 @@ const Body = z.object({ action: z.enum(["send", "paid", "void"]) });
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  // WEB-275: role gate (documents.manage).
+  const denied = permissionDenied(ctx, "documents.manage");
+  if (denied) return denied;
   const { id } = await params;
 
   const parsed = Body.safeParse(await req.json().catch(() => ({})));

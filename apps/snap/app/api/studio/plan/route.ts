@@ -8,6 +8,7 @@
  * studio upgrading from its dashboard changes the whole family's bill (and
  * the Stripe webhook writes the root, whose metadata the checkout carried). */
 import { getOrgContext } from "@/lib/session";
+import { permissionDenied } from "@/lib/permissions";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { getPlanEntitlements } from "@/lib/plans";
 import {
@@ -24,6 +25,9 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  // WEB-275: role gate (billing.write).
+  const denied = permissionDenied(ctx, "billing.write");
+  if (denied) return denied;
   const ent = await getPlanEntitlements(ctx.organizationId);
   if (!ent) return Response.json({ error: "no_studio" }, { status: 404 });
   // Billing state lives on the root profile (subscription, period, pending).
@@ -70,6 +74,9 @@ export async function GET() {
 export async function POST(req: Request) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  // WEB-275: role gate (billing.write).
+  const denied = permissionDenied(ctx, "billing.write");
+  if (denied) return denied;
   const ent = await getPlanEntitlements(ctx.organizationId);
   if (!ent) return Response.json({ error: "no_studio" }, { status: 404 });
   // One bill per family: all mutations target the root org.

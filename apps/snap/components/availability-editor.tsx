@@ -365,7 +365,7 @@ export function AvailabilityEditor({ initial }: { initial: Initial }) {
         </div>
         <p className="mt-3 text-xs text-ink-tertiary">
           Reminders ride the daily 6:00 UTC pass — a “24 hours before” reminder may land a few hours early when the timing straddles
-          the daily run. You can edit the copy under Settings → Emails.
+          the daily run. You can edit the copy under Templates → Emails.
         </p>
       </section>
 

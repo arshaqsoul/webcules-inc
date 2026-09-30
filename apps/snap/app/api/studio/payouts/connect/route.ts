@@ -2,6 +2,7 @@
  * on first call, then returns a Stripe-hosted Account Link. Body
  * { update?: true } requests the re-auth variant for restricted accounts. */
 import { getOrgContext } from "@/lib/session";
+import { permissionDenied } from "@/lib/permissions";
 import { getStudioProfile, setStudioStripeAccount } from "@/lib/repos/studios";
 import { createAccountLink } from "@/lib/connect";
 import { getStripe } from "@/lib/stripe";
@@ -13,6 +14,9 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  // WEB-275: role gate (billing.write).
+  const denied = permissionDenied(ctx, "billing.write");
+  if (denied) return denied;
 
   const profile = await getStudioProfile(ctx.organizationId);
   if (!profile) return Response.json({ error: "no_studio" }, { status: 404 });

@@ -8,6 +8,7 @@ import { and, eq } from "drizzle-orm";
 
 import { getDb } from "./db";
 import * as schema from "./db-schema";
+import { defaultClientNotify } from "./notify-client";
 
 export type ClientRow = typeof schema.clients.$inferSelect;
 
@@ -65,6 +66,7 @@ export async function upsertClient(params: {
     email,
     name: params.name ?? null,
     phone: params.phone ?? null,
+    notify: await defaultClientNotify(params.organizationId),
   });
   return (await getClientRow(params.organizationId, email))!;
 }

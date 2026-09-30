@@ -13,6 +13,7 @@ import * as schema from "@/lib/db-schema";
 import type { BookingSettings } from "@/lib/availability";
 import { computeDateSlots, getBookingSettings } from "./availability";
 import { decryptToken, encryptToken, hashToken, mintToken } from "@/lib/shares/grants";
+import { studioWantsEmail } from "@/lib/notify-client";
 
 export const MANAGE_TOKEN_RE = /^[A-Za-z0-9_-]{20,64}$/;
 export const DEFAULT_RESCHEDULE_CUTOFF_H = 24;
@@ -453,7 +454,7 @@ export async function notifyRescheduled(params: {
         }),
       );
     }
-    if (profile.contactEmail) {
+    if (profile.contactEmail && (await studioWantsEmail(params.booking.organizationId, "booking_change"))) {
       sends.push(
         sendEmail({
           to: profile.contactEmail,
@@ -526,7 +527,7 @@ export async function notifyClientCanceled(params: {
         }),
       );
     }
-    if (profile.contactEmail) {
+    if (profile.contactEmail && (await studioWantsEmail(params.booking.organizationId, "booking_change"))) {
       sends.push(
         sendEmail({
           to: profile.contactEmail,

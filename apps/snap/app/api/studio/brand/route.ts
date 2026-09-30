@@ -10,6 +10,8 @@ import { sanitizeWatermarkInput } from "@/lib/watermark";
 import { getPlanEntitlements } from "@/lib/plans";
 import { updateStudioSlug } from "@/lib/repos/studios";
 import { getOrgContext } from "@/lib/session";
+import { permissionDenied } from "@/lib/permissions";
+import { STUDIO_ALERT_KINDS } from "@/lib/notify-client";
 
 export const dynamic = "force-dynamic";
 
@@ -47,11 +49,27 @@ const bodySchema = z.object({
     .optional(),
   /** WEB-117: reject derivatives that still carry EXIF/GPS metadata. */
   exifStripDerived: z.boolean().optional(),
+  /** WEB-278: studio alert toggles — unknown keys dropped, merged over the
+   * stored bag so partial updates never clear unrelated toggles. */
+  notificationPrefs: z.record(z.string(), z.boolean()).optional(),
+  /** WEB-278: default notify state for newly created client rows. */
+  clientNotifyDefault: z.boolean().optional(),
+  /** WEB-278: pre-fill for new share grants — 0 = no expiry. */
+  defaultExpiryDays: z
+    .union([z.literal(7), z.literal(30), z.literal(60), z.literal(90), z.literal(365), z.literal(0), z.null()])
+    .optional(),
+  /** WEB-278: pre-fill for the new-grant download toggle. */
+  defaultAllowDownload: z.boolean().optional(),
+  /** WEB-275: per-org "members see RAW vault" toggle. */
+  memberRawAccess: z.boolean().optional(),
 });
 
 export async function PATCH(req: Request) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  // WEB-275: role gate.
+  const denied = permissionDenied(ctx, "settings.write");
+  if (denied) return denied;
 
   let body: unknown;
   try {
@@ -130,6 +148,24 @@ export async function PATCH(req: Request) {
     }
   }
 
+  // WEB-278: notification + delivery defaults — merge/validate before the write.
+  const alertKeys = new Set<string>(STUDIO_ALERT_KINDS);
+  let notificationPrefs = existing.notificationPrefs;
+  if (parsed.data.notificationPrefs) {
+    const stored = (() => {
+      try {
+        return JSON.parse(existing.notificationPrefs || "{}") as Record<string, unknown>;
+      } catch {
+        return {};
+      }
+    })();
+    for (const [k, v] of Object.entries(parsed.data.notificationPrefs)) {
+      if (alertKeys.has(k)) stored[k] = v;
+    }
+    for (const k of Object.keys(stored)) if (!alertKeys.has(k)) delete stored[k];
+    notificationPrefs = JSON.stringify(stored);
+  }
+
   await db
     .update(schema.studioProfiles)
     .set({
@@ -141,6 +177,19 @@ export async function PATCH(req: Request) {
         ? { rejectedPolicy: JSON.stringify(parsed.data.rejectedPolicy) }
         : {}),
       exifStripDerived: parsed.data.exifStripDerived ?? existing.exifStripDerived,
+      ...(notificationPrefs !== undefined ? { notificationPrefs } : {}),
+      ...(parsed.data.clientNotifyDefault !== undefined
+        ? { clientNotifyDefault: parsed.data.clientNotifyDefault }
+        : {}),
+      ...(parsed.data.defaultExpiryDays !== undefined
+        ? { defaultExpiryDays: parsed.data.defaultExpiryDays }
+        : {}),
+      ...(parsed.data.defaultAllowDownload !== undefined
+        ? { defaultAllowDownload: parsed.data.defaultAllowDownload }
+        : {}),
+      ...(parsed.data.memberRawAccess !== undefined
+        ? { memberRawAccess: parsed.data.memberRawAccess }
+        : {}),
       updatedAt: new Date(),
     })
     .where(eq(schema.studioProfiles.organizationId, ctx.organizationId));

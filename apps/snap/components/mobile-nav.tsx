@@ -22,6 +22,7 @@ export function MobileNav({
   familyStudioCount,
   maxLinkedStudios,
   plan = "free",
+  role = "owner",
 }: {
   studios: SwitcherStudio[];
   currentOrganizationId: string;
@@ -30,6 +31,8 @@ export function MobileNav({
   maxLinkedStudios: number | null;
   /** WEB-286: gates nav rows whose `requires` exceeds the plan. */
   plan?: "free" | "lite" | "studio" | "pro";
+  /** WEB-275: staff role — drives the nav's role filtering. */
+  role?: string;
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -58,7 +61,7 @@ export function MobileNav({
             />
           </div>
         </div>
-        <DashboardNavLinks plan={plan} />
+        <DashboardNavLinks plan={plan} role={role} />
         <div className="flex flex-col gap-0.5 border-t border-hairline p-2">
           <ThemeToggle />
           <SignOutButton />

@@ -50,4 +50,6 @@ interface Env {
   CLOUDFLARE_ZONE_ID?: string;
   CF_API_BASE?: string;
   DOH_BASE?: string;
+  /** Set only by the e2e server (tests/e2e/server.mjs) — loosens dev-only limits. */
+  SNAP_E2E?: string;
 }

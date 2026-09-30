@@ -16,6 +16,28 @@ const n = (x?: string | null) => (x && x.trim() ? x.trim() : "");
 const owner = (c: OutreachContext) => n(c.contactName) || "there";
 
 /**
+ * Finding titles are written for the audit, not for message copy — used verbatim they
+ * bloat the email past the mailto cap (GTM-PLAYBOOK: cold email < ~1,500 chars or the
+ * "Email pitch" button truncates) and a hard slice mid-word reads as broken text.
+ * Keep the title whole when it fits; otherwise cut at the last clause break (— : ;)
+ * inside the budget, falling back to the last full word. Never mid-word.
+ */
+export function headline(title: string, maxLen: number): string {
+  const t = title.trim();
+  if (t.length <= maxLen) return t;
+  const head = t.slice(0, maxLen + 1);
+  let cut = 0;
+  for (const m of head.matchAll(/[—–]\s|(?<=\w)[:;]\s|\s[—–:;]\s/g)) {
+    const i = m.index ?? 0;
+    if (i > 24) cut = i;
+  }
+  if (cut > 0) return t.slice(0, cut).trimEnd();
+  const words = t.slice(0, maxLen).split(/\s+/);
+  words.pop();
+  return `${words.join(" ")}…`;
+}
+
+/**
  * The FIRST cold email — deliberately zero links and zero images:
  *.workers.dev links are spam-blocked (Microsoft blocks the whole suffix), inline
  * images add HTML weight a fresh domain can't afford. The preview link + the
@@ -24,9 +46,7 @@ const owner = (c: OutreachContext) => n(c.contactName) || "there";
 export function draftEmail(c: OutreachContext): { subject: string; body: string } {
   const top = (c.findings ?? []).filter((f) => f.severity !== "minor").slice(0, 3);
   const findingsBlock = top.length
-    ? top
-        .map((f) => `• ${f.title.length > 84 ? f.title.slice(0, 81) + "..." : f.title}`)
-        .join("\n")
+    ? top.map((f) => `• ${headline(f.title, 110)}`).join("\n")
     : "• hard to read on phones • invisible to AI search";
 
   const plan = installmentFor(c.quote.oneTime);
@@ -83,7 +103,7 @@ Arshaq · Webcules, Saskatoon`;
 
 export function draftWhatsApp(c: OutreachContext): string {
   const top = (c.findings ?? []).filter((f) => f.severity === "critical")[0];
-  const hook = top ? top.title.toLowerCase() : "your website";
+  const hook = top ? headline(top.title, 80).toLowerCase() : "your website";
   const plan = installmentFor(c.quote.oneTime);
   return `Hi ${owner(c)}, it's Arshaq — a developer here in Saskatoon. I noticed ${hook} on ${c.business}'s site, so I rebuilt the whole thing to show what's possible (no catch): ${
     n(c.previewUrl) || "[preview link]"
@@ -101,7 +121,7 @@ export function draftFacebook(c: OutreachContext): string {
   const top = (c.findings ?? []).filter((f) => f.severity !== "minor")[0];
   const plan = installmentFor(c.quote.oneTime);
   return `Hi ${owner(c)}, Arshaq here — I run Webcules, a one-person web studio in Saskatoon. ${c.business}'s website undersells the business (${
-    top ? top.title.toLowerCase() : "it's hard to use on phones"
+    top ? headline(top.title, 80).toLowerCase() : "it's hard to use on phones"
   }), so I rebuilt the whole thing — no catch, just want you to see it: ${n(c.previewUrl) || "[preview link]"}
 
 If you like what you see, it goes live on your own domain for $${c.quote.oneTime} CAD (or $${plan.monthly}/month × ${plan.months} — Saskatoon studios charge $${c.quote.marketLow}–$${c.quote.marketHigh} for the same thing), and I handle the domain switch and everything technical. Worth a look?`;
@@ -113,7 +133,7 @@ If you like what you see, it goes live on your own domain for $${c.quote.oneTime
  */
 export function draftInstagram(c: OutreachContext): string {
   const top = (c.findings ?? []).filter((f) => f.severity === "critical")[0];
-  const hook = top ? top.title.toLowerCase() : "it's showing its age";
+  const hook = top ? headline(top.title, 80).toLowerCase() : "it's showing its age";
   const plan = installmentFor(c.quote.oneTime);
   return `Hey ${owner(c)} — Arshaq, web developer in Saskatoon. ${hook} on ${c.business}'s website, so I rebuilt it for free to show what it could be. I've got the before/after ready if you want a look.
 
@@ -126,7 +146,7 @@ If you like it, it's yours: $${c.quote.oneTime} CAD to go live on your domain, o
  */
 export function draftTiktok(c: OutreachContext): string {
   const top = (c.findings ?? []).filter((f) => f.severity === "critical")[0];
-  const hook = top ? top.title.toLowerCase() : "your site loads slow on phones";
+  const hook = top ? headline(top.title, 80).toLowerCase() : "your site loads slow on phones";
   const plan = installmentFor(c.quote.oneTime);
   return `hi ${owner(c)} — arshaq, web dev in saskatoon. ${hook} on ${c.business}'s website, so i rebuilt the whole thing and recorded a before/after walkthrough. if you want it, it's yours: $${c.quote.oneTime} CAD (or $${plan.monthly}/mo × ${plan.months}), i handle everything technical. can i send it?`;
 }
@@ -135,7 +155,7 @@ export function draftFollowup(c: OutreachContext, day: 3 | 7): string {
   if (day === 3) {
     const top = (c.findings ?? []).filter((f) => f.severity !== "minor")[0];
     return `Hi ${owner(c)} — one thing from the audit I sent: ${
-      top ? `${top.title.toLowerCase()} (${top.cost.toLowerCase()})` : "the current site turns away mobile visitors"
+      top ? `${headline(top.title, 90).toLowerCase()} (${top.cost.toLowerCase()})` : "the current site turns away mobile visitors"
     }. It's fixed in the rebuild — I have the before/after screenshot right here, say the word and I'll send it. — Arshaq`;
   }
   return `Hi ${owner(c)}, last note from me — I take preview sites down after two weeks to keep things tidy. If you'd like a 5-minute walkthrough of what changed (and what it'd take to go live), just reply here. Either way, the audit is yours to keep. — Arshaq, Webcules`;

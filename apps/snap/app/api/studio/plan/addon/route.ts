@@ -2,6 +2,7 @@
  * on the family's existing subscription. Always operates on the family ROOT
  * (one bill); entitlements surface through the pooled path. */
 import { getOrgContext } from "@/lib/session";
+import { permissionDenied } from "@/lib/permissions";
 import { getPlanEntitlements } from "@/lib/plans";
 import { setCustomDomainAddon } from "@/lib/billing";
 
@@ -10,6 +11,9 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  // WEB-275: role gate (billing.write).
+  const denied = permissionDenied(ctx, "billing.write");
+  if (denied) return denied;
   let body: { enable?: boolean };
   try {
     body = (await req.json()) as typeof body;

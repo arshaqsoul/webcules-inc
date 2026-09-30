@@ -2,6 +2,7 @@
 import { z } from "zod";
 
 import { getOrgContext } from "@/lib/session";
+import { permissionDenied } from "@/lib/permissions";
 import { createContract, listProjectContracts, sendContract, voidContract } from "@/lib/contracts";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +17,9 @@ const ActionBody = z.object({ contractId: z.string().uuid(), action: z.enum(["se
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  // WEB-275: role gate (documents.manage).
+  const denied = permissionDenied(ctx, "documents.manage");
+  if (denied) return denied;
   const { id } = await params;
   return Response.json({ contracts: await listProjectContracts(ctx.organizationId, id) });
 }
@@ -23,6 +27,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  // WEB-275: role gate (documents.manage).
+  const denied = permissionDenied(ctx, "documents.manage");
+  if (denied) return denied;
   const { id } = await params;
 
   const raw = (await req.json().catch(() => ({}))) as Record<string, unknown>;

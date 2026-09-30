@@ -15,6 +15,7 @@ import { mapLeadColumns, parseFormSchema, packLeadCustomFields, validateFormAnsw
 import { clientIp } from "@/lib/shares/gallery-auth";
 import { checkFormRate, verifyFormFileKey } from "@/lib/repos/forms";
 import { getStudioProfile } from "@/lib/repos/studios";
+import { notificationPrefValue } from "@/lib/notify-client";
 import { getTemplate, touchTemplateUsed } from "@/lib/repos/templates";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { matchSessionTypeByLabel } from "@/lib/repos/session-types";
@@ -140,6 +141,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ templat
       dashboardUrl,
       brand.accent,
     );
+    // WEB-278: studio may have muted "new inquiry" alerts (form or page).
+    if (!notificationPrefValue(profile?.notificationPrefs, "inquiry")) return;
     await sendEmail({
       to: profile?.contactEmail ?? brand.contactEmail ?? email,
       subject: studioNotify.subject,

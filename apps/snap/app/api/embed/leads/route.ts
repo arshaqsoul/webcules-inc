@@ -9,6 +9,7 @@ import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { getAuth } from "@/lib/auth.server";
 import { getEmailBrand } from "@/lib/branding";
+import { notificationPrefValue } from "@/lib/notify-client";
 import { inquiryAckEmail, inquiryReceivedEmail, sendEmail } from "@/lib/email";
 import { originAllowed, resolveStudioByEmbedKey, safeHexColor } from "@/lib/embed";
 import { verifyTurnstile } from "@/lib/turnstile";
@@ -142,13 +143,17 @@ export async function POST(req: Request) {
   };
   const accent = safeHexColor(studio.brand.accent) ?? "#5e6ad2";
   const profileRows = await db
-    .select({ contactEmail: schema.studioProfiles.contactEmail })
+    .select({
+      contactEmail: schema.studioProfiles.contactEmail,
+      notificationPrefs: schema.studioProfiles.notificationPrefs,
+    })
     .from(schema.studioProfiles)
     .where(eq(schema.studioProfiles.organizationId, studio.organizationId))
     .limit(1);
   const studioInbox = profileRows[0]?.contactEmail;
 
-  if (studioInbox) {
+  // WEB-278: studio may have muted "new inquiry" alerts.
+  if (studioInbox && notificationPrefValue(profileRows[0]?.notificationPrefs, "inquiry")) {
     const tmpl = inquiryReceivedEmail(studio.studioName, lead, `${url.origin}/dashboard/leads`, accent);
     await sendEmail({
       to: studioInbox,

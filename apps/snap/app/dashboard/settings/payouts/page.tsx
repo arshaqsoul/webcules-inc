@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { PayoutsPanel } from "@/components/payouts-panel";
 import { getOrgContext } from "@/lib/session";
+import { can } from "@/lib/permissions";
 
 export const metadata = { title: "Settings · Payouts" };
 
@@ -12,6 +13,8 @@ export default async function SettingsPayoutsPage({
 }) {
   const ctx = await getOrgContext();
   if (!ctx) redirect("/login");
+  // WEB-275: payouts are owner-only.
+  if (!can(ctx.role, "billing.write")) redirect("/dashboard/settings");
   const { return: returnParam, refresh: refreshParam } = await searchParams;
 
   return (

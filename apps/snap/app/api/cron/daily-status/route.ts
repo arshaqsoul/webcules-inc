@@ -102,6 +102,8 @@ export async function POST(req: Request) {
     if (!ent || ent.storagePct < 90) continue;
     const profile = await getStudioProfile(org.id);
     if (!profile?.contactEmail) continue;
+    const { studioWantsEmail } = await import("@/lib/notify-client");
+    if (!(await studioWantsEmail(org.id, "storage"))) continue;
     const gb = (b: number) => `${(b / 1024 ** 3).toFixed(0)}GB`;
     const tmpl = usageWarningEmail(profile.studioName, {
       usedLabel: gb(ent.storageUsedBytes),

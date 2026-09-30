@@ -13,6 +13,7 @@ import { parseFormSchema, validateFormAnswers } from "@/lib/forms";
 import { createBookingFromWidget, getBookingByRef } from "@/lib/repos/bookings";
 import { ensureManageToken } from "@/lib/repos/booking-manage";
 import { getStudioProfile } from "@/lib/repos/studios";
+import { notificationPrefValue } from "@/lib/notify-client";
 import { getStripe } from "@/lib/stripe";
 import { verifyTurnstile } from "@/lib/turnstile";
 
@@ -208,7 +209,7 @@ export async function POST(req: Request) {
       refId: result.bookingId,
       ...(icsAttach ? { attachments: [icsAttach] } : {}),
     }),
-    profile?.contactEmail
+    profile?.contactEmail && notificationPrefValue(profile.notificationPrefs, "booking")
       ? sendEmail({
           to: profile.contactEmail,
           subject: templates.studio.subject,

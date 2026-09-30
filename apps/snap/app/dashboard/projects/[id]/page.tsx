@@ -70,6 +70,21 @@ export default async function ProjectDetailPage({
   const tab: Tab = TABS.some((t) => t.key === tabParam) ? (tabParam as Tab) : "overview";
 
   const db = getDb();
+  // WEB-278: delivery defaults pre-fill the share panel (Settings → Delivery).
+  const deliveryDefaults = await (async () => {
+    const rows = await db
+      .select({
+        defaultExpiryDays: schema.studioProfiles.defaultExpiryDays,
+        defaultAllowDownload: schema.studioProfiles.defaultAllowDownload,
+      })
+      .from(schema.studioProfiles)
+      .where(eq(schema.studioProfiles.organizationId, ctx.organizationId))
+      .limit(1);
+    return {
+      expiryDays: rows[0]?.defaultExpiryDays ?? 90,
+      allowDownload: rows[0]?.defaultAllowDownload ?? true,
+    };
+  })();
   const project = (
     await db
       .select()
@@ -266,7 +281,7 @@ export default async function ProjectDetailPage({
           <p className="mb-4 mt-1 text-xs text-ink-subtle">
             Upload the shoot, triage with Triage, curate in the grid — shared files are locked.
           </p>
-          <ProjectFiles projectId={id} clientEmail={client?.email} />
+          <ProjectFiles projectId={id} clientEmail={client?.email} defaultExpiryDays={deliveryDefaults.expiryDays} defaultAllowDownload={deliveryDefaults.allowDownload} />
         </section>
       )}
 

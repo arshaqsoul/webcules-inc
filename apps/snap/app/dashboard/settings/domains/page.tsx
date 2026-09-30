@@ -6,12 +6,15 @@ import { getPlanEntitlements } from "@/lib/plans";
 import { listDomains } from "@/lib/repos/domains";
 import { getStudioProfile, getStudioSlug } from "@/lib/repos/studios";
 import { getOrgContext } from "@/lib/session";
+import { can } from "@/lib/permissions";
 
 export const metadata = { title: "Settings · Domains" };
 
 export default async function SettingsDomainsPage() {
   const ctx = await getOrgContext();
   if (!ctx) redirect("/login");
+  // WEB-275: studio settings are admin+ (Security stays self-account).
+  if (!can(ctx.role, "settings.read")) redirect("/dashboard");
   const [profile, slug, domains, ent] = await Promise.all([
     getStudioProfile(ctx.organizationId),
     getStudioSlug(ctx.organizationId),

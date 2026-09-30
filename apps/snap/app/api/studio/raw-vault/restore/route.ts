@@ -3,6 +3,8 @@
 import { z } from "zod";
 
 import { getOrgContext } from "@/lib/session";
+import { canAccessRawVault } from "@/lib/permissions";
+import { getStudioProfile } from "@/lib/repos/studios";
 import { claimThrottleGate } from "@/lib/system-state";
 import { restoreRawAssets } from "@/lib/vault";
 
@@ -17,6 +19,11 @@ const Body = z.object({
 export async function POST(req: Request) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  // WEB-275: members only when the org opted them into the vault.
+  const profile = await getStudioProfile(ctx.organizationId);
+  if (!canAccessRawVault(ctx.role, profile?.memberRawAccess ?? false)) {
+    return Response.json({ error: "forbidden" }, { status: 403 });
+  }
 
   // WEB-284: a human clicks this once — anything faster is a retry loop.
   if (!(await claimThrottleGate(`vault.restore.${ctx.organizationId}`, 60))) {

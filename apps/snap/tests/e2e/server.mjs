@@ -233,6 +233,7 @@ writeFileSync(
   devVarsPath,
   [
     `BETTER_AUTH_SECRET=e2e-secret-${crypto.randomUUID()}`,
+    `SNAP_E2E=1`,
     `BETTER_AUTH_URL=${base}`,
     `NEXT_PUBLIC_APP_URL=${base}`,
     `GALLERY_OTP_MODE=off`,
@@ -289,6 +290,8 @@ child.on("exit", (code) => {
   };
   await probe("/login");
   await probe("/signup");
+  await probe("/dashboard/settings/security"); // WEB-279 (compiles the settings tree)
+  await probe("/dashboard/settings/team"); // WEB-275
   await probe(`/embed/calendar?key=${embedKey}`);
   console.log("[e2e-server] cold routes warmed");
 })();

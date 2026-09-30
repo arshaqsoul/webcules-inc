@@ -22,9 +22,29 @@ export const user = sqliteTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: integer("email_verified", { mode: "boolean" }).notNull().default(false),
   image: text("image"),
+  /** WEB-279 twoFactor plugin: flips true only after a live TOTP verify. */
+  twoFactorEnabled: integer("two_factor_enabled", { mode: "boolean" }).notNull().default(false),
   createdAt: ts("created_at"),
   updatedAt: ts("updated_at"),
 });
+
+/* WEB-279: Better Auth twoFactor plugin — one row per enabled account;
+ * secret + backup codes are stored encrypted by the plugin (AUTH_SECRET). */
+export const twoFactor = sqliteTable(
+  "two_factor",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    secret: text("secret").notNull(),
+    backupCodes: text("backup_codes").notNull(),
+    verified: integer("verified", { mode: "boolean" }).notNull().default(true),
+    failedVerificationCount: integer("failed_verification_count").notNull().default(0),
+    lockedUntil: integer("locked_until", { mode: "timestamp" }),
+  },
+  (t) => [index("two_factor_user_id_idx").on(t.userId)],
+);
 
 export const session = sqliteTable("session", {
   id: text("id").primaryKey(),
@@ -165,6 +185,18 @@ export const studioProfiles = sqliteTable("studio_profile", {
   /** JSON: { enabled: bool, retainDays?: number } — rejected auto-delete policy */
   rejectedPolicy: text("rejected_policy").notNull().default('{"enabled":false}'),
   exifStripDerived: integer("exif_strip_derived", { mode: "boolean" }).notNull().default(false),
+  /** WEB-278: JSON map of studio-alert toggles (absent key = alert on).
+   * Client transactional emails are never governed by these. */
+  notificationPrefs: text("notification_prefs"),
+  /** WEB-278: default notify state applied to freshly created client rows. */
+  clientNotifyDefault: integer("client_notify_default", { mode: "boolean" }).notNull().default(true),
+  /** WEB-278: pre-fill for new share grants — 7/30/60/90/365 days, 0 = no
+   * expiry; null = never configured (UI treats 90 as the effective default). */
+  defaultExpiryDays: integer("default_expiry_days"),
+  /** WEB-278: pre-fill for the new-grant download toggle. */
+  defaultAllowDownload: integer("default_allow_download", { mode: "boolean" }).notNull().default(true),
+  /** WEB-275: "members see RAW vault" per-org toggle (admins always can). */
+  memberRawAccess: integer("member_raw_access", { mode: "boolean" }).notNull().default(false),
   /** Stripe Connect Express account (KYC/bank data lives in Stripe, never here). */
   stripeAccountId: text("stripe_account_id"),
   /** not_connected | pending | active | restricted — derived from Stripe, cached. */

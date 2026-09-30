@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 
 import { RawVaultPanel } from "@/components/raw-vault-panel";
 import { getOrgContext } from "@/lib/session";
+import { canAccessRawVault } from "@/lib/permissions";
+import { getStudioProfile } from "@/lib/repos/studios";
 import { getRawVaultSummary } from "@/lib/vault";
 
 export const metadata = { title: "RAW Vault" };
@@ -9,6 +11,9 @@ export const metadata = { title: "RAW Vault" };
 export default async function RawVaultPage() {
   const ctx = await getOrgContext();
   if (!ctx) redirect("/login");
+  // WEB-275: members see the vault only when the studio opts them in.
+  const vaultProfile = await getStudioProfile(ctx.organizationId);
+  if (!canAccessRawVault(ctx.role, vaultProfile?.memberRawAccess ?? false)) redirect("/dashboard");
   const summary = await getRawVaultSummary(ctx.organizationId);
 
   return (

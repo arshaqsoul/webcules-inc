@@ -84,7 +84,7 @@ export function BookingPageCard({ initial, canEdit, bookingUrl }: { initial: Boo
             <textarea value={cfg.intro?.body ?? ""} onChange={(e) => set({ intro: { heading: cfg.intro?.heading ?? "", body: e.target.value } })} maxLength={1000} className={`${input} min-h-20`} placeholder="A couple of lines about your process…" />
           </label>
           <label className={label}>
-            Thank-you body (merge fields work)
+            Thank-you body
             <textarea value={cfg.thanks.body} onChange={(e) => set({ thanks: { ...cfg.thanks, body: e.target.value } })} maxLength={600} className={`${input} min-h-20`} placeholder="Thank you — a confirmation email is on its way." />
           </label>
 

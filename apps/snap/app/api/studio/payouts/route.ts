@@ -2,6 +2,7 @@
  * WEB-157 extends this with balance + payouts; this route is the state source
  * for the Settings → Payouts panel and the destination-charge gate. */
 import { getOrgContext } from "@/lib/session";
+import { permissionDenied } from "@/lib/permissions";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { readConnectStatus, type ConnectState } from "@/lib/connect";
 import { getStripe } from "@/lib/stripe";
@@ -11,6 +12,9 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  // WEB-275: role gate (billing.write).
+  const denied = permissionDenied(ctx, "billing.write");
+  if (denied) return denied;
 
   const profile = await getStudioProfile(ctx.organizationId);
   if (!profile) return Response.json({ error: "no_studio" }, { status: 404 });

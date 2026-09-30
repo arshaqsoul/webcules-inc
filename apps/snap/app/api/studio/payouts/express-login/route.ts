@@ -1,6 +1,7 @@
 /* Stripe Express dashboard deep-link (WEB-157) — photographers manage bank
  * details and payouts there without a separate password. */
 import { getOrgContext } from "@/lib/session";
+import { permissionDenied } from "@/lib/permissions";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { getStripe } from "@/lib/stripe";
 
@@ -9,6 +10,9 @@ export const dynamic = "force-dynamic";
 export async function POST() {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  // WEB-275: role gate (billing.write).
+  const denied = permissionDenied(ctx, "billing.write");
+  if (denied) return denied;
   const profile = await getStudioProfile(ctx.organizationId);
   if (!profile?.stripeAccountId) return Response.json({ error: "not_connected" }, { status: 409 });
 

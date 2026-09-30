@@ -13,6 +13,7 @@ import { and, eq, inArray, isNull, isNotNull, lte } from "drizzle-orm";
 import { getDb } from "./db";
 import * as schema from "./db-schema";
 import { sendEmail, rawArchivedEmail, rawPurgeWarningEmail, rawRenewalEmail } from "./email";
+import { studioWantsEmail } from "./notify-client";
 import { getStudioProfile } from "./repos/studios";
 import { safeHexColor } from "./embed";
 import { deleteAsset, assetProtectedByGrant } from "./repos/assets";
@@ -68,6 +69,8 @@ async function emailStage(
 ): Promise<boolean> {
   const profile = await getStudioProfile(orgId);
   if (!profile?.contactEmail) return false;
+  // WEB-278: RAW vault notices are suppressible as a group.
+  if (!(await studioWantsEmail(orgId, "raw_archive"))) return false;
   const titles = await projectTitles([...new Set(assets.map((a) => a.projectId))]);
   const tmpl = render({
     studioName: profile.studioName,

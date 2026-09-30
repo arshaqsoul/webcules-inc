@@ -9,6 +9,7 @@ import { and, eq } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
+import { defaultClientNotify } from "@/lib/notify-client";
 
 export type Client = typeof schema.clients.$inferSelect;
 
@@ -48,6 +49,7 @@ export async function upsertClient(params: {
       email,
       name: params.name ?? null,
       phone: params.phone ?? null,
+      notify: await defaultClientNotify(params.organizationId),
     })
     .returning();
   return created;

@@ -55,10 +55,12 @@ import m49 from "../../migrations/0049_system_state.sql?raw";
 import m50 from "../../migrations/0050_booking_manage.sql?raw";
 import m51 from "../../migrations/0051_setup_guide.sql?raw";
 import m52 from "../../migrations/0052_booking_reminders.sql?raw";
+import m53 from "../../migrations/0053_two_factor.sql?raw";
+import m54 from "../../migrations/0054_notification_defaults.sql?raw";
 
 const MIGRATIONS = [
   m01, m02, m03, m04, m05, m06, m07, m08, m09, m10, m11, m12, m13, m14, m15,
-  m16, m17, m18, m19, m20, m21, m22, m23, m24, m25, m26, m27, m28, m29, m30, m31, m32, m33, m34, m35, m36, m37, m38, m39, m40, m41, m42, m43, m44, m45, m46, m47, m48, m49, m50, m51, m52,
+  m16, m17, m18, m19, m20, m21, m22, m23, m24, m25, m26, m27, m28, m29, m30, m31, m32, m33, m34, m35, m36, m37, m38, m39, m40, m41, m42, m43, m44, m45, m46, m47, m48, m49, m50, m51, m52, m53, m54,
 ];
 
 /** Every table, in an order that satisfies FK constraints when deleting. */

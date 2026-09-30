@@ -12,6 +12,7 @@ import { linkOpenLeadToBooking } from "./leads";
 import { galleryTitlePattern } from "./session-types";
 import { renderMerge } from "@/lib/merge";
 import { getStudioProfile } from "./studios";
+import { defaultClientNotify } from "@/lib/notify-client";
 
 export type CreateBookingResult =
   | { ok: true; bookingId: string; projectId: string }
@@ -63,6 +64,7 @@ export async function createBookingFromWidget(params: {
         email,
         name: params.clientName,
         phone: params.clientPhone ?? null,
+        notify: await defaultClientNotify(params.organizationId),
       })
       .onConflictDoUpdate({
         target: [schema.clients.organizationId, schema.clients.email],
@@ -234,6 +236,7 @@ export async function confirmBookingPaid(params: {
         organizationId: params.organizationId,
         email: booking.clientEmail,
         name: booking.clientName ?? booking.clientEmail,
+        notify: await defaultClientNotify(params.organizationId),
       })
       .onConflictDoUpdate({
         target: [schema.clients.organizationId, schema.clients.email],

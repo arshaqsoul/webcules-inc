@@ -14,13 +14,26 @@ function fmtBytes(n: number): string {
   return `${Math.max(1, Math.round(n / 1024))} KB`;
 }
 
+const EXPIRY_OPTIONS = [
+  { label: "7 days", value: "7" },
+  { label: "30 days", value: "30" },
+  { label: "60 days", value: "60" },
+  { label: "90 days", value: "90" },
+  { label: "1 year", value: "365" },
+  { label: "No expiry", value: "0" },
+];
+
 export function SettingsDelivery({
   rejectedRetentionDays: initialDays,
   exifStripDerived: initialStrip,
   rawStatus,
+  defaultExpiryDays: initialExpiry,
+  defaultAllowDownload: initialAllowDownload,
 }: {
   rejectedRetentionDays: number;
   exifStripDerived: boolean;
+  defaultExpiryDays: number | null;
+  defaultAllowDownload: boolean;
   rawStatus: {
     rawAllowed: boolean;
     /** null = no trial pocket on this tier. */
@@ -34,6 +47,25 @@ export function SettingsDelivery({
   const [stripExif, setStripExif] = useState(initialStrip);
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // WEB-278: pre-fills for NEW share grants (per-send override always wins).
+  const [expiry, setExpiry] = useState(String(initialExpiry ?? 90));
+  const [allowDownload, setAllowDownload] = useState(initialAllowDownload);
+
+  async function saveDefaults() {
+    setBusy(true);
+    setStatus(null);
+    const res = await fetch("/api/studio/brand", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        defaultExpiryDays: expiry === "0" ? 0 : Number(expiry),
+        defaultAllowDownload: allowDownload,
+      }),
+    });
+    setBusy(false);
+    setStatus(res.ok ? "Gallery defaults saved." : "Save failed — try again.");
+    if (res.ok) router.refresh();
+  }
 
   async function save() {
     setBusy(true);
@@ -102,6 +134,42 @@ export function SettingsDelivery({
         <div className="mt-4 flex items-center justify-end gap-3">
           {status && <p className="text-sm text-ink-subtle">{status}</p>}
           <Button onClick={save} disabled={busy} size="sm">Save delivery settings</Button>
+        </div>
+      </section>
+
+      <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
+        <h2 className="text-[15px] font-medium text-ink">New gallery defaults</h2>
+        <div className="mt-4 flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="defaultExpiry" className="text-sm text-ink">Link expires after</label>
+            <select id="defaultExpiry" className="snap-select max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm"
+              value={expiry} onChange={(e) => setExpiry(e.target.value)}>
+              {EXPIRY_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+            <p className="text-xs text-ink-tertiary">
+              Pre-fills the share panel every time you send a new gallery — you can still change it per send.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="flex items-start gap-2 text-sm text-ink">
+              <input
+                type="checkbox"
+                checked={allowDownload}
+                onChange={(e) => setAllowDownload(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-input"
+              />
+              <span>
+                Allow downloads by default
+                <span className="mt-1 block text-xs font-normal text-ink-tertiary">
+                  Pre-fills the download toggle on new galleries.
+                </span>
+              </span>
+            </label>
+          </div>
+        </div>
+        <div className="mt-4 flex items-center justify-end gap-3">
+          {status && <p className="text-sm text-ink-subtle">{status}</p>}
+          <Button onClick={saveDefaults} disabled={busy} size="sm">Save gallery defaults</Button>
         </div>
       </section>
 

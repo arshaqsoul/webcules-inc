@@ -10,6 +10,7 @@ import { putObject } from "./storage/service";
 import { renderContractPdf } from "./pdf";
 import { fetchEmailHeaderLogo } from "./brand-assets";
 import { sendEmail, contractSignRequestEmail, contractSignedEmail } from "./email";
+import { studioWantsEmail } from "./notify-client";
 import { clientUrl } from "./client-urls";
 import { getEmailBrand } from "./branding";
 import { getStudioProfile } from "./repos/studios";
@@ -257,7 +258,11 @@ export async function signContract(
     emailHeaderUrl: studio.emailHeaderUrl,
     contactEmail: studio.contactEmail,
   });
-  const recipients = [contract.clientEmail, studio.contactEmail].filter((e): e is string => Boolean(e));
+  // WEB-278: the studio copy respects the "contract signed" alert toggle.
+  const studioCopy = await studioWantsEmail(contract.organizationId, "contract_signed");
+  const recipients = [contract.clientEmail, studioCopy ? studio.contactEmail : null].filter(
+    (e): e is string => Boolean(e),
+  );
   for (const to of recipients) {
     await sendEmail({
       to,

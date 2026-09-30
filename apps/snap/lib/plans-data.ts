@@ -44,6 +44,9 @@ export type PlanDef = {
   maxContactForms: number | null;
   /** WEB-256 questionnaires (Free 1, Lite 3, Studio+ unlimited). */
   maxQuestionnaires: number | null;
+  /** WEB-275 team seats (members + pending invites) — Free 1 · Lite 1 ·
+   * Studio 3 · Pro 10. Owner counts as one seat. */
+  maxTeamSeats: number;
 };
 
 const GB = 1024 ** 3;
@@ -56,7 +59,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     monthlyUploadBytes: 40 * GB, fileCap: 250_000,
     jpgOnly: true, rawAllowed: false, rawTrialBytes: 3 * GB, whiteLabel: false,
     maxActiveBookings: null, maxActiveGalleries: 5, maxLinkedStudios: 1, otpCapPerUser: 30, maxSessionTypes: 1, maxContractTemplates: 2, maxEmailSnippets: 5, maxContactForms: 1, maxQuestionnaires: 1,
-    maxCustomDomains: 0,
+    maxCustomDomains: 0, maxTeamSeats: 1,
   },
   lite: {
     id: "lite", name: "Lite", priceMonthlyUsd: 15,
@@ -64,7 +67,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     monthlyUploadBytes: 300 * GB, fileCap: 250_000,
     jpgOnly: false, rawAllowed: true, rawTrialBytes: null, whiteLabel: false,
     maxActiveBookings: null, maxActiveGalleries: 15, maxLinkedStudios: 3, otpCapPerUser: 30, maxSessionTypes: 3, maxContractTemplates: 2, maxEmailSnippets: 5, maxContactForms: 1, maxQuestionnaires: 3,
-    maxCustomDomains: 0,
+    maxCustomDomains: 0, maxTeamSeats: 1,
   },
   studio: {
     id: "studio", name: "Studio", priceMonthlyUsd: 29,
@@ -72,7 +75,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     monthlyUploadBytes: TB, fileCap: 250_000,
     jpgOnly: false, rawAllowed: true, rawTrialBytes: null, whiteLabel: true,
     maxActiveBookings: null, maxActiveGalleries: null, maxLinkedStudios: null, otpCapPerUser: 30, maxSessionTypes: null, maxContractTemplates: null, maxEmailSnippets: null, maxContactForms: null, maxQuestionnaires: null,
-    maxCustomDomains: 0,
+    maxCustomDomains: 0, maxTeamSeats: 3,
   },
   pro: {
     id: "pro", name: "Pro", priceMonthlyUsd: 59,
@@ -80,7 +83,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     monthlyUploadBytes: 4 * TB, fileCap: 250_000,
     jpgOnly: false, rawAllowed: true, rawTrialBytes: null, whiteLabel: true,
     maxActiveBookings: null, maxActiveGalleries: null, maxLinkedStudios: null, otpCapPerUser: 30, maxSessionTypes: null, maxContractTemplates: null, maxEmailSnippets: null, maxContactForms: null, maxQuestionnaires: null,
-    maxCustomDomains: 2,
+    maxCustomDomains: 2, maxTeamSeats: 10,
   },
 };
 

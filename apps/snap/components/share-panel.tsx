@@ -18,6 +18,7 @@ type PreviewAsset = { id: string; filename: string; kind: string };
 const EXPIRY_OPTIONS = [
   { label: "7 days", value: "7" },
   { label: "30 days", value: "30" },
+  { label: "60 days", value: "60" },
   { label: "90 days", value: "90" },
   { label: "1 year", value: "365" },
   { label: "No expiry", value: "" },
@@ -56,16 +57,22 @@ export function SharePanel({
   projectId,
   clientEmail,
   approvedCount,
+  defaultExpiryDays = 90,
+  defaultAllowDownload = true,
   onClose,
 }: {
   projectId: string;
   clientEmail?: string;
   approvedCount: number;
+  /** WEB-278: studio defaults from Settings → Delivery (0 = no expiry). */
+  defaultExpiryDays?: number;
+  defaultAllowDownload?: boolean;
   onClose: () => void;
 }) {
   const router = useRouter();
   const [email, setEmail] = useState(clientEmail ?? "");
-  const [days, setDays] = useState("30");
+  const [days, setDays] = useState(defaultExpiryDays === 0 ? "" : String(defaultExpiryDays));
+  const [allowDownload, setAllowDownload] = useState(defaultAllowDownload);
   const [proofing, setProofing] = useState(false);
   const [folders, setFolders] = useState<DeliverFolder[]>([]);
   const [picked, setPicked] = useState<Set<string>>(new Set());
@@ -127,6 +134,7 @@ export function SharePanel({
           clientEmail: email.trim(),
           ...(picked.size ? { folderIds: Array.from(picked) } : {}),
           expiresInDays: days ? Number(days) : null,
+          allowDownload,
           // WEB-242: proofing — downloads deliver watermarked previews.
           proofing,
         }),
@@ -185,6 +193,21 @@ export function SharePanel({
                 <option key={o.value} value={o.value}>{o.label}</option>
               ))}
             </select>
+          </label>
+
+          <label className="mt-3 flex items-start gap-2 text-xs text-ink-subtle">
+            <input
+              type="checkbox"
+              checked={allowDownload}
+              onChange={(e) => setAllowDownload(e.target.checked)}
+              className="mt-0.5 h-4 w-4"
+            />
+            <span>
+              <span className="block text-xs font-medium text-ink">Allow downloads</span>
+              <span className="block text-[11px] leading-relaxed text-ink-tertiary">
+                Client can save the delivered photos.
+              </span>
+            </span>
           </label>
 
           {/* WEB-242: proofing mode — client downloads get the watermarked

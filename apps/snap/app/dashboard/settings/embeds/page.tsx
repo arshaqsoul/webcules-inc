@@ -7,12 +7,15 @@ import { listTemplates } from "@/lib/repos/templates";
 import { getPlanEntitlements } from "@/lib/plans";
 import { parseBookingPageConfig } from "@/lib/booking-page";
 import { getOrgContext } from "@/lib/session";
+import { can } from "@/lib/permissions";
 
 export const metadata = { title: "Settings · Embeds" };
 
 export default async function SettingsEmbedsPage() {
   const ctx = await getOrgContext();
   if (!ctx) redirect("/login");
+  // WEB-275: studio settings are admin+ (Security stays self-account).
+  if (!can(ctx.role, "settings.read")) redirect("/dashboard");
   const [profile, slug, formTemplates, ent] = await Promise.all([
     getStudioProfile(ctx.organizationId),
     getStudioSlug(ctx.organizationId),

@@ -319,7 +319,7 @@ function VideoTile({ id, hover }: { id: string; hover: boolean }) {
   );
 }
 
-export function ProjectFiles({ projectId, clientEmail, initial }: { projectId: string; clientEmail?: string; initial?: AssetItem[] }) {
+export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDays, defaultAllowDownload }: { projectId: string; clientEmail?: string; initial?: AssetItem[]; defaultExpiryDays?: number; defaultAllowDownload?: boolean }) {
   const confirm = useConfirm();
   const [feed, setFeed] = useState<Feed>({ items: initial ?? [], nextCursor: null, counts: {}, tags: [] });
   const [status, setStatus] = useState("");
@@ -2406,6 +2406,8 @@ export function ProjectFiles({ projectId, clientEmail, initial }: { projectId: s
           projectId={projectId}
           clientEmail={clientEmail}
           approvedCount={(counts.approved ?? 0) + (counts.shared ?? 0)}
+          defaultExpiryDays={defaultExpiryDays}
+          defaultAllowDownload={defaultAllowDownload}
           onClose={() => setShareOpen(false)}
         />
       )}
