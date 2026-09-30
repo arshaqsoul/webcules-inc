@@ -20,14 +20,8 @@ import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { getCfConfig, deleteCustomHostname, type CfConfig, type CfFetch } from "@/lib/cf-hostnames";
 import { syncDomainStatus } from "@/lib/domain-sync";
-import {
-  CNAME_TARGET,
-  cnamePointsAtSnap,
-  lookupCname,
-  lookupVerificationTxt,
-  txtMatches,
-  verificationTxtName,
-} from "@/lib/domains";
+import { CNAME_TARGET, cnamePointsAtSnap, txtMatches, verificationTxtName } from "@/lib/domains";
+import { lookupCname, lookupVerificationTxt } from "@/lib/doh";
 import { getPlanEntitlements } from "@/lib/plans";
 import { expireStalePending, markDomainStatus } from "@/lib/repos/domains";
 import { getStudioProfile } from "@/lib/repos/studios";

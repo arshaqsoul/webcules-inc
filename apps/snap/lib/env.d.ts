@@ -23,6 +23,10 @@ declare namespace Cloudflare {
     CLOUDFLARE_API_TOKEN?: string;
     /** webcules.com zone id — public var in wrangler.jsonc. */
     CLOUDFLARE_ZONE_ID?: string;
+    /** E2E only (WEB-233): redirect the CF Custom Hostnames client at a local mock. */
+    CF_API_BASE?: string;
+    /** E2E only (WEB-233): redirect DoH TXT/CNAME lookups at a local mock. */
+    DOH_BASE?: string;
   }
 }
 
@@ -39,4 +43,6 @@ interface Env {
   FOUNDER_EMAILS?: string;
   CLOUDFLARE_API_TOKEN?: string;
   CLOUDFLARE_ZONE_ID?: string;
+  CF_API_BASE?: string;
+  DOH_BASE?: string;
 }

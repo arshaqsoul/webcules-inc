@@ -114,47 +114,6 @@ export function newVerificationToken(): string {
   return `snap-verify=${Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("")}`;
 }
 
-/** Injectable fetch shape for the DoH helpers (tests pass stubs). */
-export type DohFetch = (input: string, init?: RequestInit) => Promise<Response>;
-
-/** DoH TXT lookup for the ownership record — returns the TXT strings or null
- * (no answer / lookup failure). Cloudflare's public JSON API; no auth needed. */
-export async function lookupVerificationTxt(
-  hostname: string,
-  fetchImpl: DohFetch = fetch,
-): Promise<string[] | null> {
-  try {
-    const res = await fetchImpl(
-      `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(verificationTxtName(hostname))}&type=TXT`,
-      { headers: { accept: "application/dns-json" } },
-    );
-    if (!res.ok) return null;
-    const json = (await res.json()) as { Answer?: { data?: string }[] };
-    return (json.Answer ?? []).map((a) => (a.data ?? "").replace(/^"|"$/g, "")).filter(Boolean);
-  } catch {
-    return null;
-  }
-}
-
-/** DoH CNAME lookup — the sweep's health check (does the hostname still
- * point at our fallback origin?). Returns the target or null. */
-export async function lookupCname(
-  hostname: string,
-  fetchImpl: DohFetch = fetch,
-): Promise<string | null> {
-  try {
-    const res = await fetchImpl(
-      `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(hostname)}&type=CNAME`,
-      { headers: { accept: "application/dns-json" } },
-    );
-    if (!res.ok) return null;
-    const json = (await res.json()) as { Answer?: { data?: string }[] };
-    return (json.Answer ?? []).map((a) => (a.data ?? "").replace(/\.$/, "")).find(Boolean) ?? null;
-  } catch {
-    return null;
-  }
-}
-
 /** Does the CNAME answer point at our serving target (exact or nested)? */
 export function cnamePointsAtSnap(target: string | null): boolean {
   if (!target) return false;
@@ -181,7 +140,15 @@ export const DEFAULT_APP_HOSTS = new Set([
 ]);
 
 function bareHost(host: string): string {
-  return host.toLowerCase().replace(/^\[|\]$/g, "").split(":")[0];
+  const h = host.toLowerCase();
+  // Bracketed IPv6 literal (e.g. "[::1]:3000" — what Node/browsers send for
+  // IPv6 loopback): the host is between the brackets, never split on ":".
+  const bracketed = h.match(/^\[([^\]]+)\]/);
+  if (bracketed) return bracketed[1];
+  // Bare IPv6 literal (multiple colons, no brackets) — also never split;
+  // this makes bareHost idempotent for callers that pass an already-bare host.
+  if ((h.match(/:/g) ?? []).length > 1) return h;
+  return h.split(":")[0];
 }
 
 export function isLocalDevHost(host: string): boolean {

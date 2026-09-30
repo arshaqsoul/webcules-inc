@@ -139,6 +139,17 @@ describe("serving guard (WEB-227)", () => {
       expect(nonClientPathRedirect(h, "/dashboard")).toBeNull();
       expect(isCustomAppHost(h)).toBe(false);
     }
+    // IPv6 loopback literals (what Node/browsers send for localhost over ::1)
+    // are dev hosts — never treated as a studio custom hostname (WEB-233:
+    // this exact case 307'd dev traffic at the production origin).
+    for (const h of ["[::1]:3000", "[::1]", "[2001:db8::1]:8787"]) {
+      if (h === "[2001:db8::1]:8787") {
+        expect(isCustomAppHost(h)).toBe(true); // a real IPv6 address is not loopback
+        continue;
+      }
+      expect(isCustomAppHost(h)).toBe(false);
+      expect(nonClientPathRedirect(h, "/dashboard")).toBeNull();
+    }
     expect(isCustomAppHost("gallery.studio.com")).toBe(true);
     expect(isCustomAppHost("GALLERY.Studio.COM")).toBe(true);
   });

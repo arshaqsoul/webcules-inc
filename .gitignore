@@ -55,3 +55,4 @@ apps/1kpapers/public/storage/
 
 # Snap: local-only pre-wipe DB backups and scratch files
 .backups/
+apps/snap/.dev.vars.e2e-backup

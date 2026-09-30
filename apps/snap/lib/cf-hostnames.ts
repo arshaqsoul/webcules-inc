@@ -23,6 +23,17 @@ import { CF_FALLBACK_ORIGIN } from "@/lib/domains";
 const API = "https://api.cloudflare.com/client/v4";
 const TIMEOUT_MS = 10_000;
 
+/* E2E (WEB-233): CF_API_BASE redirects every call at a local mock so the
+ * browser-driven add/verify/sync flow never touches the real API. */
+async function apiBase(): Promise<string> {
+  try {
+    const { env } = await import("cloudflare:workers");
+    return env.CF_API_BASE || API;
+  } catch {
+    return API;
+  }
+}
+
 export type CfFetch = (input: string, init?: RequestInit) => Promise<Response>;
 
 export type CfConfig = { token: string; zoneId: string; fetchImpl?: CfFetch };
@@ -59,7 +70,7 @@ function friendlyError(status: number, bodyText: string): string {
 }
 
 async function cfCall<T>(cfg: CfConfig, method: string, path: string, body?: unknown): Promise<CfResult<T>> {
-  const url = `${API}${path}`;
+  const url = `${await apiBase()}${path}`;
   let res: Response;
   try {
     res = await (cfg.fetchImpl ?? fetch)(url, {

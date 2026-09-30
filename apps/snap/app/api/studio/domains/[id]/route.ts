@@ -3,7 +3,8 @@
  * remove (soft). All org-scoped through getOrgContext. */
 import { getOrgContext } from "@/lib/session";
 import { createCustomHostname, getCfConfig } from "@/lib/cf-hostnames";
-import { lookupVerificationTxt, txtMatches } from "@/lib/domains";
+import { txtMatches } from "@/lib/domains";
+import { lookupVerificationTxt } from "@/lib/doh";
 import { syncDomainStatus } from "@/lib/domain-sync";
 import {
   getDomain,

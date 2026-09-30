@@ -360,6 +360,99 @@ describe("custom-domain add-on entitlement (WEB-231)", () => {
   });
 });
 
+describe("lifecycle transition guard (WEB-233)", () => {
+  it("every status serves a same-status re-check (error persistence)", async () => {
+    const s = await seedStudio({ plan: "pro" });
+    const mkFor = (org: typeof s) => async (host: string) => {
+      const r = await createDomain({ organizationId: org.organizationId, hostname: host, actorUserId: org.userId });
+      if (!r.ok) throw new Error("create failed");
+      return r.domain.id;
+    };
+    const mk = mkFor(s);
+    type Status = Parameters<typeof markDomainStatus>[0]["status"];
+    const same = async (id: string, status: Status) => {
+      await markDomainStatus({ organizationId: s.organizationId, domainId: id, status, lastError: "re-check" });
+      expect((await getDomain(s.organizationId, id))?.status).toBe(status);
+    };
+    const hop = async (id: string, status: Status) => {
+      const r = await markDomainStatus({ organizationId: s.organizationId, domainId: id, status });
+      expect(r.ok).toBe(true);
+    };
+
+    // main lifecycle walk — every hop followed by a same-status re-check
+    const main = await mk("same-status.studio-a.test");
+    await same(main, "pending_verification");
+    for (const st of ["verified", "cert_pending", "active", "degraded"] as const) {
+      await hop(main, st);
+      await same(main, st);
+    }
+    // suspended: reachable from the pre-active states
+    const susp = await mk("same-status-susp.studio-a.test");
+    for (const st of ["verified", "cert_pending", "suspended_entitlement"] as const) {
+      await hop(susp, st);
+      await same(susp, st);
+    }
+    // failed: reachable from active (cert went bad at renewal) — fresh org:
+    // Pro allows 2 concurrent rows and this test already holds two above.
+    const s2 = await seedStudio({ plan: "pro" });
+    const failed = await mkFor(s2)("same-status-failed.studio-a.test");
+    for (const st of ["verified", "cert_pending", "active", "failed"] as const) {
+      const r = await markDomainStatus({ organizationId: s2.organizationId, domainId: failed, status: st });
+      expect(r.ok).toBe(true);
+      await markDomainStatus({ organizationId: s2.organizationId, domainId: failed, status: st, lastError: "re-check" });
+      expect((await getDomain(s2.organizationId, failed))?.status).toBe(st);
+    }
+  });
+
+  it("illegal transitions rejected, row untouched", async () => {
+    const s = await seedStudio({ plan: "pro" });
+    const d = await createDomain({ organizationId: s.organizationId, hostname: "guard.studio-a.test", actorUserId: s.userId });
+    if (!d.ok) throw new Error("create failed");
+
+    // pending_verification can't jump the gun to cert/serve states
+    for (const bad of ["cert_pending", "active", "degraded", "suspended_entitlement"] as const) {
+      const r = await markDomainStatus({ organizationId: s.organizationId, domainId: d.domain.id, status: bad });
+      expect(r).toEqual({ ok: false, error: "illegal_transition" });
+    }
+    expect((await getDomain(s.organizationId, d.domain.id))?.status).toBe("pending_verification");
+
+    // active can't fall back to pre-ownership states
+    await activate(s.organizationId, d.domain.id);
+    for (const bad of ["pending_verification", "verified"] as const) {
+      const r = await markDomainStatus({ organizationId: s.organizationId, domainId: d.domain.id, status: bad });
+      expect(r).toEqual({ ok: false, error: "illegal_transition" });
+    }
+    expect((await getDomain(s.organizationId, d.domain.id))?.status).toBe("active");
+
+    // removed is terminal
+    await removeDomain({ organizationId: s.organizationId, domainId: d.domain.id, actorUserId: s.userId });
+    expect(await markDomainStatus({ organizationId: s.organizationId, domainId: d.domain.id, status: "active" })).toEqual({ ok: false, error: "not_found" });
+  });
+
+  it("the full legal chain still walks: pending → verified → cert_pending → active → degraded → active", async () => {
+    const s = await seedStudio({ plan: "pro" });
+    const d = await createDomain({ organizationId: s.organizationId, hostname: "chain.studio-a.test", actorUserId: s.userId });
+    if (!d.ok) throw new Error("create failed");
+    for (const status of ["verified", "cert_pending", "active", "degraded", "active"] as const) {
+      const r = await markDomainStatus({ organizationId: s.organizationId, domainId: d.domain.id, status });
+      expect(r.ok).toBe(true);
+    }
+  });
+
+  it("two orgs racing one hostname — the unique index picks exactly one winner", async () => {
+    const a = await seedStudio({ plan: "pro" });
+    const b = await seedStudio({ plan: "pro" });
+    const [ra, rb] = await Promise.all([
+      createDomain({ organizationId: a.organizationId, hostname: "race.studio-a.test", actorUserId: a.userId }),
+      createDomain({ organizationId: b.organizationId, hostname: "race.studio-a.test", actorUserId: b.userId }),
+    ]);
+    const oks = [ra, rb].filter((r) => r.ok);
+    const fails = [ra, rb].filter((r) => !r.ok);
+    expect(oks).toHaveLength(1);
+    expect(fails).toEqual([{ ok: false, error: "hostname_taken" }]);
+  });
+});
+
 async function getStudioProfileRow(org: string) {
   return (
     await getDb().select().from(schema.studioProfiles).where(eq(schema.studioProfiles.organizationId, org)).limit(1)

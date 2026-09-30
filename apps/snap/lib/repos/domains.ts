@@ -214,6 +214,23 @@ export async function removeDomain(params: {
   return { ok: true, hostname: domain.hostname, wasPrimary };
 }
 
+/** Legal lifecycle edges (WEB-233 launch gate) — derived from every writer:
+ * the verify route (pending→verified/failed, then the CF sync), the CF sync
+ * (cert_pending/active/failed/degraded-from-moved), the sweep (suspend/
+ * unsuspend, degrade, recover) and same-status re-checks (error persistence).
+ * Removal is terminal here (removeDomain/expireStalePending write it
+ * directly); a reclaimed hostname starts a fresh row. */
+export const DOMAIN_TRANSITIONS: Record<DomainStatus, DomainStatus[]> = {
+  pending_verification: ["verified", "failed"],
+  verified: ["cert_pending", "active", "failed", "degraded"],
+  cert_pending: ["active", "failed", "degraded", "suspended_entitlement"],
+  active: ["cert_pending", "degraded", "failed", "suspended_entitlement"],
+  degraded: ["active", "cert_pending", "failed"],
+  suspended_entitlement: ["cert_pending"],
+  failed: ["verified", "cert_pending", "active", "degraded"],
+  removed: [],
+};
+
 /** Status transitions from the verify button, the CF sync and the sweep.
  * Audits actual transitions only (the sweep re-checks daily without noise).
  * On first activation, auto-promotes primary if the org has none. */
@@ -229,10 +246,14 @@ export async function markDomainStatus(params: {
   notifiedAt?: number;
   dcvTxtName?: string | null;
   dcvTxtValue?: string | null;
-}): Promise<{ ok: true; from: DomainStatus } | { ok: false; error: "not_found" }> {
+}): Promise<{ ok: true; from: DomainStatus } | { ok: false; error: "not_found" | "illegal_transition" }> {
   const db = getDb();
   const domain = await getDomain(params.organizationId, params.domainId);
   if (!domain || domain.removedAt) return { ok: false, error: "not_found" };
+  if (domain.status !== params.status && !DOMAIN_TRANSITIONS[domain.status as DomainStatus].includes(params.status)) {
+    console.warn(`illegal domain transition rejected: ${domain.status} → ${params.status} (${domain.id})`);
+    return { ok: false, error: "illegal_transition" };
+  }
 
   const now = new Date();
   await db
