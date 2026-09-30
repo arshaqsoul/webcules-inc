@@ -6,6 +6,7 @@ import { env } from "cloudflare:workers";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
+import { claimThrottleGate } from "@/lib/system-state";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,13 @@ export async function POST(req: Request) {
   const auth = req.headers.get("Authorization") ?? "";
   if (!expected || auth !== `Bearer ${expected}`) {
     return Response.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  // WEB-284: the cron fires daily; nothing legitimate needs this endpoint
+  // more than once per 6h. Unthrottled re-invocation was the amplifier shape
+  // of the Sept R2 billing incident.
+  if (!(await claimThrottleGate("cron.daily_status", 6 * 3600))) {
+    return Response.json({ ok: true, skipped: "throttled" }, { status: 429 });
   }
 
   const db = getDb();

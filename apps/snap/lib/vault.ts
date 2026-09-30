@@ -181,6 +181,9 @@ export async function runRawVaultSweep(): Promise<SweepResult> {
   for (const a of archiveDue) {
     try {
       await toInfrequentAccess(a.organizationId, a.storageKey);
+      // Stamp per object: a run killed mid-loop (deploys, worker eviction)
+      // must never leave copied-but-unstamped rows for the next run to redo.
+      await db.update(schema.assets).set({ rawArchivedAt: now }).where(eq(schema.assets.id, a.id));
       archivedIds.push(a.id);
       archivedByOrg.set(a.organizationId, [...(archivedByOrg.get(a.organizationId) ?? []), a]);
       archivedByProject.set(a.projectId, (archivedByProject.get(a.projectId) ?? 0) + 1);
@@ -191,7 +194,6 @@ export async function runRawVaultSweep(): Promise<SweepResult> {
     }
   }
   if (archivedIds.length) {
-    await db.update(schema.assets).set({ rawArchivedAt: now }).where(inArray(schema.assets.id, archivedIds));
     for (const [projectId, n] of archivedByProject) {
       const orgId = archiveDue.find((a) => a.projectId === projectId)!.organizationId;
       await auditProject(orgId, projectId, "asset.raw_archive", { n, system: true });

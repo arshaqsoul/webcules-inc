@@ -16,6 +16,10 @@ declare namespace Cloudflare {
     R2_S3_ACCOUNT_ID?: string;
     /** "otp" (default) | "off" — email-shock contingency for gallery OTPs. */
     GALLERY_OTP_MODE?: string;
+    /** WEB-284: "1" enables R2 storage-class moves (IA tiering). Keep "0" —
+     * IA ops bill in rounded 1M blocks ($9/mo min) with no free tier; only
+     * flip when cold RAW volume nears ~2TB. */
+    R2_CLASS_MOVES_ENABLED?: string;
     /** Comma-separated founder emails — gates the margin report + alerts. */
     FOUNDER_EMAILS?: string;
     /** WEB-224/226: Custom Hostnames API token (Zone → Custom Hostnames →
@@ -40,6 +44,7 @@ interface Env {
   R2_S3_SECRET_ACCESS_KEY?: string;
   R2_S3_ACCOUNT_ID?: string;
   GALLERY_OTP_MODE?: string;
+  R2_CLASS_MOVES_ENABLED?: string;
   FOUNDER_EMAILS?: string;
   CLOUDFLARE_API_TOKEN?: string;
   CLOUDFLARE_ZONE_ID?: string;

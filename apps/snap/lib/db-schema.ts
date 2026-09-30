@@ -998,6 +998,13 @@ export const orgCounters = sqliteTable("org_counter", {
   invoiceYearSeq: integer("invoice_year_seq").notNull().default(0),
 });
 
+/** WEB-284: system-wide key/value state — rate-limit gates for the cron and
+ * restore endpoints (value holds an epoch-seconds timestamp). */
+export const systemState = sqliteTable("system_state", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+});
+
 
 /* ---------------- Session types (WEB-250) ---------------- */
 

@@ -3,6 +3,7 @@
 import { z } from "zod";
 
 import { getOrgContext } from "@/lib/session";
+import { claimThrottleGate } from "@/lib/system-state";
 import { restoreRawAssets } from "@/lib/vault";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +17,11 @@ const Body = z.object({
 export async function POST(req: Request) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+
+  // WEB-284: a human clicks this once — anything faster is a retry loop.
+  if (!(await claimThrottleGate(`vault.restore.${ctx.organizationId}`, 60))) {
+    return Response.json({ error: "too_many_requests" }, { status: 429 });
+  }
 
   const parsed = Body.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) return Response.json({ error: "bad_request" }, { status: 400 });

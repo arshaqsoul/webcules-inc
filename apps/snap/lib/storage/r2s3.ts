@@ -6,7 +6,14 @@
  *
  * Infrequent Access objects still serve normal GETs — the class only changes
  * billing ($0.01/GB-mo storage, $0.01/GB retrieval, absorbed by the platform
- * for the RAW Vault restore flow). */
+ * for the RAW Vault restore flow).
+ *
+ * WEB-284: R2 bills IA operations in 1M-op blocks rounded up per month with
+ * NO free tier — a single IA write costs $9.00/mo, a single IA read $0.90.
+ * Class moves are therefore gated behind R2_CLASS_MOVES_ENABLED="1" and off
+ * by default; the vault/dormancy lifecycle runs unchanged on Standard (the
+ * D1 stamps drive all behavior). Flip the flag only when cold RAW volume
+ * nears ~2TB, where the $0.005/GB-mo IA discount outgrows the block cost. */
 import { AwsClient } from "aws4fetch";
 import { env } from "cloudflare:workers";
 
@@ -71,12 +78,16 @@ async function copyClass(orgId: string, key: string, storageClass: string): Prom
   }
 }
 
-/** Move an object to Infrequent Access (RAW Vault archive). */
+/** Move an object to Infrequent Access (RAW Vault archive). No-op unless
+ * R2_CLASS_MOVES_ENABLED="1" — see the WEB-284 note at the top of the file. */
 export async function toInfrequentAccess(orgId: string, key: string): Promise<void> {
+  if (env.R2_CLASS_MOVES_ENABLED !== "1") return;
   await copyClass(orgId, key, R2_IA);
 }
 
-/** Move an object back to Standard (RAW Vault restore). */
+/** Move an object back to Standard (RAW Vault restore). No-op unless
+ * R2_CLASS_MOVES_ENABLED="1" — archived-while-off objects are already Standard. */
 export async function toStandard(orgId: string, key: string): Promise<void> {
+  if (env.R2_CLASS_MOVES_ENABLED !== "1") return;
   await copyClass(orgId, key, "STANDARD");
 }
