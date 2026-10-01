@@ -23,10 +23,10 @@ export default defineConfig({
   webServer: {
     // Wrapper serializes: reset isolated D1 → migrations → seed → wrangler dev.
     command: "node tests/e2e/server.mjs",
-    url: `${BASE}/login`,
+    url: "http://127.0.0.1:3117/__ready",
     env: { SNAP_E2E: "1" },
     reuseExistingServer: false, // orphans on Windows serve STALE builds — always boot fresh
-    timeout: 240_000,
+    timeout: 480_000,
   },
   globalSetup: "./tests/e2e/global-setup.mjs",
   outputDir: "./tests/e2e/.artifacts",

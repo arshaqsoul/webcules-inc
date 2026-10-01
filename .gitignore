@@ -64,3 +64,8 @@ apps/snap/.cf-saas-token
 .learn-videos/auditions/
 .learn-videos/assets/
 .learn-videos/voice-sample/
+
+# session state + drafts (not for commit)
+.docs-agent-state.json
+.webcules-drafts/
+apps/snap/scripts/learn-tools/
