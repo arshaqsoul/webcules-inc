@@ -1,0 +1,354 @@
+{
+  "video": {
+    "slug": "intro-to-snap",
+    "title": "Intro to Snap",
+    "targetSeconds": 125,
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "theme": "light",
+    "presenter": "shutter-mascot",
+    "chapters": [
+      {
+        "title": "Introduction",
+        "scenes": [
+          "s01"
+        ]
+      },
+      {
+        "title": "Bookings",
+        "scenes": [
+          "s02a",
+          "s02b"
+        ]
+      },
+      {
+        "title": "The pipeline",
+        "scenes": [
+          "s03a",
+          "s03b",
+          "s03c"
+        ]
+      },
+      {
+        "title": "Galleries",
+        "scenes": [
+          "s04a",
+          "s04b"
+        ]
+      },
+      {
+        "title": "Money",
+        "scenes": [
+          "s05"
+        ]
+      },
+      {
+        "title": "Wrap-up",
+        "scenes": [
+          "s06"
+        ]
+      }
+    ]
+  },
+  "scenes": [
+    {
+      "id": "s01",
+      "chapter": "Introduction",
+      "narration": "Hi, we're Snap \u2014 the studio operating system for photographers. We run your bookings, your contracts, your galleries, and your payments, all in one place. In the next few minutes, we'll show you how a booking turns into a delivered gallery.",
+      "startUrl": "https://snap-staging.webcules.com/dashboard",
+      "requiresLogin": true,
+      "actions": [
+        {
+          "type": "wait",
+          "durationMs": 1200
+        },
+        {
+          "type": "scroll",
+          "deltaY": 0,
+          "durationMs": 400
+        },
+        {
+          "type": "move",
+          "x": 760,
+          "y": 420,
+          "durationMs": 700
+        }
+      ],
+      "focus": {
+        "x": 0.5,
+        "y": 0.45,
+        "zoom": 1.0
+      },
+      "estSeconds": 15,
+      "voFile": "vo/s01.wav",
+      "note": "VO already approved (s01-intro-final.wav). Visual: dashboard Overview, slow pan."
+    },
+    {
+      "id": "s02a",
+      "chapter": "Bookings",
+      "narration": "Everything starts with your booking page. It's one link with your packages, your calendar, and your contract built in.",
+      "startUrl": "https://snap-staging.webcules.com/b/<studio-slug>",
+      "requiresLogin": false,
+      "actions": [
+        {
+          "type": "wait",
+          "durationMs": 1000
+        },
+        {
+          "type": "scroll",
+          "deltaY": 500,
+          "durationMs": 900
+        },
+        {
+          "type": "wait",
+          "durationMs": 800
+        },
+        {
+          "type": "scroll",
+          "deltaY": 500,
+          "durationMs": 900
+        }
+      ],
+      "focus": {
+        "x": 0.5,
+        "y": 0.4,
+        "zoom": 1.15
+      },
+      "estSeconds": 10
+    },
+    {
+      "id": "s02b",
+      "chapter": "Bookings",
+      "narration": "Your client picks a package, chooses a date, signs, and pays the retainer. That's it. Snap creates the project, blocks the date on your calendar, and reminds the client before the shoot.",
+      "startUrl": "https://snap-staging.webcules.com/b/<studio-slug>",
+      "requiresLogin": false,
+      "actions": [
+        {
+          "type": "click",
+          "selector": "<package-card>",
+          "delayAfterMs": 1200
+        },
+        {
+          "type": "click",
+          "selector": "<date-slot>",
+          "delayAfterMs": 1200
+        },
+        {
+          "type": "scroll",
+          "deltaY": 600,
+          "durationMs": 800
+        },
+        {
+          "type": "wait",
+          "durationMs": 1500
+        }
+      ],
+      "focus": {
+        "x": 0.5,
+        "y": 0.5,
+        "zoom": 1.1
+      },
+      "estSeconds": 15,
+      "note": "Demo booking for Willow & Pine seeded via this exact flow."
+    },
+    {
+      "id": "s03a",
+      "chapter": "The pipeline",
+      "narration": "New inquiries land in Leads, your inbox for triage and replies.",
+      "startUrl": "https://snap-staging.webcules.com/dashboard/leads",
+      "requiresLogin": true,
+      "actions": [
+        {
+          "type": "wait",
+          "durationMs": 1000
+        },
+        {
+          "type": "move",
+          "x": 700,
+          "y": 380,
+          "durationMs": 600
+        },
+        {
+          "type": "wait",
+          "durationMs": 1200
+        }
+      ],
+      "focus": {
+        "x": 0.45,
+        "y": 0.4,
+        "zoom": 1.1
+      },
+      "estSeconds": 6
+    },
+    {
+      "id": "s03b",
+      "chapter": "The pipeline",
+      "narration": "Booked work moves down the Projects pipeline. A kanban carries every job from booking to delivery.",
+      "startUrl": "https://snap-staging.webcules.com/dashboard/projects",
+      "requiresLogin": true,
+      "actions": [
+        {
+          "type": "wait",
+          "durationMs": 1000
+        },
+        {
+          "type": "scroll",
+          "deltaY": 300,
+          "durationMs": 800
+        },
+        {
+          "type": "wait",
+          "durationMs": 1500
+        }
+      ],
+      "focus": {
+        "x": 0.5,
+        "y": 0.45,
+        "zoom": 1.1
+      },
+      "estSeconds": 9
+    },
+    {
+      "id": "s03c",
+      "chapter": "The pipeline",
+      "narration": "The Calendar shows bookings, shoot days, and dated leads, with your availability rules underneath. And Raw shooters get a RAW Vault for cold storage, so archives stop eating your drives.",
+      "startUrl": "https://snap-staging.webcules.com/dashboard/calendar",
+      "requiresLogin": true,
+      "actions": [
+        {
+          "type": "wait",
+          "durationMs": 1000
+        },
+        {
+          "type": "wait",
+          "durationMs": 1200
+        },
+        {
+          "type": "click",
+          "selector": "text=RAW Vault",
+          "delayAfterMs": 1800
+        }
+      ],
+      "focus": {
+        "x": 0.5,
+        "y": 0.45,
+        "zoom": 1.05
+      },
+      "estSeconds": 13
+    },
+    {
+      "id": "s04a",
+      "chapter": "Galleries",
+      "narration": "After the shoot, upload your selects and hit Deliver. Snap builds a gallery with the client's name on it. Clients open a verified link, pick their favorites, run the slideshow, and order prints, on any device.",
+      "startUrl": "https://snap-staging.webcules.com/dashboard/projects/<id>",
+      "requiresLogin": true,
+      "actions": [
+        {
+          "type": "wait",
+          "durationMs": 1000
+        },
+        {
+          "type": "click",
+          "selector": "text=Deliver",
+          "delayAfterMs": 2200
+        },
+        {
+          "type": "wait",
+          "durationMs": 1500
+        }
+      ],
+      "focus": {
+        "x": 0.5,
+        "y": 0.5,
+        "zoom": 1.12
+      },
+      "estSeconds": 15,
+      "note": "Cutaway: public gallery /c/<token> for the client-side beat."
+    },
+    {
+      "id": "s04b",
+      "chapter": "Galleries",
+      "narration": "Every gallery you've sent lives in Galleries, with its status and controls in one place. The client portal keeps their gallery, invoice, and contract together, under your brand.",
+      "startUrl": "https://snap-staging.webcules.com/dashboard/galleries",
+      "requiresLogin": true,
+      "actions": [
+        {
+          "type": "wait",
+          "durationMs": 1000
+        },
+        {
+          "type": "scroll",
+          "deltaY": 400,
+          "durationMs": 800
+        },
+        {
+          "type": "wait",
+          "durationMs": 1500
+        }
+      ],
+      "focus": {
+        "x": 0.5,
+        "y": 0.45,
+        "zoom": 1.1
+      },
+      "estSeconds": 13
+    },
+    {
+      "id": "s05",
+      "chapter": "Money",
+      "narration": "Money is its own area. Transactions holds every payment, with refunds and disputes when things go wrong. Connect payouts with Stripe Express, and what clients pay lands in your bank in one to two business days. Snap never holds it.",
+      "startUrl": "https://snap-staging.webcules.com/dashboard/transactions",
+      "requiresLogin": true,
+      "actions": [
+        {
+          "type": "wait",
+          "durationMs": 1000
+        },
+        {
+          "type": "scroll",
+          "deltaY": 350,
+          "durationMs": 800
+        },
+        {
+          "type": "wait",
+          "durationMs": 1500
+        }
+      ],
+      "focus": {
+        "x": 0.5,
+        "y": 0.45,
+        "zoom": 1.1
+      },
+      "estSeconds": 16
+    },
+    {
+      "id": "s06",
+      "chapter": "Wrap-up",
+      "narration": "That's the whole loop. Inquiry to booking, shoot to gallery, gallery to payout. Start with the setup guide on your Overview. It walks you through brand, payouts, and your booking page, one step at a time. See you in the dashboard.",
+      "startUrl": "https://snap-staging.webcules.com/dashboard",
+      "requiresLogin": true,
+      "actions": [
+        {
+          "type": "wait",
+          "durationMs": 1000
+        },
+        {
+          "type": "scroll",
+          "deltaY": -300,
+          "durationMs": 900
+        },
+        {
+          "type": "wait",
+          "durationMs": 2500
+        }
+      ],
+      "focus": {
+        "x": 0.5,
+        "y": 0.4,
+        "zoom": 1.0
+      },
+      "estSeconds": 16
+    }
+  ]
+}

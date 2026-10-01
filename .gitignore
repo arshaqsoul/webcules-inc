@@ -58,3 +58,9 @@ apps/1kpapers/public/storage/
 apps/snap/.dev.vars.e2e-backup
 
 apps/snap/.cf-saas-token
+
+# learn video intermediates
+.learn-videos/vo/
+.learn-videos/auditions/
+.learn-videos/assets/
+.learn-videos/voice-sample/
