@@ -248,15 +248,17 @@ export function InboxView({ contactEmail, studioName }: { contactEmail: string |
     e.preventDefault();
     const startX = e.clientX;
     const startW = widthRef.current;
+    let latest = startW; // persisted from the drag itself — the ref lags a render behind
     document.body.classList.add("cursor-col-resize", "select-none");
     const move = (ev: MouseEvent) => {
-      setListWidth(Math.min(SPLIT_MAX, Math.max(SPLIT_MIN, startW + ev.clientX - startX)));
+      latest = Math.min(SPLIT_MAX, Math.max(SPLIT_MIN, startW + ev.clientX - startX));
+      setListWidth(latest);
     };
     const up = () => {
       window.removeEventListener("mousemove", move);
       window.removeEventListener("mouseup", up);
       document.body.classList.remove("cursor-col-resize", "select-none");
-      localStorage.setItem(SPLIT_KEY, String(widthRef.current));
+      localStorage.setItem(SPLIT_KEY, String(latest));
     };
     window.addEventListener("mousemove", move);
     window.addEventListener("mouseup", up);
