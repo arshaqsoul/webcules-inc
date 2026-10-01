@@ -10,7 +10,7 @@ import * as schema from "@/lib/db-schema";
 import { getOrgContext } from "@/lib/session";
 import { getPlanEntitlements } from "@/lib/plans";
 import { effectiveGalleryDesign, saveProjectGalleryDesign } from "@/lib/repos/gallery-design";
-import type { GalleryDesign } from "@/lib/gallery-design";
+import { isCoverOnlyDesign, parseGalleryDesign, type GalleryDesign } from "@/lib/gallery-design";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +41,13 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   if (!parsed.success) return Response.json({ error: "invalid_body" }, { status: 400 });
 
   const ent = await getPlanEntitlements(ctx.organizationId);
-  if (parsed.data.design !== null && ent?.id === "free") {
+  // WEB-301 follow-up: Free may save a single hero/cover photo (the one
+  // free design surface) — anything beyond a cover-only design stays Lite.
+  if (
+    parsed.data.design !== null &&
+    ent?.id === "free" &&
+    !isCoverOnlyDesign(parseGalleryDesign(parsed.data.design))
+  ) {
     return Response.json({ error: "design_requires_lite", plan: ent?.id ?? "free" }, { status: 403 });
   }
 

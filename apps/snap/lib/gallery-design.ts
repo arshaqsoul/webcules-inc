@@ -224,6 +224,24 @@ export function themeVars(background: GalleryDesign["theme"]["background"]): Rec
   return {};
 }
 
+/** WEB-301 follow-up: may a FREE-tier org save this design? The free tier
+ * gets exactly one design surface — a single hero/cover photo (with title,
+ * subtitle, focal). Everything else (styles, layouts, themes, columns, hero
+ * slider) stays Lite/Studio. Input should be the CANONICAL parse. */
+export function isCoverOnlyDesign(d: GalleryDesign | null | undefined): boolean {
+  if (!d) return true; // clearing is always allowed
+  return (
+    d.layout === CLASSIC_LAYOUT &&
+    d.films !== true &&
+    !d.columns &&
+    d.theme.background === CLASSIC_THEME.background &&
+    d.theme.padding === CLASSIC_THEME.padding &&
+    d.theme.radius === CLASSIC_THEME.radius &&
+    d.theme.captions === CLASSIC_THEME.captions &&
+    (!d.cover || (d.cover.style === "static" && !d.cover.images?.length && !d.cover.interval))
+  );
+}
+
 /** WEB-301: CSS-variable overrides for the grid/masonry column counts.
  * Empty when the design carries no column config — the stylesheet's
  * classic ladder (2 / 3 / 4) applies and old configs render unchanged. */

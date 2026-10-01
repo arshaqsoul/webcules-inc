@@ -315,32 +315,27 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
       <div className="flex flex-wrap items-center gap-3">
         <h3 className="text-[15px] font-medium text-ink">Gallery design</h3>
         <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] text-ink-subtle">{statusLabel}{dirty ? " · unsaved" : ""}</span>
-        {canDesign && (
-          <div className="ml-auto flex items-center gap-2">
-            {customized && (
-              <Button size="sm" variant="ghost" disabled={busy} onClick={() => void save(true)}>
-                Reset to default
-              </Button>
-            )}
-            <Button size="sm" disabled={busy || !dirty} onClick={() => void save()}>
-              {busy ? "Saving…" : "Save design"}
+        <div className="ml-auto flex items-center gap-2">
+          {customized && (
+            <Button size="sm" variant="ghost" disabled={busy} onClick={() => void save(true)}>
+              Reset to default
             </Button>
-          </div>
-        )}
+          )}
+          <Button size="sm" disabled={busy || !dirty} onClick={() => void save()}>
+            {busy ? "Saving…" : "Save design"}
+          </Button>
+        </div>
       </div>
 
       <div className="mt-5 grid gap-6 lg:grid-cols-[1fr,320px]">
         {/* ---------------- controls ---------------- */}
         <div className="flex flex-col gap-6">
-          {/* WEB-286: the design controls are Lite — free sees only the
-           * upgrade card (slideshow below stays free-tier). */}
-          {!canDesign && (
-            <LiteUpsell feature="Gallery design" note="Cover photo with a focal point, cinematic Ken Burns hero, editorial layouts, dark or brand-tinted themes, reusable presets." />
-          )}
-          {canDesign && (
-          <>
+          {/* WEB-301 follow-up: the single hero/cover photo is FREE — every
+           * studio can put their photo on the gallery cover. Styles, layouts,
+           * themes and presets below stay Lite (slideshow is free-tier). */}
           <fieldset>
             <legend className="text-xs font-semibold uppercase tracking-wide text-ink-tertiary">Cover</legend>
+            {canDesign ? (
             <div className="mt-2 grid grid-cols-3 gap-2">
               {(["static", "kenburns", "split"] as const).map((s) => (
                 <button
@@ -359,6 +354,11 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
                 </button>
               ))}
             </div>
+            ) : (
+              <p className="mt-2 text-[11px] text-ink-tertiary">
+                Photo + title. Cinematic Ken Burns and split-panel covers come with <span className="font-medium text-ink">Lite</span>.
+              </p>
+            )}
             <div className="mt-3 flex flex-wrap gap-2">
               <button
                 type="button"
@@ -496,6 +496,11 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
             </div>
           </fieldset>
 
+          {!canDesign && (
+            <LiteUpsell feature="Gallery design" note="Cinematic Ken Burns + split covers, editorial layouts, dark or brand-tinted themes, reusable presets." />
+          )}
+          {canDesign && (
+          <>
           <fieldset>
             <legend className="text-xs font-semibold uppercase tracking-wide text-ink-tertiary">Layout</legend>
             <div className="mt-2 grid grid-cols-3 gap-2">

@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import {
   columnsVars,
   heroImages,
+  isCoverOnlyDesign,
   parseGalleryDesign,
   type GalleryDesign,
 } from "@/lib/gallery-design";
@@ -90,5 +91,33 @@ describe("columnsVars / heroImages", () => {
     ]);
     expect(heroImages({ ...LEGACY, cover: undefined })).toEqual([]);
     expect(heroImages(null)).toEqual([]);
+  });
+});
+
+describe("isCoverOnlyDesign — the free-tier hero carve-out", () => {
+  it("null (clearing) and a bare cover are free-legal", () => {
+    expect(isCoverOnlyDesign(null)).toBe(true);
+    expect(
+      isCoverOnlyDesign(
+        parseGalleryDesign({
+          cover: { assetId: "abc123", focal: { x: 0.5, y: 0.5 }, style: "static", title: "Hi", subtitle: "" },
+        }),
+      ),
+    ).toBe(true);
+  });
+
+  it("any Lite/Studio surface rejects the free save", () => {
+    const cover = { assetId: "abc123", focal: { x: 0.5, y: 0.5 }, style: "static", title: "", subtitle: "" };
+    expect(isCoverOnlyDesign(parseGalleryDesign({ cover, layout: "masonry" }))).toBe(false);
+    expect(isCoverOnlyDesign(parseGalleryDesign({ cover, theme: { background: "dark" } }))).toBe(false);
+    expect(isCoverOnlyDesign(parseGalleryDesign({ cover, films: true }))).toBe(false);
+    expect(isCoverOnlyDesign(parseGalleryDesign({ cover, columns: { md: 2 } }))).toBe(false);
+    expect(isCoverOnlyDesign(parseGalleryDesign({ cover, cover2: 1, ...{ cover: { ...cover, images: [{ assetId: "x1", focal: { x: 0.5, y: 0.5 } }, { assetId: "x2", focal: { x: 0.5, y: 0.5 } }] } } }))).toBe(false);
+    expect(isCoverOnlyDesign(parseGalleryDesign({ cover: { ...cover, style: "kenburns" } }))).toBe(false);
+    expect(isCoverOnlyDesign(parseGalleryDesign({ cover: { ...cover, interval: 6 } }))).toBe(false);
+  });
+
+  it("junk keys parse to classic defaults, so a free save can't smuggle styles", () => {
+    expect(isCoverOnlyDesign(parseGalleryDesign({ cover: { assetId: "abc123", style: "bogus" } }))).toBe(true);
   });
 });

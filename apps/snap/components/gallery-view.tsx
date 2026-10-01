@@ -759,6 +759,9 @@ export function GalleryHero({ design, studioName, coverAssetId, slides }: {
             ) : (
               <div className="absolute inset-0 bg-gradient-to-br from-[color-mix(in_srgb,var(--accent)_55%,#22222b)] to-[#101014]" />
             )}
+            {(coverAssetId || (slides?.length ?? 0) >= 2) && (
+              <div className="snap-hero-vignette pointer-events-none absolute inset-0" aria-hidden />
+            )}
           </div>
           <div className="flex items-center bg-surface-2 p-7 sm:p-10 md:min-h-[400px]">
             <div style={{ color: "var(--ink)" }}>
@@ -788,6 +791,9 @@ export function GalleryHero({ design, studioName, coverAssetId, slides }: {
         />
       ) : (
         <div className="absolute inset-0 bg-gradient-to-br from-[color-mix(in_srgb,var(--accent)_55%,#22222b)] to-[#101014]" />
+      )}
+      {(coverAssetId || (slides?.length ?? 0) >= 2) && (
+        <div className="snap-hero-vignette pointer-events-none absolute inset-0" aria-hidden />
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-black/10" />
       <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-10">

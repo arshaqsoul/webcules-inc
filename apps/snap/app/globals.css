@@ -240,6 +240,13 @@ body {
   .snap-masonry { columns: var(--snap-cols-md, 4); }
 }
 
+/* WEB-301: hero vignette — dark edges around the cover photo (the
+ * cinematic frame photographers ask for; also firms up text contrast at
+ * the sides). Sits under the bottom text scrim, over the photo only. */
+.snap-hero-vignette {
+  background: radial-gradient(125% 95% at 50% 42%, transparent 52%, rgba(0, 0, 0, 0.38) 100%);
+}
+
 /* WEB-301: cover hero slider — CSS scroll-snap carousel (swipe on touch,
  * arrows on desktop, gentle auto-advance from JS that respects reduced
  * motion). Slides reserve the same aspect box as the single-image cover. */
