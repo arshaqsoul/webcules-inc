@@ -91,7 +91,7 @@ export const DOC_CATEGORIES: DocCategory[] = [
         slug: "leads",
         title: "Lead inbox",
         description:
-          "Every inquiry lands in one inbox — from your contact form, an embedded widget, or a reply to your email. Triage, reply with snippets, and convert the yeses into bookings without retyping anything.",
+          "Every inquiry becomes a lead — from your contact form, an embedded widget, or added by hand — and opens a conversation in your unified inbox. The Leads page tracks the pipeline: reply with snippets, archive the noes, and convert the yeses into projects without retyping anything.",
         icon: "inbox",
       },
     ],

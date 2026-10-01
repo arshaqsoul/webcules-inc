@@ -24,10 +24,11 @@ export default function Concepts() {
       <p>
         A lead is an inquiry before it&apos;s a job. Leads arrive on their own from your contact
         form, booking page, and embedded widgets — and you can add them by hand. They wait in the{" "}
-        <a href="/dashboard/leads">lead inbox</a> with a status: <strong>new</strong>,{" "}
-        <strong>replied</strong>, <strong>converted</strong>, or <strong>archived</strong>. You
-        reply straight from the thread (with your saved email snippets), and when the answer is
-        yes, one click converts the lead into a project.
+        <a href="/dashboard/leads">Leads pipeline</a> with a status: <strong>new</strong>,{" "}
+        <strong>replied</strong>, <strong>converted</strong>, or <strong>archived</strong>, while
+        the conversation opens in your <a href="/docs/inbox">inbox</a>. You reply there (with your
+        saved email snippets), and when the answer is yes, one click converts the lead into a
+        project.
       </p>
 
       <H3>Bookings</H3>

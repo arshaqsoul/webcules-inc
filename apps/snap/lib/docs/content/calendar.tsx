@@ -76,8 +76,8 @@ export default function Calendar() {
               <strong>replied</strong> that carries an event date. Nothing is held yet.
             </td>
             <td>
-              A "Tentative — lead" card that opens the lead inbox — reply and convert to turn the
-              dashed pill into a committed day.
+              A "Tentative — lead" card that opens the lead record — convert to turn the dashed
+              pill into a committed day, or open the conversation in the inbox to reply.
             </td>
           </tr>
         </tbody>

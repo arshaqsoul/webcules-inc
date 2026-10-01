@@ -50,10 +50,10 @@ export default function Inbox() {
 
       <H2>Replying</H2>
       <p>
-        Replies send from <strong>your studio&rsquo;s own Snap address</strong> (your studio&rsquo;s
-        name on <code>hello+…@snap.webcules.com</code>, with your contact address as Reply-To), so
-        the client&rsquo;s answer threads straight back into the same conversation — never into a
-        no-reply void.
+        Replies send from <strong>the thread&rsquo;s own address</strong> — a private{" "}
+        <code>t-…@snap.webcules.com</code> endpoint minted per conversation, with your contact
+        address as Reply-To — so the client&rsquo;s answer threads straight back into the same
+        conversation even if every header is stripped, and never into a no-reply void.
       </p>
       <ul>
         <li>
