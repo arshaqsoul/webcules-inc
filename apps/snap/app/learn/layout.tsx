@@ -4,6 +4,7 @@
 import type { Metadata } from "next";
 
 import { DocsSidebar } from "@/components/docs/sidebar";
+import { DocsSearch } from "@/components/docs/search";
 import { LearnHeader } from "@/components/learn/learn-header";
 
 export const metadata: Metadata = {
@@ -25,6 +26,7 @@ export default function LearnLayout({ children }: { children: React.ReactNode })
         <LearnHeader />
         <main>{children}</main>
       </div>
+      <DocsSearch />
     </div>
   );
 }

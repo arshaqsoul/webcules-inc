@@ -3,6 +3,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 import { findLearnGuide, fmt, LEARN_GUIDES } from "@/lib/learn/nav";
 import { LearnVideo } from "@/components/learn/learn-video";
@@ -34,13 +35,15 @@ export default async function LearnGuidePage({ params }: { params: Promise<{ slu
       <p className="mt-2 text-[13px] tabular-nums text-ink-tertiary">{fmt(guide.seconds)}</p>
 
       <div className="mt-6">
-        <LearnVideo
-          src={guide.video}
-          poster={guide.poster}
-          captions={guide.captions}
-          chapters={guide.chapters}
-          transcript={guide.transcript}
-        />
+        <Suspense fallback={null}>
+          <LearnVideo
+            src={guide.video}
+            poster={guide.poster}
+            captions={guide.captions}
+            chapters={guide.chapters}
+            transcript={guide.transcript}
+          />
+        </Suspense>
       </div>
 
       {guide.relatedDocs.length > 0 && (

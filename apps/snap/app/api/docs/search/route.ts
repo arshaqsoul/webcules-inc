@@ -1,13 +1,15 @@
-/* GET /api/docs/search?q=… — small server-side search over the doc content.
- * The index (one entry per heading-scoped section) is built lazily from the
- * content registry and cached module-level; scoring is plain token matching
- * with title/heading boost. No DB, no third-party service. */
+/* GET /api/docs/search?q=… — small server-side search over the doc content
+ * AND the learn video guides. The index (one entry per heading-scoped doc
+ * section, per learn guide, and per learn chapter) is built lazily from the
+ * registries and cached module-level; scoring is plain token matching with
+ * title/heading boost. No DB, no third-party service. */
 import { createElement, type ReactElement } from "react";
 import { NextResponse } from "next/server";
 
 import { DOC_CATEGORIES } from "@/lib/docs/nav";
 import { getDocContent } from "@/lib/docs/registry";
 import { extractSections } from "@/lib/docs/extract";
+import { LEARN_GUIDES } from "@/lib/learn/nav";
 
 type IndexedSection = {
   slug: string;
@@ -16,6 +18,8 @@ type IndexedSection = {
   sectionId: string | null;
   heading: string;
   text: string;
+  href: string;
+  kind: "docs" | "learn";
 };
 
 type Hit = {
@@ -26,6 +30,8 @@ type Hit = {
   heading: string | null;
   snippet: string;
   score: number;
+  href: string;
+  kind: "docs" | "learn";
 };
 
 let INDEX: IndexedSection[] | null = null;
@@ -46,8 +52,41 @@ function buildIndex(): IndexedSection[] {
           sectionId: section.heading ? section.id : null,
           heading: section.heading,
           text: section.text.replace(/\s+/g, " ").trim(),
+          href: `/docs/${page.slug}${section.heading ? `#${section.id}` : ""}`,
+          kind: "docs",
         });
       }
+    }
+  }
+  // Learn guides: one guide-level entry (description + chapter titles) and
+  // one entry per chapter (its narration), deep-linking with ?t=<seconds>.
+  for (const guide of LEARN_GUIDES) {
+    const chapterText = guide.chapters.map((c) => c.title).join(", ");
+    index.push({
+      slug: guide.slug,
+      title: guide.title,
+      category: "Learn",
+      sectionId: null,
+      heading: "",
+      text: `${guide.description} Chapters: ${chapterText}`,
+      href: `/learn/${guide.slug}`,
+      kind: "learn",
+    });
+    for (let i = 0; i < guide.chapters.length; i++) {
+      const chapter = guide.chapters[i];
+      const next = guide.chapters[i + 1];
+      const lines = guide.transcript.filter((l) => l.start >= chapter.start && (!next || l.start < next.start));
+      if (lines.length === 0) continue;
+      index.push({
+        slug: guide.slug,
+        title: guide.title,
+        category: "Learn",
+        sectionId: null,
+        heading: chapter.title,
+        text: lines.map((l) => l.text).join(" ").replace(/\s+/g, " ").trim(),
+        href: `/learn/${guide.slug}?t=${chapter.start}`,
+        kind: "learn",
+      });
     }
   }
   INDEX = index;
@@ -108,7 +147,9 @@ export async function GET(request: Request) {
       sectionId: entry.sectionId,
       heading: entry.heading || null,
       snippet: snippetFor(entry.text, tokens),
-      score,
+      score: entry.kind === "learn" ? score + 2 : score,
+      href: entry.href,
+      kind: entry.kind,
     });
   }
 

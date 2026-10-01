@@ -2,7 +2,8 @@
 /* /learn player — Linear-style: full-width video, then the narration as
  * prose with a sticky chapter rail beside it. Clicking a chapter (or a
  * transcript paragraph) seeks the video; the rail tracks playback. */
-import { useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 import { fmt, type LearnChapter, type LearnLine } from "@/lib/learn/nav";
 
@@ -20,8 +21,24 @@ export function LearnVideo({
   transcript: LearnLine[];
 }) {
   const ref = useRef<HTMLVideoElement>(null);
+  const params = useSearchParams();
   const [active, setActive] = useState(0);
   const [activeLine, setActiveLine] = useState(-1);
+
+  // Deep link support: /learn/<slug>?t=<seconds> starts at that timestamp
+  // (used by docs search chapter hits).
+  useEffect(() => {
+    const v = ref.current;
+    const t0 = Number(params.get("t") ?? "");
+    if (!v || !Number.isFinite(t0) || t0 <= 0) return;
+    const apply = () => {
+      v.currentTime = t0;
+      void v.play().catch(() => {});
+    };
+    if (v.readyState >= 1) apply();
+    else v.addEventListener("loadedmetadata", apply, { once: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Robust seek: applies once metadata is ready, re-applies on canplay in
   // case the initial assignment raced the loader, then plays.

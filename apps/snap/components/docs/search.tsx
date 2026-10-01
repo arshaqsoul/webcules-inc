@@ -7,7 +7,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CornerDownLeft, FileText, Search } from "lucide-react";
+import { CornerDownLeft, FileText, PlayCircle, Search } from "lucide-react";
 
 export function openDocsSearch() {
   window.dispatchEvent(new CustomEvent("docs-search"));
@@ -20,6 +20,8 @@ type SearchHit = {
   sectionId: string | null;
   heading: string | null;
   snippet: string;
+  href: string;
+  kind: "docs" | "learn";
 };
 
 export function DocsSearch() {
@@ -80,7 +82,8 @@ export function DocsSearch() {
 
   const go = (hit: SearchHit) => {
     setOpen(false);
-    router.push(hit.sectionId ? `/docs/${hit.slug}#${hit.sectionId}` : `/docs/${hit.slug}`);
+    // Learn hits deep-link with ?t=<seconds>; the player seeks on load.
+    router.push(hit.href || (hit.sectionId ? `/docs/${hit.slug}#${hit.sectionId}` : `/docs/${hit.slug}`));
   };
 
   if (!open) return null;
@@ -124,11 +127,15 @@ export function DocsSearch() {
           {hits.map((hit, i) => (
             <button
               type="button"
-              key={`${hit.slug}-${hit.sectionId ?? "page"}-${i}`}
+              key={`${hit.kind}-${hit.slug}-${hit.href}-${i}`}
               onClick={() => go(hit)}
               className="group flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-surface-1"
             >
-              <FileText className="mt-0.5 h-4 w-4 shrink-0 text-ink-tertiary" aria-hidden />
+              {hit.kind === "learn" ? (
+                <PlayCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+              ) : (
+                <FileText className="mt-0.5 h-4 w-4 shrink-0 text-ink-tertiary" aria-hidden />
+              )}
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[13.5px] font-medium text-ink">
                   {hit.heading ? `${hit.title} — ${hit.heading}` : hit.title}
