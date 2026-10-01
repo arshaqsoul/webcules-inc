@@ -19,6 +19,7 @@ const KEYS: Array<[string, string]> = [
   ["H", "Snooze the selected item"],
   ["Backspace", "Delete the selected item"],
   ["Shift+Backspace", "Delete everything read"],
+  ["F", "Filter the stream"],
   ["⌘K / Ctrl+K", "Command menu"],
   ["Esc", "Close the thread or dialog"],
   ["?", "This sheet"],

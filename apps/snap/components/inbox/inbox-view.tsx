@@ -29,11 +29,12 @@ import {
 import { Button } from "@webcules/ui/components/button";
 import { EmailFrame } from "@/components/inbox/email-frame";
 import { CommandMenu } from "@/components/inbox/command-menu";
+import { FilterMenu } from "@/components/inbox/filter-menu";
+import { KIND_ICON, type InboxKind } from "@/components/inbox/kinds";
 import { ShortcutsSheet } from "@/components/inbox/shortcuts-sheet";
 import { SnoozeDialog } from "@/components/inbox/snooze-dialog";
 import { splitReplyForDisplay } from "@/lib/strip-reply";
 
-type InboxKind = "email" | "booking" | "contract" | "invoice" | "gallery" | "order" | "lead";
 type Tab = "all" | "unread" | "needs-reply" | "needs-triage";
 
 type ListItem = {
@@ -91,16 +92,6 @@ type ThreadData = {
   signature: string;
 };
 
-const KIND_ICON: Record<InboxKind, typeof Mail> = {
-  email: Mail,
-  booking: CalendarDays,
-  contract: FileText,
-  invoice: Banknote,
-  gallery: Images,
-  order: PackageCheck,
-  lead: Users,
-};
-
 const TABS: Array<{ id: Tab; label: string }> = [
   { id: "all", label: "All" },
   { id: "unread", label: "Unread" },
@@ -108,14 +99,11 @@ const TABS: Array<{ id: Tab; label: string }> = [
   { id: "needs-triage", label: "Needs triage" },
 ];
 
-const KIND_FILTERS: Array<{ id: InboxKind; label: string }> = [
-  { id: "email", label: "Emails" },
-  { id: "booking", label: "Bookings" },
-  { id: "contract", label: "Contracts" },
-  { id: "invoice", label: "Payments" },
-  { id: "gallery", label: "Galleries" },
-  { id: "lead", label: "Inquiries" },
-];
+/** List-pane width bounds + storage key for the drag-to-resize split. */
+const SPLIT_MIN = 300;
+const SPLIT_MAX = 640;
+const SPLIT_DEFAULT = 360;
+const SPLIT_KEY = "snap-inbox-split";
 
 function eventLink(e: TimelineEvent, t: ThreadData["thread"]): { href: string; label: string } {
   switch (e.entityType) {
@@ -246,6 +234,37 @@ export function InboxView({ contactEmail, studioName }: { contactEmail: string |
   const [snoozeFor, setSnoozeFor] = useState<string | null>(null);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+
+  // Drag-to-resize split (list | divider | reading pane) — Linear-style.
+  const [listWidth, setListWidth] = useState(SPLIT_DEFAULT);
+  const widthRef = useRef(SPLIT_DEFAULT);
+  widthRef.current = listWidth;
+  useEffect(() => {
+    const saved = Number(localStorage.getItem(SPLIT_KEY));
+    if (Number.isFinite(saved) && saved >= SPLIT_MIN && saved <= SPLIT_MAX) setListWidth(saved);
+  }, []);
+  const onDividerDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startW = widthRef.current;
+    document.body.classList.add("cursor-col-resize", "select-none");
+    const move = (ev: MouseEvent) => {
+      setListWidth(Math.min(SPLIT_MAX, Math.max(SPLIT_MIN, startW + ev.clientX - startX)));
+    };
+    const up = () => {
+      window.removeEventListener("mousemove", move);
+      window.removeEventListener("mouseup", up);
+      document.body.classList.remove("cursor-col-resize", "select-none");
+      localStorage.setItem(SPLIT_KEY, String(widthRef.current));
+    };
+    window.addEventListener("mousemove", move);
+    window.addEventListener("mouseup", up);
+  };
+  const resetSplit = () => {
+    setListWidth(SPLIT_DEFAULT);
+    localStorage.setItem(SPLIT_KEY, String(SPLIT_DEFAULT));
+  };
 
   // Composer state.
   const [reply, setReply] = useState("");
@@ -430,9 +449,13 @@ export function InboxView({ contactEmail, studioName }: { contactEmail: string |
     const onKey = (e: KeyboardEvent) => {
       const el = e.target as HTMLElement | null;
       const typing = el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT" || el.isContentEditable);
-      const dialogOpen = snoozeFor !== null || shortcutsOpen || cmdOpen;
+      const dialogOpen = snoozeFor !== null || shortcutsOpen || cmdOpen || filterOpen;
       if (e.key === "Escape") {
-        if (dialogOpen) return; // dialog's own handler closes it
+        if (dialogOpen) {
+          // Dialogs manage their own close; the filter popover is ours.
+          setFilterOpen(false);
+          return;
+        }
         if (keymapRef.current.openThreadId) {
           setOpenThreadId(null);
           setThread(null);
@@ -513,11 +536,16 @@ export function InboxView({ contactEmail, studioName }: { contactEmail: string |
           e.preventDefault();
           setShortcutsOpen(true);
           break;
+        case "f":
+        case "F":
+          e.preventDefault();
+          setFilterOpen((v) => !v);
+          break;
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [act, bulk, openThread, snoozeFor, shortcutsOpen, cmdOpen]);
+  }, [act, bulk, openThread, snoozeFor, shortcutsOpen, cmdOpen, filterOpen]);
 
   /* ---------------- composer ---------------- */
 
@@ -617,7 +645,10 @@ export function InboxView({ contactEmail, studioName }: { contactEmail: string |
         </div>
       </div>
 
-      <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[360px_1fr]">
+      <div
+        className="grid min-h-0 flex-1 gap-4 lg:gap-0 lg:grid-cols-[var(--list-w)_6px_minmax(0,1fr)]"
+        style={{ ["--list-w" as string]: `${listWidth}px` }}
+      >
         {/* List pane — hidden on mobile while a thread is open (slide-in). */}
         <aside
           aria-label="Inbox items"
@@ -625,31 +656,9 @@ export function InboxView({ contactEmail, studioName }: { contactEmail: string |
             openThreadId ? "hidden" : "flex"
           }`}
         >
-          {/* Kind filter chips */}
-          <div className="flex flex-wrap gap-1.5 border-b border-hairline px-3 py-2">
-            <button
-              type="button"
-              onClick={() => setKindFilter(null)}
-              aria-pressed={kindFilter === null}
-              className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
-                kindFilter === null ? "bg-surface-2 text-ink" : "text-ink-subtle hover:bg-surface-2/60 hover:text-ink"
-              }`}
-            >
-              Everything
-            </button>
-            {KIND_FILTERS.map((k) => (
-              <button
-                key={k.id}
-                type="button"
-                onClick={() => setKindFilter(kindFilter === k.id ? null : k.id)}
-                aria-pressed={kindFilter === k.id}
-                className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
-                  kindFilter === k.id ? "bg-surface-2 text-ink" : "text-ink-subtle hover:bg-surface-2/60 hover:text-ink"
-                }`}
-              >
-                {k.label}
-              </button>
-            ))}
+          {/* Toolbar: filter menu + bulk actions (the keymap's mouse twins). */}
+          <div className="flex items-center gap-1.5 border-b border-hairline px-3 py-2">
+            <FilterMenu kind={kindFilter} onKind={setKindFilter} open={filterOpen} onOpenChange={setFilterOpen} />
             <div className="ml-auto flex items-center gap-1">
               <button
                 type="button"
@@ -786,6 +795,19 @@ export function InboxView({ contactEmail, studioName }: { contactEmail: string |
             )}
           </div>
         </aside>
+
+        {/* Drag-to-resize divider (desktop only) — double-click resets. */}
+        <div
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize list width"
+          title="Drag to resize · double-click to reset"
+          onMouseDown={onDividerDown}
+          onDoubleClick={resetSplit}
+          className="group relative hidden cursor-col-resize items-stretch justify-center lg:flex"
+        >
+          <span className="absolute inset-y-4 left-1/2 w-px -translate-x-1/2 bg-hairline transition-colors group-hover:bg-primary/50" />
+        </div>
 
         {/* Reading pane */}
         <section

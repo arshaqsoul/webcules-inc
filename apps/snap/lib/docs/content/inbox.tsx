@@ -92,8 +92,11 @@ export default function Inbox() {
         The list has four tabs. <strong>All</strong> is everything open; <strong>Unread</strong>{" "}
         is what you haven&rsquo;t seen; <strong>Needs reply</strong> narrows to conversations
         where the client spoke last; <strong>Needs triage</strong> holds the odd ones — events
-        that matched no conversation yet. Filter chips (emails, bookings, contracts, payments,
-        galleries, inquiries) and the search box slice the stream further.
+        that matched no conversation yet. The <strong>Filter</strong> menu (press{" "}
+        <strong>F</strong>) slices the stream by kind — emails, bookings, contracts, payments,
+        galleries, inquiries — and the search box covers titles and previews. The divider
+        between the list and the conversation drags to whatever split suits your screen
+        (double-click resets it), and Snap remembers your choice.
       </p>
       <p>
         The inbox is built to be driven from the keyboard, Linear-style:{" "}
