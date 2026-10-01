@@ -35,6 +35,43 @@ export default function Releases() {
         polish fold into the next entry rather than getting their own.
       </Note>
 
+      <Release version="0.3.0" date="October 1, 2026">
+        <p>
+          <strong>The Inbox.</strong> Snap now has one place for everything that needs you:
+          client emails and studio activity — bookings, contracts, payments, galleries — in a
+          single stream, with replies that send from your own studio address.
+        </p>
+        <ul className="mt-2 list-disc pl-5">
+          <li>
+            <strong>One timeline per client</strong> (Dashboard → Inbox): conversations sit
+            next to compact event cards — &ldquo;Booking rescheduled&rdquo;, &ldquo;Invoice
+            paid&rdquo;, &ldquo;Client opened their gallery&rdquo; — each linking straight to
+            the booking, project or gallery it refers to.
+          </li>
+          <li>
+            <strong>Reading email, safely:</strong> client emails render in a locked frame with
+            remote images blocked until you allow them (tracking pixels never fire by default),
+            and the quoted-reply walls collapse behind a &ldquo;Show trimmed content&rdquo;
+            toggle — nothing is ever cut from the record, just out of your way.
+          </li>
+          <li>
+            <strong>Reply right there:</strong> replies go out from your studio&rsquo;s own Snap
+            address with your studio&rsquo;s name, so answers thread back into the same
+            conversation. Saved snippets and merge fields resolve per client, your business
+            signature is appended, the client&rsquo;s gallery link is one click away, and a copy
+            lands in your own inbox by default while you build trust in the new surface.
+          </li>
+          <li>
+            <strong>Finer notification controls</strong> (Settings → Notifications): Payments,
+            Gallery activity and Orders join the toggles, and every toggle now governs both the
+            alert email <em>and</em> what lands in your Snap inbox — one switch, one truth.
+          </li>
+          <li>
+            Read the docs: <a href="/docs/inbox">Inbox</a>.
+          </li>
+        </ul>
+      </Release>
+
       <Release version="0.2.0" date="October 1, 2026">
         <p>
           <strong>Security, teams, and a gallery that impresses.</strong> Studios can now lock
