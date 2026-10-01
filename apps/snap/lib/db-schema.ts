@@ -1363,6 +1363,8 @@ export const threadMessages = sqliteTable(
     referencesChain: text("references_chain"),
     fromAddr: text("from_addr").notNull().default(""),
     subject: text("subject").notNull().default(""),
+    /** Full stripped body text (≤8 KB) until WEB-307 moves bodies to R2 —
+     * list surfaces truncate to their own preview caps. */
     textPreview: text("text_preview").notNull().default(""),
     /** R2 keys — sanitized HTML + raw .eml (WEB-307 fills them; today's
      * lead ingest keeps body text in lead_message as before). */

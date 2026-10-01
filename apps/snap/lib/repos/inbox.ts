@@ -60,7 +60,9 @@ export async function resolveOrCreateThread(params: {
 
 /** Append a message and bump the thread's activity pointer (the newest
  * direction drives the needs-reply tab). rfc_message_id UNIQUE collapses
- * webhook-retry duplicates — the insert is skipped when one already exists. */
+ * webhook-retry duplicates — the insert is skipped when one already exists.
+ * textPreview carries the FULL body text (≤8 KB, stripped) until WEB-307
+ * moves bodies to R2; list surfaces truncate to their own preview caps. */
 export async function appendThreadMessage(params: {
   organizationId: string;
   threadId: string;
@@ -88,7 +90,7 @@ export async function appendThreadMessage(params: {
         referencesChain: params.referencesChain ?? null,
         fromAddr: params.fromAddr ?? "",
         subject: params.subject?.slice(0, 300) ?? "",
-        textPreview: (params.textPreview ?? "").slice(0, 500),
+        textPreview: (params.textPreview ?? "").slice(0, 8000),
         status: params.status ?? (params.direction === "out" ? "sent" : "received"),
         ...(params.createdAt ? { createdAt: params.createdAt } : {}),
       }),
@@ -241,7 +243,8 @@ export async function listInboxItems(params: ListInboxParams): Promise<{
   nextCursor: string | null;
 }> {
   const db = getDb();
-  const limit = Math.min(Math.max(params.limit ?? 25, 1), 100);
+  const rawLimit = params.limit ?? 25;
+  const limit = Number.isFinite(rawLimit) ? Math.min(Math.max(Math.trunc(rawLimit), 1), 100) : 25;
   const nowSec = Math.floor(Date.now() / 1000);
 
   const conds = [
@@ -388,6 +391,45 @@ export async function markAllInboxRead(params: { userId: string; organizationId:
     )
     .returning({ id: schema.inboxItems.id });
   return out.length;
+}
+
+/** WEB-305: opening a conversation marks its items read (Linear's
+ * open-notification-is-read). Scoped to the caller's own rows. */
+export async function markThreadItemsRead(params: {
+  userId: string;
+  organizationId: string;
+  threadId: string;
+}): Promise<number> {
+  const out = await getDb()
+    .update(schema.inboxItems)
+    .set({ readAt: Math.floor(Date.now() / 1000) })
+    .where(
+      and(
+        eq(schema.inboxItems.userId, params.userId),
+        eq(schema.inboxItems.organizationId, params.organizationId),
+        eq(schema.inboxItems.threadId, params.threadId),
+        isNull(schema.inboxItems.deletedAt),
+        isNull(schema.inboxItems.readAt),
+      ),
+    )
+    .returning({ id: schema.inboxItems.id });
+  return out.length;
+}
+
+/** WEB-305: the caller's items on one thread (event cards + read state). */
+export async function listThreadItems(params: { userId: string; organizationId: string; threadId: string }) {
+  return getDb()
+    .select()
+    .from(schema.inboxItems)
+    .where(
+      and(
+        eq(schema.inboxItems.userId, params.userId),
+        eq(schema.inboxItems.organizationId, params.organizationId),
+        eq(schema.inboxItems.threadId, params.threadId),
+        isNull(schema.inboxItems.deletedAt),
+      ),
+    )
+    .orderBy(desc(schema.inboxItems.createdAt));
 }
 
 export async function deleteReadInboxItems(params: { userId: string; organizationId: string }): Promise<number> {

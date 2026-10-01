@@ -19,6 +19,9 @@ type NavItem = { href: string; label: string; icon: LucideIcon; /** WEB-286: min
 
 export const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Overview", icon: LayoutGrid },
+  // WEB-303: the unified inbox is the primary communication surface — first
+  // working section, ahead of Leads (which WEB-308 folds under it).
+  { href: "/dashboard/inbox", label: "Inbox", icon: Mail },
   { href: "/dashboard/leads", label: "Leads", icon: Users },
   { href: "/dashboard/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/dashboard/projects", label: "Projects", icon: Images },

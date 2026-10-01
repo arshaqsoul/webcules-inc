@@ -30,6 +30,11 @@ export async function GET(req: Request) {
   if (kind && !INBOX_KINDS.includes(kind as InboxKind)) {
     return Response.json({ error: "invalid_kind" }, { status: 400 });
   }
+  // NaN-safe limit: "?limit=abc" must not reach the SQL layer.
+  const limit = limitRaw === null ? undefined : Number(limitRaw);
+  if (limit !== undefined && (!Number.isInteger(limit) || limit < 1 || limit > 100)) {
+    return Response.json({ error: "invalid_limit" }, { status: 400 });
+  }
 
   const { items, nextCursor } = await listInboxItems({
     userId: ctx.user.id,
@@ -38,7 +43,7 @@ export async function GET(req: Request) {
     kind: (kind as InboxKind) || undefined,
     threadId: threadId || undefined,
     cursor: cursor || null,
-    limit: limitRaw ? Number(limitRaw) : undefined,
+    limit,
   });
 
   return Response.json({

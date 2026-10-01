@@ -81,6 +81,13 @@ export const DOC_CATEGORIES: DocCategory[] = [
     icon: "inbox",
     pages: [
       {
+        slug: "inbox",
+        title: "Inbox",
+        description:
+          "One stream for everything that needs you: client emails and replies alongside bookings, contracts, payments and gallery events — read them in place and answer from your studio's own address.",
+        icon: "inbox",
+      },
+      {
         slug: "leads",
         title: "Lead inbox",
         description:

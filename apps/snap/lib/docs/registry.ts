@@ -9,6 +9,7 @@ import StartGuide from "./content/start-guide";
 import Concepts from "./content/concepts";
 import Security from "./content/security";
 import Notifications from "./content/notifications";
+import Inbox from "./content/inbox";
 import Leads from "./content/leads";
 import BookingPage from "./content/booking-page";
 import Calendar from "./content/calendar";
@@ -39,6 +40,7 @@ export const DOC_CONTENT: Record<string, ComponentType> = {
   concepts: Concepts,
   security: Security,
   notifications: Notifications,
+  inbox: Inbox,
   leads: Leads,
   "booking-page": BookingPage,
   calendar: Calendar,

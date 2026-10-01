@@ -80,6 +80,8 @@ export async function recordOutboundReply(params: {
   subject: string;
   body: string;
   providerId?: string | null;
+  /** WEB-305: delivery outcome for the thread record (default sent). */
+  delivered?: boolean;
 }): Promise<void> {
   const db = getDb();
   await db.insert(schema.leadMessages).values({
@@ -122,6 +124,7 @@ export async function recordOutboundReply(params: {
         rfcMessageId: params.providerId ?? null,
         subject: params.subject,
         textPreview: params.body,
+        status: params.delivered === false ? "failed" : "sent",
       });
     }
   } catch (err) {

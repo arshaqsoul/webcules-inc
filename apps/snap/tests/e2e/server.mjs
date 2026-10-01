@@ -58,6 +58,7 @@ const rmTree = (dir) => {
  *   GET  /dns-query?name=&type=                            DoH JSON answers
  *   /client/v4/zones/:zone/custom_hostnames…               CF-shaped CRUD
  * ------------------------------------------------------------------ */
+let ready = false;
 const dnsRecords = new Map(); // `${type}:${name}` → value
 const chHostnames = new Map(); // custom_hostname id → hostname
 let cfState = { sslStatus: "pending_validation", hostnameStatus: "pending" };
@@ -82,6 +83,11 @@ const mock = createServer(async (req, res) => {
     if (req.method === "POST" && url.pathname === "/__mock/cf") {
       cfState = { ...cfState, ...JSON.parse(await readBody(req)) };
       return json(200, { ok: true });
+    }
+    if (req.method === "GET" && url.pathname === "/__ready") {
+      // Playwright's webServer gate: 200 only once cold-route warmup finished,
+      // so the workerd crash-restart window never lands on a test request.
+      return json(ready ? 200 : 503, { ready });
     }
     if (req.method === "GET" && url.pathname === "/dns-query") {
       const type = url.searchParams.get("type");
@@ -131,6 +137,10 @@ const mock = createServer(async (req, res) => {
 });
 mock.listen(mockPort, "127.0.0.1", () => console.log(`[e2e-server] CF/DoH mock on :${mockPort}`));
 
+console.log("[e2e-server] building production bundle (vinext build)…");
+run("pnpm exec vinext build");
+console.log("[e2e-server] build complete");
+
 console.log("[e2e-server] preparing isolated D1…");
 rmTree(stateDir);
 mkdirSync(stateDir, { recursive: true });
@@ -179,6 +189,11 @@ const classicProjectId = crypto.randomUUID();
 const proOrgId = crypto.randomUUID();
 const freeOrgId = crypto.randomUUID();
 const passwordHash = await hashPassword("TestPass123!x");
+// The PRO org's embed key: specs that need the seeded OWNER to see the
+// result (e.g. the inbox minting an inbox_item for org members) post their
+// embed payloads here — the widget org's key mints for an org the login
+// user doesn't belong to.
+const proEmbedKey = crypto.randomUUID().replace(/-/g, "");
 
 const seedSql = `INSERT INTO organization (id, name, slug, created_at, updated_at)
      VALUES ('${orgId}', 'E2E Widget Studio', 'e2e-widget-${orgId.slice(0, 8)}', unixepoch(), unixepoch());
@@ -191,7 +206,7 @@ const seedSql = `INSERT INTO organization (id, name, slug, created_at, updated_a
    INSERT INTO organization (id, name, slug, created_at, updated_at)
      VALUES ('${proOrgId}', 'E2E Pro Studio', 'e2e-pro-${proOrgId.slice(0, 8)}', unixepoch(), unixepoch());
    INSERT INTO studio_profile (organization_id, studio_name, timezone, contact_email, embed_key, plan)
-     VALUES ('${proOrgId}', 'E2E Pro Studio', 'UTC', '${userEmail}', '${crypto.randomUUID().replace(/-/g, "")}', 'pro');
+     VALUES ('${proOrgId}', 'E2E Pro Studio', 'UTC', '${userEmail}', '${proEmbedKey}', 'pro');
    INSERT INTO organization (id, name, slug, created_at, updated_at)
      VALUES ('${freeOrgId}', 'E2E Side Studio', 'e2e-side-${freeOrgId.slice(0, 8)}', unixepoch(), unixepoch());
    INSERT INTO studio_profile (organization_id, studio_name, timezone, contact_email, embed_key, plan)
@@ -222,7 +237,7 @@ writeFileSync(join(root, "tests", "e2e", ".seed.sql"), seedSql, "utf8");
 run("pnpm exec wrangler d1 execute webcules-snap --local --persist-to tests/e2e/.state --file tests/e2e/.seed.sql");
 writeFileSync(
   join(root, "tests", "e2e", ".seed.json"),
-  JSON.stringify({ orgId, embedKey, weekday, date, userId, userEmail, proOrgId, freeOrgId, mockPort, manageToken, previewProjectId, classicProjectId }),
+  JSON.stringify({ orgId, embedKey, weekday, date, userId, userEmail, proOrgId, freeOrgId, proEmbedKey, mockPort, manageToken, previewProjectId, classicProjectId }),
   "utf8",
 );
 console.log(`[e2e-server] seeded widget + domain studios (weekday ${weekday}, ${date})`);
@@ -231,8 +246,8 @@ console.log(`[e2e-server] seeded widget + domain studios (weekday ${weekday}, ${
 // REAL secrets) is backed up and restored on any exit path. Windows kills
 // don't run exit handlers, so the swap SELF-HEALS: a leftover backup from a
 // crashed run is restored before this run swaps again.
-const devVarsPath = join(root, ".dev.vars");
-const devVarsBackup = join(root, ".dev.vars.e2e-backup");
+const devVarsPath = join(root, "dist", "server", ".dev.vars");
+const devVarsBackup = join(root, "dist", "server", ".dev.vars.e2e-backup");
 if (existsSync(devVarsBackup)) {
   console.warn("[e2e-server] restoring .dev.vars from a crashed previous run");
   copyFileSync(devVarsBackup, devVarsPath);
@@ -257,6 +272,9 @@ writeFileSync(
     `DOH_BASE=http://127.0.0.1:${mockPort}`,
     `CLOUDFLARE_API_TOKEN=e2e-token`,
     `CLOUDFLARE_ZONE_ID=e2e-zone`,
+    `TURNSTILE_SITE_KEY=`,
+    `TURNSTILE_SECRET_KEY=`,
+    `R2_S3_ACCOUNT_ID=`,
   ].join("\n") + "\n",
   "utf8",
 );
@@ -270,10 +288,10 @@ const restoreDevVars = () => {
   }
 };
 
-console.log(`[e2e-server] starting vinext dev on ${base}`);
+console.log(`[e2e-server] starting wrangler dev (production build) on ${base}`);
 const child = spawn(
   "pnpm",
-  ["exec", "vinext", "dev", "--port", port, "--strictPort"],
+  ["exec", "wrangler", "dev", "--config", "dist/server/wrangler.json", "--port", port, "--persist-to", "tests/e2e/.state"],
   { stdio: "inherit", cwd: root, shell: true, env: { ...process.env, SNAP_E2E: "1" } },
 );
 process.on("SIGINT", () => {
@@ -309,5 +327,8 @@ child.on("exit", (code) => {
   await probe("/dashboard/settings/security"); // WEB-279 (compiles the settings tree)
   await probe("/dashboard/settings/team"); // WEB-275
   await probe(`/embed/calendar?key=${embedKey}`);
-  console.log("[e2e-server] cold routes warmed");
+  await probe("/learn"); // cold-compile learn routes during warmup — the
+  await probe("/learn/intro-to-snap"); // workerd crash-restart window must not
+  ready = true; // ...land on a test request: flip the /__ready gate last
+  console.log("[e2e-server] cold routes warmed — ready")
 })();
