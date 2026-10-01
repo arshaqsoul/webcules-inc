@@ -1,8 +1,10 @@
-/* Notifications — the Settings → Notifications card (WEB-278): six studio
+/* Notifications — the Settings → Notifications card (WEB-278): nine studio
  * alert toggles, the new-client email default, and the honest split between
  * alerts to you (mutable) and client transactional email (never suppressible).
  * Facts from components/settings-notifications.tsx, lib/notify-client.ts,
- * app/api/cron/daily-status/route.ts and migrations/0054_notification_defaults.sql. */
+ * app/api/cron/daily-status/route.ts and migrations/0054_notification_defaults.sql.
+ * WEB-303: the same toggles now also govern which events mint inbox items
+ * (lib/inbox/sources.ts) — the inbox surface itself ships separately. */
 import { H2, Callout, Shot, Related } from "@/lib/docs/primitives";
 
 export default function Notifications() {
@@ -16,13 +18,13 @@ export default function Notifications() {
 
       <Shot
         src="/docs-shots/notifications/settings.png"
-        alt="The Settings → Notifications card: six studio alert toggles, the new-client email default, and a Save notifications button."
+        alt="The Settings → Notifications card: studio alert toggles, the new-client email default, and a Save notifications button."
         grad="moss"
       />
 
       <H2>Studio alerts</H2>
       <p>
-        <a href="/dashboard/settings/notifications">Settings → Notifications</a> lists six alerts,
+        <a href="/dashboard/settings/notifications">Settings → Notifications</a> lists nine alerts,
         all on by default. Each one is an email to your studio's contact address — the inbox you
         gave when you signed up. Studio admins can flip any of them off; the change applies from
         the next send onward.
@@ -39,7 +41,7 @@ export default function Notifications() {
             <td>
               <strong>New inquiries</strong>
             </td>
-            <td>Booking page or contact-form submissions</td>
+            <td>Booking page or contact-form submissions, client email replies</td>
           </tr>
           <tr>
             <td>
@@ -55,9 +57,27 @@ export default function Notifications() {
           </tr>
           <tr>
             <td>
-              <strong>Contract signed</strong>
+              <strong>Contract activity</strong>
             </td>
-            <td>A client signs a contract</td>
+            <td>A contract goes out or comes back signed</td>
+          </tr>
+          <tr>
+            <td>
+              <strong>Payments</strong>
+            </td>
+            <td>Invoices paid or payments refunded</td>
+          </tr>
+          <tr>
+            <td>
+              <strong>Gallery activity</strong>
+            </td>
+            <td>A gallery is delivered or first viewed by the client</td>
+          </tr>
+          <tr>
+            <td>
+              <strong>Orders</strong>
+            </td>
+            <td>Client orders paid or shipped</td>
           </tr>
           <tr>
             <td>

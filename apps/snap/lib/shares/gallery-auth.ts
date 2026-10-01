@@ -175,6 +175,18 @@ export async function logShareAccess(
   req?: Request,
 ): Promise<void> {
   try {
+    // WEB-304: the FIRST client view of a gallery is an inbox event. The
+    // pre-count is one indexed query on the hot path; the mint (and its
+    // grant lookup) fires only when no prior view exists.
+    let firstView = false;
+    if (event === "view") {
+      const prior = await getDb()
+        .select({ id: schema.shareAccessLogs.id })
+        .from(schema.shareAccessLogs)
+        .where(and(eq(schema.shareAccessLogs.grantId, grantId), eq(schema.shareAccessLogs.event, "view")))
+        .limit(1);
+      firstView = prior.length === 0;
+    }
     await getDb().insert(schema.shareAccessLogs).values({
       id: crypto.randomUUID(),
       grantId,
@@ -182,6 +194,32 @@ export async function logShareAccess(
       ip: req?.headers.get("cf-connecting-ip") ?? null,
       userAgent: req?.headers.get("user-agent")?.slice(0, 250) ?? null,
     });
+    if (firstView) {
+      const grant = (
+        await getDb()
+          .select({
+            organizationId: schema.shareGrants.organizationId,
+            clientEmail: schema.shareGrants.clientEmail,
+          })
+          .from(schema.shareGrants)
+          .where(eq(schema.shareGrants.id, grantId))
+          .limit(1)
+      )[0];
+      if (grant) {
+        const { emitInboxItem } = await import("@/lib/inbox/sources");
+        await emitInboxItem({
+          organizationId: grant.organizationId,
+          kind: "gallery",
+          eventType: "gallery.first_view",
+          entityType: "gallery.first_view",
+          entityId: grantId,
+          clientEmail: grant.clientEmail,
+          title: "Client opened their gallery for the first time",
+          preview: grant.clientEmail,
+          occurredAt: new Date(),
+        });
+      }
+    }
   } catch (err) {
     console.error("share_access_log insert failed:", String(err)); // audit must never break serving
   }

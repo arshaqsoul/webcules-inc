@@ -59,14 +59,16 @@ import m53 from "../../migrations/0053_two_factor.sql?raw";
 import m54 from "../../migrations/0054_notification_defaults.sql?raw";
 import m55 from "../../migrations/0055_import_batch.sql?raw";
 import m56 from "../../migrations/0056_business_identity.sql?raw";
+import m57 from "../../migrations/0057_inbox.sql?raw";
 
 const MIGRATIONS = [
   m01, m02, m03, m04, m05, m06, m07, m08, m09, m10, m11, m12, m13, m14, m15,
-  m16, m17, m18, m19, m20, m21, m22, m23, m24, m25, m26, m27, m28, m29, m30, m31, m32, m33, m34, m35, m36, m37, m38, m39, m40, m41, m42, m43, m44, m45, m46, m47, m48, m49, m50, m51, m52, m53, m54, m55, m56,
+  m16, m17, m18, m19, m20, m21, m22, m23, m24, m25, m26, m27, m28, m29, m30, m31, m32, m33, m34, m35, m36, m37, m38, m39, m40, m41, m42, m43, m44, m45, m46, m47, m48, m49, m50, m51, m52, m53, m54, m55, m56, m57,
 ];
 
 /** Every table, in an order that satisfies FK constraints when deleting. */
 const TABLES = [
+  "inbox_item", "thread_message", "thread",
   "two_factor", "import_batch",
   "gallery_selection", "gallery_favorite", "share_otp_log", "share_otp", "share_access_log",
   "share_grant_asset", "share_grant",

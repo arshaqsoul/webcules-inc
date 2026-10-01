@@ -17,6 +17,7 @@ import { getEmailBrand } from "./branding";
 import { getStudioProfile } from "./repos/studios";
 import { safeHexColor } from "./embed";
 import { CONTRACT_MERGE_FIELDS, renderMergeFrom } from "./merge";
+import { emitInboxItem } from "./inbox/sources";
 
 export type ContractRow = typeof schema.contracts.$inferSelect;
 
@@ -168,6 +169,20 @@ export async function sendContract(organizationId: string, contractId: string): 
     targetId: contract.projectId,
     meta: JSON.stringify({ contractId, title: contract.title }),
   });
+  // WEB-304: inbox item on the client's thread ("signed" bumps it when the
+  // client comes back — one open item per entity).
+  await emitInboxItem({
+    organizationId,
+    kind: "contract",
+    eventType: "contract.sent",
+    entityType: "contract",
+    entityId: contractId,
+    clientEmail: contract.clientEmail,
+    projectId: contract.projectId,
+    title: `Contract sent — ${contract.title}`,
+    preview: contract.clientEmail,
+    occurredAt: new Date(),
+  });
   return { ok: true, url };
 }
 
@@ -287,6 +302,19 @@ export async function signContract(
       refId: contract.id,
     });
   }
+  // WEB-304: "signed" bumps the contract's inbox item.
+  await emitInboxItem({
+    organizationId: contract.organizationId,
+    kind: "contract",
+    eventType: "contract.signed",
+    entityType: "contract",
+    entityId: contract.id,
+    clientEmail: contract.clientEmail,
+    projectId: contract.projectId,
+    title: `Contract signed — ${contract.title}`,
+    preview: `Signed by ${signer.name.trim()}`,
+    occurredAt: signedAt,
+  });
   return { ok: true, pdfUrl: url };
 }
 

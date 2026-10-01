@@ -30,8 +30,10 @@ describe("notificationPrefValue", () => {
   });
 
   it("covers exactly the toggleable branches (founder notices excluded)", () => {
+    // WEB-303: invoice/gallery/order gate inbox minting (no internal-email
+    // senders yet); inquiry/contract toggles now cover inbox events too.
     expect([...STUDIO_ALERT_KINDS].sort()).toEqual(
-      ["booking", "booking_change", "contract_signed", "inquiry", "raw_archive", "storage"].sort(),
+      ["booking", "booking_change", "contract_signed", "gallery", "inquiry", "invoice", "order", "raw_archive", "storage"].sort(),
     );
   });
 });

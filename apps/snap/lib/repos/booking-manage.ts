@@ -14,6 +14,7 @@ import type { BookingSettings } from "@/lib/availability";
 import { computeDateSlots, getBookingSettings } from "./availability";
 import { decryptToken, encryptToken, hashToken, mintToken } from "@/lib/shares/grants";
 import { studioWantsEmail } from "@/lib/notify-client";
+import { emitInboxItem } from "@/lib/inbox/sources";
 
 export const MANAGE_TOKEN_RE = /^[A-Za-z0-9_-]{20,64}$/;
 export const DEFAULT_RESCHEDULE_CUTOFF_H = 24;
@@ -331,6 +332,20 @@ export async function rescheduleBooking(params: {
   }
 
   const updated = (await db.select().from(schema.bookings).where(eq(schema.bookings.id, booking.id)).limit(1))[0];
+  // WEB-304: inbox item on the client's thread — bumps the booking item
+  // (one open item per entity; the latest state wins).
+  await emitInboxItem({
+    organizationId: params.organizationId,
+    kind: "booking",
+    eventType: "booking.rescheduled",
+    entityType: "booking",
+    entityId: booking.id,
+    clientEmail: booking.clientEmail,
+    projectId: booking.projectId,
+    title: `Booking rescheduled — ${booking.clientName ?? booking.clientEmail}`,
+    preview: `${booking.startAt.toLocaleString("en-US", { month: "short", day: "numeric" })} → ${startAt.toLocaleString("en-US", { timeZone: booking.timezone, month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}`,
+    occurredAt: now,
+  });
   return { ok: true, booking: updated, previousStartAt: booking.startAt, previousEndAt: booking.endAt };
 }
 
@@ -379,6 +394,25 @@ export async function cancelBookingByToken(params: {
   ]);
 
   const updated = (await db.select().from(schema.bookings).where(eq(schema.bookings.id, booking.id)).limit(1))[0];
+  // WEB-304: client-initiated cancel — inbox item on the client's thread.
+  await emitInboxItem({
+    organizationId: booking.organizationId,
+    kind: "booking",
+    eventType: "booking.canceled",
+    entityType: "booking",
+    entityId: booking.id,
+    clientEmail: booking.clientEmail,
+    projectId: booking.projectId,
+    title: `Booking canceled — ${booking.clientName ?? booking.clientEmail}`,
+    preview: booking.startAt.toLocaleString("en-US", {
+      timeZone: booking.timezone,
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    }),
+    occurredAt: new Date(),
+  });
   return { ok: true, booking: updated };
 }
 

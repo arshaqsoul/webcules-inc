@@ -13,6 +13,7 @@ import { galleryTitlePattern } from "./session-types";
 import { renderMerge } from "@/lib/merge";
 import { getStudioProfile } from "./studios";
 import { defaultClientNotify } from "@/lib/notify-client";
+import { emitInboxItem, formatMoney } from "@/lib/inbox/sources";
 
 export type CreateBookingResult =
   | { ok: true; bookingId: string; projectId: string }
@@ -146,6 +147,26 @@ export async function createBookingFromWidget(params: {
   // converted so the inbox doesn't show a duplicate person.
   if (bookingStatus === "confirmed") {
     await linkOpenLeadToBooking({ organizationId: params.organizationId, email, projectId, bookingId });
+    // WEB-304: a new booking landed — inbox item on the client's thread.
+    // (Unpaid holds don't mint; they'd spam the stream when they expire.)
+    await emitInboxItem({
+      organizationId: params.organizationId,
+      kind: "booking",
+      eventType: "booking.created",
+      entityType: "booking",
+      entityId: bookingId,
+      clientEmail: email,
+      projectId,
+      title: `New booking — ${params.clientName}`,
+      preview: startAt.toLocaleString("en-US", {
+        timeZone: profile.timezone,
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      }),
+      occurredAt: new Date(),
+    });
   }
 
   return { ok: true, bookingId, projectId };
@@ -297,6 +318,23 @@ export async function confirmBookingPaid(params: {
     email: booking.clientEmail,
     projectId,
     bookingId: booking.id,
+  });
+
+  // WEB-304: money landed — inbox item on the client's thread (bumps the
+  // booking.created item; one open item per entity, latest state wins).
+  await emitInboxItem({
+    organizationId: params.organizationId,
+    kind: "invoice",
+    eventType: "invoice.paid",
+    entityType: "booking",
+    entityId: booking.id,
+    clientEmail: booking.clientEmail,
+    projectId,
+    title: `Payment received — ${booking.clientName ?? booking.clientEmail}`,
+    preview: params.amountMinor
+      ? `${formatMoney(params.amountMinor, params.currency ?? "usd")} · ${booking.startAt.toLocaleString("en-US", { month: "short", day: "numeric" })}`
+      : booking.startAt.toLocaleString("en-US", { month: "short", day: "numeric" }),
+    occurredAt: new Date(),
   });
 
   // WEB-136: booking-confirmed client email (per-studio opt-out respected).

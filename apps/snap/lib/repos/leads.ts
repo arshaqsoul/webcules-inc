@@ -8,6 +8,8 @@ import * as schema from "@/lib/db-schema";
 import { createProjectForLead } from "./projects";
 import { stripQuotedReply } from "../strip-reply";
 import { defaultClientNotify } from "@/lib/notify-client";
+import { appendThreadMessage, mintInboxItems, resolveOrCreateThread } from "./inbox";
+import { emitInboxItem } from "@/lib/inbox/sources";
 
 export const LEAD_STATUSES = ["new", "replied", "converted", "archived"] as const;
 export type LeadStatus = (typeof LEAD_STATUSES)[number];
@@ -96,6 +98,61 @@ export async function recordOutboundReply(params: {
     .where(
       and(eq(schema.leads.id, params.leadId), eq(schema.leads.organizationId, params.organizationId)),
     );
+  // WEB-304: the reply also lands on the inbox thread (no item — the studio
+  // sent it; the conversation record stays complete for the unified view).
+  try {
+    const lead = (
+      await db
+        .select({ email: schema.leads.email })
+        .from(schema.leads)
+        .where(eq(schema.leads.id, params.leadId))
+        .limit(1)
+    )[0];
+    if (lead) {
+      const threadId = await resolveOrCreateThread({
+        organizationId: params.organizationId,
+        clientEmail: lead.email,
+        subject: params.subject,
+        leadId: params.leadId,
+      });
+      await appendThreadMessage({
+        organizationId: params.organizationId,
+        threadId,
+        direction: "out",
+        rfcMessageId: params.providerId ?? null,
+        subject: params.subject,
+        textPreview: params.body,
+      });
+    }
+  } catch (err) {
+    console.error("lead reply thread append failed:", String(err));
+  }
+}
+
+/** WEB-304: mint the "new inquiry" inbox item + thread for a lead. Shared by
+ * the manual entry, the embed contact form and the embed forms pipeline;
+ * repeat submissions (the dedupe path) bump the same item. Never throws. */
+export async function mintLeadInboxItem(params: {
+  organizationId: string;
+  leadId: string;
+  name: string;
+  email: string;
+  message?: string | null;
+  eventType?: string | null;
+}): Promise<void> {
+  await emitInboxItem({
+    organizationId: params.organizationId,
+    kind: "lead",
+    eventType: "lead.created",
+    entityType: "lead",
+    entityId: params.leadId,
+    clientEmail: params.email,
+    leadId: params.leadId,
+    subject: params.eventType ? `${params.eventType} inquiry` : "New inquiry",
+    title: `New inquiry — ${params.name}`,
+    preview: params.message?.slice(0, 240) || params.eventType || params.email,
+    occurredAt: new Date(),
+  });
 }
 
 export async function updateLeadStatus(organizationId: string, leadId: string, status: LeadStatus) {
@@ -365,6 +422,14 @@ export async function createManualLead(params: {
       meta: JSON.stringify({ source: "manual" }),
     }),
   ]);
+  await mintLeadInboxItem({
+    organizationId: params.organizationId,
+    leadId,
+    name: params.name,
+    email: params.email,
+    message: params.message ?? null,
+    eventType: params.eventType ?? null,
+  });
   return { ok: true, leadId };
 }
 
@@ -464,19 +529,62 @@ export async function ingestInboundEmail(payload: {
   if (!result) return { matched: false };
 
   const db = getDb();
+  const body = stripQuotedReply((payload.text ?? payload.html ?? "")).slice(0, 8000);
   await db.insert(schema.leadMessages).values({
     id: crypto.randomUUID(),
     organizationId: result.organizationId,
     leadId: result.leadId,
     direction: "in",
     subject: payload.subject,
-    body: stripQuotedReply((payload.text ?? payload.html ?? "")).slice(0, 8000),
+    body,
     providerId: payload.messageId,
   });
   await db
     .update(schema.leads)
     .set({ updatedAt: new Date() })
     .where(eq(schema.leads.id, result.leadId));
+
+  // WEB-304: the reply lands on the unified inbox — thread message + item.
+  // Never breaks ingest: the lead_message row above is already committed.
+  try {
+    const lead = (
+      await db
+        .select({ email: schema.leads.email, name: schema.leads.name })
+        .from(schema.leads)
+        .where(eq(schema.leads.id, result.leadId))
+        .limit(1)
+    )[0];
+    if (lead) {
+      const threadId = await resolveOrCreateThread({
+        organizationId: result.organizationId,
+        clientEmail: lead.email,
+        subject: payload.subject,
+        leadId: result.leadId,
+      });
+      await appendThreadMessage({
+        organizationId: result.organizationId,
+        threadId,
+        direction: "in",
+        rfcMessageId: payload.messageId || null,
+        fromAddr: payload.from,
+        subject: payload.subject,
+        textPreview: body,
+      });
+      await mintInboxItems({
+        organizationId: result.organizationId,
+        kind: "email",
+        entityType: "email",
+        entityId: payload.messageId || crypto.randomUUID(),
+        threadId,
+        title: `${lead.name} replied`,
+        preview: body.slice(0, 240),
+        occurredAt: new Date(),
+      });
+    }
+  } catch (err) {
+    console.error("inbox thread append for inbound reply failed:", String(err));
+  }
+
   return { matched: true, leadId: result.leadId, organizationId: result.organizationId };
 }
 

@@ -19,6 +19,7 @@ import { notificationPrefValue } from "@/lib/notify-client";
 import { getTemplate, touchTemplateUsed } from "@/lib/repos/templates";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { matchSessionTypeByLabel } from "@/lib/repos/session-types";
+import { mintLeadInboxItem } from "@/lib/repos/leads";
 
 export const dynamic = "force-dynamic";
 
@@ -129,6 +130,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ templat
     targetType: "lead",
     targetId: leadId,
     meta: JSON.stringify({ deduped: Boolean(existing), formTemplateId: template.id }),
+  });
+
+  // WEB-304: unified-inbox item (repeat submissions bump the same item).
+  await mintLeadInboxItem({
+    organizationId: studio.organizationId,
+    leadId,
+    name,
+    email,
+    message: message || null,
+    eventType: eventType || null,
   });
 
   // Notifications — failures never block the visitor's success.

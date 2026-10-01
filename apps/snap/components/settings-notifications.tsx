@@ -12,10 +12,13 @@ import { Button } from "@webcules/ui/components/button";
 type Prefs = Record<string, boolean | undefined>;
 
 const ALERTS: { key: string; label: string; hint: string }[] = [
-  { key: "inquiry", label: "New inquiries", hint: "Booking page or contact-form submissions" },
+  { key: "inquiry", label: "New inquiries", hint: "Booking page or contact-form submissions, client email replies" },
   { key: "booking", label: "New bookings", hint: "A paid booking lands through your booking page" },
   { key: "booking_change", label: "Booking changes", hint: "Client reschedules or cancels" },
-  { key: "contract_signed", label: "Contract signed", hint: "A client signs a contract" },
+  { key: "contract_signed", label: "Contract activity", hint: "A contract goes out or comes back signed" },
+  { key: "invoice", label: "Payments", hint: "Invoices paid or payments refunded" },
+  { key: "gallery", label: "Gallery activity", hint: "A gallery is delivered or first viewed by the client" },
+  { key: "order", label: "Orders", hint: "Client orders paid or shipped" },
   { key: "storage", label: "Storage warnings", hint: "Storage crosses 90% of your plan" },
   { key: "raw_archive", label: "RAW Vault notices", hint: "Archive confirmations, purge warnings, renewals" },
 ];
@@ -95,10 +98,10 @@ export function SettingsNotifications({
     <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
       <h2 className="text-[15px] font-medium text-ink">Studio alerts</h2>
       <p className="mt-1 text-sm leading-relaxed text-ink-subtle">
-        Choose which updates land in your inbox. These toggles only govern emails to{" "}
-        <em>you</em>. Client email runs in two streams: contracts and invoices/receipts always send,
-        while gallery links, booking emails and reminders follow each client's email preference —
-        clients control that in their portal, and “New client emails” below sets your default.
+        Choose which updates reach you. These toggles govern both alert emails to{" "}
+        <em>you</em> and what lands in your Snap inbox. Client email runs in two streams: contracts and
+        invoices/receipts always send, while gallery links, booking emails and reminders follow each client's
+        email preference — clients control that in their portal, and “New client emails” below sets your default.
       </p>
       <div className="mt-4 flex flex-col gap-2">
         {ALERTS.map((a) => (

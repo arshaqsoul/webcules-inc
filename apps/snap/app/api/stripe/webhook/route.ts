@@ -22,6 +22,7 @@ import { applySubscriptionState } from "@/lib/billing";
 import { cancelBooking, confirmBookingPaid } from "@/lib/repos/bookings";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { getStripe } from "@/lib/stripe";
+import { emitInboxItem, formatMoney } from "@/lib/inbox/sources";
 
 export const dynamic = "force-dynamic";
 
@@ -198,6 +199,20 @@ export async function POST(req: Request) {
             : []),
           ...cancelProject,
         ]);
+
+        // WEB-304: refund landed — inbox item (client thread when booking).
+        await emitInboxItem({
+          organizationId: payment.organizationId,
+          kind: "invoice",
+          eventType: "invoice.refunded",
+          entityType: "payment",
+          entityId: payment.id,
+          clientEmail: booking?.clientEmail ?? null,
+          projectId: payment.projectId,
+          title: `Refund issued — ${formatMoney(payment.amountMinor, payment.currency)}`,
+          preview: booking ? (booking.clientName ?? booking.clientEmail) : (project?.title ?? null) || "",
+          occurredAt: new Date(),
+        });
 
         // Canceled bookings free their slot (conflict query excludes canceled).
         // WEB-141: the email states what happens to the booking, the project,

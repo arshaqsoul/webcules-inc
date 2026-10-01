@@ -1315,6 +1315,101 @@ export const uploadSessions = sqliteTable(
   (t) => [index("upload_session_org_idx").on(t.organizationId, t.createdAt)],
 );
 
+/* ---------------- Inbox (WEB-303/304) — Linear-style per-user view ----------------
+ * The inbox is a view over events, never a duplicate store: entities live in
+ * their own tables; inbox_item carries only per-user read/snooze/deleted
+ * state. Conversations live in thread/thread_message (bodies in R2 — D1 rows
+ * cap at 2 MB); DDL: migrations/0057_inbox.sql. */
+
+export const threads = sqliteTable(
+  "thread",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    subject: text("subject").notNull().default(""),
+    clientEmail: text("client_email").notNull(),
+    clientId: text("client_id").references(() => clients.id, { onDelete: "set null" }),
+    leadId: text("lead_id").references(() => leads.id, { onDelete: "set null" }),
+    projectId: text("project_id").references(() => projects.id, { onDelete: "set null" }),
+    /** Direction of the newest message — drives the needs-reply filter. */
+    lastDirection: text("last_direction"),
+    lastActivityAt: ts("last_activity_at"),
+    createdAt: ts("created_at"),
+  },
+  (t) => [
+    index("thread_org_client_idx").on(t.organizationId, t.clientEmail, t.lastActivityAt),
+    index("thread_org_activity_idx").on(t.organizationId, t.lastActivityAt),
+  ],
+);
+
+export const threadMessages = sqliteTable(
+  "thread_message",
+  {
+    id: text("id").primaryKey(),
+    threadId: text("thread_id")
+      .notNull()
+      .references(() => threads.id, { onDelete: "cascade" }),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    /** in | out */
+    direction: text("direction").notNull(),
+    /** RFC 5322 Message-ID — the threading lookup key; UNIQUE collapses
+     * webhook-retry duplicates before they reach the conversation. */
+    rfcMessageId: text("rfc_message_id").unique(),
+    inReplyTo: text("in_reply_to"),
+    referencesChain: text("references_chain"),
+    fromAddr: text("from_addr").notNull().default(""),
+    subject: text("subject").notNull().default(""),
+    textPreview: text("text_preview").notNull().default(""),
+    /** R2 keys — sanitized HTML + raw .eml (WEB-307 fills them; today's
+     * lead ingest keeps body text in lead_message as before). */
+    htmlR2Key: text("html_r2_key"),
+    rawR2Key: text("raw_r2_key"),
+    hasAttachments: integer("has_attachments", { mode: "boolean" }).notNull().default(false),
+    /** received | sent | failed */
+    status: text("status").notNull().default("received"),
+    createdAt: ts("created_at"),
+  },
+  (t) => [index("thread_message_thread_idx").on(t.threadId, t.createdAt)],
+);
+
+export const inboxItems = sqliteTable(
+  "inbox_item",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    /** email | booking | contract | invoice | gallery | order | lead */
+    kind: text("kind").notNull(),
+    entityType: text("entity_type").notNull(),
+    entityId: text("entity_id").notNull(),
+    /** Set when the event belongs to a client conversation; NULL = needs
+     * triage (unmatched inbound, WEB-307 mints those). */
+    threadId: text("thread_id").references(() => threads.id, { onDelete: "set null" }),
+    title: text("title").notNull().default(""),
+    preview: text("preview").notNull().default(""),
+    /** Per-user state only — the entity itself is never mutated. */
+    readAt: integer("read_at"),
+    snoozedUntil: integer("snoozed_until"),
+    deletedAt: integer("deleted_at"),
+    createdAt: ts("created_at"),
+  },
+  (t) => [
+    index("inbox_item_user_stream_idx").on(t.userId, t.deletedAt, t.createdAt),
+    index("inbox_item_user_read_idx").on(t.userId, t.readAt),
+    uniqueIndex("inbox_item_user_entity_unique")
+      .on(t.userId, t.entityType, t.entityId)
+      .where(sql`${t.deletedAt} IS NULL`),
+  ],
+);
+
 /* ---------------- Client portal auth (WEB-131) ---------------- */
 
 /** Magic-code login for portal clients — email-scoped, latest code wins. */

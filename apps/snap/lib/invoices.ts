@@ -17,6 +17,7 @@ import { getEmailBrand } from "./branding";
 import { getStudioProfile } from "./repos/studios";
 import { safeHexColor } from "./embed";
 import { getStripe } from "./stripe";
+import { emitInboxItem, formatMoney } from "./inbox/sources";
 
 export type InvoiceLine = { description: string; qty: number; amountMinor: number };
 
@@ -381,4 +382,18 @@ export async function markInvoicePaidFromSession(session: {
       meta: JSON.stringify({ invoiceId, number: invoice.number, checkoutSession: session.id }),
     }),
   ]);
+
+  // WEB-304: money landed — inbox item on the client's thread.
+  await emitInboxItem({
+    organizationId: invoice.organizationId,
+    kind: "invoice",
+    eventType: "invoice.paid",
+    entityType: "invoice",
+    entityId: invoiceId,
+    clientEmail: invoice.clientEmail,
+    projectId: invoice.projectId,
+    title: `Invoice ${invoice.number} paid`,
+    preview: formatMoney(session.amount_total ?? invoice.totalMinor, invoice.currency),
+    occurredAt: new Date(),
+  });
 }

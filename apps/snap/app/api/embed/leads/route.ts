@@ -14,6 +14,7 @@ import { inquiryAckEmail, inquiryReceivedEmail, sendEmail } from "@/lib/email";
 import { originAllowed, resolveStudioByEmbedKey, safeHexColor } from "@/lib/embed";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { matchSessionTypeByLabel } from "@/lib/repos/session-types";
+import { mintLeadInboxItem } from "@/lib/repos/leads";
 
 export const dynamic = "force-dynamic";
 
@@ -129,6 +130,16 @@ export async function POST(req: Request) {
     targetType: "lead",
     targetId: leadId,
     meta: JSON.stringify({ deduped: Boolean(existing) }),
+  });
+
+  // WEB-304: unified-inbox item (repeat submissions bump the same item).
+  await mintLeadInboxItem({
+    organizationId: studio.organizationId,
+    leadId,
+    name: input.name,
+    email,
+    message: input.message || null,
+    eventType: input.eventType || null,
   });
 
   // Notifications (async-ish: workerd keeps the ctx alive until the response

@@ -6,6 +6,7 @@ import { getEmailBrand } from "@/lib/branding";
 import { getStudioProfile, getStudioSlug } from "@/lib/repos/studios";
 import { safeHexColor } from "@/lib/embed";
 import { clientWantsEmail } from "@/lib/notify-client";
+import { emitInboxItem } from "@/lib/inbox/sources";
 
 export async function sendGrantEmail(params: {
   organizationId: string;
@@ -35,7 +36,7 @@ export async function sendGrantEmail(params: {
     contactEmail: b.contactEmail,
   });
   const slug = await getStudioSlug(params.organizationId);
-  return sendEmail({
+  const sent = await sendEmail({
     to: params.clientEmail,
     subject: tmpl.subject,
     html: tmpl.html,
@@ -49,6 +50,24 @@ export async function sendGrantEmail(params: {
     template: "gallery_link",
     refId: params.grantId,
   });
+  // WEB-304: "gallery delivered" inbox item on the client's thread — mints
+  // on first delivery, re-emails/new-photo notifies bump the same item.
+  if (sent) {
+    await emitInboxItem({
+      organizationId: params.organizationId,
+      kind: "gallery",
+      eventType: "gallery.delivered",
+      entityType: "gallery",
+      entityId: params.grantId,
+      clientEmail: params.clientEmail,
+      title: params.fresh
+        ? `Gallery delivered — ${params.clientName}`
+        : `Gallery updated — ${params.clientName}`,
+      preview: `${params.photoCount} photo${params.photoCount === 1 ? "" : "s"}`,
+      occurredAt: new Date(),
+    });
+  }
+  return sent;
 }
 
 /** Gallery OTP code email — sent only within the WEB-132 caps. */

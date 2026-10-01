@@ -270,5 +270,15 @@ export async function POST(req: Request) {
     console.error("setup rollup failed:", String(err));
   }
 
-  return Response.json({ ok: true, moved: due.length, warned, downgraded, expiredHolds, vault, dormancy, margin, expiredUploads, rejectedPurged, domains, addonSettled, downloads, reminders, setup });
+  // WEB-304: inbox cap — every user's open items prune to 2,000 (oldest
+  // first, soft-delete so a still-referenced item keeps its history).
+  let inboxPrune = { users: 0, pruned: 0 };
+  try {
+    const { pruneInboxCaps } = await import("@/lib/repos/inbox");
+    inboxPrune = await pruneInboxCaps();
+  } catch (err) {
+    console.error("inbox prune failed:", String(err));
+  }
+
+  return Response.json({ ok: true, moved: due.length, warned, downgraded, expiredHolds, vault, dormancy, margin, expiredUploads, rejectedPurged, domains, addonSettled, downloads, reminders, setup, inboxPrune });
 }
