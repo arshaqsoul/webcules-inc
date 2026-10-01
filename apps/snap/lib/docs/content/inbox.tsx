@@ -1,10 +1,9 @@
-/* Inbox (WEB-303/305) — the unified conversation + activity stream. Written
- * from the code: components/inbox/inbox-view.tsx (layout, filters, composer),
- * email-frame.tsx (sandboxed rendering), app/api/inbox/threads/[id]/reply
- * (sending, from-address, mirror copy), lib/inbox/sources.ts (what mints
- * items), lib/notify-client.ts (the toggles that gate minting). The triage
- * layer (tabs, snooze, keymap) ships separately — keep this page honest
- * about what exists today. */
+/* Inbox (WEB-303/305/306) — the unified conversation + activity stream and
+ * its triage layer. Written from the code: components/inbox/inbox-view.tsx
+ * (tabs, keymap, actions, search), email-frame.tsx (sandboxed rendering),
+ * command-menu/shortcuts-sheet/snooze-dialog/nav-badge, app/api/inbox
+ * (list/actions/bulk/badge), lib/inbox/sources.ts (what mints items),
+ * lib/notify-client.ts (the toggles that gate minting). */
 import { H2, Callout, Related } from "@/lib/docs/primitives";
 
 export default function Inbox() {
@@ -86,6 +85,30 @@ export default function Inbox() {
         events mint inbox notifications — turn a branch off (say, gallery activity) and neither the
         email nor the inbox item appears. The stream refreshes as you work: on opening the page, when
         you come back to the tab, and every 30 seconds.
+      </p>
+
+      <H2>Triage at speed</H2>
+      <p>
+        The list has four tabs. <strong>All</strong> is everything open; <strong>Unread</strong>{" "}
+        is what you haven&rsquo;t seen; <strong>Needs reply</strong> narrows to conversations
+        where the client spoke last; <strong>Needs triage</strong> holds the odd ones — events
+        that matched no conversation yet. Filter chips (emails, bookings, contracts, payments,
+        galleries, inquiries) and the search box slice the stream further.
+      </p>
+      <p>
+        The inbox is built to be driven from the keyboard, Linear-style:{" "}
+        <strong>j/k</strong> move the selection, <strong>Enter</strong> opens (or closes) the
+        conversation, <strong>U</strong> toggles read, <strong>H</strong> snoozes,{" "}
+        <strong>Backspace</strong> deletes — <strong>Alt+U</strong> marks everything read,{" "}
+        <strong>Shift+Backspace</strong> clears everything read, and <strong>⌘K</strong> opens
+        the command menu. Press <strong>?</strong> any time for the full sheet.
+      </p>
+      <p>
+        <strong>Snooze</strong> hides an item until a moment you pick — later today, tomorrow
+        morning, next week, or a custom time — then it resurfaces unread. Nothing is lost: the
+        underlying lead, booking or invoice keeps its own history whatever you do here, and the
+        sidebar&rsquo;s Inbox badge always equals your open unread items, mirrored into the
+        browser tab title so a backgrounded tab still signals.
       </p>
 
       <Callout tone="info" title="Inquiries live in both, on purpose">

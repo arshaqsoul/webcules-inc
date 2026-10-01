@@ -231,6 +231,10 @@ export type ListInboxParams = {
   tab?: InboxTab;
   kind?: InboxKind;
   threadId?: string;
+  /** Substring search over title/preview (v1 LIKE; D1 FTS5 is confirmed
+   * available — when the corpus demands it, promote to an external-content
+   * FTS5 table over inbox_item and keep this signature unchanged). */
+  q?: string | null;
   cursor?: string | null;
   limit?: number;
   /** Snoozed items leave the list until snoozed_until passes (Linear
@@ -260,6 +264,15 @@ export async function listInboxItems(params: ListInboxParams): Promise<{
     conds.push(eq(schema.threads.lastDirection, "in"));
   }
   if (params.tab === "needs-triage") conds.push(isNull(schema.inboxItems.threadId));
+  if (params.q?.trim()) {
+    // LIKE escape: %/_ in the needle must not widen the match.
+    const needle = `%${params.q.trim().replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
+    const search = or(
+      sql`${schema.inboxItems.title} LIKE ${needle} ESCAPE '\\'`,
+      sql`${schema.inboxItems.preview} LIKE ${needle} ESCAPE '\\'`,
+    );
+    if (search) conds.push(search);
+  }
   if (!params.includeSnoozed) {
     const snoozeGate = or(isNull(schema.inboxItems.snoozedUntil), lt(schema.inboxItems.snoozedUntil, nowSec));
     if (snoozeGate) conds.push(snoozeGate);

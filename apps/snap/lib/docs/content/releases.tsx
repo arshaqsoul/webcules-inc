@@ -35,6 +35,31 @@ export default function Releases() {
         polish fold into the next entry rather than getting their own.
       </Note>
 
+      <Release version="0.3.1" date="October 1, 2026">
+        <p>
+          <strong>Inbox, faster.</strong> The inbox gains its triage layer: four tabs (Unread ·
+          All · Needs reply · Needs triage), the full keyboard shortcut set Linear made famous,
+          snooze with reasons, search, and an unread badge in the sidebar that follows you
+          everywhere — including the browser tab title.
+        </p>
+        <ul className="mt-2 list-disc pl-5">
+          <li>
+            Drive it from the keyboard: <strong>j/k</strong> to move, <strong>Enter</strong> to
+            open, <strong>U</strong> to mark read, <strong>H</strong> to snooze,{" "}
+            <strong>Backspace</strong> to delete — plus <strong>⌘K</strong> for the command
+            menu and <strong>?</strong> for the shortcut sheet.
+          </li>
+          <li>
+            <strong>Snooze</strong> an item until later today, tomorrow morning, next week or a
+            custom moment — it hides, then resurfaces unread. Nothing is ever lost.
+          </li>
+          <li>
+            Filter chips by kind (emails, bookings, contracts, payments, galleries, inquiries)
+            and search across titles and previews.
+          </li>
+        </ul>
+      </Release>
+
       <Release version="0.3.0" date="October 1, 2026">
         <p>
           <strong>The Inbox.</strong> Snap now has one place for everything that needs you:

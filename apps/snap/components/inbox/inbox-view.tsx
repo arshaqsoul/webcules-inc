@@ -1,31 +1,40 @@
 "use client";
 
-/* Unified inbox (WEB-305) — Linear-style two-pane: the item stream on the
- * left, the conversation (emails + system event cards, interleaved) on the
- * right, composer docked to the reading pane. SWR feel without realtime
- * infra: refetch on mount / window focus / 30 s. Optimistic mark-read and
- * reply with rollback. The triage layer (tabs, keymap, snooze) is WEB-306;
- * this is the reading surface. */
+/* Unified inbox (WEB-303) — two panes: the triage list on the left, the
+ * conversation on the right. WEB-305 built the reading surface; WEB-306
+ * builds the Linear layer on top: four tabs (Unread · All · Needs reply ·
+ * Needs triage), the exact keymap (j/k · Enter · U · Alt+U · H · Backspace ·
+ * Shift+Backspace · ⌘K · ?), snooze-with-reasons, per-row actions, search,
+ * and load-more pagination (keyset) that keeps the list responsive at any
+ * corpus size. SWR rhythm: mount + window focus + 30 s. */
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Banknote,
   CalendarDays,
+  Check,
+  ChevronDown,
+  Clock,
   FileText,
   Images,
   Mail,
   PackageCheck,
-  Users,
-  ChevronDown,
   RefreshCw,
+  Search,
   Send,
+  Trash2,
+  Users,
 } from "lucide-react";
 
 import { Button } from "@webcules/ui/components/button";
 import { EmailFrame } from "@/components/inbox/email-frame";
+import { CommandMenu } from "@/components/inbox/command-menu";
+import { ShortcutsSheet } from "@/components/inbox/shortcuts-sheet";
+import { SnoozeDialog } from "@/components/inbox/snooze-dialog";
 import { splitReplyForDisplay } from "@/lib/strip-reply";
 
 type InboxKind = "email" | "booking" | "contract" | "invoice" | "gallery" | "order" | "lead";
+type Tab = "all" | "unread" | "needs-reply" | "needs-triage";
 
 type ListItem = {
   id: string;
@@ -36,6 +45,7 @@ type ListItem = {
   title: string;
   preview: string;
   readAt: number | null;
+  snoozedUntil: number | null;
   createdAt: string;
 };
 
@@ -91,6 +101,22 @@ const KIND_ICON: Record<InboxKind, typeof Mail> = {
   lead: Users,
 };
 
+const TABS: Array<{ id: Tab; label: string }> = [
+  { id: "all", label: "All" },
+  { id: "unread", label: "Unread" },
+  { id: "needs-reply", label: "Needs reply" },
+  { id: "needs-triage", label: "Needs triage" },
+];
+
+const KIND_FILTERS: Array<{ id: InboxKind; label: string }> = [
+  { id: "email", label: "Emails" },
+  { id: "booking", label: "Bookings" },
+  { id: "contract", label: "Contracts" },
+  { id: "invoice", label: "Payments" },
+  { id: "gallery", label: "Galleries" },
+  { id: "lead", label: "Inquiries" },
+];
+
 function eventLink(e: TimelineEvent, t: ThreadData["thread"]): { href: string; label: string } {
   switch (e.entityType) {
     case "lead":
@@ -110,6 +136,16 @@ function eventLink(e: TimelineEvent, t: ThreadData["thread"]): { href: string; l
 
 const fmtTime = (iso: string) =>
   new Date(iso).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+
+/** Relative list time — Linear's list is "2m", the pane keeps the stamp. */
+function relTime(iso: string): string {
+  const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+  if (s < 60) return "now";
+  if (s < 3600) return `${Math.floor(s / 60)}m`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h`;
+  if (s < 7 * 86400) return `${Math.floor(s / 86400)}d`;
+  return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
 
 /** A client email: quote-collapsed text (render-time split — the stored body
  * is never touched), sandboxed iframe when an HTML body exists. */
@@ -194,12 +230,22 @@ function EventCard({ e, thread }: { e: TimelineEvent; thread: ThreadData["thread
 
 export function InboxView({ contactEmail, studioName }: { contactEmail: string | null; studioName: string }) {
   const [items, setItems] = useState<ListItem[]>([]);
-  const [unreadFilter, setUnreadFilter] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [tab, setTab] = useState<Tab>("all");
+  const [kindFilter, setKindFilter] = useState<InboxKind | null>(null);
+  const [search, setSearch] = useState("");
+  const [debouncedQ, setDebouncedQ] = useState("");
   const [unreadCount, setUnreadCount] = useState(0);
-  const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [openThreadId, setOpenThreadId] = useState<string | null>(null);
   const [thread, setThread] = useState<ThreadData | null>(null);
   const [threadLoading, setThreadLoading] = useState(false);
   const [listLoading, setListLoading] = useState(true);
+
+  // Dialogs (keymap gates on any of these being open).
+  const [snoozeFor, setSnoozeFor] = useState<string | null>(null);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [cmdOpen, setCmdOpen] = useState(false);
 
   // Composer state.
   const [reply, setReply] = useState("");
@@ -207,19 +253,12 @@ export function InboxView({ contactEmail, studioName }: { contactEmail: string |
   const [sendFailed, setSendFailed] = useState(false);
   const [mirror, setMirror] = useState(true);
   const composerRef = useRef<HTMLTextAreaElement>(null);
+  const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
-  const fetchList = useCallback(
-    async () => {
-      try {
-        const res = await fetch(`/api/inbox?limit=50${unreadFilter ? "&tab=unread" : ""}`, { cache: "no-store" });
-        const body = (await res.json()) as { items?: ListItem[] };
-        if (body.items) setItems(body.items);
-      } finally {
-        setListLoading(false);
-      }
-    },
-    [unreadFilter],
-  );
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQ(search.trim()), 250);
+    return () => clearTimeout(t);
+  }, [search]);
 
   const fetchUnread = useCallback(async () => {
     try {
@@ -231,8 +270,34 @@ export function InboxView({ contactEmail, studioName }: { contactEmail: string |
     }
   }, []);
 
-  // SWR rhythm: mount + focus + 30 s polling (push deliberately deferred).
+  // Params live in a ref so fetchList stays referentially stable — otherwise
+  // the SWR effect below re-runs on every cursor change and double-fetches /
+  // resets the list after Load more.
+  const paramsRef = useRef({ tab, kindFilter, debouncedQ, nextCursor });
+  paramsRef.current = { tab, kindFilter, debouncedQ, nextCursor };
+
+  const fetchList = useCallback(async (opts: { append?: boolean } = {}) => {
+    const { tab, kindFilter, debouncedQ, nextCursor } = paramsRef.current;
+    const params = new URLSearchParams({ limit: "50", tab });
+    if (kindFilter) params.set("kind", kindFilter);
+    if (debouncedQ) params.set("q", debouncedQ);
+    if (opts.append && nextCursor) params.set("cursor", nextCursor);
+    try {
+      const res = await fetch(`/api/inbox?${params.toString()}`, { cache: "no-store" });
+      const body = (await res.json()) as { items?: ListItem[]; nextCursor?: string | null };
+      if (body.items) {
+        setItems((prev) => (opts.append ? [...prev, ...body.items!] : body.items!));
+        setNextCursor(body.nextCursor ?? null);
+      }
+    } finally {
+      setListLoading(false);
+    }
+  }, []);
+
+  // SWR rhythm: fresh fetch when the view changes; mount + focus + 30 s
+  // polling otherwise (push deliberately deferred).
   useEffect(() => {
+    setListLoading(true);
     void fetchList();
     void fetchUnread();
     const t = setInterval(() => {
@@ -248,11 +313,13 @@ export function InboxView({ contactEmail, studioName }: { contactEmail: string |
       clearInterval(t);
       window.removeEventListener("focus", onFocus);
     };
-  }, [fetchList, fetchUnread]);
+  }, [tab, kindFilter, debouncedQ, fetchList, fetchUnread]);
+
+  const selectedItem = items.find((i) => i.id === selectedId) ?? null;
 
   const openThread = useCallback(
     async (threadId: string) => {
-      setSelectedThreadId(threadId);
+      setOpenThreadId(threadId);
       setThreadLoading(true);
       setThread(null);
       setSendFailed(false);
@@ -268,7 +335,6 @@ export function InboxView({ contactEmail, studioName }: { contactEmail: string |
         if (!res.ok) throw new Error(String(res.status));
         setThread((await res.json()) as ThreadData);
       } catch {
-        // Rollback the optimistic read on failure.
         if (affected) {
           setItems((prev) => prev.map((i) => (i.threadId === threadId && i.readAt === 1 ? { ...i, readAt: null } : i)));
           void fetchUnread();
@@ -281,12 +347,185 @@ export function InboxView({ contactEmail, studioName }: { contactEmail: string |
     [items, fetchUnread],
   );
 
+  /* ---------------- per-item + bulk actions (optimistic, reconciled) ---------------- */
+
+  const act = useCallback(
+    async (id: string, action: "read" | "unread" | "delete", extra?: Record<string, unknown>) => {
+      const target = items.find((i) => i.id === id);
+      if (!target) return;
+      const wasUnread = target.readAt === null;
+      const prev = items;
+      // Optimistic flip (count only moves on a real transition).
+      if (action === "delete") setItems((cur) => cur.filter((i) => i.id !== id));
+      else setItems((cur) => cur.map((i) => (i.id === id ? { ...i, readAt: action === "read" ? 1 : null } : i)));
+      if (wasUnread && action !== "unread") setUnreadCount((n) => Math.max(0, n - 1));
+      if (action === "unread" && !wasUnread) setUnreadCount((n) => n + 1);
+      try {
+        const res = await fetch(`/api/inbox/items/${id}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action, ...extra }),
+        });
+        if (!res.ok) throw new Error();
+      } catch {
+        setItems(prev); // rollback
+        void fetchUnread();
+      }
+    },
+    [items, fetchUnread],
+  );
+
+  const snooze = useCallback(
+    async (id: string, until: Date) => {
+      const target = items.find((i) => i.id === id);
+      if (!target) return;
+      const prev = items;
+      setItems((cur) => cur.filter((i) => i.id !== id)); // hidden until the moment passes
+      if (target.readAt === null) setUnreadCount((n) => Math.max(0, n - 1));
+      try {
+        const res = await fetch(`/api/inbox/items/${id}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "snooze", until: until.toISOString() }),
+        });
+        if (!res.ok) throw new Error();
+      } catch {
+        setItems(prev);
+        void fetchUnread();
+      }
+    },
+    [items, fetchUnread],
+  );
+
+  const bulk = useCallback(
+    async (action: "mark-all-read" | "delete-read") => {
+      const prev = items;
+      if (action === "mark-all-read") {
+        setItems((cur) => cur.map((i) => ({ ...i, readAt: 1 })));
+        setUnreadCount(0);
+      } else {
+        setItems((cur) => cur.filter((i) => i.readAt === null));
+      }
+      try {
+        const res = await fetch("/api/inbox/bulk", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action }),
+        });
+        if (!res.ok) throw new Error();
+      } catch {
+        setItems(prev);
+        void fetchUnread();
+      }
+    },
+    [items, fetchUnread],
+  );
+
+  /* ---------------- the keymap (WEB-306 contract — ? sheet mirrors it) ---------------- */
+
+  const keymapRef = useRef({ items, selectedId, openThreadId });
+  keymapRef.current = { items, selectedId, openThreadId };
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement | null;
+      const typing = el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT" || el.isContentEditable);
+      const dialogOpen = snoozeFor !== null || shortcutsOpen || cmdOpen;
+      if (e.key === "Escape") {
+        if (dialogOpen) return; // dialog's own handler closes it
+        if (keymapRef.current.openThreadId) {
+          setOpenThreadId(null);
+          setThread(null);
+        }
+        return;
+      }
+      if (typing || dialogOpen) return;
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setCmdOpen(true);
+        return;
+      }
+      if (e.altKey && e.key.toLowerCase() === "u") {
+        e.preventDefault();
+        void bulk("mark-all-read");
+        return;
+      }
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const { items: list, selectedId: sel } = keymapRef.current;
+      const idx = list.findIndex((i) => i.id === sel);
+      const select = (next: number) => {
+        if (!list.length) return;
+        const id = list[Math.max(0, Math.min(list.length - 1, next))].id;
+        setSelectedId(id);
+        rowRefs.current.get(id)?.scrollIntoView({ block: "nearest" });
+      };
+      switch (e.key) {
+        case "j":
+          e.preventDefault();
+          select(idx < 0 ? 0 : idx + 1);
+          break;
+        case "k":
+          e.preventDefault();
+          select(idx < 0 ? list.length - 1 : idx - 1);
+          break;
+        case "Enter": {
+          e.preventDefault();
+          const cur = idx >= 0 ? list[idx] : null;
+          if (cur?.threadId) {
+            if (keymapRef.current.openThreadId === cur.threadId) {
+              setOpenThreadId(null);
+              setThread(null);
+            } else {
+              void openThread(cur.threadId);
+            }
+          }
+          break;
+        }
+        case "u":
+        case "U": {
+          e.preventDefault();
+          const cur = idx >= 0 ? list[idx] : null;
+          if (cur) void act(cur.id, cur.readAt === null ? "read" : "unread");
+          break;
+        }
+        case "h":
+        case "H": {
+          e.preventDefault();
+          const cur = idx >= 0 ? list[idx] : null;
+          if (cur) setSnoozeFor(cur.id);
+          break;
+        }
+        case "Backspace": {
+          e.preventDefault();
+          if (e.shiftKey) {
+            void bulk("delete-read");
+          } else {
+            const cur = idx >= 0 ? list[idx] : null;
+            if (cur) {
+              void act(cur.id, "delete");
+              const nextSel = list[Math.min(list.length - 1, idx + 1)] ?? null;
+              setSelectedId(nextSel?.id ?? null);
+            }
+          }
+          break;
+        }
+        case "?":
+          e.preventDefault();
+          setShortcutsOpen(true);
+          break;
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [act, bulk, openThread, snoozeFor, shortcutsOpen, cmdOpen]);
+
+  /* ---------------- composer ---------------- */
+
   async function sendReply() {
-    if (!selectedThreadId || !reply.trim() || sending) return;
+    if (!openThreadId || !reply.trim() || sending) return;
     setSending(true);
     setSendFailed(false);
     const body = reply;
-    // Optimistic pending bubble (id free-form; replaced by refetch).
     const pending: TimelineMessage = {
       type: "message",
       id: `pending-${Date.now()}`,
@@ -300,7 +539,7 @@ export function InboxView({ contactEmail, studioName }: { contactEmail: string |
     };
     setThread((t) => (t ? { ...t, timeline: [...t.timeline, pending] } : t));
     try {
-      const res = await fetch(`/api/inbox/threads/${selectedThreadId}/reply`, {
+      const res = await fetch(`/api/inbox/threads/${openThreadId}/reply`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ body, mirrorCopy: mirror }),
@@ -313,7 +552,7 @@ export function InboxView({ contactEmail, studioName }: { contactEmail: string |
       } else {
         setReply("");
       }
-      await fetch(`/api/inbox/threads/${selectedThreadId}`, { cache: "no-store" })
+      await fetch(`/api/inbox/threads/${openThreadId}`, { cache: "no-store" })
         .then((r) => (r.ok ? r.json() : null))
         .then((t) => t && setThread(t as ThreadData));
       void fetchList();
@@ -327,76 +566,223 @@ export function InboxView({ contactEmail, studioName }: { contactEmail: string |
     }
   }
 
+  const cmdTarget = {
+    hasSelection: Boolean(selectedItem),
+    leadId: thread?.thread.leadId ?? null,
+    projectId: thread?.thread.projectId ?? null,
+  };
+
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
+      {/* Header: tabs + search + bulk */}
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-[-0.6px] text-ink">Inbox</h1>
-          <p className="mt-0.5 text-sm text-ink-subtle">
-            {unreadCount > 0 ? `${unreadCount} unread` : "Everything read"} · conversations and studio events in one stream
-          </p>
+        <div className="flex flex-wrap items-center gap-1.5">
+          {TABS.map((t) => {
+            const active = tab === t.id;
+            const label = t.id === "unread" && unreadCount > 0 ? `Unread (${unreadCount})` : t.label;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setTab(t.id)}
+                aria-pressed={active}
+                className={`rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
+                  active
+                    ? "bg-primary text-white"
+                    : "border border-hairline bg-surface-1 text-ink-subtle hover:bg-surface-2 hover:text-ink"
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
         </div>
-        <div className="flex items-center gap-1.5">
-          {(["all", "unread"] as const).map((f) => (
-            <button
-              key={f}
-              type="button"
-              onClick={() => setUnreadFilter(f === "unread")}
-              aria-pressed={unreadFilter === (f === "unread")}
-              className={`rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
-                (f === "unread") === unreadFilter
-                  ? "bg-primary text-white"
-                  : "border border-hairline bg-surface-1 text-ink-subtle hover:bg-surface-2 hover:text-ink"
-              }`}
-            >
-              {f === "all" ? "All" : `Unread${unreadCount ? ` (${unreadCount})` : ""}`}
-            </button>
-          ))}
+        <div className="flex items-center gap-2">
+          <label className="relative">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-tertiary" aria-hidden />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search the inbox…"
+              aria-label="Search the inbox"
+              className="w-48 rounded-full border border-hairline bg-surface-1 py-1.5 pl-8 pr-3 text-[13px] text-ink placeholder:text-ink-tertiary focus:w-64 focus:outline-none focus:ring-2 focus:ring-primary/30"
+            />
+          </label>
+          <Button variant="ghost" size="sm" onClick={() => setCmdOpen(true)} title="Command menu (⌘K)">
+            ⌘K
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => setShortcutsOpen(true)} title="Keyboard shortcuts (?)">
+            ?
+          </Button>
         </div>
       </div>
 
-      <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[340px_1fr]">
-        {/* List pane */}
+      <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[360px_1fr]">
+        {/* List pane — hidden on mobile while a thread is open (slide-in). */}
         <aside
           aria-label="Inbox items"
-          className="flex min-h-64 flex-col overflow-hidden rounded-[12px] border border-hairline bg-surface-1 lg:h-full"
+          className={`min-h-64 flex-col overflow-hidden rounded-[12px] border border-hairline bg-surface-1 lg:flex lg:h-full ${
+            openThreadId ? "hidden" : "flex"
+          }`}
         >
+          {/* Kind filter chips */}
+          <div className="flex flex-wrap gap-1.5 border-b border-hairline px-3 py-2">
+            <button
+              type="button"
+              onClick={() => setKindFilter(null)}
+              aria-pressed={kindFilter === null}
+              className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
+                kindFilter === null ? "bg-surface-2 text-ink" : "text-ink-subtle hover:bg-surface-2/60 hover:text-ink"
+              }`}
+            >
+              Everything
+            </button>
+            {KIND_FILTERS.map((k) => (
+              <button
+                key={k.id}
+                type="button"
+                onClick={() => setKindFilter(kindFilter === k.id ? null : k.id)}
+                aria-pressed={kindFilter === k.id}
+                className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
+                  kindFilter === k.id ? "bg-surface-2 text-ink" : "text-ink-subtle hover:bg-surface-2/60 hover:text-ink"
+                }`}
+              >
+                {k.label}
+              </button>
+            ))}
+            <div className="ml-auto flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => void bulk("mark-all-read")}
+                title="Mark everything read (Alt+U)"
+                className="rounded-md p-1.5 text-ink-tertiary transition-colors hover:bg-surface-2 hover:text-ink"
+              >
+                <Check className="h-3.5 w-3.5" aria-hidden />
+              </button>
+              <button
+                type="button"
+                onClick={() => void bulk("delete-read")}
+                title="Delete everything read (Shift+Backspace)"
+                className="rounded-md p-1.5 text-ink-tertiary transition-colors hover:bg-surface-2 hover:text-ink"
+              >
+                <Trash2 className="h-3.5 w-3.5" aria-hidden />
+              </button>
+            </div>
+          </div>
+
           <div className="min-h-0 flex-1 overflow-y-auto" role="list" aria-label="Conversations">
             {listLoading ? (
               <p className="p-4 text-sm text-ink-subtle">Loading…</p>
             ) : items.length === 0 ? (
               <p className="p-4 text-sm text-ink-subtle">
-                {unreadFilter ? "Nothing unread — nice." : "No conversations yet. Inquiries, bookings and client replies land here."}
+                {debouncedQ
+                  ? "Nothing matches that search."
+                  : tab === "unread"
+                    ? "Nothing unread — nice."
+                    : tab === "needs-reply"
+                      ? "Every conversation is answered."
+                      : tab === "needs-triage"
+                        ? "Nothing waiting for triage."
+                        : "No conversations yet. Inquiries, bookings and client replies land here."}
               </p>
             ) : (
               items.map((i) => {
                 const Icon = KIND_ICON[i.kind] ?? Mail;
-                const active = i.threadId === selectedThreadId;
+                const selected = i.id === selectedId;
                 return (
-                  <button
+                  <div
                     key={i.id}
-                    type="button"
+                    ref={(el) => {
+                      if (el) rowRefs.current.set(i.id, el);
+                      else rowRefs.current.delete(i.id);
+                    }}
                     role="listitem"
-                    aria-current={active ? "true" : undefined}
-                    onClick={() => i.threadId && void openThread(i.threadId)}
-                    className={`flex w-full items-start gap-3 border-b border-hairline px-4 py-3 text-left transition-colors ${
-                      active ? "bg-surface-2" : "hover:bg-surface-2/60"
+                    data-selected={selected || undefined}
+                    tabIndex={0}
+                    onClick={() => {
+                      setSelectedId(i.id);
+                      if (i.threadId) void openThread(i.threadId);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.stopPropagation();
+                        setSelectedId(i.id);
+                        if (i.threadId) void openThread(i.threadId);
+                      }
+                    }}
+                    className={`group flex w-full cursor-pointer items-start gap-3 border-b border-hairline px-4 py-3 text-left outline-none transition-colors ${
+                      selected ? "bg-surface-2 ring-1 ring-inset ring-primary/40" : "hover:bg-surface-2/60 focus-visible:bg-surface-2/60"
                     }`}
                   >
                     <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                       <Icon className="h-3.5 w-3.5" aria-hidden />
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className={`block truncate text-sm ${i.readAt === null ? "font-semibold text-ink" : "text-ink"}`}>
-                        {i.title}
+                      <span className={`flex items-baseline justify-between gap-2 ${i.readAt === null ? "font-semibold text-ink" : "text-ink"}`}>
+                        <span className="truncate">{i.title}</span>
+                        <span className="shrink-0 text-[11px] font-normal text-ink-tertiary">{relTime(i.createdAt)}</span>
                       </span>
                       <span className="block truncate text-xs text-ink-subtle">{i.preview || "—"}</span>
-                      <span className="mt-0.5 block text-[11px] text-ink-tertiary">{fmtTime(i.createdAt)}</span>
+                      <span className="mt-0.5 flex items-center gap-1.5 text-[11px] text-ink-tertiary">
+                        {i.threadId ? (
+                          <span className="inline-flex items-center gap-0.5 rounded-full border border-hairline px-1.5 py-px">
+                            <Mail className="h-2.5 w-2.5" aria-hidden /> thread
+                          </span>
+                        ) : null}
+                        {i.kind}
+                      </span>
                     </span>
-                    {i.readAt === null && <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary" aria-label="Unread" />}
-                  </button>
+                    <span className="flex shrink-0 flex-col items-center gap-1">
+                      {i.readAt === null && <span className="h-2 w-2 rounded-full bg-primary" aria-label="Unread" />}
+                      {/* Row actions (hover/focus) — the keymap's mouse twins. */}
+                      <span className="flex opacity-0 transition-opacity group-hover:focus-within:opacity-100 group-hover:opacity-100">
+                        <button
+                          type="button"
+                          title={i.readAt === null ? "Mark read (U)" : "Mark unread (U)"}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void act(i.id, i.readAt === null ? "read" : "unread");
+                          }}
+                          className="rounded p-1 text-ink-tertiary hover:bg-surface-2 hover:text-ink"
+                        >
+                          <Check className="h-3 w-3" aria-hidden />
+                        </button>
+                        <button
+                          type="button"
+                          title="Snooze (H)"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSnoozeFor(i.id);
+                          }}
+                          className="rounded p-1 text-ink-tertiary hover:bg-surface-2 hover:text-ink"
+                        >
+                          <Clock className="h-3 w-3" aria-hidden />
+                        </button>
+                        <button
+                          type="button"
+                          title="Delete (Backspace)"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void act(i.id, "delete");
+                          }}
+                          className="rounded p-1 text-ink-tertiary hover:bg-surface-2 hover:text-ink"
+                        >
+                          <Trash2 className="h-3 w-3" aria-hidden />
+                        </button>
+                      </span>
+                    </span>
+                  </div>
                 );
               })
+            )}
+            {nextCursor && !listLoading && (
+              <button
+                type="button"
+                onClick={() => void fetchList({ append: true })}
+                className="w-full px-4 py-3 text-center text-[13px] font-medium text-primary transition-colors hover:bg-surface-2/60"
+              >
+                Load more
+              </button>
             )}
           </div>
         </aside>
@@ -404,12 +790,17 @@ export function InboxView({ contactEmail, studioName }: { contactEmail: string |
         {/* Reading pane */}
         <section
           aria-label="Conversation"
-          className="flex min-h-96 flex-col overflow-hidden rounded-[12px] border border-hairline bg-background lg:h-full"
+          className={`min-h-96 flex-col overflow-hidden rounded-[12px] border border-hairline bg-background lg:flex lg:h-full ${
+            openThreadId ? "flex" : "hidden"
+          }`}
         >
-          {!selectedThreadId ? (
+          {!openThreadId ? (
             <div className="flex flex-1 items-center justify-center p-8 text-center">
               <p className="max-w-xs text-sm text-ink-subtle">
-                Pick a conversation on the left. Emails, bookings, contracts, invoices and gallery events sit in one timeline.
+                Pick a conversation on the left — or drive it from the keyboard: <kbd className="rounded border border-hairline bg-surface-1 px-1 font-mono text-[11px]">j</kbd>{" "}
+                <kbd className="rounded border border-hairline bg-surface-1 px-1 font-mono text-[11px]">k</kbd> to move,{" "}
+                <kbd className="rounded border border-hairline bg-surface-1 px-1 font-mono text-[11px]">Enter</kbd> to open. Press{" "}
+                <kbd className="rounded border border-hairline bg-surface-1 px-1 font-mono text-[11px]">?</kbd> for all shortcuts.
               </p>
             </div>
           ) : threadLoading ? (
@@ -417,8 +808,11 @@ export function InboxView({ contactEmail, studioName }: { contactEmail: string |
               <RefreshCw className="h-4 w-4 animate-spin text-ink-subtle" aria-hidden />
             </div>
           ) : !thread ? (
-            <div className="flex flex-1 items-center justify-center p-8 text-sm text-ink-subtle">
-              Couldn&rsquo;t load this conversation — try again.
+            <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-sm text-ink-subtle">
+              <p>Couldn&rsquo;t load this conversation — try again.</p>
+              <Button variant="outline" size="sm" onClick={() => openThreadId && void openThread(openThreadId)}>
+                Retry
+              </Button>
             </div>
           ) : (
             <>
@@ -445,7 +839,13 @@ export function InboxView({ contactEmail, studioName }: { contactEmail: string |
                     ) : null}
                   </p>
                 </div>
-                <p className="shrink-0 text-xs text-ink-tertiary">{thread.thread.subject || "Conversation"}</p>
+                <div className="flex items-center gap-2">
+                  <p className="hidden shrink-0 text-xs text-ink-tertiary sm:block">{thread.thread.subject || "Conversation"}</p>
+                  {/* Mobile slide-in back */}
+                  <Button variant="ghost" size="sm" className="lg:hidden" onClick={() => { setOpenThreadId(null); setThread(null); }}>
+                    ← Inbox
+                  </Button>
+                </div>
               </div>
 
               <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
@@ -531,6 +931,27 @@ export function InboxView({ contactEmail, studioName }: { contactEmail: string |
           )}
         </section>
       </div>
+
+      {/* Dialogs — the keymap and row buttons share them. */}
+      <SnoozeDialog
+        open={snoozeFor !== null}
+        onOpenChange={(v) => !v && setSnoozeFor(null)}
+        onSnooze={(until) => snoozeFor && void snooze(snoozeFor, until)}
+      />
+      <ShortcutsSheet open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
+      <CommandMenu
+        open={cmdOpen}
+        onOpenChange={setCmdOpen}
+        target={cmdTarget}
+        onSnooze={(until) => selectedItem && void snooze(selectedItem.id, until)}
+        onToggleRead={() => selectedItem && void act(selectedItem.id, selectedItem.readAt === null ? "read" : "unread")}
+        onMarkAllRead={() => void bulk("mark-all-read")}
+        onDeleteRead={() => void bulk("delete-read")}
+        onCloseThread={() => {
+          setOpenThreadId(null);
+          setThread(null);
+        }}
+      />
     </div>
   );
 }

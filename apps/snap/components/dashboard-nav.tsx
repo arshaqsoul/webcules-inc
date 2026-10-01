@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { Banknote, CalendarDays, ChevronDown, Clock, Code2, CreditCard, FileText, Globe, Images, LayoutGrid, LayoutTemplate, Link2, ListChecks, Lock, Mail, PackageCheck, Receipt, Settings, SlidersHorizontal, Bell, ShieldCheck, Snowflake, UserPlus, Users, BookOpen, Palette, Frame } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { PlanId } from "@/lib/plans-data";
+import { InboxNavBadge } from "@/components/inbox/nav-badge";
 
 /** Plan ladder for nav gating (free < lite < studio < pro). */
 const PLAN_RANK: Record<PlanId, number> = { free: 0, lite: 1, studio: 2, pro: 3 };
@@ -232,6 +233,9 @@ export function DashboardNavLinks({ onNavigate, includeDocs = true, collapsed = 
           >
             <item.icon className="h-4 w-4 shrink-0" aria-hidden />
             {!collapsed && item.label}
+            {/* WEB-306: the inbox row carries the unread badge (one number,
+                one truth) in every layout the nav renders. */}
+            {item.href === "/dashboard/inbox" && !collapsed && <InboxNavBadge />}
           </Link>
         );
       })}

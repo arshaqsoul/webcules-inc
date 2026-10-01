@@ -21,6 +21,7 @@ export async function GET(req: Request) {
   const tab = url.searchParams.get("tab");
   const kind = url.searchParams.get("kind");
   const threadId = url.searchParams.get("thread");
+  const q = url.searchParams.get("q");
   const cursor = url.searchParams.get("cursor");
   const limitRaw = url.searchParams.get("limit");
 
@@ -42,6 +43,7 @@ export async function GET(req: Request) {
     tab: (tab as InboxTab) || undefined,
     kind: (kind as InboxKind) || undefined,
     threadId: threadId || undefined,
+    q: q || null,
     cursor: cursor || null,
     limit,
   });
