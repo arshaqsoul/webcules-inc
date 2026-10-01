@@ -1,9 +1,8 @@
 # Generated per-video artifacts — only inputs (script/plan/chapters) are tracked.
-vo/*.wav
-vo/*.mp3
-out/
-auditions/
-assets/
+**/vo/
+**/out/
+**/auditions/
+**/assets/
 voice-sample/
-raw/
-clips/
+**/raw/
+**/clips/
