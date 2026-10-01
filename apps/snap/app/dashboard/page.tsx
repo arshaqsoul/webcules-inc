@@ -262,7 +262,8 @@ async function OverviewLists({ organizationId, tz, now }: { organizationId: stri
       <div className="rounded-[12px] border border-hairline bg-surface-1 p-5">
         <div className="flex items-center justify-between">
           <p className="text-sm font-medium text-ink">Latest leads</p>
-          <Link href="/dashboard/leads" className="text-xs text-ink-subtle hover:text-ink">
+          {/* WEB-308: conversations live in the Inbox; the pipeline stays here. */}
+          <Link href="/dashboard/inbox" className="text-xs text-ink-subtle hover:text-ink">
             Inbox →
           </Link>
         </div>

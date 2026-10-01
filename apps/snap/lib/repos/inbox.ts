@@ -452,6 +452,95 @@ export async function listThreadItems(params: { userId: string; organizationId: 
     .orderBy(desc(schema.inboxItems.createdAt));
 }
 
+/** WEB-308: attach a threadless (triage) item to a client/lead/project —
+ * resolves (or creates) the record's conversation, re-points the item, and
+ * retitles it to the record. Returns the thread to open. */
+export async function attachTriageItem(params: {
+  userId: string;
+  organizationId: string;
+  itemId: string;
+  kind: "lead" | "client" | "project";
+  recordId: string;
+}): Promise<{ ok: true; threadId: string; title: string } | { ok: false; error: "item_not_found" | "already_threaded" | "record_not_found" }> {
+  const db = getDb();
+  const item = (
+    await db
+      .select()
+      .from(schema.inboxItems)
+      .where(
+        and(
+          eq(schema.inboxItems.id, params.itemId),
+          eq(schema.inboxItems.userId, params.userId),
+          eq(schema.inboxItems.organizationId, params.organizationId),
+          isNull(schema.inboxItems.deletedAt),
+        ),
+      )
+      .limit(1)
+  )[0];
+  if (!item) return { ok: false, error: "item_not_found" };
+  if (item.threadId) return { ok: false, error: "already_threaded" };
+
+  let clientEmail: string;
+  let title: string;
+  let leadId: string | null = null;
+  let clientId: string | null = null;
+  let projectId: string | null = null;
+  if (params.kind === "lead") {
+    const lead = (
+      await db
+        .select()
+        .from(schema.leads)
+        .where(and(eq(schema.leads.id, params.recordId), eq(schema.leads.organizationId, params.organizationId)))
+        .limit(1)
+    )[0];
+    if (!lead) return { ok: false, error: "record_not_found" };
+    clientEmail = lead.email;
+    title = `New inquiry — ${lead.name}`;
+    leadId = lead.id;
+  } else if (params.kind === "client") {
+    const client = (
+      await db
+        .select()
+        .from(schema.clients)
+        .where(and(eq(schema.clients.id, params.recordId), eq(schema.clients.organizationId, params.organizationId)))
+        .limit(1)
+    )[0];
+    if (!client) return { ok: false, error: "record_not_found" };
+    clientEmail = client.email;
+    title = `Conversation — ${client.name ?? client.email}`;
+    clientId = client.id;
+  } else {
+    const project = (
+      await db
+        .select()
+        .from(schema.projects)
+        .where(and(eq(schema.projects.id, params.recordId), eq(schema.projects.organizationId, params.organizationId)))
+        .limit(1)
+    )[0];
+    if (!project) return { ok: false, error: "record_not_found" };
+    const client = project.clientId
+      ? (await db.select().from(schema.clients).where(eq(schema.clients.id, project.clientId)).limit(1))[0]
+      : undefined;
+    clientEmail = client?.email ?? "unknown@snap.webcules.com";
+    title = `Conversation — ${project.title}`;
+    projectId = project.id;
+  }
+
+  const threadId = await resolveOrCreateThread({
+    organizationId: params.organizationId,
+    clientEmail,
+    subject: item.title,
+    clientId,
+    leadId,
+    projectId,
+  });
+  await db
+    .update(schema.inboxItems)
+    .set({ threadId, title })
+    .where(eq(schema.inboxItems.id, item.id));
+  return { ok: true, threadId, title };
+}
+
 export async function deleteReadInboxItems(params: { userId: string; organizationId: string }): Promise<number> {
   const out = await getDb()
     .update(schema.inboxItems)

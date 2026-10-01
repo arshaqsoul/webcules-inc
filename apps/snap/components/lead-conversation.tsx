@@ -1,12 +1,14 @@
 "use client";
 
-/* Lead conversation thread: the original inquiry, outbound replies, inbound
- * client answers (captured by the snap-email worker webhook), plus the reply
- * composer, the conversion dialog (WEB-167: title/date/client overrides with
- * a missing-date warning) and archive/restore. */
+/* Lead conversation card (WEB-308) — the lead thread UI retired into the
+ * unified Inbox: exactly one reply composer exists in the product. What
+ * stays here is the CRM record surface: the conversation deep-link (with a
+ * compact recent-message preview), the conversion dialog (WEB-167) and
+ * archive/restore. */
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { MessageSquare } from "lucide-react";
 
 import { Button } from "@webcules/ui/components/button";
 import {
@@ -18,28 +20,22 @@ import {
   DialogTitle,
 } from "@webcules/ui/components/dialog";
 
-type ThreadMessage = {
-  id: string;
-  direction: string;
-  body: string;
-  createdAt: string;
-};
-
 const inputCls =
   "rounded-md border border-hairline bg-canvas px-2.5 py-2 text-sm text-ink placeholder:text-ink-tertiary";
 
-export function LeadThread({
+type PreviewMessage = { id: string; direction: string; body: string; createdAt: string };
+
+export function LeadConversation({
   leadId,
   leadName,
   leadEmail,
   leadEventType,
   leadEventDate,
   leadStatus,
-  leadMessage,
   projectId,
   projectTitle,
-  messages,
-  snippets = [],
+  threadId,
+  recentMessages,
 }: {
   leadId: string;
   leadName: string;
@@ -47,15 +43,12 @@ export function LeadThread({
   leadEventType: string | null;
   leadEventDate: string | null;
   leadStatus: string;
-  leadMessage: string;
   projectId?: string | null;
   projectTitle?: string | null;
-  messages: ThreadMessage[];
-  /** WEB-253: canned replies, merge-resolved server-side for this lead. */
-  snippets?: Array<{ id: string; name: string; text: string }>;
+  threadId: string | null;
+  recentMessages: PreviewMessage[];
 }) {
   const router = useRouter();
-  const [reply, setReply] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [converted, setConverted] = useState(leadStatus === "converted");
@@ -67,24 +60,6 @@ export function LeadThread({
   const [cName, setCName] = useState(leadName);
   const [cEmail, setCEmail] = useState(leadEmail);
   const [convError, setConvError] = useState("");
-
-  async function sendReply() {
-    if (!reply.trim()) return;
-    setBusy(true);
-    setStatus(null);
-    const res = await fetch(`/api/leads/${leadId}/reply`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ body: reply }),
-    });
-    const body = (await res.json().catch(() => ({}))) as { delivered?: boolean };
-    setBusy(false);
-    if (res.ok) {
-      setReply("");
-      setStatus(body.delivered ? "Reply sent." : "Reply recorded, but email delivery failed — check the inquiry inbox.");
-      router.refresh();
-    } else setStatus("Reply failed — try again.");
-  }
 
   async function convert() {
     if (busy) return;
@@ -134,89 +109,73 @@ export function LeadThread({
     if (res.ok) router.refresh();
   }
 
-  const bubble = (m: ThreadMessage) => (
-    <div key={m.id} className={`flex ${m.direction === "out" ? "justify-end" : "justify-start"}`}>
-      <div
-        className={`max-w-[85%] rounded-[12px] border px-4 py-3 text-sm leading-relaxed ${
-          m.direction === "out"
-            ? "border-primary/30 bg-primary/10 text-ink"
-            : "border-hairline bg-surface-1 text-ink-muted"
-        }`}
-      >
-        <p className="mb-1 text-[11px] uppercase tracking-wide text-ink-tertiary">
-          {m.direction === "out" ? "You" : leadName} · {new Date(m.createdAt).toLocaleString()}
-        </p>
-        <p className="whitespace-pre-wrap">{m.body}</p>
-      </div>
-    </div>
-  );
-
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-3 rounded-[12px] border border-hairline bg-surface-1 p-4">
-        {leadMessage && <>{bubble({ id: "original", direction: "in", body: leadMessage, createdAt: messages[0]?.createdAt ?? "" })}</>}
-        {messages.length > 0 ? (
-          messages.map(bubble)
-        ) : (
-          !leadMessage && <p className="text-sm text-ink-subtle">No message body on this inquiry.</p>
+      <div className="rounded-[12px] border border-hairline bg-surface-1 p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="flex items-center gap-2 text-sm font-medium text-ink">
+              <MessageSquare className="h-4 w-4 text-primary" aria-hidden /> Conversation
+            </p>
+            <p className="mt-1 text-sm text-ink-subtle">
+              {threadId
+                ? "Reading and replying live in the Inbox — one place for every conversation."
+                : "No conversation yet. The inquiry and any replies live in the Inbox."}
+            </p>
+          </div>
+          {threadId && (
+            <Button size="sm" asChild>
+              <Link href={`/dashboard/inbox?thread=${threadId}`}>Open in Inbox</Link>
+            </Button>
+          )}
+        </div>
+        {threadId && recentMessages.length > 0 && (
+          <div className="mt-3 flex flex-col gap-1.5 border-t border-hairline pt-3">
+            {recentMessages.slice(-3).map((m) => (
+              <p key={m.id} className="truncate text-xs text-ink-subtle">
+                <span className="font-medium text-ink">{m.direction === "out" ? "You" : leadName.split(" ")[0]}:</span>{" "}
+                {m.body}
+              </p>
+            ))}
+          </div>
         )}
       </div>
 
       {!converted ? (
-<div className="rounded-[12px] border border-hairline bg-surface-1 p-4">
-          {snippets.length > 0 && (
-            <select
-              className="snap-select mb-2 rounded-md border border-hairline bg-canvas px-2 py-1.5 text-xs text-ink-muted outline-none"
-              value=""
-              onChange={(e) => {
-                const snip = snippets.find((x) => x.id === e.target.value);
-                if (snip) setReply((r) => (r ? `${r}\n\n${snip.text}` : snip.text));
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-[12px] border border-hairline bg-surface-1 p-4">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              onClick={() => {
+                setCTitle(`${leadName}${leadEventType ? ` — ${leadEventType}` : ""}`);
+                setCDate(leadEventDate ?? "");
+                setCName(leadName);
+                setCEmail(leadEmail);
+                setConvError("");
+                setConvOpen(true);
               }}
-              aria-label="Insert a saved reply"
+              disabled={busy}
+              size="sm"
             >
-              <option value="">Insert a saved reply…</option>
-              {snippets.map((sn) => (
-                <option key={sn.id} value={sn.id}>{sn.name}</option>
-              ))}
-            </select>
-          )}
-          <textarea
-            value={reply}
-            onChange={(e) => setReply(e.target.value)}
-            placeholder={`Reply to ${leadName.split(" ")[0]}…`}
-            className="min-h-[96px] w-full resize-vertical rounded-md border border-input bg-background px-3 py-2 text-sm text-ink placeholder:text-ink-tertiary"
-          />
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-            <div className="flex gap-2">
-              <Button onClick={sendReply} disabled={busy || !reply.trim()} size="sm">
-                Send reply
-              </Button>
-              <Button
-                onClick={() => {
-                  setCTitle(`${leadName}${leadEventType ? ` — ${leadEventType}` : ""}`);
-                  setCDate(leadEventDate ?? "");
-                  setCName(leadName);
-                  setCEmail(leadEmail);
-                  setConvError("");
-                  setConvOpen(true);
-                }}
-                disabled={busy}
-                size="sm"
-                variant="secondary"
-              >
-                Convert to project
-              </Button>
-            </div>
-            {leadStatus !== "archived" ? (
-              <Button onClick={() => setLeadStatus("archived")} disabled={busy} size="sm" variant="ghost" className="text-ink-subtle">
-                Archive
-              </Button>
-            ) : (
-              <Button onClick={() => setLeadStatus("new")} disabled={busy} size="sm" variant="ghost" className="text-ink-subtle">
-                Restore
-              </Button>
-            )}
+              Convert to project
+            </Button>
+            <Button
+              onClick={() => window.location.assign(`/dashboard/inbox${threadId ? `?thread=${threadId}` : ""}`)}
+              disabled={busy}
+              size="sm"
+              variant="secondary"
+            >
+              Reply in Inbox
+            </Button>
           </div>
+          {leadStatus !== "archived" ? (
+            <Button onClick={() => setLeadStatus("archived")} disabled={busy} size="sm" variant="ghost" className="text-ink-subtle">
+              Archive
+            </Button>
+          ) : (
+            <Button onClick={() => setLeadStatus("new")} disabled={busy} size="sm" variant="ghost" className="text-ink-subtle">
+              Restore
+            </Button>
+          )}
         </div>
       ) : (
         <div className="rounded-[12px] border border-success/30 bg-success/10 p-4 text-sm text-success-text">

@@ -35,6 +35,47 @@ export default function Releases() {
         polish fold into the next entry rather than getting their own.
       </Note>
 
+      <Release version="0.4.0" date="October 1, 2026">
+        <p>
+          <strong>The inbox is home.</strong> Every conversation now lives in one place: the lead
+          thread moved in (with all its history), replies send from addresses that thread
+          perfectly in Gmail and Outlook, and unmatched email lands in a triage list you can
+          attach to the right client in one click.
+        </p>
+        <ul className="mt-2 list-disc pl-5">
+          <li>
+            <strong>Leads moved into the Inbox.</strong> The dashboard now reads Inbox →
+            Projects → Calendar → Leads; the Leads page keeps the pipeline and conversion, and
+            each lead links straight into its conversation (exactly one reply composer in the
+            product — every past message is there).
+          </li>
+          <li>
+            <strong>Replies that thread.</strong> Messages send from a unique per-conversation
+            Snap address with full threading headers — answers find their thread even when mail
+            clients strip everything. Bounced replies are marked on the thread, tracking pixels
+            are stripped from stored email, and mail over 25&nbsp;MiB is politely declined.
+          </li>
+          <li>
+            <strong>Needs triage.</strong> Email that matches no conversation waits in its own
+            tab — attach it to a client, lead or project with one click.
+          </li>
+          <li>
+            <strong>Reply mirroring</strong> (Settings → Notifications, default on): client
+            replies also land in your own inbox, tagged X-Snap, while you build trust in Snap's.
+          </li>
+          <li>
+            <strong>Filter menu + resizable split.</strong> Linear-style filter popover (press{" "}
+            <strong>F</strong>) replaces the chips, and the divider between the list and the
+            conversation drags to your preferred width — Snap remembers it.
+          </li>
+          <li>
+            <strong>Snooze is a Lite feature.</strong> The inbox itself — reading, replying,
+            events, search, triage — is free on every plan; snoozing a conversation until
+            tomorrow morning joins Lite.
+          </li>
+        </ul>
+      </Release>
+
       <Release version="0.3.1" date="October 1, 2026">
         <p>
           <strong>Inbox, faster.</strong> The inbox gains its triage layer: four tabs (Unread ·

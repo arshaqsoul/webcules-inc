@@ -32,6 +32,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const a = parsed.data;
 
   const { id } = await params;
+
+  // WEB-309 tier gate: snooze is Lite+ (the inbox itself is free-for-all).
+  if (a.action === "snooze" || a.action === "unsnooze") {
+    const { getPlanEntitlements } = await import("@/lib/plans");
+    const ent = await getPlanEntitlements(ctx.organizationId);
+    if (ent && !ent.inboxSnooze) {
+      return Response.json({ error: "upgrade_required", plan: "lite" }, { status: 402 });
+    }
+  }
+
   const action: InboxItemAction =
     a.action === "snooze"
       ? { action: "snooze", until: new Date(a.until) }

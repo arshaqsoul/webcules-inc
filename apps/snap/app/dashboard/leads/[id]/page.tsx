@@ -1,15 +1,16 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { eq } from "drizzle-orm";
 
 import { LeadEdit } from "@/components/lead-edit";
-import { LeadThread } from "@/components/lead-thread";
+import { LeadConversation } from "@/components/lead-conversation";
+import { getDb } from "@/lib/db";
+import * as schema from "@/lib/db-schema";
 import { getLeadWithThread } from "@/lib/repos/leads";
 import { getProjectByLeadId } from "@/lib/repos/projects";
 import { getOrgContext } from "@/lib/session";
 import { unpackLeadCustomFields } from "@/lib/forms";
-import { listTemplates } from "@/lib/repos/templates";
-import { buildMergeValues, renderMerge } from "@/lib/merge";
 
 export const metadata = { title: "Lead" };
 
@@ -23,14 +24,14 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
   const { lead, messages } = data;
   const project = lead.status === "converted" ? await getProjectByLeadId(ctx.organizationId, lead.id) : undefined;
   const customFields = unpackLeadCustomFields(lead.customFields);
-  // WEB-253: canned replies resolved for this lead (HTML snippets → text).
-  const snippetRows = await listTemplates(ctx.organizationId, "email_snippet");
-  const mergeValues = await buildMergeValues({ organizationId: ctx.organizationId, clientEmail: lead.email, projectId: project?.id ?? null });
-  const snippets = snippetRows.map((t) => ({
-    id: t.id,
-    name: t.name,
-    text: renderMerge(htmlSnippetToText(t.body), mergeValues, { surface: "plain" }),
-  }));
+  // WEB-308: the conversation lives in the Inbox — link to its thread.
+  const thread = (
+    await getDb()
+      .select({ id: schema.threads.id })
+      .from(schema.threads)
+      .where(eq(schema.threads.leadId, lead.id))
+      .limit(1)
+  )[0];
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-5">
@@ -94,35 +95,23 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
         </section>
       )}
 
-      <LeadThread
-        snippets={snippets}
+      <LeadConversation
+        threadId={thread?.id ?? null}
+        recentMessages={messages.map((m) => ({
+          id: m.id,
+          direction: m.direction,
+          body: m.body.slice(0, 120),
+          createdAt: m.createdAt.toISOString(),
+        }))}
         leadId={lead.id}
         leadName={lead.name}
         leadEmail={lead.email}
         leadEventType={lead.eventType}
         leadEventDate={lead.eventDate ? lead.eventDate.toISOString().slice(0, 10) : null}
         leadStatus={lead.status}
-        leadMessage={lead.message ?? ""}
         projectId={project?.id ?? null}
         projectTitle={project?.title ?? null}
-        messages={messages.map((m) => ({
-          id: m.id,
-          direction: m.direction,
-          body: m.body,
-          createdAt: m.createdAt.toISOString(),
-        }))}
       />
     </div>
   );
-}
-
-function htmlSnippetToText(html: string): string {
-  return html
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/(p|li|h3|h4|blockquote)>/gi, "\n")
-    .replace(/<[^>]+>/g, "")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .trim();
 }

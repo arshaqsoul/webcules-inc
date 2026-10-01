@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 
 import { InboxView } from "@/components/inbox/inbox-view";
 import { getStudioProfile } from "@/lib/repos/studios";
+import { getPlanEntitlements } from "@/lib/plans";
 import { getOrgContext } from "@/lib/session";
 
 export const metadata = { title: "Inbox" };
@@ -15,11 +16,13 @@ export default async function InboxPage() {
   if (!ctx) redirect("/login");
   const profile = await getStudioProfile(ctx.organizationId);
   if (!profile) redirect("/onboarding");
+  const ent = await getPlanEntitlements(ctx.organizationId);
 
   return (
     <InboxView
       contactEmail={profile.contactEmail}
       studioName={profile.studioName}
+      plan={ent?.id ?? "free"}
     />
   );
 }

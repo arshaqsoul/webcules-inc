@@ -3,6 +3,7 @@
 import { describe, expect, it } from "vitest";
 
 import { PLANS, planDef } from "@/lib/plans";
+import { TIER_CARDS } from "@/lib/tier-cards";
 
 const ORDER = ["free", "lite", "studio", "pro"] as const;
 
@@ -60,5 +61,32 @@ describe("PLANS", () => {
     expect(planDef("nonsense").id).toBe("free");
     expect(planDef(null).id).toBe("free");
     expect(planDef(undefined).id).toBe("free");
+  });
+});
+
+/* WEB-309 — the inbox gate table, audited against the single source:
+ * everything free-for-all by design (the inbox is the retention surface);
+ * snooze is the one gated nicety (Lite+). */
+describe("inbox tier gates (WEB-309)", () => {
+  it("inbox is free-for-all; snooze Lite+", () => {
+    expect(PLANS.free.inboxSnooze).toBe(false);
+    expect(PLANS.lite.inboxSnooze).toBe(true);
+    expect(PLANS.studio.inboxSnooze).toBe(true);
+    expect(PLANS.pro.inboxSnooze).toBe(true);
+  });
+
+  it("tier cards carry the inbox on every tier (headline for all)", () => {
+    const free = TIER_CARDS.find((t) => t.id === "free")!;
+    expect(free.features.some((f) => f.toLowerCase().includes("inbox"))).toBe(true);
+    const lite = TIER_CARDS.find((t) => t.id === "lite")!;
+    expect(lite.features.some((f) => /snooze/i.test(f))).toBe(true);
+    // Marketing truth rule: no tier claims Gmail sync, SMS or AI drafting.
+    for (const card of TIER_CARDS) {
+      for (const f of card.features) {
+        expect(/gmail sync/i.test(f)).toBe(false);
+        expect(/\bSMS\b/.test(f)).toBe(false);
+        expect(/\bAI\b/.test(f)).toBe(false);
+      }
+    }
   });
 });

@@ -89,7 +89,7 @@ describe("preview = production renderer (WEB-253)", () => {
   });
 });
 
-describe("lead-thread snippets (WEB-253)", () => {
+describe("email snippets (WEB-253 — resolved in the inbox composer)", () => {
   it("snippets resolve merge fields against the lead context", async () => {
     const studio = await seedStudio({ name: "Aurora Photos" });
     await getDb().insert(schema.templates).values({

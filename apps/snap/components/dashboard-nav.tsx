@@ -20,12 +20,13 @@ type NavItem = { href: string; label: string; icon: LucideIcon; /** WEB-286: min
 
 export const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Overview", icon: LayoutGrid },
-  // WEB-303: the unified inbox is the primary communication surface — first
-  // working section, ahead of Leads (which WEB-308 folds under it).
+  // WEB-303/308: the inbox IS the primary communication surface — first
+  // working section with the live unread badge. Leads stays as the pipeline
+  // (qualification is a board problem, not a reading problem).
   { href: "/dashboard/inbox", label: "Inbox", icon: Mail },
-  { href: "/dashboard/leads", label: "Leads", icon: Users },
-  { href: "/dashboard/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/dashboard/projects", label: "Projects", icon: Images },
+  { href: "/dashboard/calendar", label: "Calendar", icon: CalendarDays },
+  { href: "/dashboard/leads", label: "Leads", icon: Users },
   { href: "/dashboard/galleries", label: "Galleries", icon: Link2 },
   { href: "/dashboard/raw-vault", label: "RAW Vault", icon: Snowflake },
   { href: "/dashboard/transactions", label: "Transactions", icon: CreditCard },

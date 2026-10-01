@@ -73,6 +73,16 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
           .limit(1)
       )[0]
     : undefined;
+  // WEB-308: project-linked conversations carry a status chip.
+  const project = thread.projectId
+    ? (
+        await getDb()
+          .select({ title: schema.projects.title, status: schema.projects.status })
+          .from(schema.projects)
+          .where(eq(schema.projects.id, thread.projectId))
+          .limit(1)
+      )[0]
+    : undefined;
 
   // WEB-253 snippets resolved for this client ({{merge}} → values).
   const snippetRows = await listTemplates(ctx.organizationId, "email_snippet");
@@ -167,6 +177,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       clientId: thread.clientId,
       leadId: thread.leadId,
       projectId: thread.projectId,
+      projectTitle: project?.title ?? null,
+      projectStatus: project?.status ?? null,
       lastDirection: thread.lastDirection,
     },
     timeline: timeline.map((e) => ({ ...e, createdAt: e.createdAt.toISOString() })),

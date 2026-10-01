@@ -144,6 +144,15 @@ export default function Inbox() {
         shows the deal. Same inquiries, two jobs.
       </Callout>
 
+      <Callout tone="warn" title="What the inbox isn't (yet)">
+        No two-way Gmail sync — your existing mail flows in via the
+        auto-forward recipe above, and replies you write send from your
+        Snap address (a copy can land in your own inbox). Attachments
+        don't ride replies (email caps at a few MB) — share gallery links
+        instead. SMS and AI drafting are deliberate future projects, not
+        hidden features.
+      </Callout>
+
       <Related slugs={["notifications", "leads", "client-portal"]} />
     </>
   );

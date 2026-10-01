@@ -33,6 +33,7 @@ import { FilterMenu } from "@/components/inbox/filter-menu";
 import { KIND_ICON, type InboxKind } from "@/components/inbox/kinds";
 import { ShortcutsSheet } from "@/components/inbox/shortcuts-sheet";
 import { SnoozeDialog } from "@/components/inbox/snooze-dialog";
+import { TriagePane } from "@/components/inbox/triage-pane";
 import { splitReplyForDisplay } from "@/lib/strip-reply";
 
 type Tab = "all" | "unread" | "needs-reply" | "needs-triage";
@@ -85,6 +86,8 @@ type ThreadData = {
     clientName: string;
     leadId: string | null;
     projectId: string | null;
+    projectTitle: string | null;
+    projectStatus: string | null;
     lastDirection: string | null;
   };
   timeline: TimelineEntry[];
@@ -216,7 +219,16 @@ function EventCard({ e, thread }: { e: TimelineEvent; thread: ThreadData["thread
   );
 }
 
-export function InboxView({ contactEmail, studioName }: { contactEmail: string | null; studioName: string }) {
+export function InboxView({
+  contactEmail,
+  studioName,
+  plan = "free",
+}: {
+  contactEmail: string | null;
+  studioName: string;
+  /** WEB-309: snooze is Lite+ — free studios get an upgrade hint instead. */
+  plan?: "free" | "lite" | "studio" | "pro";
+}) {
   const [items, setItems] = useState<ListItem[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("all");
@@ -336,6 +348,17 @@ export function InboxView({ contactEmail, studioName }: { contactEmail: string |
     };
   }, [tab, kindFilter, debouncedQ, fetchList, fetchUnread]);
 
+  // WEB-308: /dashboard/inbox?thread={id} deep-links a conversation (lead
+  // detail and event cards link here). Runs once on mount.
+  const deepLinkRef = useRef(false);
+  useEffect(() => {
+    if (deepLinkRef.current) return;
+    deepLinkRef.current = true;
+    const threadId = new URLSearchParams(window.location.search).get("thread");
+    if (threadId) void openThread(threadId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const selectedItem = items.find((i) => i.id === selectedId) ?? null;
 
   const openThread = useCallback(
@@ -416,6 +439,20 @@ export function InboxView({ contactEmail, studioName }: { contactEmail: string |
       }
     },
     [items, fetchUnread],
+  );
+
+  /** WEB-309: snooze is Lite+ — free studios see an upgrade hint instead of
+   * the dialog (the API enforces it too; this is just the honest UX). */
+  const [upgradeHint, setUpgradeHint] = useState(false);
+  const trySnooze = useCallback(
+    (id: string) => {
+      if (plan === "free") {
+        setUpgradeHint(true);
+        return;
+      }
+      setSnoozeFor(id);
+    },
+    [plan],
   );
 
   const bulk = useCallback(
@@ -517,7 +554,7 @@ export function InboxView({ contactEmail, studioName }: { contactEmail: string |
         case "H": {
           e.preventDefault();
           const cur = idx >= 0 ? list[idx] : null;
-          if (cur) setSnoozeFor(cur.id);
+          if (cur) trySnooze(cur.id);
           break;
         }
         case "Backspace": {
@@ -760,10 +797,10 @@ export function InboxView({ contactEmail, studioName }: { contactEmail: string |
                         </button>
                         <button
                           type="button"
-                          title="Snooze (H)"
+                          title={plan === "free" ? "Snooze — included with Lite" : "Snooze (H)"}
                           onClick={(e) => {
                             e.stopPropagation();
-                            setSnoozeFor(i.id);
+                            trySnooze(i.id);
                           }}
                           className="rounded p-1 text-ink-tertiary hover:bg-surface-2 hover:text-ink"
                         >
@@ -811,14 +848,26 @@ export function InboxView({ contactEmail, studioName }: { contactEmail: string |
           <span className="absolute inset-y-4 left-1/2 w-px -translate-x-1/2 bg-hairline transition-colors group-hover:bg-primary/50" />
         </div>
 
-        {/* Reading pane */}
+        {/* Reading pane — a conversation, or a triage detail for threadless items */}
         <section
           aria-label="Conversation"
           className={`min-h-96 flex-col overflow-hidden rounded-[12px] border border-hairline bg-background lg:flex lg:h-full ${
-            openThreadId ? "flex" : "hidden"
+            openThreadId || (selectedItem && !selectedItem.threadId) ? "flex" : "hidden"
           }`}
         >
-          {!openThreadId ? (
+          {!openThreadId && selectedItem && !selectedItem.threadId ? (
+            <TriagePane
+              item={selectedItem}
+              onAttached={(threadId) => {
+                void openThread(threadId);
+                void fetchList();
+              }}
+              onDelete={() => {
+                void act(selectedItem.id, "delete");
+                setSelectedId(null);
+              }}
+            />
+          ) : !openThreadId ? (
             <div className="flex flex-1 items-center justify-center p-8 text-center">
               <p className="max-w-xs text-sm text-ink-subtle">
                 Pick a conversation on the left — or drive it from the keyboard: <kbd className="rounded border border-hairline bg-surface-1 px-1 font-mono text-[11px]">j</kbd>{" "}
@@ -864,6 +913,11 @@ export function InboxView({ contactEmail, studioName }: { contactEmail: string |
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
+                  {thread.thread.projectStatus && (
+                    <span className="shrink-0 rounded-full border border-hairline bg-surface-1 px-2 py-0.5 text-[11px] uppercase tracking-wide text-ink-subtle">
+                      {thread.thread.projectStatus}
+                    </span>
+                  )}
                   <p className="hidden shrink-0 text-xs text-ink-tertiary sm:block">{thread.thread.subject || "Conversation"}</p>
                   {/* Mobile slide-in back */}
                   <Button variant="ghost" size="sm" className="lg:hidden" onClick={() => { setOpenThreadId(null); setThread(null); }}>
@@ -955,6 +1009,24 @@ export function InboxView({ contactEmail, studioName }: { contactEmail: string |
           )}
         </section>
       </div>
+
+      {/* WEB-309: free-tier snooze upgrade hint (dismissible, honest). */}
+      {upgradeHint && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-hairline bg-surface-1 px-4 py-3 text-sm text-ink-subtle">
+          <span>
+            <strong className="text-ink">Snooze is a Lite feature.</strong> Park a conversation until tonight,
+            tomorrow or next week — it comes back unread when you pick.
+          </span>
+          <span className="flex items-center gap-3">
+            <Link href="/dashboard/settings/billing" className="font-medium text-primary hover:underline">
+              Upgrade to Lite
+            </Link>
+            <button type="button" onClick={() => setUpgradeHint(false)} className="text-ink-tertiary hover:text-ink" aria-label="Dismiss">
+              ✕
+            </button>
+          </span>
+        </div>
+      )}
 
       {/* Dialogs — the keymap and row buttons share them. */}
       <SnoozeDialog
