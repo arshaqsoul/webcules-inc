@@ -19,11 +19,12 @@ export function DocShell({ slug }: { slug: string }) {
   const toc = extractToc(<Content />);
 
   return (
-    /* Linear geometry: the article column hugs the sidebar (~80px gap), a
-     * fixed ~660px reading width, then ~76px to the TOC rail — left-anchored,
-     * never centered, so the gap never breathes with the viewport. */
-    <div className="docs-shell flex w-full items-start px-6 lg:px-[80px]">
-      <article className="docs-prose w-full min-w-0 max-w-[660px] flex-1 pb-24 pt-8 lg:pt-12">
+    /* Linear geometry: the article+TOC group (660 + 76 + 240 = 976px) is
+     * CENTERED in the space right of the sidebar — left-anchoring only looks
+     * right at ~1400px viewports and leaves a dead zone on wide monitors. */
+    <div className="docs-shell flex w-full justify-center px-6 lg:px-10">
+      <div className="flex w-full max-w-[976px] items-start">
+        <article className="docs-prose w-full min-w-0 max-w-[660px] flex-1 pb-24 pt-8 lg:pt-12">
         <h1 className="docs-h1">
           {hit.page.title}
           {hit.page.tier && <Tier plan={TIER_OF[hit.page.tier]} className="ml-3 align-[2px]" />}
@@ -34,6 +35,7 @@ export function DocShell({ slug }: { slug: string }) {
         <Content />
       </article>
       <DocsToc items={toc} />
+      </div>
     </div>
   );
 }
