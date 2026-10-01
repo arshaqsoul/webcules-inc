@@ -95,8 +95,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         from: string;
         subject: string;
         text: string;
-        /** Sanitized inbound HTML — WEB-307 fills it once bodies land in R2;
-         * today's ingest stores stripped text only. */
+        /** Sanitized inbound HTML from R2 (WEB-307) — rendered in the
+         * sandboxed frame; null for text-only messages. */
         html: string | null;
         status: string;
         hasAttachments: boolean;
@@ -113,6 +113,25 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         wasUnread: boolean;
         createdAt: Date;
       };
+
+  // Inbound bodies live in R2 (sanitized + pixel-neutralized at ingest);
+  // fetch them for the reading pane in one pass, missing objects degrade to
+  // the text body.
+  const { getObject } = await import("@/lib/storage/service");
+  const htmlByKey = new Map<string, string | null>();
+  await Promise.all(
+    messages
+      .filter((m) => m.direction === "in" && m.htmlR2Key)
+      .map(async (m) => {
+        try {
+          const obj = await getObject(ctx.organizationId, m.htmlR2Key!);
+          htmlByKey.set(m.htmlR2Key!, obj ? await new Response(obj.body as unknown as BodyInit).text() : null);
+        } catch {
+          htmlByKey.set(m.htmlR2Key!, null);
+        }
+      }),
+  );
+
   const timeline: TimelineEntry[] = [
     ...messages.map((m) => ({
       type: "message" as const,
@@ -121,7 +140,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       from: m.fromAddr,
       subject: m.subject,
       text: m.textPreview,
-      html: null as string | null,
+      html: m.direction === "in" && m.htmlR2Key ? (htmlByKey.get(m.htmlR2Key) ?? null) : null,
       status: m.status,
       hasAttachments: m.hasAttachments,
       createdAt: m.createdAt,

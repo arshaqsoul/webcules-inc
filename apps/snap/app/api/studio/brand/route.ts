@@ -63,6 +63,9 @@ const bodySchema = z.object({
   defaultAllowDownload: z.boolean().optional(),
   /** WEB-275: per-org "members see RAW vault" toggle. */
   memberRawAccess: z.boolean().optional(),
+  /** WEB-307: dual delivery — inbound client replies mirror to the contact
+   * inbox while the Snap inbox is young (default on). */
+  inboxMirror: z.boolean().optional(),
   /** WEB-277: business identity (validated ≤ 4 KB via serializeBusiness). */
   business: z
     .object({
@@ -201,6 +204,9 @@ export async function PATCH(req: Request) {
         : {}),
       ...(parsed.data.memberRawAccess !== undefined
         ? { memberRawAccess: parsed.data.memberRawAccess }
+        : {}),
+      ...(parsed.data.inboxMirror !== undefined
+        ? { inboxMirror: parsed.data.inboxMirror }
         : {}),
       ...(parsed.data.business !== undefined
         ? { business: parsed.data.business === null ? null : serializeBusiness(parsed.data.business, existing.studioName) }

@@ -57,9 +57,13 @@ function Toggle({
 export function SettingsNotifications({
   notificationPrefs: prefsJson,
   clientNotifyDefault: initialClientDefault,
+  inboxMirror: initialInboxMirror,
+  contactEmail,
 }: {
   notificationPrefs: string | null;
   clientNotifyDefault: boolean;
+  inboxMirror: boolean;
+  contactEmail: string | null;
 }) {
   const router = useRouter();
   const initial: Prefs = (() => {
@@ -71,11 +75,13 @@ export function SettingsNotifications({
   })();
   const [prefs, setPrefs] = useState<Prefs>(initial);
   const [clientDefault, setClientDefault] = useState(initialClientDefault);
+  const [inboxMirror, setInboxMirror] = useState(initialInboxMirror);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
 
   function dirty(): boolean {
     if (clientDefault !== initialClientDefault) return true;
+    if (inboxMirror !== initialInboxMirror) return true;
     return ALERTS.some((a) => Boolean(prefs[a.key]) !== Boolean(initial[a.key]));
   }
 
@@ -87,7 +93,7 @@ export function SettingsNotifications({
     const res = await fetch("/api/studio/brand", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ notificationPrefs: payload, clientNotifyDefault: clientDefault }),
+      body: JSON.stringify({ notificationPrefs: payload, clientNotifyDefault: clientDefault, inboxMirror }),
     });
     setBusy(false);
     setStatus(res.ok ? "Saved." : "Save failed — try again.");
@@ -126,6 +132,21 @@ export function SettingsNotifications({
           hint="Recommended — delivery links are how clients receive their photos"
           checked={clientDefault}
           onChange={setClientDefault}
+        />
+      </div>
+
+      <h2 className="mt-6 text-[15px] font-medium text-ink">Reply mirroring</h2>
+      <p className="mt-1 text-sm leading-relaxed text-ink-subtle">
+        While the Snap inbox is young, every client reply also lands in your own mail —
+        searchable, forwardable, nothing to trust on day one. Turn this off once the inbox
+        is home. (The “Send a copy” checkbox on each reply you write is separate.)
+      </p>
+      <div className="mt-3">
+        <Toggle
+          label="Mirror client replies to my contact inbox"
+          hint={`Copies go to ${contactEmail ?? "your studio contact email"}, tagged with X-Snap headers`}
+          checked={inboxMirror}
+          onChange={setInboxMirror}
         />
       </div>
 

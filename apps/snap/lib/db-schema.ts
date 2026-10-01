@@ -195,6 +195,9 @@ export const studioProfiles = sqliteTable("studio_profile", {
   defaultExpiryDays: integer("default_expiry_days"),
   /** WEB-278: pre-fill for the new-grant download toggle. */
   defaultAllowDownload: integer("default_allow_download", { mode: "boolean" }).notNull().default(true),
+  /** WEB-307: dual delivery — inbound client replies mirror to the contact
+   * inbox while the Snap inbox is young (default on). */
+  inboxMirror: integer("inbox_mirror", { mode: "boolean" }).notNull().default(true),
   /** WEB-275: "members see RAW vault" per-org toggle (admins always can). */
   memberRawAccess: integer("member_raw_access", { mode: "boolean" }).notNull().default(false),
   /** WEB-277: business identity JSON — legalName, addressLines, taxId, phone,
@@ -1335,6 +1338,11 @@ export const threads = sqliteTable(
     projectId: text("project_id").references(() => projects.id, { onDelete: "set null" }),
     /** Direction of the newest message — drives the needs-reply filter. */
     lastDirection: text("last_direction"),
+    /** WEB-307: base64 Thread-Index we emit for this conversation (22 bytes:
+     * 6-byte clock + stable 16-byte GUID; inbound matches on the GUID). */
+    threadIndex: text("thread_index"),
+    /** WEB-307: token for the per-thread reply address t-{id}-{token}@. */
+    addressToken: text("address_token"),
     lastActivityAt: ts("last_activity_at"),
     createdAt: ts("created_at"),
   },

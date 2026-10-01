@@ -4,7 +4,7 @@
  * a malformed email from bleeding into the frame shell. */
 import { describe, expect, it } from "vitest";
 
-import { sanitizeEmailHtml } from "@/lib/inbox/sanitize-email";
+import { neutralizeTrackingPixels, sanitizeEmailHtml } from "@/lib/inbox/sanitize-email";
 
 describe("sanitizeEmailHtml — XSS corpus", () => {
   it("drops script elements with their content entirely", () => {
@@ -107,5 +107,23 @@ describe("sanitizeEmailHtml — XSS corpus", () => {
     const out = sanitizeEmailHtml('<img src="cid:part1.abc" alt="photo">');
     expect(out.html).toContain('alt="photo"');
     expect(out.html).not.toContain("cid:");
+  });
+});
+
+describe("neutralizeTrackingPixels (WEB-307)", () => {
+  it("drops 1×1 remote images, keeps content images", () => {
+    const clean = sanitizeEmailHtml(
+      '<p>hi</p><img src="https://t.test/px.gif" width="1" height="1"><img src="https://cdn.test/photo.jpg" width="600" height="400"><img src="https://t.test/px2.gif" style="width:1px;height:1px">',
+    ).html;
+    const out = neutralizeTrackingPixels(clean);
+    expect(out.removed).toBe(2);
+    expect(out.html).not.toContain("t.test/px.gif");
+    expect(out.html).not.toContain("px2.gif");
+    expect(out.html).toContain("cdn.test/photo.jpg");
+  });
+
+  it("keeps 1×1 images without a src (placeholders)", () => {
+    const out = neutralizeTrackingPixels('<img alt="spacer" width="1" height="1">');
+    expect(out.removed).toBe(0);
   });
 });

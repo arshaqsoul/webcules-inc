@@ -21,7 +21,8 @@ import {
   resolveOrCreateThread,
   unreadInboxCount,
 } from "@/lib/repos/inbox";
-import { createManualLead, ingestInboundEmail, mintLeadInboxItem } from "@/lib/repos/leads";
+import { createManualLead, mintLeadInboxItem } from "@/lib/repos/leads";
+import { ingestInboxEmail } from "@/lib/inbox/ingest";
 import { emitInboxItem } from "@/lib/inbox/sources";
 import { resetDb } from "../helpers/db";
 import { seedStudio } from "../helpers/seed";
@@ -412,25 +413,20 @@ describe("live adapters", () => {
       name: "Dana Doe",
       email: "dana@t.test",
       message: "first",
+      eventType: "Wedding", // thread subject becomes "Wedding inquiry" → ⑤ subject match
     });
     if (!created.ok) throw new Error("seed lead failed");
-    // An outbound reply puts the lead on the fallback trail too.
-    await getDb().insert(schema.leadMessages).values({
-      id: crypto.randomUUID(),
-      organizationId: s.organizationId,
-      leadId: created.leadId,
-      direction: "out",
-      subject: "Re: inquiry",
-      body: "Absolutely!",
-    });
 
-    const result = await ingestInboundEmail({
+    // The lead's hello+ address routes the org; the inquiry item created the
+    // thread for this client (WEB-307 ingest resolves ④ then ⑤).
+    const result = await ingestInboxEmail({
       from: "Dana <dana@t.test>",
       to: `hello+${created.leadId}@snap.webcules.com`,
-      subject: "Re: inquiry",
+      subject: "Re: Wedding inquiry",
       text: "Great — let's book October 12.",
       html: null,
       messageId: "<reply-1@dana>",
+      receivedAt: new Date().toISOString(),
     });
     expect(result.matched).toBe(true);
 

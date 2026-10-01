@@ -19,6 +19,8 @@ export default async function SettingsNotificationsPage() {
     <SettingsNotifications
       notificationPrefs={profile.notificationPrefs ?? null}
       clientNotifyDefault={profile.clientNotifyDefault ?? true}
+      inboxMirror={profile.inboxMirror ?? true}
+      contactEmail={profile.contactEmail ?? null}
     />
   );
 }

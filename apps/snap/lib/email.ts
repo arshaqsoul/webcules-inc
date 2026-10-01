@@ -47,6 +47,9 @@ export async function sendEmail(params: {
   /** WEB-273: file attachments (ICS invites) — passed through to the Email
    * Service binding; no-op where the binding is absent (dev/tests). */
   attachments?: EmailAttachment[];
+  /** WEB-307: extra RFC headers (Message-ID, References, Thread-Index,
+   * X-Snap-*) — passed through to the Email Service binding. */
+  headers?: Record<string, string>;
 }): Promise<boolean> {
   if (!env.EMAIL) {
     console.log(
@@ -98,6 +101,7 @@ export async function sendEmail(params: {
       text,
       ...(params.replyTo ? { replyTo: params.replyTo } : {}),
       ...(params.attachments?.length ? { attachments: params.attachments } : {}),
+      ...(params.headers && Object.keys(params.headers).length ? { headers: params.headers } : {}),
     } as Parameters<typeof env.EMAIL.send>[0]);
   } catch (err) {
     console.error(`email send failed (${params.template} → ${params.to}):`, String(err));

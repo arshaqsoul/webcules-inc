@@ -114,6 +114,31 @@ export default function Inbox() {
         browser tab title so a backgrounded tab still signals.
       </p>
 
+      <H2>How replies find their thread</H2>
+      <p>
+        Emails are messy: some clients strip headers, Outlook ignores the standard threading
+        fields, and forwards arrive wearing someone else&rsquo;s envelope. Snap&rsquo;s inbound
+        pipeline resolves every reply through five signals in order — the standard
+        In-Reply-To/References chain, Snap&rsquo;s own thread header, Outlook&rsquo;s
+        Thread-Index, the unique per-conversation reply address your mail now carries, and
+        finally a normalized subject match with the same client within 45 days. Anything that
+        survives all five lands under <strong>Needs triage</strong> instead of vanishing.
+      </p>
+      <p>
+        Two safety nets while the inbox is young. <strong>Reply mirroring</strong> (Settings →
+        Notifications) drops a copy of every client reply into your own mail — tagged with
+        X-Snap headers so you can filter them — and you can switch it off once the inbox is
+        home. And mail over 25&nbsp;MiB is politely refused with a note to share via a gallery
+        link instead. Tracking pixels are stripped from stored email on arrival; remote images
+        stay click-to-load.
+      </p>
+      <Callout tone="info" title="Keep your existing Gmail flowing in">
+        Want the mail you already receive to appear in Snap too? In Gmail, set up a filter
+        (or forwarding rule) that forwards a copy to your studio&rsquo;s Snap reply address —
+        <code>hello+your-studio@snap.webcules.com</code>. Forwarded copies keep their original
+        sender (Snap unwraps the forwarding envelope), so they thread to the right client.
+      </Callout>
+
       <Callout tone="info" title="Inquiries live in both, on purpose">
         The Leads pipeline still owns qualification — the inbox shows the conversation, the board
         shows the deal. Same inquiries, two jobs.

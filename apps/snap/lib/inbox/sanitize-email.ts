@@ -124,7 +124,6 @@ export type SanitizedEmail = {
   /** Count of remote images found (rewritten to data-src, click-to-load). */
   remoteImages: number;
 };
-
 export function sanitizeEmailHtml(input: string): SanitizedEmail {
   if (!input) return { html: "", remoteImages: 0 };
   let out = "";
@@ -217,4 +216,39 @@ export function sanitizeEmailHtml(input: string): SanitizedEmail {
   }
   for (let k = stack.length - 1; k >= 0; k--) out += `</${stack[k]}>`;
   return { html: out, remoteImages };
+}
+
+/** WEB-307 — store-time tracking-pixel neutralization: drop 1×1 (or 0×0)
+ * remote images entirely from the HTML we persist. Operates on
+ * sanitizeEmailHtml OUTPUT, so <img> tags are exactly the ones we rebuilt
+ * (src / data-src / width / height / style attributes only). Pairs with the
+ * render-time click-to-load wall; this keeps pixels out of storage (and out
+ * of any future re-render) for good. */
+export function neutralizeTrackingPixels(html: string): { html: string; removed: number } {
+  let removed = 0;
+  const out = html.replace(/<img\b[^>]*>/gi, (tag) => {
+    const attrVal = (attr: string): string | null => {
+      const m = new RegExp(`(?:^|\\s)${attr}\\s*=\\s*"([^"]*)"`).exec(tag);
+      return m ? m[1].trim() : null;
+    };
+    // The px-suffix strip is for width/height ATTRIBUTES ("600px"); applying
+    // it to the style VALUE would truncate "height:1px" at the tail.
+    const dim = (attr: string): string | null => attrVal(attr)?.replace(/px$/i, "") ?? null;
+    const w = dim("width");
+    const h = dim("height");
+    const style = attrVal("style") ?? "";
+    const sw = /(?:^|;)\s*width\s*:\s*([0-9.]+)\s*px/i.exec(style)?.[1];
+    const sh = /(?:^|;)\s*height\s*:\s*([0-9.]+)\s*px/i.exec(style)?.[1];
+    const num = (v: string | null | undefined) => (v == null ? null : Number(v));
+    const width = num(w) ?? num(sw);
+    const height = num(h) ?? num(sh);
+    const isPixel =
+      width != null && height != null && width <= 1 && height <= 1 && /(src|data-src)=/i.test(tag);
+    if (isPixel) {
+      removed++;
+      return "";
+    }
+    return tag;
+  });
+  return { html: out, removed };
 }

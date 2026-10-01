@@ -7,7 +7,7 @@
  * the composer can offer retry (nothing silently vanishes).
  * No outbound attachments in v1 (Email Workers 5 MiB cap) — the composer
  * inserts {{gallery_link}} instead. */
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq, isNotNull } from "drizzle-orm";
 import { z } from "zod";
 
 import { getDb } from "@/lib/db";
@@ -15,11 +15,13 @@ import * as schema from "@/lib/db-schema";
 import { getOrgContext } from "@/lib/session";
 import { getThreadWithMessages, appendThreadMessage, resolveOrCreateThread } from "@/lib/repos/inbox";
 import { recordOutboundReply } from "@/lib/repos/leads";
-import { getStudioProfile, getStudioSlug } from "@/lib/repos/studios";
+import { getStudioProfile } from "@/lib/repos/studios";
 import { getEmailBrand } from "@/lib/branding";
 import { sendEmail } from "@/lib/email";
 import { renderMergeFrom } from "@/lib/merge";
 import { buildReplyEmail, studioSignature } from "@/lib/inbox/compose";
+import { threadAddress } from "@/lib/inbox/threading";
+import { ensureThreadRouting } from "@/lib/inbox/ingest";
 import { safeHexColor } from "@/lib/embed";
 
 export const dynamic = "force-dynamic";
@@ -65,10 +67,34 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       ? thread.subject
       : `Re: ${thread.subject}`
     : `Re: Your inquiry to ${brand.studioName}`;
-  const slug = (await getStudioSlug(ctx.organizationId)) || "studio";
-  const fromAddress = brand.whiteLabel
-    ? `hello+${slug}@snap.webcules.com`
-    : `${brand.studioName} <hello+${slug}@snap.webcules.com>`;
+
+  // WEB-307: the reply sends from the per-thread address
+  // (t-{threadId}-{token}@) — a client answer to it self-identifies the
+  // thread even with every header stripped — and carries full threading
+  // headers: our Message-ID, the References chain, a Thread-Index Outlook
+  // groups on, and X-Snap-Thread-ID as the fast lane.
+  const threadRow = await ensureThreadRouting(ctx.organizationId, thread.id);
+  const fromAddress = threadAddress(thread.id, threadRow.addressToken);
+  const priorIds = (
+    await getDb()
+      .select({ id: schema.threadMessages.rfcMessageId })
+      .from(schema.threadMessages)
+      .where(and(eq(schema.threadMessages.threadId, thread.id), isNotNull(schema.threadMessages.rfcMessageId)))
+      .orderBy(asc(schema.threadMessages.createdAt))
+  )
+    .map((r) => r.id!)
+    .filter((id) => !id.startsWith("<bounce-"));
+  const messageId = `<${crypto.randomUUID()}@snap.webcules.com>`;
+  const headers: Record<string, string> = {
+    "Message-ID": messageId,
+    "X-Snap-Thread-ID": thread.id,
+    "Thread-Index": threadRow.threadIndexBase64,
+  };
+  if (priorIds.length) {
+    headers["In-Reply-To"] = priorIds[priorIds.length - 1];
+    headers["References"] = priorIds.join(" ");
+  }
+
   const signature = await studioSignature(ctx.organizationId);
   const tmpl = buildReplyEmail({
     studioName: brand.studioName,
@@ -83,12 +109,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     subject,
     html: tmpl.html,
     text: tmpl.text,
-    ...(brand.whiteLabel ? { fromName: brand.studioName } : {}),
+    fromName: brand.studioName,
     fromOverride: fromAddress,
     replyTo: profile.contactEmail ?? undefined,
     organizationId: ctx.organizationId,
     template: "inbox.reply",
     refId: thread.id,
+    headers,
   });
 
   // Mirror copy (dual delivery during the trust period): the studio's own
@@ -103,11 +130,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       organizationId: ctx.organizationId,
       template: "inbox.reply_mirror",
       refId: thread.id,
+      headers: { "X-Snap-Thread-ID": thread.id, "X-Snap-Type": "reply-copy" },
     });
   }
 
   // Conversation record: lead-linked threads reuse the lead flow (message +
-  // status flip + thread append); project threads append directly.
+  // status flip + thread append); project threads append directly. The rfc
+  // Message-ID rides along so inbound In-Reply-To resolves to this thread.
   if (thread.leadId) {
     await recordOutboundReply({
       organizationId: ctx.organizationId,
@@ -116,6 +145,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       subject,
       body: resolved,
       delivered: sent,
+      providerId: messageId,
     });
   } else {
     const threadId = await resolveOrCreateThread({
@@ -128,6 +158,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       organizationId: ctx.organizationId,
       threadId,
       direction: "out",
+      rfcMessageId: messageId,
       subject,
       textPreview: resolved,
       status: sent ? "sent" : "failed",

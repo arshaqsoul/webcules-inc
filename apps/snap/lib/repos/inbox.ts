@@ -73,6 +73,10 @@ export async function appendThreadMessage(params: {
   fromAddr?: string;
   subject?: string;
   textPreview?: string;
+  /** WEB-307: R2 keys for the sanitized HTML body + raw .eml. */
+  htmlR2Key?: string | null;
+  rawR2Key?: string | null;
+  hasAttachments?: boolean;
   status?: "received" | "sent" | "failed";
   createdAt?: Date;
 }): Promise<string | null> {
@@ -91,6 +95,9 @@ export async function appendThreadMessage(params: {
         fromAddr: params.fromAddr ?? "",
         subject: params.subject?.slice(0, 300) ?? "",
         textPreview: (params.textPreview ?? "").slice(0, 8000),
+        htmlR2Key: params.htmlR2Key ?? null,
+        rawR2Key: params.rawR2Key ?? null,
+        hasAttachments: params.hasAttachments ?? false,
         status: params.status ?? (params.direction === "out" ? "sent" : "received"),
         ...(params.createdAt ? { createdAt: params.createdAt } : {}),
       }),

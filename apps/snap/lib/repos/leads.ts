@@ -483,113 +483,11 @@ export async function linkOpenLeadToBooking(params: {
   ]);
 }
 
-/**
- * Inbound email ingest (called by the snap-email worker webhook): match the
- * sender to the most recent thread this platform sent outbound mail to (within
- * 45 days) — today all outbound goes from shared addresses, so the org is
- * resolved through the outbound message trail. Unmatched mail is ignored.
- */
-export async function ingestInboundEmail(payload: {
-  from: string;
-  to: string;
-  subject: string;
-  text: string | null;
-  html: string | null;
-  messageId: string | null;
-}): Promise<{ matched: boolean; leadId?: string; organizationId?: string }> {
-  const sender = payload.from.toLowerCase();
+/* Inbound email ingest moved to lib/inbox/ingest.ts (WEB-307): the
+ * five-step threading pipeline, R2 bodies, triage, mirroring. The lead
+ * bridge inside it keeps writing lead_message rows, so this module's views
+ * stay whole. */
 
-  // Primary: lead-scoped sub-address (hello+{leadId}@snap.webcules.com) —
-  // exact match, no cross-studio ambiguity.
-  let result: { leadId: string; organizationId: string } | null = null;
-  const tagMatch = payload.to.match(/hello\+([0-9a-f-]{36})@snap\.webcules\.com/i);
-  if (tagMatch) {
-    const lead = (
-      await getDb()
-        .select({ id: schema.leads.id, organizationId: schema.leads.organizationId })
-        .from(schema.leads)
-        .where(eq(schema.leads.id, tagMatch[1]))
-        .limit(1)
-    )[0];
-    if (lead) result = { leadId: lead.id, organizationId: lead.organizationId };
-  }
-  // Fallback (transition period): outbound-reply trail by sender.
-  if (!result) {
-    result = await getD1()
-      .prepare(
-        `SELECT lm.lead_id AS leadId, lm.organization_id AS organizationId
-         FROM lead_message lm
-         JOIN lead l ON l.id = lm.lead_id
-         WHERE lm.direction = 'out' AND lower(l.email) = ?
-           AND l.status IN ('new','replied')
-           AND lm.created_at > unixepoch() - 45*86400
-         ORDER BY lm.created_at DESC
-         LIMIT 1`,
-      )
-      .bind(sender)
-      .first<{ leadId: string; organizationId: string }>();
-  }
-  if (!result) return { matched: false };
-
-  const db = getDb();
-  const body = stripQuotedReply((payload.text ?? payload.html ?? "")).slice(0, 8000);
-  await db.insert(schema.leadMessages).values({
-    id: crypto.randomUUID(),
-    organizationId: result.organizationId,
-    leadId: result.leadId,
-    direction: "in",
-    subject: payload.subject,
-    body,
-    providerId: payload.messageId,
-  });
-  await db
-    .update(schema.leads)
-    .set({ updatedAt: new Date() })
-    .where(eq(schema.leads.id, result.leadId));
-
-  // WEB-304: the reply lands on the unified inbox — thread message + item.
-  // Never breaks ingest: the lead_message row above is already committed.
-  try {
-    const lead = (
-      await db
-        .select({ email: schema.leads.email, name: schema.leads.name })
-        .from(schema.leads)
-        .where(eq(schema.leads.id, result.leadId))
-        .limit(1)
-    )[0];
-    if (lead) {
-      const threadId = await resolveOrCreateThread({
-        organizationId: result.organizationId,
-        clientEmail: lead.email,
-        subject: payload.subject,
-        leadId: result.leadId,
-      });
-      await appendThreadMessage({
-        organizationId: result.organizationId,
-        threadId,
-        direction: "in",
-        rfcMessageId: payload.messageId || null,
-        fromAddr: payload.from,
-        subject: payload.subject,
-        textPreview: body,
-      });
-      await mintInboxItems({
-        organizationId: result.organizationId,
-        kind: "email",
-        entityType: "email",
-        entityId: payload.messageId || crypto.randomUUID(),
-        threadId,
-        title: `${lead.name} replied`,
-        preview: body.slice(0, 240),
-        occurredAt: new Date(),
-      });
-    }
-  } catch (err) {
-    console.error("inbox thread append for inbound reply failed:", String(err));
-  }
-
-  return { matched: true, leadId: result.leadId, organizationId: result.organizationId };
-}
 
 /** Calendar range query (WEB-286): open leads carrying an event date —
  * shown on the calendar as tentative (not yet booked). */
