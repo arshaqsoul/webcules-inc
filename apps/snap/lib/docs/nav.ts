@@ -161,7 +161,7 @@ export const DOC_CATEGORIES: DocCategory[] = [
         slug: "gallery-design",
         title: "Gallery design & styles",
         description:
-          "Covers, layouts, themes, and motion — design each gallery to match the shoot, then save the combination as a style preset your whole studio reuses.",
+          "Covers with a hero slider, layouts, themes, and motion — design each gallery to match the shoot, preview it exactly as your client will see it, then save the combination as a preset your whole studio reuses.",
         icon: "frame",
         tier: "lite",
       },

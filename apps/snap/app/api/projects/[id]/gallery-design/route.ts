@@ -41,14 +41,24 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   if (!parsed.success) return Response.json({ error: "invalid_body" }, { status: 400 });
 
   const ent = await getPlanEntitlements(ctx.organizationId);
+  const parsedDesign =
+    parsed.data.design !== null ? parseGalleryDesign(parsed.data.design) : null;
   // WEB-301 follow-up: Free may save a single hero/cover photo (the one
   // free design surface) — anything beyond a cover-only design stays Lite.
-  if (
-    parsed.data.design !== null &&
-    ent?.id === "free" &&
-    !isCoverOnlyDesign(parseGalleryDesign(parsed.data.design))
-  ) {
+  if (parsed.data.design !== null && ent?.id === "free" && !isCoverOnlyDesign(parsedDesign)) {
     return Response.json({ error: "design_requires_lite", plan: ent?.id ?? "free" }, { status: 403 });
+  }
+  // WEB-302: hero slider (2+ ordered cover images) and per-breakpoint columns
+  // are Studio+ — the designer gates this in the UI; the API must agree.
+  // (parseGalleryDesign drops slider arrays below 2 images, so a single photo
+  // is a plain cover and passes here on every plan.)
+  if (
+    parsedDesign &&
+    ent?.id !== "studio" &&
+    ent?.id !== "pro" &&
+    ((parsedDesign.cover?.images?.length ?? 0) >= 2 || Boolean(parsedDesign.columns))
+  ) {
+    return Response.json({ error: "design_requires_studio", plan: ent?.id ?? "free" }, { status: 403 });
   }
 
   const result = await saveProjectGalleryDesign({

@@ -1,6 +1,7 @@
 /* Gallery design & styles — authored from lib/gallery-design.ts (cover/layout/
- * theme enums), lib/slideshow.ts (paces/transitions/music), components/
- * gallery-designer.tsx (presets, studio default, Lite upsells), and the gate
+ * theme/columns enums, hero-slider parse, the free-tier cover-only gate),
+ * components/gallery-designer.tsx (presets, free cover, Studio+ hero slider +
+ * columns), app/g/[token]/preview/page.tsx (preview-as-client), and the gate
  * matrix (design_requires_lite / music_requires_lite). */
 import { H2, H3, Note, Shot, Tier, Related } from "@/lib/docs/primitives";
 
@@ -9,8 +10,9 @@ export default function GalleryDesign() {
     <>
       <p>
         Design each gallery to match the shoot: a cover photo with a focal point, a layout, a
-        theme — then save the combination as a preset your whole studio reuses. The classic gallery
-        is free; the design layer on top of it is Lite and above.
+        theme — then save the combination as a preset your whole studio reuses. One cover photo is
+        free on every plan, the design layer is Lite and above, and the hero slider and column
+        controls are Studio and above.
       </p>
 
       <Shot
@@ -22,34 +24,53 @@ export default function GalleryDesign() {
 
       <H2>Free, on every gallery</H2>
       <p>
-        Without touching the designer, every gallery ships the classic look: a uniform{" "}
-        <strong>grid</strong> on a light canvas, rounded tiles, clean and fast. The basic
-        slideshow works on Free too — full-screen, crossfade or Ken Burns motion, at your pace —
-        it just plays silent. Favorites, selections, downloads, and every delivery control on{" "}
+        Even a gallery you never style opens on an intentional hero: a gradient cover with the
+        project title and a date · photo-count line, above the classic look — a uniform{" "}
+        <strong>grid</strong> on a light canvas, rounded tiles. Folders group under uppercase
+        section headers. Basic means non-configurable, not unstyled. The basic slideshow works on
+        Free too — full-screen, crossfade or Ken Burns motion, at your pace — it just plays silent.
+        Favorites, selections, downloads, and every delivery control on{" "}
         <a href="/docs/gallery-delivery">Delivering galleries</a> are never gated.
       </p>
 
       <H2>The design layer <Tier plan="lite" /></H2>
       <p>
         Open the <strong>Client gallery</strong> tab on any project and the designer sits beside a
-        live phone-frame preview. Saving a design is what Lite unlocks — on Free the panel shows
-        an upsell instead of a save button.
+        live phone-frame preview. The <strong>Cover</strong> section renders for every plan; what
+        Lite unlocks is everything around it — layouts, themes, cover motion, presets. On Free the
+        upsell card sits below the cover and saving accepts a cover-only design.
       </p>
 
       <H3>Cover</H3>
       <p>
-        Pick a cover photo from the project and drag its focal point so the crop lands where you
-        want. Three styles: <strong>static</strong> (a still hero), <strong>Ken Burns</strong>{" "}
-        (a slow drift), or a <strong>split title panel</strong>. Title and subtitle accept merge
+        Pick a photo from the project, drag its focal point so the crop lands where you want, and
+        add a title and subtitle — this much is free on every plan. Title and subtitle accept merge
         fields — <code>{"{{client_name}}"}</code>, <code>{"{{event_date}}"}</code> — rendered per
-        viewer. No photo picked? The cover falls back to a text-only gradient hero, so presets
-        never depend on a specific project&apos;s images.
+        viewer. Lite adds the styles: <strong>static</strong> (a still hero),{" "}
+        <strong>Ken Burns</strong> (a slow drift), or a <strong>split title panel</strong>; on Free
+        the cover is the static photo-plus-title hero. No photo picked? It falls back to a
+        text-only gradient hero, so presets never depend on a specific project&apos;s images. Every
+        photo hero wears a soft vignette — darkened edges that frame the image.
+      </p>
+
+      <H3>Hero slider <Tier plan="studio" /></H3>
+      <p>
+        Swap the single cover for a carousel of 2–6 photos. Click thumbnails to add them in order —
+        the first photo leads, and it&apos;s the one clients see when the link unfurls in a chat or
+        social card. Each slide keeps its own focal point; a dropdown picks which slide your drag
+        edits. Clients swipe the strip (arrows and dots too), and optional auto-advance (4, 6, or 8
+        seconds, or off) never runs for people who prefer reduced motion. Fewer than two photos and
+        you&apos;re back to the plain single-image cover.
       </p>
 
       <H3>Layout</H3>
       <p>
         <strong>Grid</strong> (uniform rows), <strong>masonry</strong> (natural heights, no
-        cropping), or <strong>cascade</strong> (an editorial, mixed-scale flow).
+        cropping), or <strong>cascade</strong> (an editorial, mixed-scale flow). On grid and
+        masonry, Studio plans set the density per screen <Tier plan="studio" /> — 2–3 columns on
+        phones, 2–3 on tablets, 2–5 on desktop. Fewer columns, bigger photos. Cascade keeps its
+        justified rows and hides the control; leave the counts alone and the classic 2 / 3 / 4
+        ladder applies.
       </p>
 
       <H3>Theme</H3>
@@ -58,6 +79,19 @@ export default function GalleryDesign() {
         your studio accent. Then the details: compact, normal, or airy spacing; square, 8px, or
         16px corners; captions off, on hover, or always (a tile&apos;s caption is its filename,
         minus the extension).
+      </p>
+
+      <H2>Preview as your client</H2>
+      <p>
+        See exactly what the client will see before anything is sent. The{" "}
+        <strong>Preview</strong> button sits next to Share on the Client gallery tab (a second link
+        tops the share panel), opening the gallery at <code>/g/…/preview</code> in a new tab — on
+        every plan. Your dashboard session is the only key: no grant, no email code, and a
+        signed-out visitor gets the same neutral 404 as any unknown gallery link. It&apos;s the
+        real client view — the approved-and-shared set a fresh link would carry, your watermark and
+        privacy settings applied — under a banner with a desktop/mobile viewport toggle and a
+        shortcut back to sending. Downloads, selections, and sharing stay off until the real
+        grant&apos;s settings exist, and preview opens never count as views.
       </p>
 
       <H2>Presets and your studio default <Tier plan="lite" /></H2>
@@ -75,9 +109,8 @@ export default function GalleryDesign() {
         <strong>vertical 9:16 mode</strong> reframes the show for phones — built for Stories and
         Reels (the client records their screen to save it). Music is bring-your-own{" "}
         <Tier plan="lite" />: MP3, AAC, or M4A up to 15 MB, uploaded once to a studio library and
-        reused across every gallery. You tick a box confirming you own the rights — it&apos;s
-        recorded with the upload — and can set where the track starts, so a long intro never
-        outruns the first crossfade. On Free the slideshow plays silent.
+        reused across every gallery. You tick a box confirming you own the rights (recorded with
+        the upload), and can set where the track starts. On Free the slideshow plays silent.
       </p>
       <Note>
         Turning on a <strong>Films section</strong> is also a design-tab switch — see{" "}

@@ -112,7 +112,7 @@ describe("isCoverOnlyDesign — the free-tier hero carve-out", () => {
     expect(isCoverOnlyDesign(parseGalleryDesign({ cover, theme: { background: "dark" } }))).toBe(false);
     expect(isCoverOnlyDesign(parseGalleryDesign({ cover, films: true }))).toBe(false);
     expect(isCoverOnlyDesign(parseGalleryDesign({ cover, columns: { md: 2 } }))).toBe(false);
-    expect(isCoverOnlyDesign(parseGalleryDesign({ cover, cover2: 1, ...{ cover: { ...cover, images: [{ assetId: "x1", focal: { x: 0.5, y: 0.5 } }, { assetId: "x2", focal: { x: 0.5, y: 0.5 } }] } } }))).toBe(false);
+    expect(isCoverOnlyDesign(parseGalleryDesign({ cover: { ...cover, images: [{ assetId: "x1", focal: { x: 0.5, y: 0.5 } }, { assetId: "x2", focal: { x: 0.5, y: 0.5 } }] }, cover2: 1 }))).toBe(false);
     expect(isCoverOnlyDesign(parseGalleryDesign({ cover: { ...cover, style: "kenburns" } }))).toBe(false);
     expect(isCoverOnlyDesign(parseGalleryDesign({ cover: { ...cover, interval: 6 } }))).toBe(false);
   });
