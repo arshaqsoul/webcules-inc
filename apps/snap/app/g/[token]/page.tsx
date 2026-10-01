@@ -28,7 +28,7 @@ import { countGalleryOpen } from "@/lib/limits";
 import { buildMergeValues, renderMerge } from "@/lib/merge";
 import { coverLink } from "@/lib/cover-link";
 import { clientUrl } from "@/lib/client-urls";
-import type { GalleryDesign } from "@/lib/gallery-design";
+import { heroImages, type GalleryDesign } from "@/lib/gallery-design";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Your gallery", robots: { index: false } };
@@ -55,16 +55,19 @@ export async function generateMetadata({ params }: { params: Promise<{ token: st
   let coverOg: string | null = null;
   let coverTitle: string | null = null;
   const eff = await effectiveGalleryDesign(grant.organizationId, grant.projectId);
-  if (eff.design?.cover?.assetId) {
+  // WEB-301: the og card leads with the first delivered hero image (slider
+  // or single cover — same rule as the rendered hero).
+  const ogAssetId = heroImages(eff.design).find((i) => i.assetId)?.assetId ?? eff.design?.cover?.assetId ?? null;
+  if (ogAssetId) {
     const assets = await getGrantAssets(grant);
-    if (assets.some((a) => a.id === eff.design?.cover?.assetId)) {
+    if (assets.some((a) => a.id === ogAssetId)) {
       const values = await buildMergeValues({
         organizationId: grant.organizationId,
         projectId: grant.projectId,
         clientEmail: grant.clientEmail,
       });
-      coverTitle = renderMerge(eff.design.cover.title, values, { surface: "plain" }) || null;
-      coverOg = await clientUrl(grant.organizationId, await coverLink(eff.design.cover.assetId, grant.id));
+      coverTitle = renderMerge(eff.design?.cover?.title ?? "", values, { surface: "plain" }) || null;
+      coverOg = await clientUrl(grant.organizationId, await coverLink(ogAssetId, grant.id));
     }
   }
 
@@ -167,7 +170,11 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
     getLatestSelection(grant.id),
     // WEB-242: per-project watermark override.
     getDb()
-      .select({ watermarkOverride: schema.projects.watermarkOverride })
+      .select({
+        watermarkOverride: schema.projects.watermarkOverride,
+        title: schema.projects.title,
+        eventDate: schema.projects.eventDate,
+      })
       .from(schema.projects)
       .where(eq(schema.projects.id, grant.projectId))
       .limit(1),
@@ -177,6 +184,12 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
     getProjectSlideshow(grant.organizationId, grant.projectId),
   ]);
   const brand = JSON.parse(profile?.brand || "{}") as { accent?: string };
+  // WEB-301 WP-A: zero-config galleries open on a default hero with the
+  // project title + a date · count meta line.
+  const projectTitle = projectOverride[0]?.title ?? null;
+  const eventDate = projectOverride[0]?.eventDate
+    ? new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" }).format(projectOverride[0].eventDate)
+    : null;
   const shared = {
     studioName: profile?.studioName ?? "your photographer",
     accent: safeHexColor(brand.accent) ?? "#5e6ad2",
@@ -242,6 +255,8 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
         design={design}
         slideshow={slideshow}
         allowSharing={grant.allowSharing && (ent?.id ?? "free") !== "free"}
+        projectTitle={projectTitle}
+        eventDate={eventDate}
       />
     );
   }
@@ -291,6 +306,8 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
       design={design}
       slideshow={slideshow}
       allowSharing={grant.allowSharing && (ent?.id ?? "free") !== "free"}
+      projectTitle={projectTitle}
+      eventDate={eventDate}
     />
   );
 }

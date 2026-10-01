@@ -292,6 +292,7 @@ export default async function ProjectDetailPage({
           initialDesign={design}
           inherited={inheritedDesign}
           canDesign={(ent?.id ?? "free") !== "free"}
+          canStyle={ent?.id === "studio" || ent?.id === "pro"}
           initialSlideshow={slideshowCfg}
           canMusic={(ent?.id ?? "free") !== "free"}
         />

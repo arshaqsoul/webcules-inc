@@ -169,6 +169,16 @@ export function SharePanel({
             <X className="h-4 w-4" aria-hidden />
           </Button>
         </div>
+        <div className="border-b border-hairline bg-surface-2/60 px-4 py-1.5">
+          <a
+            href={`/g/${projectId}/preview`}
+            target="_blank"
+            rel="noreferrer"
+            className="text-xs text-ink-subtle underline-offset-2 transition-colors hover:text-ink hover:underline"
+          >
+            Not sure yet? Preview the gallery as your client will see it →
+          </a>
+        </div>
 
         <div className="flex-1 overflow-y-auto p-4">
           <label className="flex flex-col gap-1 text-xs text-ink-subtle">

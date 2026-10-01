@@ -174,6 +174,8 @@ const manageEndEpoch = manageStartEpoch + 3600;
 // panel re-scope when switching studios.
 const userId = crypto.randomUUID();
 const userEmail = "e2e-domains@test.test";
+const previewProjectId = crypto.randomUUID();
+const classicProjectId = crypto.randomUUID();
 const proOrgId = crypto.randomUUID();
 const freeOrgId = crypto.randomUUID();
 const passwordHash = await hashPassword("TestPass123!x");
@@ -201,12 +203,26 @@ const seedSql = `INSERT INTO organization (id, name, slug, created_at, updated_a
    INSERT INTO member (id, organization_id, user_id, role, created_at)
      VALUES ('${crypto.randomUUID()}', '${proOrgId}', '${userId}', 'owner', unixepoch());
    INSERT INTO member (id, organization_id, user_id, role, created_at)
-     VALUES ('${crypto.randomUUID()}', '${freeOrgId}', '${userId}', 'owner', unixepoch());`;
+     VALUES ('${crypto.randomUUID()}', '${freeOrgId}', '${userId}', 'owner', unixepoch());
+
+-- WEB-301 preview e2e: a designed project (columns + hero slider) plus a
+-- zero-config one, each with approved assets (no R2 objects — DOM-level
+-- assertions only).
+INSERT INTO project (id, organization_id, title, event_date, status, gallery_design, created_at, updated_at)
+VALUES ('${previewProjectId}', '${proOrgId}', 'Autumn Winds Shoot', strftime('%s','2026-10-18') * 1000, 'booked',
+        '{"layout":"grid","columns":{"mobile":2,"md":2},"theme":{"background":"light","padding":"normal","radius":"16px","captions":"off"},"cover":{"assetId":"","focal":{"x":0.5,"y":0.5},"style":"static","title":"Anna & Elias","subtitle":"Preview family session"}}',
+        unixepoch(), unixepoch());
+INSERT INTO project (id, organization_id, title, status, created_at, updated_at)
+VALUES ('${classicProjectId}', '${proOrgId}', 'Rustic Barn Wedding', 'booked', unixepoch(), unixepoch());
+INSERT INTO asset (id, organization_id, project_id, storage_key, kind, filename, mime_type, bytes, status, width, height, created_at) VALUES
+ ('e2eprev-a1', '${proOrgId}', '${previewProjectId}', '${proOrgId}/${previewProjectId}/e2eprev-a1/one.jpg', 'image', 'one.jpg', 'image/jpeg', 1000, 'approved', 1600, 1000, unixepoch()),
+ ('e2eprev-a2', '${proOrgId}', '${previewProjectId}', '${proOrgId}/${previewProjectId}/e2eprev-a2/two.jpg', 'image', 'two.jpg', 'image/jpeg', 1000, 'approved', 1600, 1000, unixepoch()),
+ ('e2eprev-a3', '${proOrgId}', '${classicProjectId}', '${proOrgId}/${classicProjectId}/e2eprev-a3/three.jpg', 'image', 'three.jpg', 'image/jpeg', 1000, 'approved', 1600, 1000, unixepoch());`;
 writeFileSync(join(root, "tests", "e2e", ".seed.sql"), seedSql, "utf8");
 run("pnpm exec wrangler d1 execute webcules-snap --local --persist-to tests/e2e/.state --file tests/e2e/.seed.sql");
 writeFileSync(
   join(root, "tests", "e2e", ".seed.json"),
-  JSON.stringify({ orgId, embedKey, weekday, date, userId, userEmail, proOrgId, freeOrgId, mockPort, manageToken }),
+  JSON.stringify({ orgId, embedKey, weekday, date, userId, userEmail, proOrgId, freeOrgId, mockPort, manageToken, previewProjectId, classicProjectId }),
   "utf8",
 );
 console.log(`[e2e-server] seeded widget + domain studios (weekday ${weekday}, ${date})`);

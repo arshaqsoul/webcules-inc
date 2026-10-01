@@ -220,6 +220,47 @@ body {
   }
 }
 
+/* WEB-301: column-count ladders for the gallery grid/masonry — CSS vars so
+ * the designer's counts flow in without per-breakpoint classes. Defaults are
+ * the classic ladder (mobile 2 / sm 3 / lg 4) so designs without column
+ * config render exactly as before. */
+.snap-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--snap-cols, 2), minmax(0, 1fr));
+}
+.snap-masonry {
+  columns: var(--snap-cols, 2);
+}
+@media (min-width: 640px) {
+  .snap-grid { grid-template-columns: repeat(var(--snap-cols-sm, 3), minmax(0, 1fr)); }
+  .snap-masonry { columns: var(--snap-cols-sm, 3); }
+}
+@media (min-width: 1024px) {
+  .snap-grid { grid-template-columns: repeat(var(--snap-cols-md, 4), minmax(0, 1fr)); }
+  .snap-masonry { columns: var(--snap-cols-md, 4); }
+}
+
+/* WEB-301: cover hero slider — CSS scroll-snap carousel (swipe on touch,
+ * arrows on desktop, gentle auto-advance from JS that respects reduced
+ * motion). Slides reserve the same aspect box as the single-image cover. */
+.snap-hero-track {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+.snap-hero-track::-webkit-scrollbar { display: none; }
+.snap-hero-slide {
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+  position: relative;
+}
+@media (prefers-reduced-motion: reduce) {
+  .snap-hero-track { scroll-behavior: auto; }
+}
+
 /* WEB-258: Ken Burns cover — slow scale/pan drift on the gallery hero.
  * Pure CSS (no JS, no image processing); disabled for users who prefer
  * reduced motion. */

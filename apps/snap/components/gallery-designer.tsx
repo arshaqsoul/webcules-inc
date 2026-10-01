@@ -31,7 +31,7 @@ const CLASSIC: GalleryDesign = {
   theme: { background: "light", padding: "normal", radius: "16px", captions: "off" },
 };
 
-export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign, initialSlideshow, canMusic }: {
+export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign, initialSlideshow, canMusic, canStyle }: {
   projectId: string;
   /** The project's own saved design (null = none). */
   initialDesign: GalleryDesign | null;
@@ -41,6 +41,8 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
   /** WEB-259: slideshow config + whether this org may pick music (Lite+). */
   initialSlideshow: SlideshowConfig | null;
   canMusic: boolean;
+  /** WEB-301: Studio+ controls — hero slider + column counts. */
+  canStyle?: boolean;
 }) {
   const [draft, setDraft] = useState<GalleryDesign>(initialDesign ?? inherited ?? CLASSIC);
   const [customized, setCustomized] = useState(Boolean(initialDesign));
@@ -60,6 +62,7 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
   const [tracks, setTracks] = useState<MusicTrack[] | null>(null);
   const [uploadName, setUploadName] = useState("");
   const [warranted, setWarranted] = useState(false);
+  const [heroSel, setHeroSel] = useState(0);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const focalRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
@@ -93,13 +96,38 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
     setDirty(true);
   }
 
+  /** WEB-301 hero slider: ordered multi-pick from the project's photos. */
+  const heroList = draft.cover?.images ?? [];
+  function toggleHero(id: string) {
+    const cur = heroList;
+    const next = cur.some((i) => i.assetId === id)
+      ? cur.filter((i) => i.assetId !== id)
+      : [...cur, { assetId: id, focal: { x: 0.5, y: 0.5 } }];
+    if (next.length > 6) return;
+    setHeroSel(0);
+    editCover({
+      images: next,
+      // the canonical cover follows the first slide (og:image + fallback)
+      ...(next.length ? { assetId: next[0].assetId, focal: next[0].focal } : {}),
+    });
+  }
+  function editHeroFocal(focal: { x: number; y: number }) {
+    const cur = heroList;
+    if (!cur.length) {
+      editCover({ focal });
+      return;
+    }
+    const next = cur.map((img, i) => (i === Math.min(heroSel, cur.length - 1) ? { ...img, focal } : img));
+    editCover({ images: next, ...(heroSel === 0 ? { focal } : {}) });
+  }
+
   function setFocalFromEvent(e: React.PointerEvent) {
     const el = focalRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
     const x = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
     const y = Math.min(1, Math.max(0, (e.clientY - rect.top) / rect.height));
-    editCover({ focal: { x: Math.round(x * 100) / 100, y: Math.round(y * 100) / 100 } });
+    editHeroFocal({ x: Math.round(x * 100) / 100, y: Math.round(y * 100) / 100 });
   }
 
   async function save(clear = false) {
@@ -383,7 +411,70 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
                 </div>
               </div>
             )}
-            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                        {canStyle && (
+              <div className="mt-4 rounded-lg border border-hairline bg-surface-2/40 p-3">
+                <p className="text-[11px] font-medium text-ink">Hero slider</p>
+                <p className="mt-0.5 text-[11px] text-ink-tertiary">
+                  Pick 2&ndash;6 photos for a swipeable cover carousel (first photo leads). Fewer than two keeps today&apos;s single cover.
+                </p>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {(picker ?? []).slice(0, 24).map((a) => {
+                    const idx = heroList.findIndex((i) => i.assetId === a.id);
+                    const on = idx >= 0;
+                    return (
+                      <button
+                        key={a.id}
+                        type="button"
+                        onClick={() => toggleHero(a.id)}
+                        aria-pressed={on}
+                        aria-label={"Hero image: " + a.filename}
+                        title={on ? "Hero " + (idx + 1) + " — click to remove" : "Add to hero slider"}
+                        className={"relative h-11 w-11 overflow-hidden rounded-md border-2 " + (on ? "border-primary" : "border-transparent opacity-70 hover:opacity-100")}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element -- authorized proxy */}
+                        <img src={"/api/assets/" + a.id + "?variant=thumb"} alt={a.filename} className="h-full w-full object-cover" loading="lazy" />
+                        {on && (
+                          <span className="absolute bottom-0 right-0 rounded-tl bg-primary px-1 text-[9px] font-bold text-white">{idx + 1}</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+                {heroList.length >= 2 && (
+                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                    <label className="text-[11px] text-ink-subtle">
+                      Auto-advance
+                      <select
+                        value={String(draft.cover?.interval ?? 0)}
+                        onChange={(e) => editCover({ interval: Number(e.target.value) })}
+                        className="snap-select mt-1 w-full rounded-md border border-hairline bg-canvas px-2 py-1.5 text-xs text-ink"
+                      >
+                        <option value="0">Off — swipe only</option>
+                        <option value="4">Every 4s</option>
+                        <option value="6">Every 6s</option>
+                        <option value="8">Every 8s</option>
+                      </select>
+                      <span className="mt-0.5 block text-ink-tertiary">Clients who prefer reduced motion never see auto-advance.</span>
+                    </label>
+                    <label className="text-[11px] text-ink-subtle">
+                      Focal point edits hero image
+                      <select
+                        value={String(Math.min(heroSel, heroList.length - 1))}
+                        onChange={(e) => setHeroSel(Number(e.target.value))}
+                        className="snap-select mt-1 w-full rounded-md border border-hairline bg-canvas px-2 py-1.5 text-xs text-ink"
+                      >
+                        {heroList.map((img, i) => (
+                          <option key={img.assetId} value={i}>{"Hero " + (i + 1)}</option>
+                        ))}
+                      </select>
+                      <span className="mt-0.5 block text-ink-tertiary">Drag on the cover preview above to set it.</span>
+                    </label>
+                  </div>
+                )}
+              </div>
+            )}
+
+<div className="mt-3 grid gap-2 sm:grid-cols-2">
               <label className="text-xs text-ink-subtle">
                 Title <span className="text-ink-tertiary">(merge works: {"{{client_name}}"})</span>
                 <input
@@ -427,6 +518,44 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
                 </button>
               ))}
             </div>
+            {draft.layout !== "cascade" && (
+              <div className="mt-3">
+                {canStyle ? (
+                  <div className="flex flex-wrap gap-2">
+                    <Seg
+                      label="Phone columns"
+                      value={String(draft.columns?.mobile ?? 2)}
+                      options={[["2", "2"], ["3", "3"]]}
+                      onChange={(v) => edit({ columns: { ...draft.columns, mobile: Number(v) as 2 | 3 } })}
+                    />
+                    <Seg
+                      label="Tablet columns"
+                      value={String(draft.columns?.sm ?? 3)}
+                      options={[["2", "2"], ["3", "3"]]}
+                      onChange={(v) => edit({ columns: { ...draft.columns, sm: Number(v) as 2 | 3 } })}
+                    />
+                    <Seg
+                      label="Desktop columns"
+                      value={String(draft.columns?.md ?? 4)}
+                      options={[["2", "2"], ["3", "3"], ["4", "4"], ["5", "5"]]}
+                      onChange={(v) => edit({ columns: { ...draft.columns, md: Number(v) as 2 | 3 | 4 | 5 } })}
+                    />
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-hairline bg-surface-2/40 px-3 py-2.5">
+                    <span className="text-[11px] text-ink-subtle">
+                      Fewer columns, bigger photos — a <span className="font-medium text-ink">Studio</span> control.
+                    </span>
+                    <a
+                      href="/dashboard/settings/billing"
+                      className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary transition-colors hover:bg-primary/20"
+                    >
+                      Upgrade
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
           </fieldset>
 
           <fieldset>

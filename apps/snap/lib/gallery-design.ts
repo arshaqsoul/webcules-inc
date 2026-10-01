@@ -15,6 +15,11 @@ export const THEME_CAPTIONS = ["off", "hover", "always"] as const;
 
 export type CoverStyle = (typeof COVER_STYLES)[number];
 export type GalleryLayout = (typeof GALLERY_LAYOUTS)[number];
+/** WEB-301: one slide of the cover hero slider. */
+export type CoverImage = { assetId: string; focal: { x: number; y: number } };
+/** WEB-301: grid density per breakpoint (omitted = classic 2/3/4 ladder —
+ * old configs render unchanged). Cascade ignores it (rows, not columns). */
+export type ColumnCounts = { mobile?: 2 | 3; sm?: 2 | 3; md?: 2 | 3 | 4 | 5 };
 export type GalleryDesign = {
   /** WEB-260: group videos into a dedicated Films section (with a reels
    * strip for vertical clips) instead of interleaving them with photos. */
@@ -30,8 +35,17 @@ export type GalleryDesign = {
     /** Merge-enabled ({{client_name}}, {{event_date}}…), rendered at view. */
     title: string;
     subtitle: string;
+    /** WEB-301: hero image slider — 2–6 ordered cover images; single image
+     * or absent = today's single-image cover exactly. assetId stays the
+     * canonical cover (first slide when a slider is configured). */
+    images?: CoverImage[];
+    /** WEB-301: auto-advance seconds for the hero slider (0 = off; the
+     * carousel still swipes/scrolls). */
+    interval?: number;
   };
   layout: GalleryLayout;
+  /** WEB-301: column counts per breakpoint (Studio+ control). */
+  columns?: ColumnCounts;
   theme: {
     background: (typeof THEME_BACKGROUNDS)[number];
     padding: (typeof THEME_PADDINGS)[number];
@@ -70,9 +84,25 @@ function pick<T extends readonly string[]>(list: T, v: unknown, fallback: T[numb
 export function parseGalleryDesign(input: unknown): GalleryDesign | null {
   if (!input || typeof input !== "object" || Array.isArray(input)) return null;
   const raw = input as Record<string, unknown>;
+  // WEB-301: column counts — only in-range values survive; absent keys stay
+  // absent so old configs (and cascade) keep the classic ladder.
+  const rawCols = raw.columns && typeof raw.columns === "object" && !Array.isArray(raw.columns) ? (raw.columns as Record<string, unknown>) : null;
+  const colOf = (key: "mobile" | "sm" | "md", allowed: number[]): number | undefined => {
+    const v = rawCols?.[key];
+    return typeof v === "number" && allowed.includes(v) ? v : undefined;
+  };
+  const columns: ColumnCounts | undefined =
+    rawCols && (colOf("mobile", [2, 3]) !== undefined || colOf("sm", [2, 3]) !== undefined || colOf("md", [2, 3, 4, 5]) !== undefined)
+      ? {
+          ...(colOf("mobile", [2, 3]) !== undefined ? { mobile: colOf("mobile", [2, 3]) as 2 | 3 } : {}),
+          ...(colOf("sm", [2, 3]) !== undefined ? { sm: colOf("sm", [2, 3]) as 2 | 3 } : {}),
+          ...(colOf("md", [2, 3, 4, 5]) !== undefined ? { md: colOf("md", [2, 3, 4, 5]) as 2 | 3 | 4 | 5 } : {}),
+        }
+      : undefined;
   const design: GalleryDesign = {
     films: raw.films === true,
     layout: pick(GALLERY_LAYOUTS, raw.layout, CLASSIC_LAYOUT),
+    ...(columns ? { columns } : {}),
     theme: {
       background: pick(THEME_BACKGROUNDS, raw.theme && typeof raw.theme === "object" ? (raw.theme as Record<string, unknown>).background : undefined, "light"),
       padding: pick(THEME_PADDINGS, raw.theme && typeof raw.theme === "object" ? (raw.theme as Record<string, unknown>).padding : undefined, "normal"),
@@ -95,6 +125,32 @@ export function parseGalleryDesign(input: unknown): GalleryDesign | null {
       title: str(cover.title, 80),
       subtitle: str(cover.subtitle, 140),
     };
+    // WEB-301: hero slider — ordered, deduped, 2–6 valid images only (a
+    // 1-image array is dropped: single image = today's cover exactly).
+    if (Array.isArray(cover.images)) {
+      const seen = new Set<string>();
+      const images: CoverImage[] = [];
+      for (const raw of cover.images) {
+        if (!raw || typeof raw !== "object") continue;
+        const img = raw as Record<string, unknown>;
+        const assetId = typeof img.assetId === "string" && ID_RE.test(img.assetId) ? img.assetId : "";
+        if (!assetId || seen.has(assetId) || images.length >= 6) continue;
+        seen.add(assetId);
+        images.push({
+          assetId,
+          focal:
+            img.focal && typeof img.focal === "object"
+              ? { x: pct((img.focal as Record<string, unknown>).x), y: pct((img.focal as Record<string, unknown>).y) }
+              : { x: 0.5, y: 0.5 },
+        });
+      }
+      if (images.length >= 2) design.cover.images = images;
+    }
+    // WEB-301: gentle auto-advance — 0 (off) or 3–10s, snapped to ints.
+    if (typeof cover.interval === "number" && Number.isFinite(cover.interval)) {
+      const secs = Math.round(cover.interval);
+      design.cover.interval = secs >= 3 && secs <= 10 ? secs : 0;
+    }
     if (!design.cover.assetId && !design.cover.title && !design.cover.subtitle) delete design.cover;
   }
   return design;
@@ -166,6 +222,28 @@ export function themeVars(background: GalleryDesign["theme"]["background"]): Rec
     };
   }
   return {};
+}
+
+/** WEB-301: CSS-variable overrides for the grid/masonry column counts.
+ * Empty when the design carries no column config — the stylesheet's
+ * classic ladder (2 / 3 / 4) applies and old configs render unchanged. */
+export function columnsVars(design: GalleryDesign | null | undefined): Record<string, string> {
+  const c = design?.columns;
+  if (!c) return {};
+  const vars: Record<string, string> = {};
+  if (c.mobile !== undefined) vars["--snap-cols"] = String(c.mobile);
+  if (c.sm !== undefined) vars["--snap-cols-sm"] = String(c.sm);
+  if (c.md !== undefined) vars["--snap-cols-md"] = String(c.md);
+  return vars;
+}
+
+/** WEB-301: the cover's slide list — the hero slider when 2+ images are
+ * configured, else the single canonical cover (today's behavior). */
+export function heroImages(design: GalleryDesign | null | undefined): CoverImage[] {
+  const c = design?.cover;
+  if (!c) return [];
+  if (c.images && c.images.length >= 2) return c.images;
+  return c.assetId ? [{ assetId: c.assetId, focal: c.focal }] : [];
 }
 
 /** `object-position` for the cover focal point. */

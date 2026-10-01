@@ -3,7 +3,7 @@
  * with: the project's own design wins; otherwise the org's default
  * gallery_preset applies ("new galleries start with…"); none → null (the
  * classic gallery, unchanged). */
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 
 import { getDb } from "../db";
 import * as schema from "../db-schema";
@@ -41,19 +41,24 @@ export async function saveProjectGalleryDesign(params: {
   if (params.design) {
     const canonical = parseGalleryDesign(params.design);
     if (!canonical) return { ok: false, error: "invalid_design" };
-    if (canonical.cover?.assetId) {
-      const cover = await getDb()
+    // WEB-301: every cover surface (canonical asset + hero slider images)
+    // must belong to the project — one query covers them all.
+    const coverIds = [
+      ...(canonical.cover?.assetId ? [canonical.cover.assetId] : []),
+      ...(canonical.cover?.images ?? []).map((i) => i.assetId),
+    ];
+    if (coverIds.length) {
+      const owned = await getDb()
         .select({ id: schema.assets.id })
         .from(schema.assets)
         .where(
           and(
-            eq(schema.assets.id, canonical.cover.assetId),
+            inArray(schema.assets.id, coverIds),
             eq(schema.assets.organizationId, params.organizationId),
             eq(schema.assets.projectId, params.projectId),
           ),
-        )
-        .limit(1);
-      if (!cover.length) return { ok: false, error: "cover_not_in_project" };
+        );
+      if (owned.length !== new Set(coverIds).size) return { ok: false, error: "cover_not_in_project" };
     }
     stored = serializeGalleryDesign(canonical);
     if (stored.length > GALLERY_DESIGN_MAX_BYTES) return { ok: false, error: "too_large" };

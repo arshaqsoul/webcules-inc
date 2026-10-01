@@ -96,6 +96,13 @@ test("pro studio: add domain renders the DNS records", async ({ page }) => {
 
   await page.fill("#hostname", HOSTNAME);
   await hydrated(page);
+  // A pre-hydration fill can be wiped by React's controlled-input reset —
+  // re-fill until the form's submit button enables.
+  for (let i = 0; i < 3; i++) {
+    if (await page.getByRole("button", { name: "Add domain" }).isEnabled().catch(() => false)) break;
+    await page.fill("#hostname", HOSTNAME);
+    await page.waitForTimeout(1500);
+  }
   await page.getByRole("button", { name: "Add domain" }).click();
 
   const card = page.locator(`section[aria-label="Domain ${HOSTNAME}"]`);

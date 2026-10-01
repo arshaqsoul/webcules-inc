@@ -436,6 +436,15 @@ export function ProjectGalleries({
             </label>
           </>
         )}
+        <a
+          href={`/g/${projectId}/preview`}
+          target="_blank"
+          rel="noreferrer"
+          className="rounded-md border border-hairline px-3 py-2 text-sm text-ink-subtle transition-colors hover:bg-surface-2 hover:text-ink"
+          title="Open the exact client view in a new tab — nothing is sent"
+        >
+          Preview
+        </a>
         <Button size="sm" disabled={busy || !email} onClick={createGrant}>
           {busy ? "Working…" : `Share ${deliverCount} approved file${deliverCount === 1 ? "" : "s"}${deliverFolders.size ? ` · ${deliverFolders.size} folder${deliverFolders.size === 1 ? "" : "s"}` : ""}`}
         </Button>

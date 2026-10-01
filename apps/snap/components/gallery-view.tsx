@@ -8,7 +8,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FileTypeIcon } from "@/components/file-type-icon";
 import { PwaRuntime, queueFavoriteOp, recordFavoriteState } from "@/components/my-pwa";
 import { SnapBadge } from "@/components/snap-badge";
-import { captionOf, fmtDuration, focalPosition, themeVars, type GalleryDesign } from "@/lib/gallery-design";
+import {
+  captionOf,
+  columnsVars,
+  fmtDuration,
+  focalPosition,
+  heroImages,
+  themeVars,
+  type CoverImage,
+  type GalleryDesign,
+} from "@/lib/gallery-design";
 
 declare global {
   interface Window {
@@ -616,10 +625,111 @@ function LightboxVideo({ assetId, filename, onFirstPlay }: { assetId: string; fi
  * reserved by aspect wrappers (CLS-safe); the focal point drives
  * object-position. `coverAssetId` is only passed when the cover photo is in
  * this grant's delivered set — otherwise a text-only gradient hero renders. */
-export function GalleryHero({ design, studioName, coverAssetId }: {
+/** WEB-301: cover hero slider — CSS scroll-snap carousel over the cover's
+ * image list. Swipe on touch, arrows on desktop, dots for position; gentle
+ * auto-advance only when configured AND the user allows motion. */
+function HeroSlides({
+  slides,
+  interval,
+  kenburns,
+  alt,
+  deterrents,
+}: {
+  slides: CoverImage[];
+  interval: number;
+  kenburns: boolean;
+  alt: string;
+  deterrents?: boolean;
+}) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [idx, setIdx] = useState(0);
+
+  useEffect(() => {
+    if (!interval || slides.length < 2) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const timer = setInterval(() => {
+      const el = trackRef.current;
+      if (!el) return;
+      const next = (Math.round(el.scrollLeft / Math.max(1, el.clientWidth)) + 1) % slides.length;
+      el.scrollTo({ left: next * el.clientWidth, behavior: "smooth" });
+    }, interval * 1000);
+    return () => clearInterval(timer);
+  }, [interval, slides.length]);
+
+  const go = (n: number) => {
+    const el = trackRef.current;
+    if (el) el.scrollTo({ left: n * el.clientWidth, behavior: "smooth" });
+  };
+
+  return (
+    <div className="absolute inset-0">
+      <div
+        ref={trackRef}
+        className="snap-hero-track h-full w-full"
+        onScroll={(e) => {
+          const el = e.currentTarget;
+          const i = Math.round(el.scrollLeft / Math.max(1, el.clientWidth));
+          if (i !== idx) setIdx(i);
+        }}
+      >
+        {slides.map((slide, i) => (
+          <div key={slide.assetId} className="snap-hero-slide h-full w-full" aria-hidden={i !== idx}>
+            <BackoffImage
+              id={slide.assetId}
+              alt={i === 0 ? alt : ""}
+              loading={i === 0 ? "eager" : "lazy"}
+              variant="preview"
+              protectedMedia={deterrents}
+              className={`absolute inset-0 h-full w-full object-cover ${kenburns ? "snap-kenburns" : ""}`}
+              style={{ objectPosition: focalPosition(slide.focal) }}
+            />
+          </div>
+        ))}
+      </div>
+      {/* arrows — desktop pointer affordance */}
+      {slides.length > 1 && (
+        <>
+          <button
+            type="button"
+            onClick={() => go((idx - 1 + slides.length) % slides.length)}
+            aria-label="Previous cover image"
+            className="absolute left-3 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur transition-colors hover:bg-black/60 sm:flex"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M15 18l-6-6 6-6" /></svg>
+          </button>
+          <button
+            type="button"
+            onClick={() => go((idx + 1) % slides.length)}
+            aria-label="Next cover image"
+            className="absolute right-3 top-1/2 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur transition-colors hover:bg-black/60 sm:flex"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M9 6l6 6-6 6" /></svg>
+          </button>
+          {/* dots — position + jump */}
+          <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
+            {slides.map((slide, i) => (
+              <button
+                key={slide.assetId}
+                type="button"
+                onClick={() => go(i)}
+                aria-label={`Cover image ${i + 1}`}
+                aria-current={i === idx}
+                className={`h-1.5 rounded-full transition-all ${i === idx ? "w-5 bg-white" : "w-1.5 bg-white/50 hover:bg-white/80"}`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+export function GalleryHero({ design, studioName, coverAssetId, slides }: {
   design: GalleryDesign;
   studioName: string;
   coverAssetId: string | null;
+  /** WEB-301: the delivered-set-filtered hero images (slider when 2+). */
+  slides?: CoverImage[];
 }) {
   const c = design.cover;
   if (!c) return null;
@@ -635,7 +745,9 @@ export function GalleryHero({ design, studioName, coverAssetId }: {
       <section className="w-full">
         <div className="grid md:grid-cols-[1fr,minmax(300px,38%)]">
           <div className="relative aspect-[4/3] overflow-hidden md:aspect-auto md:min-h-[400px]">
-            {coverAssetId ? (
+            {(slides?.length ?? 0) >= 2 ? (
+              <HeroSlides slides={slides!} interval={c.interval ?? 0} kenburns={false} alt={c.title || studioName} />
+            ) : coverAssetId ? (
               <BackoffImage
                 id={coverAssetId}
                 alt={c.title || studioName}
@@ -663,7 +775,9 @@ export function GalleryHero({ design, studioName, coverAssetId }: {
   const kenburns = c.style === "kenburns";
   return (
     <section className="relative aspect-[4/3] w-full overflow-hidden sm:aspect-[21/10]">
-      {coverAssetId ? (
+      {(slides?.length ?? 0) >= 2 ? (
+        <HeroSlides slides={slides!} interval={c.interval ?? 0} kenburns={kenburns} alt={c.title || studioName} deterrents={undefined} />
+      ) : coverAssetId ? (
         <BackoffImage
           id={coverAssetId}
           alt={c.title || studioName}
@@ -837,7 +951,7 @@ function GalleryTile(props: {
 }
 
 
-export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLabel, watermarked, deterrents, assets, allowDownload, expiresAt, selectionMode, selectionLimit, selectionDeadline, initialFavorites, submittedSelection, clientToken, design, slideshow, allowSharing, favoriteLists = [], initialNotes = {}, canMakeLists, canNote }: Brand & {
+export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLabel, watermarked, deterrents, assets, allowDownload, expiresAt, selectionMode, selectionLimit, selectionDeadline, initialFavorites, submittedSelection, clientToken, design, slideshow, allowSharing, favoriteLists = [], initialNotes = {}, canMakeLists, canNote, projectTitle, eventDate }: Brand & {
   assets: GalleryAsset[];
   allowDownload: boolean;
   expiresAt: string | null;
@@ -859,6 +973,9 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
   initialNotes?: Record<string, string>;
   canMakeLists?: boolean;
   canNote?: boolean;
+  /** WEB-301 WP-A: display strings for the zero-config default hero. */
+  projectTitle?: string | null;
+  eventDate?: string | null;
 }) {
   const [open, setOpen] = useState<number | null>(null);
   // WEB-259: slideshow start index into the photos-only slide list.
@@ -1106,11 +1223,15 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
 
   useEffect(() => {
     if (layout !== "cascade") return;
-    const mq = () => setCols(window.innerWidth >= 1024 ? 4 : window.innerWidth >= 640 ? 3 : 2);
+    const c = design?.columns;
+    const mq = () => {
+      const w = window.innerWidth;
+      setCols(w >= 1024 ? (c?.md ?? 4) : w >= 640 ? (c?.sm ?? 3) : (c?.mobile ?? 2));
+    };
     mq();
     window.addEventListener("resize", mq);
     return () => window.removeEventListener("resize", mq);
-  }, [layout]);
+  }, [layout, design?.columns]);
 
   const measureAspect = useCallback((id: string, aspect: number) => {
     setAspects((cur) => (cur[id] ? cur : { ...cur, [id]: Math.min(2.4, Math.max(0.45, aspect)) }));
@@ -1135,7 +1256,12 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
     const photosOf = (list: { a: GalleryAsset; idx: number }[]) => (filmsOn ? list.filter((e) => e.a.kind !== "video") : list);
     const all = visible.map((a, idx) => ({ a, idx }));
     const films = filmsOn ? all.filter((e) => e.a.kind === "video") : [];
-    if (!themed || activeFolder) {
+    // WEB-301 WP-A: foldered deliveries group even without a saved design —
+    // the default look gets real section dividers, not a flat anonymous grid.
+    if (!themed && folderNames.length === 0) {
+      return [...(photosOf(all).length ? [{ name: null as string | null, items: photosOf(all) }] : []), ...(films.length ? [{ name: "Films" as string | null, items: films, films: true }] : [])];
+    }
+    if (activeFolder) {
       return [...(photosOf(all).length ? [{ name: null as string | null, items: photosOf(all) }] : []), ...(films.length ? [{ name: "Films" as string | null, items: films, films: true }] : [])];
     }
     const byFolder = new Map<string | null, { a: GalleryAsset; idx: number }[]>();
@@ -1281,7 +1407,13 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
   return (
     <main
       className="min-h-screen bg-canvas"
-      style={{ ["--accent" as string]: accent, ...(design ? themeVars(design.theme.background) : {}) } as React.CSSProperties}
+      style={
+        {
+          ["--accent" as string]: accent,
+          ...(design ? themeVars(design.theme.background) : {}),
+          ...columnsVars(design),
+        } as React.CSSProperties
+      }
       onContextMenu={(e) => {
         // WEB-243: deterrent on MEDIA only — UI chrome keeps the normal menu.
         if (deterrents && (e.target as HTMLElement).tagName === "IMG") e.preventDefault();
@@ -1293,6 +1425,32 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
           design={design}
           studioName={studioName}
           coverAssetId={design.cover?.assetId && assets.some((a) => a.id === design.cover?.assetId) ? design.cover.assetId : null}
+          slides={heroImages(design).filter((i) => assets.some((a) => a.id === i.assetId))}
+        />
+      )}
+      {!design && (projectTitle || assets.length > 0) && (
+        /* WEB-301 WP-A: the zero-config gallery still opens on an intentional
+         * hero — same renderer, default text-only design (scrim + display
+         * type + meta line). Configured galleries above are untouched. */
+        <GalleryHero
+          design={{
+            layout: "grid",
+            theme: { background: "light", padding: "normal", radius: "16px", captions: "off" },
+            cover: {
+              assetId: "",
+              focal: { x: 0.5, y: 0.5 },
+              style: "static",
+              title: projectTitle?.trim() || "Your gallery",
+              subtitle: [
+                eventDate,
+                `${assets.filter((a) => a.kind === "image").length} photo${assets.filter((a) => a.kind === "image").length === 1 ? "" : "s"}`,
+              ]
+                .filter(Boolean)
+                .join(" · "),
+            },
+          }}
+          studioName={studioName}
+          coverAssetId={null}
         />
       )}
       <header className="sticky top-0 z-10 border-b border-hairline bg-canvas/90 backdrop-blur">
@@ -1451,6 +1609,13 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
         <div className={`mx-auto max-w-6xl ${spacing.pad} ${themed ? "space-y-10" : ""}`}>
           {sections.map((section) => (
             <section key={section.name ?? "__loose"} aria-label={section.name ?? undefined}>
+              {section.name && !themed && (
+                <div className="mb-3 flex items-center gap-3">
+                  <h2 className="shrink-0 text-[13px] font-semibold uppercase tracking-[0.14em] text-ink-muted">{section.name}</h2>
+                  <span className="h-px flex-1 bg-hairline" aria-hidden />
+                  <span className="shrink-0 text-xs text-ink-tertiary">{section.items.length}</span>
+                </div>
+              )}
               {section.name && themed && (
                 <div className="mb-3 flex items-baseline justify-between">
                   <h2 className="text-[15px] font-medium text-ink">{section.name}</h2>
@@ -1527,7 +1692,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
                 </div>
               )}
               {!("films" in section) && layout === "grid" && (
-                <div className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 ${spacing.gap}`}>
+                <div className={`snap-grid ${spacing.gap}`}>
                   {section.items.map(({ a, idx }) => (
                     <GalleryTile
                       key={a.id}
@@ -1549,7 +1714,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
                 </div>
               )}
               {!("films" in section) && layout === "masonry" && (
-                <div className={`columns-2 sm:columns-3 lg:columns-4 ${spacing.gap}`}>
+                <div className={`snap-masonry ${spacing.gap}`}>
                   {section.items.map(({ a, idx }) => (
                     <div key={a.id} className={spacing.mb}>
                       <GalleryTile
