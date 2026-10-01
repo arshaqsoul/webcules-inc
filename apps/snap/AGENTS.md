@@ -39,6 +39,35 @@ node scripts/deploy.mjs production --staging-verified  # ONLY after browser veri
 - Never deploy from an uncommitted state you can't name; commit first so the deploy is traceable
   to a commit.
 
+## Commits, releases & version tags — every ship is a tagged release
+
+**Every behavior-changing push is committed, pushed, and tagged as a versioned release whose note
+drops into the public docs unchanged. Commit messages are written for the docs page, not for git.**
+
+- **Commit format = release-note format.**
+  - Subject: `type(snap): WEB-### — <what changed, in photographer-readable words>` (the Linear
+    issue id when one exists; `feat` / `fix` / `docs` types as usual).
+  - Body: the FIRST paragraph(s) must be the public release note — what users get, in plain
+    language, pasteable verbatim into `lib/docs/content/releases.tsx`. Technical detail (files,
+    migrations, test counts, incident notes) goes in trailing paragraphs below a `---` line —
+    never above the user-facing text.
+- **Every release gets a version tag.**
+  - `vX.Y.Z`, semver-ish: user-visible feature → minor bump, fix → patch, breaking/data-model
+    flip → major (rare; needs the founder).
+  - In the release commit: bump `version` in `apps/snap/package.json`, append the entry (version,
+    date, the commit's release paragraphs) to the TOP of `lib/docs/content/releases.tsx`, then:
+    `git tag -a vX.Y.Z -m "<release note>"` and `git push origin master --tags`.
+  - Never move or delete a pushed tag — a bad release gets a new patch tag, not a rewritten one.
+- **The docs Releases page is the changelog** (`/docs/releases`, registered in
+  `lib/docs/nav.ts` under Product updates). If a change is too small to announce (typos, test
+  infra, internal refactors), fold it into the next release's entry instead of tagging noise —
+  but it still gets a normal commit + push.
+- **Push always.** No deploy ships from an unpushed commit, and no finished work stays local past
+  the end of a task. Paused mid-feature? Commit + push with a `wip:` subject (WIP commits are
+  never tagged).
+- Baseline: `v0.1.0` = the 2026-09-29 production launch. History before it is untagged and lives
+  as one summary entry; from `v0.2.0` on there is exactly one docs entry per tag.
+
 ## Environments
 
 | | Production | Staging |

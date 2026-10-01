@@ -30,6 +30,7 @@ import {
   Palette,
   Receipt,
   Rocket,
+  Sparkles,
   ShieldCheck,
   Smartphone,
   Snowflake,
@@ -40,6 +41,7 @@ import {
 
 export const DOC_ICONS: Record<string, LucideIcon> = {
   rocket: Rocket,
+  sparkles: Sparkles,
   info: Info,
   user: User,
   "shield-check": ShieldCheck,

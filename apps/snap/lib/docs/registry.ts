@@ -32,6 +32,7 @@ import Embeds from "./content/embeds";
 import RawVault from "./content/raw-vault";
 import Storage from "./content/storage";
 import Templates from "./content/templates";
+import Releases from "./content/releases";
 
 export const DOC_CONTENT: Record<string, ComponentType> = {
   "start-guide": StartGuide,
@@ -61,6 +62,7 @@ export const DOC_CONTENT: Record<string, ComponentType> = {
   "raw-vault": RawVault,
   storage: Storage,
   templates: Templates,
+  releases: Releases,
 };
 
 export function getDocContent(slug: string): ComponentType | null {

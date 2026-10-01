@@ -300,6 +300,20 @@ export const DOC_CATEGORIES: DocCategory[] = [
       },
     ],
   },
+  {
+    id: "product-updates",
+    label: "Product updates",
+    icon: "sparkles",
+    pages: [
+      {
+        slug: "releases",
+        title: "Releases",
+        description:
+          "Every tagged release of Snap, newest first — new features, fixes, and changes worth knowing about, written for photographers.",
+        icon: "sparkles",
+      },
+    ],
+  },
 ];
 
 /** Flat lookup: slug → page meta (with its category attached). */
