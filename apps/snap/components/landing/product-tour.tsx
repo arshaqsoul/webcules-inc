@@ -26,18 +26,39 @@ const STEPS: { id: SceneId; kicker: string; title: string; body: string; bullets
     kicker: "03 · Shoot",
     title: "A pipeline that mirrors how you actually work.",
     body: "Booked, Snapping, Evaluation, Complete, Closed. The first kanban built for photography - drag a card and the whole project follows, emails and all.",
-    bullets: ["Every lead and project in one view", "Cull in triage mode, keep or reject", "Status-driven client emails"],
+    bullets: ["Every lead and project in one view", "Status-driven client emails", "Nothing slips between shoots"],
+  },
+  {
+    id: "cull",
+    kicker: "04 · Cull",
+    title: "Cull thousands of frames in minutes.",
+    body: "Triage mode turns the worst part of the job into a flick: swipe or tap to keep or pass, rate as you go, and every flag and folder stays in sync with the gallery.",
+    bullets: ["Keep / pass with one key", "Ratings, flags and folders", "Straight from cull to client gallery"],
+  },
+  {
+    id: "templates",
+    kicker: "05 · Design",
+    title: "A designed gallery in one click.",
+    body: "Pick from ten designer templates - wedding, cinematic, editorial, minimal - and swap in your photos. Or build your own with the page builder. Undo any time.",
+    bullets: ["10 templates, free on every plan", "Sections, themes and collages", "Apply and undo without losing work"],
   },
   {
     id: "gallery",
-    kicker: "04 · Deliver",
+    kicker: "06 · Deliver",
     title: "Galleries your clients will actually show off.",
-    body: "Designed covers, slideshows, a client photo app, favorites and downloads - private by default with email codes and expiring links, white-labeled to your brand.",
+    body: "Designed covers, slideshows, a client photo app, favorites and downloads - white-labeled to your brand, so the delivery feels as good as the shoot.",
     bullets: ["Favorites and download approvals", "RAW vault, video and slideshows", "Your logo, colors and domain"],
   },
   {
+    id: "secure",
+    kicker: "07 · Protect",
+    title: "Private by default. Revocable in one click.",
+    body: "Clients unlock galleries with an emailed code. Links expire, downloads can be PIN-protected, and a single click kills a link everywhere.",
+    bullets: ["Email codes and expiring links", "Download PINs and approvals", "One-click revoke"],
+  },
+  {
     id: "payments",
-    kicker: "05 · Get paid",
+    kicker: "08 · Get paid",
     title: "Invoices that get paid, and keep every cent.",
     body: "Invoice presets, payment reminders and installments - paid out to your own Stripe account. Snap takes 0% commission. Ever.",
     bullets: ["Zero platform commission", "Automatic reminders", "Payments tied to each project"],
@@ -98,7 +119,7 @@ export function ProductTour() {
       </div>
 
       {/* desktop: pinned */}
-      <div ref={track} className="relative hidden lg:block" style={{ height: `${STEPS.length * 80}vh` }}>
+      <div ref={track} className="relative hidden lg:block" style={{ height: `${STEPS.length * 65}vh` }}>
         <div className="sticky top-0 grid h-screen grid-cols-[minmax(0,400px)_minmax(0,1fr)] items-center gap-16">
           <div className="relative">
             <AnimatePresence mode="wait">

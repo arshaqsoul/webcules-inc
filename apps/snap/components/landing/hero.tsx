@@ -7,7 +7,7 @@ import { ArrowRight, Check } from "lucide-react";
 
 import { useMouseParallax } from "./mouse-parallax";
 import { PhoneAuto } from "./phone-demo";
-import { LaptopReplay } from "./screens";
+import { HeroShowcase } from "./hero-showcase";
 
 const PROOF = ["0% commission", "20 GB free", "No credit card"];
 
@@ -113,17 +113,17 @@ export function Hero({ signedIn }: { signedIn: boolean }) {
           className="relative mx-auto mt-14 max-w-5xl [perspective:1800px] sm:mt-20"
         >
           <motion.div style={{ x: mx, y: my }}>
-            <LaptopReplay scene="pipeline" ms={1400} />
+            <HeroShowcase />
           </motion.div>
           <motion.div
             style={{ x: phoneX, y: phoneY }}
-            className="absolute -bottom-8 right-[-2%] z-10 w-[26%] min-w-[96px] max-w-[210px] sm:-bottom-12 sm:right-[-5%]"
+            className="absolute bottom-[30px] right-[-7%] z-10 hidden w-[15%] max-w-[170px] sm:block"
           >
             <PhoneAuto />
           </motion.div>
           <div
             aria-hidden
-            className="pointer-events-none absolute -bottom-10 left-1/2 h-24 w-[70%] -translate-x-1/2 rounded-[100%] bg-primary/30 blur-3xl"
+            className="pointer-events-none absolute bottom-10 left-1/2 h-24 w-[70%] -translate-x-1/2 rounded-[100%] bg-primary/30 blur-3xl"
           />
         </motion.div>
       </div>
