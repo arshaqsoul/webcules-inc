@@ -44,6 +44,25 @@ export default function Releases() {
         </p>
       </Release>
 
+      <Release version="0.5.4" date="October 2, 2026">
+        <p>
+          <strong>Safety release.</strong> A full independent review of every module found and
+          fixed five serious issues before anyone could trip on them: the signup API no longer
+          accepts a client-chosen plan (paid tiers now only ever arrive through a completed
+          checkout), a cross-studio write hole in project payments is closed, gallery
+          email-verification now applies to exactly the gallery whose link was opened (not any
+          gallery you happen to hold a link to), dormant-studio cleanup can no longer touch
+          photos still under an active gallery link, and the free tier can no longer smuggle
+          custom designs past the builder gate by faking a template marker. Also in: Stripe
+          webhook events now retry on failure instead of being silently dropped, invoice payment
+          links only settle on actually-captured matching amounts, seeded starter templates no
+          longer consume your plan&apos;s template slots, template duplication respects plan
+          limits, team members are properly role-gated out of settings changes, booking
+          confirmations can&apos;t resurrect canceled bookings, proofing galleries never serve
+          the clean original inline, and view counting can&apos;t be skipped with range-request
+          tricks. Deferred findings are tracked and linked (WEB-325).
+        </p>
+      </Release>
       <Release version="0.5.3" date="October 2, 2026">
         <p>
           Fixed: on Studio and Pro (unlimited linked studios), the sidebar claimed &quot;1 studio
