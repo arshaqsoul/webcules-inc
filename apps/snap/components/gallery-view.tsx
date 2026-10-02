@@ -11,13 +11,16 @@ import { SnapBadge } from "@/components/snap-badge";
 import {
   captionOf,
   columnsVars,
+  designColorVars,
   fmtDuration,
   focalPosition,
+  fontVars,
   heroImages,
   themeVars,
   type CoverImage,
   type GalleryDesign,
 } from "@/lib/gallery-design";
+import type { RenderPlan, RenderSection, SectionAsset } from "@/lib/gallery-sections";
 
 declare global {
   interface Window {
@@ -56,6 +59,13 @@ export type GalleryAsset = {
   height?: number | null;
   /** WEB-260: video duration ms (browser decoder at upload). */
   durationMs?: number | null;
+  /** WEB-318: culling stars (0 = unrated) — the rating image binding. */
+  stars?: number | null;
+  /** WEB-319: direct URLs for sample-pack assets (template harness +
+   * preview thumbnails) — set at RUNTIME by the harness, never persisted
+   * in a design; absent = the authorized /api/assets proxy as usual. */
+  src?: string;
+  previewSrc?: string;
 };
 
 /** WEB-160: gallery image with 429 backoff — a rate-limited load retries
@@ -67,6 +77,8 @@ function BackoffImage(props: {
   loading?: "lazy" | "eager";
   /** WEB-116: thumb for grid tiles, preview for the lightbox. */
   variant?: "thumb" | "preview" | "preview_wm";
+  /** WEB-319: direct URL override (sample-pack assets) — skips the proxy. */
+  srcUrl?: string;
   onClick?: React.MouseEventHandler<HTMLImageElement>;
   /** WEB-243: media protection — drag/long-press suppression (deterrents on). */
   protectedMedia?: boolean;
@@ -77,7 +89,7 @@ function BackoffImage(props: {
 }) {
   const [attempt, setAttempt] = useState(0);
   const reported = useRef(false);
-  const src = `/api/assets/${props.id}?variant=${props.variant ?? "thumb"}${attempt ? `&r=${attempt}` : ""}`;
+  const src = props.srcUrl ?? `/api/assets/${props.id}?variant=${props.variant ?? "thumb"}${attempt ? `&r=${attempt}` : ""}`;
   return (
     // eslint-disable-next-line @next/next/no-img-element -- authorized proxy, no optimizer
     <img
@@ -435,8 +447,9 @@ function Slideshow({ slides, startIndex, cfg, watermarked, deterrents, onOpenLig
   useEffect(() => {
     if (n < 2) return;
     for (const off of [1, 2]) {
+      const entry = slides[(idx + off) % n];
       const img = new Image();
-      img.src = `/api/assets/${slides[(idx + off) % n].asset.id}?variant=${watermarked ? "preview_wm" : "preview"}`;
+      img.src = entry.asset.previewSrc ?? entry.asset.src ?? `/api/assets/${entry.asset.id}?variant=${watermarked ? "preview_wm" : "preview"}`;
     }
   }, [idx, n, slides, watermarked]);
 
@@ -479,6 +492,7 @@ function Slideshow({ slides, startIndex, cfg, watermarked, deterrents, onOpenLig
         id={entry.asset.id}
         alt={entry.asset.filename}
         variant={watermarked ? "preview_wm" : "preview"}
+        srcUrl={entry.asset.previewSrc ?? entry.asset.src}
         protectedMedia={deterrents}
         loading="eager"
         className={`${slideCls} ${isCurrent ? "snap-fade-in" : ""} ${isCurrent && kenburns ? "snap-kenburns" : ""}`}
@@ -679,6 +693,7 @@ function HeroSlides({
               alt={i === 0 ? alt : ""}
               loading={i === 0 ? "eager" : "lazy"}
               variant="preview"
+              srcUrl={slide.src}
               protectedMedia={deterrents}
               className={`absolute inset-0 h-full w-full object-cover ${kenburns ? "snap-kenburns" : ""}`}
               style={{ objectPosition: focalPosition(slide.focal) }}
@@ -724,12 +739,14 @@ function HeroSlides({
   );
 }
 
-export function GalleryHero({ design, studioName, coverAssetId, slides }: {
+export function GalleryHero({ design, studioName, coverAssetId, slides, coverSrc }: {
   design: GalleryDesign;
   studioName: string;
   coverAssetId: string | null;
   /** WEB-301: the delivered-set-filtered hero images (slider when 2+). */
   slides?: CoverImage[];
+  /** WEB-319: direct URL for the single-image cover (harness/sample assets). */
+  coverSrc?: string | null;
 }) {
   const c = design.cover;
   if (!c) return null;
@@ -743,7 +760,7 @@ export function GalleryHero({ design, studioName, coverAssetId, slides }: {
   if (c.style === "split") {
     return (
       <section className="w-full">
-        <div className="grid md:grid-cols-[1fr,minmax(300px,38%)]">
+        <div className="grid md:grid-cols-[1fr_minmax(300px,38%)]">
           <div className="relative aspect-[4/3] overflow-hidden md:aspect-auto md:min-h-[400px]">
             {(slides?.length ?? 0) >= 2 ? (
               <HeroSlides slides={slides!} interval={c.interval ?? 0} kenburns={false} alt={c.title || studioName} />
@@ -753,6 +770,7 @@ export function GalleryHero({ design, studioName, coverAssetId, slides }: {
                 alt={c.title || studioName}
                 loading="eager"
                 variant="preview"
+                srcUrl={coverSrc ?? undefined}
                 className="absolute inset-0 h-full w-full object-cover"
                 style={{ objectPosition: pos }}
               />
@@ -786,6 +804,7 @@ export function GalleryHero({ design, studioName, coverAssetId, slides }: {
           alt={c.title || studioName}
           loading="eager"
           variant="preview"
+          srcUrl={coverSrc ?? undefined}
           className={`absolute inset-0 h-full w-full object-cover ${kenburns ? "snap-kenburns" : ""}`}
           style={{ objectPosition: pos }}
         />
@@ -919,6 +938,7 @@ function GalleryTile(props: {
           alt={a.filename}
           loading="lazy"
           className={imgCls}
+          srcUrl={a.src}
           protectedMedia={props.deterrents}
           onLoaded={props.onMeasured}
         />
@@ -957,7 +977,404 @@ function GalleryTile(props: {
 }
 
 
-export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLabel, watermarked, deterrents, assets, allowDownload, expiresAt, selectionMode, selectionLimit, selectionDeadline, initialFavorites, submittedSelection, clientToken, design, slideshow, allowSharing, favoriteLists = [], initialNotes = {}, canMakeLists, canNote, projectTitle, eventDate }: Brand & {
+/* ---------------- WEB-318: sectioned renderer (Template Studio) ---------------- */
+
+/** Everything a section needs from its host gallery — tiles, hearts,
+ * lightbox hand-off, brand, theme ramps. Sections never fetch or decide
+ * scope on their own: bindings were resolved server-side (lib/gallery-sections). */
+type SectionCtx = {
+  design: GalleryDesign;
+  studioName: string;
+  contactEmail: string | null;
+  favorites: Set<string>;
+  heartsOn: boolean;
+  picking: boolean;
+  picks: Set<string>;
+  pickedLocked: (assetId: string) => boolean;
+  radiusCls: string;
+  spacing: { gap: string; mb: string; pad: string };
+  aspects: Record<string, number>;
+  cols: number;
+  deterrents?: boolean;
+  onOpenAsset: (assetId: string) => void;
+  onHeart: (assetId: string) => void;
+  onPick: (assetId: string) => void;
+  onMeasured: (assetId: string, aspect: number) => void;
+  onStartSlideshow: (assetId: string) => void;
+  justifiedRows: (items: { a: GalleryAsset; idx: number }[]) => { a: GalleryAsset; idx: number }[][];
+};
+
+const SECTION_PAD: Record<string, string> = { compact: "px-4 py-4 sm:px-6", normal: "px-5 py-8 sm:px-8", airy: "px-6 py-12 sm:px-10 sm:py-16" };
+/** Type ramp for sectioned surfaces — sized off --snap-font-scale so the
+ * typography editor scales the whole gallery coherently (v1 path untouched). */
+const ramp = {
+  kicker: 'text-[calc(11px*var(--snap-font-scale,1))] font-semibold uppercase tracking-[0.22em]',
+  h2: 'text-[calc(20px*var(--snap-font-scale,1))] font-semibold leading-tight',
+  body: 'text-[calc(14.5px*var(--snap-font-scale,1))] leading-relaxed',
+};
+
+/** Section band: optional background + horizontal padding; content maxes at
+ * the gallery's measure. Hero sections go full-bleed (no band). */
+function SectionShell({ section, children, wide }: { section: { padding?: string; bg?: string }; children: React.ReactNode; wide?: boolean }) {
+  const pad = SECTION_PAD[section.padding ?? "normal"] ?? SECTION_PAD.normal;
+  const bg =
+    section.bg === "surface"
+      ? "bg-surface-1"
+      : section.bg === "accent"
+        ? "bg-[color-mix(in_srgb,var(--accent)_8%,var(--canvas))]"
+        : "";
+  return (
+    <section className={bg || undefined}>
+      <div className={`${wide ? "max-w-7xl" : "max-w-6xl"} mx-auto ${pad}`}>{children}</div>
+    </section>
+  );
+}
+
+function SectionHeading({ text, count }: { text: string; count?: number }) {
+  if (!text) return null;
+  return (
+    <div className="mb-4 flex items-baseline justify-between" style={{ letterSpacing: "var(--snap-tracking, 0)" }}>
+      <h2 className={`${ramp.h2} text-ink`}>{text}</h2>
+      {count !== undefined && <span className="text-xs text-ink-tertiary">{count} item{count === 1 ? "" : "s"}</span>}
+    </div>
+  );
+}
+
+/** v2 hero — static/kenburns/split reuse the WEB-258 GalleryHero verbatim
+ * (same markup, same behavior); fullbleed is the v2 statement hero
+ * (edge-to-edge 21/9, scrim, centered display type, no vignette). */
+function HeroSectionView({ section, slides, ctx }: { section: Extract<RenderSection, { kind: "hero" }>["section"]; slides: CoverImage[]; ctx: SectionCtx }) {
+  const kicker = section.kicker ? (
+    <span className={`${ramp.kicker} opacity-80`} style={{ color: "var(--ink)" }}>
+      {ctx.studioName}
+    </span>
+  ) : null;
+
+  if (section.style === "fullbleed") {
+    return (
+      <section className="relative aspect-[4/3] w-full overflow-hidden sm:aspect-[21/9]">
+        {slides.length >= 2 ? (
+          <HeroSlides slides={slides} interval={section.interval} kenburns={false} alt={section.title || ctx.studioName} deterrents={ctx.deterrents} />
+        ) : slides[0] ? (
+          <BackoffImage
+            id={slides[0].assetId}
+            alt={section.title || ctx.studioName}
+            loading="eager"
+            variant="preview"
+            srcUrl={slides[0].src}
+            protectedMedia={ctx.deterrents}
+            className="absolute inset-0 h-full w-full object-cover"
+            style={{ objectPosition: focalPosition(slides[0].focal) }}
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-[color-mix(in_srgb,var(--accent)_55%,#22222b)] to-[#101014]" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-black/10" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-white" style={{ letterSpacing: "var(--snap-tracking, 0)" }}>
+          {kicker && <span className={`${ramp.kicker} opacity-90`}>{ctx.studioName}</span>}
+          {section.title && <h1 className="mt-3 text-[calc(30px*var(--snap-font-scale,1))] font-semibold leading-tight sm:text-[calc(44px*var(--snap-font-scale,1))]">{section.title}</h1>}
+          {section.subtitle && <p className="mt-3 max-w-xl text-[calc(15px*var(--snap-font-scale,1))] leading-relaxed opacity-90">{section.subtitle}</p>}
+        </div>
+      </section>
+    );
+  }
+
+  if (!section.kicker) {
+    // kicker-less variant of the static/kenburns hero (otherwise GalleryHero)
+    const kenburns = section.style === "kenburns";
+    return (
+      <section className="relative aspect-[4/3] w-full overflow-hidden sm:aspect-[21/10]">
+        {slides.length >= 2 ? (
+          <HeroSlides slides={slides} interval={section.interval} kenburns={kenburns} alt={section.title || ctx.studioName} deterrents={ctx.deterrents} />
+        ) : slides[0] ? (
+          <BackoffImage
+            id={slides[0].assetId}
+            alt={section.title || ctx.studioName}
+            loading="eager"
+            variant="preview"
+            srcUrl={slides[0].src}
+            protectedMedia={ctx.deterrents}
+            className={`absolute inset-0 h-full w-full object-cover ${kenburns ? "snap-kenburns" : ""}`}
+            style={{ objectPosition: focalPosition(slides[0].focal) }}
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-[color-mix(in_srgb,var(--accent)_55%,#22222b)] to-[#101014]" />
+        )}
+        {slides.length > 0 && <div className="snap-hero-vignette pointer-events-none absolute inset-0" aria-hidden />}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-black/10" />
+        <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-10" style={{ letterSpacing: "var(--snap-tracking, 0)" }}>
+          {section.title && <h1 className="text-[calc(24px*var(--snap-font-scale,1))] font-semibold leading-tight sm:text-[calc(36px*var(--snap-font-scale,1))]">{section.title}</h1>}
+          {section.subtitle && <p className="mt-2 max-w-xl text-[calc(14.5px*var(--snap-font-scale,1))] leading-relaxed opacity-85">{section.subtitle}</p>}
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <GalleryHero
+      design={{
+        layout: "grid",
+        theme: ctx.design.theme,
+        cover: {
+          assetId: slides[0]?.assetId ?? "",
+          focal: slides[0]?.focal ?? { x: 0.5, y: 0.5 },
+          style: section.style === "split" ? "split" : section.style === "kenburns" ? "kenburns" : "static",
+          title: section.title,
+          subtitle: section.subtitle,
+          ...(slides.length >= 2 ? { images: slides, interval: section.interval } : {}),
+        },
+      }}
+      studioName={ctx.studioName}
+      coverAssetId={slides[0]?.assetId ?? null}
+      coverSrc={slides[0]?.src ?? null}
+      slides={slides.length >= 2 ? slides : undefined}
+    />
+  );
+}
+
+/** One bound gallery section — the same three layouts as the v1 grid,
+ * rendered through the same GalleryTile (hearts, picking, captions, films
+ * behavior all identical; entitlements live in the tile host, not here). */
+function GallerySectionView({ section, assets, ctx }: { section: Extract<RenderSection, { kind: "gallery" }>["section"]; assets: SectionAsset[]; ctx: SectionCtx }) {
+  const entries = assets.map((a) => ({ a: a as GalleryAsset, idx: 0 }));
+  const tile = (a: GalleryAsset, size: "square" | "natural" | "row", rowAspect?: number) => (
+    <GalleryTile
+      key={a.id}
+      asset={a}
+      size={size}
+      rowAspect={rowAspect}
+      heartsOn={ctx.heartsOn}
+      favorited={ctx.favorites.has(a.id)}
+      picking={ctx.picking}
+      picked={ctx.picks.has(a.id)}
+      pickedLocked={ctx.pickedLocked(a.id)}
+      captions={ctx.design.theme.captions}
+      radiusCls={ctx.radiusCls}
+      deterrents={ctx.deterrents}
+      onOpen={() => ctx.onOpenAsset(a.id)}
+      onHeart={() => ctx.onHeart(a.id)}
+      onPick={() => ctx.onPick(a.id)}
+      onMeasured={size === "row" ? (aspect) => ctx.onMeasured(a.id, aspect) : undefined}
+    />
+  );
+  return (
+    <SectionShell section={section}>
+      <SectionHeading text={section.heading ?? ""} count={section.binding.kind === "all" ? undefined : assets.length} />
+      {assets.length === 0 ? (
+        <p className="py-6 text-center text-sm text-ink-tertiary">
+          {section.binding.kind === "picks" ? "Your photographer is curating this selection — check back soon." : "Nothing in this part of the gallery yet."}
+        </p>
+      ) : (
+        <div style={columnsVars({ columns: section.columns }) as React.CSSProperties}>          {section.layout === "grid" && <div className={`snap-grid ${ctx.spacing.gap}`}>{entries.map(({ a }) => tile(a, "square"))}</div>}
+          {section.layout === "masonry" && (
+            <div className={`snap-masonry ${ctx.spacing.gap}`}>
+              {entries.map(({ a }) => (
+                <div key={a.id} className={ctx.spacing.mb}>{tile(a, "natural")}</div>
+              ))}
+            </div>
+          )}
+          {section.layout === "cascade" && (
+            <div className={`flex flex-col ${ctx.spacing.gap}`}>
+              {ctx.justifiedRows(entries).map((row, ri) => (
+                <div key={ri} className={`flex ${ctx.spacing.gap}`}>
+                  {row.map(({ a }) => tile(a, "row", ctx.aspects[a.id] ?? 1))}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </SectionShell>
+  );
+}
+
+/** WEB-259 launcher section — a poster strip that opens the full-screen
+ * slideshow at the first bound photo. */
+function SlideshowSectionView({ section, assets, ctx }: { section: Extract<RenderSection, { kind: "slideshow" }>["section"]; assets: SectionAsset[]; ctx: SectionCtx }) {
+  if (!assets.length) return null;
+  const posters = assets.slice(0, section.posters);
+  return (
+    <SectionShell section={section}>
+      <SectionHeading text={section.heading ?? ""} />
+      <button
+        type="button"
+        onClick={() => ctx.onStartSlideshow(assets[0].id)}
+        className="group relative block w-full overflow-hidden rounded-[16px] border border-hairline"
+        aria-label={`Play slideshow (${assets.length} photos)`}
+      >
+        <div className="grid grid-cols-2 gap-0.5 sm:grid-cols-4">
+          {posters.map((a) => (
+            <span key={a.id} className="relative block aspect-[4/3] overflow-hidden bg-surface-1">
+              <BackoffImage id={a.id} alt="" srcUrl={a.src} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]" protectedMedia={ctx.deterrents} />
+            </span>
+          ))}
+          {posters.length < 4 && Array.from({ length: 4 - posters.length }).map((_, i) => <span key={`fill-${i}`} className="aspect-[4/3] bg-surface-2" />)}
+        </div>
+        <span className="absolute inset-0 flex items-center justify-center bg-black/25 backdrop-blur-[1px] transition-colors group-hover:bg-black/35">
+          <span className="flex items-center gap-2.5 rounded-full bg-white/95 px-5 py-2.5 text-sm font-semibold text-[#111] shadow-lg">
+            <svg width="13" height="15" viewBox="0 0 14 16" fill="currentColor" aria-hidden><path d="M0 0l14 8-14 8z" /></svg>
+            Play slideshow · {assets.length} photos
+          </span>
+        </span>
+      </button>
+    </SectionShell>
+  );
+}
+
+/** Live favorites — the client's hearted photos right now (WEB-264 lists
+ * stay in the host header; this grid follows the active list). */
+function FavoritesSectionView({ section, assets, ctx, fallbackHeading }: { section: Extract<RenderSection, { kind: "favorites" }>["section"]; assets: GalleryAsset[]; ctx: SectionCtx; fallbackHeading?: string }) {
+  const favs = assets.filter((a) => ctx.favorites.has(a.id) && a.kind === "image");
+  return (
+    <SectionShell section={section}>
+      <SectionHeading text={section.heading ?? fallbackHeading ?? "Your favorites"} count={favs.length || undefined} />
+      {favs.length === 0 ? (
+        <p className="rounded-[16px] border border-dashed border-hairline-strong px-6 py-10 text-center text-sm text-ink-tertiary">
+          {section.emptyHint?.trim() || "Tap the ♥ on photos you love — they'll appear here for you (and your photographer)."}
+        </p>
+      ) : (
+        <div className={`snap-grid ${ctx.spacing.gap}`}>
+          {favs.map((a) => (
+            <GalleryTile
+              key={a.id}
+              asset={a}
+              size="square"
+              heartsOn={ctx.heartsOn}
+              favorited
+              picking={ctx.picking}
+              picked={ctx.picks.has(a.id)}
+              pickedLocked={ctx.pickedLocked(a.id)}
+              captions={ctx.design.theme.captions}
+              radiusCls={ctx.radiusCls}
+              deterrents={ctx.deterrents}
+              onOpen={() => ctx.onOpenAsset(a.id)}
+              onHeart={() => ctx.onHeart(a.id)}
+              onPick={() => ctx.onPick(a.id)}
+            />
+          ))}
+        </div>
+      )}
+    </SectionShell>
+  );
+}
+
+/** Free-positioned collage — percent-absolute items over the section box;
+ * the aspect wrapper reserves space (CLS-safe) and the same numbers scale
+ * phone → desktop. mobileStack swaps in a simple grid below sm instead. */
+function CollageSectionView({ section, items, ctx }: { section: Extract<RenderSection, { kind: "collage" }>["section"]; items: (RenderSection & { kind: "collage" })["items"]; ctx: SectionCtx }) {
+  if (!items.length) return null;
+  const collage = (className: string) => (
+    <div className={`relative w-full overflow-hidden ${className}`} style={{ aspectRatio: section.aspect.replace("/", " / ") }}>
+      {items.map((it) => (
+        <button
+          key={it.assetId}
+          type="button"
+          onClick={() => ctx.onOpenAsset(it.assetId)}
+          aria-label={`Open ${it.asset.filename}`}
+          className="group absolute block overflow-hidden border border-hairline bg-surface-1"
+          style={{
+            left: `${it.x}%`,
+            top: `${it.y}%`,
+            width: `${it.w}%`,
+            transform: it.rotation ? `rotate(${it.rotation}deg)` : undefined,
+            zIndex: it.z,
+            aspectRatio: "4 / 5",
+          }}
+        >
+          <BackoffImage
+            id={it.assetId}
+            alt={it.asset.filename}
+            srcUrl={it.asset.src}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+            style={{ objectPosition: focalPosition(it.focal) }}
+            protectedMedia={ctx.deterrents}
+          />
+        </button>
+      ))}
+    </div>
+  );
+  if (!section.mobileStack) return <SectionShell section={section}>{collage(ctx.radiusCls)}</SectionShell>;
+  return (
+    <SectionShell section={section}>
+      {/* stacked below sm (readability floor), collage from sm up — one schema, two responsive renders */}
+      <div className={`grid grid-cols-2 gap-2 sm:hidden ${ctx.spacing.gap}`}>
+        {items.map((it) => (
+          <button key={it.assetId} type="button" onClick={() => ctx.onOpenAsset(it.assetId)} className={`block aspect-[4/5] overflow-hidden border border-hairline bg-surface-1 ${ctx.radiusCls}`} aria-label={`Open ${it.asset.filename}`}>
+            <BackoffImage id={it.assetId} alt={it.asset.filename} srcUrl={it.asset.src} className="h-full w-full object-cover" style={{ objectPosition: focalPosition(it.focal) }} protectedMedia={ctx.deterrents} />
+          </button>
+        ))}
+      </div>
+      <div className="hidden sm:block">{collage(ctx.radiusCls)}</div>
+    </SectionShell>
+  );
+}
+
+/** Sanitized rich text (WEB-247 allowlist ran at parse) — merge fields were
+ * rendered server-side before this component sees the html. */
+function TextSectionView({ section, ctx: _ctx }: { section: Extract<RenderSection, { kind: "text" }>["section"]; ctx: SectionCtx }) {
+  if (!section.html) return null;
+  return (
+    <SectionShell section={section}>
+      <div
+        className={`gallery-prose ${section.width === "wide" ? "max-w-4xl" : "max-w-2xl"} ${section.align === "center" ? "mx-auto text-center" : ""} text-ink`}
+        style={{ letterSpacing: "var(--snap-tracking, 0)", ["--snap-prose-scale" as string]: "var(--snap-font-scale, 1)" }}
+        // eslint-disable-next-line react/no-danger -- sanitized at parse (lib/sanitize allowlist)
+        dangerouslySetInnerHTML={{ __html: section.html }}
+      />
+    </SectionShell>
+  );
+}
+
+/** Studio contact / CTA card — merge-rendered copy + accent CTA. */
+function ContactSectionView({ section, ctx }: { section: Extract<RenderSection, { kind: "contact" }>["section"]; ctx: SectionCtx }) {
+  const href = section.ctaHref ?? (ctx.contactEmail ? `mailto:${ctx.contactEmail}` : null);
+  return (
+    <SectionShell section={section}>
+      <div className="mx-auto max-w-2xl rounded-[16px] border border-hairline bg-surface-1 p-8 text-center sm:p-10" style={{ letterSpacing: "var(--snap-tracking, 0)" }}>
+        <span className={`${ramp.kicker} text-ink-tertiary`}>{ctx.studioName}</span>
+        {section.heading && <h2 className={`${ramp.h2} mt-3 text-ink`}>{section.heading}</h2>}
+        {section.body && <p className={`${ramp.body} mt-3 text-ink-subtle`}>{section.body}</p>}
+        {href && (
+          <a
+            href={href}
+            className="mt-6 inline-block rounded-full px-6 py-2.5 text-sm font-semibold text-white transition-[filter] hover:brightness-110"
+            style={{ background: "var(--accent)" }}
+          >
+            {section.ctaLabel?.trim() || ctx.contactEmail || "Get in touch"}
+          </a>
+        )}
+      </div>
+    </SectionShell>
+  );
+}
+
+/** The nav bar (WEB-318): client-side view tabs — no routing, theme-aware,
+ * respects the studio's white-label (it never carries Snap identity). */
+function GalleryNav({ items, view, onView }: { items: ("gallery" | "favorites" | "info")[]; view: string; onView: (v: "gallery" | "favorites" | "info") => void }) {
+  const labels = { gallery: "Gallery", favorites: "Favorites", info: "Info" } as const;
+  return (
+    <nav aria-label="Gallery views" className="sticky top-[57px] z-[9] border-b border-hairline bg-canvas/90 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl gap-1 px-5 pt-2" role="tablist">
+        {items.map((item) => (
+          <button
+            key={item}
+            type="button"
+            role="tab"
+            aria-selected={view === item}
+            onClick={() => onView(item)}
+            className={`-mb-px border-b-2 px-3.5 pb-2.5 pt-1 text-[13px] font-medium transition-colors ${
+              view === item ? "border-[var(--accent)] text-ink" : "border-transparent text-ink-muted hover:text-ink"
+            }`}
+          >
+            {labels[item]}
+          </button>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLabel, watermarked, deterrents, assets, allowDownload, expiresAt, selectionMode, selectionLimit, selectionDeadline, initialFavorites, submittedSelection, clientToken, design, plan, fontFamily, slideshow, allowSharing, favoriteLists = [], initialNotes = {}, canMakeLists, canNote, projectTitle, eventDate }: Brand & {
   assets: GalleryAsset[];
   allowDownload: boolean;
   expiresAt: string | null;
@@ -970,6 +1387,14 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
   clientToken: string;
   /** WEB-258: gallery design (cover/layout/theme) — null = classic look. */
   design?: GalleryDesign | null;
+  /** WEB-318: sectioned render plan (bindings resolved server-side against
+   * the delivered set). Present = the sectioned renderer owns the page; the
+   * v1 cover+grid surface is bypassed (and v1 configs, which never produce a
+   * plan, render through it pixel-identical as before). */
+  plan?: RenderPlan | null;
+  /** WEB-318/319: CSS font-family stack resolved from theme.font against
+   * the self-hosted pack — null = system stack. */
+  fontFamily?: string | null;
   /** WEB-259: slideshow (server-resolved: Free tier arrives musicless). */
   slideshow?: SlideshowProps | null;
   /** WEB-262: per-photo sharing allowed (Lite+ AND the studio toggle). */
@@ -1219,6 +1644,8 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
     return seed;
   });
   const [cols, setCols] = useState(4);
+  // WEB-318: nav view tabs — client state only, never routing.
+  const [view, setView] = useState<"gallery" | "favorites" | "info">("gallery");
 
   const layout = design?.layout ?? "grid";
   const themed = Boolean(design);
@@ -1244,7 +1671,8 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
   }, []);
 
   const folderNames = Array.from(new Set(assets.map((a) => a.folder).filter((f): f is string => Boolean(f))));
-  const visible = activeFolder ? assets.filter((a) => a.folder === activeFolder) : assets;
+  // WEB-318: sectioned designs own the page — no folder pills, no filter.
+  const visible = plan ? assets : activeFolder ? assets.filter((a) => a.folder === activeFolder) : assets;
   // WEB-259: photos in delivery order; each carries its lightbox index so a
   // slideshow tap hands off to the lightbox at the same photo.
   const slideEntries = useMemo(
@@ -1410,6 +1838,76 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
     ? new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" }).format(new Date(expiresAt))
     : null;
 
+  // WEB-318: hand-off helpers for the sectioned renderer.
+  const openAsset = useCallback((assetId: string) => {
+    const idx = visible.findIndex((a) => a.id === assetId);
+    if (idx >= 0) setOpen(idx);
+  }, [visible]);
+  const startSlideshowAt = useCallback(
+    (assetId: string) => {
+      const i = slideEntries.findIndex((e) => e.asset.id === assetId);
+      if (i >= 0) setSlideshowStart(i);
+    },
+    [slideEntries],
+  );
+
+  const sectionCtx: SectionCtx | null =
+    plan && design
+      ? {
+          design,
+          studioName,
+          contactEmail,
+          favorites,
+          heartsOn,
+          picking,
+          picks,
+          pickedLocked: (assetId) => selectionMode === "selection" && !picking && picks.has(assetId),
+          radiusCls,
+          spacing,
+          aspects,
+          cols,
+          deterrents,
+          onOpenAsset: openAsset,
+          onHeart: (id) => void heart(id),
+          onPick: togglePick,
+          onMeasured: measureAspect,
+          onStartSlideshow: startSlideshowAt,
+          justifiedRows,
+        }
+      : null;
+
+  /** One section → its component (the nav-less single scroll renders every
+   * kind in order; nav views pre-filter, below). */
+  const renderSection = (rs: RenderSection): React.ReactNode => {
+    if (!sectionCtx) return null;
+    switch (rs.kind) {
+      case "hero":
+        return <HeroSectionView key={rs.section.id} section={rs.section} slides={rs.slides} ctx={sectionCtx} />;
+      case "gallery":
+        return <GallerySectionView key={rs.section.id} section={rs.section} assets={rs.assets} ctx={sectionCtx} />;
+      case "slideshow":
+        return <SlideshowSectionView key={rs.section.id} section={rs.section} assets={rs.assets} ctx={sectionCtx} />;
+      case "favorites":
+        return <FavoritesSectionView key={rs.section.id} section={rs.section} assets={assets} ctx={sectionCtx} />;
+      case "collage":
+        return <CollageSectionView key={rs.section.id} section={rs.section} items={rs.items} ctx={sectionCtx} />;
+      case "text":
+        return <TextSectionView key={rs.section.id} section={rs.section} ctx={sectionCtx} />;
+      case "contact":
+        return <ContactSectionView key={rs.section.id} section={rs.section} ctx={sectionCtx} />;
+    }
+  };
+
+  // WEB-318: what each nav view shows. Gallery keeps the visual sections;
+  // Info is text+contact; Favorites renders the live hearts grid (from the
+  // favorites section when authored, sensible defaults otherwise).
+  const gallerySections = plan ? plan.sections.filter((s) => s.kind === "hero" || s.kind === "gallery" || s.kind === "slideshow" || s.kind === "collage" || (!plan.nav?.enabled && (s.kind === "favorites" || s.kind === "text" || s.kind === "contact"))) : [];
+  const infoSections = plan ? plan.sections.filter((s) => s.kind === "text" || s.kind === "contact") : [];
+  const favoritesSection = plan?.sections.find((s) => s.kind === "favorites")?.section ?? null;
+  const defaultFavorites: Extract<RenderSection, { kind: "favorites" }>["section"] = { type: "favorites", id: "sec-favorites-default", heading: "", emptyHint: undefined };
+  const defaultContact: Extract<RenderSection, { kind: "contact" }>["section"] = { type: "contact", id: "sec-contact-default", heading: "Get in touch" };
+
+
   return (
     <main
       className="min-h-screen bg-canvas"
@@ -1417,7 +1915,12 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
         {
           ["--accent" as string]: accent,
           ...(design ? themeVars(design.theme.background) : {}),
+          ...designColorVars(design),
+          ...fontVars(design, fontFamily ?? null),
           ...columnsVars(design),
+          // WEB-318/319: the resolved pack font consumes its var here —
+          // everything inside the gallery inherits it.
+          ...(fontFamily ? { fontFamily: "var(--snap-font)" } : {}),
         } as React.CSSProperties
       }
       onContextMenu={(e) => {
@@ -1426,7 +1929,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
       }}
     >
       <PwaRuntime enabled />
-      {design && (
+      {design && !plan && (
         <GalleryHero
           design={design}
           studioName={studioName}
@@ -1434,7 +1937,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
           slides={heroImages(design).filter((i) => assets.some((a) => a.id === i.assetId))}
         />
       )}
-      {!design && (projectTitle || assets.length > 0) && (
+      {!design && !plan && (projectTitle || assets.length > 0) && (
         /* WEB-301 WP-A: the zero-config gallery still opens on an intentional
          * hero — same renderer, default text-only design (scrim + display
          * type + meta line). Configured galleries above are untouched. */
@@ -1577,8 +2080,12 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
         </nav>
       )}
 
-      {/* Folder navigation (WEB-216) — only when the delivery was foldered. */}
-      {folderNames.length > 0 && (
+      {/* WEB-318: view tabs (no routing) — only for sectioned designs with nav on. */}
+      {plan?.nav?.enabled && plan.nav.items.length > 0 && <GalleryNav items={plan.nav.items} view={view} onView={setView} />}
+
+      {/* Folder navigation (WEB-216) — only when the delivery was foldered.
+       * Sectioned designs replace folder pills with bound sections. */}
+      {!plan && folderNames.length > 0 && (
         <nav aria-label="Folders" className="mx-auto flex max-w-6xl flex-wrap gap-1.5 px-5 pt-4">
           <button
             type="button"
@@ -1603,7 +2110,23 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
         </nav>
       )}
 
-      {assets.length === 0 ? (
+      {plan && sectionCtx ? (
+        /* WEB-318: the sectioned page — nav views partition the sections;
+         * without nav everything renders as one ordered scroll. */
+        view === "favorites" ? (
+          <FavoritesSectionView section={favoritesSection ?? defaultFavorites} assets={assets} ctx={sectionCtx} fallbackHeading="Your favorites" />
+        ) : view === "info" ? (
+          <>
+            {infoSections.length ? (
+              infoSections.map(renderSection)
+            ) : (
+              <ContactSectionView section={defaultContact} ctx={sectionCtx} />
+            )}
+          </>
+        ) : (
+          <>{gallerySections.map(renderSection)}</>
+        )
+      ) : assets.length === 0 ? (
         <div className="mx-auto max-w-6xl px-5 py-24 text-center text-sm text-ink-subtle">
           Nothing has been shared in this gallery yet — check back soon.
         </div>
@@ -2033,6 +2556,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
                 id={current.id}
                 alt={current.filename}
                 variant={watermarked ? "preview_wm" : "preview"}
+                srcUrl={current.previewSrc ?? current.src}
                 protectedMedia={deterrents}
                 className="max-h-full max-w-full object-contain"
                 onClick={(e) => e.stopPropagation()}

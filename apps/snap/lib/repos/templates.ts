@@ -10,7 +10,7 @@ import { getDb } from "../db";
 import * as schema from "../db-schema";
 import { sanitizeRichText } from "../sanitize";
 import { DEFAULT_CONTACT_FORM_BODY } from "../forms";
-import { GALLERY_DESIGN_MAX_BYTES, parseGalleryDesign, serializeGalleryDesign } from "../gallery-design";
+import { GALLERY_DESIGN_MAX_BYTES, GALLERY_DESIGN_V2_MAX_BYTES, designHasV2Fields, parseGalleryDesign, serializeGalleryDesign } from "../gallery-design";
 
 export type TemplateRow = typeof schema.templates.$inferSelect;
 export type TemplateInsert = typeof schema.templates.$inferInsert;
@@ -27,7 +27,9 @@ const BODY_CAPS: Record<TemplateKind, number> = {
   email_snippet: 256 * 1024,
   invoice_preset: 64 * 1024,
   questionnaire: 64 * 1024,
-  gallery_preset: GALLERY_DESIGN_MAX_BYTES,
+  // WEB-318: sectioned v2 designs get the 32 KB envelope (same as the
+  // project column) — a gallery_preset body above 16 KB must carry v2 fields.
+  gallery_preset: GALLERY_DESIGN_V2_MAX_BYTES,
 };
 
 const NAME_CAP = 120;
@@ -43,10 +45,13 @@ export function normalizeTemplateBody(kind: TemplateKind, body: string): string 
   if (trimmed.length > BODY_CAPS[kind]) return null;
   // WEB-258: gallery presets hold a design config — must parse to a valid
   // design; re-serialized canonically (strict body, like the project column).
+  // WEB-318: 16–32 KB bodies are v2-only (sections/nav/template fields).
   if (kind === "gallery_preset") {
     try {
       const design = parseGalleryDesign(JSON.parse(trimmed));
-      return design ? serializeGalleryDesign(design) : null;
+      if (!design) return null;
+      if (trimmed.length > GALLERY_DESIGN_MAX_BYTES && !designHasV2Fields(design)) return null;
+      return serializeGalleryDesign(design);
     } catch {
       return null;
     }

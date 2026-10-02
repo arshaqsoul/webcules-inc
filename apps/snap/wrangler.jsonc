@@ -71,6 +71,10 @@
     // Founder allowlist — margin report (WEB-161) access + alert recipient.
     "FOUNDER_EMAILS": "arshaqhishamsl@gmail.com",
     // webcules.com zone — Custom Hostnames (Cloudflare for SaaS) target zone.
-    "CLOUDFLARE_ZONE_ID": "5de72a6806708f95960d382acaa466b0"
+    "CLOUDFLARE_ZONE_ID": "5de72a6806708f95960d382acaa466b0",
+    // WEB-319: Template Studio harness (/dev/template-harness) — always open
+    // in local dev (NODE_ENV), this flips it on for a deployed environment
+    // (staging sets "1"; production keeps it off).
+    "SNAP_DEV_HARNESS": "0"
   }
 }

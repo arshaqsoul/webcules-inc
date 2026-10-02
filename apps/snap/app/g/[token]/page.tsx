@@ -26,6 +26,8 @@ import { ensureFavoriteLists, getFavoritesForList, getLatestSelection, listFavor
 import { safeHexColor } from "@/lib/embed";
 import { countGalleryOpen } from "@/lib/limits";
 import { buildMergeValues, renderMerge } from "@/lib/merge";
+import { mergeRenderDesign, resolveDesignSections } from "@/lib/gallery-sections";
+import { fontFamilyOf, FONTS_CSS_HREF } from "@/lib/fonts";
 import { coverLink } from "@/lib/cover-link";
 import { clientUrl } from "@/lib/client-urls";
 import { heroImages, type GalleryDesign } from "@/lib/gallery-design";
@@ -97,23 +99,17 @@ async function galleryTitle(projectId: string): Promise<string | null> {
 const TOKEN_RE = /^[A-Za-z0-9_-]{20,64}$/;
 
 /** WEB-258: the effective design with cover text merge-rendered (unknown
- * fields pass through — drafts stay editable). */
+ * fields pass through — drafts stay editable). WEB-318: section strings
+ * (hero/text/contact copy) merge-render through the same path. */
 async function designedGallery(grant: { organizationId: string; projectId: string; clientEmail: string }): Promise<GalleryDesign | null> {
   const eff = await effectiveGalleryDesign(grant.organizationId, grant.projectId);
-  if (!eff.design?.cover) return eff.design;
+  if (!eff.design) return null;
   const values = await buildMergeValues({
     organizationId: grant.organizationId,
     projectId: grant.projectId,
     clientEmail: grant.clientEmail,
   });
-  return {
-    ...eff.design,
-    cover: {
-      ...eff.design.cover,
-      title: renderMerge(eff.design.cover.title, values, { surface: "plain" }),
-      subtitle: renderMerge(eff.design.cover.subtitle, values, { surface: "plain" }),
-    },
-  };
+  return mergeRenderDesign(eff.design, values);
 }
 
 type DeniedProps = { studioName?: string; contactEmail?: string | null; reason: "dead" | "unknown" };
@@ -220,6 +216,25 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
       }
     : null;
 
+  // WEB-318: the sectioned render plan — bindings resolve against the
+  // grant's delivered set only (getGrantAssets already scope-filtered).
+  const viewAssets = assets.map((a) => ({
+    id: a.id,
+    filename: a.filename,
+    kind: a.kind,
+    mimeType: a.mimeType,
+    bytes: a.bytes,
+    folder: a.folder,
+    width: a.width,
+    height: a.height,
+    durationMs: a.durationMs,
+    stars: a.stars,
+  }));
+  const plan = design ? resolveDesignSections(design, viewAssets) : null;
+  const fontFamily = fontFamilyOf(design?.theme.font);
+  // Self-hosted pack font: load the @font-face sheet only when used.
+  const fontLink = fontFamily ? <link rel="stylesheet" href={FONTS_CSS_HREF} /> : null;
+
   // Email-shock contingency: OTPs off, the link itself is the gate.
   if (env.GALLERY_OTP_MODE === "off") {
     await logShareAccess(grant.id, "view");
@@ -227,19 +242,11 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
       return <GalleryPaused {...shared} />;
     }
     return (
-      <GalleryView
+      <>
+        {fontLink}
+        <GalleryView
         {...shared}
-        assets={assets.map((a) => ({
-          id: a.id,
-          filename: a.filename,
-          kind: a.kind,
-          mimeType: a.mimeType,
-          bytes: a.bytes,
-          folder: a.folder,
-          width: a.width,
-          height: a.height,
-          durationMs: a.durationMs,
-        }))}
+        assets={viewAssets}
         allowDownload={grant.allowDownload}
         expiresAt={grant.expiresAt ? grant.expiresAt.toISOString() : null}
         selectionMode={grant.selectionMode as "off" | "favorites" | "selection"}
@@ -253,11 +260,14 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
         canMakeLists={(ent?.id ?? "free") !== "free"}
         canNote={ent?.id === "studio" || ent?.id === "pro"}
         design={design}
+        plan={plan}
+        fontFamily={fontFamily}
         slideshow={slideshow}
         allowSharing={grant.allowSharing && (ent?.id ?? "free") !== "free"}
         projectTitle={projectTitle}
         eventDate={eventDate}
       />
+      </>
     );
   }
 
@@ -278,19 +288,11 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
     return <GalleryPaused {...shared} />;
   }
   return (
-    <GalleryView
+    <>
+      {fontLink}
+      <GalleryView
       {...shared}
-      assets={assets.map((a) => ({
-        id: a.id,
-        filename: a.filename,
-        kind: a.kind,
-        mimeType: a.mimeType,
-        bytes: a.bytes,
-        folder: a.folder,
-        width: a.width,
-        height: a.height,
-        durationMs: a.durationMs,
-      }))}
+      assets={viewAssets}
       allowDownload={grant.allowDownload}
       expiresAt={grant.expiresAt ? grant.expiresAt.toISOString() : null}
       selectionMode={grant.selectionMode as "off" | "favorites" | "selection"}
@@ -304,11 +306,14 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
       canMakeLists={(ent?.id ?? "free") !== "free"}
       canNote={ent?.id === "studio" || ent?.id === "pro"}
       design={design}
+      plan={plan}
+      fontFamily={fontFamily}
       slideshow={slideshow}
       allowSharing={grant.allowSharing && (ent?.id ?? "free") !== "free"}
       projectTitle={projectTitle}
       eventDate={eventDate}
     />
+    </>
   );
 }
 

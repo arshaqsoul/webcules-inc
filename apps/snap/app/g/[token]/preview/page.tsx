@@ -22,6 +22,8 @@ import { getProjectSlideshow, slideshowForTier } from "@/lib/repos/slideshow";
 import { getPlanEntitlements } from "@/lib/plans";
 import { getOrgContext } from "@/lib/session";
 import { buildMergeValues, renderMerge } from "@/lib/merge";
+import { mergeRenderDesign, resolveDesignSections } from "@/lib/gallery-sections";
+import { fontFamilyOf, FONTS_CSS_HREF } from "@/lib/fonts";
 import { safeHexColor } from "@/lib/embed";
 import type { GalleryDesign } from "@/lib/gallery-design";
 import type { SlideshowProps } from "@/components/gallery-view";
@@ -31,19 +33,13 @@ export const metadata: Metadata = { title: "Gallery preview", robots: { index: f
 
 const ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
 
-/** WEB-258 parity: effective design with cover text merge-rendered. */
+/** WEB-258 parity: effective design with cover text merge-rendered.
+ * WEB-318: section strings merge through the same path. */
 async function designedGallery(organizationId: string, projectId: string): Promise<GalleryDesign | null> {
   const eff = await effectiveGalleryDesign(organizationId, projectId);
-  if (!eff.design?.cover) return eff.design;
+  if (!eff.design) return null;
   const values = await buildMergeValues({ organizationId, projectId });
-  return {
-    ...eff.design,
-    cover: {
-      ...eff.design.cover,
-      title: renderMerge(eff.design.cover.title, values, { surface: "plain" }),
-      subtitle: renderMerge(eff.design.cover.subtitle, values, { surface: "plain" }),
-    },
-  };
+  return mergeRenderDesign(eff.design, values);
 }
 
 export default async function GalleryPreviewPage({ params }: { params: Promise<{ token: string }> }) {
@@ -98,6 +94,7 @@ export default async function GalleryPreviewPage({ params }: { params: Promise<{
         width: schema.assets.width,
         height: schema.assets.height,
         durationMs: schema.assets.durationMs,
+        stars: schema.assets.stars,
         folderId: schema.assets.folderId,
       })
       .from(schema.assets)
@@ -119,6 +116,23 @@ export default async function GalleryPreviewPage({ params }: { params: Promise<{
   const brand = JSON.parse(profile?.brand || "{}") as { accent?: string };
   const tier = ent?.id ?? "free";
 
+  // WEB-318: the sectioned plan resolves against the deliverable set a fresh
+  // grant would carry (approved + shared — the query above).
+  const viewAssets = assetRows.map((a) => ({
+    id: a.id,
+    filename: a.filename,
+    kind: a.kind,
+    mimeType: a.mimeType,
+    bytes: a.bytes,
+    folder: a.folderId ? (folderName.get(a.folderId) ?? null) : null,
+    width: a.width,
+    height: a.height,
+    durationMs: a.durationMs,
+    stars: a.stars,
+  }));
+  const plan = design ? resolveDesignSections(design, viewAssets) : null;
+  const fontFamily = fontFamilyOf(design?.theme.font);
+
   // Same shared context the client route builds — watermark previews ON
   // when the gallery watermarks (the client always sees watermarked).
   const effectiveSlideshow = slideshowForTier(slideshowCfg, tier !== "free");
@@ -135,6 +149,7 @@ export default async function GalleryPreviewPage({ params }: { params: Promise<{
 
   return (
     <GalleryPreviewFrame projectId={projectId}>
+      {fontFamily ? <link rel="stylesheet" href={FONTS_CSS_HREF} /> : null}
       <GalleryView
         studioName={profile?.studioName ?? "your studio"}
         accent={safeHexColor(brand.accent) ?? "#5e6ad2"}
@@ -148,17 +163,7 @@ export default async function GalleryPreviewPage({ params }: { params: Promise<{
           studioName: profile?.studioName,
         }) !== null}
         deterrents={deterrentsOn(ent, profile?.brand)}
-        assets={assetRows.map((a) => ({
-          id: a.id,
-          filename: a.filename,
-          kind: a.kind,
-          mimeType: a.mimeType,
-          bytes: a.bytes,
-          folder: a.folderId ? (folderName.get(a.folderId) ?? null) : null,
-          width: a.width,
-          height: a.height,
-          durationMs: a.durationMs,
-        }))}
+        assets={viewAssets}
         /* Grant-level policies don't exist pre-send — the preview shows the
          * media experience; download/selection/sharing activate with the
          * real grant's settings once sent. */
@@ -175,6 +180,8 @@ export default async function GalleryPreviewPage({ params }: { params: Promise<{
         canMakeLists={false}
         canNote={false}
         design={design}
+        plan={plan}
+        fontFamily={fontFamily}
         slideshow={slideshow}
         allowSharing={false}
         projectTitle={project.title}

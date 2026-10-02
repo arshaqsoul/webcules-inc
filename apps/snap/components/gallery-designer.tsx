@@ -327,7 +327,7 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
         </div>
       </div>
 
-      <div className="mt-5 grid gap-6 lg:grid-cols-[1fr,320px]">
+      <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_320px]">
         {/* ---------------- controls ---------------- */}
         <div className="flex flex-col gap-6">
           {/* WEB-301 follow-up: the single hero/cover photo is FREE — every

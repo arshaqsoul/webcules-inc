@@ -60,3 +60,17 @@ export function contentTypeForExtension(ext: string): string | null {
       return null;
   }
 }
+
+/* ---------------- WEB-319: system (platform-wide) pack assets ---------------- */
+
+/** The one deliberate exception to the org-prefix invariant: the Template
+ * Studio sample pack + template preview thumbs live at platform-wide keys
+ * (`samples/{genre}/…`, `template-previews/{template}/…`) with no tenant
+ * data — AI-generated photography (see tools/sample-pack.json license
+ * note) and renders of it. Public, immutable, R2-served via /api/pack. */
+export const SYSTEM_PACK_KEY_RE = /^(samples|template-previews)\/[A-Za-z0-9][A-Za-z0-9._/-]{0,200}$/;
+
+export async function getSystemPackObject(key: string): Promise<R2ObjectBody | null> {
+  if (!SYSTEM_PACK_KEY_RE.test(key)) return null;
+  return env.R2.get(key);
+}

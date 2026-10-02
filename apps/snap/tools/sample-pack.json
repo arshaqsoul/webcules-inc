@@ -1,0 +1,919 @@
+{
+  "version": 1,
+  "generator": "ComfyUI 0.38.0 / sd_xl_base_1.0_fp16.safetensors",
+  "license": "AI-generated (SDXL). No subject rights, no model release required. Render in template previews only; never attributed to a real studio.",
+  "genres": {
+    "wedding": [
+      {
+        "name": "wedding-01",
+        "paths": {
+          "master": "wedding/master/wedding-01.jpg",
+          "web": "wedding/web/wedding-01.jpg",
+          "thumb": "wedding/thumb/wedding-01.jpg"
+        },
+        "width": 1344,
+        "height": 768,
+        "masterWidth": 3000,
+        "masterHeight": 1714,
+        "prompt": "wide shot of an elegant outdoor wedding ceremony, flower arch with white roses, guests seated on white chairs, golden hour backlight",
+        "seed": 1653571408,
+        "aspect": "1344x768"
+      },
+      {
+        "name": "wedding-02",
+        "paths": {
+          "master": "wedding/master/wedding-02.jpg",
+          "web": "wedding/web/wedding-02.jpg",
+          "thumb": "wedding/thumb/wedding-02.jpg"
+        },
+        "width": 832,
+        "height": 1216,
+        "masterWidth": 2053,
+        "masterHeight": 3000,
+        "prompt": "bride and groom kissing at the altar, confetti in the air, romantic backlit moment, shallow depth of field",
+        "seed": 1119161651,
+        "aspect": "832x1216"
+      },
+      {
+        "name": "wedding-03",
+        "paths": {
+          "master": "wedding/master/wedding-03.jpg",
+          "web": "wedding/web/wedding-03.jpg",
+          "thumb": "wedding/thumb/wedding-03.jpg"
+        },
+        "width": 1216,
+        "height": 832,
+        "masterWidth": 3000,
+        "masterHeight": 2053,
+        "prompt": "macro photograph of two gold wedding rings on a blush peony petal, soft bokeh",
+        "seed": 2112983619,
+        "aspect": "1216x832"
+      },
+      {
+        "name": "wedding-04",
+        "paths": {
+          "master": "wedding/master/wedding-04.jpg",
+          "web": "wedding/web/wedding-04.jpg",
+          "thumb": "wedding/thumb/wedding-04.jpg"
+        },
+        "width": 832,
+        "height": 1216,
+        "masterWidth": 2053,
+        "masterHeight": 3000,
+        "prompt": "portrait of a bride in lace gown by a tall window, veil catching light, timeless elegance",
+        "seed": 119003906,
+        "aspect": "832x1216"
+      },
+      {
+        "name": "wedding-05",
+        "paths": {
+          "master": "wedding/master/wedding-05.jpg",
+          "web": "wedding/web/wedding-05.jpg",
+          "thumb": "wedding/thumb/wedding-05.jpg"
+        },
+        "width": 1344,
+        "height": 768,
+        "masterWidth": 3000,
+        "masterHeight": 1714,
+        "prompt": "reception table setting with candles, eucalyptus runners and gold cutlery, warm evening ambiance",
+        "seed": 1379876433,
+        "aspect": "1344x768"
+      },
+      {
+        "name": "wedding-06",
+        "paths": {
+          "master": "wedding/master/wedding-06.jpg",
+          "web": "wedding/web/wedding-06.jpg",
+          "thumb": "wedding/thumb/wedding-06.jpg"
+        },
+        "width": 1344,
+        "height": 768,
+        "masterWidth": 3000,
+        "masterHeight": 1714,
+        "prompt": "candid guests laughing during speeches at a wedding reception, string lights bokeh background",
+        "seed": 824683039,
+        "aspect": "1344x768"
+      },
+      {
+        "name": "wedding-07",
+        "paths": {
+          "master": "wedding/master/wedding-07.jpg",
+          "web": "wedding/web/wedding-07.jpg",
+          "thumb": "wedding/thumb/wedding-07.jpg"
+        },
+        "width": 896,
+        "height": 1152,
+        "masterWidth": 2333,
+        "masterHeight": 3000,
+        "prompt": "bridal bouquet of white garden roses and eucalyptus held against silk dress, soft window light",
+        "seed": 575050221,
+        "aspect": "896x1152"
+      },
+      {
+        "name": "wedding-08",
+        "paths": {
+          "master": "wedding/master/wedding-08.jpg",
+          "web": "wedding/web/wedding-08.jpg",
+          "thumb": "wedding/thumb/wedding-08.jpg"
+        },
+        "width": 1216,
+        "height": 832,
+        "masterWidth": 3000,
+        "masterHeight": 2053,
+        "prompt": "bride and groom first dance under a chandelier, spotlight, guests watching, cinematic",
+        "seed": 1957816321,
+        "aspect": "1216x832"
+      },
+      {
+        "name": "wedding-09",
+        "paths": {
+          "master": "wedding/master/wedding-09.jpg",
+          "web": "wedding/web/wedding-09.jpg",
+          "thumb": "wedding/thumb/wedding-09.jpg"
+        },
+        "width": 896,
+        "height": 1152,
+        "masterWidth": 2333,
+        "masterHeight": 3000,
+        "prompt": "detail shot of embroidery and buttons on a hanging wedding dress, soft morning light",
+        "seed": 1008751168,
+        "aspect": "896x1152"
+      },
+      {
+        "name": "wedding-10",
+        "paths": {
+          "master": "wedding/master/wedding-10.jpg",
+          "web": "wedding/web/wedding-10.jpg",
+          "thumb": "wedding/thumb/wedding-10.jpg"
+        },
+        "width": 1344,
+        "height": 768,
+        "masterWidth": 3000,
+        "masterHeight": 1714,
+        "prompt": "wedding couple walking away hand in hand down a tree-lined avenue at dusk, off-camera flash editorial style",
+        "seed": 1105533676,
+        "aspect": "1344x768"
+      }
+    ],
+    "family": [
+      {
+        "name": "family-01",
+        "paths": {
+          "master": "family/master/family-01.jpg",
+          "web": "family/web/family-01.jpg",
+          "thumb": "family/thumb/family-01.jpg"
+        },
+        "width": 1344,
+        "height": 768,
+        "masterWidth": 3000,
+        "masterHeight": 1714,
+        "prompt": "family of four on a picnic blanket in a sunlit meadow, laughing together, golden hour warmth",
+        "seed": 1009522378,
+        "aspect": "1344x768"
+      },
+      {
+        "name": "family-02",
+        "paths": {
+          "master": "family/master/family-02.jpg",
+          "web": "family/web/family-02.jpg",
+          "thumb": "family/thumb/family-02.jpg"
+        },
+        "width": 1344,
+        "height": 768,
+        "masterWidth": 3000,
+        "masterHeight": 1714,
+        "prompt": "two siblings running through tall grass toward camera, backlit sun flare, joyful motion",
+        "seed": 1925873094,
+        "aspect": "1344x768"
+      },
+      {
+        "name": "family-03",
+        "paths": {
+          "master": "family/master/family-03.jpg",
+          "web": "family/web/family-03.jpg",
+          "thumb": "family/thumb/family-03.jpg"
+        },
+        "width": 832,
+        "height": 1216,
+        "masterWidth": 2053,
+        "masterHeight": 3000,
+        "prompt": "father lifting his laughing daughter onto his shoulders against a blue sky",
+        "seed": 1260646280,
+        "aspect": "832x1216"
+      },
+      {
+        "name": "family-04",
+        "paths": {
+          "master": "family/master/family-04.jpg",
+          "web": "family/web/family-04.jpg",
+          "thumb": "family/thumb/family-04.jpg"
+        },
+        "width": 896,
+        "height": 1152,
+        "masterWidth": 2333,
+        "masterHeight": 3000,
+        "prompt": "family walking a forest path in autumn, warm coats, fallen leaves, cozy atmosphere",
+        "seed": 1549908706,
+        "aspect": "896x1152"
+      },
+      {
+        "name": "family-05",
+        "paths": {
+          "master": "family/master/family-05.jpg",
+          "web": "family/web/family-05.jpg",
+          "thumb": "family/thumb/family-05.jpg"
+        },
+        "width": 896,
+        "height": 1152,
+        "masterWidth": 2333,
+        "masterHeight": 3000,
+        "prompt": "mother and son sharing a hug on a porch swing, soft afternoon light",
+        "seed": 531352116,
+        "aspect": "896x1152"
+      },
+      {
+        "name": "family-06",
+        "paths": {
+          "master": "family/master/family-06.jpg",
+          "web": "family/web/family-06.jpg",
+          "thumb": "family/thumb/family-06.jpg"
+        },
+        "width": 1344,
+        "height": 768,
+        "masterWidth": 3000,
+        "masterHeight": 1714,
+        "prompt": "children playing with a golden retriever on a beach at sunset, silhouettes and reflections",
+        "seed": 191177647,
+        "aspect": "1344x768"
+      },
+      {
+        "name": "family-07",
+        "paths": {
+          "master": "family/master/family-07.jpg",
+          "web": "family/web/family-07.jpg",
+          "thumb": "family/thumb/family-07.jpg"
+        },
+        "width": 1216,
+        "height": 832,
+        "masterWidth": 3000,
+        "masterHeight": 2053,
+        "prompt": "multigenerational family portrait in a park, grandparents parents and kids, natural smiles",
+        "seed": 421021242,
+        "aspect": "1216x832"
+      },
+      {
+        "name": "family-08",
+        "paths": {
+          "master": "family/master/family-08.jpg",
+          "web": "family/web/family-08.jpg",
+          "thumb": "family/thumb/family-08.jpg"
+        },
+        "width": 832,
+        "height": 1216,
+        "masterWidth": 2053,
+        "masterHeight": 3000,
+        "prompt": "toddler sitting among pumpkins at an autumn farm market, genuine laugh, overalls",
+        "seed": 309395150,
+        "aspect": "832x1216"
+      },
+      {
+        "name": "family-09",
+        "paths": {
+          "master": "family/master/family-09.jpg",
+          "web": "family/web/family-09.jpg",
+          "thumb": "family/thumb/family-09.jpg"
+        },
+        "width": 1344,
+        "height": 768,
+        "masterWidth": 3000,
+        "masterHeight": 1714,
+        "prompt": "family baking together in a bright kitchen, flour dust in the air, candid lifestyle",
+        "seed": 1331287235,
+        "aspect": "1344x768"
+      },
+      {
+        "name": "family-10",
+        "paths": {
+          "master": "family/master/family-10.jpg",
+          "web": "family/web/family-10.jpg",
+          "thumb": "family/thumb/family-10.jpg"
+        },
+        "width": 1216,
+        "height": 832,
+        "masterWidth": 3000,
+        "masterHeight": 2053,
+        "prompt": "parents kissing their baby's cheeks between them on a bed, white linens, morning light",
+        "seed": 1197455177,
+        "aspect": "1216x832"
+      }
+    ],
+    "party": [
+      {
+        "name": "party-01",
+        "paths": {
+          "master": "party/master/party-01.jpg",
+          "web": "party/web/party-01.jpg",
+          "thumb": "party/thumb/party-01.jpg"
+        },
+        "width": 1344,
+        "height": 768,
+        "masterWidth": 3000,
+        "masterHeight": 1714,
+        "prompt": "crowd dancing under confetti explosion at a party, dynamic energy, flash photography style",
+        "seed": 215959249,
+        "aspect": "1344x768"
+      },
+      {
+        "name": "party-02",
+        "paths": {
+          "master": "party/master/party-02.jpg",
+          "web": "party/web/party-02.jpg",
+          "thumb": "party/thumb/party-02.jpg"
+        },
+        "width": 1344,
+        "height": 768,
+        "masterWidth": 3000,
+        "masterHeight": 1714,
+        "prompt": "dj booth with neon lights and raised hands, low-light club atmosphere, vibrant magenta and cyan",
+        "seed": 204310322,
+        "aspect": "1344x768"
+      },
+      {
+        "name": "party-03",
+        "paths": {
+          "master": "party/master/party-03.jpg",
+          "web": "party/web/party-03.jpg",
+          "thumb": "party/thumb/party-03.jpg"
+        },
+        "width": 1216,
+        "height": 832,
+        "masterWidth": 3000,
+        "masterHeight": 2053,
+        "prompt": "friends toasting cocktails with sparklers on a rooftop at night, city lights behind",
+        "seed": 781995600,
+        "aspect": "1216x832"
+      },
+      {
+        "name": "party-04",
+        "paths": {
+          "master": "party/master/party-04.jpg",
+          "web": "party/web/party-04.jpg",
+          "thumb": "party/thumb/party-04.jpg"
+        },
+        "width": 832,
+        "height": 1216,
+        "masterWidth": 2053,
+        "masterHeight": 3000,
+        "prompt": "birthday girl blowing out candles on a layered cake, dark room lit by candlelight and bokeh",
+        "seed": 516507045,
+        "aspect": "832x1216"
+      },
+      {
+        "name": "party-05",
+        "paths": {
+          "master": "party/master/party-05.jpg",
+          "web": "party/web/party-05.jpg",
+          "thumb": "party/thumb/party-05.jpg"
+        },
+        "width": 1344,
+        "height": 768,
+        "masterWidth": 3000,
+        "masterHeight": 1714,
+        "prompt": "guests laughing at an outdoor evening party under string lights, patio dinner table",
+        "seed": 1636248567,
+        "aspect": "1344x768"
+      },
+      {
+        "name": "party-06",
+        "paths": {
+          "master": "party/master/party-06.jpg",
+          "web": "party/web/party-06.jpg",
+          "thumb": "party/thumb/party-06.jpg"
+        },
+        "width": 1216,
+        "height": 832,
+        "masterWidth": 3000,
+        "masterHeight": 2053,
+        "prompt": "close-up of champagne glasses clinking with fizz, celebratory mood, rim light",
+        "seed": 1493251270,
+        "aspect": "1216x832"
+      },
+      {
+        "name": "party-07",
+        "paths": {
+          "master": "party/master/party-07.jpg",
+          "web": "party/web/party-07.jpg",
+          "thumb": "party/thumb/party-07.jpg"
+        },
+        "width": 1344,
+        "height": 768,
+        "masterWidth": 3000,
+        "masterHeight": 1714,
+        "prompt": "singer performing at an intimate live venue, stage lights, crowd silhouettes in foreground",
+        "seed": 252808166,
+        "aspect": "1344x768"
+      },
+      {
+        "name": "party-08",
+        "paths": {
+          "master": "party/master/party-08.jpg",
+          "web": "party/web/party-08.jpg",
+          "thumb": "party/thumb/party-08.jpg"
+        },
+        "width": 896,
+        "height": 1152,
+        "masterWidth": 2333,
+        "masterHeight": 3000,
+        "prompt": "kids with glow sticks dancing at a birthday party, colorful motion blur, joyful",
+        "seed": 21461577,
+        "aspect": "896x1152"
+      },
+      {
+        "name": "party-09",
+        "paths": {
+          "master": "party/master/party-09.jpg",
+          "web": "party/web/party-09.jpg",
+          "thumb": "party/thumb/party-09.jpg"
+        },
+        "width": 832,
+        "height": 1216,
+        "masterWidth": 2053,
+        "masterHeight": 3000,
+        "prompt": "confetti raining on a dancing couple at a milestone anniversary party, gold light",
+        "seed": 51298119,
+        "aspect": "832x1216"
+      },
+      {
+        "name": "party-10",
+        "paths": {
+          "master": "party/master/party-10.jpg",
+          "web": "party/web/party-10.jpg",
+          "thumb": "party/thumb/party-10.jpg"
+        },
+        "width": 1344,
+        "height": 768,
+        "masterWidth": 3000,
+        "masterHeight": 1714,
+        "prompt": "group of friends jumping in the air at a beach bonfire party at dusk, flash freeze",
+        "seed": 1094726547,
+        "aspect": "1344x768"
+      }
+    ],
+    "newborn": [
+      {
+        "name": "newborn-01",
+        "paths": {
+          "master": "newborn/master/newborn-01.jpg",
+          "web": "newborn/web/newborn-01.jpg",
+          "thumb": "newborn/thumb/newborn-01.jpg"
+        },
+        "width": 896,
+        "height": 1152,
+        "masterWidth": 2333,
+        "masterHeight": 3000,
+        "prompt": "newborn baby wrapped in a cream knit blanket, sleeping peacefully, studio soft light, beige backdrop",
+        "seed": 321393152,
+        "aspect": "896x1152"
+      },
+      {
+        "name": "newborn-02",
+        "paths": {
+          "master": "newborn/master/newborn-02.jpg",
+          "web": "newborn/web/newborn-02.jpg",
+          "thumb": "newborn/thumb/newborn-02.jpg"
+        },
+        "width": 1216,
+        "height": 832,
+        "masterWidth": 3000,
+        "masterHeight": 2053,
+        "prompt": "macro of a newborn's tiny hand gripping a parent's finger, ultra soft focus",
+        "seed": 1805562346,
+        "aspect": "1216x832"
+      },
+      {
+        "name": "newborn-03",
+        "paths": {
+          "master": "newborn/master/newborn-03.jpg",
+          "web": "newborn/web/newborn-03.jpg",
+          "thumb": "newborn/thumb/newborn-03.jpg"
+        },
+        "width": 896,
+        "height": 1152,
+        "masterWidth": 2333,
+        "masterHeight": 3000,
+        "prompt": "newborn sleeping in a woven basket with a knitted hat, next to dried flowers, warm tones",
+        "seed": 361485136,
+        "aspect": "896x1152"
+      },
+      {
+        "name": "newborn-04",
+        "paths": {
+          "master": "newborn/master/newborn-04.jpg",
+          "web": "newborn/web/newborn-04.jpg",
+          "thumb": "newborn/thumb/newborn-04.jpg"
+        },
+        "width": 1216,
+        "height": 832,
+        "masterWidth": 3000,
+        "masterHeight": 2053,
+        "prompt": "newborn nursery corner with soft toys and a linen curtain, gentle morning window light",
+        "seed": 1972760897,
+        "aspect": "1216x832"
+      },
+      {
+        "name": "newborn-05",
+        "paths": {
+          "master": "newborn/master/newborn-05.jpg",
+          "web": "newborn/web/newborn-05.jpg",
+          "thumb": "newborn/thumb/newborn-05.jpg"
+        },
+        "width": 832,
+        "height": 1216,
+        "masterWidth": 2053,
+        "masterHeight": 3000,
+        "prompt": "mother cradling her newborn against her shoulder in white linen, tender backlit moment",
+        "seed": 1814341148,
+        "aspect": "832x1216"
+      },
+      {
+        "name": "newborn-06",
+        "paths": {
+          "master": "newborn/master/newborn-06.jpg",
+          "web": "newborn/web/newborn-06.jpg",
+          "thumb": "newborn/thumb/newborn-06.jpg"
+        },
+        "width": 1024,
+        "height": 1024,
+        "masterWidth": 3000,
+        "masterHeight": 3000,
+        "prompt": "newborn yawning on a soft muslin blanket, wrapped in pastel tones, overhead shot",
+        "seed": 978600447,
+        "aspect": "1024x1024"
+      },
+      {
+        "name": "newborn-07",
+        "paths": {
+          "master": "newborn/master/newborn-07.jpg",
+          "web": "newborn/web/newborn-07.jpg",
+          "thumb": "newborn/thumb/newborn-07.jpg"
+        },
+        "width": 1216,
+        "height": 832,
+        "masterWidth": 3000,
+        "masterHeight": 2053,
+        "prompt": "detail of tiny newborn feet in a parent's palm, warm skin tones, soft shadow",
+        "seed": 1098165773,
+        "aspect": "1216x832"
+      },
+      {
+        "name": "newborn-08",
+        "paths": {
+          "master": "newborn/master/newborn-08.jpg",
+          "web": "newborn/web/newborn-08.jpg",
+          "thumb": "newborn/thumb/newborn-08.jpg"
+        },
+        "width": 832,
+        "height": 1216,
+        "masterWidth": 2053,
+        "masterHeight": 3000,
+        "prompt": "father holding newborn against his chest, black and white fine art style, soft contrast",
+        "seed": 2002267777,
+        "aspect": "832x1216"
+      },
+      {
+        "name": "newborn-09",
+        "paths": {
+          "master": "newborn/master/newborn-09.jpg",
+          "web": "newborn/web/newborn-09.jpg",
+          "thumb": "newborn/thumb/newborn-09.jpg"
+        },
+        "width": 1024,
+        "height": 1024,
+        "masterWidth": 3000,
+        "masterHeight": 3000,
+        "prompt": "newborn twins sleeping curled together in a wrap, neutral studio setup, delicate",
+        "seed": 137703750,
+        "aspect": "1024x1024"
+      },
+      {
+        "name": "newborn-10",
+        "paths": {
+          "master": "newborn/master/newborn-10.jpg",
+          "web": "newborn/web/newborn-10.jpg",
+          "thumb": "newborn/thumb/newborn-10.jpg"
+        },
+        "width": 1216,
+        "height": 832,
+        "masterWidth": 3000,
+        "masterHeight": 2053,
+        "prompt": "flat lay of newborn props: knitted booties, headband, wooden rattle on linen, top-down",
+        "seed": 771848274,
+        "aspect": "1216x832"
+      }
+    ],
+    "corporate": [
+      {
+        "name": "corporate-01",
+        "paths": {
+          "master": "corporate/master/corporate-01.jpg",
+          "web": "corporate/web/corporate-01.jpg",
+          "thumb": "corporate/thumb/corporate-01.jpg"
+        },
+        "width": 1344,
+        "height": 768,
+        "masterWidth": 3000,
+        "masterHeight": 1714,
+        "prompt": "modern office team collaborating around a glass table, laptops and coffee, bright natural light",
+        "seed": 1008639986,
+        "aspect": "1344x768"
+      },
+      {
+        "name": "corporate-02",
+        "paths": {
+          "master": "corporate/master/corporate-02.jpg",
+          "web": "corporate/web/corporate-02.jpg",
+          "thumb": "corporate/thumb/corporate-02.jpg"
+        },
+        "width": 832,
+        "height": 1216,
+        "masterWidth": 2053,
+        "masterHeight": 3000,
+        "prompt": "confident businesswoman portrait in a tailored suit against a city skyline window",
+        "seed": 2078237152,
+        "aspect": "832x1216"
+      },
+      {
+        "name": "corporate-03",
+        "paths": {
+          "master": "corporate/master/corporate-03.jpg",
+          "web": "corporate/web/corporate-03.jpg",
+          "thumb": "corporate/thumb/corporate-03.jpg"
+        },
+        "width": 1344,
+        "height": 768,
+        "masterWidth": 3000,
+        "masterHeight": 1714,
+        "prompt": "candid of colleagues laughing during a meeting in a sunlit coworking space",
+        "seed": 1129729439,
+        "aspect": "1344x768"
+      },
+      {
+        "name": "corporate-04",
+        "paths": {
+          "master": "corporate/master/corporate-04.jpg",
+          "web": "corporate/web/corporate-04.jpg",
+          "thumb": "corporate/thumb/corporate-04.jpg"
+        },
+        "width": 1216,
+        "height": 832,
+        "masterWidth": 3000,
+        "masterHeight": 2053,
+        "prompt": "minimal desk workspace with laptop, notebook and espresso, shallow depth of field",
+        "seed": 1073900204,
+        "aspect": "1216x832"
+      },
+      {
+        "name": "corporate-05",
+        "paths": {
+          "master": "corporate/master/corporate-05.jpg",
+          "web": "corporate/web/corporate-05.jpg",
+          "thumb": "corporate/thumb/corporate-05.jpg"
+        },
+        "width": 1344,
+        "height": 768,
+        "masterWidth": 3000,
+        "masterHeight": 1714,
+        "prompt": "business handshake between two professionals in a bright modern lobby",
+        "seed": 669323491,
+        "aspect": "1344x768"
+      },
+      {
+        "name": "corporate-06",
+        "paths": {
+          "master": "corporate/master/corporate-06.jpg",
+          "web": "corporate/web/corporate-06.jpg",
+          "thumb": "corporate/thumb/corporate-06.jpg"
+        },
+        "width": 1344,
+        "height": 768,
+        "masterWidth": 3000,
+        "masterHeight": 1714,
+        "prompt": "boardroom with a presentation on screen, diverse team listening attentively",
+        "seed": 1391265941,
+        "aspect": "1344x768"
+      },
+      {
+        "name": "corporate-07",
+        "paths": {
+          "master": "corporate/master/corporate-07.jpg",
+          "web": "corporate/web/corporate-07.jpg",
+          "thumb": "corporate/thumb/corporate-07.jpg"
+        },
+        "width": 832,
+        "height": 1216,
+        "masterWidth": 2053,
+        "masterHeight": 3000,
+        "prompt": "male executive portrait with folded arms in an industrial-chic office, soft window light",
+        "seed": 1073071171,
+        "aspect": "832x1216"
+      },
+      {
+        "name": "corporate-08",
+        "paths": {
+          "master": "corporate/master/corporate-08.jpg",
+          "web": "corporate/web/corporate-08.jpg",
+          "thumb": "corporate/thumb/corporate-08.jpg"
+        },
+        "width": 896,
+        "height": 1152,
+        "masterWidth": 2333,
+        "masterHeight": 3000,
+        "prompt": "engineer reviewing plans at a standing desk in a bright tech office, green plants",
+        "seed": 1974077178,
+        "aspect": "896x1152"
+      },
+      {
+        "name": "corporate-09",
+        "paths": {
+          "master": "corporate/master/corporate-09.jpg",
+          "web": "corporate/web/corporate-09.jpg",
+          "thumb": "corporate/thumb/corporate-09.jpg"
+        },
+        "width": 1216,
+        "height": 832,
+        "masterWidth": 3000,
+        "masterHeight": 2053,
+        "prompt": "team standing confidently in a line in a modern office atrium, professional group portrait",
+        "seed": 883463147,
+        "aspect": "1216x832"
+      },
+      {
+        "name": "corporate-10",
+        "paths": {
+          "master": "corporate/master/corporate-10.jpg",
+          "web": "corporate/web/corporate-10.jpg",
+          "thumb": "corporate/thumb/corporate-10.jpg"
+        },
+        "width": 1216,
+        "height": 832,
+        "masterWidth": 3000,
+        "masterHeight": 2053,
+        "prompt": "close-up of hands typing on a laptop over a marble table with coffee, business casual",
+        "seed": 548217393,
+        "aspect": "1216x832"
+      }
+    ],
+    "editorial": [
+      {
+        "name": "editorial-01",
+        "paths": {
+          "master": "editorial/master/editorial-01.jpg",
+          "web": "editorial/web/editorial-01.jpg",
+          "thumb": "editorial/thumb/editorial-01.jpg"
+        },
+        "width": 832,
+        "height": 1216,
+        "masterWidth": 2053,
+        "masterHeight": 3000,
+        "prompt": "high fashion model in a flowing red gown against a brutalist concrete wall, dramatic shadows",
+        "seed": 895935975,
+        "aspect": "832x1216"
+      },
+      {
+        "name": "editorial-02",
+        "paths": {
+          "master": "editorial/master/editorial-02.jpg",
+          "web": "editorial/web/editorial-02.jpg",
+          "thumb": "editorial/thumb/editorial-02.jpg"
+        },
+        "width": 832,
+        "height": 1216,
+        "masterWidth": 2053,
+        "masterHeight": 3000,
+        "prompt": "studio fashion portrait, model in avant-garde black outfit, single hard light, deep shadows",
+        "seed": 2010239603,
+        "aspect": "832x1216"
+      },
+      {
+        "name": "editorial-03",
+        "paths": {
+          "master": "editorial/master/editorial-03.jpg",
+          "web": "editorial/web/editorial-03.jpg",
+          "thumb": "editorial/thumb/editorial-03.jpg"
+        },
+        "width": 896,
+        "height": 1152,
+        "masterWidth": 2333,
+        "masterHeight": 3000,
+        "prompt": "street style photograph of a stylish woman crossing a city street, motion and wind in her coat",
+        "seed": 2062898917,
+        "aspect": "896x1152"
+      },
+      {
+        "name": "editorial-04",
+        "paths": {
+          "master": "editorial/master/editorial-04.jpg",
+          "web": "editorial/web/editorial-04.jpg",
+          "thumb": "editorial/thumb/editorial-04.jpg"
+        },
+        "width": 1024,
+        "height": 1024,
+        "masterWidth": 3000,
+        "masterHeight": 3000,
+        "prompt": "beauty close-up with bold red lips and dewy skin, sculpted studio lighting, neutral backdrop",
+        "seed": 1032951503,
+        "aspect": "1024x1024"
+      },
+      {
+        "name": "editorial-05",
+        "paths": {
+          "master": "editorial/master/editorial-05.jpg",
+          "web": "editorial/web/editorial-05.jpg",
+          "thumb": "editorial/thumb/editorial-05.jpg"
+        },
+        "width": 832,
+        "height": 1216,
+        "masterWidth": 2053,
+        "masterHeight": 3000,
+        "prompt": "male model in a tailored camel coat on an empty foggy street at dawn, cinematic mood",
+        "seed": 1297205521,
+        "aspect": "832x1216"
+      },
+      {
+        "name": "editorial-06",
+        "paths": {
+          "master": "editorial/master/editorial-06.jpg",
+          "web": "editorial/web/editorial-06.jpg",
+          "thumb": "editorial/thumb/editorial-06.jpg"
+        },
+        "width": 896,
+        "height": 1152,
+        "masterWidth": 2333,
+        "masterHeight": 3000,
+        "prompt": "model in white suit mid-twirl, fabric in motion, seamless grey studio backdrop",
+        "seed": 657790144,
+        "aspect": "896x1152"
+      },
+      {
+        "name": "editorial-07",
+        "paths": {
+          "master": "editorial/master/editorial-07.jpg",
+          "web": "editorial/web/editorial-07.jpg",
+          "thumb": "editorial/thumb/editorial-07.jpg"
+        },
+        "width": 1216,
+        "height": 832,
+        "masterWidth": 3000,
+        "masterHeight": 2053,
+        "prompt": "fashion editorial with model seated on a vintage chair, warm gelled light, film grain",
+        "seed": 1475105832,
+        "aspect": "1216x832"
+      },
+      {
+        "name": "editorial-08",
+        "paths": {
+          "master": "editorial/master/editorial-08.jpg",
+          "web": "editorial/web/editorial-08.jpg",
+          "thumb": "editorial/thumb/editorial-08.jpg"
+        },
+        "width": 832,
+        "height": 1216,
+        "masterWidth": 2053,
+        "masterHeight": 3000,
+        "prompt": "black and white editorial portrait, strong side profile, rim light, grain",
+        "seed": 259433317,
+        "aspect": "832x1216"
+      },
+      {
+        "name": "editorial-09",
+        "paths": {
+          "master": "editorial/master/editorial-09.jpg",
+          "web": "editorial/web/editorial-09.jpg",
+          "thumb": "editorial/thumb/editorial-09.jpg"
+        },
+        "width": 896,
+        "height": 1152,
+        "masterWidth": 2333,
+        "masterHeight": 3000,
+        "prompt": "model in a patterned summer dress under palm shadows, riviera vibe, hard sunlight patterns",
+        "seed": 313737980,
+        "aspect": "896x1152"
+      },
+      {
+        "name": "editorial-10",
+        "paths": {
+          "master": "editorial/master/editorial-10.jpg",
+          "web": "editorial/web/editorial-10.jpg",
+          "thumb": "editorial/thumb/editorial-10.jpg"
+        },
+        "width": 1216,
+        "height": 832,
+        "masterWidth": 3000,
+        "masterHeight": 2053,
+        "prompt": "duo fashion editorial, two models back to back in monochrome outfits, minimal studio",
+        "seed": 2016463962,
+        "aspect": "1216x832"
+      }
+    ]
+  }
+}

@@ -18,3 +18,10 @@ tests/e2e/.server.log
 tests/e2e/.run.log
 test-results/
 tests/e2e/.cookies.txt
+
+# Template Studio sample pack — generated binaries, never commit (WEB-319)
+tools/sample-pack/*/
+
+# harness local state
+tools/.harness-state/
+tools/preview-shots/

@@ -10,8 +10,11 @@ import * as schema from "../db-schema";
 import { getDefaultTemplate } from "./templates";
 import {
   GALLERY_DESIGN_MAX_BYTES,
+  GALLERY_DESIGN_V2_MAX_BYTES,
+  designHasV2Fields,
   parseGalleryDesign,
   parseGalleryDesignJson,
+  sectionAssetIds,
   serializeGalleryDesign,
   type GalleryDesign,
 } from "../gallery-design";
@@ -30,8 +33,9 @@ export async function getProjectGalleryDesign(organizationId: string, projectId:
   return parseGalleryDesignJson(rows[0]?.galleryDesign ?? null);
 }
 
-/** Strict write path (API): canonicalize + cap; a cover assetId must belong
- * to the project when present. */
+/** Strict write path (API): canonicalize + cap; every referenced asset —
+ * cover surfaces (WEB-301) AND v2 section references (hero images, binding
+ * picks, collage items) — must belong to the project when present. */
 export async function saveProjectGalleryDesign(params: {
   organizationId: string;
   projectId: string;
@@ -42,10 +46,12 @@ export async function saveProjectGalleryDesign(params: {
     const canonical = parseGalleryDesign(params.design);
     if (!canonical) return { ok: false, error: "invalid_design" };
     // WEB-301: every cover surface (canonical asset + hero slider images)
-    // must belong to the project — one query covers them all.
+    // must belong to the project — one query covers them all. WEB-318:
+    // section-referenced ids join the same check.
     const coverIds = [
       ...(canonical.cover?.assetId ? [canonical.cover.assetId] : []),
       ...(canonical.cover?.images ?? []).map((i) => i.assetId),
+      ...sectionAssetIds(canonical),
     ];
     if (coverIds.length) {
       const owned = await getDb()
@@ -61,7 +67,9 @@ export async function saveProjectGalleryDesign(params: {
       if (owned.length !== new Set(coverIds).size) return { ok: false, error: "cover_not_in_project" };
     }
     stored = serializeGalleryDesign(canonical);
-    if (stored.length > GALLERY_DESIGN_MAX_BYTES) return { ok: false, error: "too_large" };
+    // WEB-318: sectioned designs get the 32 KB envelope; v1 stays 16 KB.
+    const cap = designHasV2Fields(canonical) ? GALLERY_DESIGN_V2_MAX_BYTES : GALLERY_DESIGN_MAX_BYTES;
+    if (stored.length > cap) return { ok: false, error: "too_large" };
   }
   const updated = await getDb()
     .update(schema.projects)
