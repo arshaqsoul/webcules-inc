@@ -1,7 +1,7 @@
 /* Triage attach options (WEB-308) — search the studio's records for the
  * one-click "attach this unmatched email to…" picker: open leads first,
  * then clients, then projects. Org-scoped, LIKE over name/email/title. */
-import { and, desc, eq, ilike, or } from "drizzle-orm";
+import { and, desc, eq, like, or } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
@@ -21,9 +21,9 @@ export async function GET(req: Request) {
   const clientConds = [eq(schema.clients.organizationId, ctx.organizationId)];
   const projectConds = [eq(schema.projects.organizationId, ctx.organizationId)];
   if (q) {
-    leadConds.push(or(ilike(schema.leads.name, needle), ilike(schema.leads.email, needle))!);
-    clientConds.push(or(ilike(schema.clients.name, needle), ilike(schema.clients.email, needle))!);
-    projectConds.push(ilike(schema.projects.title, needle));
+    leadConds.push(or(like(schema.leads.name, needle), like(schema.leads.email, needle))!);
+    clientConds.push(or(like(schema.clients.name, needle), like(schema.clients.email, needle))!);
+    projectConds.push(like(schema.projects.title, needle));
   }
 
   const [leads, clients, projects] = await Promise.all([

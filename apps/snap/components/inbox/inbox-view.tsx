@@ -749,13 +749,23 @@ export function InboxView({
                     tabIndex={0}
                     onClick={() => {
                       setSelectedId(i.id);
+                      // a threadless (triage) selection must never leave the
+                      // previously-opened conversation on screen
                       if (i.threadId) void openThread(i.threadId);
+                      else {
+                        setOpenThreadId(null);
+                        setThread(null);
+                      }
                     }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         e.stopPropagation();
                         setSelectedId(i.id);
                         if (i.threadId) void openThread(i.threadId);
+                        else {
+                          setOpenThreadId(null);
+                          setThread(null);
+                        }
                       }
                     }}
                     className={`group flex w-full cursor-pointer items-start gap-3 border-b border-hairline px-4 py-3 text-left outline-none transition-colors ${

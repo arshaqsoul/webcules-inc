@@ -1,7 +1,7 @@
 /* Lead repository — inbox, threading, conversion. Every call is org-scoped
  * by the passed context; inbound email ingest matches sender→lead heuristically
  * (per-studio inbound addresses arrive with the embed-platform follow-up). */
-import { and, desc, eq, gte, ilike, inArray, isNotNull, lte, ne, or, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNotNull, like, lte, ne, or, sql } from "drizzle-orm";
 
 import { getD1, getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
@@ -36,7 +36,7 @@ export async function listLeads(params: {
   }
   if (params.search?.trim()) {
     const needle = `%${params.search.trim()}%`;
-    const match = or(ilike(schema.leads.name, needle), ilike(schema.leads.email, needle));
+    const match = or(like(schema.leads.name, needle), like(schema.leads.email, needle));
     if (match) conditions.push(match);
   }
   return db

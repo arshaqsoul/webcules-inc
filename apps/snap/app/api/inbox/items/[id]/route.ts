@@ -1,10 +1,11 @@
 /* Per-item inbox actions (WEB-304) — read/unread/snooze/unsnooze/delete/
- * restore. Ownership is (user_id, organization_id): a member can only ever
- * touch their own view of an item. */
+ * restore, plus triage ATTACH (one-click "this email belongs to that
+ * client/lead/project"). Ownership is (user_id, organization_id): a member
+ * can only ever touch their own view of an item. */
 import { z } from "zod";
 
 import { getOrgContext } from "@/lib/session";
-import { applyInboxItemAction, type InboxItemAction } from "@/lib/repos/inbox";
+import { applyInboxItemAction, attachTriageItem, type InboxItemAction } from "@/lib/repos/inbox";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,12 @@ const actionSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("restore") }),
 ]);
 
+const attachSchema = z.object({
+  attach: z.literal(true),
+  kind: z.enum(["lead", "client", "project"]),
+  recordId: z.string().min(1).max(64),
+});
+
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
@@ -27,6 +34,25 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   } catch {
     return Response.json({ error: "invalid_json" }, { status: 400 });
   }
+
+  // Triage attach: {attach: true, kind, recordId} — the shape the triage
+  // pane sends. The route used to accept only {action} shapes and 400'd on
+  // every attach attempt (founder-reported); the repo path existed but was
+  // never reachable from the API.
+  const attach = attachSchema.safeParse(body);
+  if (attach.success) {
+    const { id } = await params;
+    const result = await attachTriageItem({
+      userId: ctx.user.id,
+      organizationId: ctx.organizationId,
+      itemId: id,
+      kind: attach.data.kind,
+      recordId: attach.data.recordId,
+    });
+    if (result.ok) return Response.json({ ok: true, threadId: result.threadId, title: result.title });
+    return Response.json({ error: result.error }, { status: result.error === "already_threaded" ? 409 : 404 });
+  }
+
   const parsed = actionSchema.safeParse(body);
   if (!parsed.success) return Response.json({ error: "invalid_input" }, { status: 400 });
   const a = parsed.data;
