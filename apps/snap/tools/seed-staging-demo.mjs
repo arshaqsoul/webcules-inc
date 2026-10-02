@@ -639,8 +639,8 @@ console.log(`
     email:    ${STUDIO.email}
     password: TestPass123!x
 
-  CLIENT GALLERY (favorites on, downloads allowed)
-    ${APP_URL}/p/${GALLERY_TOKEN}
+  CLIENT GALLERY — email-code verified (favorites on, downloads allowed)
+    ${APP_URL}/g/${GALLERY_TOKEN}
 
   CONTRACT AWAITING SIGNATURE (family session)
     ${APP_URL}/c/${CONTRACT_TOKEN}

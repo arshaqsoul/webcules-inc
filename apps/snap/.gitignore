@@ -27,3 +27,4 @@ tools/.harness-state/
 tools/preview-shots/
 tools/.template-previews/
 tools/.demo-seed.sql
+tools/staging-shots/

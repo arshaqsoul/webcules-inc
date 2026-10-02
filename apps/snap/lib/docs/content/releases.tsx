@@ -35,6 +35,53 @@ export default function Releases() {
         polish fold into the next entry rather than getting their own.
       </Note>
 
+      <Release version="0.5.0" date="October 2, 2026">
+        <p>
+          <strong>Template Studio is here.</strong> Ten designer gallery templates — wedding,
+          family, party, newborn, corporate, editorial — now ship with Snap, free on every plan.
+          Pick a look, preview it with your own photos, apply it in one click. And on Lite and
+          above, the new page builder takes any template (or a blank page) and makes it yours:
+          drag sections around, choose from twelve bundled fonts, set your colors, even place
+          photos freely in a collage.
+        </p>
+        <ul className="mt-2 list-disc pl-5">
+          <li>
+            <strong>The template grid.</strong> Every project&apos;s Client gallery tab now opens
+            with real photographic previews — browse by category (Wedding, Family, Party,
+            Corporate, Editorial, Minimal), hover to Preview a template rendered with{" "}
+            <em>your</em> photos, then Apply. Changed your mind? Undo restores your previous
+            design. Applying never touches photos, favorites, or delivery settings.
+          </li>
+          <li>
+            <strong>The page builder (Lite).</strong> A gallery page is now a stack of sections —
+            hero, gallery, slideshow, favorites, text, contact — that you drag to reorder, edit
+            in a live inspector, and bind to exactly the photos each section should show (all,
+            one folder, your N-star picks, or hand-picked). Undo/redo, autosaved drafts, and a
+            stale-session guard keep it safe.
+          </li>
+          <li>
+            <strong>Typography &amp; theme (Lite).</strong> Twelve self-hosted font families
+            (Playfair Display, Cormorant Garamond, Space Grotesk, Work Sans…), a type-scale
+            slider, letter-spacing, and page/text/accent colors with one-click match-my-brand.
+            Fonts load from Snap itself — no external font service ever touches your
+            client&apos;s gallery.
+          </li>
+          <li>
+            <strong>Collage sections (Studio).</strong> Drag photos anywhere on the canvas,
+            resize, rotate, layer — free positioning that scales from phone to desktop. Twelve
+            photos per collage keeps it a composition, not a pile.
+          </li>
+          <li>
+            <strong>Fixed: the split cover.</strong> Galleries using the split cover style now
+            truly show photo and title side-by-side — a layout rule with an invalid character
+            had quietly stacked them since the design system launched.
+          </li>
+          <li>
+            <strong>New studios</strong> get a &quot;Pick a gallery template&quot; step in the
+            setup guide — two minutes after signup, the demo gallery can look like a magazine.
+          </li>
+        </ul>
+      </Release>
       <Release version="0.4.0" date="October 1, 2026">
         <p>
           <strong>The inbox is home.</strong> Every conversation now lives in one place: the lead
