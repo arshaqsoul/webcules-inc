@@ -44,7 +44,7 @@ export default function Releases() {
         </p>
       </Release>
 
-      <Release version="0.5.2" date="October 2, 2026">
+      <Release version="0.5.3" date="October 2, 2026">
         <p>
           Fixed: on Studio and Pro (unlimited linked studios), the sidebar claimed &quot;1 studio
           on this plan&quot; and hid the add-studio button — unlimited was being misread as a
