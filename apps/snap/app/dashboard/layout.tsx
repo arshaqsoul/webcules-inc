@@ -50,7 +50,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         currentOrganizationId={ctx.organizationId}
         rootOrganizationId={ent?.rootOrganizationId ?? ctx.organizationId}
         familyStudioCount={ent?.familyStudioCount ?? 1}
-        maxLinkedStudios={ent?.maxLinkedStudios ?? 1}
+        maxLinkedStudios={ent ? ent.maxLinkedStudios : 1}
         plan={ent?.id ?? "free"}
         role={ctx.role}
         setup={
@@ -71,7 +71,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             currentOrganizationId={ctx.organizationId}
             rootOrganizationId={ent?.rootOrganizationId ?? ctx.organizationId}
             familyStudioCount={ent?.familyStudioCount ?? 1}
-            maxLinkedStudios={ent?.maxLinkedStudios ?? 1}
+            maxLinkedStudios={ent ? ent.maxLinkedStudios : 1}
             plan={ent?.id ?? "free"}
             role={ctx.role}
           />

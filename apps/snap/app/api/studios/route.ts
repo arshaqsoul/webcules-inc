@@ -21,7 +21,8 @@ export async function GET() {
     currentOrganizationId: ctx.organizationId,
     rootOrganizationId: ent?.rootOrganizationId ?? ctx.organizationId,
     familyStudioCount: ent?.familyStudioCount ?? 1,
-    maxLinkedStudios: ent?.maxLinkedStudios ?? 1,
+    // null = unlimited (Studio/Pro); 1 only when entitlements are missing.
+    maxLinkedStudios: ent ? ent.maxLinkedStudios : 1,
   });
 }
 
