@@ -35,6 +35,15 @@ export default function Releases() {
         polish fold into the next entry rather than getting their own.
       </Note>
 
+      <Release version="0.5.2" date="October 2, 2026">
+        <p>
+          Long studio names now behave in the sidebar: instead of running under the collapse
+          button, the name shortens with an ellipsis and the chevron stays put — in the desktop
+          sidebar and the mobile menu alike. The full name is still one hover away, and every
+          studio is listed in full when you open the switcher.
+        </p>
+      </Release>
+
       <Release version="0.5.1" date="October 2, 2026">
         <p>
           Polish from the Template Studio review: buttons that fill with your brand color — the

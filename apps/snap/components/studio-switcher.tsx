@@ -139,10 +139,10 @@ export function StudioSwitcher({
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         aria-haspopup="listbox"
-        className="flex min-w-0 items-center gap-1.5 rounded-md px-1.5 py-1 text-left transition-colors hover:bg-surface-2"
+        className="flex w-full min-w-0 items-center gap-1.5 rounded-md px-1.5 py-1 text-left transition-colors hover:bg-surface-2"
         title="Switch studio"
       >
-        <SnapMark className="h-4 w-4 rounded-[5px]" />
+        <SnapMark className="h-4 w-4 shrink-0 rounded-[5px]" />
         <span className="truncate text-sm font-medium text-ink">{current?.name ?? "Studio"}</span>
         <ChevronDown className="h-3.5 w-3.5 shrink-0 text-ink-tertiary" aria-hidden />
       </button>
