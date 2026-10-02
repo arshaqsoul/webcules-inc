@@ -44,6 +44,13 @@ export default function Releases() {
         </p>
       </Release>
 
+      <Release version="0.5.2" date="October 2, 2026">
+        <p>
+          Fixed: on Studio and Pro (unlimited linked studios), the sidebar claimed &quot;1 studio
+          on this plan&quot; and hid the add-studio button — unlimited was being misread as a
+          limit of one. Adding studios works as it always should have.
+        </p>
+      </Release>
       <Release version="0.5.1" date="October 2, 2026">
         <p>
           Polish from the Template Studio review: buttons that fill with your brand color — the
