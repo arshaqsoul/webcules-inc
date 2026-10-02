@@ -47,7 +47,7 @@ export default function Templates() {
           <tr>
             <td>Gallery styles <Tier plan="lite" /></td>
             <td><code>Templates → Gallery styles</code></td>
-            <td>A project&apos;s Client gallery tab → Design</td>
+            <td>A project&apos;s Client gallery tab</td>
           </tr>
           <tr>
             <td>Session types</td>
@@ -92,8 +92,8 @@ export default function Templates() {
 
       <H3>Gallery styles <Tier plan="lite" /></H3>
       <p>
-        Cover treatment, layout, and theme as one reusable look, previewed desktop and mobile side
-        by side. Pin a studio default and every new gallery inherits it until you design it
+        Cover treatment, layout, and theme as one reusable look, previewed desktop and mobile.
+        Pin a studio default and every new gallery inherits it until you design it
         differently. See <a href="/docs/gallery-design">Gallery design &amp; styles</a>.
       </p>
 
@@ -112,8 +112,10 @@ export default function Templates() {
       <p>
         On Free and Lite: <strong>2</strong> contract templates, <strong>5</strong> email snippets,{" "}
         <strong>1</strong> contact form, <strong>1</strong> questionnaire (3 on Lite), and{" "}
-        <strong>1</strong> session type (3 on Lite). Studio and above are unlimited. Invoice presets
-        and gallery styles aren&apos;t counted — they&apos;re Lite and above, full stop. Starters
+        <strong>1</strong> session type (3 on Lite). Studio and above are unlimited. Invoice
+        presets and gallery styles aren&apos;t counted — they&apos;re Lite and above, full stop.
+        One exception: a gallery look saved from the page builder counts toward Lite&apos;s one
+        saved custom look; designer presets and the seeded starters never count. Starters
         beyond your cap aren&apos;t deleted; they sit dormant in the library until you upgrade.
       </p>
       <Callout tone="info" title="Applying copies">

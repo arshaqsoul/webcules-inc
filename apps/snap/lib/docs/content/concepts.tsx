@@ -89,7 +89,7 @@ export default function Concepts() {
       <p>
         The reusable definitions — contract agreements, forms and questionnaires, email snippets,
         invoice presets <Tier plan="lite" />, gallery styles <Tier plan="lite" />, and session
-        types — live in one <a href="/docs/templates">template library</a>. Applying a template
+        types — live in one <a href="/docs/template-library">template library</a>. Applying a template
         copies it, so editing a template never rewrites what you already sent.
       </p>
 

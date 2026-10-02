@@ -35,15 +35,6 @@ export default function Releases() {
         polish fold into the next entry rather than getting their own.
       </Note>
 
-      <Release version="0.5.2" date="October 2, 2026">
-        <p>
-          Long studio names now behave in the sidebar: instead of running under the collapse
-          button, the name shortens with an ellipsis and the chevron stays put — in the desktop
-          sidebar and the mobile menu alike. The full name is still one hover away, and every
-          studio is listed in full when you open the switcher.
-        </p>
-      </Release>
-
       <Release version="0.5.4" date="October 2, 2026">
         <p>
           <strong>Safety release.</strong> A full independent review of every module found and
@@ -63,14 +54,22 @@ export default function Releases() {
           tricks. Deferred findings are tracked and linked (WEB-325).
         </p>
       </Release>
-      <Release version="0.5.3" date="October 2, 2026">
+      <Release version="0.5.3" date="October 1, 2026">
         <p>
           Fixed: on Studio and Pro (unlimited linked studios), the sidebar claimed &quot;1 studio
           on this plan&quot; and hid the add-studio button — unlimited was being misread as a
           limit of one. Adding studios works as it always should have.
         </p>
       </Release>
-      <Release version="0.5.1" date="October 2, 2026">
+      <Release version="0.5.2" date="October 1, 2026">
+        <p>
+          Long studio names now behave in the sidebar: instead of running under the collapse
+          button, the name shortens with an ellipsis and the chevron stays put — in the desktop
+          sidebar and the mobile menu alike. The full name is still one hover away, and every
+          studio is listed in full when you open the switcher.
+        </p>
+      </Release>
+      <Release version="0.5.1" date="October 1, 2026">
         <p>
           Polish from the Template Studio review: buttons that fill with your brand color — the
           template picker&apos;s Apply, the applied badge, category chips, the builder entry — now
@@ -80,7 +79,7 @@ export default function Releases() {
           hero titles over bright photos carry a soft shadow.
         </p>
       </Release>
-      <Release version="0.5.0" date="October 2, 2026">
+      <Release version="0.5.0" date="October 1, 2026">
         <p>
           <strong>Template Studio is here.</strong> Ten designer gallery templates — wedding,
           family, party, newborn, corporate, editorial — now ship with Snap, free on every plan.
@@ -230,7 +229,7 @@ export default function Releases() {
         </ul>
       </Release>
 
-      <Release version="0.2.0" date="October 1, 2026">
+      <Release version="0.2.0" date="September 30, 2026">
         <p>
           <strong>Security, teams, and a gallery that impresses.</strong> Studios can now lock
           their account with two-factor authentication, invite their team with real roles, and

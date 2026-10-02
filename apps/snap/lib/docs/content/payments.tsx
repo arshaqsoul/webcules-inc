@@ -21,7 +21,7 @@ export default function Payments() {
           <>
             <strong>Compose</strong> — hit <strong>New invoice</strong>. One line item by default
             (description, amount, starting from the project&apos;s quoted total when one is set),
-            or apply a <a href="/docs/templates">package preset</a>{" "}
+            or apply a <a href="/docs/template-library">package preset</a>{" "}
             <Tier plan="lite" /> to pull in a multi-line package like Wedding Collection.
           </>,
           <>
@@ -84,7 +84,7 @@ export default function Payments() {
         <a href="/docs/booking-page">booking page</a> land in the same ledger automatically.
       </p>
 
-      <Related slugs={["transactions", "billing", "booking-page", "templates"]} />
+      <Related slugs={["transactions", "billing", "booking-page", "template-library"]} />
     </>
   );
 }

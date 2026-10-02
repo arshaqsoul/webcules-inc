@@ -306,7 +306,7 @@ export const DOC_CATEGORIES: DocCategory[] = [
     icon: "list-checks",
     pages: [
       {
-        slug: "templates",
+        slug: "template-library",
         title: "Templates guide",
         description:
           "One library for everything reusable in your studio — contracts, forms and questionnaires, email snippets, invoice presets, gallery styles, and session types — where each lives and where it applies.",

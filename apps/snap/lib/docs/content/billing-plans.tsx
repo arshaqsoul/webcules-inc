@@ -139,11 +139,18 @@ export default function BillingPlans() {
             <td>Included</td>
           </tr>
           <tr>
-            <td>Collage sections (unlimited saved looks)</td>
+            <td>Collage sections</td>
             <td>—</td>
-            <td>1 saved look</td>
+            <td>—</td>
             <td>Included</td>
             <td>Included</td>
+          </tr>
+          <tr>
+            <td>Saved custom gallery looks (page builder)</td>
+            <td>—</td>
+            <td>1</td>
+            <td>Unlimited</td>
+            <td>Unlimited</td>
           </tr>
           <tr>
             <td>White-label</td>
@@ -165,7 +172,8 @@ export default function BillingPlans() {
         Bookings are unlimited on every plan, and a 250,000-file ceiling per studio applies at all
         tiers. Quotas pool across your{" "}
         <a href="/docs/concepts">studio family</a> — three studios on Lite share one 150 GB pool
-        and one bill, not three.
+        and one bill, not three. A studio carrying its own Snap subscription can't be linked into
+        a family — cancel or finish its plan first, then link it.
       </Note>
 
       <H2>Storage, overage, and the hard lock</H2>

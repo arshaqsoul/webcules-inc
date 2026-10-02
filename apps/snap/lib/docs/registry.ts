@@ -19,6 +19,7 @@ import ProjectHub from "./content/project-hub";
 import Contracts from "./content/contracts";
 import GalleryDelivery from "./content/gallery-delivery";
 import GalleryDesign from "./content/gallery-design";
+import GalleryTemplates from "./content/gallery-templates";
 import Templates from "./content/templates";
 import Video from "./content/video";
 import Protection from "./content/protection";
@@ -50,7 +51,8 @@ export const DOC_CONTENT: Record<string, ComponentType> = {
   contracts: Contracts,
   "gallery-delivery": GalleryDelivery,
   "gallery-design": GalleryDesign,
-  "templates": Templates,
+  "templates": GalleryTemplates,
+  "template-library": Templates,
   video: Video,
   protection: Protection,
   "billing-plans": BillingPlans,

@@ -93,7 +93,7 @@ export default function Leads() {
         hits reply and lands back on the same thread. <strong>Insert a saved reply…</strong>{" "}
         drops in one of your email snippets from{" "}
         <a href="/dashboard/templates/emails">Templates → Emails</a> (
-        <a href="/docs/templates">Templates guide</a>) with merge fields like the client&apos;s
+        <a href="/docs/template-library">Templates guide</a>) with merge fields like the client&apos;s
         name resolved for the person you&apos;re writing to; <strong>+ Gallery link</strong>{" "}
         inserts their gallery link (replies carry links, not attachments), and your business
         signature appends itself. A reply that fails to deliver keeps your draft on the thread
@@ -141,7 +141,7 @@ export default function Leads() {
         <Tier plan="lite" />. The full tour lives on the <a href="/docs/inbox">Inbox</a> page.
       </p>
 
-      <Related slugs={["inbox", "booking-page", "projects", "templates", "embeds"]} />
+      <Related slugs={["inbox", "booking-page", "projects", "template-library", "embeds"]} />
     </>
   );
 }

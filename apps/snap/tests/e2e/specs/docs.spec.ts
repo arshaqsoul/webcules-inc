@@ -19,6 +19,8 @@ const PAGES: Array<[string, RegExp]> = [
   ["contracts", /Contracts/],
   ["gallery-delivery", /Delivering galleries/],
   ["gallery-design", /Gallery design/],
+  ["templates", /Gallery templates/],
+  ["template-library", /Templates guide/],
   ["video", /Films/],
   ["protection", /Photo protection/],
   ["billing-plans", /Plans/],
@@ -32,7 +34,6 @@ const PAGES: Array<[string, RegExp]> = [
   ["embeds", /Embed/],
   ["raw-vault", /RAW Vault/],
   ["storage", /Storage/],
-  ["templates", /Templates/],
 ];
 
 async function gotoWithRetry(page: import("@playwright/test").Page, path: string) {

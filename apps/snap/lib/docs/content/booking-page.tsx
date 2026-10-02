@@ -116,7 +116,7 @@ export default function BookingPage() {
         above unlimited; see <a href="/docs/billing-plans">Plans &amp; tiers</a>.
       </p>
 
-      <Related slugs={["calendar", "bookings", "embeds", "templates"]} />
+      <Related slugs={["calendar", "bookings", "embeds", "template-library"]} />
     </>
   );
 }

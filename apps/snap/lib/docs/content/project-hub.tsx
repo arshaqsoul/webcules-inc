@@ -40,7 +40,7 @@ export default function ProjectHub() {
         The details card (client, event date, status, created), the status timeline with every
         transition and its note, and <strong>Notes</strong> — private to your studio, never shown to
         the client: shot lists, location details, anything. Questionnaires live here too: pick a{" "}
-        <a href="/docs/templates">template</a>, send the client a private link (copy it or email
+        <a href="/docs/template-library">template</a>, send the client a private link (copy it or email
         it), and their answers land on the project the moment they submit. Pending shows until they
         do.
       </p>

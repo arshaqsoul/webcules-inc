@@ -119,7 +119,7 @@ export default function Calendar() {
         includes one session type, Lite three, Studio and above unlimited.
       </p>
 
-      <Related slugs={["booking-page", "bookings", "leads", "templates"]} />
+      <Related slugs={["booking-page", "bookings", "leads", "template-library"]} />
     </>
   );
 }

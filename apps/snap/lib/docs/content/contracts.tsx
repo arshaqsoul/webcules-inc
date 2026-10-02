@@ -87,7 +87,7 @@ export default function Contracts() {
         witnesses, capture those separately.
       </Callout>
 
-      <Related slugs={["templates", "project-hub", "projects"]} />
+      <Related slugs={["template-library", "project-hub", "projects"]} />
     </>
   );
 }
