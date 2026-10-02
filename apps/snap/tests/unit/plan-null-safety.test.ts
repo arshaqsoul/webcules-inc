@@ -97,3 +97,34 @@ describe("call sites: no unguarded `?? <number>` on nullable-unlimited fields", 
     }
   });
 });
+
+describe("role gates: mutating studio APIs check permissionDenied", () => {
+  const GATED = [
+    "app/api/studio/domains/route.ts",
+    "app/api/studio/domains/[id]/route.ts",
+    "app/api/studio/embed/route.ts",
+    "app/api/studio/invoice-settings/route.ts",
+    "app/api/studio/email-overrides/route.ts",
+    "app/api/studio/watermark/route.ts",
+    "app/api/studio/watermark/assets/route.ts",
+    "app/api/studio/session-types/route.ts",
+    "app/api/studio/session-types/[id]/route.ts",
+    "app/api/studio/templates/route.ts",
+    "app/api/studio/templates/[id]/route.ts",
+    "app/api/studio/availability/route.ts",
+    "app/api/studio/booking-page/route.ts",
+    "app/api/studio/brand-assets/route.ts",
+    "app/api/studio/slideshow-music/route.ts",
+    "app/api/studio/slideshow-music/[id]/route.ts",
+    "app/api/studio/raw-vault/route.ts",
+  ];
+  it("every listed route imports and calls permissionDenied", () => {
+    const missing: string[] = [];
+    for (const rel of GATED) {
+      const key = `../../${rel}`;
+      const src = sources[key];
+      if (!src || !/permissionDenied\(ctx,/.test(src)) missing.push(rel);
+    }
+    expect(missing, "routes missing the member-role gate (audit P1)").toEqual([]);
+  });
+});
