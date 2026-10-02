@@ -1,6 +1,6 @@
 /* Stripe customer portal — card updates, invoices, cancel/plan self-service. */
-import { getOrgContext } from "@/lib/session";
 import { permissionDenied } from "@/lib/permissions";
+import { getOrgContext } from "@/lib/session";
 import { createPortalSession } from "@/lib/billing";
 
 export const dynamic = "force-dynamic";

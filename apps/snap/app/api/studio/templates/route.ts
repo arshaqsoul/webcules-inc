@@ -2,6 +2,7 @@
  * template store. GET lists (optionally per kind, archived included);
  * POST creates with per-kind validation. Form/questionnaire schemas are
  * validated here (file fields Studio-only). */
+import { permissionDenied } from "@/lib/permissions";
 import { z } from "zod";
 
 import { getOrgContext } from "@/lib/session";
@@ -14,6 +15,8 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const denied = permissionDenied(ctx, "documents.manage");
+  if (denied) return denied;
   const url = new URL(req.url);
   const kindParam = url.searchParams.get("kind");
   const kind = kindParam && isTemplateKind(kindParam) ? (kindParam as TemplateKind) : undefined;
@@ -46,6 +49,8 @@ const createSchema = z.object({
 export async function POST(req: Request) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const denied = permissionDenied(ctx, "documents.manage");
+  if (denied) return denied;
   let body: z.infer<typeof createSchema>;
   try {
     body = createSchema.parse(await req.json());
@@ -72,14 +77,14 @@ export async function POST(req: Request) {
   if (body.kind === "form" || body.kind === "questionnaire") {
     const unlimited = ent?.id === "studio" || ent?.id === "pro";
     const limit = unlimited ? null : body.kind === "form" ? (ent?.maxContactForms ?? 1) : (ent?.maxQuestionnaires ?? 1);
-    if (limit !== null && (await countTemplates(ctx.organizationId, body.kind)) >= limit) {
+    if (limit !== null && (await countTemplates(ctx.organizationId, body.kind, { excludeStarters: true })) >= limit) {
       return Response.json({ error: "limit_reached", limit, kind: body.kind }, { status: 403 });
     }
   }
   // WEB-253: saved snippets — Free/Lite 5, Studio+ unlimited.
   if (body.kind === "email_snippet") {
     const limit = ent ? (ent.id === "studio" || ent.id === "pro" ? null : ent.maxEmailSnippets ?? 5) : 5;
-    if (limit !== null && (await countTemplates(ctx.organizationId, "email_snippet")) >= limit) {
+    if (limit !== null && (await countTemplates(ctx.organizationId, "email_snippet", { excludeStarters: true })) >= limit) {
       return Response.json({ error: "limit_reached", limit }, { status: 403 });
     }
   }
@@ -114,7 +119,7 @@ export async function POST(req: Request) {
   // Clauses are ungated — they're just text snippets.
   if (body.kind === "contract") {
     const limit = ent ? (ent.id === "studio" || ent.id === "pro" ? null : ent.maxContractTemplates ?? 2) : 2;
-    if (limit !== null && (await countTemplates(ctx.organizationId, "contract")) >= limit) {
+    if (limit !== null && (await countTemplates(ctx.organizationId, "contract", { excludeStarters: true })) >= limit) {
       return Response.json({ error: "limit_reached", limit }, { status: 403 });
     }
   }

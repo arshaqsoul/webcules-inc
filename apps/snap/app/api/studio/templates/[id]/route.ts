@@ -1,6 +1,7 @@
 /* /api/studio/templates/{id} (WEB-248) — one template: GET (full row),
  * PATCH (name/body/meta — per-kind validation like create), POST (actions:
  * duplicate | default | restore), DELETE (archive). */
+import { permissionDenied } from "@/lib/permissions";
 import { z } from "zod";
 
 import { getOrgContext } from "@/lib/session";
@@ -22,6 +23,8 @@ type Params = { params: Promise<{ id: string }> };
 export async function GET(_req: Request, { params }: Params) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const denied = permissionDenied(ctx, "documents.manage");
+  if (denied) return denied;
   const { id } = await params;
   const t = await getTemplate(ctx.organizationId, id);
   if (!t) return Response.json({ error: "not_found" }, { status: 404 });
@@ -37,6 +40,8 @@ const patchSchema = z.object({
 export async function PATCH(req: Request, { params }: Params) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const denied = permissionDenied(ctx, "documents.manage");
+  if (denied) return denied;
   const { id } = await params;
   let body: z.infer<typeof patchSchema>;
   try {
@@ -76,6 +81,8 @@ export async function PATCH(req: Request, { params }: Params) {
 export async function POST(req: Request, { params }: Params) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const denied = permissionDenied(ctx, "documents.manage");
+  if (denied) return denied;
   const { id } = await params;
   let action: string;
   try {
@@ -84,6 +91,27 @@ export async function POST(req: Request, { params }: Params) {
     return Response.json({ error: "invalid_json" }, { status: 400 });
   }
   if (action === "duplicate") {
+    // (audit fix): duplication used to skip every per-kind cap — Free/Lite
+    // could clone unlimitedly. Enforce the same limits as create.
+    const ent = await getPlanEntitlements(ctx.organizationId);
+    const repos = await import("@/lib/repos/templates");
+    const src = await repos.getTemplate(ctx.organizationId, id);
+    const kind = src?.kind as (typeof repos)["TEMPLATE_KINDS"][number] | undefined;
+    if (kind) {
+      const { countTemplates, countCustomGalleryPresets } = await import("@/lib/repos/templates");
+      if (kind === "gallery_preset") {
+        if (!ent || ent.id === "free") return Response.json({ error: "presets_require_lite" }, { status: 403 });
+        if (ent.id === "lite" && (await countCustomGalleryPresets(ctx.organizationId)) >= 1) {
+          return Response.json({ error: "limit_reached", limit: 1, reason: "custom_looks_require_studio" }, { status: 403 });
+        }
+      } else {
+        const unlimited = ent?.id === "studio" || ent?.id === "pro";
+        const limit = unlimited ? null : kind === "contract" ? (ent?.maxContractTemplates ?? 2) : kind === "email_snippet" ? (ent?.maxEmailSnippets ?? 5) : kind === "form" ? (ent?.maxContactForms ?? 1) : kind === "questionnaire" ? (ent?.maxQuestionnaires ?? 1) : null;
+        if (limit !== null && (await countTemplates(ctx.organizationId, kind, { excludeStarters: true })) >= limit) {
+          return Response.json({ error: "limit_reached", limit }, { status: 403 });
+        }
+      }
+    }
     const result = await duplicateTemplate(ctx.organizationId, id);
     if (!result.ok) return Response.json({ error: result.error }, { status: 404 });
     return Response.json({ id: result.template.id });
@@ -110,6 +138,8 @@ export async function POST(req: Request, { params }: Params) {
 export async function DELETE(_req: Request, { params }: Params) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const denied = permissionDenied(ctx, "documents.manage");
+  if (denied) return denied;
   const { id } = await params;
   const result = await archiveTemplate(ctx.organizationId, id);
   if (!result.ok) return Response.json({ error: result.error }, { status: 404 });

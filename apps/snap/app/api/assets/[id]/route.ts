@@ -33,7 +33,10 @@ function variantKey(
 ): string | null {
   if (variant === "thumb" && asset.thumbKey) return asset.thumbKey;
   if (variant === "preview" && asset.previewKey) return asset.previewKey;
-  if (variant === "preview_wm") return asset.previewWmKey ?? asset.previewKey;
+  // (audit fix): never fall back to the clean full preview for preview_wm —
+  // a watermarking gallery would serve the unwatermarked image wherever the
+  // wm derivative hasn't been generated yet. Thumb is the safe fallback.
+  if (variant === "preview_wm") return asset.previewWmKey ?? asset.thumbKey;
   return null;
 }
 
@@ -109,8 +112,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     // WEB-160: per-IP 30 views/min + per-gallery monthly budget. Range
     // requests (video scrubbing) continue an already-admitted view.
     const ip = clientIp(req);
-    const rangeReq = req.headers.has("Range");
-    if (ip && !rangeReq) {
+    // (audit fix): only CONTINUATION ranges (start > 0, video scrubbing)
+    // skip the budget — a client sending `Range: bytes=0-` on every GET used
+    // to bypass per-IP and monthly view counting entirely.
+    const rangeHeader = req.headers.get("Range");
+    const rangeStart = rangeHeader ? Number(rangeHeader.match(/bytes=(\d*)-/)?.[1] || 0) : null;
+    const continuation = rangeStart !== null && rangeStart > 0;
+    if (ip && !continuation) {
       const limit = await checkImageView(ip, grant.organizationId, grant.id);
       // WEB-265: per-photo interest counter (heat overlay) — only admitted
       // views count, same moment as the budget.
@@ -185,6 +193,14 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       }
     }
 
+    // (audit fix): in a proofing (pre-sale) grant the original bytes never
+    // stream inline — a bare GET used to reach serveAsset with the clean
+    // storageKey. Force the watermarked derivative for every non-variant
+    // serve; thumb when wm hasn't been generated.
+    if (grant.proofing && !dk) {
+      const wmKey = asset.previewWmKey ?? asset.thumbKey;
+      if (wmKey) return serveAsset(req, { ...asset, storageKey: wmKey, mimeType: "image/jpeg" }, grant.allowDownload);
+    }
     return serveAsset(req, dk ? { ...asset, storageKey: dk, mimeType: "image/jpeg" } : asset, grant.allowDownload);
   }
 

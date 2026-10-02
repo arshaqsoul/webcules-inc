@@ -73,9 +73,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (!expiry.ok) return Response.json({ error: "invalid_expiry" }, { status: 400 });
   const expiresAt = expiry.expiresAt;
 
-  // Tier gate (WEB-151): active gallery cap (Free 5, Lite 15).
+  // Tier gate (WEB-151): active gallery cap (Free 5, Lite 15). null =
+  // unlimited on Studio/Pro — no cap then; a missing entitlements read is
+  // the only other null-ish path and must not invent a limit of 0.
   const ent = await getPlanEntitlements(ctx.organizationId);
-  if (ent?.maxActiveGalleries !== null && ent && ent.activeGalleries >= (ent.maxActiveGalleries ?? 0)) {
+  if (ent && ent.maxActiveGalleries !== null && ent.activeGalleries >= ent.maxActiveGalleries) {
     return Response.json(
       {
         error: "gallery_limit",

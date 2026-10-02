@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request, { params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const grant = await resolveGrantByToken(token);
-  const access = await resolveGalleryAccess(req.headers);
+  const access = await resolveGalleryAccess(req.headers, grant?.id ?? undefined);
   // Same trust model as the gallery page (WEB-132): any valid verified
   // gallery session may interact; writes are scoped to THIS grant's asset
   // set by assetInGrant inside the repo calls.

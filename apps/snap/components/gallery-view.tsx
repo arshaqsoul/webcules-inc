@@ -2011,7 +2011,17 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
   // WEB-318: what each nav view shows. Gallery keeps the visual sections;
   // Info is text+contact; Favorites renders the live hearts grid (from the
   // favorites section when authored, sensible defaults otherwise).
-  const gallerySections = plan ? plan.sections.filter((s) => s.kind === "hero" || s.kind === "gallery" || s.kind === "slideshow" || s.kind === "collage" || (!plan.nav?.enabled && (s.kind === "favorites" || s.kind === "text" || s.kind === "contact"))) : [];
+  // favorites sections need hearts (selectionMode); without them the section is a dead end
+  const gallerySections = plan
+    ? plan.sections.filter(
+        (s) =>
+          s.kind === "hero" ||
+          s.kind === "gallery" ||
+          s.kind === "slideshow" ||
+          s.kind === "collage" ||
+          (s.kind === "favorites" ? !plan.nav?.enabled && heartsOn : !plan.nav?.enabled && (s.kind === "text" || s.kind === "contact")),
+      )
+    : [];
   const infoSections = plan ? plan.sections.filter((s) => s.kind === "text" || s.kind === "contact") : [];
   const favoritesSection = plan?.sections.find((s) => s.kind === "favorites")?.section ?? null;
   const defaultFavorites: Extract<RenderSection, { kind: "favorites" }>["section"] = { type: "favorites", id: "sec-favorites-default", heading: "", emptyHint: undefined };
@@ -2191,7 +2201,9 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
       )}
 
       {/* WEB-318: view tabs (no routing) — only for sectioned designs with nav on. */}
-      {plan?.nav?.enabled && plan.nav.items.length > 0 && <GalleryNav items={plan.nav.items} view={view} onView={setView} />}
+      {plan?.nav?.enabled && plan.nav.items.length > 0 && (
+        <GalleryNav items={plan.nav.items.filter((i) => i !== "favorites" || heartsOn)} view={view} onView={setView} />
+      )}
 
       {/* Folder navigation (WEB-216) — only when the delivery was foldered.
        * Sectioned designs replace folder pills with bound sections. */}
@@ -2223,7 +2235,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
       {plan && sectionCtx ? (
         /* WEB-318: the sectioned page — nav views partition the sections;
          * without nav everything renders as one ordered scroll. */
-        view === "favorites" ? (
+        view === "favorites" && heartsOn ? (
           <FavoritesSectionView section={favoritesSection ?? defaultFavorites} assets={assets} ctx={sectionCtx} fallbackHeading="Your favorites" />
         ) : view === "info" ? (
           <>

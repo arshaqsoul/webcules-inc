@@ -7,12 +7,15 @@ import { resolveGalleryAccess } from "@/lib/shares/gallery-auth";
 import { serveR2Range } from "@/lib/http-range";
 import { getProjectSlideshow, getTrack, slideshowForTier } from "@/lib/repos/slideshow";
 import { getPlanEntitlements } from "@/lib/plans";
+import { resolveGrantByToken } from "@/lib/shares/grants";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request, { params }: { params: Promise<{ token: string }> }) {
   const { token: _token } = await params;
-  const access = await resolveGalleryAccess(req.headers);
+  const tokenGrant = await resolveGrantByToken(_token);
+  if (!tokenGrant) return Response.json({ error: "unknown_gallery" }, { status: 404 });
+  const access = await resolveGalleryAccess(req.headers, tokenGrant.id);
   if (!access) return Response.json({ error: "unauthorized" }, { status: 401 });
   const grant = access.grant;
 

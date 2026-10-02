@@ -1,4 +1,5 @@
 /* Studio availability save + read (org-context guarded). Replace-all. */
+import { permissionDenied } from "@/lib/permissions";
 import { z } from "zod";
 
 import { getAvailability, saveAvailability } from "@/lib/repos/availability";
@@ -62,12 +63,16 @@ const bodySchema = z.object({
 export async function GET() {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const denied = permissionDenied(ctx, "settings.write");
+  if (denied) return denied;
   return Response.json(await getAvailability(ctx.organizationId));
 }
 
 export async function PUT(req: Request) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const denied = permissionDenied(ctx, "settings.write");
+  if (denied) return denied;
 
   let body: z.infer<typeof bodySchema>;
   try {

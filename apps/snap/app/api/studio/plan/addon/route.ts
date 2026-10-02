@@ -1,8 +1,8 @@
 /* Custom-domain add-on purchase/cancel (WEB-224/231) — a second line item
  * on the family's existing subscription. Always operates on the family ROOT
  * (one bill); entitlements surface through the pooled path. */
-import { getOrgContext } from "@/lib/session";
 import { permissionDenied } from "@/lib/permissions";
+import { getOrgContext } from "@/lib/session";
 import { getPlanEntitlements } from "@/lib/plans";
 import { setCustomDomainAddon } from "@/lib/billing";
 

@@ -1,6 +1,7 @@
 /* GET/PUT /api/studio/invoice-settings (WEB-252) — the invoice-design
  * defaults: numbering, tax, terms, memo. Settings snapshot onto each
  * invoice at creation, so edits never rewrite existing documents. */
+import { permissionDenied } from "@/lib/permissions";
 import { z } from "zod";
 
 import { getDb } from "@/lib/db";
@@ -27,12 +28,16 @@ const putSchema = z.object({
 export async function GET() {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const denied = permissionDenied(ctx, "settings.write");
+  if (denied) return denied;
   return Response.json({ settings: await getStudioInvoiceSettings(ctx.organizationId) });
 }
 
 export async function PUT(req: Request) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const denied = permissionDenied(ctx, "settings.write");
+  if (denied) return denied;
   let body: z.infer<typeof putSchema>;
   try {
     body = putSchema.parse(await req.json());

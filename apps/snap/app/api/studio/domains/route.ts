@@ -3,6 +3,7 @@
  * a hostname (normalize → entitlement → partial-unique claim → CF custom
  * hostname create, resilient when CF config is absent: the row exists, the
  * CF side is created lazily at verify time). */
+import { permissionDenied } from "@/lib/permissions";
 import { getOrgContext } from "@/lib/session";
 import { getPlanEntitlements } from "@/lib/plans";
 import { getStudioProfile } from "@/lib/repos/studios";
@@ -15,6 +16,8 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const denied = permissionDenied(ctx, "settings.write");
+  if (denied) return denied;
   const [domains, ent] = await Promise.all([
     listDomains(ctx.organizationId),
     getPlanEntitlements(ctx.organizationId),
@@ -35,6 +38,8 @@ export async function GET() {
 export async function POST(req: Request) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const denied = permissionDenied(ctx, "settings.write");
+  if (denied) return denied;
   let body: { hostname?: string };
   try {
     body = (await req.json()) as typeof body;

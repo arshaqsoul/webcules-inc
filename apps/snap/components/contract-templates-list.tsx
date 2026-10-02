@@ -7,7 +7,8 @@ import { Copy, Star, Trash2 } from "lucide-react";
 
 import { Button } from "@webcules/ui/components/button";
 
-export function CreateContractTemplate({ disabled, limit, blankBody }: { disabled: boolean; limit: number; blankBody: string }) {
+/** limit null = unlimited (Studio/Pro) — only the capped tiers pass a number. */
+export function CreateContractTemplate({ disabled, limit, blankBody }: { disabled: boolean; limit: number | null; blankBody: string }) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
@@ -26,7 +27,7 @@ export function CreateContractTemplate({ disabled, limit, blankBody }: { disable
       const body = (await res.json().catch(() => ({}))) as { id?: string; error?: string };
       if (!res.ok || !body.id) {
         if (body.error === "limit_reached") {
-          setError(`Your plan includes ${limit} contract templates — upgrade to Studio for unlimited.`);
+          setError(limit === null ? "Couldn't create the template — try again." : `Your plan includes ${limit} contract templates — upgrade to Studio for unlimited.`);
         } else {
           setError("Couldn't create the template — try again.");
         }

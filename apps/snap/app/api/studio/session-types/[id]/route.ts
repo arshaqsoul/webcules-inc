@@ -1,4 +1,5 @@
 /* /api/studio/session-types/{id} (WEB-250) — update / delete / reorder. */
+import { permissionDenied } from "@/lib/permissions";
 import { z } from "zod";
 
 import { getOrgContext } from "@/lib/session";
@@ -12,6 +13,8 @@ type Params = { params: Promise<{ id: string }> };
 export async function PATCH(req: Request, { params }: Params) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const denied = permissionDenied(ctx, "settings.write");
+  if (denied) return denied;
   const { id } = await params;
   let body: z.infer<typeof sessionTypeInput>;
   try {
@@ -27,6 +30,8 @@ export async function PATCH(req: Request, { params }: Params) {
 export async function POST(req: Request, { params }: Params) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const denied = permissionDenied(ctx, "settings.write");
+  if (denied) return denied;
   const { id } = await params;
   let body: { action?: string; orderedIds?: string[] };
   try {
@@ -44,6 +49,8 @@ export async function POST(req: Request, { params }: Params) {
 export async function DELETE(_req: Request, { params }: Params) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const denied = permissionDenied(ctx, "settings.write");
+  if (denied) return denied;
   const { id } = await params;
   const result = await deleteSessionType(ctx.organizationId, id);
   if (!result.ok) return Response.json({ error: result.error }, { status: 404 });

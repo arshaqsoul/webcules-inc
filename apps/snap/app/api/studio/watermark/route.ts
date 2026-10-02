@@ -2,6 +2,7 @@
  * composite preview_wm derivatives: the effective studio config, the public
  * watermark-source logo URL, and the studio name (text fallback). Org-
  * context guarded; entitlement enforced (null config for Free/Lite). */
+import { permissionDenied } from "@/lib/permissions";
 import { eq } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
@@ -16,6 +17,8 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const denied = permissionDenied(ctx, "settings.write");
+  if (denied) return denied;
 
   const ent = await getPlanEntitlements(ctx.organizationId);
   const row = (

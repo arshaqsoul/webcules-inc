@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request, { params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const grant = await resolveGrantByToken(token);
-  const access = await resolveGalleryAccess(req.headers);
+  const access = await resolveGalleryAccess(req.headers, grant?.id ?? undefined);
   if (!grant || !access) return Response.json({ error: "unauthorized" }, { status: 401 });
   if (grant.selectionMode === "off") return Response.json({ error: "disabled" }, { status: 409 });
 
@@ -36,7 +36,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
 export async function POST(req: Request, { params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const grant = await resolveGrantByToken(token);
-  const access = await resolveGalleryAccess(req.headers);
+  const access = await resolveGalleryAccess(req.headers, grant?.id ?? undefined);
   if (!grant || !access) return Response.json({ error: "unauthorized" }, { status: 401 });
   if (grant.selectionMode === "off") return Response.json({ error: "disabled" }, { status: 409 });
 
@@ -52,7 +52,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
 export async function DELETE(req: Request, { params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const grant = await resolveGrantByToken(token);
-  const access = await resolveGalleryAccess(req.headers);
+  const access = await resolveGalleryAccess(req.headers, grant?.id ?? undefined);
   if (!grant || !access) return Response.json({ error: "unauthorized" }, { status: 401 });
 
   const ent = await getPlanEntitlements(grant.organizationId);

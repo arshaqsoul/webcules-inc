@@ -225,12 +225,33 @@ async function sweepOrg(p: Profile, now: number, out: DormancyResult): Promise<v
     }
     out.purging += deleted;
     if (assets.length < PURGE_BATCH) {
-      // asset rows exhausted — sweep orphan keys (branding, derivatives)
-      const keys = await orgKeys(orgId, CLASS_BATCH);
-      for (const key of keys) {
-        await env.R2.delete(key);
+      // SECURITY (audit P0): grant-protected assets keep their ROWS alive —
+      // their R2 objects must survive too. Collect every key referenced by
+      // a surviving row and never sweep those; the sweep only claims true
+      // orphans (branding, session uploads, derivatives of deleted assets).
+      const survivors = await db
+        .select({
+          storageKey: schema.assets.storageKey,
+          thumbKey: schema.assets.thumbKey,
+          previewKey: schema.assets.previewKey,
+          previewWmKey: schema.assets.previewWmKey,
+        })
+        .from(schema.assets)
+        .where(eq(schema.assets.organizationId, orgId));
+      const keep = new Set<string>();
+      for (const row of survivors) {
+        for (const k of [row.storageKey, row.thumbKey, row.previewKey, row.previewWmKey]) {
+          if (k) keep.add(k);
+        }
       }
-      if (keys.length === 0) {
+      const keys = await orgKeys(orgId, CLASS_BATCH);
+      let swept = 0;
+      for (const key of keys) {
+        if (keep.has(key)) continue; // a live row still owns this object
+        await env.R2.delete(key);
+        swept++;
+      }
+      if (keys.length === 0 || swept === keys.length) {
         await db
           .update(schema.studioProfiles)
           .set({ dormantPurgeState: "purged" })

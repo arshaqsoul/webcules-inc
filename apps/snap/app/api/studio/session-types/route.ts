@@ -1,5 +1,6 @@
 /* /api/studio/session-types (WEB-250) — the event-type definer's CRUD.
  * Tier gate: maxSessionTypes (Free 1 · Lite 3 · Studio+ unlimited). */
+import { permissionDenied } from "@/lib/permissions";
 import { z } from "zod";
 
 import { getOrgContext } from "@/lib/session";
@@ -29,6 +30,8 @@ export const sessionTypeInput = z.object({
 export async function GET() {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const denied = permissionDenied(ctx, "settings.write");
+  if (denied) return denied;
   const [types, ent] = await Promise.all([listSessionTypes(ctx.organizationId, { includeInactive: true }), getPlanEntitlements(ctx.organizationId)]);
   return Response.json({ types, limit: ent?.maxSessionTypes ?? null });
 }
@@ -36,6 +39,8 @@ export async function GET() {
 export async function POST(req: Request) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const denied = permissionDenied(ctx, "settings.write");
+  if (denied) return denied;
   let body: z.infer<typeof sessionTypeInput>;
   try {
     body = sessionTypeInput.parse(await req.json());

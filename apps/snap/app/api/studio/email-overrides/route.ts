@@ -1,6 +1,7 @@
 /* GET/PUT /api/studio/email-overrides + GET preview (WEB-253).
  * GET /api/studio/email-overrides?key={template} with ?preview=1 renders
  * the PRODUCTION shell with sample data + the override applied. */
+import { permissionDenied } from "@/lib/permissions";
 import { z } from "zod";
 
 import { getOrgContext } from "@/lib/session";
@@ -15,6 +16,8 @@ const putSchema = z.record(z.string(), z.object({ subject: z.string().max(120).o
 export async function GET(req: Request) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const denied = permissionDenied(ctx, "settings.write");
+  if (denied) return denied;
   const url = new URL(req.url);
   if (url.searchParams.get("preview") === "1") {
     const key = url.searchParams.get("key") ?? "";
@@ -30,6 +33,8 @@ export async function GET(req: Request) {
 export async function PUT(req: Request) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const denied = permissionDenied(ctx, "settings.write");
+  if (denied) return denied;
   let body: z.infer<typeof putSchema>;
   try {
     body = putSchema.parse(await req.json());

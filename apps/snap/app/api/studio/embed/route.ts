@@ -1,4 +1,5 @@
 /* Embed key rotation + allowed-origins management (org-context guarded). */
+import { permissionDenied } from "@/lib/permissions";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
@@ -17,6 +18,8 @@ function newEmbedKey(): string {
 export async function POST() {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const denied = permissionDenied(ctx, "settings.write");
+  if (denied) return denied;
 
   const db = getDb();
   const embedKey = newEmbedKey();
@@ -46,6 +49,8 @@ const originsSchema = z.object({
 export async function PUT(req: Request) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const denied = permissionDenied(ctx, "settings.write");
+  if (denied) return denied;
 
   let body: unknown;
   try {

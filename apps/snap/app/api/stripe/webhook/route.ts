@@ -47,30 +47,23 @@ export async function POST(req: Request) {
 
   // Idempotency: skip events we've already processed.
   const db = getDb();
+  // (audit fix): the marker row is written with organizationId NULL (FK-safe)
+  // — the old SELECT filtered organizationId="__stripe__" and could never
+  // match, so every Stripe redelivery reprocessed. Match the real row.
   const seen = (
     await db
       .select({ id: schema.auditLog.id })
       .from(schema.auditLog)
       .where(
         and(
-          eq(schema.auditLog.organizationId, "__stripe__"),
           eq(schema.auditLog.action, "stripe.event"),
-          eq(schema.auditLog.meta, JSON.stringify({ id: event.id })),
+          eq(schema.auditLog.targetType, "stripe_event"),
+          eq(schema.auditLog.targetId, event.id),
         ),
       )
       .limit(1)
   )[0];
   if (seen) return Response.json({ received: true, duplicate: true });
-  await db.insert(schema.auditLog).values({
-    id: crypto.randomUUID(),
-    organizationId: null,
-    actorType: "system",
-    action: "stripe.event",
-    targetType: "stripe_event",
-    targetId: event.id,
-    meta: JSON.stringify({ id: event.id, type: event.type }),
-  });
-
   try {
     switch (event.type) {
       case "checkout.session.completed": {
@@ -95,6 +88,7 @@ export async function POST(req: Request) {
             payment_intent: typeof session.payment_intent === "string" ? session.payment_intent : null,
             amount_total: session.amount_total ?? null,
             currency: session.currency ?? null,
+            payment_status: session.payment_status ?? null,
             metadata: session.metadata,
           });
           break;
@@ -338,9 +332,25 @@ export async function POST(req: Request) {
         break;
     }
   } catch (err) {
+    // (audit fix): report failure so Stripe retries — a swallowed event was
+    // permanently lost (the marker above already claims it, so a dedicated
+    // marker is only inserted AFTER successful processing from now on).
     console.error(`stripe webhook handler failed (${event.type}):`, String(err));
-    return Response.json({ received: true, processed: false });
+    return Response.json({ received: true, processed: false }, { status: 500 });
   }
+
+  // marker lands only after the handler fully succeeded — a crash mid-apply
+  // leaves the event unmarked and Stripe's retry reprocesses it (handlers
+  // are written to be idempotent where side effects are non-trivial).
+  await db.insert(schema.auditLog).values({
+    id: crypto.randomUUID(),
+    organizationId: null,
+    actorType: "system",
+    action: "stripe.event",
+    targetType: "stripe_event",
+    targetId: event.id,
+    meta: JSON.stringify({ id: event.id, type: event.type }),
+  });
 
   return Response.json({ received: true });
 }

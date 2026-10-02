@@ -2,7 +2,6 @@
  * save surface. Saving a design is Lite+ (the design layer); clearing (null)
  * is always allowed so a downgraded studio can still return to classic.
  * Presets themselves live in the template store (kind gallery_preset). */
-import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { getDb } from "@/lib/db";
@@ -10,7 +9,10 @@ import * as schema from "@/lib/db-schema";
 import { getOrgContext } from "@/lib/session";
 import { getPlanEntitlements } from "@/lib/plans";
 import { effectiveGalleryDesign, saveProjectGalleryDesign } from "@/lib/repos/gallery-design";
-import { designMinTier, isCoverOnlyDesign, parseGalleryDesign, type GalleryDesign } from "@/lib/gallery-design";
+import { and, asc, eq, inArray } from "drizzle-orm";
+
+import { designMinTier, isCoverOnlyDesign, isSeedDesign, parseGalleryDesign, serializeGalleryDesign } from "@/lib/gallery-design";
+import { adaptSeedToProject, seedTemplateOf } from "@/lib/seed-templates";
 
 export const dynamic = "force-dynamic";
 
@@ -41,22 +43,55 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   if (!parsed.success) return Response.json({ error: "invalid_body" }, { status: 400 });
 
   const ent = await getPlanEntitlements(ctx.organizationId);
-  const parsedDesign =
-    parsed.data.design !== null ? parseGalleryDesign(parsed.data.design) : null;
+  let parsedDesign = parsed.data.design !== null ? parseGalleryDesign(parsed.data.design) : null;
+  // SECURITY (audit P0): the `template` marker is client-controlled — a Free
+  // org could forge template:"classic-wedding" onto an arbitrary custom
+  // design and save it (the marker is what makes seed applications
+  // free-tier-saveable). A claimed seed must be BYTE-IDENTICAL to what
+  // applying that seed would produce against this project's own photos;
+  // anything else is a custom design and gates as one.
+  if (parsedDesign && isSeedDesign(parsedDesign)) {
+    const seed = seedTemplateOf(parsedDesign.template!);
+    if (seed) {
+      const photos = (
+        await getDb()
+          .select({ id: schema.assets.id })
+          .from(schema.assets)
+          .where(
+            and(
+              eq(schema.assets.organizationId, ctx.organizationId),
+              eq(schema.assets.projectId, id),
+              eq(schema.assets.kind, "image"),
+              inArray(schema.assets.status, ["approved", "shared"]),
+            ),
+          )
+          .orderBy(asc(schema.assets.createdAt))
+      ).map((r) => r.id);
+      const pristine = parseGalleryDesign(adaptSeedToProject(seed, photos));
+      if (!pristine || serializeGalleryDesign(pristine) !== serializeGalleryDesign(parsedDesign)) {
+        parsedDesign = { ...parsedDesign, template: "custom" };
+      }
+    } else {
+      parsedDesign = { ...parsedDesign, template: "custom" };
+    }
+  }
   // WEB-301 follow-up: Free may save a single hero/cover photo (the one
   // free design surface) — anything beyond a cover-only design stays Lite.
   if (parsed.data.design !== null && ent?.id === "free" && !isCoverOnlyDesign(parsedDesign)) {
     return Response.json({ error: "design_requires_lite", plan: ent?.id ?? "free" }, { status: 403 });
   }
-  // WEB-302: hero slider (2+ ordered cover images) and per-breakpoint columns
-  // are Studio+ — the designer gates this in the UI; the API must agree.
-  // (parseGalleryDesign drops slider arrays below 2 images, so a single photo
-  // is a plain cover and passes here on every plan.)
+  // WEB-302: hero sliders and per-breakpoint columns are Studio+ — in v1
+  // (cover.images/columns) AND in v2 (a hero section's own images[] and a
+  // gallery section's own columns), which previously slipped through.
   if (
     parsedDesign &&
     ent?.id !== "studio" &&
     ent?.id !== "pro" &&
-    ((parsedDesign.cover?.images?.length ?? 0) >= 2 || Boolean(parsedDesign.columns))
+    ((parsedDesign.cover?.images?.length ?? 0) >= 2 ||
+      Boolean(parsedDesign.columns) ||
+      (parsedDesign.sections ?? []).some(
+        (s) => (s.type === "hero" && s.images.length >= 2) || (s.type === "gallery" && Boolean(s.columns)),
+      ))
   ) {
     return Response.json({ error: "design_requires_studio", plan: ent?.id ?? "free" }, { status: 403 });
   }
@@ -73,7 +108,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   const result = await saveProjectGalleryDesign({
     organizationId: ctx.organizationId,
     projectId: id,
-    design: (parsed.data.design as GalleryDesign | null) ?? null,
+    // canonical (and marker-reclassified) form — never the raw body
+    design: parsedDesign,
   });
   if (!result.ok) {
     return Response.json({ error: result.error }, { status: 400 });

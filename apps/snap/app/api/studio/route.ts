@@ -35,7 +35,11 @@ export async function POST(req: Request) {
       studioName: parsed.data.studioName,
       timezone: parsed.data.timezone,
       contactEmail: parsed.data.contactEmail ?? user.email,
-      plan: parsed.data.plan,
+      // SECURITY (audit P0): paid tiers are ONLY ever granted by a completed
+      // Stripe checkout → webhook. The client-supplied plan value is accepted
+      // by the schema for signup-payload compatibility and ignored here —
+      // trusting it let any authenticated user self-assign Pro for free.
+      plan: "free",
     });
     return Response.json({ ok: true, ...studio });
   } catch (err) {

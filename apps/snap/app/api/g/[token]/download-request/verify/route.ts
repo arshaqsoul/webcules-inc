@@ -10,6 +10,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { resolveGalleryAccess } from "@/lib/shares/gallery-auth";
 import { downloadSettingsOf } from "@/lib/repos/downloads";
 import { hashDownloadPin, isValidPin } from "@/lib/gallery-downloads";
+import { resolveGrantByToken } from "@/lib/shares/grants";
 
 export const dynamic = "force-dynamic";
 
@@ -43,7 +44,9 @@ export async function downloadCookieOk(grantId: string, presented: string | null
 
 export async function POST(req: Request, { params }: { params: Promise<{ token: string }> }) {
   const { token: _t } = await params;
-  const access = await resolveGalleryAccess(req.headers);
+  const tokenGrant = await resolveGrantByToken(_t);
+  if (!tokenGrant) return Response.json({ error: "unknown_gallery" }, { status: 404 });
+  const access = await resolveGalleryAccess(req.headers, tokenGrant.id);
   if (!access) return Response.json({ error: "unauthorized" }, { status: 401 });
   const grant = access.grant;
 

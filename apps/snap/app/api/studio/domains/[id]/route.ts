@@ -1,6 +1,7 @@
 /* Per-domain actions (WEB-224/229): verify (DoH TXT + CF sync, creating the
  * CF custom hostname lazily if the add-time create failed), set primary,
  * remove (soft). All org-scoped through getOrgContext. */
+import { permissionDenied } from "@/lib/permissions";
 import { getOrgContext } from "@/lib/session";
 import { createCustomHostname, getCfConfig } from "@/lib/cf-hostnames";
 import { txtMatches } from "@/lib/domains";
@@ -20,6 +21,8 @@ type Action = "verify" | "retry" | "set_primary" | "remove";
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const denied = permissionDenied(ctx, "settings.write");
+  if (denied) return denied;
   const { id } = await params;
   let body: { action?: Action };
   try {

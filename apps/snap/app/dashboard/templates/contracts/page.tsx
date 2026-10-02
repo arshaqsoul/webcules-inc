@@ -33,7 +33,10 @@ export default async function ContractTemplatesPage({ searchParams }: { searchPa
   const missingStarters = starterTemplateRows("probe").filter((r) => !starterKeys.has(`${r.kind}::${r.name}`)).length;
   const ent = await getPlanEntitlements(ctx.organizationId);
   const unlimited = ent?.id === "studio" || ent?.id === "pro";
-  const limit = ent?.maxContractTemplates ?? 2;
+  // null = unlimited on Studio/Pro — the `?? 2` fallback is only for a
+  // missing entitlements read, never for "unlimited" (the studios-limit bug
+  // class; guarded by tests/unit/plan-null-safety.test.ts).
+  const limit = ent ? (unlimited ? null : ent.maxContractTemplates ?? 2) : 2;
 
   const editing = edit ? await getTemplate(ctx.organizationId, edit) : null;
   if (editing && editing.kind === "contract" && !editing.archivedAt) {
@@ -61,10 +64,10 @@ export default async function ContractTemplatesPage({ searchParams }: { searchPa
       <div>
         <h1 className="text-lg font-semibold text-ink">Contract templates</h1>
         <p className="mt-0.5 text-sm text-ink-subtle">
-          Your agreement library — apply one to any project, then send for e-signature.{!unlimited && ` Your plan includes ${limit}.`}
+          Your agreement library — apply one to any project, then send for e-signature.{limit !== null && ` Your plan includes ${limit}.`}
         </p>
       </div>
-      <CreateContractTemplate disabled={!unlimited && templates.length >= limit} limit={limit} blankBody={BLANK} />
+      <CreateContractTemplate disabled={limit !== null && templates.length >= limit} limit={limit} blankBody={BLANK} />
       <RestoreStartersBanner missingCount={missingStarters} />
       <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
         {templates.length === 0 ? (

@@ -49,7 +49,7 @@ export async function createBookingFromWidget(params: {
   const match = slots.find((s) => s.startAt.getTime() === startAt.getTime());
   if (!match) return { ok: false, error: "slot_unavailable" };
   const sessionType = params.sessionTypeId
-    ? ((await getDb().select().from(schema.sessionTypes).where(eq(schema.sessionTypes.id, params.sessionTypeId)).limit(1))[0] ?? null)
+    ? ((await getDb().select().from(schema.sessionTypes).where(and(eq(schema.sessionTypes.id, params.sessionTypeId), eq(schema.sessionTypes.organizationId, params.organizationId))).limit(1))[0] ?? null)
     : null;
 
   const endAt = match.endAt;
@@ -248,6 +248,9 @@ export async function confirmBookingPaid(params: {
   )[0];
   if (!booking) return { ok: false };
   if (booking.status === "confirmed") return { ok: true, booking }; // idempotent
+  // a canceled booking (client cancel/refund/stale checkout) stays dead —
+  // a late webhook used to resurrect it AND mint a duplicate project
+  if (booking.status === "canceled") return { ok: false };
 
   const client = (
     await db

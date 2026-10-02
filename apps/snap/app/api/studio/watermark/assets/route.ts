@@ -2,6 +2,7 @@
  * The client loops: fetch preview → canvas composite → POST derivative
  * (replace=1). Keyset pagination on id keeps resume cheap; only images with
  * an existing clean preview are eligible (wm is built from the preview). */
+import { permissionDenied } from "@/lib/permissions";
 import { and, asc, eq, gt, isNotNull, like } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
@@ -14,6 +15,8 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const denied = permissionDenied(ctx, "settings.write");
+  if (denied) return denied;
 
   const ent = await getPlanEntitlements(ctx.organizationId);
   if (!ent?.whiteLabel) return Response.json({ error: "plan_required" }, { status: 403 });

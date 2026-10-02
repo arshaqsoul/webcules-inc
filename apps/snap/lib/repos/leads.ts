@@ -1,7 +1,7 @@
 /* Lead repository — inbox, threading, conversion. Every call is org-scoped
  * by the passed context; inbound email ingest matches sender→lead heuristically
  * (per-studio inbound addresses arrive with the embed-platform follow-up). */
-import { and, desc, eq, gte, ilike, inArray, isNotNull, lte, ne, or } from "drizzle-orm";
+import { and, desc, eq, gte, ilike, inArray, isNotNull, lte, ne, or, sql } from "drizzle-orm";
 
 import { getD1, getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
@@ -96,7 +96,9 @@ export async function recordOutboundReply(params: {
   });
   await db
     .update(schema.leads)
-    .set({ status: "replied", updatedAt: new Date() })
+    // replying on a converted/archived lead's thread must not reopen it
+    // (audit: the unconditional write regressed converted → replied)
+    .set({ status: sql`CASE WHEN ${schema.leads.status} = 'new' THEN 'replied' ELSE ${schema.leads.status} END`, updatedAt: new Date() })
     .where(
       and(eq(schema.leads.id, params.leadId), eq(schema.leads.organizationId, params.organizationId)),
     );

@@ -9,12 +9,15 @@ import * as schema from "@/lib/db-schema";
 import { resolveGalleryAccess, clientIp, logShareAccess } from "@/lib/shares/gallery-auth";
 import { getObject } from "@/lib/storage/service";
 import { getDownloadRequestForGrant, markDownloadState } from "@/lib/repos/downloads";
+import { resolveGrantByToken } from "@/lib/shares/grants";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request, { params }: { params: Promise<{ token: string; id: string }> }) {
-  const { id } = await params;
-  const access = await resolveGalleryAccess(req.headers);
+  const { token, id } = await params;
+  const tokenGrant = await resolveGrantByToken(token);
+  if (!tokenGrant) return Response.json({ error: "unknown_gallery" }, { status: 404 });
+  const access = await resolveGalleryAccess(req.headers, tokenGrant.id);
   if (!access) return Response.json({ error: "unauthorized" }, { status: 401 });
   const grant = access.grant;
 

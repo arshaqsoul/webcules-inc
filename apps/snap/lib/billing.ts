@@ -376,7 +376,10 @@ export async function applySubscriptionState(sub: Stripe.Subscription): Promise<
   // its paid period keeps the entitlement on until the settle clears it.
   const addonOn = subscriptionHasAddon(sub, "custom_domain") !== null;
   const keepAddon =
-    (sub.status === "active" || sub.status === "trialing") &&
+    // (audit fix): past_due sits INSIDE the 14-day dunning grace the plan
+    // itself keeps — the domain add-on must survive it too, or the studio's
+    // custom domain suspends on the first failed charge.
+    (sub.status === "active" || sub.status === "trialing" || sub.status === "past_due") &&
     (addonOn || (Boolean(profile?.pendingAddonRemoval) && (profile?.planPeriodEnd ?? 0) * 1000 > Date.now()));
   await db
     .update(schema.studioProfiles)

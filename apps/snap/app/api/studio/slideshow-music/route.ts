@@ -2,6 +2,7 @@
  * Lite+ (marginal feature), MP3/AAC/M4A ≤ 15 MB, byte-sniffed (extension
  * alone is never trusted), with a rights warranty checkbox recorded in the
  * audit log. No catalog, no licensing on snap's books. */
+import { permissionDenied } from "@/lib/permissions";
 import { z } from "zod";
 
 import { getDb } from "@/lib/db";
@@ -17,6 +18,8 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const denied = permissionDenied(ctx, "settings.write");
+  if (denied) return denied;
   const tracks = await listTracks(ctx.organizationId);
   return Response.json({
     tracks: tracks.map((t) => ({ id: t.id, name: t.name, mimeType: t.mimeType, bytes: t.bytes, createdAt: t.createdAt.toISOString() })),
@@ -26,6 +29,8 @@ export async function GET() {
 export async function POST(req: Request) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const denied = permissionDenied(ctx, "settings.write");
+  if (denied) return denied;
 
   const ent = await getPlanEntitlements(ctx.organizationId);
   if (ent?.id === "free") return Response.json({ error: "music_requires_lite" }, { status: 403 });

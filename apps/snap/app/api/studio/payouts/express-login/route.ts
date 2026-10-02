@@ -1,7 +1,7 @@
 /* Stripe Express dashboard deep-link (WEB-157) — photographers manage bank
  * details and payouts there without a separate password. */
-import { getOrgContext } from "@/lib/session";
 import { permissionDenied } from "@/lib/permissions";
+import { getOrgContext } from "@/lib/session";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { getStripe } from "@/lib/stripe";
 

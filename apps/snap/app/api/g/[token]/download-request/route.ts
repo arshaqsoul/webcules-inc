@@ -16,12 +16,15 @@ import {
   photoDownloadCount,
 } from "@/lib/repos/downloads";
 import { DOWNLOAD_SCOPES, isDownloadState, ZIP_MAX_FILES, type DownloadScope } from "@/lib/gallery-downloads";
+import { resolveGrantByToken } from "@/lib/shares/grants";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request, { params }: { params: Promise<{ token: string }> }) {
   const { token: _t } = await params;
-  const access = await resolveGalleryAccess(req.headers);
+  const tokenGrant = await resolveGrantByToken(_t);
+  if (!tokenGrant) return Response.json({ error: "unknown_gallery" }, { status: 404 });
+  const access = await resolveGalleryAccess(req.headers, tokenGrant.id);
   if (!access) return Response.json({ error: "unauthorized" }, { status: 401 });
   const grant = access.grant;
 
@@ -61,7 +64,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
 
 export async function POST(req: Request, { params }: { params: Promise<{ token: string }> }) {
   const { token: _t } = await params;
-  const access = await resolveGalleryAccess(req.headers);
+  const tokenGrant = await resolveGrantByToken(_t);
+  if (!tokenGrant) return Response.json({ error: "unknown_gallery" }, { status: 404 });
+  const access = await resolveGalleryAccess(req.headers, tokenGrant.id);
   if (!access) return Response.json({ error: "unauthorized" }, { status: 401 });
   const grant = access.grant;
   if (!grant.allowDownload) return Response.json({ error: "downloads_disabled" }, { status: 403 });

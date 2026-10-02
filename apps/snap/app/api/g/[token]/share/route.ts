@@ -8,12 +8,15 @@ import { assetInGrant } from "@/lib/shares/grants";
 import { createPhotoShare } from "@/lib/shares/photo-shares";
 import { getPlanEntitlements } from "@/lib/plans";
 import { clientUrl } from "@/lib/client-urls";
+import { resolveGrantByToken } from "@/lib/shares/grants";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request, { params }: { params: Promise<{ token: string }> }) {
   const { token: _t } = await params;
-  const access = await resolveGalleryAccess(req.headers);
+  const tokenGrant = await resolveGrantByToken(_t);
+  if (!tokenGrant) return Response.json({ error: "unknown_gallery" }, { status: 404 });
+  const access = await resolveGalleryAccess(req.headers, tokenGrant.id);
   if (!access) return Response.json({ error: "unauthorized" }, { status: 401 });
   const grant = access.grant;
 

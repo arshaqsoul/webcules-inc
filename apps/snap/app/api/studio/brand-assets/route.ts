@@ -4,6 +4,7 @@
  * margin rule: no server-side image transforms), stores to R2 under the
  * org's branding prefix, and stamps a revision that cache-busts the public
  * URLs. White-label entitlement gated — Free/Lite keep platform branding. */
+import { permissionDenied } from "@/lib/permissions";
 import { eq } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
@@ -25,6 +26,8 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
+  const denied = permissionDenied(ctx, "settings.write");
+  if (denied) return denied;
 
   const ent = await getPlanEntitlements(ctx.organizationId);
   if (!ent?.whiteLabel) return Response.json({ error: "plan_required" }, { status: 403 });

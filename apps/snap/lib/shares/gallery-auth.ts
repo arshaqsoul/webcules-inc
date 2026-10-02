@@ -71,7 +71,11 @@ export function clearGalleryCookie(): string {
 
 /** Resolve the gallery session for a request: cookie signature valid, fresh
  * (≤30d), AND the grant still effectively active (live DB check). */
-export async function resolveGalleryAccess(headers: Headers): Promise<{ grant: typeof schema.shareGrants.$inferSelect } | null> {
+/** SECURITY (audit P0): resolve the OTP cookie, optionally pinned to the
+ * grant the URL's token names. Without the pin, a cookie minted for grant A
+ * (one OTP verification) satisfied the gate for ANY grant whose link the
+ * visitor held — cross-tenant gallery access. Every /g/{token} surface pins. */
+export async function resolveGalleryAccess(headers: Headers, forGrantId?: string): Promise<{ grant: typeof schema.shareGrants.$inferSelect } | null> {
   const match = headers.get("cookie")?.match(/(?:^|;\s*)snap-g=([^;]+)/);
   if (!match) return null;
   const parts = match[1].split(".");
@@ -81,6 +85,7 @@ export async function resolveGalleryAccess(headers: Headers): Promise<{ grant: t
   if (!timingSafeEqualStr(sig, await sign(`${grantId}.${issued}`))) return null;
   if (Date.now() / 1000 - Number(issued) > COOKIE_TTL_S) return null;
 
+  if (forGrantId !== undefined && grantId !== forGrantId) return null;
   const grant = await getGrantById(grantId);
   return grant && grantIsEffectivelyActive(grant) ? { grant } : null;
 }

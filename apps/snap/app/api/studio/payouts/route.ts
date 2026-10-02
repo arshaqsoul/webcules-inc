@@ -1,8 +1,8 @@
 /* Payouts status (GET) — live Stripe read when connected; D1 cache otherwise.
  * WEB-157 extends this with balance + payouts; this route is the state source
  * for the Settings → Payouts panel and the destination-charge gate. */
-import { getOrgContext } from "@/lib/session";
 import { permissionDenied } from "@/lib/permissions";
+import { getOrgContext } from "@/lib/session";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { readConnectStatus, type ConnectState } from "@/lib/connect";
 import { getStripe } from "@/lib/stripe";

@@ -1,8 +1,8 @@
 /* Start (or resume) Stripe Express onboarding — creates the connected account
  * on first call, then returns a Stripe-hosted Account Link. Body
  * { update?: true } requests the re-auth variant for restricted accounts. */
-import { getOrgContext } from "@/lib/session";
 import { permissionDenied } from "@/lib/permissions";
+import { getOrgContext } from "@/lib/session";
 import { getStudioProfile, setStudioStripeAccount } from "@/lib/repos/studios";
 import { createAccountLink } from "@/lib/connect";
 import { getStripe } from "@/lib/stripe";

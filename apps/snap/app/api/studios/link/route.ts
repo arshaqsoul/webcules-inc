@@ -49,6 +49,15 @@ export async function POST(req: Request) {
   if (ent.familyOrgIds.includes(target)) {
     return Response.json({ error: "already_in_family" }, { status: 409 });
   }
+  // (audit fix): an org carrying its own Stripe subscription must not be
+  // linked under a different root — billing continues while entitlements
+  // silently come from the root (the payer is stranded).
+  const targetProfile = (
+    await getDb().select({ sub: schema.studioProfiles.stripeSubscriptionId }).from(schema.studioProfiles).where(eq(schema.studioProfiles.organizationId, target)).limit(1)
+  )[0];
+  if (targetProfile?.sub) {
+    return Response.json({ error: "target_has_subscription", hint: "Cancel or migrate that studio's subscription before linking it." }, { status: 409 });
+  }
   if (ent.maxLinkedStudios !== null && ent.familyStudioCount >= ent.maxLinkedStudios) {
     return Response.json(
       { error: "studio_limit", plan: ent.id, familyStudioCount: ent.familyStudioCount, maxLinkedStudios: ent.maxLinkedStudios },

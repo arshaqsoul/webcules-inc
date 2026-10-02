@@ -142,7 +142,7 @@ export function GalleryBuilder({
   const [saving, setSaving] = useState(false);
   const [conflict, setConflict] = useState<GalleryDesign | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
-  const [assetPicker, setAssetPicker] = useState<{ sectionId: string } | null>(null);
+  const [assetPicker, setAssetPicker] = useState<{ sectionId: string; forHero?: boolean } | null>(null);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -505,7 +505,7 @@ export function GalleryBuilder({
               <div className="space-y-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-ink-tertiary">{SECTION_LABEL[selectedSection.type]} section</p>
                 <CommonControls section={selectedSection} onChange={(patch) => updateSection(selectedSection.id, patch)} />
-                {selectedSection.type === "hero" && <HeroControls section={selectedSection} onChange={(patch) => updateSection(selectedSection.id, patch)} assets={assets} onPick={(images) => updateSection(selectedSection.id, { images } as Partial<DesignSection>)} />}
+                {selectedSection.type === "hero" && <HeroControls section={selectedSection} onChange={(patch) => updateSection(selectedSection.id, patch)} assets={assets} onPick={() => setAssetPicker({ sectionId: selectedSection.id, forHero: true })} />}
                 {selectedSection.type === "gallery" && <GalleryControls section={selectedSection} onChange={(patch) => updateSection(selectedSection.id, patch)} folders={folders} onPickAssets={() => setAssetPicker({ sectionId: selectedSection.id })} />}
                 {selectedSection.type === "slideshow" && <SlideshowControls section={selectedSection} onChange={(patch) => updateSection(selectedSection.id, patch)} folders={folders} onPickAssets={() => setAssetPicker({ sectionId: selectedSection.id })} />}
                 {selectedSection.type === "favorites" && <FavoritesControls section={selectedSection} onChange={(patch) => updateSection(selectedSection.id, patch)} />}
@@ -527,9 +527,21 @@ export function GalleryBuilder({
       {assetPicker && (
         <AssetPickerModal
           assets={assets}
+          initialIds={
+            assetPicker.forHero
+              ? ((design.sections ?? []).find((s) => s.id === assetPicker.sectionId && s.type === "hero") as HeroSection | undefined)?.images.map((i) => i.assetId) ?? []
+              : undefined
+          }
           onClose={() => setAssetPicker(null)}
           onConfirm={(ids) => {
-            updateSection(assetPicker.sectionId, (s) => (s.type === "gallery" || s.type === "slideshow" ? { ...s, binding: { kind: "picks", ids } } : s));
+            updateSection(assetPicker.sectionId, (s) => {
+              if (assetPicker.forHero && s.type === "hero") {
+                // hero images: chosen order, keep existing focals where the
+                // photo survives, default focal for new picks (1–6 by parse cap)
+                return { ...s, images: ids.slice(0, 6).map((assetId, i) => ({ assetId, focal: s.images[i]?.focal ?? { x: 0.5, y: 0.4 } })) };
+              }
+              return s.type === "gallery" || s.type === "slideshow" ? { ...s, binding: { kind: "picks", ids } } : s;
+            });
             setAssetPicker(null);
           }}
         />
@@ -900,8 +912,8 @@ function ThemeControls({ design, onChange, accent }: { design: GalleryDesign; on
 }
 
 /** Grid-of-thumbs picker for picks bindings (chosen ids, ordered). */
-function AssetPickerModal({ assets, onConfirm, onClose }: { assets: BuilderAsset[]; onConfirm: (ids: string[]) => void; onClose: () => void }) {
-  const [ids, setIds] = useState<string[]>([]);
+function AssetPickerModal({ assets, initialIds, onConfirm, onClose }: { assets: BuilderAsset[]; initialIds?: string[]; onConfirm: (ids: string[]) => void; onClose: () => void }) {
+  const [ids, setIds] = useState<string[]>(initialIds ?? []);
   const toggle = (id: string) => setIds((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : cur.length < 60 ? [...cur, id] : cur));
   return (
     <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>

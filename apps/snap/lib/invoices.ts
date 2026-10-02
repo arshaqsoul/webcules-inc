@@ -344,6 +344,7 @@ export async function markInvoicePaidFromSession(session: {
   payment_intent: string | null;
   amount_total: number | null;
   currency: string | null;
+  payment_status?: string | null;
   metadata: Record<string, string | null> | null;
 }): Promise<void> {
   const db = getDb();
@@ -353,6 +354,11 @@ export async function markInvoicePaidFromSession(session: {
     await db.select().from(schema.invoices).where(eq(schema.invoices.id, invoiceId)).limit(1)
   )[0];
   if (!invoice || invoice.status !== "sent") return;
+  // (audit fix): only settle on actually-captured money — async methods can
+  // complete unsettled, and a mismatched amount means a partial/foreign
+  // payment that must not silently flip the invoice to paid.
+  if (session.payment_status && session.payment_status !== "paid") return;
+  if (session.amount_total !== null && session.amount_total !== invoice.totalMinor) return;
 
   await db.batch([
     db

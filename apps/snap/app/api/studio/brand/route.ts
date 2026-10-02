@@ -1,4 +1,5 @@
 /* Studio brand + settings updates (org-context guarded). */
+import { permissionDenied } from "@/lib/permissions";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
@@ -10,7 +11,6 @@ import { sanitizeWatermarkInput } from "@/lib/watermark";
 import { getPlanEntitlements } from "@/lib/plans";
 import { updateStudioSlug } from "@/lib/repos/studios";
 import { getOrgContext } from "@/lib/session";
-import { permissionDenied } from "@/lib/permissions";
 import { STUDIO_ALERT_KINDS } from "@/lib/notify-client";
 import { serializeBusiness } from "@/lib/business";
 

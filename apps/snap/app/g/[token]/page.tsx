@@ -271,7 +271,7 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
     );
   }
 
-  const access = await resolveGalleryAccess(await headers());
+  const access = await resolveGalleryAccess(await headers(), grant?.id ?? undefined);
   if (!access) {
     return (
       <GalleryGate

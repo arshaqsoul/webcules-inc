@@ -56,7 +56,15 @@ export type MergeSurface = "plain" | "pdf-text" | "html" | "html-email";
 const LINK_FIELDS = new Set(MERGE_FIELDS.filter((f) => f.link).map((f) => f.id));
 
 function escapeHtmlValue(s: string): string {
-  return s.replace(/&(?!(?:#\d+|#x[0-9a-f]+|[a-z][a-z0-9]{1,31});)/gi, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  // SECURITY (audit): quotes too — merge values land inside attribute
+  // positions in sanitized html (href="{{client_email}}"); without quote
+  // escaping a value containing `"` breaks out of the attribute.
+  return s
+    .replace(/&(?!(?:#\d+|#x[0-9a-f]+|[a-z][a-z0-9]{1,31});)/gi, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function escapeAttrValue(s: string): string {

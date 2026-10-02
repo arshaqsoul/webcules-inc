@@ -93,11 +93,24 @@ export async function getTemplate(organizationId: string, id: string): Promise<T
 }
 
 /** Active (non-archived) count for one kind — the entitlement-gate number. */
-export async function countTemplates(organizationId: string, kind: TemplateKind): Promise<number> {
+export async function countTemplates(organizationId: string, kind: TemplateKind, opts?: { excludeStarters?: boolean }): Promise<number> {
+  // (audit fix): seeded starter rows ship with every org — they must not
+  // consume the per-kind caps (Free's 2 contract slots were both taken by
+  // starters, leaving zero custom templates). Identified by name per kind.
+  const starterNames = opts?.excludeStarters
+    ? starterTemplateRows("probe").filter((r) => r.kind === kind).map((r) => r.name)
+    : [];
   const rows = await getDb()
     .select({ n: sql<number>`count(*)` })
     .from(schema.templates)
-    .where(and(eq(schema.templates.organizationId, organizationId), eq(schema.templates.kind, kind), isNull(schema.templates.archivedAt)));
+    .where(
+      and(
+        eq(schema.templates.organizationId, organizationId),
+        eq(schema.templates.kind, kind),
+        isNull(schema.templates.archivedAt),
+        ...(starterNames.length ? [sql`name NOT IN (${sql.join(starterNames.map((n) => sql`${n}`), sql`, `)})`] : []),
+      ),
+    );
   return rows[0]?.n ?? 0;
 }
 

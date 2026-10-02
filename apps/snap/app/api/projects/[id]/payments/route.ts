@@ -2,7 +2,7 @@
  * POST body: { action: "manual", amountMinor, method, note? } |
  *            { action: "quote", quotedTotalMinor } */
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
@@ -45,10 +45,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     });
     if (!result.ok) return Response.json({ error: result.error }, { status: 404 });
   } else {
-    await getDb()
+    // SECURITY (audit P0): org-scope the write — the bare-id update let any
+    // authenticated user overwrite another org's quoted total.
+    const updated = await getDb()
       .update(schema.projects)
       .set({ quotedTotalMinor: parsed.data.quotedTotalMinor, updatedAt: new Date() })
-      .where(eq(schema.projects.id, id));
+      .where(and(eq(schema.projects.id, id), eq(schema.projects.organizationId, ctx.organizationId)))
+      .returning({ id: schema.projects.id });
+    if (!updated.length) return Response.json({ error: "not_found" }, { status: 404 });
   }
   return Response.json({ ok: true, summary: await getProjectPaymentSummary(ctx.organizationId, id) });
 }
