@@ -35,6 +35,16 @@ export default function Releases() {
         polish fold into the next entry rather than getting their own.
       </Note>
 
+      <Release version="0.5.1" date="October 2, 2026">
+        <p>
+          Polish from the Template Studio review: buttons that fill with your brand color — the
+          template picker&apos;s Apply, the applied badge, category chips, the builder entry — now
+          pick a label color that reads on it (white on dark accents, ink on light ones), so a
+          light gold or oak brand never produces invisible white-on-light text. The applied
+          template state is now a solid, high-contrast badge instead of a dimmed button, and
+          hero titles over bright photos carry a soft shadow.
+        </p>
+      </Release>
       <Release version="0.5.0" date="October 2, 2026">
         <p>
           <strong>Template Studio is here.</strong> Ten designer gallery templates — wedding,
