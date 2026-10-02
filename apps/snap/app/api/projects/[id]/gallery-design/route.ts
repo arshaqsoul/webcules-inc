@@ -10,7 +10,7 @@ import * as schema from "@/lib/db-schema";
 import { getOrgContext } from "@/lib/session";
 import { getPlanEntitlements } from "@/lib/plans";
 import { effectiveGalleryDesign, saveProjectGalleryDesign } from "@/lib/repos/gallery-design";
-import { isCoverOnlyDesign, parseGalleryDesign, type GalleryDesign } from "@/lib/gallery-design";
+import { designMinTier, isCoverOnlyDesign, parseGalleryDesign, type GalleryDesign } from "@/lib/gallery-design";
 
 export const dynamic = "force-dynamic";
 
@@ -59,6 +59,15 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     ((parsedDesign.cover?.images?.length ?? 0) >= 2 || Boolean(parsedDesign.columns))
   ) {
     return Response.json({ error: "design_requires_studio", plan: ent?.id ?? "free" }, { status: 403 });
+  }
+  // WEB-320/322: v2 gate — a CUSTOM sectioned design (builder work) needs
+  // Lite, and any collage section needs Studio. Pristine seed applications
+  // pass above (their template marker is intact).
+  if (parsedDesign && designMinTier(parsedDesign) === "studio" && ent?.id !== "studio" && ent?.id !== "pro") {
+    return Response.json({ error: "design_requires_studio", plan: ent?.id ?? "free" }, { status: 403 });
+  }
+  if (parsedDesign && designMinTier(parsedDesign) === "lite" && ent?.id === "free") {
+    return Response.json({ error: "design_requires_lite", plan: ent?.id ?? "free" }, { status: 403 });
   }
 
   const result = await saveProjectGalleryDesign({

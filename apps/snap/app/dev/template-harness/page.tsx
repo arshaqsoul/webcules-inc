@@ -5,11 +5,14 @@
  * Gated to local dev (NODE_ENV=development) or SNAP_DEV_HARNESS=1 (staging,
  * set as a worker var when the founder wants to browse templates).
  *
+ * ?draft=<key>                      — render tools/seed-drafts/<key>.json
  * ?design=<urlencoded design JSON>  — render an arbitrary v2 design
  * ?template=<seed key>              — render a seed from lib/seed-templates
  * ?genre=<genre>                    — sample set (default: the mix)
  * ?accent=<hex>                     — demo studio accent (default lavender)
  */
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { notFound } from "next/navigation";
 import { env } from "cloudflare:workers";
 
@@ -38,10 +41,21 @@ export default async function TemplateHarnessPage({ searchParams }: { searchPara
 
   let design: GalleryDesign | null = null;
   const templateKey = one("template");
+  const draftKey = one("draft");
   const designJson = one("design");
   if (templateKey) {
     const seed = SEED_TEMPLATES.find((t) => t.key === templateKey);
     design = seed ? parseGalleryDesign(seed.design) : null;
+  } else if (draftKey) {
+    // Authoring loop: tools/seed-drafts/<key>.json ({key,name,...,design}).
+    // Key-regex-constrained (no traversal); the page is dev-gated anyway.
+    if (!/^[a-z0-9-]{1,40}$/.test(draftKey)) notFound();
+    try {
+      const draft = JSON.parse(readFileSync(join(process.cwd(), "tools", "seed-drafts", `${draftKey}.json`), "utf8")) as { design?: unknown };
+      design = parseGalleryDesign(draft.design ?? draft);
+    } catch {
+      design = null;
+    }
   } else if (designJson) {
     try {
       design = parseGalleryDesign(JSON.parse(decodeURIComponent(designJson)));

@@ -25,6 +25,7 @@ import { buildMergeValues, renderMerge } from "@/lib/merge";
 import { mergeRenderDesign, resolveDesignSections } from "@/lib/gallery-sections";
 import { fontFamilyOf, FONTS_CSS_HREF } from "@/lib/fonts";
 import { safeHexColor } from "@/lib/embed";
+import { adaptSeedToProject, seedTemplateOf } from "@/lib/seed-templates";
 import type { GalleryDesign } from "@/lib/gallery-design";
 import type { SlideshowProps } from "@/components/gallery-view";
 
@@ -42,11 +43,13 @@ async function designedGallery(organizationId: string, projectId: string): Promi
   return mergeRenderDesign(eff.design, values);
 }
 
-export default async function GalleryPreviewPage({ params }: { params: Promise<{ token: string }> }) {
+export default async function GalleryPreviewPage({ params, searchParams }: { params: Promise<{ token: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   // The dashboard session is the only key. Unauthenticated → the same neutral
   // 404 as any unknown /g path — existence is never confirmed.
   const ctx = await getOrgContext();
   const { token: projectId } = await params;
+  const sp = await searchParams;
+  const templateKey = typeof sp.template === "string" ? sp.template : null;
   if (!ctx || !ID_RE.test(projectId)) notFound();
 
   const rows = await getDb()
@@ -133,6 +136,22 @@ export default async function GalleryPreviewPage({ params }: { params: Promise<{
   const plan = design ? resolveDesignSections(design, viewAssets) : null;
   const fontFamily = fontFamilyOf(design?.theme.font);
 
+  // WEB-320: ?template=<seed key> previews a seed BEFORE applying — the
+  // saved design is untouched; the seed is adapted to this project's own
+  // photos so the photographer sees exactly what applying would give them.
+  let previewDesign = design;
+  let previewPlan = plan;
+  if (templateKey) {
+    const seed = seedTemplateOf(templateKey);
+    if (seed) {
+      previewDesign = mergeRenderDesign(
+        adaptSeedToProject(seed, viewAssets.filter((a) => a.kind === "image").map((a) => a.id)),
+        await buildMergeValues({ organizationId: ctx.organizationId, projectId }),
+      );
+      previewPlan = resolveDesignSections(previewDesign, viewAssets);
+    }
+  }
+
   // Same shared context the client route builds — watermark previews ON
   // when the gallery watermarks (the client always sees watermarked).
   const effectiveSlideshow = slideshowForTier(slideshowCfg, tier !== "free");
@@ -149,7 +168,7 @@ export default async function GalleryPreviewPage({ params }: { params: Promise<{
 
   return (
     <GalleryPreviewFrame projectId={projectId}>
-      {fontFamily ? <link rel="stylesheet" href={FONTS_CSS_HREF} /> : null}
+      {(fontFamilyOf(previewDesign?.theme.font) || fontFamily) ? <link rel="stylesheet" href={FONTS_CSS_HREF} /> : null}
       <GalleryView
         studioName={profile?.studioName ?? "your studio"}
         accent={safeHexColor(brand.accent) ?? "#5e6ad2"}
@@ -179,9 +198,9 @@ export default async function GalleryPreviewPage({ params }: { params: Promise<{
         initialNotes={{}}
         canMakeLists={false}
         canNote={false}
-        design={design}
-        plan={plan}
-        fontFamily={fontFamily}
+        design={previewDesign}
+        plan={previewPlan}
+        fontFamily={fontFamilyOf(previewDesign?.theme.font) ?? fontFamily}
         slideshow={slideshow}
         allowSharing={false}
         projectTitle={project.title}

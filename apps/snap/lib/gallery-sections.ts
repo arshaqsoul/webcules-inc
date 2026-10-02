@@ -21,7 +21,7 @@ import type {
   SlideshowSection,
   TextSection,
 } from "./gallery-design";
-import { renderMerge } from "./merge";
+import { renderMerge } from "./merge-fields";
 
 /** The asset slice resolution needs — GalleryAsset (components/gallery-view)
  * is structurally assignable; tests + the harness construct these directly. */

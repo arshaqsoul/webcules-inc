@@ -13,6 +13,7 @@ import { MarqueeSection } from "@/components/landing/marquee";
 import { PricingSection } from "@/components/landing/pricing-section";
 import { SmoothScroll } from "@/components/landing/smooth-scroll";
 import { StackMath } from "@/components/landing/stack-math";
+import { TemplateGridSection } from "@/components/landing/template-grid";
 import { isCustomAppHost } from "@/lib/domains";
 import { resolveStudioByHost } from "@/lib/repos/domains";
 import { requestHost } from "@/lib/domains";
@@ -76,6 +77,7 @@ export default async function Home() {
           <FamilyChapter />
           <BridgeChapter />
           <MarqueeSection />
+          <TemplateGridSection />
           <BentoFeatures />
           <StackMath />
           <PricingSection />

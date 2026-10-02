@@ -69,7 +69,7 @@ export default function StartGuide() {
           </>,
           <>
             <strong>Land in the dashboard</strong> — the Overview page greets you with a{" "}
-            <strong>setup guide</strong>: a ten-item checklist derived from what your studio has
+            <strong>setup guide</strong>: an eleven-item checklist derived from what your studio has
             configured so far. It updates itself as you go, and it never nags about things you
             already did.
           </>,

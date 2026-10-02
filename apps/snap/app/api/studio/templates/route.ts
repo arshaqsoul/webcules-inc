@@ -7,7 +7,7 @@ import { z } from "zod";
 import { getOrgContext } from "@/lib/session";
 import { getPlanEntitlements } from "@/lib/plans";
 import { countCustomFields, FREE_CUSTOM_FIELD_CAP, validateFormSchema } from "@/lib/forms";
-import { countTemplates, createTemplate, isTemplateKind, listTemplates, type TemplateKind } from "@/lib/repos/templates";
+import { countCustomGalleryPresets, countTemplates, createTemplate, isTemplateKind, listTemplates, type TemplateKind } from "@/lib/repos/templates";
 
 export const dynamic = "force-dynamic";
 
@@ -100,9 +100,15 @@ export async function POST(req: Request) {
   }
   // WEB-258: gallery presets are Lite+ (the design layer); the body itself
   // is validated + canonicalized by the repo (must parse to a design).
+  // WEB-323: Lite keeps ONE custom look (a v2 sectioned preset); Studio+
+  // save as many as they like. Seeded starter presets are v1 and never
+  // count against the cap.
   if (body.kind === "gallery_preset") {
     const lite = ent && ent.id !== "free";
     if (!lite) return Response.json({ error: "presets_require_lite" }, { status: 403 });
+    if (ent?.id === "lite" && (await countCustomGalleryPresets(ctx.organizationId)) >= 1) {
+      return Response.json({ error: "limit_reached", limit: 1, reason: "custom_looks_require_studio" }, { status: 403 });
+    }
   }
   // WEB-251: contract-template gate (Free/Lite 2, Studio+ unlimited).
   // Clauses are ungated — they're just text snippets.

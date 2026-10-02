@@ -1,4 +1,4 @@
-/* Setup Guide engine (WEB-269) — derives the ten-item first-time
+/* Setup Guide engine (WEB-269) — derives the eleven-item first-time
  * configuration checklist from EXISTING signals only (no new writes where a
  * signal exists). Item state is always derived — nothing can drift; the only
  * persisted setup state is dismiss/reopen on the studio profile. Also owns
@@ -16,6 +16,7 @@ import { putObject } from "@/lib/storage/service";
 export type SetupStepId =
   | "profile"
   | "brand"
+  | "gallery_template"
   | "payouts"
   | "availability"
   | "session_type"
@@ -45,6 +46,8 @@ export type SetupState = {
 export const SETUP_STEPS: Array<Omit<SetupStep, "done">> = [
   { id: "profile", title: "Studio profile", why: "Your name, timezone, and where inquiries land.", href: "/dashboard/settings/general" },
   { id: "brand", title: "Your brand", why: "Logo and accent color across every email and gallery.", href: "/dashboard/settings/brand" },
+  // WEB-317/320: the template step — the natural 2.5, free and instant.
+  { id: "gallery_template", title: "Pick a gallery template", why: "Ten designer looks for your client galleries — one click, free.", href: "/dashboard/projects" },
   { id: "payouts", title: "Connect payouts", why: "Deposits and invoices land in your bank.", href: "/dashboard/settings/payouts" },
   { id: "availability", title: "Set your availability", why: "Clients book while you sleep.", href: "/dashboard/calendar?tab=availability" },
   { id: "session_type", title: "Define a session type", why: "What clients can book — length, price, deposit.", href: "/dashboard/templates/session-types" },
@@ -83,6 +86,7 @@ export async function getSetupState(organizationId: string): Promise<SetupState>
     embedOriginsRaw,
     snippetCopied,
     domainsCount,
+    templateApplied,
     demo,
   ] = await Promise.all([
     db
@@ -115,6 +119,11 @@ export async function getSetupState(organizationId: string): Promise<SetupState>
       .select({ n: sql<number>`count(*)` })
       .from(schema.customDomains)
       .where(and(eq(schema.customDomains.organizationId, organizationId), sql`removed_at IS NULL`)),
+    // WEB-320: any project carrying a seed-template design completes the step.
+    db
+      .select({ n: sql<number>`count(*)` })
+      .from(schema.projects)
+      .where(and(eq(schema.projects.organizationId, organizationId), sql`gallery_design LIKE '%"template"%'`)),
     // Demo counts when the gallery was actually OPENED: a view access log on
     // a grant for the demo project.
     db
@@ -148,6 +157,7 @@ export async function getSetupState(organizationId: string): Promise<SetupState>
   const doneMap: Record<SetupStepId, boolean> = {
     profile: Boolean(profileRow.studioName),
     brand: Boolean(profileRow.logoKey),
+    gallery_template: Number(templateApplied[0]?.n ?? 0) > 0,
     payouts: Boolean(profileRow.stripeAccountId),
     availability: Number(rules[0]?.n ?? 0) > 0,
     session_type: types > 0,

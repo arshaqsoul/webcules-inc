@@ -18,10 +18,7 @@ import { MERGE_FIELDS } from "./merge-fields";
 import { businessAddressLine, parseBusiness, taxIdLine } from "./business";
 
 export { MERGE_FIELDS, CONTRACT_MERGE_FIELDS } from "./merge-fields";
-export type { MergeField } from "./merge-fields";
-void MERGE_FIELDS;
-
-export type MergeSurface = "plain" | "pdf-text" | "html" | "html-email";
+export type { MergeField, MergeSurface } from "./merge-fields";
 
 
 export type MergeContext = {
@@ -37,15 +34,6 @@ export type MergeContext = {
 };
 
 const FIELD_IDS = new Set(MERGE_FIELDS.map((f) => f.id));
-const LINK_FIELDS = new Set(MERGE_FIELDS.filter((f) => f.link).map((f) => f.id));
-
-function escapeHtmlValue(s: string): string {
-  return s.replace(/&(?!(?:#\d+|#x[0-9a-f]+|[a-z][a-z0-9]{1,31});)/gi, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
-function escapeAttrValue(s: string): string {
-  return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
 
 function longDate(d: Date): string {
   return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
@@ -134,21 +122,10 @@ export async function buildMergeValues(ctx: MergeContext): Promise<Record<string
   return values;
 }
 
-/** Apply merge values to a template. Unknown fields pass through untouched
- * (drafts stay editable); escaping is per surface. */
-export function renderMerge(template: string, values: Record<string, string>, opts: { surface: MergeSurface }): string {
-  const htmlSurface = opts.surface === "html" || opts.surface === "html-email";
-  return template.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (full, rawName: string) => {
-    const name = rawName.toLowerCase();
-    if (!(name in values)) return full; // unknown → untouched
-    const value = values[name];
-    if (!htmlSurface) return value; // plain / pdf-text: raw, exactly like contracts today
-    if (LINK_FIELDS.has(name) && /^(https:\/\/|mailto:)/i.test(value)) {
-      return `<a href="${escapeAttrValue(value)}" target="_blank" rel="noopener noreferrer">${escapeHtmlValue(value)}</a>`;
-    }
-    return escapeHtmlValue(value);
-  });
-}
+/** Apply merge values to a template — pure renderer lives in merge-fields
+ * (client bundles import it); re-exported here for the server surfaces. */
+export { renderMerge } from "./merge-fields";
+import { renderMerge, type MergeSurface } from "./merge-fields";
 
 /** Resolve + render in one call — the path every runtime surface uses. */
 export async function renderMergeFrom(ctx: MergeContext, template: string, opts: { surface: MergeSurface }): Promise<string> {

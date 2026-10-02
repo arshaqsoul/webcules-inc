@@ -24,17 +24,23 @@ describe("TIER_CARDS", () => {
 
   it("WEB-267: the gallery feature ladder is present and tier-correct on the cards", () => {
     const byTier = Object.fromEntries(TIER_CARDS.map((t) => [t.id, t.features.join(" ")]));
-    // Free: galleries exist (secure + basic slideshow + video) — no design/app/ZIP claims.
+    // Free: galleries exist (secure + basic slideshow + video) + the seed
+    // templates (WEB-317's free-tier wow) — no builder/app/ZIP claims.
     expect(byTier.free).toMatch(/Secure client galleries/);
     expect(byTier.free).toMatch(/Basic slideshow/);
-    expect(byTier.free).not.toMatch(/designed galleries|photo app|ZIP|social sharing/i);
-    // Lite: client app + designed galleries, music slideshows + sharing, PIN/web-size/ZIPs.
+    expect(byTier.free).toMatch(/designer gallery templates/);
+    expect(byTier.free).not.toMatch(/page builder|photo app \(\/my\)|ZIP|social sharing/i);
+    // Lite: client app + the page builder (WEB-321), music slideshows + sharing, PIN/web-size/ZIPs.
     expect(byTier.lite).toMatch(/Client photo app/);
-    expect(byTier.lite).toMatch(/designed galleries/);
+    expect(byTier.lite).toMatch(/Gallery page builder/);
+    expect(byTier.lite).toMatch(/custom fonts/);
     expect(byTier.lite).toMatch(/your music/);
     expect(byTier.lite).toMatch(/social sharing/);
     expect(byTier.lite).toMatch(/Download PIN/);
-    // Studio: sneak peeks + approvals, favorites lists/notes/exports, per-photo insights.
+    // Studio: collages + unlimited saved looks (WEB-322/323), sneak peeks +
+    // approvals, favorites lists/notes/exports, per-photo insights.
+    expect(byTier.studio).toMatch(/Collage sections/);
+    expect(byTier.studio).toMatch(/unlimited custom gallery looks/);
     expect(byTier.studio).toMatch(/Sneak peeks/);
     expect(byTier.studio).toMatch(/download approvals/);
     expect(byTier.studio).toMatch(/lists, notes/);

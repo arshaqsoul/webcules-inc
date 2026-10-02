@@ -10,7 +10,7 @@ import { getDb } from "../db";
 import * as schema from "../db-schema";
 import { sanitizeRichText } from "../sanitize";
 import { DEFAULT_CONTACT_FORM_BODY } from "../forms";
-import { GALLERY_DESIGN_MAX_BYTES, GALLERY_DESIGN_V2_MAX_BYTES, designHasV2Fields, parseGalleryDesign, serializeGalleryDesign } from "../gallery-design";
+import { GALLERY_DESIGN_MAX_BYTES, GALLERY_DESIGN_V2_MAX_BYTES, designHasV2Fields, parseGalleryDesign, parseGalleryDesignJson, serializeGalleryDesign } from "../gallery-design";
 
 export type TemplateRow = typeof schema.templates.$inferSelect;
 export type TemplateInsert = typeof schema.templates.$inferInsert;
@@ -99,6 +99,17 @@ export async function countTemplates(organizationId: string, kind: TemplateKind)
     .from(schema.templates)
     .where(and(eq(schema.templates.organizationId, organizationId), eq(schema.templates.kind, kind), isNull(schema.templates.archivedAt)));
   return rows[0]?.n ?? 0;
+}
+
+/** WEB-323: CUSTOM gallery looks — presets whose body carries v2 sections
+ * (builder-saved designs; the seeded starter presets are v1 and never
+ * count). Lite may keep one; Studio+ unlimited. */
+export async function countCustomGalleryPresets(organizationId: string): Promise<number> {
+  const rows = await getDb()
+    .select({ body: schema.templates.body })
+    .from(schema.templates)
+    .where(and(eq(schema.templates.organizationId, organizationId), eq(schema.templates.kind, "gallery_preset"), isNull(schema.templates.archivedAt)));
+  return rows.filter((r) => parseGalleryDesignJson(r.body)?.sections?.length).length;
 }
 
 /** The org's default template for a kind (null when none is pinned). */

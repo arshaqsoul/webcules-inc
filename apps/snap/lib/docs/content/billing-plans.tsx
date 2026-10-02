@@ -125,6 +125,27 @@ export default function BillingPlans() {
             <td>2 included</td>
           </tr>
           <tr>
+            <td>Gallery templates — apply any of the 10</td>
+            <td>Included</td>
+            <td>Included</td>
+            <td>Included</td>
+            <td>Included</td>
+          </tr>
+          <tr>
+            <td>Gallery page builder + custom fonts</td>
+            <td>—</td>
+            <td>Included</td>
+            <td>Included</td>
+            <td>Included</td>
+          </tr>
+          <tr>
+            <td>Collage sections (unlimited saved looks)</td>
+            <td>—</td>
+            <td>1 saved look</td>
+            <td>Included</td>
+            <td>Included</td>
+          </tr>
+          <tr>
             <td>White-label</td>
             <td>—</td>
             <td>—</td>

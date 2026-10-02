@@ -173,6 +173,13 @@ export const DOC_CATEGORIES: DocCategory[] = [
         tier: "lite",
       },
       {
+        slug: "templates",
+        title: "Gallery templates & page builder",
+        description:
+          "Ten designer gallery templates — pick a look, preview it with your photos, apply in one click (free on every plan). On Lite+ the page builder makes any template yours: sections, fonts, colors, free-positioned collages.",
+        icon: "layout-template",
+      },
+      {
         slug: "video",
         title: "Films & video delivery",
         description:

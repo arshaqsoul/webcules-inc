@@ -19,6 +19,7 @@ import ProjectHub from "./content/project-hub";
 import Contracts from "./content/contracts";
 import GalleryDelivery from "./content/gallery-delivery";
 import GalleryDesign from "./content/gallery-design";
+import Templates from "./content/templates";
 import Video from "./content/video";
 import Protection from "./content/protection";
 import BillingPlans from "./content/billing-plans";
@@ -32,7 +33,6 @@ import Domains from "./content/domains";
 import Embeds from "./content/embeds";
 import RawVault from "./content/raw-vault";
 import Storage from "./content/storage";
-import Templates from "./content/templates";
 import Releases from "./content/releases";
 
 export const DOC_CONTENT: Record<string, ComponentType> = {
@@ -50,6 +50,7 @@ export const DOC_CONTENT: Record<string, ComponentType> = {
   contracts: Contracts,
   "gallery-delivery": GalleryDelivery,
   "gallery-design": GalleryDesign,
+  "templates": Templates,
   video: Video,
   protection: Protection,
   "billing-plans": BillingPlans,
@@ -63,7 +64,6 @@ export const DOC_CONTENT: Record<string, ComponentType> = {
   embeds: Embeds,
   "raw-vault": RawVault,
   storage: Storage,
-  templates: Templates,
   releases: Releases,
 };
 

@@ -45,14 +45,14 @@ describe("getSetupState", () => {
   it("fresh studio: profile done, everything else pending", async () => {
     const s = await seedStudio();
     const state = await getSetupState(s.organizationId);
-    expect(state.total).toBe(10);
+    expect(state.total).toBe(11);
     expect(state.done).toBe(1); // the profile row exists post-onboarding
     expect(step(state, "profile").done).toBe(true);
     for (const id of ["brand", "payouts", "availability", "session_type", "contact_form", "embed", "branding_domain", "contract", "demo_gallery"]) {
       expect(step(state, id).done).toBe(false);
     }
     // Every step carries a deep link except the demo action.
-    expect(SETUP_STEPS.filter((x) => x.href).length).toBe(9);
+    expect(SETUP_STEPS.filter((x) => x.href).length).toBe(10);
   });
 
   it("each signal flips its item", async () => {

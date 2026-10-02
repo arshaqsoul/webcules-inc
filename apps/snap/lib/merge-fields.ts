@@ -47,3 +47,34 @@ export const MERGE_FIELDS: MergeField[] = [
 export const CONTRACT_MERGE_FIELDS = ["client_name", "studio_name", "date", "event_date", "package"]
   .map((id) => MERGE_FIELDS.find((f) => f.id === id))
   .filter((f): f is MergeField => Boolean(f));
+
+/* ---------------- pure renderer (moved from lib/merge.ts, WEB-318) -------
+ * Client bundles (the gallery renderer + builder) need renderMerge for the
+ * text-section/harness surfaces; the DB resolver stays in lib/merge.ts. */
+export type MergeSurface = "plain" | "pdf-text" | "html" | "html-email";
+
+const LINK_FIELDS = new Set(MERGE_FIELDS.filter((f) => f.link).map((f) => f.id));
+
+function escapeHtmlValue(s: string): string {
+  return s.replace(/&(?!(?:#\d+|#x[0-9a-f]+|[a-z][a-z0-9]{1,31});)/gi, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function escapeAttrValue(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+/** Apply merge values to a template. Unknown fields pass through untouched
+ * (drafts stay editable); escaping is per surface. */
+export function renderMerge(template: string, values: Record<string, string>, opts: { surface: MergeSurface }): string {
+  const htmlSurface = opts.surface === "html" || opts.surface === "html-email";
+  return template.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (full, rawName: string) => {
+    const name = rawName.toLowerCase();
+    if (!(name in values)) return full; // unknown → untouched
+    const value = values[name];
+    if (!htmlSurface) return value; // plain / pdf-text: raw, exactly like contracts today
+    if (LINK_FIELDS.has(name) && /^(https:\/\/|mailto:)/i.test(value)) {
+      return `<a href="${escapeAttrValue(value)}" target="_blank" rel="noopener noreferrer">${escapeHtmlValue(value)}</a>`;
+    }
+    return escapeHtmlValue(value);
+  });
+}

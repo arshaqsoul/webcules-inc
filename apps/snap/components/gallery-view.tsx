@@ -739,7 +739,7 @@ function HeroSlides({
   );
 }
 
-export function GalleryHero({ design, studioName, coverAssetId, slides, coverSrc }: {
+export function GalleryHero({ design, studioName, coverAssetId, slides, coverSrc, secId }: {
   design: GalleryDesign;
   studioName: string;
   coverAssetId: string | null;
@@ -747,6 +747,8 @@ export function GalleryHero({ design, studioName, coverAssetId, slides, coverSrc
   slides?: CoverImage[];
   /** WEB-319: direct URL for the single-image cover (harness/sample assets). */
   coverSrc?: string | null;
+  /** WEB-321: builder canvas selection hook. */
+  secId?: string;
 }) {
   const c = design.cover;
   if (!c) return null;
@@ -759,7 +761,7 @@ export function GalleryHero({ design, studioName, coverAssetId, slides, coverSrc
 
   if (c.style === "split") {
     return (
-      <section className="w-full">
+      <section className="w-full" data-sec={secId}>
         <div className="grid md:grid-cols-[1fr_minmax(300px,38%)]">
           <div className="relative aspect-[4/3] overflow-hidden md:aspect-auto md:min-h-[400px]">
             {(slides?.length ?? 0) >= 2 ? (
@@ -795,7 +797,7 @@ export function GalleryHero({ design, studioName, coverAssetId, slides, coverSrc
 
   const kenburns = c.style === "kenburns";
   return (
-    <section className="relative aspect-[4/3] w-full overflow-hidden sm:aspect-[21/10]">
+    <section className="relative aspect-[4/3] w-full overflow-hidden sm:aspect-[21/10]" data-sec={secId}>
       {(slides?.length ?? 0) >= 2 ? (
         <HeroSlides slides={slides!} interval={c.interval ?? 0} kenburns={kenburns} alt={c.title || studioName} deterrents={undefined} />
       ) : coverAssetId ? (
@@ -1002,6 +1004,12 @@ type SectionCtx = {
   onMeasured: (assetId: string, aspect: number) => void;
   onStartSlideshow: (assetId: string) => void;
   justifiedRows: (items: { a: GalleryAsset; idx: number }[]) => { a: GalleryAsset; idx: number }[][];
+  /** WEB-322: builder mode — collage items become pointer-editable (drag to
+   * position, corner to resize, top handle to rotate); edits report through
+   * onCollageEdit as normalized percents (the same numbers the renderer
+   * draws — one schema, zero drift). Client galleries never set this. */
+  builder?: boolean;
+  onCollageEdit?: (sectionId: string, index: number, patch: { x?: number; y?: number; w?: number; rotation?: number }) => void;
 };
 
 const SECTION_PAD: Record<string, string> = { compact: "px-4 py-4 sm:px-6", normal: "px-5 py-8 sm:px-8", airy: "px-6 py-12 sm:px-10 sm:py-16" };
@@ -1014,8 +1022,10 @@ const ramp = {
 };
 
 /** Section band: optional background + horizontal padding; content maxes at
- * the gallery's measure. Hero sections go full-bleed (no band). */
-function SectionShell({ section, children, wide }: { section: { padding?: string; bg?: string }; children: React.ReactNode; wide?: boolean }) {
+ * the gallery's measure. Hero sections go full-bleed (no band). Every
+ * section root carries data-sec={id} — the page builder's canvas uses it
+ * for click-to-select and selection outlines (inert for clients). */
+function SectionShell({ section, children, wide }: { section: { id: string; padding?: string; bg?: string }; children: React.ReactNode; wide?: boolean }) {
   const pad = SECTION_PAD[section.padding ?? "normal"] ?? SECTION_PAD.normal;
   const bg =
     section.bg === "surface"
@@ -1023,8 +1033,12 @@ function SectionShell({ section, children, wide }: { section: { padding?: string
       : section.bg === "accent"
         ? "bg-[color-mix(in_srgb,var(--accent)_8%,var(--canvas))]"
         : "";
+  // dark: a scoped dark plate (its own ink ladder) so a section can go moody
+  // inside a light gallery — same vars the dark theme uses, no bleed.
+  const darkVars = section.bg === "dark" ? (themeVars("dark") as React.CSSProperties) : undefined;
+  const cls = bg || (section.bg === "dark" ? "bg-[#101014]" : "");
   return (
-    <section className={bg || undefined}>
+    <section className={cls || undefined} data-sec={section.id} style={darkVars}>
       <div className={`${wide ? "max-w-7xl" : "max-w-6xl"} mx-auto ${pad}`}>{children}</div>
     </section>
   );
@@ -1052,7 +1066,7 @@ function HeroSectionView({ section, slides, ctx }: { section: Extract<RenderSect
 
   if (section.style === "fullbleed") {
     return (
-      <section className="relative aspect-[4/3] w-full overflow-hidden sm:aspect-[21/9]">
+      <section className="relative aspect-[4/3] w-full overflow-hidden sm:aspect-[21/9]" data-sec={section.id}>
         {slides.length >= 2 ? (
           <HeroSlides slides={slides} interval={section.interval} kenburns={false} alt={section.title || ctx.studioName} deterrents={ctx.deterrents} />
         ) : slides[0] ? (
@@ -1083,7 +1097,7 @@ function HeroSectionView({ section, slides, ctx }: { section: Extract<RenderSect
     // kicker-less variant of the static/kenburns hero (otherwise GalleryHero)
     const kenburns = section.style === "kenburns";
     return (
-      <section className="relative aspect-[4/3] w-full overflow-hidden sm:aspect-[21/10]">
+      <section className="relative aspect-[4/3] w-full overflow-hidden sm:aspect-[21/10]" data-sec={section.id}>
         {slides.length >= 2 ? (
           <HeroSlides slides={slides} interval={section.interval} kenburns={kenburns} alt={section.title || ctx.studioName} deterrents={ctx.deterrents} />
         ) : slides[0] ? (
@@ -1128,6 +1142,7 @@ function HeroSectionView({ section, slides, ctx }: { section: Extract<RenderSect
       coverAssetId={slides[0]?.assetId ?? null}
       coverSrc={slides[0]?.src ?? null}
       slides={slides.length >= 2 ? slides : undefined}
+      secId={section.id}
     />
   );
 }
@@ -1258,14 +1273,79 @@ function FavoritesSectionView({ section, assets, ctx, fallbackHeading }: { secti
   );
 }
 
+/** One pointer-editable collage item in builder mode: drag body = position,
+ * corner handle = width, top handle = rotation (clamped ±15°). Deltas are
+ * measured against the section box and reported as the same normalized
+ * percents the renderer consumes. */
+function CollageItemEditable({ it, index, section, ctx, box }: {
+  it: (RenderSection & { kind: "collage" })["items"][number];
+  index: number;
+  section: Extract<RenderSection, { kind: "collage" }>["section"];
+  ctx: SectionCtx;
+  box: HTMLElement;
+}) {
+  const start = useRef<{ mode: "move" | "size" | "rotate"; x0: number; y0: number; item: typeof it; cx: number; cy: number } | null>(null);
+  const onPointerDown = (mode: "move" | "size" | "rotate") => (e: React.PointerEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const rect = box.getBoundingClientRect();
+    start.current = { mode, x0: e.clientX, y0: e.clientY, item: it, cx: rect.left + rect.width / 2, cy: rect.top + rect.height / 2 };
+    const el = e.currentTarget as HTMLElement;
+    el.setPointerCapture(e.pointerId);
+    const move = (ev: PointerEvent) => {
+      const s = start.current;
+      if (!s || !ctx.onCollageEdit) return;
+      const rect2 = box.getBoundingClientRect();
+      const dxPct = ((ev.clientX - s.x0) / rect2.width) * 100;
+      const dyPct = ((ev.clientY - s.y0) / rect2.height) * 100;
+      if (s.mode === "move") {
+        ctx.onCollageEdit(section.id, index, {
+          x: Math.round(Math.min(100 - 8, Math.max(0, s.item.x + dxPct)) * 10) / 10,
+          y: Math.round(Math.min(100 - 8, Math.max(0, s.item.y + dyPct)) * 10) / 10,
+        });
+      } else if (s.mode === "size") {
+        ctx.onCollageEdit(section.id, index, { w: Math.round(Math.min(100, Math.max(8, s.item.w + dxPct)) * 10) / 10 });
+      } else {
+        const a0 = Math.atan2(s.y0 - s.cy, s.x0 - s.cx);
+        const a1 = Math.atan2(ev.clientY - s.cy, ev.clientX - s.cx);
+        const deg = s.item.rotation + ((a1 - a0) * 180) / Math.PI;
+        ctx.onCollageEdit(section.id, index, { rotation: Math.round(Math.min(15, Math.max(-15, deg)) * 10) / 10 });
+      }
+    };
+    const up = () => {
+      start.current = null;
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  };
+  return (
+    <div
+      className="group absolute block overflow-hidden border border-hairline bg-surface-1 ring-1 ring-transparent hover:ring-[var(--accent)]"
+      style={{ left: `${it.x}%`, top: `${it.y}%`, width: `${it.w}%`, transform: it.rotation ? `rotate(${it.rotation}deg)` : undefined, zIndex: it.z, aspectRatio: "4 / 5", cursor: "grab" }}
+      onPointerDown={onPointerDown("move")}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element -- builder canvas */}
+      <img src={`/api/assets/${it.assetId}?variant=thumb`} alt={it.asset.filename} className="pointer-events-none h-full w-full select-none object-cover" style={{ objectPosition: focalPosition(it.focal) }} draggable={false} />
+      <span aria-hidden className="absolute -right-0 -bottom-0 h-3.5 w-3.5 cursor-nwse-resize rounded-tl bg-[var(--accent)]" onPointerDown={onPointerDown("size")} />
+      <span aria-hidden className="absolute -top-0 left-1/2 h-3.5 w-3.5 -translate-x-1/2 cursor-grab rounded-b bg-[var(--accent)]/80" onPointerDown={onPointerDown("rotate")} title="rotate" />
+    </div>
+  );
+}
+
 /** Free-positioned collage — percent-absolute items over the section box;
  * the aspect wrapper reserves space (CLS-safe) and the same numbers scale
  * phone → desktop. mobileStack swaps in a simple grid below sm instead. */
 function CollageSectionView({ section, items, ctx }: { section: Extract<RenderSection, { kind: "collage" }>["section"]; items: (RenderSection & { kind: "collage" })["items"]; ctx: SectionCtx }) {
+  const boxRef = useRef<HTMLDivElement>(null);
   if (!items.length) return null;
   const collage = (className: string) => (
-    <div className={`relative w-full overflow-hidden ${className}`} style={{ aspectRatio: section.aspect.replace("/", " / ") }}>
-      {items.map((it) => (
+    <div ref={boxRef} className={`relative w-full overflow-hidden ${className}`} style={{ aspectRatio: section.aspect.replace("/", " / ") }}>
+      {items.map((it, i) =>
+        ctx.builder && boxRef.current ? (
+          <CollageItemEditable key={`${it.assetId}-${i}`} it={it} index={i} section={section} ctx={ctx} box={boxRef.current} />
+        ) : (
         <button
           key={it.assetId}
           type="button"
@@ -1290,7 +1370,8 @@ function CollageSectionView({ section, items, ctx }: { section: Extract<RenderSe
             protectedMedia={ctx.deterrents}
           />
         </button>
-      ))}
+        ),
+      )}
     </div>
   );
   if (!section.mobileStack) return <SectionShell section={section}>{collage(ctx.radiusCls)}</SectionShell>;
@@ -1374,7 +1455,7 @@ function GalleryNav({ items, view, onView }: { items: ("gallery" | "favorites" |
   );
 }
 
-export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLabel, watermarked, deterrents, assets, allowDownload, expiresAt, selectionMode, selectionLimit, selectionDeadline, initialFavorites, submittedSelection, clientToken, design, plan, fontFamily, slideshow, allowSharing, favoriteLists = [], initialNotes = {}, canMakeLists, canNote, projectTitle, eventDate }: Brand & {
+export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLabel, watermarked, deterrents, assets, allowDownload, expiresAt, selectionMode, selectionLimit, selectionDeadline, initialFavorites, submittedSelection, clientToken, design, plan, fontFamily, builder, onCollageEdit, slideshow, allowSharing, favoriteLists = [], initialNotes = {}, canMakeLists, canNote, projectTitle, eventDate }: Brand & {
   assets: GalleryAsset[];
   allowDownload: boolean;
   expiresAt: string | null;
@@ -1395,6 +1476,10 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
   /** WEB-318/319: CSS font-family stack resolved from theme.font against
    * the self-hosted pack — null = system stack. */
   fontFamily?: string | null;
+  /** WEB-322: builder mode — collage items become pointer-editable. */
+  builder?: boolean;
+  /** WEB-322: collage edit callback (normalized percents). */
+  onCollageEdit?: (sectionId: string, index: number, patch: { x?: number; y?: number; w?: number; rotation?: number }) => void;
   /** WEB-259: slideshow (server-resolved: Free tier arrives musicless). */
   slideshow?: SlideshowProps | null;
   /** WEB-262: per-photo sharing allowed (Lite+ AND the studio toggle). */
@@ -1873,6 +1958,8 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
           onMeasured: measureAspect,
           onStartSlideshow: startSlideshowAt,
           justifiedRows,
+          builder,
+          onCollageEdit,
         }
       : null;
 

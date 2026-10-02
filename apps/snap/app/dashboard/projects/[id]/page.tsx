@@ -27,6 +27,7 @@ import { listTemplates } from "@/lib/repos/templates";
 import { parseFormSchema } from "@/lib/forms";
 import { parsePresetLines } from "@/lib/invoice-settings";
 import { GalleryDesigner } from "@/components/gallery-designer";
+import { GalleryTemplatePicker } from "@/components/gallery-template-picker";
 import { GalleryActivity } from "@/components/gallery-activity";
 import { getGalleryAnalytics } from "@/lib/repos/gallery-analytics";
 import { getProjectGalleryDesign } from "@/lib/repos/gallery-design";
@@ -287,6 +288,13 @@ export default async function ProjectDetailPage({
 
       {tab === "gallery" && (
         <>
+        {/* WEB-320: visual template picker — every tier; apply is design-only. */}
+        <GalleryTemplatePicker
+          projectId={id}
+          activeTemplateKey={design?.template ?? ""}
+          hasCustomDesign={Boolean(design)}
+          canBuild={(ent?.id ?? "free") !== "free"}
+        />
         <GalleryDesigner
           projectId={id}
           initialDesign={design}

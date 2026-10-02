@@ -583,6 +583,12 @@ export function serializeGalleryDesign(design: GalleryDesign): string {
   return JSON.stringify(design);
 }
 
+/** WEB-321: builder stale-session check — do two (canonical) designs differ?
+ * Key order is deterministic from parse, so plain stringify is exact. */
+export function serializedEq(a: GalleryDesign | null, b: GalleryDesign | null): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
 /** Preset body for the template store — cover style/title/focal travel with
  * the preset, the project-specific cover photo does not (applyPreset
  * re-attaches the target project's own cover). */

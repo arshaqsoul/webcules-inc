@@ -79,3 +79,41 @@ export const SEED_TEMPLATES: SeedTemplate[] = [
     design: classicWedding,
   },
 ];
+
+export function seedTemplateOf(key: string): SeedTemplate | null {
+  return SEED_TEMPLATES.find((t) => t.key === key) ?? null;
+}
+
+/* ---------------- apply semantics (WEB-320) ---------------- */
+
+/** Remap a seed's sample-photo references onto a real project's photos:
+ * hero images and picks/collage items are positional (the project's first N
+ * photos in delivery order stand in for the sample picks), rating bindings
+ * survive as-is (they work on any gallery), folder bindings widen to "all".
+ * The seed KEY travels with the design (a pristine application is free-tier
+ * saveable; the builder clears it on first edit). Photos shorter than the
+ * seed's picks simply render fewer items. */
+export function adaptSeedToProject(
+  seed: SeedTemplate,
+  photoIds: string[],
+): GalleryDesign {
+  let i = 0;
+  /** Positional stand-ins, wrapping for short galleries (sections are
+   * independent surfaces; reuse beats empty states). Empty gallery → []. */
+  const take = (n: number): string[] =>
+    photoIds.length === 0 ? [] : Array.from({ length: n }, () => photoIds[i++ % photoIds.length]);
+  const design: GalleryDesign = JSON.parse(JSON.stringify(seed.design));
+  design.template = seed.key;
+  for (const s of design.sections ?? []) {
+    if (s.type === "hero") {
+      const n = Math.max(1, s.images.length);
+      s.images = take(n).map((assetId, idx) => ({ assetId, focal: s.images[idx]?.focal ?? { x: 0.5, y: 0.4 } }));
+    } else if (s.type === "gallery" || s.type === "slideshow") {
+      if (s.binding.kind === "picks") s.binding = { kind: "picks", ids: take(s.binding.ids.length) };
+      else if (s.binding.kind === "folder") s.binding = { kind: "all" };
+    } else if (s.type === "collage") {
+      s.items = s.items.map((it) => ({ ...it, assetId: take(1)[0] ?? it.assetId }));
+    }
+  }
+  return design;
+}
