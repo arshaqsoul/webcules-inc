@@ -24,9 +24,17 @@ const planProbe = await p.evaluate(async () => {
     body: JSON.stringify({ studioName: "Audit Probe", plan: "pro" }),
   });
   const b2 = await r.json().catch(() => ({}));
-  return { status: r.status, plan: b2.plan };
+  return { status: r.status, plan: b2.plan, orgId: b2.organizationId ?? b2.orgId ?? null };
 });
-check("studio-create ignores client plan (P0)", planProbe.status === 200 || planProbe.status === 400, JSON.stringify(planProbe));
+check("studio-create ignores client plan (P0)", (planProbe.status === 200 || planProbe.status === 400) && planProbe.plan === "free", JSON.stringify(planProbe));
+// the probe CREATES a studio — clean it up so it never litters the account
+if (planProbe.orgId) {
+  await p.evaluate(async (orgId) => {
+    await fetch("/api/auth/organization/set-active", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ organizationId: orgId }) });
+    // no org-delete API exists (by design); leave cleanup note — orgs are
+    // pruned manually on staging. Probe uses a fixed name for that.
+  }, planProbe.orgId);
+}
 
 // 3. cross-tenant quote write refused (own-org write still works; foreign-id 404s)
 const quoteProbe = await p.evaluate(async () => {
