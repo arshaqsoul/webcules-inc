@@ -1,0 +1,82 @@
+{
+  "key": "newborn-soft",
+  "name": "Newborn Soft",
+  "category": "family",
+  "description": "Cream linen calm, an airy serif, and first days in a soft three-column masonry.",
+  "genres": ["newborn"],
+  "harnessAccent": "#96685a",
+  "design": {
+    "template": "newborn-soft",
+    "layout": "masonry",
+    "columns": { "mobile": 2, "sm": 3, "md": 3 },
+    "nav": { "enabled": false, "items": ["gallery", "favorites", "info"] },
+    "sections": [
+      {
+        "type": "hero",
+        "id": "nb-hero",
+        "style": "split",
+        "title": "Elodie Rose",
+        "subtitle": "Seven days young · one slow morning at home",
+        "images": [
+          { "assetId": "newborn-01", "focal": { "x": 0.5, "y": 0.3 } },
+          { "assetId": "newborn-06", "focal": { "x": 0.5, "y": 0.42 } },
+          { "assetId": "newborn-02", "focal": { "x": 0.42, "y": 0.45 } }
+        ],
+        "interval": 7,
+        "kicker": true
+      },
+      {
+        "type": "text",
+        "id": "nb-welcome",
+        "padding": "airy",
+        "bg": "accent",
+        "html": "<p><strong><em>Ten tiny fingers, one sleepy sigh — welcome.</em></strong></p><p>These photographs were made in the calm of your own home, at your little one's pace: fed, held, and exactly as they are. Nothing posed, nothing rushed — only the first quiet days, kept for always.</p>",
+        "align": "center",
+        "width": "prose"
+      },
+      {
+        "type": "gallery",
+        "id": "nb-gallery",
+        "padding": "airy",
+        "binding": { "kind": "all" },
+        "layout": "masonry",
+        "columns": { "mobile": 2, "sm": 3, "md": 3 },
+        "heading": "The first days"
+      },
+      {
+        "type": "slideshow",
+        "id": "nb-slideshow",
+        "padding": "airy",
+        "binding": { "kind": "rating", "min": 5 },
+        "heading": "One more slow look",
+        "posters": 4
+      },
+      {
+        "type": "favorites",
+        "id": "nb-favorites",
+        "padding": "airy",
+        "heading": "Your little loves",
+        "emptyHint": "Tap the heart on any photograph — the ones you keep coming back to will gather here."
+      },
+      {
+        "type": "contact",
+        "id": "nb-contact",
+        "padding": "airy",
+        "bg": "accent",
+        "heading": "With love, from our studio to yours",
+        "body": "When you are ready to choose keepsakes, order prints, or plan the next milestone, we are only a kind word away.",
+        "ctaLabel": "Say hello"
+      }
+    ],
+    "theme": {
+      "background": "brand",
+      "padding": "airy",
+      "radius": "16px",
+      "captions": "off",
+      "font": "cormorant-garamond",
+      "fontScale": 1.15,
+      "tracking": "wide",
+      "colors": { "bg": "#faf7f2", "text": "#55483d", "accent": "#96685a" }
+    }
+  }
+}

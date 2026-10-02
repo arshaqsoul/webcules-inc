@@ -987,6 +987,8 @@ function GalleryTile(props: {
 type SectionCtx = {
   design: GalleryDesign;
   studioName: string;
+  /** Studio accent (the CTA ink computation needs the effective value). */
+  accent: string;
   contactEmail: string | null;
   favorites: Set<string>;
   heartsOn: boolean;
@@ -1025,11 +1027,17 @@ const ramp = {
  * the gallery's measure. Hero sections go full-bleed (no band). Every
  * section root carries data-sec={id} — the page builder's canvas uses it
  * for click-to-select and selection outlines (inert for clients). */
-function SectionShell({ section, children, wide }: { section: { id: string; padding?: string; bg?: string }; children: React.ReactNode; wide?: boolean }) {
+function SectionShell({ section, children, wide, ctx }: { section: { id: string; padding?: string; bg?: string }; children: React.ReactNode; wide?: boolean; ctx?: SectionCtx }) {
+  const customPalette = Boolean(ctx?.design.theme.colors?.bg);
   const pad = SECTION_PAD[section.padding ?? "normal"] ?? SECTION_PAD.normal;
+  // WEB-323 render QA: with a custom page palette, "surface" derives from the
+  // page canvas instead of the app's stock ladder, so warm/mono designs stay
+  // on-palette.
   const bg =
     section.bg === "surface"
-      ? "bg-surface-1"
+      ? customPalette
+        ? "bg-[color-mix(in_srgb,var(--ink)_5%,var(--canvas))]"
+        : "bg-surface-1"
       : section.bg === "accent"
         ? "bg-[color-mix(in_srgb,var(--accent)_8%,var(--canvas))]"
         : "";
@@ -1083,7 +1091,9 @@ function HeroSectionView({ section, slides, ctx }: { section: Extract<RenderSect
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-[color-mix(in_srgb,var(--accent)_55%,#22222b)] to-[#101014]" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-black/10" />
+        {/* WEB-323 render QA: the mid scrim keeps centered display type
+         * readable over bright hero photos (white dresses, windows). */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/60" />
         <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-white" style={{ letterSpacing: "var(--snap-tracking, 0)" }}>
           {kicker && <span className={`${ramp.kicker} opacity-90`}>{ctx.studioName}</span>}
           {section.title && <h1 className="mt-3 text-[calc(30px*var(--snap-font-scale,1))] font-semibold leading-tight sm:text-[calc(44px*var(--snap-font-scale,1))]">{section.title}</h1>}
@@ -1173,7 +1183,7 @@ function GallerySectionView({ section, assets, ctx }: { section: Extract<RenderS
     />
   );
   return (
-    <SectionShell section={section}>
+    <SectionShell section={section} ctx={ctx}>
       <SectionHeading text={section.heading ?? ""} count={section.binding.kind === "all" ? undefined : assets.length} />
       {assets.length === 0 ? (
         <p className="py-6 text-center text-sm text-ink-tertiary">
@@ -1209,7 +1219,7 @@ function SlideshowSectionView({ section, assets, ctx }: { section: Extract<Rende
   if (!assets.length) return null;
   const posters = assets.slice(0, section.posters);
   return (
-    <SectionShell section={section}>
+    <SectionShell section={section} ctx={ctx}>
       <SectionHeading text={section.heading ?? ""} />
       <button
         type="button"
@@ -1241,7 +1251,7 @@ function SlideshowSectionView({ section, assets, ctx }: { section: Extract<Rende
 function FavoritesSectionView({ section, assets, ctx, fallbackHeading }: { section: Extract<RenderSection, { kind: "favorites" }>["section"]; assets: GalleryAsset[]; ctx: SectionCtx; fallbackHeading?: string }) {
   const favs = assets.filter((a) => ctx.favorites.has(a.id) && a.kind === "image");
   return (
-    <SectionShell section={section}>
+    <SectionShell section={section} ctx={ctx}>
       <SectionHeading text={section.heading ?? fallbackHeading ?? "Your favorites"} count={favs.length || undefined} />
       {favs.length === 0 ? (
         <p className="rounded-[16px] border border-dashed border-hairline-strong px-6 py-10 text-center text-sm text-ink-tertiary">
@@ -1374,9 +1384,9 @@ function CollageSectionView({ section, items, ctx }: { section: Extract<RenderSe
       )}
     </div>
   );
-  if (!section.mobileStack) return <SectionShell section={section}>{collage(ctx.radiusCls)}</SectionShell>;
+  if (!section.mobileStack) return <SectionShell section={section} ctx={ctx}>{collage(ctx.radiusCls)}</SectionShell>;
   return (
-    <SectionShell section={section}>
+    <SectionShell section={section} ctx={ctx}>
       {/* stacked below sm (readability floor), collage from sm up — one schema, two responsive renders */}
       <div className={`grid grid-cols-2 gap-2 sm:hidden ${ctx.spacing.gap}`}>
         {items.map((it) => (
@@ -1392,10 +1402,10 @@ function CollageSectionView({ section, items, ctx }: { section: Extract<RenderSe
 
 /** Sanitized rich text (WEB-247 allowlist ran at parse) — merge fields were
  * rendered server-side before this component sees the html. */
-function TextSectionView({ section, ctx: _ctx }: { section: Extract<RenderSection, { kind: "text" }>["section"]; ctx: SectionCtx }) {
+function TextSectionView({ section, ctx }: { section: Extract<RenderSection, { kind: "text" }>["section"]; ctx: SectionCtx }) {
   if (!section.html) return null;
   return (
-    <SectionShell section={section}>
+    <SectionShell section={section} ctx={ctx}>
       <div
         className={`gallery-prose ${section.width === "wide" ? "max-w-4xl" : "max-w-2xl"} ${section.align === "center" ? "mx-auto text-center" : ""} text-ink`}
         style={{ letterSpacing: "var(--snap-tracking, 0)", ["--snap-prose-scale" as string]: "var(--snap-font-scale, 1)" }}
@@ -1406,20 +1416,43 @@ function TextSectionView({ section, ctx: _ctx }: { section: Extract<RenderSectio
   );
 }
 
+/** WCAG-aware CTA label color for a given accent (hex): white on dark
+ * accents, near-black ink on light ones (gold, cream) — a template's
+ * conversion button must never be its lowest-contrast text. */
+function ctaInkFor(accent: string | undefined | null): string {
+  const m = /^#([0-9a-f]{6})$/i.exec((accent ?? "").trim());
+  if (!m) return "#ffffff";
+  const n = parseInt(m[1], 16);
+  const lin = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  });
+  const L = 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
+  // white text needs L ≤ ~0.183 for 4.5:1 — above that, dark ink wins
+  return L > 0.185 ? "#101014" : "#ffffff";
+}
+
 /** Studio contact / CTA card — merge-rendered copy + accent CTA. */
 function ContactSectionView({ section, ctx }: { section: Extract<RenderSection, { kind: "contact" }>["section"]; ctx: SectionCtx }) {
   const href = section.ctaHref ?? (ctx.contactEmail ? `mailto:${ctx.contactEmail}` : null);
+  // WEB-323 render QA: surfaces follow a custom page palette (derived from
+  // --canvas, not the app's cool surface ladder), corners follow the theme
+  // radius token, and the CTA label picks its ink from the effective accent.
+  const customPalette = Boolean(ctx.design.theme.colors?.bg);
+  const surfaceCls = customPalette ? "bg-[color-mix(in_srgb,var(--ink)_5%,var(--canvas))]" : "bg-surface-1";
+  const cardCls = ctx.design.theme.radius === "0px" ? "rounded-none" : ctx.design.theme.radius === "8px" ? "rounded-[8px]" : "rounded-[16px]";
+  const pillCls = ctx.design.theme.radius === "0px" ? "rounded-none" : "rounded-full";
   return (
-    <SectionShell section={section}>
-      <div className="mx-auto max-w-2xl rounded-[16px] border border-hairline bg-surface-1 p-8 text-center sm:p-10" style={{ letterSpacing: "var(--snap-tracking, 0)" }}>
+    <SectionShell section={section} ctx={ctx}>
+      <div className={`mx-auto max-w-2xl ${cardCls} border border-hairline ${surfaceCls} p-8 text-center sm:p-10`} style={{ letterSpacing: "var(--snap-tracking, 0)" }}>
         <span className={`${ramp.kicker} text-ink-tertiary`}>{ctx.studioName}</span>
         {section.heading && <h2 className={`${ramp.h2} mt-3 text-ink`}>{section.heading}</h2>}
         {section.body && <p className={`${ramp.body} mt-3 text-ink-subtle`}>{section.body}</p>}
         {href && (
           <a
             href={href}
-            className="mt-6 inline-block rounded-full px-6 py-2.5 text-sm font-semibold text-white transition-[filter] hover:brightness-110"
-            style={{ background: "var(--accent)" }}
+            className={`mt-6 inline-block ${pillCls} px-6 py-2.5 text-sm font-semibold transition-[filter] hover:brightness-110`}
+            style={{ background: "var(--accent)", color: ctaInkFor(ctx.design.theme.colors?.accent ?? ctx.accent) }}
           >
             {section.ctaLabel?.trim() || ctx.contactEmail || "Get in touch"}
           </a>
@@ -1941,6 +1974,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
       ? {
           design,
           studioName,
+          accent,
           contactEmail,
           favorites,
           heartsOn,

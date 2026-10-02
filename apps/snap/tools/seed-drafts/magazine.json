@@ -1,0 +1,75 @@
+{
+  "key": "magazine",
+  "name": "Magazine",
+  "category": "editorial",
+  "description": "Full-bleed fashion cover, cover-story row, cascade spread — Fraunces serif, an actual issue.",
+  "genres": ["editorial"],
+  "harnessAccent": "#8c2f24",
+  "design": {
+    "template": "magazine",
+    "layout": "cascade",
+    "nav": { "enabled": true, "items": ["gallery", "favorites", "info"] },
+    "sections": [
+      {
+        "type": "hero",
+        "id": "mg-hero",
+        "style": "fullbleed",
+        "title": "The Autumn Edit",
+        "subtitle": "A fashion editorial in wool, silk and low light",
+        "images": [
+          { "assetId": "editorial-07", "focal": { "x": 0.5, "y": 0.45 } },
+          { "assetId": "editorial-04", "focal": { "x": 0.5, "y": 0.4 } },
+          { "assetId": "editorial-10", "focal": { "x": 0.5, "y": 0.5 } }
+        ],
+        "interval": 6,
+        "kicker": true
+      },
+      {
+        "type": "text",
+        "id": "mg-standfirst",
+        "html": "<p><em>Ten looks, one long afternoon, and a north-facing window.</em></p><p>This is the full edit from our autumn shoot — the seams, the movement, and the quiet frames between the poses. Everything here was made with available light, in a single sitting, the way a magazine spread is built.</p><p><strong>Mark the frames you love.</strong> Your shortlist becomes the final cut — and the studio behind this issue takes a small number of commissions each season.</p>",
+        "align": "center",
+        "width": "prose"
+      },
+      {
+        "type": "gallery",
+        "id": "mg-cover-story",
+        "binding": { "kind": "picks", "ids": ["editorial-01", "editorial-03", "editorial-06", "editorial-08"] },
+        "layout": "grid",
+        "columns": { "mobile": 2, "sm": 2, "md": 4 },
+        "heading": "The Cover Story"
+      },
+      {
+        "type": "gallery",
+        "id": "mg-spread",
+        "binding": { "kind": "all" },
+        "layout": "cascade",
+        "heading": "The Full Spread"
+      },
+      {
+        "type": "favorites",
+        "id": "mg-favorites",
+        "heading": "Your Shortlist",
+        "emptyHint": "Tap the ♥ on a frame — the ones you keep gather here for the final cut."
+      },
+      {
+        "type": "contact",
+        "id": "mg-contact",
+        "heading": "Commission the next issue",
+        "body": "We shoot a small number of editorial commissions each season — campaigns, lookbooks and portfolios. Tell us what you're making and we'll bring the light.",
+        "ctaLabel": "Start a conversation",
+        "ctaHref": "https://maison-noir.example"
+      }
+    ],
+    "theme": {
+      "background": "light",
+      "padding": "airy",
+      "radius": "0px",
+      "captions": "hover",
+      "font": "fraunces",
+      "fontScale": 1.15,
+      "tracking": "wide",
+      "colors": { "bg": "#faf8f4", "text": "#1c1814", "accent": "#8c2f24" }
+    }
+  }
+}

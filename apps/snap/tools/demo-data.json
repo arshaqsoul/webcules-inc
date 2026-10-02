@@ -1,0 +1,322 @@
+{
+  "seed": 20261001,
+  "generatedAt": "2026-10-01T19:25:14",
+  "faker": true,
+  "clients": [
+    {
+      "name": "Priya Fernando",
+      "email": "priya+demo@webcules.com",
+      "phone": "(973) 555-0142",
+      "notes": "Daniel & Priya, married at Willow Creek Estate. Golden-hour couple portraits are the priority; album upgrade + second photographer on the booking."
+    },
+    {
+      "name": "Ian Rice",
+      "email": "hmacdonald@example.net",
+      "phone": "(731)520-2763",
+      "notes": "Two kids (4 and 7). Park session preferred; youngest does better late afternoon."
+    },
+    {
+      "name": "Debra Ochoa",
+      "email": "larryvalencia@example.net",
+      "phone": "947.872.5680",
+      "notes": "Office manager. Needs 14 headshots for the website relaunch — consistent lighting across the set."
+    },
+    {
+      "name": "Katherine Rodriguez",
+      "email": "ljames@example.com",
+      "phone": "001-928-440-7709x379",
+      "notes": "Baby due any day; wants the session within the first 10 days. Prefers a warm, quiet studio setup."
+    },
+    {
+      "name": "William Perkins",
+      "email": "christopherharris@example.org",
+      "phone": "001-453-971-5591",
+      "notes": "Autumn minis last year — always first to book the next seasonal date."
+    }
+  ],
+  "leads": [
+    {
+      "name": "Julie Freeman",
+      "email": "victor88@example.org",
+      "phone": "857.907.3380",
+      "eventType": "Wedding",
+      "eventDate": "2027-07-28",
+      "status": "new",
+      "source": "contact_form",
+      "message": "Hi! We got engaged last month and we're planning a July 28, 2027 wedding for about 120 guests in Montclair. Your Willow Creek gallery stopped us mid-scroll. Do you still have that date open, and what do your collections start at?",
+      "messages": [
+        {
+          "direction": "in",
+          "subject": "Wedding inquiry — Montclair",
+          "body": "Hi! We got engaged last month and we're planning a wedding for about 120 guests in Montclair. Your Willow Creek gallery stopped us mid-scroll. Do you still have our date open, and what do your collections start at?",
+          "daysAgo": 1
+        }
+      ]
+    },
+    {
+      "name": "David White",
+      "email": "jeffrey38@example.com",
+      "phone": "(498)483-8242x177",
+      "eventType": "Family",
+      "eventDate": "2026-10-22",
+      "status": "new",
+      "source": "booking",
+      "message": "Hi there — we'd love to book the fall mini for our crew (two kids, one very energetic dog if allowed!). Is the Saturday after next still available?",
+      "messages": [
+        {
+          "direction": "in",
+          "subject": "Fall mini session?",
+          "body": "Hi there — we'd love to book the fall mini for our crew (two kids, one very energetic dog if allowed!). Is the Saturday after next still available?",
+          "daysAgo": 0
+        }
+      ]
+    },
+    {
+      "name": "Cassie Maldonado",
+      "email": "amandanguyen@example.com",
+      "phone": "409-933-0960x398",
+      "eventType": "Corporate headshots",
+      "eventDate": "2026-11-05",
+      "status": "new",
+      "source": "contact_form",
+      "message": "Hello — our firm needs updated team headshots for the website relaunch, about 14 people. Could you come on-site, or do you prefer studio? What's your per-person rate?",
+      "messages": [
+        {
+          "direction": "in",
+          "subject": "Team headshots for website relaunch",
+          "body": "Hello — our firm needs updated team headshots for the website relaunch, about 14 people. Could you come on-site, or do you prefer studio? What's your per-person rate?",
+          "daysAgo": 3
+        }
+      ]
+    },
+    {
+      "name": "Sandra Glenn",
+      "email": "grodriguez@example.com",
+      "phone": "374-848-6353x50537",
+      "eventType": "Newborn",
+      "eventDate": "2026-10-15",
+      "status": "replied",
+      "source": "contact_form",
+      "message": "We're expecting our first in a few weeks and love your newborn work. When should we book, and how soon after the birth would the session happen?",
+      "messages": [
+        {
+          "direction": "in",
+          "subject": "Newborn session question",
+          "body": "We're expecting our first in a few weeks and love your newborn work. When should we book, and how soon after the birth would the session happen?",
+          "daysAgo": 4
+        },
+        {
+          "direction": "out",
+          "subject": "Re: Newborn session question",
+          "body": "Congratulations! The sweet spot is days 5–10, when babies are sleepiest. I pencil in your due date and we confirm once the little one arrives — the studio stays warm and quiet, and sessions are never rushed.",
+          "daysAgo": 4
+        }
+      ]
+    },
+    {
+      "name": "Brenda Patel",
+      "email": "nathan22@example.com",
+      "phone": "692-906-9921x925",
+      "eventType": "Engagement",
+      "eventDate": "2026-11-30",
+      "status": "replied",
+      "source": "contact_form",
+      "message": "Hi! We're planning our engagement shoot and love the golden, film-like look of your couples work. Are weekends in the park possible?",
+      "messages": [
+        {
+          "direction": "in",
+          "subject": "Engagement shoot — park?",
+          "body": "Hi! We're planning our engagement shoot and love the golden, film-like look of your couples work. Are weekends in the park possible?",
+          "daysAgo": 6
+        },
+        {
+          "direction": "out",
+          "subject": "Re: Engagement shoot — park?",
+          "body": "Absolutely — sunset weekends in the park are my favorite. I'd suggest the hour before golden hour so we can wander and let it get prettier as we go. I'll send over a mini guide with outfit ideas!",
+          "daysAgo": 5
+        },
+        {
+          "direction": "in",
+          "subject": "Re: Re: Engagement shoot — park?",
+          "body": "This all sounds perfect. One more thing — could we bring our dog for the last fifteen minutes? He's very photogenic and we'd love him in a few frames.",
+          "daysAgo": 0
+        }
+      ]
+    },
+    {
+      "name": "Ian Rice",
+      "email": "hmacdonald@example.net",
+      "phone": "(731)520-2763",
+      "eventType": "Family",
+      "eventDate": "2026-09-11",
+      "status": "converted",
+      "source": "contact_form",
+      "message": "Hi! A friend sent me your fall family minis and I fell in love with the warm tones. Two kids, 4 and 7 — the youngest does better late afternoon. Any slots left?",
+      "messages": [
+        {
+          "direction": "in",
+          "subject": "Fall family mini?",
+          "body": "Hi! A friend sent me your fall family minis and I fell in love with the warm tones. Two kids, 4 and 7 — the youngest does better late afternoon. Any slots left?",
+          "daysAgo": 24
+        },
+        {
+          "direction": "out",
+          "subject": "Re: Fall family mini?",
+          "body": "Hi! Yes — I have two late-afternoon slots left. The light around 4:30 is gorgeous right now and the park is peak color. Want me to hold one for you?",
+          "daysAgo": 24
+        },
+        {
+          "direction": "in",
+          "subject": "Re: Re: Fall family mini?",
+          "body": "Yes please hold the 4:30! What do we need to bring?",
+          "daysAgo": 23
+        },
+        {
+          "direction": "out",
+          "subject": "Re: Re: Re: Fall family mini?",
+          "body": "Just yourselves and maybe a favorite snack for the 4-year-old — I'll take care of the rest. Booking confirmed; gallery lands about two weeks after.",
+          "daysAgo": 22
+        }
+      ]
+    },
+    {
+      "name": "Caitlyn Harper",
+      "email": "qcurtis@example.org",
+      "phone": "(854)260-8424",
+      "eventType": "Birthday party",
+      "eventDate": "2026-07-03",
+      "status": "archived",
+      "source": "contact_form",
+      "message": "Hi — pricing for a 60th birthday party, roughly 40 guests, evening? Just candids, nothing formal.",
+      "messages": [
+        {
+          "direction": "in",
+          "subject": "60th birthday party — candids",
+          "body": "Hi — pricing for a 60th birthday party, roughly 40 guests, evening? Just candids, nothing formal.",
+          "daysAgo": 95
+        },
+        {
+          "direction": "out",
+          "subject": "Re: 60th birthday party — candids",
+          "body": "Hi! For evening candids I'd suggest my two-hour event rate — I float and capture the room as it happens. Dates in that window are still open!",
+          "daysAgo": 94
+        }
+      ]
+    }
+  ],
+  "emailThread": {
+    "subject": "Album delivery?",
+    "from": "priya+demo@webcules.com",
+    "fromName": "Priya Fernando",
+    "messages": [
+      {
+        "direction": "in",
+        "subject": "Album delivery?",
+        "body": "Hi Amara! The gallery made my mother cry (happy tears!). Quick question — when does the album estimate ship, and can we add two pages from the rehearsal dinner?",
+        "daysAgo": 2
+      },
+      {
+        "direction": "out",
+        "subject": "Re: Album delivery?",
+        "body": "Priya! That made my whole week. The album proof lands with you in about ten days, and yes — send me your favorite rehearsal frames and I'll mock up the extra spreads so you can see them in the layout.",
+        "daysAgo": 2
+      },
+      {
+        "direction": "in",
+        "subject": "Re: Re: Album delivery?",
+        "body": "Perfect, will do tonight. Also — my cousin is getting married next spring and asked who our photographer was. I've already sent her your site!",
+        "daysAgo": 0
+      }
+    ]
+  },
+  "projects": {
+    "wedding": {
+      "title": "Daniel & Priya — Willow Creek Estate Wedding",
+      "notes": "Full day, second photographer (Jess). Golden-hour portraits on the west lawn at 6:10pm. Delivered gallery + 10-frame sneak peek same night.",
+      "eventDaysAgo": 24
+    },
+    "family": {
+      "title": "The Rice Family — Autumn Park Session",
+      "notes": "Late-afternoon park mini. Kids warmed up after the snack break — watch the younger one's expressions in the last third of the set.",
+      "eventDaysAgo": 8
+    },
+    "corporate": {
+      "title": "Flowers, Anderson and Nelson — Team Headshots",
+      "notes": "14 people, on-site conference room converted to a studio. Consistent lighting set; two rounds for blinkers. Delivering web-ready crops + print masters.",
+      "eventDaysAgo": 1
+    },
+    "newborn": {
+      "title": "Baby Rodriguez — Newborn Session",
+      "notes": "In-studio, day 8. Slept through almost everything — the wrapped poses on the oak blanket are the keepers. Culling done, retouch list flagged.",
+      "eventDaysAgo": 12
+    }
+  },
+  "invoices": {
+    "paid": {
+      "number": "AO-0001",
+      "status": "paid",
+      "issuedDaysAgo": 32,
+      "dueDaysAfter": 14,
+      "lines": [
+        {
+          "description": "Full-day wedding coverage (8 hours)",
+          "qty": 1,
+          "amountMinor": 280000
+        },
+        {
+          "description": "Second photographer",
+          "qty": 1,
+          "amountMinor": 45000
+        },
+        {
+          "description": "Album credit (30 spreads)",
+          "qty": 1,
+          "amountMinor": 30000
+        }
+      ],
+      "memo": "Retainer of $500 received 2026 balance applied. Thank you for having us!"
+    },
+    "open": {
+      "number": "AO-0002",
+      "status": "sent",
+      "issuedDaysAgo": 5,
+      "dueDaysAfter": 14,
+      "lines": [
+        {
+          "description": "Autumn family session (60 minutes)",
+          "qty": 1,
+          "amountMinor": 35000
+        },
+        {
+          "description": "Additional retouched image set (10)",
+          "qty": 1,
+          "amountMinor": 7500
+        }
+      ],
+      "memo": "Gallery upgrades as selected. Thank you!"
+    },
+    "overdue": {
+      "number": "AO-0003",
+      "status": "sent",
+      "issuedDaysAgo": 34,
+      "dueDaysAfter": 14,
+      "lines": [
+        {
+          "description": "On-site team headshots (3 hours, 14 people)",
+          "qty": 1,
+          "amountMinor": 90000
+        },
+        {
+          "description": "Web-ready crop set + usage license",
+          "qty": 1,
+          "amountMinor": 30000
+        }
+      ],
+      "memo": "Deposit received; balance net 14. PO 2026-118 attached."
+    }
+  },
+  "contracts": {
+    "wedding": "This agreement is between {{studio_name}} (\"the Studio\") and {{client_name}} (\"the Client\") for the wedding photography collection described as {{project_title}}.\n\nCoverage. The Studio will photograph the wedding on {{event_date}} for up to eight (8) hours, including a second photographer, as outlined in the collection details shared with the Client.\n\nDelivery. Edited, gallery-ready images are delivered through a private online gallery within six weeks of the wedding date, with a sneak peek set within 48 hours.\n\nPayment. The retainer reserves the date and is applied toward the total. The remaining balance is due one week before the wedding. Payments may be made by card through the Studio's secure payment links.\n\nAlbum. Album credit, if included, is redeemed against the Studio's album collections and never expires.\n\nCancellation. If the Client cancels, the retainer is non-refundable. The Studio will make reasonable efforts to rebook the date. If the Studio cannot attend due to illness, emergency or force majeure, all payments made will be refunded in full within 10 business days, or a comparable replacement photographer may be offered.\n\nCreative license. The Studio retains the copyright in all images and may share selected images for portfolio use unless the Client requests otherwise in writing.\n\nBy signing below, both parties agree to these terms.",
+    "portrait": "This portrait session agreement is between {{studio_name}} (\"the Studio\") and {{client_name}} (\"the Client\").\n\nSession. The portrait session takes place on {{event_date}} at the agreed location and time. The Studio confirms the date, time, and meeting point by email no later than 48 hours before the session.\n\nDelivery. The Client receives a private online gallery of fully edited images within two weeks of the session. Favorites, downloads, and print releases are managed through the gallery.\n\nUsage. Personal printing and sharing are included. Commercial use of the images requires written permission from the Studio.\n\nPayment. The session fee is due at booking and reserves the date. Additional image sets are invoiced after gallery selection.\n\nWeather. If conditions make outdoor photography unsafe or unreasonably difficult, the Studio and Client will agree on a new date within 60 days at no additional charge.\n\nBy signing below, both parties agree to these terms."
+  }
+}

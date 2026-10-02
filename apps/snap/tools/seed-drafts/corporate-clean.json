@@ -1,0 +1,59 @@
+{
+  "key": "corporate-clean",
+  "name": "Corporate Clean",
+  "category": "corporate",
+  "description": "Crisp square grid, Inter type, straight to the photos — headshot & event delivery without the frills.",
+  "genres": ["corporate"],
+  "harnessAccent": "#1e3a5f",
+  "design": {
+    "template": "corporate-clean",
+    "layout": "grid",
+    "sections": [
+      {
+        "type": "hero",
+        "id": "cc-hero",
+        "style": "static",
+        "title": "The Leadership Summit",
+        "subtitle": "Event coverage & executive headshots — final selections, retouched and ready to share.",
+        "images": [{ "assetId": "corporate-01", "focal": { "x": 0.5, "y": 0.42 } }],
+        "interval": 0,
+        "kicker": true
+      },
+      {
+        "type": "gallery",
+        "id": "cc-grid",
+        "binding": { "kind": "all" },
+        "layout": "grid",
+        "columns": { "mobile": 2, "sm": 3, "md": 4 },
+        "heading": "All photos"
+      },
+      {
+        "type": "text",
+        "id": "cc-note",
+        "bg": "surface",
+        "html": "<p><strong>About this gallery.</strong> Every photo here is a final, retouched selection in full resolution — download and use them across your site, decks, and social channels; a photo credit is appreciated, never required. Need a specific crop, a print-ready file, or the raw set for your comms team? Just ask — revisions are included, and the <a href=\"https://meridian-studio.example/usage\">usage FAQ</a> covers licensing in plain language.</p>",
+        "align": "left",
+        "width": "prose"
+      },
+      {
+        "type": "contact",
+        "id": "cc-contact",
+        "bg": "accent",
+        "padding": "airy",
+        "heading": "Book your next shoot",
+        "body": "Corporate headshots, team photo days, and full event coverage. Tell us about your team and we'll reply with a tailored quote within one business day.",
+        "ctaLabel": "Check availability",
+        "ctaHref": "https://meridian-studio.example/book"
+      }
+    ],
+    "theme": {
+      "background": "light",
+      "padding": "normal",
+      "radius": "0px",
+      "captions": "off",
+      "font": "inter",
+      "fontScale": 1,
+      "colors": { "bg": "#ffffff", "text": "#15181d", "accent": "#1e3a5f" }
+    }
+  }
+}

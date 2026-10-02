@@ -1,0 +1,64 @@
+{
+  "key": "editorial-wedding",
+  "name": "Editorial Wedding",
+  "category": "wedding",
+  "description": "Full-bleed statement cover, justified photo rows, magazine serif — high fashion.",
+  "genres": ["wedding"],
+  "harnessAccent": "#8a6a48",
+  "design": {
+    "template": "editorial-wedding",
+    "layout": "cascade",
+    "columns": { "mobile": 2, "sm": 3, "md": 3 },
+    "sections": [
+      {
+        "type": "hero",
+        "id": "ew-hero",
+        "style": "fullbleed",
+        "title": "Eloise & Julian",
+        "subtitle": "Château de Varennes · September",
+        "images": [
+          { "assetId": "wedding-10", "focal": { "x": 0.5, "y": 0.55 } }
+        ],
+        "interval": 0,
+        "kicker": true
+      },
+      {
+        "type": "text",
+        "id": "ew-standfirst",
+        "html": "<p><em>It rained until noon, then the light broke over the vineyard — a day of slow hours, loud toasts, and one very quiet first dance.</em></p>",
+        "align": "center",
+        "width": "prose"
+      },
+      {
+        "type": "gallery",
+        "id": "ew-gallery",
+        "binding": { "kind": "all" },
+        "layout": "cascade",
+        "heading": "The Edit"
+      },
+      {
+        "type": "favorites",
+        "id": "ew-favorites",
+        "heading": "The Shortlist",
+        "emptyHint": "Heart the frames you love — your shortlist gathers here."
+      },
+      {
+        "type": "contact",
+        "id": "ew-contact",
+        "heading": "Begin your chapter",
+        "body": "A wedding told in quiet frames. We take a limited number of commissions each season.",
+        "ctaLabel": "Enquire about your date",
+        "ctaHref": "https://atelier.example/weddings"
+      }
+    ],
+    "theme": {
+      "background": "light",
+      "padding": "airy",
+      "radius": "0px",
+      "captions": "off",
+      "font": "cormorant-garamond",
+      "fontScale": 1.3,
+      "colors": { "bg": "#faf7f2", "text": "#221d17", "accent": "#8a6a48" }
+    }
+  }
+}

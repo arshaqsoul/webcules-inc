@@ -1,0 +1,72 @@
+{
+  "key": "minimal-mono",
+  "name": "Minimal Mono",
+  "category": "minimal",
+  "description": "Near-white canvas, ink-black type, tight square grid — the gallery as a quiet exhibition.",
+  "genres": ["editorial"],
+  "harnessAccent": "#111111",
+  "design": {
+    "template": "minimal-mono",
+    "layout": "grid",
+    "sections": [
+      {
+        "type": "hero",
+        "id": "mm-hero",
+        "style": "static",
+        "title": "",
+        "subtitle": "Ten frames. No color. No noise.",
+        "images": [],
+        "interval": 0,
+        "kicker": true
+      },
+      {
+        "type": "gallery",
+        "id": "mm-grid",
+        "binding": { "kind": "all" },
+        "layout": "grid",
+        "columns": { "mobile": 2, "sm": 3, "md": 4 },
+        "heading": ""
+      },
+      {
+        "type": "text",
+        "id": "mm-statement",
+        "padding": "airy",
+        "html": "<p><strong>About the set.</strong> Shot in a single morning, one lens, no strobes — the frames stand on composition and light alone. <em>Every photograph here is a final, retouched selection.</em> For prints or a session of your own: <a href=\"https://atelier-noir.example/commissions\">atelier-noir.example</a>.</p>",
+        "align": "center",
+        "width": "prose"
+      },
+      {
+        "type": "gallery",
+        "id": "mm-selects",
+        "binding": { "kind": "rating", "min": 5 },
+        "layout": "grid",
+        "columns": { "mobile": 2, "sm": 3, "md": 4 },
+        "heading": "Studio selects"
+      },
+      {
+        "type": "favorites",
+        "id": "mm-favorites",
+        "heading": "Your favorites",
+        "emptyHint": "Tap the ♥ on a photograph you love — it will wait for you here."
+      },
+      {
+        "type": "contact",
+        "id": "mm-contact",
+        "heading": "Commission the studio",
+        "body": "Editorial, portrait, and campaign work — shot slow, delivered quiet. Tell us what you are making.",
+        "ctaLabel": "Start a conversation",
+        "ctaHref": "https://atelier-noir.example/commissions"
+      }
+    ],
+    "theme": {
+      "background": "light",
+      "padding": "compact",
+      "radius": "0px",
+      "captions": "off",
+      "font": "space-grotesk",
+      "fontScale": 0.9,
+      "tracking": "wide",
+      "colors": { "bg": "#fafafa", "text": "#111111", "accent": "#111111" }
+    }
+  }
+}

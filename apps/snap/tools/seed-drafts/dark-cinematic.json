@@ -1,0 +1,92 @@
+{
+  "key": "dark-cinematic",
+  "name": "Dark Cinematic",
+  "category": "wedding",
+  "description": "Night-reception energy — Ken Burns hero, tight dark grid, gold on black.",
+  "genres": ["wedding"],
+  "harnessAccent": "#c8a45c",
+  "design": {
+    "template": "dark-cinematic",
+    "layout": "grid",
+    "nav": { "enabled": true, "items": ["gallery", "favorites", "info"] },
+    "sections": [
+      {
+        "type": "hero",
+        "id": "dc-hero",
+        "style": "kenburns",
+        "title": "Vera & Julian",
+        "subtitle": "After midnight at The Waverly",
+        "images": [
+          { "assetId": "wedding-08", "focal": { "x": 0.5, "y": 0.45 } },
+          { "assetId": "wedding-07", "focal": { "x": 0.5, "y": 0.4 } },
+          { "assetId": "wedding-05", "focal": { "x": 0.5, "y": 0.5 } },
+          { "assetId": "wedding-10", "focal": { "x": 0.5, "y": 0.5 } }
+        ],
+        "interval": 6,
+        "kicker": true
+      },
+      {
+        "type": "gallery",
+        "id": "dc-grid",
+        "binding": { "kind": "all" },
+        "layout": "grid",
+        "columns": { "mobile": 2, "sm": 3, "md": 5 },
+        "padding": "compact"
+      },
+      {
+        "type": "collage",
+        "id": "dc-collage",
+        "aspect": "16/9",
+        "mobileStack": true,
+        "padding": "normal",
+        "items": [
+          { "assetId": "wedding-02", "x": 2, "y": 12, "w": 27, "rotation": -3, "z": 2, "focal": { "x": 0.5, "y": 0.35 } },
+          { "assetId": "wedding-09", "x": 21, "y": 42, "w": 23, "rotation": 2, "z": 3, "focal": { "x": 0.5, "y": 0.4 } },
+          { "assetId": "wedding-06", "x": 40, "y": 8, "w": 24, "rotation": -2, "z": 2, "focal": { "x": 0.5, "y": 0.45 } },
+          { "assetId": "wedding-04", "x": 57, "y": 30, "w": 25, "rotation": 3, "z": 3, "focal": { "x": 0.5, "y": 0.3 } },
+          { "assetId": "wedding-03", "x": 76, "y": 10, "w": 22, "rotation": -3, "z": 1, "focal": { "x": 0.5, "y": 0.5 } }
+        ]
+      },
+      {
+        "type": "slideshow",
+        "id": "dc-film",
+        "binding": { "kind": "picks", "ids": ["wedding-10", "wedding-08", "wedding-05", "wedding-07"] },
+        "heading": "Watch the film",
+        "posters": 4,
+        "bg": "surface",
+        "padding": "normal"
+      },
+      {
+        "type": "favorites",
+        "id": "dc-favorites",
+        "heading": "Your favorites",
+        "emptyHint": "Tap the ♥ on any frame — the ones you keep will collect here."
+      },
+      {
+        "type": "text",
+        "id": "dc-note",
+        "html": "<p><strong>Shot after midnight.</strong></p><p>Every frame in this gallery was made after sunset — candlelight, string lights, and a dance floor that never quite emptied. Mark the moments you love and we will finish them by hand.</p><p><em>Available light only. No flash, all night.</em></p>",
+        "align": "center",
+        "width": "prose"
+      },
+      {
+        "type": "contact",
+        "id": "dc-contact",
+        "heading": "Your night, next",
+        "body": "We take a small number of weddings each season. Say hello and we'll share a full gallery from a real reception.",
+        "ctaLabel": "Check your date",
+        "ctaHref": "https://nocturne-studio.example"
+      }
+    ],
+    "theme": {
+      "background": "dark",
+      "padding": "compact",
+      "radius": "8px",
+      "captions": "off",
+      "font": "space-grotesk",
+      "fontScale": 1,
+      "tracking": "wide",
+      "colors": { "bg": "#0f0f13", "text": "#f2f2f4", "accent": "#c8a45c" }
+    }
+  }
+}

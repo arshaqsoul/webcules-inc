@@ -1,0 +1,90 @@
+{
+  "key": "luxury",
+  "name": "Luxury",
+  "category": "editorial",
+  "description": "Champagne gold on near-black — full-bleed hero, curated highlights, Playfair serif.",
+  "genres": ["wedding"],
+  "harnessAccent": "#8a6d3f",
+  "design": {
+    "template": "luxury",
+    "layout": "masonry",
+    "sections": [
+      {
+        "type": "hero",
+        "id": "lux-hero",
+        "style": "fullbleed",
+        "title": "Serena & Alexander",
+        "subtitle": "A black-tie evening at Ashford House",
+        "images": [
+          { "assetId": "wedding-10", "focal": { "x": 0.5, "y": 0.5 } },
+          { "assetId": "wedding-06", "focal": { "x": 0.5, "y": 0.45 } },
+          { "assetId": "wedding-05", "focal": { "x": 0.5, "y": 0.5 } }
+        ],
+        "interval": 7,
+        "kicker": true
+      },
+      {
+        "type": "text",
+        "id": "lux-standfirst",
+        "html": "<p><em>A candlelit October evening at Ashford House — two families, one long table, and a first dance no one wanted to end. The frames that follow are the ones worth lingering over.</em></p>",
+        "align": "center",
+        "width": "prose",
+        "padding": "airy"
+      },
+      {
+        "type": "gallery",
+        "id": "lux-highlights",
+        "binding": { "kind": "rating", "min": 5 },
+        "layout": "masonry",
+        "columns": { "mobile": 2, "sm": 2, "md": 2 },
+        "heading": "The Highlights",
+        "padding": "airy"
+      },
+      {
+        "type": "gallery",
+        "id": "lux-collection",
+        "binding": { "kind": "all" },
+        "layout": "masonry",
+        "columns": { "mobile": 2, "sm": 2, "md": 3 },
+        "heading": "The Collection",
+        "bg": "accent",
+        "padding": "airy"
+      },
+      {
+        "type": "text",
+        "id": "lux-interlude",
+        "html": "<p><strong>The keepsake album.</strong></p><p>Each gallery is finished by hand — color, grain, and sequence considered frame by frame. Mark the photographs you love, and we will bind your album around them.</p><p><em>Heirloom albums are crafted over six weeks. <a href=\"https://maison-lumiere.example/albums\">View a sample album</a>.</em></p>",
+        "align": "center",
+        "width": "prose",
+        "bg": "accent",
+        "padding": "airy"
+      },
+      {
+        "type": "favorites",
+        "id": "lux-favorites",
+        "heading": "Your Keepsakes",
+        "emptyHint": "Tap the ♥ on a photograph — the ones you keep will gather here.",
+        "padding": "airy"
+      },
+      {
+        "type": "contact",
+        "id": "lux-contact",
+        "heading": "Begin Your Story",
+        "body": "We accept a small number of commissions each year, and each is photographed as if it were the only one. Tell us about your day.",
+        "ctaLabel": "Request the Portfolio",
+        "ctaHref": "https://maison-lumiere.example",
+        "padding": "airy"
+      }
+    ],
+    "theme": {
+      "background": "dark",
+      "padding": "airy",
+      "radius": "0px",
+      "captions": "off",
+      "font": "playfair-display",
+      "fontScale": 1.15,
+      "tracking": "wide",
+      "colors": { "bg": "#0e0d0b", "text": "#f4efe4", "accent": "#8a6d3f" }
+    }
+  }
+}

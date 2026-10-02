@@ -6,5 +6,41 @@ export const TEMPLATE_PREVIEWS: Record<string, { desktop: string; mobile: string
   "classic-wedding": {
     "desktop": "/api/pack/template-previews/classic-wedding/desktop.webp",
     "mobile": "/api/pack/template-previews/classic-wedding/mobile.webp"
+  },
+  "corporate-clean": {
+    "desktop": "/api/pack/template-previews/corporate-clean/desktop.webp",
+    "mobile": "/api/pack/template-previews/corporate-clean/mobile.webp"
+  },
+  "dark-cinematic": {
+    "desktop": "/api/pack/template-previews/dark-cinematic/desktop.webp",
+    "mobile": "/api/pack/template-previews/dark-cinematic/mobile.webp"
+  },
+  "editorial-wedding": {
+    "desktop": "/api/pack/template-previews/editorial-wedding/desktop.webp",
+    "mobile": "/api/pack/template-previews/editorial-wedding/mobile.webp"
+  },
+  "family-warm": {
+    "desktop": "/api/pack/template-previews/family-warm/desktop.webp",
+    "mobile": "/api/pack/template-previews/family-warm/mobile.webp"
+  },
+  "luxury": {
+    "desktop": "/api/pack/template-previews/luxury/desktop.webp",
+    "mobile": "/api/pack/template-previews/luxury/mobile.webp"
+  },
+  "magazine": {
+    "desktop": "/api/pack/template-previews/magazine/desktop.webp",
+    "mobile": "/api/pack/template-previews/magazine/mobile.webp"
+  },
+  "minimal-mono": {
+    "desktop": "/api/pack/template-previews/minimal-mono/desktop.webp",
+    "mobile": "/api/pack/template-previews/minimal-mono/mobile.webp"
+  },
+  "newborn-soft": {
+    "desktop": "/api/pack/template-previews/newborn-soft/desktop.webp",
+    "mobile": "/api/pack/template-previews/newborn-soft/mobile.webp"
+  },
+  "party-energy": {
+    "desktop": "/api/pack/template-previews/party-energy/desktop.webp",
+    "mobile": "/api/pack/template-previews/party-energy/mobile.webp"
   }
 };

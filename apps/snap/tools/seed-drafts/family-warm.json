@@ -1,0 +1,90 @@
+{
+  "key": "family-warm",
+  "name": "Family Warm",
+  "category": "family",
+  "description": "Sun-washed statement cover, playful collage, big cozy tiles — golden-hour warmth on every scroll.",
+  "genres": ["family"],
+  "harnessAccent": "#c2410c",
+  "design": {
+    "template": "family-warm",
+    "layout": "masonry",
+    "sections": [
+      {
+        "type": "hero",
+        "id": "fw-hero",
+        "style": "fullbleed",
+        "title": "The Hartleys",
+        "subtitle": "A golden-hour morning at Meadowlark Park — bare feet, big laughs, zero posing.",
+        "images": [
+          { "assetId": "family-01", "focal": { "x": 0.5, "y": 0.45 } },
+          { "assetId": "family-06", "focal": { "x": 0.5, "y": 0.45 } },
+          { "assetId": "family-07", "focal": { "x": 0.5, "y": 0.4 } }
+        ],
+        "interval": 5,
+        "kicker": true
+      },
+      {
+        "type": "text",
+        "id": "fw-intro",
+        "padding": "normal",
+        "align": "center",
+        "width": "prose",
+        "html": "<p><strong>Welcome in — shoes off, snacks encouraged.</strong></p><p>Every giggle, piggyback ride, and last sliver of that golden-hour glow lives in here. Take your time, tap the heart on anything you love, and your favorites land straight in my retouching queue.</p>"
+      },
+      {
+        "type": "gallery",
+        "id": "fw-peek",
+        "binding": { "kind": "rating", "min": 5 },
+        "layout": "masonry",
+        "columns": { "mobile": 2, "sm": 2, "md": 4 },
+        "heading": "A first peek"
+      },
+      {
+        "type": "collage",
+        "id": "fw-collage",
+        "padding": "airy",
+        "aspect": "3/2",
+        "mobileStack": true,
+        "items": [
+          { "assetId": "family-03", "x": 2, "y": 26, "w": 27, "rotation": -3, "z": 2, "focal": { "x": 0.5, "y": 0.35 } },
+          { "assetId": "family-04", "x": 30, "y": 6, "w": 26, "rotation": 2, "z": 1, "focal": { "x": 0.5, "y": 0.3 } },
+          { "assetId": "family-08", "x": 57, "y": 30, "w": 27, "rotation": -2, "z": 2, "focal": { "x": 0.5, "y": 0.35 } },
+          { "assetId": "family-05", "x": 76, "y": 12, "w": 22, "rotation": 3, "z": 3, "focal": { "x": 0.5, "y": 0.3 } }
+        ]
+      },
+      {
+        "type": "gallery",
+        "id": "fw-gallery",
+        "binding": { "kind": "all" },
+        "layout": "masonry",
+        "columns": { "mobile": 2, "sm": 2, "md": 3 },
+        "heading": "The whole session"
+      },
+      {
+        "type": "favorites",
+        "id": "fw-favorites",
+        "padding": "airy",
+        "bg": "accent",
+        "heading": "Your favorites",
+        "emptyHint": "No hearts yet — tap the ♥ on any photo that makes you smile, and it will be waiting for you right here."
+      },
+      {
+        "type": "contact",
+        "id": "fw-contact",
+        "padding": "airy",
+        "heading": "Let's plan your golden hour",
+        "body": "If your walls could use a little more of this light, I'd love to hear from you. Next season's calendar is open now.",
+        "ctaLabel": "Book your session"
+      }
+    ],
+    "theme": {
+      "background": "light",
+      "padding": "airy",
+      "radius": "16px",
+      "captions": "off",
+      "font": "manrope",
+      "fontScale": 1.05,
+      "colors": { "bg": "#fffaf3", "accent": "#c2410c" }
+    }
+  }
+}

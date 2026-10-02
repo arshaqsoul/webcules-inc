@@ -1,0 +1,56 @@
+{
+  "key": "classic-wedding",
+  "name": "Classic Wedding",
+  "category": "wedding",
+  "description": "Split cover, soft masonry grid, serif headlines — timeless.",
+  "genres": ["wedding"],
+  "design": {
+    "template": "classic-wedding",
+    "layout": "masonry",
+    "nav": { "enabled": true, "items": ["gallery", "favorites"] },
+    "sections": [
+      {
+        "type": "hero",
+        "id": "cw-hero",
+        "style": "split",
+        "title": "Anna & Benjamin",
+        "subtitle": "A June wedding at Willow Creek Estate",
+        "images": [
+          { "assetId": "wedding-02", "focal": { "x": 0.5, "y": 0.35 } },
+          { "assetId": "wedding-09", "focal": { "x": 0.5, "y": 0.4 } },
+          { "assetId": "wedding-10", "focal": { "x": 0.5, "y": 0.35 } }
+        ],
+        "interval": 5,
+        "kicker": true
+      },
+      {
+        "type": "gallery",
+        "id": "cw-gallery",
+        "binding": { "kind": "all" },
+        "layout": "masonry",
+        "columns": { "mobile": 2, "sm": 3, "md": 4 },
+        "heading": "Your photos"
+      },
+      {
+        "type": "favorites",
+        "id": "cw-favorites",
+        "heading": "Your favorites",
+        "emptyHint": "Tap the ♥ on the photos you can't stop coming back to."
+      },
+      {
+        "type": "contact",
+        "id": "cw-contact",
+        "heading": "Thank you for having us",
+        "body": "Questions about your gallery? We're one email away."
+      }
+    ],
+    "theme": {
+      "background": "light",
+      "padding": "normal",
+      "radius": "16px",
+      "captions": "off",
+      "font": "playfair-display",
+      "fontScale": 1
+    }
+  }
+}

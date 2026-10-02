@@ -1,0 +1,87 @@
+{
+  "key": "party-energy",
+  "name": "Party Energy",
+  "category": "party",
+  "description": "Neon-dark, tilted photo collage, Bebas headlines — pure party adrenaline.",
+  "genres": ["party"],
+  "harnessAccent": "#ff3d81",
+  "design": {
+    "template": "party-energy",
+    "layout": "grid",
+    "nav": { "enabled": false, "items": ["gallery", "favorites", "info"] },
+    "sections": [
+      {
+        "type": "hero",
+        "id": "pe-hero",
+        "style": "fullbleed",
+        "title": "Maya's 30th at Warehouse 21",
+        "subtitle": "One night, 300 frames, zero chill — the whole riot, right here.",
+        "images": [
+          { "assetId": "party-01", "focal": { "x": 0.5, "y": 0.45 } },
+          { "assetId": "party-05", "focal": { "x": 0.5, "y": 0.5 } },
+          { "assetId": "party-10", "focal": { "x": 0.5, "y": 0.45 } }
+        ],
+        "interval": 4,
+        "kicker": true
+      },
+      {
+        "type": "collage",
+        "id": "pe-collage",
+        "aspect": "4/3",
+        "mobileStack": true,
+        "padding": "airy",
+        "bg": "surface",
+        "items": [
+          { "assetId": "party-04", "x": 2, "y": 22, "w": 26, "rotation": -8, "z": 2, "focal": { "x": 0.5, "y": 0.42 } },
+          { "assetId": "party-08", "x": 21, "y": 14, "w": 24, "rotation": 5, "z": 3, "focal": { "x": 0.5, "y": 0.4 } },
+          { "assetId": "party-09", "x": 39, "y": 26, "w": 25, "rotation": -5, "z": 4, "focal": { "x": 0.5, "y": 0.42 } },
+          { "assetId": "party-01", "x": 57, "y": 10, "w": 24, "rotation": 9, "z": 5, "focal": { "x": 0.5, "y": 0.45 } },
+          { "assetId": "party-06", "x": 74, "y": 36, "w": 26, "rotation": -12, "z": 6, "focal": { "x": 0.5, "y": 0.45 } },
+          { "assetId": "party-03", "x": 13, "y": 56, "w": 22, "rotation": 11, "z": 7, "focal": { "x": 0.5, "y": 0.4 } },
+          { "assetId": "party-02", "x": 32, "y": 2, "w": 12, "rotation": 14, "z": 1, "focal": { "x": 0.5, "y": 0.45 } }
+        ]
+      },
+      {
+        "type": "text",
+        "id": "pe-text",
+        "html": "<p><strong>The confetti is still in the carpet.</strong> Dance floor at midnight, toasts that ran long, a photo booth that never got a break — every frame is here, edited and ready to share.</p><p><em>Grab your favorites, tag the crew, and relive it on loop.</em></p>",
+        "align": "center",
+        "width": "wide",
+        "bg": "accent",
+        "padding": "airy"
+      },
+      {
+        "type": "gallery",
+        "id": "pe-gallery",
+        "binding": { "kind": "picks", "ids": ["party-05", "party-07", "party-10"] },
+        "layout": "grid",
+        "columns": { "mobile": 2, "sm": 3, "md": 3 },
+        "heading": "The rest of the riot"
+      },
+      {
+        "type": "favorites",
+        "id": "pe-favorites",
+        "heading": "Your favorites",
+        "emptyHint": "No hearts yet — tap the ♥ on the shots that make you want to relive the night."
+      },
+      {
+        "type": "contact",
+        "id": "pe-contact",
+        "heading": "Book your own riot",
+        "body": "Launches, birthdays, weddings — we shoot every party with this much energy.",
+        "ctaLabel": "Check your date",
+        "ctaHref": "https://snap.example"
+      }
+    ],
+    "theme": {
+      "background": "dark",
+      "padding": "normal",
+      "radius": "8px",
+      "captions": "hover",
+      "font": "bebas-neue",
+      "fontScale": 1.1,
+      "tracking": "wide",
+      "colors": { "bg": "#0e0e13", "text": "#f7f7f5", "accent": "#ff3d81" }
+    }
+  }
+}
