@@ -1,0 +1,161 @@
+{
+  "video": {
+    "slug": "meet-snap",
+    "title": "Meet Snap — the studio platform for photographers",
+    "kind": "launch",
+    "targetSeconds": 78,
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "theme": "light",
+    "presenter": "shutter-mascot",
+    "deliverables": [
+      "out/meet-snap.mp4 (1920x1080 landing master, .vtt sidecar captions)",
+      "out/meet-snap-square.mp4 (1080x1080 social)",
+      "out/meet-snap-vertical.mp4 (1080x1920 social)"
+    ],
+    "chapters": [
+      { "title": "Meet Snap", "scenes": ["s01"] },
+      { "title": "Booking", "scenes": ["s02"] },
+      { "title": "Inbox", "scenes": ["s03"] },
+      { "title": "Pipeline", "scenes": ["s04"] },
+      { "title": "Templates", "scenes": ["s05"] },
+      { "title": "Galleries", "scenes": ["s06"] },
+      { "title": "Money", "scenes": ["s07"] },
+      { "title": "CTA", "scenes": ["s08"] }
+    ]
+  },
+  "copyProvenance": "All claims drawn verbatim or near-verbatim from docs/SNAP-30-DAY-LAUNCH-STRATEGY.md truth sheet + apps/snap product copy. No superlatives, no numbers outside the sheet.",
+  "scenes": [
+    {
+      "id": "s01",
+      "chapter": "Meet Snap",
+      "narration": "Meet Snap — the studio platform for photographers. Bookings, galleries, contracts, payments. One login, one bill, and zero percent commission. Ever.",
+      "startUrl": "https://snap-staging.webcules.com/dashboard",
+      "requiresLogin": true,
+      "actions": [
+        { "type": "wait", "durationMs": 1400 },
+        { "type": "move", "x": 1180, "y": 760, "durationMs": 900 },
+        { "type": "wait", "durationMs": 600 },
+        { "type": "move", "x": 1500, "y": 480, "durationMs": 800 },
+        { "type": "scroll", "deltaY": 380, "durationMs": 900, "delayAfterMs": 1800 }
+      ],
+      "focus": { "x": 0.5, "y": 0.42, "zoom": 1.04 },
+      "estSeconds": 9,
+      "note": "Overview with stat cards + pipeline strip. Cursor drifts over stats, gentle scroll to pipeline/next sessions."
+    },
+    {
+      "id": "s02",
+      "chapter": "Booking",
+      "narration": "It starts with one link. Your client picks a session, picks a time, pays the deposit. Booked — in under a minute.",
+      "startUrl": "https://snap-staging.webcules.com/b/launch-smoke-studio",
+      "requiresLogin": false,
+      "actions": [
+        { "type": "wait", "durationMs": 1200 },
+        { "type": "scroll", "deltaY": 300, "durationMs": 800 },
+        { "type": "click", "selector": "role=button[name=\"October 2026 6, 8 times free\"]", "delayAfterMs": 1800 },
+        { "type": "wait", "durationMs": 1200 }
+      ],
+      "focus": { "x": 0.5, "y": 0.48, "zoom": 1.12 },
+      "estSeconds": 9,
+      "note": "Public booking page. Scroll to calendar, click Oct 6 so time slots appear. Fallback selector: text=6 times free's parent day."
+    },
+    {
+      "id": "s03",
+      "chapter": "Inbox",
+      "narration": "Every new inquiry lands in Leads — triage, reply, and convert, right next to your bookings.",
+      "startUrl": "https://snap-staging.webcules.com/dashboard/leads",
+      "requiresLogin": true,
+      "actions": [
+        { "type": "wait", "durationMs": 1000 },
+        { "type": "move", "x": 700, "y": 380, "durationMs": 700 },
+        { "type": "wait", "durationMs": 400 },
+        { "type": "move", "x": 500, "y": 560, "durationMs": 700 },
+        { "type": "wait", "durationMs": 1800 }
+      ],
+      "focus": { "x": 0.45, "y": 0.42, "zoom": 1.08 },
+      "estSeconds": 8,
+      "note": "Leads table (6 seeded inquiries, new/replied/converted). Replaces inbox shot: staging inbox thread contains QA residue (WEB-307 test text, DELIVERY FAILED badges)."
+    },
+    {
+      "id": "s04",
+      "chapter": "Pipeline",
+      "narration": "Booked work moves down a pipeline built for shoots. Every job carries its files, gallery, invoices, and contracts.",
+      "startUrl": "https://snap-staging.webcules.com/dashboard/projects",
+      "requiresLogin": true,
+      "actions": [
+        { "type": "wait", "durationMs": 1200 },
+        { "type": "move", "x": 620, "y": 420, "durationMs": 800 },
+        { "type": "click", "selector": "[href='/dashboard/projects/1125192a-c291-4209-8a69-94baf4d8cae3']", "delayAfterMs": 2300 },
+        { "type": "wait", "durationMs": 1500 }
+      ],
+      "focus": { "x": 0.5, "y": 0.45, "zoom": 1.08 },
+      "estSeconds": 9,
+      "note": "Kanban with mixed states, then click Sofia Marino card -> project hub (files/gallery/payments/contracts tabs)."
+    },
+    {
+      "id": "s05",
+      "chapter": "Templates",
+      "narration": "When the shoot wraps, choose from ten designer templates and preview each one with your photos. Live.",
+      "startUrl": "https://snap-staging.webcules.com/dashboard/projects/1bcdf42f-bc79-4844-a74c-6a867659d87c?tab=gallery",
+      "requiresLogin": true,
+      "actions": [
+        { "type": "wait", "durationMs": 1300 },
+        { "type": "scroll", "deltaY": 420, "durationMs": 900 },
+        { "type": "move", "x": 640, "y": 560, "durationMs": 700 },
+        { "type": "click", "selector": "[href='/g/1bcdf42f-bc79-4844-a74c-6a867659d87c/preview?template=editorial-wedding']", "delayAfterMs": 2500 },
+        { "type": "wait", "durationMs": 1500 }
+      ],
+      "focus": { "x": 0.42, "y": 0.5, "zoom": 1.12 },
+      "estSeconds": 10,
+      "note": "Template Studio picker (ten cards with previews). Click Editorial Wedding 'Preview with your photos' -> styled preview opens."
+    },
+    {
+      "id": "s06",
+      "chapter": "Galleries",
+      "narration": "Clients open a verified link, protected by a six-digit code. They favorite their picks, share the gallery, and order prints.",
+      "startUrl": "https://snap-staging.webcules.com/g/1bcdf42f-bc79-4844-a74c-6a867659d87c/preview?template=editorial-wedding",
+      "requiresLogin": false,
+      "actions": [
+        { "type": "wait", "durationMs": 1300 },
+        { "type": "scroll", "deltaY": 520, "durationMs": 1000 },
+        { "type": "move", "x": 960, "y": 540, "durationMs": 700 },
+        { "type": "click", "selector": "role=button[name=\"Open wedding-couple.jpg\"]", "delayAfterMs": 2400 },
+        { "type": "wait", "durationMs": 1600 }
+      ],
+      "focus": { "x": 0.5, "y": 0.5, "zoom": 1.1 },
+      "estSeconds": 10,
+      "note": "Public client-side gallery (editorial styling). Scroll the grid, open the wedding-couple lightbox. Fallback: text=wedding-couple.jpg."
+    },
+    {
+      "id": "s07",
+      "chapter": "Money",
+      "narration": "And payments go straight to your own Stripe. Snap never holds your money, and never takes a cut. That fee goes to Stripe — never to us.",
+      "startUrl": "https://snap-staging.webcules.com/dashboard/transactions",
+      "requiresLogin": true,
+      "actions": [
+        { "type": "wait", "durationMs": 1200 },
+        { "type": "move", "x": 760, "y": 380, "durationMs": 800 },
+        { "type": "scroll", "deltaY": 240, "durationMs": 800, "delayAfterMs": 2000 }
+      ],
+      "focus": { "x": 0.5, "y": 0.4, "zoom": 1.1 },
+      "estSeconds": 10,
+      "note": "Transactions: Collected $400 summary card + succeeded row."
+    },
+    {
+      "id": "s08",
+      "chapter": "CTA",
+      "narration": "Snap. Your studio, in focus. Start free — twenty gigabytes, no credit card.",
+      "startUrl": "https://snap-staging.webcules.com/dashboard",
+      "requiresLogin": true,
+      "actions": [
+        { "type": "wait", "durationMs": 1000 },
+        { "type": "move", "x": 960, "y": 400, "durationMs": 900 },
+        { "type": "wait", "durationMs": 2500 }
+      ],
+      "focus": { "x": 0.5, "y": 0.4, "zoom": 1.0 },
+      "estSeconds": 6,
+      "note": "Visual: brief dashboard hold under VO; the outro sting card carries the CTA text. Cards: intro 'Meet Snap', outro 'Start free — snap.webcules.com'."
+    }
+  ]
+}

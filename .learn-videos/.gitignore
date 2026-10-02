@@ -6,3 +6,7 @@
 voice-sample/
 **/raw/
 **/clips/
+**/qa/
+**/qa2/
+*.ttf
+qa_sheet_*.jpg
