@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useRef, useState } from "react";
+import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "framer-motion";
 
 import { LaptopReplay, type SceneId } from "./screens";
 import { FadeUp } from "./text-reveal";
@@ -44,84 +44,89 @@ const STEPS: { id: SceneId; kicker: string; title: string; body: string; bullets
   },
 ];
 
-/** Sticky storytelling: the copy scrolls, the laptop stays and re-plays the matching scene. */
-export function ProductTour() {
-  const [active, setActive] = useState(0);
-  const refs = useRef<(HTMLDivElement | null)[]>([]);
+function StepCopy({ s }: { s: (typeof STEPS)[number] }) {
+  return (
+    <>
+      <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary">{s.kicker}</p>
+      <h3 className="snap-display mt-3 text-[34px] leading-[1.05] text-ink sm:text-[44px]">{s.title}</h3>
+      <p className="mt-4 text-pretty text-[15px] leading-relaxed text-ink-subtle">{s.body}</p>
+      <ul className="mt-5 space-y-2 text-sm text-ink-muted">
+        {s.bullets.map((b) => (
+          <li key={b} className="flex items-center gap-2.5">
+            <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-primary" />
+            {b}
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
 
-  useEffect(() => {
-    const els = refs.current.filter(Boolean) as HTMLDivElement[];
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) setActive(Number((e.target as HTMLElement).dataset.i));
-        }
-      },
-      { rootMargin: "-45% 0px -45% 0px" },
-    );
-    els.forEach((el) => io.observe(el));
-    return () => io.disconnect();
-  }, []);
+/**
+ * Pinned storytelling: on desktop the copy and the laptop are both pinned to
+ * the viewport center and swap together as you scroll (progress picks the
+ * step), so they can never drift out of alignment. Mobile stacks each step.
+ */
+export function ProductTour() {
+  const track = useRef<HTMLDivElement | null>(null);
+  const { scrollYProgress } = useScroll({ target: track, offset: ["start start", "end end"] });
+  const [active, setActive] = useState(0);
+  useMotionValueEvent(scrollYProgress, "change", (v) =>
+    setActive(Math.min(STEPS.length - 1, Math.max(0, Math.floor(v * STEPS.length)))),
+  );
+  const step = STEPS[active]!;
 
   return (
-    <section id="tour" className="relative mx-auto max-w-7xl px-4 pt-20 sm:px-6 sm:pt-32 lg:pb-0 pb-20">
-      <FadeUp className="mx-auto mb-14 max-w-3xl text-center sm:mb-20">
+    <section id="tour" className="relative mx-auto max-w-7xl px-4 pt-20 sm:px-6 sm:pt-32">
+      <FadeUp className="mx-auto mb-14 max-w-3xl text-center sm:mb-10">
         <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-tertiary sm:text-[11px]">One workflow</p>
         <h2 className="snap-display mt-3 text-balance text-4xl leading-[1.04] text-ink sm:text-6xl">
           From first message to final payout, <em className="italic">without leaving Snap.</em>
         </h2>
       </FadeUp>
 
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)] lg:gap-16">
-        <div>
-          {STEPS.map((s, i) => (
-            <div
-              key={s.id}
-              ref={(el) => {
-                refs.current[i] = el;
-              }}
-              data-i={i}
-              className="flex flex-col justify-center py-6 lg:h-[88vh] lg:last:h-[62vh]"
-            >
-              <motion.div
-                animate={{ opacity: active === i ? 1 : 0.35 }}
-                transition={{ duration: 0.4 }}
-                className="max-lg:!opacity-100"
-              >
-                <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-primary">{s.kicker}</p>
-                <h3 className="snap-display mt-3 text-[34px] leading-[1.05] text-ink sm:text-[44px]">{s.title}</h3>
-                <p className="mt-4 text-pretty text-[15px] leading-relaxed text-ink-subtle">{s.body}</p>
-                <ul className="mt-5 space-y-2 text-sm text-ink-muted">
-                  {s.bullets.map((b) => (
-                    <li key={b} className="flex items-center gap-2.5">
-                      <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-primary" />
-                      {b}
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
-              <div className="mt-8 lg:hidden">
-                <LaptopReplay scene={s.id} />
-              </div>
+      {/* mobile / tablet: stacked */}
+      <div className="space-y-16 pb-20 lg:hidden">
+        {STEPS.map((s) => (
+          <div key={s.id}>
+            <StepCopy s={s} />
+            <div className="mt-8">
+              <LaptopReplay scene={s.id} />
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
+      </div>
 
-        <div className="relative hidden lg:block">
-          <div className="sticky top-0 flex h-screen flex-col justify-center">
-            <div className="absolute inset-x-[-40px] top-[22%] -z-10 h-[56%] rounded-[40px] bg-[radial-gradient(60%_60%_at_50%_40%,rgb(94,106,210,0.16),transparent_70%)]" />
+      {/* desktop: pinned */}
+      <div ref={track} className="relative hidden lg:block" style={{ height: `${STEPS.length * 80}vh` }}>
+        <div className="sticky top-0 grid h-screen grid-cols-[minmax(0,400px)_minmax(0,1fr)] items-center gap-16">
+          <div className="relative">
             <AnimatePresence mode="wait">
               <motion.div
-                key={STEPS[active]!.id}
+                key={step.id}
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <StepCopy s={step} />
+              </motion.div>
+            </AnimatePresence>
+          </div>
+          <div className="relative">
+            <div className="absolute inset-x-[-40px] inset-y-[-10%] -z-10 rounded-[40px] bg-[radial-gradient(60%_60%_at_50%_50%,rgb(94,106,210,0.16),transparent_70%)]" />
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={step.id}
                 initial={{ opacity: 0, y: 24, scale: 0.97 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -16, scale: 0.98 }}
                 transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
               >
-                <LaptopReplay scene={STEPS[active]!.id} />
+                <LaptopReplay scene={step.id} />
               </motion.div>
             </AnimatePresence>
-            <div className="mt-8 flex justify-center gap-2">
+            <div className="mt-10 flex justify-center gap-2">
               {STEPS.map((s, i) => (
                 <span
                   key={s.id}

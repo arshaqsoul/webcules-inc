@@ -65,11 +65,14 @@ export function Laptop({ children, className = "" }: { children: ReactNode; clas
         <div aria-hidden className="absolute left-1/2 top-[3px] h-[3px] w-[3px] -translate-x-1/2 rounded-full bg-white/25 sm:top-[4px]" />
         <div className="overflow-hidden rounded-[6px] bg-background sm:rounded-[8px]">{children}</div>
       </div>
+      {/* MacBook base: slightly wider than the lid, centered, with the thumb notch */}
       <div
         aria-hidden
-        className="mx-auto h-[7px] w-[112%] -translate-x-[5.4%] rounded-b-[14px] bg-gradient-to-b from-[#2a2c33] to-[#14151a] shadow-[0_10px_20px_-8px_rgb(0,0,0,0.5)]"
-        style={{ width: "112%", marginLeft: "-6%" }}
-      />
+        className="relative mx-auto h-[9px] w-[104%] -translate-x-0 rounded-b-[12px] rounded-t-[2px] bg-gradient-to-b from-[#c9ccd2] via-[#a9adb5] to-[#7d8189] shadow-[0_18px_30px_-12px_rgb(0,0,0,0.5)] sm:h-[11px]"
+        style={{ marginLeft: "-2%" }}
+      >
+        <div className="absolute left-1/2 top-0 h-[4px] w-[16%] -translate-x-1/2 rounded-b-[6px] bg-[#6b6f77]/70" />
+      </div>
     </div>
   );
 }
