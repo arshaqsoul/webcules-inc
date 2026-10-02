@@ -248,3 +248,20 @@ describe("WEB-318 — merge rendering + v1 synthesis", () => {
     expect(synthesizedSections(parseGalleryDesign({ layout: "grid", theme: LEGACY.theme })!)).toHaveLength(1);
   });
 });
+
+describe("WEB-323 — accentInk (contrast-aware labels on accent fills)", () => {
+  it("light accents get dark ink; dark accents keep white; junk keeps white", async () => {
+    const { accentInk } = await import("@/lib/gallery-design");
+    // Founder review cases: light beiges/golds must flip to dark ink
+    expect(accentInk("#e8d5c4")).toBe("#101014"); // light warm tint (the reported one)
+    expect(accentInk("#c9a96a")).toBe("#101014"); // champagne gold
+    expect(accentInk("#b0713f")).toBe("#101014"); // warm oak (demo studio)
+    // Dark accents keep white
+    expect(accentInk("#5e6ad2")).toBe("#ffffff"); // lavender brand
+    expect(accentInk("#0e0d0b")).toBe("#ffffff");
+    // Non-hex / unknown → historical default
+    expect(accentInk(undefined)).toBe("#ffffff");
+    expect(accentInk("var(--x)")).toBe("#ffffff");
+    expect(accentInk("#fff")).toBe("#ffffff");
+  });
+});

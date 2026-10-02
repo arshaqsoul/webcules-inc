@@ -753,6 +753,25 @@ export function focalPosition(focal: { x: number; y: number }): string {
   return `${Math.round(focal.x * 100)}% ${Math.round(focal.y * 100)}%`;
 }
 
+/** WEB-323 render QA: WCAG-aware label color for an accent (hex) — white on
+ * dark accents, near-black ink on light ones (gold, oak, cream). Any UI that
+ * fills a control with the studio accent (gallery CTAs, the template
+ * picker's Apply/Applied/chips, the builder entry) picks its label color
+ * here, so a light brand accent can never produce invisible white-on-light
+ * text. Unknown/non-hex values keep white (the historical default). */
+export function accentInk(accent: string | undefined | null): string {
+  const m = /^#([0-9a-f]{6})$/i.exec((accent ?? "").trim());
+  if (!m) return "#ffffff";
+  const n = parseInt(m[1], 16);
+  const lin = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  });
+  const L = 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
+  // white text needs L ≤ ~0.183 for 4.5:1 — above that, dark ink wins
+  return L > 0.185 ? "#101014" : "#ffffff";
+}
+
 /** Caption text for a tile — the filename without its extension. */
 export function captionOf(filename: string): string {
   return filename.replace(/\.[^.]+$/, "");

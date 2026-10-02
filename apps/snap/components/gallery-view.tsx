@@ -9,6 +9,7 @@ import { FileTypeIcon } from "@/components/file-type-icon";
 import { PwaRuntime, queueFavoriteOp, recordFavoriteState } from "@/components/my-pwa";
 import { SnapBadge } from "@/components/snap-badge";
 import {
+  accentInk,
   captionOf,
   columnsVars,
   designColorVars,
@@ -817,7 +818,7 @@ export function GalleryHero({ design, studioName, coverAssetId, slides, coverSrc
         <div className="snap-hero-vignette pointer-events-none absolute inset-0" aria-hidden />
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-black/10" />
-      <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-10">
+      <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-10" style={{ textShadow: HERO_TEXT_SHADOW }}>
         {kicker}
         {title}
         {subtitle}
@@ -1014,6 +1015,10 @@ type SectionCtx = {
   onCollageEdit?: (sectionId: string, index: number, patch: { x?: number; y?: number; w?: number; rotation?: number }) => void;
 };
 
+/** WEB-323 founder-review fix: white hero type over bright photos (white
+ * dresses, ballrooms, windows) gets a soft shadow so it never washes out. */
+const HERO_TEXT_SHADOW = "0 1px 3px rgba(0,0,0,0.55), 0 2px 14px rgba(0,0,0,0.35)";
+
 const SECTION_PAD: Record<string, string> = { compact: "px-4 py-4 sm:px-6", normal: "px-5 py-8 sm:px-8", airy: "px-6 py-12 sm:px-10 sm:py-16" };
 /** Type ramp for sectioned surfaces — sized off --snap-font-scale so the
  * typography editor scales the whole gallery coherently (v1 path untouched). */
@@ -1094,7 +1099,7 @@ function HeroSectionView({ section, slides, ctx }: { section: Extract<RenderSect
         {/* WEB-323 render QA: the mid scrim keeps centered display type
          * readable over bright hero photos (white dresses, windows). */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/60" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-white" style={{ letterSpacing: "var(--snap-tracking, 0)" }}>
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-white" style={{ letterSpacing: "var(--snap-tracking, 0)", textShadow: HERO_TEXT_SHADOW }}>
           {kicker && <span className={`${ramp.kicker} opacity-90`}>{ctx.studioName}</span>}
           {section.title && <h1 className="mt-3 text-[calc(30px*var(--snap-font-scale,1))] font-semibold leading-tight sm:text-[calc(44px*var(--snap-font-scale,1))]">{section.title}</h1>}
           {section.subtitle && <p className="mt-3 max-w-xl text-[calc(15px*var(--snap-font-scale,1))] leading-relaxed opacity-90">{section.subtitle}</p>}
@@ -1126,7 +1131,7 @@ function HeroSectionView({ section, slides, ctx }: { section: Extract<RenderSect
         )}
         {slides.length > 0 && <div className="snap-hero-vignette pointer-events-none absolute inset-0" aria-hidden />}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-black/10" />
-        <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-10" style={{ letterSpacing: "var(--snap-tracking, 0)" }}>
+        <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-10" style={{ letterSpacing: "var(--snap-tracking, 0)", textShadow: HERO_TEXT_SHADOW }}>
           {section.title && <h1 className="text-[calc(24px*var(--snap-font-scale,1))] font-semibold leading-tight sm:text-[calc(36px*var(--snap-font-scale,1))]">{section.title}</h1>}
           {section.subtitle && <p className="mt-2 max-w-xl text-[calc(14.5px*var(--snap-font-scale,1))] leading-relaxed opacity-85">{section.subtitle}</p>}
         </div>
@@ -1416,22 +1421,6 @@ function TextSectionView({ section, ctx }: { section: Extract<RenderSection, { k
   );
 }
 
-/** WCAG-aware CTA label color for a given accent (hex): white on dark
- * accents, near-black ink on light ones (gold, cream) — a template's
- * conversion button must never be its lowest-contrast text. */
-function ctaInkFor(accent: string | undefined | null): string {
-  const m = /^#([0-9a-f]{6})$/i.exec((accent ?? "").trim());
-  if (!m) return "#ffffff";
-  const n = parseInt(m[1], 16);
-  const lin = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) => {
-    const s = c / 255;
-    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
-  });
-  const L = 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
-  // white text needs L ≤ ~0.183 for 4.5:1 — above that, dark ink wins
-  return L > 0.185 ? "#101014" : "#ffffff";
-}
-
 /** Studio contact / CTA card — merge-rendered copy + accent CTA. */
 function ContactSectionView({ section, ctx }: { section: Extract<RenderSection, { kind: "contact" }>["section"]; ctx: SectionCtx }) {
   const href = section.ctaHref ?? (ctx.contactEmail ? `mailto:${ctx.contactEmail}` : null);
@@ -1452,7 +1441,7 @@ function ContactSectionView({ section, ctx }: { section: Extract<RenderSection, 
           <a
             href={href}
             className={`mt-6 inline-block ${pillCls} px-6 py-2.5 text-sm font-semibold transition-[filter] hover:brightness-110`}
-            style={{ background: "var(--accent)", color: ctaInkFor(ctx.design.theme.colors?.accent ?? ctx.accent) }}
+            style={{ background: "var(--accent)", color: accentInk(ctx.design.theme.colors?.accent ?? ctx.accent) }}
           >
             {section.ctaLabel?.trim() || ctx.contactEmail || "Get in touch"}
           </a>

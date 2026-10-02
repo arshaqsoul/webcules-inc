@@ -8,13 +8,13 @@
  * Applying is free for every tier; customizing beyond a seed is the page
  * builder (Lite+) — the footer note links there. */
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { SEED_TEMPLATES } from "@/lib/seed-templates";
 import { TEMPLATE_PREVIEWS } from "@/lib/template-previews";
-import type { GalleryDesign } from "@/lib/gallery-design";
+import { accentInk, type GalleryDesign } from "@/lib/gallery-design";
 
 const CATEGORY_ORDER = ["all", "wedding", "family", "party", "corporate", "editorial", "minimal"] as const;
 const CATEGORY_LABELS: Record<string, string> = {
@@ -52,6 +52,13 @@ export function GalleryTemplatePicker({
   const [note, setNote] = useState("");
   const [errMsg, setErrMsg] = useState("");
   const [undo, setUndo] = useState<GalleryDesign | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  // Label ink for every accent-filled control, from the live --accent value.
+  const [ink, setInk] = useState("#ffffff");
+  useEffect(() => {
+    const v = getComputedStyle(rootRef.current ?? document.documentElement).getPropertyValue("--accent").trim();
+    setInk(accentInk(v));
+  }, []);
 
   function flash(msg: string, isError = false) {
     setNote(isError ? "" : msg);
@@ -111,7 +118,7 @@ export function GalleryTemplatePicker({
   }
 
   return (
-    <div className="rounded-[16px] border border-hairline bg-surface-1 p-5">
+    <div ref={rootRef} className="rounded-[16px] border border-hairline bg-surface-1 p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h3 className="text-sm font-semibold text-ink">Start from a template</h3>
@@ -120,8 +127,8 @@ export function GalleryTemplatePicker({
         {canBuild ? (
           <Link
             href={`/dashboard/projects/${projectId}/builder`}
-            className="rounded-full px-3 py-1.5 text-xs font-semibold text-white transition-[filter] hover:brightness-110"
-            style={{ background: "var(--accent)" }}
+            className="rounded-full px-3 py-1.5 text-xs font-semibold transition-[filter] hover:brightness-110"
+            style={{ background: "var(--accent)", color: ink }}
           >
             Open page builder →
           </Link>
@@ -144,9 +151,9 @@ export function GalleryTemplatePicker({
             aria-selected={category === c}
             onClick={() => setCategory(c)}
             className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-              category === c ? "text-white" : "bg-surface-2 text-ink-muted hover:text-ink"
+              category === c ? "font-semibold" : "bg-surface-2 text-ink-muted hover:text-ink"
             }`}
-            style={category === c ? { background: "var(--accent)" } : undefined}
+            style={category === c ? { background: "var(--accent)", color: ink } : undefined}
           >
             {CATEGORY_LABELS[c]}
           </button>
@@ -183,8 +190,8 @@ export function GalleryTemplatePicker({
                   Preview with your photos ↗
                 </span>
                 {active && (
-                  <span className="absolute left-2 top-2 rounded-full px-2.5 py-1 text-[11px] font-semibold text-white" style={{ background: "var(--accent)" }}>
-                    Applied
+                  <span className="absolute left-2 top-2 rounded-full px-2.5 py-1 text-[11px] font-semibold shadow" style={{ background: "var(--accent)", color: ink }}>
+                    ✓ Applied
                   </span>
                 )}
               </a>
@@ -207,10 +214,10 @@ export function GalleryTemplatePicker({
                     type="button"
                     disabled={busy !== null || active}
                     onClick={() => (hasCustomDesign && !active ? setConfirming(t.key) : void apply(t.key))}
-                    className="shrink-0 rounded-md px-3 py-1.5 text-[11px] font-semibold text-white transition-[filter] hover:brightness-110 disabled:opacity-50"
-                    style={{ background: "var(--accent)" }}
+                    className={`shrink-0 rounded-md px-3 py-1.5 text-[11px] font-semibold transition-[filter] hover:brightness-110 ${active ? "cursor-default" : ""} ${busy !== null && !active ? "opacity-60" : ""}`}
+                    style={{ background: "var(--accent)", color: ink, opacity: active ? 1 : undefined }}
                   >
-                    {active ? "Applied" : "Apply"}
+                    {active ? "✓ Applied" : busy === t.key ? "Applying…" : "Apply"}
                   </button>
                 )}
               </div>
