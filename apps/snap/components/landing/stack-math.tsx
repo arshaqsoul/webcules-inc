@@ -40,7 +40,7 @@ export function StackMath() {
             The stack tax, <em className="italic">retired.</em>
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-pretty text-sm leading-relaxed text-ink-subtle sm:text-base">
-            The typical studio pays for a CRM <em>and</em> a gallery app — and still
+            The typical studio pays for a CRM <em>and</em> a gallery app - and still
             hands over a commission on every print sale. Do the math once:
           </p>
         </FadeUp>
@@ -50,8 +50,8 @@ export function StackMath() {
             <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-ink-tertiary">The old stack</p>
             <ul className="mt-5 space-y-3 text-sm">
               {[
-                ["CRM — Dubsado, HoneyBook…", "$20–36/mo"],
-                ["Galleries — Pixieset, Pic-Time…", "$20–42/mo"],
+                ["CRM - Dubsado, HoneyBook…", "$20–36/mo"],
+                ["Galleries - Pixieset, Pic-Time…", "$20–42/mo"],
                 ["E-sign, questionnaires, proofs", "$0–20/mo"],
               ].map(([label, price]) => (
                 <li key={label} className="flex items-center justify-between gap-4 text-ink-muted">
@@ -94,7 +94,7 @@ export function StackMath() {
                 </li>
               ))}
               <li className="flex items-center gap-2.5 text-sm font-medium text-ink">
-                <Check className="h-4 w-4 text-success-text" /> 0% commission — payouts to your own Stripe
+                <Check className="h-4 w-4 text-success-text" /> 0% commission - payouts to your own Stripe
               </li>
             </ul>
             <div className="mt-6 border-t border-hairline pt-5">
@@ -111,7 +111,7 @@ export function StackMath() {
           <p className="text-sm leading-relaxed text-ink-muted">
             On a competitor's free tier, a <strong className="font-semibold text-ink">$2,400 print sale</strong> keeps{" "}
             <strong className="font-semibold text-destructive">$360</strong> for the platform. On Snap it keeps{" "}
-            <strong className="font-semibold text-success-text">$2,400</strong> — Stripe's fee, nothing else.
+            <strong className="font-semibold text-success-text">$2,400</strong> - Stripe's fee, nothing else.
           </p>
         </FadeUp>
       </div>

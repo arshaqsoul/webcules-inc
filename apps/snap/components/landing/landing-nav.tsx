@@ -5,12 +5,13 @@ import { useEffect, useState } from "react";
 import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 
 const LINKS = [
-  { href: "#story", label: "Story" },
+  { href: "#tour", label: "Product" },
   { href: "#features", label: "Features" },
   { href: "#pricing", label: "Pricing" },
+  { href: "#faq", label: "FAQ" },
 ];
 
-/** Floating pill nav — Linear's floating chrome, quiet over photography. */
+/** Floating pill nav - Linear's floating chrome, quiet over photography. */
 export function LandingNav({ signedIn }: { signedIn: boolean }) {
   const { scrollY } = useScroll();
   const [solid, setSolid] = useState(false);
@@ -74,7 +75,7 @@ export function LandingNav({ signedIn }: { signedIn: boolean }) {
 }
 
 function ApertureMark() {
-  // Same geometry as public/icon.svg — six-blade iris, 60° symmetry.
+  // Same geometry as public/icon.svg - six-blade iris, 60° symmetry.
   return (
     <svg viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5" aria-hidden>
       <circle cx="12" cy="12" r="9.75" stroke="currentColor" strokeWidth="1.8" />

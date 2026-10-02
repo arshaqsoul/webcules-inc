@@ -14,7 +14,7 @@ import {
  * a child component keeps the hook-per-word rule honest.
  *
  * Inside a PINNED stage the element's viewport position never changes, so the
- * self-measuring mode freezes — pass `progress` (the stage's scrollYProgress)
+ * self-measuring mode freezes - pass `progress` (the stage's scrollYProgress)
  * and `range` instead.
  */
 export function ScrubText({

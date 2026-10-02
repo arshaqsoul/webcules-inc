@@ -214,8 +214,18 @@ body {
   }
 }
 
+@keyframes masonry-y {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .marquee-track {
+  .marquee-track,
+  .masonry-track {
     animation: none !important;
   }
 }

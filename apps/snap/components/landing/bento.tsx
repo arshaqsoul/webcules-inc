@@ -20,7 +20,7 @@ import { FadeUp } from "./text-reveal";
 /**
  * Ten tiles, ten honest demos. Every animation mirrors a real Snap surface
  * (pipeline kanban, triage cull, OTP vault, booking, white-label, emails,
- * domains, forms, contracts, RAW vault) — no decorative motion.
+ * domains, forms, contracts, RAW vault) - no decorative motion.
  */
 export function BentoFeatures() {
   return (
@@ -41,7 +41,7 @@ export function BentoFeatures() {
           className="md:col-span-4"
           icon={<Columns3 className="h-4 w-4" />}
           title="A pipeline that mirrors your shoot"
-          desc="Booked → Snapping → Evaluation → Complete → Closed. The first kanban built for photography — drag a card, that's the whole system."
+          desc="Booked → Snapping → Evaluation → Complete → Closed. The first kanban built for photography - drag a card, that's the whole system."
         >
           <PipelineDemo />
         </BentoTile>
@@ -50,7 +50,7 @@ export function BentoFeatures() {
           className="md:col-span-2 md:row-span-2"
           icon={<Images className="h-4 w-4" />}
           title="Cull at speed"
-          desc="Triage mode: swipe right to keep, left to reject. Thousands of frames in minutes — ratings, flags and folders stay in sync."
+          desc="Triage mode: swipe right to keep, left to reject. Thousands of frames in minutes - ratings, flags and folders stay in sync."
         >
           <CullDemo />
         </BentoTile>
@@ -58,8 +58,8 @@ export function BentoFeatures() {
         <BentoTile
           className="md:col-span-2"
           icon={<LockKeyhole className="h-4 w-4" />}
-          title="Galleries that wow — and sell"
-          desc="Designed covers, layouts & Ken Burns slideshows with your music, films and reels, social share cards, a client photo app — all leak-proof by default: email codes, expiring links, one-click revocation."
+          title="Galleries that wow - and sell"
+          desc="Designed covers, layouts & Ken Burns slideshows with your music, films and reels, social share cards, a client photo app - all leak-proof by default: email codes, expiring links, one-click revocation."
         >
           <VaultDemo />
         </BentoTile>
@@ -68,7 +68,7 @@ export function BentoFeatures() {
           className="md:col-span-2"
           icon={<CalendarDays className="h-4 w-4" />}
           title="Booking on your own site"
-          desc="Embeddable calendar with session types, deposits and questions — in your brand, on your domain."
+          desc="Embeddable calendar with session types, deposits and questions - in your brand, on your domain."
         >
           <BookingDemo />
         </BentoTile>
@@ -77,7 +77,7 @@ export function BentoFeatures() {
           className="md:col-span-2"
           icon={<Palette className="h-4 w-4" />}
           title="White-label everything"
-          desc="Your logo, your colors, your domain — on galleries, emails and invoices. Clients never see our name."
+          desc="Your logo, your colors, your domain - on galleries, emails and invoices. Clients never see our name."
         >
           <BrandDemo />
         </BentoTile>
@@ -86,7 +86,7 @@ export function BentoFeatures() {
           className="md:col-span-2"
           icon={<Mail className="h-4 w-4" />}
           title="Emails that feel like you"
-          desc="Templates with merge fields — gallery links, reminders, payment receipts — signed with your studio's voice."
+          desc="Templates with merge fields - gallery links, reminders, payment receipts - signed with your studio's voice."
         >
           <EmailDemo />
         </BentoTile>
@@ -104,7 +104,7 @@ export function BentoFeatures() {
           className="md:col-span-2"
           icon={<ClipboardList className="h-4 w-4" />}
           title="Forms & questionnaires"
-          desc="Shot lists, timelines, must-have lists — clients fill them, answers land on the project."
+          desc="Shot lists, timelines, must-have lists - clients fill them, answers land on the project."
         >
           <FormsDemo />
         </BentoTile>
@@ -113,7 +113,7 @@ export function BentoFeatures() {
           className="md:col-span-2"
           icon={<PenLine className="h-4 w-4" />}
           title="Contracts & e-sign"
-          desc="Send, sign, countersign — stored with the project. No more PDF ping-pong."
+          desc="Send, sign, countersign - stored with the project. No more PDF ping-pong."
         >
           <ContractDemo />
         </BentoTile>
@@ -122,7 +122,7 @@ export function BentoFeatures() {
           className="md:col-span-2"
           icon={<HardDrive className="h-4 w-4" />}
           title="RAW Vault"
-          desc="RAWs stay hot for 6 months, extend with one click — never silently deleted."
+          desc="RAWs stay hot for 6 months, extend with one click - never silently deleted."
         >
           <RawDemo />
         </BentoTile>
@@ -269,7 +269,7 @@ function CullDemo() {
         <span className="rounded-full bg-success/10 px-2.5 py-1 text-success-text">Keep {kept}</span>
         <span className="rounded-full bg-destructive/10 px-2.5 py-1 text-destructive">Pass {rejected}</span>
       </div>
-      <p className="text-center text-[10px] text-ink-tertiary">drag the print — it's a real swipe</p>
+      <p className="text-center text-[10px] text-ink-tertiary">drag the print - it's a real swipe</p>
     </div>
   );
 }
@@ -289,7 +289,7 @@ function VaultDemo() {
       <div className="flex items-center gap-3">
         <img src="/imgs/landing/newborn.jpg" alt="" aria-hidden loading="lazy" className="h-12 w-12 rounded-lg object-cover" />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[12px] font-medium text-ink">Wells — Newborn</p>
+          <p className="truncate text-[12px] font-medium text-ink">Wells - Newborn</p>
           <p className="font-mono text-[10px] text-ink-tertiary">gallery.snap/W-8F2K</p>
         </div>
         {filled >= 4 && !revoked ? (
@@ -311,7 +311,7 @@ function VaultDemo() {
             : "border-hairline bg-surface-1 text-ink hover:bg-surface-2"
         }`}
       >
-        {revoked ? "Link revoked — access killed instantly" : "Revoke this link"}
+        {revoked ? "Link revoked - access killed instantly" : "Revoke this link"}
       </button>
     </div>
   );
@@ -355,7 +355,7 @@ function BookingDemo() {
           </span>
         ))}
       </div>
-      <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-tertiary">Sat 13 · 10:00 — deposit collected at booking</p>
+      <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-tertiary">Sat 13 · 10:00 - deposit collected at booking</p>
     </div>
   );
 }

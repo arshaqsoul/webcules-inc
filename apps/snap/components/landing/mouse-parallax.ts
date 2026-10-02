@@ -6,7 +6,7 @@ import { useMotionValue, useSpring, type MotionValue } from "framer-motion";
 /**
  * Pointer parallax: spring-smoothed x/y offsets (px) that follow the cursor
  * around the viewport center. Desktop fine pointers only, and inert under
- * prefers-reduced-motion — values simply stay at 0.
+ * prefers-reduced-motion - values simply stay at 0.
  */
 export function useMouseParallax(strength: number): {
   x: MotionValue<number>;

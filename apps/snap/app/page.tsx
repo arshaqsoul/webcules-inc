@@ -1,19 +1,20 @@
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 
-import { BridgeChapter } from "@/components/landing/bridge";
 import { BentoFeatures } from "@/components/landing/bento";
-import { CrawlChapter } from "@/components/landing/crawl";
-import { FamilyChapter, TownChapter, WeddingChapter, WildChapter } from "@/components/landing/story-chapters";
-import { FilmGrain } from "@/components/landing/film-grain";
+import { ClientApp } from "@/components/landing/client-app";
+import { Faq } from "@/components/landing/faq";
 import { FinalCta } from "@/components/landing/final-cta";
-import { HeroDive } from "@/components/landing/hero-dive";
+import { Hero } from "@/components/landing/hero";
 import { LandingNav } from "@/components/landing/landing-nav";
-import { MarqueeSection } from "@/components/landing/marquee";
+import { MasonryWall } from "@/components/landing/masonry-wall";
+import { Personas } from "@/components/landing/personas";
 import { PricingSection } from "@/components/landing/pricing-section";
+import { ProductTour } from "@/components/landing/product-tour";
 import { SmoothScroll } from "@/components/landing/smooth-scroll";
 import { StackMath } from "@/components/landing/stack-math";
 import { TemplateGridSection } from "@/components/landing/template-grid";
+import { TrustStrip } from "@/components/landing/trust-strip";
 import { isCustomAppHost } from "@/lib/domains";
 import { resolveStudioByHost } from "@/lib/repos/domains";
 import { requestHost } from "@/lib/domains";
@@ -35,9 +36,10 @@ export const metadata = {
 };
 
 /**
- * The cinematic landing — a scroll-driven story (the wild → the city → a
- * wedding → a first year) that lands on the product. Chrome + typography
- * stay inside the Linear-derived system; the photography carries the cinema.
+ * The marketing landing — product-first: a hero with the product already
+ * running, an animated photo wall, a sticky product tour of looping replays,
+ * a tappable client phone, persona tabs, the feature bento, pricing and FAQ.
+ * Chrome + typography stay inside the Linear-derived system.
  */
 export default async function Home() {
   // WEB-227: a studio's custom hostname IS the client surface — `/` there is
@@ -66,21 +68,19 @@ export default async function Home() {
       />
 
       <SmoothScroll>
-        <FilmGrain />
         <LandingNav signedIn={!!user} />
         <main>
-          <HeroDive signedIn={!!user} />
-          <CrawlChapter />
-          <WildChapter />
-          <TownChapter />
-          <WeddingChapter />
-          <FamilyChapter />
-          <BridgeChapter />
-          <MarqueeSection />
+          <Hero signedIn={!!user} />
+          <TrustStrip />
+          <MasonryWall />
+          <ProductTour />
+          <ClientApp />
+          <Personas />
           <TemplateGridSection />
           <BentoFeatures />
           <StackMath />
           <PricingSection />
+          <Faq />
           <FinalCta signedIn={!!user} />
         </main>
       </SmoothScroll>

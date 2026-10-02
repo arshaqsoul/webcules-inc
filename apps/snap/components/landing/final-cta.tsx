@@ -4,10 +4,7 @@ import Link from "next/link";
 
 import { FadeUp } from "./text-reveal";
 
-/**
- * The dark finale — the toddler with the toy camera, closing the loop the
- * story opened: someone shot her first year, and one day she'll shoot too.
- */
+/** The dark finale - one last offer over a quiet frame, plus the footer. */
 export function FinalCta({ signedIn }: { signedIn: boolean }) {
   return (
     <section className="relative overflow-hidden bg-[#0a0b0f] text-white">
@@ -23,13 +20,13 @@ export function FinalCta({ signedIn }: { signedIn: boolean }) {
       <div className="relative mx-auto flex max-w-4xl flex-col items-center px-6 pb-24 pt-28 text-center sm:pb-32 sm:pt-40">
         <FadeUp>
           <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/60 sm:text-[11px]">
-            She's shooting on a toy camera today
+            Ready when you are
           </p>
           <h2 className="snap-display mt-4 text-balance text-5xl leading-[1.02] sm:text-7xl">
-            The rest of the story is <em className="italic">yours to shoot.</em>
+            Build the studio <em className="italic">you always wanted.</em>
           </h2>
           <p className="mx-auto mt-6 max-w-xl text-pretty text-sm leading-relaxed text-white/75 sm:text-lg">
-            Snap handles the bookings, the galleries, the contracts and the payouts —
+            Snap handles the bookings, the galleries, the contracts and the payouts -
             you handle the light. Start free, keep 100% of what clients pay you.
           </p>
         </FadeUp>
@@ -39,7 +36,7 @@ export function FinalCta({ signedIn }: { signedIn: boolean }) {
             href={signedIn ? "/dashboard" : "/signup"}
             className="rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-[#12141c] transition-transform hover:scale-[1.03] active:scale-[0.99]"
           >
-            {signedIn ? "Open your studio" : "Create your studio — free"}
+            {signedIn ? "Open your studio" : "Create your studio - free"}
           </Link>
           <a
             href="#pricing"
@@ -70,7 +67,7 @@ export function FinalCta({ signedIn }: { signedIn: boolean }) {
                 />
               </svg>
             </span>
-            snap.webcules.com — a Webcules platform
+            snap.webcules.com - a Webcules platform
           </span>
           <nav aria-label="Footer" className="flex flex-wrap items-center justify-center gap-5">
             <a href="#pricing" className="transition-colors hover:text-white">Pricing</a>
