@@ -1,0 +1,19 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/growth/scripts/hooks/session-status.mjs\"" }]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/growth/scripts/hooks/guard-bash.mjs\"" }]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/growth/scripts/hooks/guard-write.mjs\"" }]
+      }
+    ]
+  }
+}

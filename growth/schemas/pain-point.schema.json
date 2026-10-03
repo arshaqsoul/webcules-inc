@@ -1,0 +1,78 @@
+{
+  "$comment": "Validated by growth/scripts/ledger.mjs (a small built-in validator: type, required, properties, enum, items, minItems, pattern, minimum, maximum, minLength).",
+  "title": "Pain point ledger record",
+  "type": "object",
+  "required": ["id", "title", "statement", "persona", "severity", "state", "evidence", "history"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^PP-\\d{3,}$" },
+    "title": { "type": "string", "minLength": 8 },
+    "statement": { "type": "string", "minLength": 20 },
+    "persona": {
+      "type": "string",
+      "enum": ["wedding", "event", "portrait", "newborn", "commercial", "school-sports", "second-shooter", "studio-owner", "any"]
+    },
+    "severity": { "type": "integer", "minimum": 1, "maximum": 5 },
+    "frequency": { "type": "integer", "minimum": 1, "maximum": 5 },
+    "priority": { "type": "number" },
+    "state": {
+      "type": "string",
+      "enum": [
+        "DISCOVERED", "VALIDATED", "TIER_MAPPED", "CLUSTERED", "EPIC_FILED", "ARCHITECTED",
+        "BUILT", "REVIEWED", "QA_PASSED", "STAGING_VERIFIED", "DEMO_SCRIPTED", "RECORDED",
+        "ENHANCED", "QC_PASSED", "PACKAGED", "HUMAN_POSTED", "MEASURED", "DROPPED"
+      ]
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source", "url", "summary", "captured_at"],
+        "properties": {
+          "source": { "type": "string", "enum": ["reddit", "instagram", "facebook-group", "youtube", "forum", "review-site", "blog", "x", "other"] },
+          "url": { "type": "string", "minLength": 8 },
+          "summary": { "type": "string", "minLength": 10 },
+          "captured_at": { "type": "string" }
+        }
+      }
+    },
+    "tier_mapping": {
+      "type": "object",
+      "required": ["verdict", "tier", "notes"],
+      "properties": {
+        "verdict": { "type": "string", "enum": ["solved", "partial", "gap"] },
+        "tier": { "type": "string", "enum": ["free", "lite", "studio", "pro", "none"] },
+        "paid_tier_trigger": { "type": "boolean" },
+        "surfaces": { "type": "array", "items": { "type": "string" } },
+        "notes": { "type": "string", "minLength": 10 }
+      }
+    },
+    "cluster_id": { "type": "string", "pattern": "^CL-\\d{3,}$" },
+    "linear": { "type": "object" },
+    "adr": { "type": "string" },
+    "branch": { "type": "string" },
+    "pr": { "type": "string" },
+    "review": { "type": "object" },
+    "qa": { "type": "object" },
+    "demo": { "type": "object" },
+    "post": { "type": "object" },
+    "metrics": { "type": "object" },
+    "blocked": { "type": "object" },
+    "lease_by": { "type": "string" },
+    "lease_expires": { "type": "string" },
+    "history": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["to", "at", "by"],
+        "properties": {
+          "from": { "type": "string" },
+          "to": { "type": "string" },
+          "at": { "type": "string" },
+          "by": { "type": "string" },
+          "note": { "type": "string" }
+        }
+      }
+    }
+  }
+}

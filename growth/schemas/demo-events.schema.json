@@ -1,0 +1,59 @@
+{
+  "$comment": "Written by the recorder next to every raw capture. The editor derives every zoom, highlight, ripple and caption from this file - never from guesswork on pixels.",
+  "title": "Demo events timeline",
+  "type": "object",
+  "required": ["version", "pain_point", "viewport", "device_scale_factor", "fps", "duration_ms", "steps", "events"],
+  "properties": {
+    "version": { "type": "integer", "minimum": 1 },
+    "pain_point": { "type": "string", "pattern": "^PP-\\d{3,}$" },
+    "seed": { "type": "integer" },
+    "viewport": {
+      "type": "object",
+      "required": ["width", "height"],
+      "properties": { "width": { "type": "integer" }, "height": { "type": "integer" } }
+    },
+    "device_scale_factor": { "type": "number", "minimum": 1 },
+    "fps": { "type": "integer", "minimum": 24 },
+    "duration_ms": { "type": "integer", "minimum": 1000 },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "caption", "t_start_ms", "t_end_ms"],
+        "properties": {
+          "id": { "type": "string" },
+          "caption": { "type": "string", "minLength": 3 },
+          "t_start_ms": { "type": "integer", "minimum": 0 },
+          "t_end_ms": { "type": "integer", "minimum": 0 },
+          "focus_box": {
+            "type": "object",
+            "required": ["x", "y", "w", "h"],
+            "properties": { "x": { "type": "number" }, "y": { "type": "number" }, "w": { "type": "number" }, "h": { "type": "number" } }
+          }
+        }
+      }
+    },
+    "events": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["t_ms", "type"],
+        "properties": {
+          "t_ms": { "type": "integer", "minimum": 0 },
+          "type": { "type": "string", "enum": ["move", "hover", "click", "type", "scroll", "navigate", "wait", "annotate"] },
+          "x": { "type": "number" },
+          "y": { "type": "number" },
+          "box": {
+            "type": "object",
+            "properties": { "x": { "type": "number" }, "y": { "type": "number" }, "w": { "type": "number" }, "h": { "type": "number" } }
+          },
+          "selector": { "type": "string" },
+          "text": { "type": "string" },
+          "step": { "type": "string" }
+        }
+      }
+    }
+  }
+}

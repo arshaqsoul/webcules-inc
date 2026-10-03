@@ -69,3 +69,10 @@ apps/snap/.cf-saas-token
 .docs-agent-state.json
 .webcules-drafts/
 apps/snap/scripts/learn-tools/
+
+# Growth system runtime state (never commit)
+growth/state/
+growth/locks/
+growth/recordings/
+growth/out/
+growth/.env.local
