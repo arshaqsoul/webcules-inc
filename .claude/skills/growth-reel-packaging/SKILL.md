@@ -17,6 +17,10 @@ description: Procedure for assembling the final Instagram package for the founde
 - One call to action, for example "Link in bio to try it free" (only if Free really covers it, otherwise name the tier).
 - 5 to 8 hashtags, niche first (for example photographer business tags), broad last.
 - Voice: direct, no hype words, no superlatives, no invented numbers, no em dashes.
+  If `~/VOICE.md` does not exist, use the plain founder voice from the brief and say so in the notes.
+- A `launch` record has no pain point: write an introduction instead (who built it, why, what it does, one call to action), and describe demo data as demo data.
+- The call to action must match the plan the reel actually shows.
+  If the reel is recorded on a higher-plan studio, do not say "try it free" about features the Free card does not list: say what the Free plan includes, and put the caveat in the pinned comment.
 - Every claim matches a row in the claims table that cites a file in `apps/snap`.
 
 ## Link
@@ -25,7 +29,12 @@ description: Procedure for assembling the final Instagram package for the founde
 Use the landing or pricing page depending on the pain point.
 The campaign value is the ledger id so signups trace back to a reel.
 
-## Timing
+## Timing and order
+
+When several reels are packaged, state the posting order in each package.
+If your package changes the order, tell the orchestrator so the earlier package is updated (the orchestrator, not you, edits another record's package).
+The first reel on an empty account should be the one that introduces the product.
+
 
 Suggest a window for a Canada-based audience with the reason, and note that the founder can override.
 

@@ -27,6 +27,12 @@ Reel is silent by design, so no sound will clash with the captions.
 
 <Day and time window for a Canada-based audience, with the reason.>
 
+## Posting order
+
+Say whether this reel goes before or after other packaged reels, how many days apart, and why.
+If your timing changes another package's suggestion, tell the orchestrator so that package is updated.
+Do not post two reels from a young account on the same day.
+
 ## Link and call to action
 
 Link in bio points to: <url with utm parameters: utm_source=instagram&utm_medium=reel&utm_campaign=PP-###>
@@ -37,10 +43,21 @@ Pinned first comment: <text>
 - Reply to every comment in the first hour.
 - Photographer accounts worth commenting on genuinely (drafted, not sent): <list of handles and a one-line suggested comment each>.
 
+## Comment disclosure rule
+
+Every drafted comment on another account that mentions, or could imply, a product the founder makes starts with an honest disclosure ("I build Snap, ...").
+A comment that does not mention the product still should not pretend to be neutral about it.
+Never send any of them, never drop them under unrelated posts, never send in bulk.
+
 ## Claims check
 
 | Claim in the reel or caption | Source file in apps/snap |
 |---|---|
+
+## Known blemishes
+
+List anything a careful viewer could notice: a zoom that briefly shows paid-only UI, a reel over the target length, seeded demo numbers, scenes taken from an equivalent earlier run.
+Honest and short.
 
 ## Measurement
 

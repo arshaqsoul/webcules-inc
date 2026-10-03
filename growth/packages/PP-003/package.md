@@ -34,7 +34,7 @@ Reel is silent by design, so no sound will clash with the captions.
 
 ## When to post
 
-Suggested: Tuesday 2026-10-06, around 8:00 pm Eastern (5:00 pm Pacific).
+Suggested: Wednesday 2026-10-07, around 8:00 pm Eastern (5:00 pm Pacific), two days AFTER the launch reel PP-004 (suggested Monday 2026-10-05). The account is empty, so the launch reel should be the first impression.
 Reasoning: wedding photographers shoot on weekends, so weekday evenings are when they sit down to edit and deliver galleries, which is when a forwarded-link worry is on their mind.
 Evening Eastern is also late afternoon on the west coast, so the Canadian audience is mostly awake and off the clock.
 This is a judgment call, not measured data, because the account has no history yet.
