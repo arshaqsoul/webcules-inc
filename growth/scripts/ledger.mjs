@@ -334,6 +334,9 @@ function applySets(pp, sets) {
   }
 }
 
+/** Mutating commands print a short receipt, not the whole record (use `show` for the record). */
+const receipt = (pp) => ({ ok: true, id: pp.id, state: pp.state, ...(pp.blocked ? { blocked: pp.blocked.reason } : {}), ...(pp.lease_by ? { lease_by: pp.lease_by, lease_expires: pp.lease_expires } : {}) });
+
 const commands = {
   new({ flags, sets }) {
     for (const k of ["title", "statement", "persona", "severity"]) if (!flags[k]) die(`--${k} required`);
@@ -396,7 +399,7 @@ const commands = {
       pp.lease_by = by;
       pp.lease_expires = new Date(Date.now() + Number(flags.ttl ?? 45) * 60_000).toISOString();
       save(pp);
-      return pp;
+      return receipt(pp);
     });
   },
 
@@ -406,7 +409,7 @@ const commands = {
       delete pp.lease_by;
       delete pp.lease_expires;
       save(pp);
-      return pp;
+      return receipt(pp);
     });
   },
 
@@ -427,7 +430,7 @@ const commands = {
       delete pp.lease_by;
       delete pp.lease_expires;
       save(pp);
-      return pp;
+      return receipt(pp);
     });
   },
 
@@ -444,7 +447,7 @@ const commands = {
       delete pp.lease_by;
       delete pp.lease_expires;
       save(pp);
-      return pp;
+      return receipt(pp);
     });
   },
 
@@ -454,7 +457,7 @@ const commands = {
       const pp = load(pos[0]);
       pp.blocked = { reason: flags.reason, since: now(), by: flags.by ?? "unknown" };
       save(pp);
-      return pp;
+      return receipt(pp);
     });
   },
 
@@ -463,7 +466,7 @@ const commands = {
       const pp = load(pos[0]);
       delete pp.blocked;
       save(pp);
-      return pp;
+      return receipt(pp);
     });
   },
 
@@ -476,7 +479,7 @@ const commands = {
       delete pp.lease_by;
       delete pp.lease_expires;
       save(pp);
-      return pp;
+      return receipt(pp);
     });
   },
 

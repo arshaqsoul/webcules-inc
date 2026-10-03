@@ -14,6 +14,11 @@
 //  8. If anything you click makes staging SEND EMAIL, set sendsEmail = true. record.mjs then refuses unless every address in
 //     mask.allowEmails is in GROWTH_SAFE_EMAILS. Unknown recipients bounce and get the sending domain blocked.
 //  9. Keep Lite+/Studio+ UI out of the zoom targets if the reel claims the Free plan.
+// 10. Locating repeated things (cards, rows, links): scope to a unique container, never the first text match.
+//     e.g. const card = page.locator("a[href*='/dashboard/projects/demo-proj-family']").first();  // stable href, not display text
+//     or   page.getByRole("link", { name: "Rice Family" }).first()  - then confirm .count() in fixture() and STOP if it is not what you expect.
+//     Prefer role/label/href locators over CSS classes. Check them with a plain Playwright screenshot before recording.
+// 11. Navigate by clicking real sidebar/tab links inside run(), never page.goto: a goto flashes white in the recording.
 
 export const format = "desktop"; // "desktop" (1360x1020) or "phone" (390x693)
 export const mask = { allowEmails: [] }; // addresses that stay readable on screen, everything else is blurred

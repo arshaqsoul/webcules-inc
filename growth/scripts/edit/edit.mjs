@@ -12,7 +12,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { pathToFileURL, fileURLToPath } from "node:url";
 import { launch, ROOT } from "../record/lib.mjs";
 
@@ -62,46 +62,50 @@ const smooth = (x) => {
 const lerp = (x, y, t) => x + (y - x) * t;
 
 // ------------------------------------------------------------------ 1. speed ramps (dead time only)
+/** Static stretches of the SOURCE footage (no cursor in the pixels). Uses the same detector QC uses, on raw.mp4:
+ *  comparing JPEG bytes missed a loading page whose pixels change very slightly. */
 function findStaticRuns() {
-  // A JPEG of unchanged pixels is not always byte-identical, so compare decoded content cheaply:
-  // same size within 0.15% AND same sampled bytes. Cursor motion is drawn separately and handled in protectedInterval.
-  const bufs = frames.map((f) => fs.readFileSync(path.join(recDir, "frames", f.file)));
-  const sig = (b) => crypto.createHash("md5").update(b.subarray(b.length >> 1, (b.length >> 1) + 4096)).digest("hex");
-  const same = (x, y) => Math.abs(bufs[x].length - bufs[y].length) / bufs[x].length < 0.0015 && sig(bufs[x]) === sig(bufs[y]);
-  const runs = [];
-  let i = 0;
-  while (i < frames.length) {
-    let j = i;
-    while (j + 1 < frames.length && same(i, j + 1)) j++;
-    const s0 = frames[i].t_ms;
-    const s1 = j + 1 < frames.length ? frames[j + 1].t_ms : D;
-    if (s1 - s0 > 700) runs.push([s0, s1]);
-    i = j + 1;
+  const raw = path.join(recDir, "raw.mp4");
+  if (fs.existsSync(raw)) {
+    const r = spawnSync("ffmpeg", ["-hide_banner", "-nostats", "-i", raw, "-vf", "freezedetect=n=-50dB:d=0.6", "-an", "-f", "null", "-"], { encoding: "utf8" });
+    const starts = [...r.stderr.matchAll(/freeze_start: ([\d.]+)/g)].map((m) => Number(m[1]) * 1000);
+    const durs = [...r.stderr.matchAll(/freeze_duration: ([\d.]+)/g)].map((m) => Number(m[1]) * 1000);
+    return starts.map((s, k) => [Math.round(s), Math.round(s + (durs[k] ?? D - s))]).filter(([s0, s1]) => s1 - s0 > 700);
   }
-  return runs;
+  return [];
 }
 
-function protectedInterval(s0, s1) {
-  // never ramp over actions, or a hold the storyboard marked as the payoff
+/** Where a static run may start to be sped up, or null if it must stay at 1x.
+ *  Only the moment right after an action (a click, a keystroke, a scroll) and any cursor travel are protected, not the whole run:
+ *  a slow page load after a click is dead time and should be ramped. A hold the storyboard labelled "payoff" is never ramped. */
+function rampStart(s0, s1) {
+  let start = s0;
   for (const e of events.events) {
-    if (["click", "type", "select", "scroll", "navigate"].includes(e.type) && e.t_ms >= s0 - 100 && e.t_ms <= s1 + 100) return true;
-    if (e.type === "wait" && /payoff/i.test(e.text ?? "") && e.t_ms >= s0 - 1500 && e.t_ms <= s1) return true;
+    if (e.type === "wait" && /payoff/i.test(e.text ?? "") && e.t_ms >= s0 - 1500 && e.t_ms <= s1) return null;
+    if (e.type === "annotate" && /payoff/i.test(e.text ?? "") && e.t_ms >= s0 - 1500 && e.t_ms <= s1) return null;
+    if (["click", "type", "select", "scroll", "navigate"].includes(e.type) && e.t_ms >= s0 - 100 && e.t_ms <= s1) start = Math.max(start, e.t_ms + 200);
   }
-  const inside = cursorPath.filter((p) => p.t_ms >= s0 && p.t_ms <= s1);
+  // the cursor must have come to rest: ramp only after its last real movement inside the run
+  const inside = cursorPath.filter((q) => q.t_ms >= s0 && q.t_ms <= s1);
   if (inside.length) {
-    const xs = inside.map((p) => p.x);
-    const ys = inside.map((p) => p.y);
-    if (Math.max(...xs) - Math.min(...xs) > 6 || Math.max(...ys) - Math.min(...ys) > 6) return true;
+    const last = inside.at(-1);
+    for (let k = inside.length - 1; k >= 0; k--) {
+      if (Math.hypot(inside[k].x - last.x, inside[k].y - last.y) > 6) {
+        start = Math.max(start, inside[k].t_ms + 100);
+        break;
+      }
+    }
   }
-  return false;
+  return start < s1 - 500 ? start : null;
 }
 
 const ramps = [];
 for (const [s0, s1] of findStaticRuns()) {
-  if (protectedInterval(s0, s1)) continue;
-  const r0 = s0 + 250;
-  const r1 = s1 - 250;
-  if (r1 - r0 >= 400) ramps.push({ s0: r0, s1: r1, speed: 4 });
+  const start = rampStart(s0, s1);
+  if (start == null) continue;
+  const r0 = start + 150;
+  const r1 = s1 - 150;
+  if (r1 - r0 >= 350) ramps.push({ s0: r0, s1: r1, speed: 4 });
 }
 // segments covering [0, D]
 const segs = [];
@@ -240,9 +244,16 @@ function stateAt(tOut, { forCover = false } = {}) {
   const f = frameAt(tSrc);
   const v = viewAt(Math.min(tOut, MAIN_MS));
   const breathe = 1 + 0.05 * (0.5 - 0.5 * Math.cos((2 * Math.PI * tOut) / 5000));
+  // a focus (annotate) holds the camera on a result: push in steadily across the hold so the payoff is never a still frame
+  let push = 1;
+  for (const e of events.events) {
+    if (e.type !== "annotate") continue;
+    const t0 = srcToOut(e.t_ms);
+    if (tOut >= t0 && tOut <= t0 + 3000) push = 1 + 0.12 * clamp((tOut - t0) / 2500, 0, 1);
+  }
   const s = {
     src: pathToFileURL(path.join(recDir, "frames", f.file)).href,
-    z: v.z * breathe,
+    z: v.z * breathe * push,
     // a pan a quarter-phase behind the zoom drift: when the zoom pauses, the pan is at full speed, so the camera never fully stops
     cx: v.cx + 14 * Math.sin((2 * Math.PI * tOut) / 5000),
     cy: v.cy + 9 * Math.sin((2 * Math.PI * tOut) / 5000),
@@ -296,7 +307,7 @@ function stateAt(tOut, { forCover = false } = {}) {
       const nxt = events.events.find((x, i) => i > e.i && x.t_ms > e.t_ms + 50);
       const t1 = Math.min(nxt ? srcToOut(nxt.t_ms) : t0 + 2500, t0 + 3500);
       const alpha = clamp((tOut - t0) / 150, 0, 1) * clamp((t1 - tOut) / 250, 0, 1);
-      if (alpha > 0) s.highlights.push({ box: e.box, alpha: alpha * 0.9, pulse: 0 });
+      if (alpha > 0) s.highlights.push({ box: e.box, alpha: alpha * 0.9, pulse: e.type === "annotate" ? 0.5 + 0.5 * Math.sin(((tOut - t0) / 1000) * 2 * Math.PI) : 0 }); // a focus outline pulses so a held payoff is never still
     }
     if (meta.hook && !forCover && tOut < HOOK_MS) {
       s.hook = { text: meta.hook, alpha: clamp(tOut / 200, 0, 1) * clamp((HOOK_MS - tOut) / 250, 0, 1) };
@@ -390,6 +401,25 @@ const edl = {
   ramps: segs.filter((s) => s.speed > 1).map((s) => ({ out_start_ms: Math.round(s.o0), out_end_ms: Math.round(s.o1), src_start_ms: s.s0, src_end_ms: s.s1, speed: s.speed })),
   zooms,
   highlights: clicks.map((e) => ({ event_index: e.i, out_ms: Math.round(srcToOut(e.t_ms)) })),
+  // output-time intervals where the cursor visibly travels (over 150 px/s for 250 ms or more). The freeze detector cannot see
+  // a small arrow crossing a large screen, so QC excuses a still-looking stretch only where the cursor is moving.
+  cursor_motion: (() => {
+    // the cursor "travels" wherever it moves more than 12 px within a 120 ms window (robust to the slow start and end of a glide)
+    const raw = [];
+    for (let i = 0, j = 0; i < cursorPath.length; i++) {
+      while (j < cursorPath.length - 1 && cursorPath[j].t_ms - cursorPath[i].t_ms < 120) j++;
+      if (Math.hypot(cursorPath[j].x - cursorPath[i].x, cursorPath[j].y - cursorPath[i].y) > 12) raw.push([cursorPath[i].t_ms, cursorPath[j].t_ms]);
+    }
+    const merged = [];
+    for (const [s, e] of raw) {
+      const last = merged.at(-1);
+      if (last && s <= last[1] + 120) last[1] = Math.max(last[1], e);
+      else merged.push([s, e]);
+    }
+    return merged
+      .filter(([s, e]) => e - s >= 250 && s < D)
+      .map(([s, e]) => [Math.round(srcToOut(s)), Math.round(srcToOut(Math.min(e, D)))]);
+  })(),
   clicks_total: clicks.length,
   clicks_covered: clicks.length, // every click gets a highlight and ripple by construction
   captions: [

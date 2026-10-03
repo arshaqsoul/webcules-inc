@@ -30,6 +30,20 @@ Each has a fix already in the tooling, but knowing why saves you from reinventin
    Stop the capture loop before closing the browser, or its error masks the real one.
    The recorder now saves `failure.png` and reports the real error.
 
+## Framing and zoom (learned on PP-004)
+
+- **A step's zoom is anchored to the FIRST event in the step that has a box** (a click, hover, select, type or focus).
+  `p.step()` placement therefore decides where the camera lands.
+  To zoom on a project card, end the previous step with the click that opens the board and START the next step with the hover on the card.
+- **A zoom holds until its step ends.**
+  If a click in the same step loads a new page, the camera stays at the old position over the new page, so something unintended can land in frame (PP-004 briefly showed the Studio-only Heat button).
+  Put the page-changing click at the end of one step and the first hover of the new page at the start of the next.
+- **Targets wider than about 60 percent of the viewport are not zoomed.**
+  Zoom a tight part of them instead: `p.focus(el.locator("xpath=.."), { tight: true })` on a total, a heading or a stat.
+- **Dead load time is sped up automatically,** but only where neither the screen nor the cursor is moving, and never right after an action or on a `payoff`.
+  QC counts a still stretch as frozen only if 0.8 s of it has neither a screen change nor visible cursor travel.
+- **A held payoff always gets motion:** the focus outline pulses and the camera pushes in steadily.
+
 ## Email safety
 
 9. **Never send email to an address you do not control.**

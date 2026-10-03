@@ -70,3 +70,14 @@ test("a long caption and an out-of-zone caption fail", () => {
   assert.ok(r.report.failures.some((f) => f.startsWith("captions are short")));
   assert.ok(r.report.failures.some((f) => f.startsWith("text inside safe zones")));
 });
+
+test("a still stretch is excused only where the cursor visibly travels", () => {
+  // a fully still reel: fails with no cursor travel, passes when the logged cursor travel covers the still stretch
+  const still = fixture("PP-978", { source: "color=c=white" });
+  assert.equal(still.report.pass, false);
+  const covered = fixture("PP-977", { source: "color=c=white", edl: { cursor_motion: [[0, 10000]] } });
+  assert.ok(!covered.report.failures.some((f) => f.startsWith("no frozen frames")), JSON.stringify(covered.report.failures));
+  // travel that covers only a small part of the stretch does not excuse it
+  const partial = fixture("PP-976", { source: "color=c=white", edl: { cursor_motion: [[0, 1000]] } });
+  assert.ok(partial.report.failures.some((f) => f.startsWith("no frozen frames")));
+});

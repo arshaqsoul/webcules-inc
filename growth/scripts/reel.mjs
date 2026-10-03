@@ -158,6 +158,7 @@ async function make() {
   step("qc", [path.join(HERE, "qc", "qc.mjs"), "--pp", pp]);
   console.log(`
 DONE. growth/out/${pp}/reel.mp4 passed QC.
+Roles for the commands below: the recorder owns RECORDED, the editor owns ENHANCED and QC_PASSED, then the packager takes over.
 Look at real frames before you report (extract a few with ffmpeg and view them), then record the stages:
   node growth/scripts/ledger.mjs transition ${pp} RECORDED --by recorder --set demo.raw=growth/recordings/${pp}/raw.mp4 --set demo.events=growth/recordings/${pp}/events.json
   node growth/scripts/ledger.mjs transition ${pp} ENHANCED --by editor   --set demo.edited=growth/out/${pp}/reel.mp4

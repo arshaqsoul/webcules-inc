@@ -5,7 +5,7 @@ Persona:
 Tier shown: free | lite | studio | pro
 Format: desktop | phone | split
 Seed: <integer, derived from the PP number>
-Target length: 12-35 s
+Target length: 20-30 s (QC hard limits 8-45 s)
 
 ## Hook (first 1.5 s)
 
@@ -20,7 +20,7 @@ Account and org:
 
 ## Steps
 
-| # | Caption (6 words or fewer) | Action (performer calls) | Focus element | Approx duration |
+| # | Caption (6 words or fewer) | Action (performer calls: move, hover, click, type, select, scroll, focus, settle, hold) | Focus element (the camera zooms on the FIRST boxed action of the step) | Approx duration |
 |---|---|---|---|---|
 | 1 | | | | |
 | 2 | | | | |

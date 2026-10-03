@@ -50,7 +50,7 @@ Rules that the checker and QC enforce:
 
 - Hook of 6 words or fewer, each step caption of 6 words or fewer.
 - Every price, limit or tier word on screen (`Free`, `Lite`, `Studio`, `Pro`, `$`, `GB`, `%`) appears in `meta.claims` with a real source file.
-- One idea, 4 to 6 steps, 15 to 30 seconds.
+- One idea, 4 to 6 steps, aim for 20 to 30 seconds (QC hard limits are 8 and 45 seconds, `DEMO-STANDARD.md` has the detail).
 - Never claim what the reel does not show, and never claim a security guarantee the code does not give.
 - No em dashes.
 
@@ -75,12 +75,14 @@ On a recorder failure it saves `growth/recordings/PP-###/failure.png`: look at i
 Extract frames and view them before you claim success:
 
 ```bash
+OUT=<your scratchpad directory>          # temporary files belong in the session scratchpad, not /tmp
 cd growth/out/PP-###
-for t in 1 5 10 15 20; do ffmpeg -y -loglevel error -ss $t -i reel.mp4 -frames:v 1 -vf scale=360:-1 /tmp/f_$t.png; done
-ffmpeg -y -loglevel error $(for t in 1 5 10 15 20; do echo -i /tmp/f_$t.png; done) -filter_complex hstack=inputs=5 /tmp/contact.png
+for t in 1 5 10 15 20; do ffmpeg -y -loglevel error -ss $t -i reel.mp4 -frames:v 1 -vf scale=360:-1 $OUT/f_$t.png; done
+ffmpeg -y -loglevel error $(for t in 1 5 10 15 20; do echo -i $OUT/f_$t.png; done) -filter_complex hstack=inputs=5 $OUT/contact.png
 ```
 
-Then read `/tmp/contact.png`.
+Then read `$OUT/contact.png`.
+Pick timestamps that fall inside each step (see `edl.json` for where zooms start).
 Check: highlights sit on the right element, text is not clipped, the payoff is zoomed and readable, nothing private is visible.
 QC passing does not replace looking.
 

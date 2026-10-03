@@ -1,0 +1,17 @@
+{
+  "hook": "Juggling four tools for clients?",
+  "end": {
+    "claim": "Booking, galleries and payments in one place",
+    "note": "0% commission. 20 GB free.",
+    "link": "snap.webcules.com"
+  },
+  "claims": [
+    { "text": "0% commission: the platform takes nothing from bookings (application_fee_amount 0)", "source": "apps/snap/lib/connect.ts" },
+    { "text": "0% commission (landing proof strip)", "source": "apps/snap/components/landing/hero.tsx" },
+    { "text": "20 GB free: Free plan storage is 20 GB", "source": "apps/snap/lib/plans-data.ts" },
+    { "text": "20 GB storage on the Free tier card", "source": "apps/snap/lib/tier-cards.ts" },
+    { "text": "Projects and Transactions sections in the dashboard sidebar", "source": "apps/snap/components/dashboard-nav.tsx" },
+    { "text": "Files tab on a project", "source": "apps/snap/app/dashboard/projects/[id]/page.tsx" }
+  ],
+  "mark": "snap.webcules.com"
+}

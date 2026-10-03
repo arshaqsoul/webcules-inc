@@ -54,8 +54,22 @@ const freezeLog = run(`freezedetect=n=-55dB:d=${T.freezeS}`);
 const starts = [...freezeLog.matchAll(/freeze_start: ([\d.]+)/g)].map((m) => Number(m[1]));
 const durs = [...freezeLog.matchAll(/freeze_duration: ([\d.]+)/g)].map((m) => Number(m[1]));
 const endStart = edl.endcard_start_ms / 1000;
-const freezes = starts.map((s, i) => ({ start: s, dur: durs[i] ?? dur - s })).filter((f) => f.start < endStart - 0.05);
-check("no frozen frames", freezes.length === 0, freezes.length ? freezes.map((f) => `${f.start.toFixed(1)}s for ${f.dur.toFixed(1)}s`).join(", ") : "none over 0.8s");
+// the end card is intentionally still, so a stretch that runs into it only counts up to where the end card starts
+const candidates = starts.map((s, i) => ({ start: s, dur: Math.min(durs[i] ?? dur - s, endStart - s) })).filter((f) => f.start < endStart - 0.05 && f.dur >= 0.8);
+// The detector cannot see a small cursor crossing a big screen. Stillness is measured as time with neither a screen change
+// nor visible cursor travel: remove the logged cursor travel from each flagged stretch, and it only counts as frozen if a
+// piece of 0.8 s or more is left. A drifting 1px cursor is not travel, so a genuinely still shot still fails.
+const travel = (edl.cursor_motion ?? []).map(([a, b]) => [a / 1000, b / 1000]);
+const stillPieces = (f) => {
+  let pieces = [[f.start, f.start + f.dur]];
+  for (const [a, b] of travel) {
+    pieces = pieces.flatMap(([s, e]) => (b <= s || a >= e ? [[s, e]] : [[s, Math.max(s, a)], [Math.min(e, b), e]].filter(([x, y]) => y > x)));
+  }
+  return Math.max(0, ...pieces.map(([s, e]) => e - s));
+};
+const excused = candidates.filter((f) => stillPieces(f) < T.freezeS);
+const freezes = candidates.filter((f) => !excused.includes(f));
+check("no frozen frames", freezes.length === 0, freezes.length ? freezes.map((f) => `${f.start.toFixed(1)}s for ${f.dur.toFixed(1)}s`).join(", ") : excused.length ? `none (${excused.length} still-looking stretch${excused.length > 1 ? "es" : ""} excused because the cursor is visibly moving: ${excused.map((f) => `${f.start.toFixed(1)}s`).join(", ")})` : "none over 0.8s");
 const blackLog = run(`blackdetect=d=${T.blackS}:pix_th=0.08`);
 const blacks = [...blackLog.matchAll(/black_start:([\d.]+)/g)];
 check("no black frames", blacks.length === 0, blacks.length ? `${blacks.length} run(s)` : "none");
