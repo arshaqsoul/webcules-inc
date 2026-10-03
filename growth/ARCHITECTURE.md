@@ -112,5 +112,5 @@ Every ADR lists the extension point and the next two features it should make eas
 ## Phases
 
 1. **Foundation (done in the first commit):** law, roles, skills, hooks, schemas, ledger and lock CLIs, tests.
-2. **Capture tooling:** the performer library, recorder, editor and QC scripts specified in `growth/DEMO-STANDARD.md`, plus one pilot pain point taken all the way to a real reel.
+2. **Capture tooling (built):** `growth/scripts/record` (performer, recorder), `growth/scripts/edit` (browser-composited editor, because this ffmpeg has no drawtext), `growth/scripts/qc`, plus one pilot pain point taken all the way to a real reel.
 3. **Pool:** start the orchestrator once the pilot passes QC and the founder approves the look.

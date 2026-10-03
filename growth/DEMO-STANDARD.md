@@ -26,16 +26,20 @@ storyboard.md  ->  recorder  ->  raw.mp4 + events.json  ->  editor  ->  reel.mp4
 | Setting | Value |
 |---|---|
 | Target | `https://snap-staging.webcules.com` only |
-| Desktop flows | viewport 1440x900, device scale factor 2 |
+| Desktop flows | viewport 1360x1020 (4:3), device scale factor 2 |
 | Phone flows (client gallery, widgets) | 390x844, device scale factor 3, mobile emulation |
-| Frame rate | 30 fps minimum, constant |
+| Frame rate | output 30 fps constant, source captured at about 15 fps with the cursor composited at 30 fps |
 | Browser chrome | hidden, no address bar, no extensions, no scrollbars |
 | Theme | the product default, no dark-mode flicker |
 | Account | the demo org from the env file, seeded by the fixture step |
 | Lock | holds `staging` for the whole session |
 
-Capture uses a frame-accurate screencast (Chrome DevTools Protocol screencast piped into ffmpeg) or a headed window capture.
-Playwright's built-in `recordVideo` is not used for final output because its fixed low bitrate and 25 fps are visible on a phone.
+Capture is a loop of full-resolution Chrome DevTools Protocol screenshots (`Page.captureScreenshot` with `clip.scale` equal to the device scale factor), each stamped with its exact capture time.
+This was chosen after measuring the alternatives: the CDP screencast API is capped at 1x resolution (soft text once zoomed), and Playwright's `recordVideo` has a fixed low bitrate and 25 fps.
+The capture rate is about 15 fps at 2x.
+That is fine because the cursor is not part of the captured pixels.
+The performer logs the cursor path at high rate to `cursor.json`, and the editor draws the cursor at 30 fps over the frames, so the pointer is smooth and stays crisp at any zoom.
+Page content changes (a new screen, typed characters) land within one capture interval of when they happened.
 
 ### Fixtures
 
@@ -52,7 +56,8 @@ Each action appends to `events.json`.
 
 ### Cursor
 
-- A visible cursor is injected into the page (DOM overlay) so it appears in the capture.
+- The cursor is logged to `cursor.json` as it moves and is drawn by the editor, so it is smooth and crisp at any zoom.
+  Over a clickable element it grows 15 percent, over a text field it becomes an I-beam, and on a phone format it is drawn as a touch dot.
 - It starts from a believable resting point, never the top-left corner.
 - Movement follows a curved path (cubic Bezier with a gentle bow), eased in and out.
 - Duration scales with distance: 350 ms for short hops up to 900 ms for a full-screen travel.
@@ -84,11 +89,31 @@ Each action appends to `events.json`.
 - Total raw take is under 90 seconds.
   The finished reel targets 12 to 35 seconds.
 
+## Files and commands
+
+| File | Written by | What |
+|---|---|---|
+| `growth/storyboards/PP-###.md` | designer | the human-readable storyboard |
+| `growth/storyboards/PP-###.meta.json` | designer | hook text, end card, claims table, mark (see `growth/templates/meta.example.json`) |
+| `growth/storyboards/PP-###.take.mjs` | recorder | the take script: exports `format`, optional `fixture()`, and `run({ p, page })` using only the performer API |
+| `growth/recordings/PP-###/` | `record.mjs` | `frames/`, `frames.json`, `cursor.json`, `raw.mp4`, `events.json` (gitignored) |
+| `growth/out/PP-###/` | `edit.mjs`, `qc.mjs` | `reel.mp4`, `cover.png`, `edl.json`, `qc.json` (gitignored) |
+
+```bash
+node growth/scripts/record/record.mjs --pp PP-001 --take growth/storyboards/PP-001.take.mjs
+node growth/scripts/edit/edit.mjs     --pp PP-001            # add --fast while iterating on the look
+node growth/scripts/qc/qc.mjs         --pp PP-001
+```
+
+`record.mjs` takes and releases the staging lock itself and refuses any host except staging or a local dev server.
+Playwright and Chrome for Testing come from `apps/snap` and the local Playwright cache.
+
 ## events.json
 
 Validated by `growth/schemas/demo-events.schema.json`.
 It holds the viewport, scale factor, fps, duration, a list of **steps** (id, caption, start, end, focus box) and a list of **events** (move, hover, click, type, scroll, navigate, wait, annotate) with timestamps and element boxes.
 The ledger refuses `RECORDED` unless this file validates.
+A step's zoom target is the box of its first click, type or hover event, so every zoom lands on a real action.
 
 ## Enhancement (editor)
 
@@ -103,7 +128,7 @@ Brand colours and fonts come from the Snap theme tokens in `apps/snap`, never in
 | Cursor | Scaled to 1.15x over interactive elements. |
 | Step captions | In the top safe area, 54 to 64 px bold, six words at most, appear 150 ms before the action, stay until the step ends. |
 | Hook | Large text in the first 1.5 seconds that states the pain, for example "Client forwarded your gallery link?". |
-| Speed ramp | Any segment with no meaningful change for over 600 ms plays at 4x with a subtle indicator. |
+| Speed ramp | Any segment where the screen and the cursor are both still for over 700 ms plays at 4x (the first and last 250 ms stay at 1x) with a "4x" indicator. Segments containing an action, or a hold labelled `payoff`, are never ramped. |
 | Framing | 1080x1920. Desktop captures sit in a rounded card with the caption area above. Phone captures fill the frame. |
 | End card | 1.5 to 2 seconds: the Snap name, the one claim from the storyboard, and the link text. Claims cite code. |
 | Safe zones | Keep text out of the top 250 px, bottom 340 px and right 120 px, where Instagram overlays its UI. |
@@ -111,7 +136,8 @@ Brand colours and fonts come from the Snap theme tokens in `apps/snap`, never in
 
 ## Output format
 
-H.264 High profile, yuv420p, 30 fps, 1080x1920, faststart, under 50 MB, AAC silent track omitted.
+H.264 High profile, yuv420p limited range, 30 fps, 1080x1920, faststart, under 50 MB, no audio stream.
+A very slow push-in ("breathing", 3 percent over 5 seconds) runs under the whole reel, so held moments never read as frozen.
 Also export a cover frame (PNG, 1080x1920) chosen at the most legible moment.
 
 ## Automated QC
@@ -121,7 +147,7 @@ Also export a cover frame (PNG, 1080x1920) chosen at the most legible moment.
 
 | Check | Fails if |
 |---|---|
-| Freeze | `freezedetect` finds a static run over 0.8 s outside a speed-ramped segment |
+| Freeze | `freezedetect` (-55 dB) finds a static run over 0.8 s before the end card |
 | Black or blank frames | any run over 0.15 s |
 | Resolution and fps | not 1080x1920 at 30 fps |
 | Duration | under 8 s or over 45 s |
@@ -136,5 +162,6 @@ The packager does not run until the founder or orchestrator has approved the loo
 
 ## Pilot acceptance
 
-The recording tooling is accepted when one real flow, recorded end to end, passes QC and the founder agrees it looks human.
+The tooling is accepted when one real flow, recorded end to end, passes QC and the founder agrees it looks human.
 Until then the pool does not start.
+QC itself is tested: `node --test growth/scripts/qc/qc.test.mjs` proves it fails a frozen reel.

@@ -1,0 +1,12 @@
+{
+  "hook": "Client forwarded your gallery link?",
+  "end": {
+    "claim": "Revoke any gallery link in one click",
+    "note": "Available on the Free plan",
+    "link": "snap.webcules.com"
+  },
+  "claims": [
+    { "text": "Free plan", "source": "apps/snap/lib/plans-data.ts" }
+  ],
+  "mark": "snap.webcules.com"
+}

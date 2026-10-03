@@ -63,7 +63,8 @@ node growth/scripts/lock.mjs status staging
 |---|---|
 | Law, roles, skills, hooks, schemas | done |
 | Ledger and lock CLIs with tests | done |
-| Performer, recorder, editor, QC scripts | next (phase 2), specified in `DEMO-STANDARD.md` |
+| Performer, recorder, editor, QC scripts | done, smoke-tested end to end against staging |
+| Pilot pain point through the whole pipeline | in progress |
 | Linear connection | not connected in the session that built this, drafts go to `linear-outbox/` |
 | Agent pool | starts after the pilot reel passes QC |
 

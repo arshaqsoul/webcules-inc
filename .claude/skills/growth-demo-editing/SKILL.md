@@ -14,9 +14,19 @@ The full effect spec and QC thresholds are in `growth/DEMO-STANDARD.md`.
 - `growth/storyboards/PP-###.md`: hook text, captions, claim line, end card.
 - Brand colours and fonts from the Snap theme tokens in `apps/snap` (read them, do not invent).
 
+## Commands
+
+```
+node growth/scripts/edit/edit.mjs --pp PP-### [--fast]
+node growth/scripts/qc/qc.mjs --pp PP-###
+```
+
+`--fast` lowers quality so you can iterate on the look in seconds.
+Always run the final edit without it.
+
 ## Method
 
-Everything is computed from `events.json`.
+Everything is computed from `events.json` and `cursor.json`.
 Never position an effect by looking at the picture.
 
 1. **Plan the timeline.**
@@ -45,7 +55,7 @@ Never position an effect by looking at the picture.
 
 ## QC
 
-Run the QC script.
+Run `qc.mjs`.
 It writes `growth/out/PP-###/qc.json` with `pass` and a `failures` list.
 It checks freeze, blank frames, resolution and fps, duration, safe zones, events coverage, caption fit, size and claims.
 

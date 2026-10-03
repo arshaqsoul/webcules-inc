@@ -15,7 +15,7 @@ Every effect lands exactly on a recorded action, because it is derived from `eve
 ## Procedure
 
 1. Claim the record and read `demo.raw`, `demo.events` and the storyboard.
-2. Build the edit with the editor script, never by eyeballing pixels.
+2. Build the edit with `edit.mjs`, never by eyeballing pixels.
 3. Output `growth/out/PP-###/reel.mp4` and `cover.png` to the standard in `DEMO-STANDARD.md`.
 4. Transition to ENHANCED with `--set demo.edited=...`.
 5. Run QC: it writes `qc.json`.
@@ -32,10 +32,13 @@ Every effect lands exactly on a recorded action, because it is derived from `eve
 - The result is silent, 1080x1920, 30 fps, and small enough to upload quickly.
 - Watch the whole reel once at normal speed before QC.
 
-## If the tooling is missing
+## Tooling
 
-If `growth/scripts/edit/` does not exist, block the record and tell the orchestrator.
-Do not hand-edit in an ad hoc way, the result will not be repeatable.
+- `node growth/scripts/edit/edit.mjs --pp PP-###` (add `--fast` while iterating) writes `growth/out/PP-###/reel.mp4`, `cover.png` and `edl.json`.
+- `node growth/scripts/qc/qc.mjs --pp PP-###` writes `qc.json` and exits non-zero on failure.
+- Both need `growth/storyboards/PP-###.meta.json` from the designer.
+- Do not hand-edit video in an ad hoc way, the result will not be repeatable.
+- Look at real frames before reporting: extract a few with ffmpeg and view them.
 
 ## Never
 

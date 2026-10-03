@@ -1,0 +1,218 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>growth composer</title>
+<style>
+  :root {
+    --brand: #5e6ad2; /* Snap primary, from apps/snap/app/globals.css */
+    --brand-deep: #4651b8;
+    --ink: #0f1011;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 1080px; height: 1920px; overflow: hidden; background: #f3f4fb;
+    font-family: Inter, "SF Pro Display", -apple-system, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  #bg {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(900px 760px at 14% 10%, #dde1ff 0, transparent 62%),
+      radial-gradient(1000px 900px at 92% 92%, #e7e0ff 0, transparent 58%),
+      #f3f4fb;
+  }
+  #card { position: absolute; overflow: hidden; background: #fff; }
+  #card.shadow { box-shadow: 0 40px 90px -30px rgba(40, 46, 120, .45), 0 12px 30px -12px rgba(15, 16, 17, .25), 0 0 0 1px rgba(15, 16, 17, .06); }
+  #world { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
+  #frame { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; }
+  #fx { position: absolute; left: 0; top: 0; transform-origin: 0 0; pointer-events: none; }
+  .hl { position: absolute; border-style: solid; border-color: var(--brand); }
+  .rp { position: absolute; border-style: solid; border-color: var(--brand); border-radius: 50%; }
+  #cursor { position: absolute; left: 0; top: 0; }
+  #cursor svg { display: block; width: 100%; height: 100%; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .35)); }
+  #touch { position: absolute; border-radius: 50%; background: rgba(15, 16, 17, .26); border-style: solid; border-color: rgba(255, 255, 255, .95); }
+
+  #cap, #hook { position: absolute; left: 0; right: 0; display: flex; justify-content: center; opacity: 0; pointer-events: none; }
+  #cap .pill {
+    display: inline-flex; align-items: center; gap: 22px; max-width: 840px;
+    background: rgba(15, 16, 17, .9); color: #fff; border-radius: 999px; padding: 18px 40px 18px 18px;
+    font-weight: 700; font-size: 54px; line-height: 1.1; letter-spacing: -.01em;
+    box-shadow: 0 18px 40px -16px rgba(15, 16, 17, .55);
+  }
+  #cap .num {
+    flex: none; width: 70px; height: 70px; border-radius: 50%; background: var(--brand); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 800;
+  }
+  #cap .txt { text-align: left; text-wrap: balance; }
+  #hook .h {
+    text-wrap: balance; max-width: 840px; text-align: center; color: var(--ink); font-weight: 800; font-size: 96px; line-height: 1.04; letter-spacing: -.03em;
+  }
+  #hook .h b { color: var(--brand); font-weight: 800; }
+  #dots { position: absolute; left: 0; right: 0; display: flex; justify-content: center; gap: 14px; opacity: 0; }
+  #dots i { width: 14px; height: 14px; border-radius: 99px; background: rgba(15, 16, 17, .18); transition: none; }
+  #dots i.on { background: var(--brand); width: 44px; }
+  #mark { position: absolute; left: 0; right: 0; text-align: center; font-size: 30px; font-weight: 600; color: #5b606b; letter-spacing: .01em; opacity: 0; }
+  #ramp { position: absolute; padding: 10px 18px; border-radius: 99px; background: rgba(15, 16, 17, .78); color: #fff; font-weight: 700; font-size: 28px; opacity: 0; letter-spacing: .02em; }
+
+  #end {
+    position: absolute; inset: 0; opacity: 0; pointer-events: none;
+    background: radial-gradient(1000px 900px at 80% 10%, #7b86e6 0, transparent 60%), linear-gradient(160deg, #5e6ad2, #3f49a8);
+    color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 36px; text-align: center; padding: 0 80px;
+  }
+  #end .brand { font-size: 150px; font-weight: 800; letter-spacing: -.05em; }
+  #end .claim { font-size: 58px; font-weight: 700; line-height: 1.12; max-width: 800px; letter-spacing: -.02em; }
+  #end .note { font-size: 36px; font-weight: 500; opacity: .85; max-width: 760px; line-height: 1.25; }
+  #end .link { margin-top: 18px; background: #fff; color: var(--brand-deep); font-weight: 800; font-size: 50px; padding: 26px 56px; border-radius: 999px; box-shadow: 0 20px 50px -18px rgba(0, 0, 0, .5); }
+</style>
+<div id="bg"></div>
+<div id="card"><div id="world"><img id="frame" /><div id="fx"></div></div></div>
+<div id="hook"><div class="h"></div></div>
+<div id="cap"><div class="pill"><div class="num"></div><div class="txt"></div></div></div>
+<div id="dots"></div>
+<div id="mark"></div>
+<div id="ramp">&raquo; 4x</div>
+<div id="end"><div class="brand">snap</div><div class="claim"></div><div class="note"></div><div class="link"></div></div>
+<script>
+  const $ = (s) => document.querySelector(s);
+  let cfg = null;
+  let k = 1;
+  const SAFE = { top: 250, bottom: 340, right: 120 };
+
+  const ARROW = '<svg viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg"><path d="M5 3l16 9-7 2-3 7z" fill="#111" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>';
+  const IBEAM = '<svg viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg"><path d="M10 5h8M10 23h8M14 5v18" stroke="#fff" stroke-width="5" stroke-linecap="round"/><path d="M10 5h8M10 23h8M14 5v18" stroke="#111" stroke-width="2.4" stroke-linecap="round"/></svg>';
+
+  window.setup = (c) => {
+    cfg = c;
+    const card = $('#card');
+    const L = c.layout;
+    Object.assign(card.style, { left: L.x + 'px', top: L.y + 'px', width: L.w + 'px', height: L.h + 'px', borderRadius: L.r + 'px' });
+    card.classList.toggle('shadow', L.r > 0);
+    $('#world').style.width = L.w + 'px';
+    $('#world').style.height = L.h + 'px';
+    k = L.w / c.vw;
+    const fx = $('#fx');
+    fx.style.width = c.vw + 'px';
+    fx.style.height = c.vh + 'px';
+    fx.style.transform = 'scale(' + k + ')';
+    $('#hook').style.top = L.hookY + 'px';
+    $('#cap').style.top = L.capY + 'px';
+    $('#dots').style.top = L.dotsY + 'px';
+    $('#mark').style.top = L.markY + 'px';
+    $('#mark').textContent = c.mark || '';
+    $('#ramp').style.left = (L.x + L.w - 130) + 'px';
+    $('#ramp').style.top = (L.y + 20) + 'px';
+    $('#end .claim').textContent = c.end.claim;
+    $('#end .note').textContent = c.end.note || '';
+    $('#end .note').style.display = c.end.note ? '' : 'none';
+    $('#end .link').textContent = c.end.link;
+    const dots = $('#dots');
+    dots.innerHTML = '';
+    for (let i = 0; i < c.stepCount; i++) dots.appendChild(document.createElement('i'));
+    // cursor + touch live inside #fx so they share the world transform
+    fx.innerHTML = '<div id="cursor"></div><div id="touch"></div>';
+  };
+
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+  /** One call renders one output frame. Everything is a pure function of the state passed in. */
+  window.render = async (s) => {
+    const L = cfg.layout;
+    const frame = $('#frame');
+    if (s.src && frame.dataset.src !== s.src) {
+      frame.dataset.src = s.src;
+      frame.src = s.src;
+      await frame.decode().catch(() => {});
+    }
+    const z = s.z;
+    const tx = clamp(L.w / 2 - s.cx * k * z, L.w * (1 - z), 0);
+    const ty = clamp(L.h / 2 - s.cy * k * z, L.h * (1 - z), 0);
+    $('#world').style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + z + ')';
+    const u = 1 / (k * z); // 1 canvas pixel expressed in #fx units
+
+    const fx = $('#fx');
+    for (const el of fx.querySelectorAll('.hl,.rp')) el.remove();
+    for (const h of s.highlights || []) {
+      const el = document.createElement('div');
+      el.className = 'hl';
+      const pad = (8 + h.pulse * 8) * u;
+      Object.assign(el.style, {
+        left: h.box.x - pad + 'px', top: h.box.y - pad + 'px', width: h.box.w + pad * 2 + 'px', height: h.box.h + pad * 2 + 'px',
+        borderWidth: 5 * u + 'px', borderRadius: 16 * u + 'px', opacity: h.alpha,
+        boxShadow: '0 0 0 ' + 12 * u + 'px rgba(94,106,210,' + (0.16 * h.alpha) + ')',
+      });
+      fx.appendChild(el);
+    }
+    for (const r of s.ripples || []) {
+      const el = document.createElement('div');
+      el.className = 'rp';
+      const rad = (22 + 84 * r.p) * u;
+      Object.assign(el.style, { left: r.x - rad + 'px', top: r.y - rad + 'px', width: rad * 2 + 'px', height: rad * 2 + 'px', borderWidth: 5 * u + 'px', opacity: 1 - r.p });
+      fx.appendChild(el);
+    }
+
+    const cur = $('#cursor');
+    const touch = $('#touch');
+    if (s.cursor && s.cursor.visible) {
+      if (cfg.format === 'phone') {
+        cur.style.display = 'none';
+        touch.style.display = 'block';
+        const d = 70 * u * (s.cursor.press ? 0.82 : 1);
+        Object.assign(touch.style, { left: s.cursor.x - d / 2 + 'px', top: s.cursor.y - d / 2 + 'px', width: d + 'px', height: d + 'px', borderWidth: 4 * u + 'px' });
+      } else {
+        touch.style.display = 'none';
+        cur.style.display = 'block';
+        const size = 48 * u * (s.cursor.kind === 'pointer' ? 1.15 : 1) * (s.cursor.press ? 0.9 : 1);
+        const html = s.cursor.kind === 'text' ? IBEAM : ARROW;
+        if (cur.dataset.kind !== s.cursor.kind) { cur.innerHTML = html; cur.dataset.kind = s.cursor.kind; }
+        const hotX = s.cursor.kind === 'text' ? 14 : 5;
+        const hotY = s.cursor.kind === 'text' ? 14 : 3;
+        Object.assign(cur.style, { width: size + 'px', height: size + 'px', left: s.cursor.x - hotX * (size / 28) + 'px', top: s.cursor.y - hotY * (size / 28) + 'px' });
+      }
+    } else {
+      cur.style.display = 'none';
+      touch.style.display = 'none';
+    }
+
+    const hook = $('#hook');
+    hook.style.opacity = s.hook ? s.hook.alpha : 0;
+    if (s.hook) {
+      hook.style.transform = 'translateY(' + (1 - s.hook.alpha) * 18 + 'px)';
+      const h = hook.querySelector('.h');
+      if (h.dataset.text !== s.hook.text) { h.dataset.text = s.hook.text; h.textContent = s.hook.text; }
+    }
+    const cap = $('#cap');
+    cap.style.opacity = s.caption ? s.caption.alpha : 0;
+    if (s.caption) {
+      cap.style.transform = 'translateY(' + (1 - s.caption.alpha) * 16 + 'px)';
+      if (cap.dataset.i !== String(s.caption.index)) {
+        cap.dataset.i = String(s.caption.index);
+        cap.querySelector('.num').textContent = String(s.caption.index + 1);
+        cap.querySelector('.txt').textContent = s.caption.text;
+      }
+    }
+    const dots = $('#dots');
+    dots.style.opacity = s.dots ? s.dots.alpha : 0;
+    if (s.dots) [...dots.children].forEach((d, i) => d.classList.toggle('on', i === s.dots.index));
+    $('#mark').style.opacity = s.mark ? s.mark.alpha : 0;
+    $('#ramp').style.opacity = s.ramp ? 1 : 0;
+    const end = $('#end');
+    end.style.opacity = s.end ? s.end.alpha : 0;
+    if (s.end) end.style.transform = 'scale(' + (1 + (1 - s.end.alpha) * 0.02) + ')';
+    return true;
+  };
+
+  /** Bounding boxes of visible text blocks, for QC (safe zones, clipping, word counts). */
+  window.layout = () => {
+    const out = [];
+    const add = (kind, el, text) => {
+      const r = el.getBoundingClientRect();
+      out.push({ kind, text, x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height), clipped: el.scrollWidth > el.clientWidth + 1 || r.right > 1080 || r.left < 0 });
+    };
+    if (+$('#cap').style.opacity > 0.5) add('caption', $('#cap .pill'), $('#cap .txt').textContent);
+    if (+$('#hook').style.opacity > 0.5) add('hook', $('#hook .h'), $('#hook .h').textContent);
+    if (+$('#end').style.opacity > 0.5) {
+      add('end-claim', $('#end .claim'), $('#end .claim').textContent);
+      add('end-link', $('#end .link'), $('#end .link').textContent);
+    }
+    return out;
+  };
+</script>

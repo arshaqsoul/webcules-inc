@@ -15,20 +15,23 @@ No teleporting cursor, no instant text, no frozen frames, no sudden appearance o
 ## Procedure
 
 1. Claim the record and read its storyboard.
-2. Acquire the staging lock for the whole session: `node growth/scripts/lock.mjs acquire staging --by recorder-<PP id> --ttl 45`.
-3. Seed the fixture named in the storyboard and verify the starting screen.
-4. Run the take through the performer library with the record's seed.
-5. Write `growth/recordings/PP-###/raw.mp4` and `growth/recordings/PP-###/events.json`.
+2. Write the take script (see Tooling) and make sure any fixture it needs is created through the app, never by editing the database by hand.
+3. Run the recorder.
+   It holds the staging lock for the whole session and seeds the performer with the record's seed.
+4. It writes `growth/recordings/PP-###/raw.mp4`, `frames.json`, `cursor.json` and `events.json`.
+5. If the run fails, read the error, fix the take script, and rerun.
 6. Check the take yourself: scrub the video, confirm every step in the storyboard happened, confirm no frame is static for over 800 ms, confirm the payoff shot is clean.
-7. Release the lock, even on failure.
-8. Transition: `ledger.mjs transition <id> RECORDED --by recorder --set demo.raw=... --set demo.events=...`.
+7. Transition: `ledger.mjs transition <id> RECORDED --by recorder --set demo.raw=... --set demo.events=...`.
    The guard validates `events.json` against its schema.
 
-## If the tooling is missing
+## Tooling
 
-The performer, recorder and editor scripts are built in phase 2 (see `growth/ARCHITECTURE.md`).
-If `growth/scripts/record/` does not exist, do not improvise with raw Playwright and do not use `recordVideo`.
-Block the record with a clear reason and tell the orchestrator.
+- Write the take script `growth/storyboards/PP-###.take.mjs` from the storyboard, using only the performer API in `growth/scripts/record/performer.mjs` (`step`, `move`, `hover`, `click`, `type`, `scroll`, `navigate`, `settle`, `hold`).
+  Use `p.hold(ms, { label: "payoff" })` for the payoff shot so the editor never speed-ramps it.
+  Reach the starting screen in `fixture()`, which runs before capture starts.
+- Run `node growth/scripts/record/record.mjs --pp PP-### --take growth/storyboards/PP-###.take.mjs`.
+  It takes and releases the staging lock for you, so do not take it separately.
+- Never use raw Playwright interactions or `recordVideo` in a take.
 
 ## Credentials
 

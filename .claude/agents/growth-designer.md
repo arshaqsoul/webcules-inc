@@ -23,9 +23,11 @@ Turn a real pain point and a real, working Snap flow into a short reel that make
    - the fixture the recorder must seed,
    - the claims table, each claim citing a file in `apps/snap`,
    - the Instagram caption and hashtags.
-4. If a validated trend in `growth/trends/` fits, reskin its format, but never change what the product does to fit it.
-5. Mention the tier honestly: if the flow needs Lite or above, the end card says so.
-6. Transition: `ledger.mjs transition <id> DEMO_SCRIPTED --by designer --set demo.storyboard=growth/storyboards/PP-###.md`.
+4. Write `growth/storyboards/PP-###.meta.json` from `growth/templates/meta.example.json`: the hook, the end card claim and link, and the claims table.
+   The editor and QC read it, and QC fails any price, limit or tier on screen that is not in the claims table.
+5. If a validated trend in `growth/trends/` fits, reskin its format, but never change what the product does to fit it.
+6. Mention the tier honestly: if the flow needs Lite or above, the end card says so.
+7. Transition: `ledger.mjs transition <id> DEMO_SCRIPTED --by designer --set demo.storyboard=growth/storyboards/PP-###.md`.
 
 ## Quality bar
 

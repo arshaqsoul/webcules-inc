@@ -54,6 +54,11 @@ Hashtags (5 to 8, niche before broad):
 Trend id from growth/trends/:
 How the trend format is used without changing what the product does:
 
+## Companion files
+
+- `growth/storyboards/PP-###.meta.json` from `growth/templates/meta.example.json` (hook, end card, claims, mark).
+- `growth/storyboards/PP-###.take.mjs` is written by the recorder from the steps above.
+
 ## Do not show
 
 <Anything private, unfinished, or not on this tier.>
