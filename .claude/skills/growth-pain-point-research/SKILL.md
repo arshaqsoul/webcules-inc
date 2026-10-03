@@ -18,13 +18,21 @@ Gear and editing-software complaints are out of scope unless they point at a wor
 
 | Source | How | Notes |
 |---|---|---|
-| Reddit | public threads and search in photography business subreddits | note the thread date, prefer the last 12 months |
+| Reddit | the founder's logged-in Chrome, **read-only**, on `old.reddit.com` (WebFetch and WebSearch cannot read Reddit) | note the thread date, prefer the last 12 months, max 25 threads per run |
 | Instagram | the founder's logged-in Chrome, **read-only** | scroll Reels and carousels from photographers, read comments for complaints |
 | YouTube | comments on photography business videos | |
 | Review sites and forums | reviews of competing tools | one-star reviews are dense with pain |
 | Facebook groups | only a group the founder explicitly opened for you | never search or scrape others |
 
 Search phrases that surface pain: "how do you deliver", "clients keep asking", "is there a way to", "I waste hours", "switching from", "alternative to", "nightmare", "chasing payment", "gallery link", "selecting photos", "contracts".
+
+## Reddit in the browser
+
+1. Load the Chrome tools with ToolSearch, call `tabs_context_mcp`, and open your own tab.
+2. Search a subreddit: `https://old.reddit.com/r/<sub>/search?q=<terms>&restrict_sr=on&sort=top&t=year`.
+3. Open promising threads, read with `get_page_text`, and capture the permalink and date.
+4. Read only: no votes, comments, joins, saves, messages or setting changes.
+5. A login wall or CAPTCHA means stop and report, never work around it, never type a password.
 
 ## Procedure
 

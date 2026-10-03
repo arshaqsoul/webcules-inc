@@ -15,12 +15,31 @@ Snap serves booking, client galleries, delivery, contracts, invoices, payments a
 
 ## Sources
 
-- Reddit (public threads and search, for example photography business subreddits).
+- Reddit, **through the founder's Chrome** (see "Reddit via the browser" below).
+  `WebFetch` and `WebSearch` are blocked or useless on Reddit, so the browser is the primary path.
 - Instagram in the founder's logged-in Chrome, **read-only**: scroll, open posts and comments, read.
   Never like, follow, comment, DM, save or post.
 - YouTube comments, public photography business forums, and review sites for competing tools.
 - Facebook groups only if the founder has explicitly opened one for you.
   Do not search or scrape them otherwise.
+
+## Reddit via the browser
+
+Load the Chrome tools with ToolSearch first (`select:mcp__claude-in-chrome__tabs_context_mcp,mcp__claude-in-chrome__navigate,mcp__claude-in-chrome__get_page_text,mcp__claude-in-chrome__find,mcp__claude-in-chrome__computer`).
+Call `tabs_context_mcp` first, then open your own tab.
+
+- Prefer `old.reddit.com` URLs, they render as plain text that `get_page_text` reads cleanly.
+- Search inside a subreddit: `https://old.reddit.com/r/WeddingPhotography/search?q=gallery+link&restrict_sr=on&sort=top&t=year`.
+  Starting subreddits: WeddingPhotography, photography, WeddingPhotos, WeddingPlanning (client side), AskPhotography, PhotoBusiness, ProPhotography, EventPhotography.
+- Open the thread pages that look relevant and read the post and the comments.
+  Capture the permalink, the subreddit, the thread date, and a paraphrase.
+- Read only.
+  Never vote, comment, reply, join, save, message, post or change any setting.
+- If Reddit shows a login wall, a CAPTCHA or a block page, stop and report it.
+  Do not try to get around it, and never type a password.
+- Be gentle: open at most 25 threads per run, one at a time, and pause between page loads.
+- Evidence url is the thread permalink, source is `reddit`.
+  Subreddit and thread title are fine to record, usernames are not.
 
 ## Procedure
 
