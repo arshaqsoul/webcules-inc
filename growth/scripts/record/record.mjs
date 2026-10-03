@@ -9,6 +9,7 @@
 //   export async function run({ p, page, env }) {}              // the performance, via the performer API only
 //   export async function teardown({ page, env, log }) {}       // optional: restore staging data the take changed
 //   export const mask = { allowEmails: ["a@b.com"] };            // optional: emails NOT blurred on screen (every other address is)
+//   export const sendsEmail = true;                              // REQUIRED if the take makes staging send email: mask.allowEmails must then all be in GROWTH_SAFE_EMAILS
 //
 // Output (growth/recordings/<PP>/): frames/*.jpg, frames.json, cursor.json, raw.mp4, events.json
 // Capture is a loop of full-resolution CDP screenshots (not Playwright recordVideo, not the 1x screencast),
@@ -18,7 +19,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { pathToFileURL, fileURLToPath } from "node:url";
-import { loadEnv, launch, apiLogin, ROOT } from "./lib.mjs";
+import { loadEnv, launch, apiLogin, ROOT, safeEmails } from "./lib.mjs";
 import { createPerformer, CURSOR_INIT } from "./performer.mjs";
 import { maskInit } from "./mask.mjs";
 
@@ -42,6 +43,19 @@ const { pp, take, format: formatFlag, keepLock } = args();
 if (!pp || !/^PP-\d{3,}$/.test(pp) || !take) {
   console.error("usage: record.mjs --pp PP-### --take <take.mjs> [--format desktop|phone]");
   process.exit(2);
+}
+
+// SAFETY: a take that makes staging send real email may only address allow-listed recipients.
+// Unknown addresses bounce, and enough bounces get the sending domain blocked. Checked before anything is wiped or locked.
+const preMod = await import(pathToFileURL(path.resolve(ROOT, take)).href);
+if (preMod.sendsEmail) {
+  const safe = safeEmails();
+  const allowed = (preMod.mask?.allowEmails ?? []).map((e) => e.toLowerCase());
+  const bad = allowed.filter((e) => !safe.includes(e));
+  if (!allowed.length || bad.length) {
+    console.error(`REFUSED: this take sends real email but ${!allowed.length ? "declares no recipient (mask.allowEmails)" : `${bad.join(", ")} is not in GROWTH_SAFE_EMAILS`}. Safe recipients: ${safe.join(", ") || "(none set)"}.`);
+    process.exit(1);
+  }
 }
 
 const seed = Number(pp.slice(3)) * 7919;

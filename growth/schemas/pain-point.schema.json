@@ -5,6 +5,8 @@
   "required": ["id", "title", "statement", "persona", "severity", "state", "evidence", "history"],
   "properties": {
     "id": { "type": "string", "pattern": "^PP-\\d{3,}$" },
+    "kind": { "type": "string", "enum": ["pain_point", "launch"] },
+    "launch": { "type": "object" },
     "title": { "type": "string", "minLength": 8 },
     "statement": { "type": "string", "minLength": 20 },
     "persona": {

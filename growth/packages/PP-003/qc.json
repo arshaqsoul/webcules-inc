@@ -1,0 +1,81 @@
+{
+  "pass": true,
+  "pain_point": "PP-003",
+  "checked_at": "2026-10-03T09:34:33.620Z",
+  "reel": "growth/out/PP-003/reel.mp4",
+  "duration_s": 27.7,
+  "size_mb": 5.4,
+  "failures": [],
+  "checks": [
+    {
+      "name": "resolution",
+      "ok": true,
+      "detail": "1080x1920"
+    },
+    {
+      "name": "fps",
+      "ok": true,
+      "detail": "30/1"
+    },
+    {
+      "name": "codec",
+      "ok": true,
+      "detail": "h264 yuv420p"
+    },
+    {
+      "name": "silent",
+      "ok": true,
+      "detail": "no audio stream"
+    },
+    {
+      "name": "duration",
+      "ok": true,
+      "detail": "27.7s (allowed 8-45s)"
+    },
+    {
+      "name": "size",
+      "ok": true,
+      "detail": "5.4 MB (max 50)"
+    },
+    {
+      "name": "no frozen frames",
+      "ok": true,
+      "detail": "none over 0.8s"
+    },
+    {
+      "name": "no black frames",
+      "ok": true,
+      "detail": "none"
+    },
+    {
+      "name": "text inside safe zones",
+      "ok": true,
+      "detail": "10 text blocks checked"
+    },
+    {
+      "name": "captions are short",
+      "ok": true,
+      "detail": "all <= 6 words"
+    },
+    {
+      "name": "hook is short",
+      "ok": true,
+      "detail": "Client forwarded your gallery link?"
+    },
+    {
+      "name": "every click has an effect",
+      "ok": true,
+      "detail": "3/3 clicks highlighted"
+    },
+    {
+      "name": "claims backed",
+      "ok": true,
+      "detail": "1 price/limit/tier mentions all in the claims table"
+    },
+    {
+      "name": "claims cite real files",
+      "ok": true,
+      "detail": "5 claim(s) cite existing files"
+    }
+  ]
+}

@@ -10,7 +10,7 @@ import { mainRoot } from "../ledger.mjs";
 export const ROOT = mainRoot();
 
 /** Parse growth/.env.local (KEY=VALUE lines) into process.env without overriding real env vars. */
-export function loadEnv() {
+export function readEnvFile() {
   const file = path.join(ROOT, "growth", ".env.local");
   if (fs.existsSync(file)) {
     for (const line of fs.readFileSync(file, "utf8").split("\n")) {
@@ -18,6 +18,16 @@ export function loadEnv() {
       if (m && !(m[1] in process.env)) process.env[m[1]] = m[2];
     }
   }
+}
+
+/** Addresses a take may send real email to (GROWTH_SAFE_EMAILS, comma separated). Anything else is refused. */
+export function safeEmails() {
+  readEnvFile();
+  return (process.env.GROWTH_SAFE_EMAILS ?? "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+}
+
+export function loadEnv() {
+  readEnvFile();
   const need = ["GROWTH_STAGING_URL", "GROWTH_STAGING_EMAIL", "GROWTH_STAGING_PASSWORD"];
   const missing = need.filter((k) => !process.env[k]);
   if (missing.length) throw new Error(`missing ${missing.join(", ")} (see growth/.env.example)`);

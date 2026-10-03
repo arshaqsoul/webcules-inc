@@ -202,6 +202,8 @@ function loadSchema(name) {
 /** Each guard returns an error string, or null when the record may enter that state. */
 const GUARDS = {
   VALIDATED(pp) {
+    // a launch reel is not a pain point: it needs a written brief instead of public evidence
+    if (pp.kind === "launch") return artifactExists(pp.launch?.brief) ? null : "launch records need launch.brief pointing at an existing brief file";
     if (pp.evidence.length < 3) return "needs >= 3 evidence items";
     const hosts = new Set(pp.evidence.map((e) => { try { return new URL(e.url).host; } catch { return e.url; } }));
     if (hosts.size < 2) return "evidence must come from >= 2 distinct hosts (one thread is an anecdote, not a pattern)";
@@ -345,6 +347,7 @@ const commands = {
       persona: flags.persona,
       severity: Number(flags.severity),
       frequency: flags.frequency ? Number(flags.frequency) : 1,
+      kind: flags.kind ?? "pain_point",
       state: "DISCOVERED",
       evidence: [],
       history: [{ to: "DISCOVERED", at: now(), by: flags.by ?? "researcher", note: "created" }],

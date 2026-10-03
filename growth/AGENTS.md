@@ -104,7 +104,11 @@ The developer does not review its own work, and QA does not fix what it finds.
 9. **Never invent evidence.**
    A pain point needs at least 3 real sources on 2 or more hosts.
    Paraphrase what people said, do not copy long quotes, and never attribute a statement to a named individual in a committed file.
-10. **Stop and block when stuck.**
+10. **Never send email to an address you do not control.**
+    Any take that makes staging send email sets `sendsEmail = true` and may only address `GROWTH_SAFE_EMAILS`.
+    Unknown recipients bounce, and enough bounces get the sending domain blocked.
+    `reel.mjs check` and `record.mjs` both enforce it.
+11. **Stop and block when stuck.**
     Use `ledger.mjs block <id> --reason "..."` and say what you tried.
     Do not loop, and do not fake a passing result.
 
@@ -161,6 +165,12 @@ NOTES: <at most 5 lines: decisions, risks, anything the next role must know>
 
 | Path | What |
 |---|---|
+| `growth/RUNBOOK.md` | **start here to make a reel**: the step-by-step path with exact commands |
+| `growth/LESSONS.md` | every pitfall already hit, and why |
+| `growth/examples/PP-003/WALKTHROUGH.md` | the worked example, annotated |
+| `growth/scripts/reel.mjs` | `new`, `check`, `make`, `status` for any reel |
+| `growth/briefs/` | briefs for launch records (committed) |
+| `growth/assets/` | prepared scene images, may show a real inbox, never committed |
 | `growth/ARCHITECTURE.md` | how the system fits together |
 | `growth/DEMO-STANDARD.md` | the recording and editing standard |
 | `growth/schemas/` | JSON schemas for ledger records and demo events |

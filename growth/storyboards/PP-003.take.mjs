@@ -5,6 +5,7 @@ export const format = "desktop";
 // addresses causes bounces that get staging email blocked, so the take refuses to act on anything else.
 const CLIENT = "arshaqhishamsl@gmail.com";
 export const mask = { allowEmails: [CLIENT] }; // every other address on screen is blurred
+export const sendsEmail = true; // "New link" emails the client: record.mjs refuses unless CLIENT is in GROWTH_SAFE_EMAILS
 
 const PATH = "/dashboard/projects/demo-proj-wedding?tab=gallery";
 

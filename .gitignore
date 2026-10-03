@@ -79,3 +79,7 @@ growth/.env.local
 
 # Screenshots used as inserted scenes (cropped views of the founder's inbox): never commit
 growth/assets/
+
+# Finished reel media (package.md and qc.json are committed, the video and cover are not)
+growth/packages/*/*.mp4
+growth/packages/*/*.png

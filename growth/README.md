@@ -19,6 +19,19 @@ node --test growth/scripts/ledger.test.mjs growth/scripts/hooks.test.mjs
 `growth/.env.local` is gitignored.
 Never commit credentials.
 
+## Make a reel in four commands
+
+```bash
+node growth/scripts/reel.mjs new    PP-###     # scaffold the storyboard, meta and take script
+node growth/scripts/reel.mjs check  PP-###     # offline lint, run after every change
+node growth/scripts/reel.mjs make   PP-###     # record on staging, edit, QC
+node growth/scripts/reel.mjs status PP-###     # where the record is and what to do next
+```
+
+The full procedure is `growth/RUNBOOK.md`.
+The pitfalls are `growth/LESSONS.md`.
+The worked example is `growth/examples/PP-003/WALKTHROUGH.md`.
+
 ## Run it
 
 Mode A, one orchestrator that fans out workers:
@@ -64,7 +77,9 @@ node growth/scripts/lock.mjs status staging
 | Law, roles, skills, hooks, schemas | done |
 | Ledger and lock CLIs with tests | done |
 | Performer, recorder, editor, QC scripts | done, smoke-tested end to end against staging |
-| Pilot pain point through the whole pipeline | in progress |
+| Pilot pain point through the whole pipeline | done: PP-003 packaged, QC passed |
+| Reusable runner, checker, scaffold, runbook, lessons | done |
+| Launch reel (kind `launch`) | in progress |
 | Linear connection | not connected in the session that built this, drafts go to `linear-outbox/` |
 | Agent pool | starts after the pilot reel passes QC |
 
