@@ -15,8 +15,9 @@ Snap serves booking, client galleries, delivery, contracts, invoices, payments a
 
 ## Sources
 
-- Reddit, **through the founder's Chrome** (see "Reddit via the browser" below).
-  `WebFetch` and `WebSearch` are blocked or useless on Reddit, so the browser is the primary path.
+- Reddit, through the founder's Chrome, **only if the extension allows it** (see "Reddit via the browser" below).
+  `WebFetch` and `WebSearch` cannot read Reddit.
+  As of 2026-10-03 the Claude-in-Chrome extension refuses reddit.com ("This site is not allowed due to safety restrictions"), so treat Reddit as unavailable unless the founder says it has been allowed.
 - Instagram in the founder's logged-in Chrome, **read-only**: scroll, open posts and comments, read.
   Never like, follow, comment, DM, save or post.
 - YouTube comments, public photography business forums, and review sites for competing tools.
@@ -25,8 +26,13 @@ Snap serves booking, client galleries, delivery, contracts, invoices, payments a
 
 ## Reddit via the browser
 
+**Prerequisite:** `reddit.com` and `old.reddit.com` must be allowed in the Chrome extension.
+If `navigate` returns "This site is not allowed due to safety restrictions", stop, report it, and do not try another Reddit domain, a proxy, a cached copy or any other route to the same content.
+That is a block, not an obstacle.
+
 Load the Chrome tools with ToolSearch first (`select:mcp__claude-in-chrome__tabs_context_mcp,mcp__claude-in-chrome__navigate,mcp__claude-in-chrome__get_page_text,mcp__claude-in-chrome__find,mcp__claude-in-chrome__computer`).
-Call `tabs_context_mcp` first, then open your own tab.
+Call `tabs_context_mcp` first, then open your own new tab.
+Never reuse an existing tab, the founder may have Instagram open in it.
 
 - Prefer `old.reddit.com` URLs, they render as plain text that `get_page_text` reads cleanly.
 - Search inside a subreddit: `https://old.reddit.com/r/WeddingPhotography/search?q=gallery+link&restrict_sr=on&sort=top&t=year`.
@@ -37,7 +43,7 @@ Call `tabs_context_mcp` first, then open your own tab.
   Never vote, comment, reply, join, save, message, post or change any setting.
 - If Reddit shows a login wall, a CAPTCHA or a block page, stop and report it.
   Do not try to get around it, and never type a password.
-- Be gentle: open at most 25 threads per run, one at a time, and pause between page loads.
+- Be gentle: open at most 25 threads per run, one at a time, and wait 5 to 10 seconds between page loads.
 - Evidence url is the thread permalink, source is `reddit`.
   Subreddit and thread title are fine to record, usernames are not.
 

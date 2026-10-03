@@ -18,7 +18,7 @@ Gear and editing-software complaints are out of scope unless they point at a wor
 
 | Source | How | Notes |
 |---|---|---|
-| Reddit | the founder's logged-in Chrome, **read-only**, on `old.reddit.com` (WebFetch and WebSearch cannot read Reddit) | note the thread date, prefer the last 12 months, max 25 threads per run |
+| Reddit | the founder's logged-in Chrome, **read-only**, on `old.reddit.com`, only if the extension allows it (blocked as of 2026-10-03, see below) | note the thread date, prefer the last 12 months, max 25 threads per run |
 | Instagram | the founder's logged-in Chrome, **read-only** | scroll Reels and carousels from photographers, read comments for complaints |
 | YouTube | comments on photography business videos | |
 | Review sites and forums | reviews of competing tools | one-star reviews are dense with pain |
@@ -27,6 +27,12 @@ Gear and editing-software complaints are out of scope unless they point at a wor
 Search phrases that surface pain: "how do you deliver", "clients keep asking", "is there a way to", "I waste hours", "switching from", "alternative to", "nightmare", "chasing payment", "gallery link", "selecting photos", "contracts".
 
 ## Reddit in the browser
+
+**Status 2026-10-03: blocked.**
+The Claude-in-Chrome extension refuses reddit.com with "This site is not allowed due to safety restrictions".
+If you see that message, stop and report it.
+Do not try other Reddit domains, proxies, caches or scrapers, and do not drive a separate browser at Reddit to reach the same content.
+Until the founder allows it, get the same signal from review sites, forums, photographer blogs, YouTube comments and Instagram.
 
 1. Load the Chrome tools with ToolSearch, call `tabs_context_mcp`, and open your own tab.
 2. Search a subreddit: `https://old.reddit.com/r/<sub>/search?q=<terms>&restrict_sr=on&sort=top&t=year`.
