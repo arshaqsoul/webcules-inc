@@ -41,6 +41,12 @@ That is fine because the cursor is not part of the captured pixels.
 The performer logs the cursor path at high rate to `cursor.json`, and the editor draws the cursor at 30 fps over the frames, so the pointer is smooth and stays crisp at any zoom.
 Page content changes (a new screen, typed characters) land within one capture interval of when they happened.
 
+### Privacy mask
+
+`record.mjs` injects a mask into every page before capture that blurs each email address on screen (text, inputs and selects) except the ones the take lists in `export const mask = { allowEmails: [...] }`.
+By default every address is blurred.
+Other people's addresses must never reach the frames.
+
 ### Fixtures
 
 Every demo starts from a known state.
@@ -121,6 +127,14 @@ Validated by `growth/schemas/demo-events.schema.json`.
 It holds the viewport, scale factor, fps, duration, a list of **steps** (id, caption, start, end, focus box) and a list of **events** (move, hover, click, type, scroll, navigate, wait, annotate) with timestamps and element boxes.
 The ledger refuses `RECORDED` unless this file validates.
 A step's zoom target is the box of its first click, type or hover event, so every zoom lands on a real action.
+
+## Inserted scenes
+
+`meta.json` may list `inserts`: still scenes shown after the recording and before the end card, for things the recorder cannot capture (for example the client's inbox).
+Each item has `image` (a prepared 4:3 PNG), `caption` (six words or fewer), `duration_ms`, and optional `focus` (`[x, y]` as fractions of the image) and `zoom_to`.
+Images live in `growth/assets/<PP>/` (gitignored, never committed) because they can be screenshots of a real inbox.
+Crop them so that nothing but the relevant email is visible: no sidebar, no labels, no other mail, no counts.
+The recorder wipes `growth/recordings/<PP>/` on every run, so assets must not live there.
 
 ## Enhancement (editor)
 

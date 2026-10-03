@@ -55,10 +55,22 @@ export function createPerformer(page, { seed, epoch, viewport }) {
   const log = (e) => events.push({ t_ms: Math.round(now()), ...e });
   const round = (b) => (b ? { x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width ?? b.w), h: Math.round(b.height ?? b.h) } : undefined);
 
-  async function box(target) {
+  /** An element's box once it has stopped moving. Apps often scroll or re-layout after an action (a banner inserts,
+   *  a smooth scroll), and a box measured mid-motion puts the cursor and the editor's highlight in the wrong place. */
+  async function box(target, { need = 1, gap = 120 } = {}) {
     if (typeof target?.boundingBox !== "function") return null;
     await target.waitFor({ state: "visible", timeout: 15000 });
-    return target.boundingBox();
+    let prev = await target.boundingBox();
+    let still = 0;
+    for (let i = 0; i < 40; i++) {
+      await sleep(gap);
+      const cur = await target.boundingBox();
+      const same = cur && prev && Math.abs(cur.x - prev.x) < 0.5 && Math.abs(cur.y - prev.y) < 0.5 && Math.abs(cur.width - prev.width) < 0.5 && Math.abs(cur.height - prev.height) < 0.5;
+      still = same ? still + 1 : 0;
+      prev = cur;
+      if (still >= need) return cur;
+    }
+    return prev;
   }
 
   async function glideTo(x, y, { overshoot = true } = {}) {
@@ -227,6 +239,21 @@ export function createPerformer(page, { seed, epoch, viewport }) {
       const got = await shown();
       if (got.toLowerCase() !== label.toLowerCase()) throw new Error(`select: wanted "${label}" but the control shows "${got}"`);
       await sleep(between(400, 600));
+    },
+
+    /** Point the camera at something without touching it (a banner, a result). Logged as an annotate event the editor zooms to. */
+    async focus(target, { label, tight } = {}) {
+      let b = await box(target, { need: 4, gap: 200 }); // 0.8 s of stillness: late re-layouts must not leave the highlight behind
+      if (tight) {
+        // a block element spans its whole row; measure just the text so the zoom and highlight hug it
+        b = await target.evaluate((el) => {
+          const r = document.createRange();
+          r.selectNodeContents(el);
+          const x = r.getBoundingClientRect();
+          return { x: x.x, y: x.y, width: x.width, height: x.height };
+        });
+      }
+      log({ type: "annotate", box: round(b), text: label ?? "focus", ...(currentStep ? { step: currentStep } : {}) });
     },
 
     async scroll(dy, opts) {

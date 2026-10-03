@@ -8,6 +8,7 @@
 //   export async function fixture({ page, env, log }) {}        // optional: get to the starting screen
 //   export async function run({ p, page, env }) {}              // the performance, via the performer API only
 //   export async function teardown({ page, env, log }) {}       // optional: restore staging data the take changed
+//   export const mask = { allowEmails: ["a@b.com"] };            // optional: emails NOT blurred on screen (every other address is)
 //
 // Output (growth/recordings/<PP>/): frames/*.jpg, frames.json, cursor.json, raw.mp4, events.json
 // Capture is a loop of full-resolution CDP screenshots (not Playwright recordVideo, not the 1x screencast),
@@ -19,6 +20,7 @@ import { spawnSync } from "node:child_process";
 import { pathToFileURL, fileURLToPath } from "node:url";
 import { loadEnv, launch, apiLogin, ROOT } from "./lib.mjs";
 import { createPerformer, CURSOR_INIT } from "./performer.mjs";
+import { maskInit } from "./mask.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FORMATS = {
@@ -82,6 +84,8 @@ try {
   });
   await context.addCookies(await apiLogin(env));
   await context.addInitScript(CURSOR_INIT);
+  // privacy: blur every email on screen except those the take explicitly allows (default: all of them)
+  await context.addInitScript(maskInit(mod.mask?.allowEmails ?? []));
   const page = await context.newPage();
   takePage = page;
   takeEnv = env;
@@ -128,6 +132,7 @@ try {
 
   capturing = false;
   await loop.catch(() => {});
+  const duration = Date.now() - epoch; // measured before teardown, which is not part of the take
   // restore any staging data the take changed (e.g. a revoked link); failures are reported, never hidden
   try {
     tornDown = true;
@@ -136,7 +141,6 @@ try {
     console.error(`[record] WARNING teardown failed, staging data may need manual restore: ${e.message}`);
     process.exitCode = 1;
   }
-  const duration = Date.now() - epoch;
 
   // ---- frames index (timestamps relative to the epoch the performer used)
   if (!frames.length) throw new Error("no frames captured");

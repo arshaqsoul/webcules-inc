@@ -119,7 +119,21 @@ for (const s of segs) {
   s.o1 = acc;
 }
 const MAIN_MS = acc;
-const TOTAL_MS = MAIN_MS + END_MS;
+// Inserted still scenes after the recording (for example the client's inbox). Each is a prepared 4:3 image with a slow push-in.
+const insertDefs = (meta.inserts ?? []).map((ins) => {
+  const abs = path.resolve(ROOT, ins.image);
+  if (!fs.existsSync(abs)) throw new Error(`meta.inserts image missing: ${ins.image}`);
+  if (!ins.caption || !ins.duration_ms) throw new Error("each meta.inserts item needs image, caption and duration_ms");
+  return { ...ins, url: pathToFileURL(abs).href };
+});
+let insAcc = MAIN_MS;
+for (const ins of insertDefs) {
+  ins.o0 = insAcc;
+  insAcc += ins.duration_ms;
+  ins.o1 = insAcc;
+}
+const INS_END = insAcc;
+const TOTAL_MS = INS_END + END_MS;
 const srcToOut = (t) => {
   const s = segs.find((x) => t >= x.s0 && t <= x.s1) ?? segs.at(-1);
   return s.o0 + (clamp(t, s.s0, s.s1) - s.s0) / s.speed;
@@ -135,7 +149,7 @@ const home = { z: 1, cx: vw / 2, cy: vh / 2 };
 const keys = [{ t: 0, ...home }];
 const zooms = [];
 for (const st of stepsList) {
-  const ev = events.events.find((e) => e.step === st.id && e.box && ["click", "type", "hover"].includes(e.type));
+  const ev = events.events.find((e) => e.step === st.id && e.box && ["click", "type", "select", "annotate", "hover"].includes(e.type));
   if (!ev) continue;
   const maxW = format === "phone" ? 0.7 : 0.6;
   if (ev.box.w > maxW * vw) continue; // a wide target (table row, hero) reads better unzoomed
@@ -204,7 +218,7 @@ const kindAt = (tSrc) => {
   return k;
 };
 const clicks = events.events.map((e, i) => ({ ...e, i })).filter((e) => e.type === "click" && e.box);
-const typings = events.events.map((e, i) => ({ ...e, i })).filter((e) => (e.type === "type" || e.type === "select") && e.box);
+const typings = events.events.map((e, i) => ({ ...e, i })).filter((e) => (e.type === "type" || e.type === "select" || e.type === "annotate") && e.box);
 
 // ------------------------------------------------------------------ 4. captions
 const hookEnd = HOOK_MS + 50;
@@ -219,16 +233,19 @@ const words = (s) => s.trim().split(/\s+/).length;
 
 // ------------------------------------------------------------------ 5. frame state
 function stateAt(tOut, { forCover = false } = {}) {
-  const inEnd = tOut >= MAIN_MS;
-  const tSrc = inEnd ? D : outToSrc(tOut);
+  const past = tOut >= MAIN_MS; // after the recording: inserted scenes, then the end card
+  const inEnd = tOut >= INS_END;
+  const ins = insertDefs.find((i) => tOut >= i.o0 && tOut < i.o1);
+  const tSrc = past ? D : outToSrc(tOut);
   const f = frameAt(tSrc);
   const v = viewAt(Math.min(tOut, MAIN_MS));
-  const breathe = 1 + 0.03 * (0.5 - 0.5 * Math.cos((2 * Math.PI * tOut) / 5000));
+  const breathe = 1 + 0.05 * (0.5 - 0.5 * Math.cos((2 * Math.PI * tOut) / 5000));
   const s = {
     src: pathToFileURL(path.join(recDir, "frames", f.file)).href,
     z: v.z * breathe,
-    cx: v.cx,
-    cy: v.cy,
+    // a pan a quarter-phase behind the zoom drift: when the zoom pauses, the pan is at full speed, so the camera never fully stops
+    cx: v.cx + 14 * Math.sin((2 * Math.PI * tOut) / 5000),
+    cy: v.cy + 9 * Math.sin((2 * Math.PI * tOut) / 5000),
     highlights: [],
     ripples: [],
     select: null,
@@ -240,7 +257,19 @@ function stateAt(tOut, { forCover = false } = {}) {
     ramp: false,
     end: null,
   };
-  if (!inEnd) {
+  if (ins) {
+    const e = clamp((tOut - ins.o0) / ins.duration_ms, 0, 1); // steady linear push-in: an eased one nearly stops at the end and reads as frozen
+    const idx = stepsList.length + insertDefs.indexOf(ins);
+    s.src = ins.url;
+    s.z = lerp(1, ins.zoom_to ?? 1.06, e) * breathe;
+    s.cx = (ins.focus?.[0] ?? 0.5) * vw;
+    s.cy = (ins.focus?.[1] ?? 0.5) * vh;
+    s.caption = { index: idx, text: ins.caption, alpha: clamp((tOut - ins.o0) / 150, 0, 1) * clamp((ins.o1 - tOut) / 150, 0, 1) };
+    s.dots = { alpha: 1, index: idx };
+    s.mark = meta.mark === false ? null : { alpha: 1 };
+    return s;
+  }
+  if (tOut < MAIN_MS) {
     const c = cursorAt(tSrc);
     if (c) {
       const pressing = clicks.some((e) => tSrc >= e.t_ms && tSrc <= e.t_ms + 110);
@@ -278,8 +307,8 @@ function stateAt(tOut, { forCover = false } = {}) {
     s.dots = { alpha: 1, index: active.index };
     s.mark = meta.mark === false ? null : { alpha: 1 };
     s.ramp = segs.some((x) => x.speed > 1 && tOut >= x.o0 && tOut <= x.o1);
-  } else {
-    s.end = { alpha: clamp((tOut - MAIN_MS) / 320, 0, 1) };
+  } else if (inEnd) {
+    s.end = { alpha: clamp((tOut - INS_END) / 320, 0, 1) };
   }
   return s;
 }
@@ -305,7 +334,7 @@ await page.evaluate((cfg) => window.setup(cfg), {
   vw,
   vh,
   layout: layoutFor(),
-  stepCount: stepsList.length,
+  stepCount: stepsList.length + insertDefs.length,
   mark: meta.mark === false ? "" : (meta.mark ?? "snap.webcules.com"),
   end: meta.end,
 });
@@ -356,13 +385,17 @@ const edl = {
   format,
   duration_ms: Math.round(TOTAL_MS),
   main_ms: Math.round(MAIN_MS),
-  endcard_start_ms: Math.round(MAIN_MS),
+  endcard_start_ms: Math.round(INS_END),
+  inserts: insertDefs.map((i) => ({ image: i.image, caption: i.caption, start_ms: Math.round(i.o0), end_ms: Math.round(i.o1) })),
   ramps: segs.filter((s) => s.speed > 1).map((s) => ({ out_start_ms: Math.round(s.o0), out_end_ms: Math.round(s.o1), src_start_ms: s.s0, src_end_ms: s.s1, speed: s.speed })),
   zooms,
   highlights: clicks.map((e) => ({ event_index: e.i, out_ms: Math.round(srcToOut(e.t_ms)) })),
   clicks_total: clicks.length,
   clicks_covered: clicks.length, // every click gets a highlight and ripple by construction
-  captions: caps.map((c) => ({ index: c.index, text: c.text, words: words(c.text), start_ms: Math.round(c.start), end_ms: Math.round(c.end) })),
+  captions: [
+    ...caps.map((c) => ({ index: c.index, text: c.text, words: words(c.text), start_ms: Math.round(c.start), end_ms: Math.round(c.end) })),
+    ...insertDefs.map((i, k) => ({ index: stepsList.length + k, text: i.caption, words: words(i.caption), start_ms: Math.round(i.o0), end_ms: Math.round(i.o1) })),
+  ],
   hook: meta.hook,
   end: meta.end,
   claims: meta.claims,
