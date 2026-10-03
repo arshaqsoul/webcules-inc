@@ -26,7 +26,7 @@ No teleporting cursor, no instant text, no frozen frames, no sudden appearance o
 
 ## Tooling
 
-- Write the take script `growth/storyboards/PP-###.take.mjs` from the storyboard, using only the performer API in `growth/scripts/record/performer.mjs` (`step`, `move`, `hover`, `click`, `type`, `scroll`, `navigate`, `settle`, `hold`).
+- Write the take script `growth/storyboards/PP-###.take.mjs` from the storyboard, using only the performer API in `growth/scripts/record/performer.mjs` (`step`, `move`, `hover`, `click`, `type`, `select`, `scroll`, `navigate`, `settle`, `hold`).
   Use `p.hold(ms, { label: "payoff" })` for the payoff shot so the editor never speed-ramps it.
   Reach the starting screen in `fixture()`, which runs before capture starts.
 - Run `node growth/scripts/record/record.mjs --pp PP-### --take growth/storyboards/PP-###.take.mjs`.

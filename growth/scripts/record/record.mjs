@@ -56,8 +56,15 @@ if (got.status !== 0) {
 }
 
 let browser;
+let capturing = false;
+let loop;
+let takeMod;
+let takePage;
+let takeEnv;
+let tornDown = false;
 try {
   const mod = await import(pathToFileURL(path.resolve(ROOT, take)).href);
+  takeMod = mod;
   const fmt = FORMATS[formatFlag ?? mod.format ?? "desktop"];
   if (!fmt) throw new Error(`unknown format ${formatFlag ?? mod.format}`);
   const env = loadEnv();
@@ -76,6 +83,8 @@ try {
   await context.addCookies(await apiLogin(env));
   await context.addInitScript(CURSOR_INIT);
   const page = await context.newPage();
+  takePage = page;
+  takeEnv = env;
 
   // ---- get to the starting screen WITHOUT recording
   const log = (m) => console.log(`[record] ${m}`);
@@ -88,13 +97,17 @@ try {
   const cdp = await context.newCDPSession(page);
   const frames = [];
   const epoch = Date.now();
-  let capturing = true;
+  capturing = true;
   let n = 0;
   const clip = { x: 0, y: 0, width: fmt.viewport.width, height: fmt.viewport.height, scale: fmt.dsf };
-  const loop = (async () => {
+  loop = (async () => {
     while (capturing) {
       const t0 = Date.now();
       try {
+        // clip is in DOCUMENT coordinates: follow the live scroll position or a scrolled page captures blank
+        const lm = await cdp.send("Page.getLayoutMetrics");
+        clip.x = lm.cssVisualViewport.pageX;
+        clip.y = lm.cssVisualViewport.pageY;
         const shot = await cdp.send("Page.captureScreenshot", { format: "jpeg", quality: 90, clip, optimizeForSpeed: true });
         const t1 = Date.now();
         const file = `${String(++n).padStart(6, "0")}.jpg`;
@@ -117,6 +130,7 @@ try {
   await loop.catch(() => {});
   // restore any staging data the take changed (e.g. a revoked link); failures are reported, never hidden
   try {
+    tornDown = true;
     await mod.teardown?.({ page, env, log });
   } catch (e) {
     console.error(`[record] WARNING teardown failed, staging data may need manual restore: ${e.message}`);
@@ -126,6 +140,11 @@ try {
 
   // ---- frames index (timestamps relative to the epoch the performer used)
   if (!frames.length) throw new Error("no frames captured");
+  // guard: a blank capture produces byte-identical frames; a take with real actions must change the picture
+  const sizes = new Set(frames.map((f) => fs.statSync(path.join(framesDir, f.file)).size));
+  if (frames.length > 20 && sizes.size <= 2 && p.events.some((e) => e.type === "click")) {
+    throw new Error(`capture looks blank: ${frames.length} frames but only ${sizes.size} distinct sizes despite clicks. Not producing a recording.`);
+  }
   const index = frames.map((f) => ({ file: f.file, t_ms: Math.max(0, f.t_ms) })).sort((a, b) => a.t_ms - b.t_ms);
   const capFps = Math.round((index.length / duration) * 1000 * 10) / 10;
   fs.writeFileSync(path.join(outDir, "frames.json"), JSON.stringify({ capture: "cdp-screenshot", capture_fps: capFps, scale: fmt.dsf, width: fmt.viewport.width * fmt.dsf, height: fmt.viewport.height * fmt.dsf, frames: index }, null, 2));
@@ -163,8 +182,21 @@ try {
   console.log(JSON.stringify({ ok: true, raw: `growth/recordings/${pp}/raw.mp4`, events: `growth/recordings/${pp}/events.json`, duration_ms: duration, frames: index.length, capture_fps: capFps, steps: p.steps.length, events: p.events.length }));
 } catch (e) {
   console.error(`[record] failed: ${e.stack || e.message}`);
+  // a picture of the screen at the moment of failure is the fastest way to see why
+  await takePage?.screenshot({ path: path.join(outDir, "failure.png") }).then(() => console.error(`[record] screenshot of the failure: growth/recordings/${pp}/failure.png`)).catch(() => {});
   process.exitCode = 1;
 } finally {
+  capturing = false;
+  await loop?.catch(() => {}); // stop the capture loop before the browser goes away, or its error masks the real one
+  // a take that failed part-way may have changed staging data: always try to restore it
+  if (takeMod?.teardown && takePage && !tornDown) {
+    try {
+      tornDown = true;
+      await takeMod.teardown({ page: takePage, env: takeEnv, log: (m) => console.log(`[record] ${m}`) });
+    } catch (e) {
+      console.error(`[record] WARNING teardown after a failed take also failed, restore staging data by hand: ${e.message}`);
+    }
+  }
   await browser?.close().catch(() => {});
   if (!keepLock) lockCmd("release", "staging", "--by", owner);
 }

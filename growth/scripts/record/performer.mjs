@@ -110,7 +110,7 @@ export function createPerformer(page, { seed, epoch, viewport }) {
   async function ensureVisible(target) {
     const b = await box(target);
     if (!b) return b;
-    const margin = 90;
+    const margin = 40;
     if (b.y < margin || b.y + b.height > viewport.height - margin) {
       const delta = b.y + b.height / 2 - viewport.height / 2;
       await scrollBy(delta);
@@ -194,6 +194,39 @@ export function createPerformer(page, { seed, epoch, viewport }) {
         await sleep(beat);
       }
       await sleep(between(250, 450));
+    },
+
+    /** Operate a native <select> the way a person does: click to open, arrow keys to move, Enter to choose.
+     *  The native popup is not captured in frames, so the timing of each step is logged on the event and the
+     *  editor draws the dropdown from it. */
+    async select(target, label) {
+      const options = await target.evaluate((el) => [...el.options].map((o) => o.text.trim()));
+      const from = await target.evaluate((el) => el.selectedIndex);
+      const to = options.findIndex((l) => l.toLowerCase() === label.toLowerCase());
+      if (to < 0) throw new Error(`select: no option "${label}" in [${options.join(", ")}]`);
+      await this.click(target);
+      const ev = { t_ms: Math.round(now()), type: "select", text: label, box: round(await box(target)), options, from, to, steps_ms: [], ...(currentStep ? { step: currentStep } : {}) };
+      events.push(ev);
+      await sleep(between(380, 520)); // the popup is open, a person reads the options
+      const key = to > from ? "ArrowDown" : "ArrowUp";
+      for (let i = 0; i < Math.abs(to - from); i++) {
+        await page.keyboard.press(key);
+        ev.steps_ms.push(Math.round(now()));
+        await sleep(between(240, 340));
+      }
+      await sleep(between(120, 200));
+      await page.keyboard.press("Enter");
+      const shown = () => target.evaluate((el) => el.options[el.selectedIndex].text.trim());
+      if ((await shown()).toLowerCase() !== label.toLowerCase()) {
+        // Headless Chrome's native popup may not take keyboard input. Commit through the real change event instead;
+        // the dropdown the viewer sees is drawn by the editor from the logged steps either way.
+        await target.selectOption({ label });
+        ev.committed_via = "selectOption";
+      }
+      ev.commit_ms = Math.round(now());
+      const got = await shown();
+      if (got.toLowerCase() !== label.toLowerCase()) throw new Error(`select: wanted "${label}" but the control shows "${got}"`);
+      await sleep(between(400, 600));
     },
 
     async scroll(dy, opts) {

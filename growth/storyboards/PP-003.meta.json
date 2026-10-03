@@ -1,0 +1,16 @@
+{
+  "hook": "Client forwarded your gallery link?",
+  "end": {
+    "claim": "Expire or replace a gallery link in seconds",
+    "note": "Available on the Free plan",
+    "link": "snap.webcules.com"
+  },
+  "claims": [
+    { "text": "Free plan", "source": "apps/snap/lib/plans-data.ts" },
+    { "text": "Expiry options: No expiry, 7 days, 30 days, 90 days, 1 year", "source": "apps/snap/components/project-galleries.tsx" },
+    { "text": "New link: the old link stops working immediately and the client gets the new one by email", "source": "apps/snap/app/api/grants/[id]/regenerate/route.ts" },
+    { "text": "Gallery access needs an emailed code sent only to the client's email", "source": "apps/snap/app/g/[token]/otp/send/route.ts" },
+    { "text": "Expiry can be edited on an existing link", "source": "apps/snap/app/api/grants/[id]/route.ts" }
+  ],
+  "mark": "snap.webcules.com"
+}

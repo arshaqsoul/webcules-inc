@@ -42,7 +42,7 @@
         "required": ["t_ms", "type"],
         "properties": {
           "t_ms": { "type": "integer", "minimum": 0 },
-          "type": { "type": "string", "enum": ["move", "hover", "click", "type", "scroll", "navigate", "wait", "annotate"] },
+          "type": { "type": "string", "enum": ["move", "hover", "click", "type", "select", "scroll", "navigate", "wait", "annotate"] },
           "x": { "type": "number" },
           "y": { "type": "number" },
           "box": {

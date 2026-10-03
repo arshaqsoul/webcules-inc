@@ -26,6 +26,9 @@
   #frame { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; }
   #fx { position: absolute; left: 0; top: 0; transform-origin: 0 0; pointer-events: none; }
   .hl { position: absolute; border-style: solid; border-color: var(--brand); }
+  .selpop { position: absolute; background: #fff; border: 1px solid rgba(15, 16, 17, .14); padding: 4px; font: 500 14px/1 Inter, "SF Pro Display", -apple-system, system-ui, sans-serif; color: #0f1011; }
+  .selpop div { height: 30px; padding: 0 10px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; white-space: nowrap; }
+  .selpop div.on { background: rgba(94, 106, 210, .15); color: #3b44a8; font-weight: 600; }
   .rp { position: absolute; border-style: solid; border-color: var(--brand); border-radius: 50%; }
   #cursor { position: absolute; left: 0; top: 0; }
   #cursor svg { display: block; width: 100%; height: 100%; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .35)); }
@@ -129,7 +132,22 @@
     const u = 1 / (k * z); // 1 canvas pixel expressed in #fx units
 
     const fx = $('#fx');
-    for (const el of fx.querySelectorAll('.hl,.rp')) el.remove();
+    for (const el of fx.querySelectorAll('.hl,.rp,.selpop')) el.remove();
+    if (s.select) {
+      const pop = document.createElement('div');
+      pop.className = 'selpop';
+      Object.assign(pop.style, {
+        left: s.select.box.x + 'px', top: s.select.box.y + s.select.box.h + 4 + 'px', minWidth: Math.max(s.select.box.w, 150) + 'px',
+        borderRadius: 10 + 'px', boxShadow: '0 12px 28px -8px rgba(15,16,17,.28), 0 2px 6px rgba(15,16,17,.1)', opacity: s.select.alpha,
+      });
+      s.select.options.forEach((o, i) => {
+        const r = document.createElement('div');
+        r.textContent = o;
+        if (i === s.select.index) r.className = 'on';
+        pop.appendChild(r);
+      });
+      fx.appendChild(pop);
+    }
     for (const h of s.highlights || []) {
       const el = document.createElement('div');
       el.className = 'hl';

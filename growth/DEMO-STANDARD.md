@@ -74,6 +74,13 @@ Each action appends to `events.json`.
 - No typos, and no instant paste of long strings.
 - Form fields are focused with a real click first.
 
+### Native select controls
+
+A native `<select>` popup is drawn by the operating system and does not appear in captured frames.
+`performer.select` clicks the control for real, logs each option step with its timing, and commits the value (keyboard first, then the real change event if the headless popup ignores keys).
+The editor draws the dropdown from those logged steps, so the viewer sees it open, the highlight move, and the value change.
+The performer verifies the control really shows the chosen value and fails the take if it does not.
+
 ### Scrolling and navigation
 
 - Scrolling is eased over 400 to 800 ms in small wheel steps, never a jump.

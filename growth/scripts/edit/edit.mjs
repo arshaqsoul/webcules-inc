@@ -84,7 +84,7 @@ function findStaticRuns() {
 function protectedInterval(s0, s1) {
   // never ramp over actions, or a hold the storyboard marked as the payoff
   for (const e of events.events) {
-    if (["click", "type", "scroll", "navigate"].includes(e.type) && e.t_ms >= s0 - 100 && e.t_ms <= s1 + 100) return true;
+    if (["click", "type", "select", "scroll", "navigate"].includes(e.type) && e.t_ms >= s0 - 100 && e.t_ms <= s1 + 100) return true;
     if (e.type === "wait" && /payoff/i.test(e.text ?? "") && e.t_ms >= s0 - 1500 && e.t_ms <= s1) return true;
   }
   const inside = cursorPath.filter((p) => p.t_ms >= s0 && p.t_ms <= s1);
@@ -204,7 +204,7 @@ const kindAt = (tSrc) => {
   return k;
 };
 const clicks = events.events.map((e, i) => ({ ...e, i })).filter((e) => e.type === "click" && e.box);
-const typings = events.events.map((e, i) => ({ ...e, i })).filter((e) => e.type === "type" && e.box);
+const typings = events.events.map((e, i) => ({ ...e, i })).filter((e) => (e.type === "type" || e.type === "select") && e.box);
 
 // ------------------------------------------------------------------ 4. captions
 const hookEnd = HOOK_MS + 50;
@@ -231,6 +231,7 @@ function stateAt(tOut, { forCover = false } = {}) {
     cy: v.cy,
     highlights: [],
     ripples: [],
+    select: null,
     cursor: null,
     caption: null,
     hook: null,
@@ -251,6 +252,15 @@ function stateAt(tOut, { forCover = false } = {}) {
       if (alpha > 0) s.highlights.push({ box: e.box, alpha, pulse: 0.5 + 0.5 * Math.sin(((tOut - t0) / 450) * Math.PI) });
       const p = (tOut - t0) / 450;
       if (p > 0 && p < 1) s.ripples.push({ x: e.x, y: e.y, p });
+    }
+    for (const e of events.events.filter((x) => x.type === "select" && x.box)) {
+      const open = e.t_ms + 120;
+      const close = (e.commit_ms ?? e.t_ms + 1500) + 220;
+      if (tSrc >= open && tSrc <= close) {
+        const passed = (e.steps_ms ?? []).filter((t) => t <= tSrc).length;
+        const dir = e.to > e.from ? 1 : -1;
+        s.select = { box: e.box, options: e.options, index: tSrc >= (e.commit_ms ?? Infinity) ? e.to : e.from + dir * passed, alpha: clamp((tSrc - open) / 120, 0, 1) * clamp((close - tSrc) / 160, 0, 1) };
+      }
     }
     for (const e of typings) {
       const t0 = srcToOut(e.t_ms);
