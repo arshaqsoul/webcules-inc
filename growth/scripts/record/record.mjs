@@ -7,6 +7,7 @@
 //   export const format = "desktop" | "phone";                  // optional, default desktop
 //   export async function fixture({ page, env, log }) {}        // optional: get to the starting screen
 //   export async function run({ p, page, env }) {}              // the performance, via the performer API only
+//   export async function teardown({ page, env, log }) {}       // optional: restore staging data the take changed
 //
 // Output (growth/recordings/<PP>/): frames/*.jpg, frames.json, cursor.json, raw.mp4, events.json
 // Capture is a loop of full-resolution CDP screenshots (not Playwright recordVideo, not the 1x screencast),
@@ -114,6 +115,13 @@ try {
 
   capturing = false;
   await loop.catch(() => {});
+  // restore any staging data the take changed (e.g. a revoked link); failures are reported, never hidden
+  try {
+    await mod.teardown?.({ page, env, log });
+  } catch (e) {
+    console.error(`[record] WARNING teardown failed, staging data may need manual restore: ${e.message}`);
+    process.exitCode = 1;
+  }
   const duration = Date.now() - epoch;
 
   // ---- frames index (timestamps relative to the epoch the performer used)

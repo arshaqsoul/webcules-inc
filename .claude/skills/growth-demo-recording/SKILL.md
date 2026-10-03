@@ -23,7 +23,9 @@ This skill is the order of operations.
 2. The script launches Chrome for Testing (desktop 1360x1020 at 2x, or phone 390x693 at 3x), logs in programmatically from `growth/.env.local`, and runs your `fixture()` before capture starts.
    The login screen is never in the take.
 3. It captures full-resolution frames, runs your steps through the performer (seeded from the PP number), and writes `raw.mp4`, `frames.json`, `cursor.json` and `events.json`.
-4. Mark each storyboard step with `p.step(id, caption)` so the editor knows where captions, dots and zooms go.
+4. If the take changes data (revoking a link, deleting something), export `teardown()` that restores it, so the take can be repeated.
+   A failed teardown makes the run exit non-zero and prints a warning.
+5. Mark each storyboard step with `p.step(id, caption)` so the editor knows where captions, dots and zooms go.
 
 ## Motion rules (from the standard)
 

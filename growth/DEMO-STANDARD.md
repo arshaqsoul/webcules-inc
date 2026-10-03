@@ -95,7 +95,7 @@ Each action appends to `events.json`.
 |---|---|---|
 | `growth/storyboards/PP-###.md` | designer | the human-readable storyboard |
 | `growth/storyboards/PP-###.meta.json` | designer | hook text, end card, claims table, mark (see `growth/templates/meta.example.json`) |
-| `growth/storyboards/PP-###.take.mjs` | recorder | the take script: exports `format`, optional `fixture()`, and `run({ p, page })` using only the performer API |
+| `growth/storyboards/PP-###.take.mjs` | recorder | the take script: exports `format`, optional `fixture()`, `run({ p, page })` using only the performer API, and optional `teardown()` that restores any staging data the take changed |
 | `growth/recordings/PP-###/` | `record.mjs` | `frames/`, `frames.json`, `cursor.json`, `raw.mp4`, `events.json` (gitignored) |
 | `growth/out/PP-###/` | `edit.mjs`, `qc.mjs` | `reel.mp4`, `cover.png`, `edl.json`, `qc.json` (gitignored) |
 
