@@ -1,0 +1,17 @@
+{
+  "hook": "Chasing the deposit again?",
+  "end": {
+    "claim": "Secure invoice links, 0% commission",
+    "note": "Available on Lite",
+    "link": "snap.webcules.com"
+  },
+  "claims": [
+    { "text": "Secure invoice links on send", "source": "apps/snap/components/project-invoices.tsx" },
+    { "text": "0% commission on client payments", "source": "apps/snap/lib/invoices.ts" },
+    { "text": "0% commission, ever", "source": "apps/snap/components/landing/faq.tsx" },
+    { "text": "Available on Lite", "source": "apps/snap/lib/tier-cards.ts" },
+    { "text": "Package presets start on Lite", "source": "apps/snap/components/invoice-preset-editor.tsx" },
+    { "text": "Mark paid settles an invoice", "source": "apps/snap/components/project-invoices.tsx" }
+  ],
+  "mark": "snap.webcules.com"
+}

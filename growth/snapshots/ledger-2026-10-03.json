@@ -1,0 +1,220 @@
+{
+  "taken_at": "2026-10-03T14:29:54.231Z",
+  "records": [
+    {
+      "id": "PP-001",
+      "title": "Photographers chase late client payments through awkward email threads",
+      "statement": "Wedding photographers wait on deposits and final balances across scattered email threads, and lose days a year to awkward payment follow-ups that a proper invoice with a pay link would remove.",
+      "persona": "wedding",
+      "severity": 4,
+      "frequency": 4,
+      "kind": "pain_point",
+      "state": "PACKAGED",
+      "evidence": [
+        {
+          "source": "blog",
+          "url": "https://kamero.ai/biz-lab/photographer-payment-collection-guide",
+          "summary": "Guide dated 2026-02-10: photographers end up spending more time chasing invoices than shooting photos, clients go silent after delivery, and PDF invoices with bank transfer details add friction even for willing clients.",
+          "captured_at": "2026-10-03"
+        },
+        {
+          "source": "blog",
+          "url": "https://shootdotedit.com/blogs/news/late-payments",
+          "summary": "Wedding photography blog: chasing overdue payments is called one of the most uncomfortable spots to be in; recommends restating payment terms on every invoice and automating reminders.",
+          "captured_at": "2026-10-03"
+        },
+        {
+          "source": "blog",
+          "url": "https://fstoppers.com/business/how-always-get-paid-time-438173",
+          "summary": "Essay dated 2019-12-17: 48 percent of creative industry invoices are paid late and the self employed lose about 20 days a year chasing them; advises deposits, milestones and reminder emails.",
+          "captured_at": "2026-10-03"
+        }
+      ],
+      "history": [
+        {
+          "to": "DISCOVERED",
+          "at": "2026-10-03T10:49:35.118Z",
+          "by": "researcher",
+          "note": "created"
+        },
+        {
+          "from": "DISCOVERED",
+          "to": "VALIDATED",
+          "at": "2026-10-03T10:49:55.532Z",
+          "by": "researcher",
+          "note": "3 blog sources on 3 hosts, all fetched and verified 2026-10-03"
+        },
+        {
+          "from": "VALIDATED",
+          "to": "TIER_MAPPED",
+          "at": "2026-10-03T10:51:23.592Z",
+          "by": "mapper",
+          "note": ""
+        },
+        {
+          "from": "TIER_MAPPED",
+          "to": "DEMO_SCRIPTED",
+          "at": "2026-10-03T14:27:45.223Z",
+          "by": "designer",
+          "note": "storyboard, meta and take pass reel.mjs check"
+        },
+        {
+          "from": "DEMO_SCRIPTED",
+          "to": "RECORDED",
+          "at": "2026-10-03T14:27:45.350Z",
+          "by": "recorder",
+          "note": ""
+        },
+        {
+          "from": "RECORDED",
+          "to": "ENHANCED",
+          "at": "2026-10-03T14:27:45.438Z",
+          "by": "editor",
+          "note": ""
+        },
+        {
+          "from": "ENHANCED",
+          "to": "QC_PASSED",
+          "at": "2026-10-03T14:27:45.526Z",
+          "by": "editor",
+          "note": ""
+        },
+        {
+          "from": "QC_PASSED",
+          "to": "PACKAGED",
+          "at": "2026-10-03T14:29:36.090Z",
+          "by": "packager",
+          "note": "reel, cover, qc copied; claims re-verified in source"
+        }
+      ],
+      "tier_mapping": {
+        "verdict": "solved",
+        "tier": "lite",
+        "paid_tier_trigger": true,
+        "surfaces": [
+          "apps/snap/components/project-invoices.tsx",
+          "apps/snap/lib/invoices.ts",
+          "apps/snap/app/inv/[token]/page.tsx",
+          "apps/snap/components/invoice-preset-editor.tsx"
+        ],
+        "notes": "Verified from code 2026-10-03. Compose, send and mark paid work on every tier (project-invoices.tsx); sending archives a branded PDF, emails the secure /inv link and mints a persistent Stripe payment link on the studio connected account with no platform fee (lib/invoices.ts, WEB-174). Package presets are Lite and above (403 presets_require_lite, invoice-preset-editor.tsx). The client page shows a Pay button once sent (app/inv/[token]/page.tsx). Staging login was unavailable in this environment, so the take fixture must exercise the flow before recording; the reel stays on the photographer side because Stripe checkout shows test mode badges."
+      },
+      "demo": {
+        "storyboard": "growth/storyboards/PP-001.md",
+        "raw": "growth/recordings/PP-001/raw.mp4",
+        "events": "growth/recordings/PP-001/events.json",
+        "edited": "growth/out/PP-001/reel.mp4",
+        "qc": "growth/out/PP-001/qc.json",
+        "package": "growth/packages/PP-001/package.md"
+      }
+    },
+    {
+      "id": "PP-002",
+      "title": "Clients take weeks to pick their photos while feedback scatters across chat and email",
+      "statement": "Photographers wait on clients to pick favorites for albums and prints while the selections trickle back as chat screenshots and filename lists, so delivery stalls and the photographer keeps asking.",
+      "persona": "wedding",
+      "severity": 3,
+      "frequency": 4,
+      "kind": "pain_point",
+      "state": "PACKAGED",
+      "evidence": [
+        {
+          "source": "blog",
+          "url": "https://www.queensberry.com/blog/get-albums-confirmed-quickly",
+          "summary": "Album lab blog dated 2025-05-12: clients go silent after the wedding and stop replying to calls, so image selection and album confirmation stall; the fix is deadlines, making choosing easy, and friendly reminders.",
+          "captured_at": "2026-10-03"
+        },
+        {
+          "source": "blog",
+          "url": "https://exportlab.io/blog/client-photo-selection",
+          "summary": "Proofing guide dated 2026-07-21: selection runs over chat screenshots and filename spreadsheets, feedback scatters across apps, and nobody knows the status without asking; recommends a PIN protected gallery where clients tap favorites with a counter and a one week deadline.",
+          "captured_at": "2026-10-03"
+        },
+        {
+          "source": "blog",
+          "url": "https://fotostudio.io/fr/blog/selection-photos-client",
+          "summary": "Delivery blog dated 2025-12-28: clients freeze when told to choose 10 photos from a huge gallery; recommends hearts and favorites inside a structured gallery with a live counter instead of lists by email.",
+          "captured_at": "2026-10-03"
+        }
+      ],
+      "history": [
+        {
+          "to": "DISCOVERED",
+          "at": "2026-10-03T10:49:47.527Z",
+          "by": "researcher",
+          "note": "created"
+        },
+        {
+          "from": "DISCOVERED",
+          "to": "VALIDATED",
+          "at": "2026-10-03T10:49:55.605Z",
+          "by": "researcher",
+          "note": "3 blog sources on 3 hosts, all fetched and verified 2026-10-03"
+        },
+        {
+          "from": "VALIDATED",
+          "to": "TIER_MAPPED",
+          "at": "2026-10-03T10:51:32.490Z",
+          "by": "mapper",
+          "note": ""
+        },
+        {
+          "from": "TIER_MAPPED",
+          "to": "DEMO_SCRIPTED",
+          "at": "2026-10-03T14:27:45.614Z",
+          "by": "designer",
+          "note": "storyboard, meta and take pass reel.mjs check"
+        },
+        {
+          "from": "DEMO_SCRIPTED",
+          "to": "RECORDED",
+          "at": "2026-10-03T14:27:45.737Z",
+          "by": "recorder",
+          "note": ""
+        },
+        {
+          "from": "RECORDED",
+          "to": "ENHANCED",
+          "at": "2026-10-03T14:27:45.827Z",
+          "by": "editor",
+          "note": ""
+        },
+        {
+          "from": "ENHANCED",
+          "to": "QC_PASSED",
+          "at": "2026-10-03T14:27:45.915Z",
+          "by": "editor",
+          "note": ""
+        },
+        {
+          "from": "QC_PASSED",
+          "to": "PACKAGED",
+          "at": "2026-10-03T14:29:36.182Z",
+          "by": "packager",
+          "note": "reel, cover, qc copied; claims re-verified in source"
+        }
+      ],
+      "tier_mapping": {
+        "verdict": "solved",
+        "tier": "lite",
+        "paid_tier_trigger": true,
+        "surfaces": [
+          "apps/snap/components/project-galleries.tsx",
+          "apps/snap/components/gallery-view.tsx",
+          "apps/snap/app/api/g/[token]/selection/route.ts",
+          "apps/snap/app/api/grants/[id]/nudge/route.ts",
+          "apps/snap/app/dashboard/projects/[id]/page.tsx"
+        ],
+        "notes": "Verified from code 2026-10-03. Favorites mode is the share form default and un-gated (project-galleries.tsx); selection mode adds a pick limit and a deadline. The client gallery renders hearts, locks at the limit and shows the submitted selection (gallery-view.tsx, api/g/[token]/selection). The photographer sees per client selection status and the Nudge email button, which are Lite and above (canNudge and canView in the dashboard project page). Favorites export is Studio and above (api/grants/[id]/favorites/export) and stays out of the reel. Staging login was unavailable in this environment, so the take fixture must exercise the flow before recording."
+      },
+      "demo": {
+        "storyboard": "growth/storyboards/PP-002.md",
+        "raw": "growth/recordings/PP-002/raw.mp4",
+        "events": "growth/recordings/PP-002/events.json",
+        "edited": "growth/out/PP-002/reel.mp4",
+        "qc": "growth/out/PP-002/qc.json",
+        "package": "growth/packages/PP-002/package.md"
+      }
+    }
+  ]
+}

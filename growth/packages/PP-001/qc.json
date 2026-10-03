@@ -1,0 +1,81 @@
+{
+  "pass": true,
+  "pain_point": "PP-001",
+  "checked_at": "2026-10-03T13:49:21.334Z",
+  "reel": "growth\\out\\PP-001\\reel.mp4",
+  "duration_s": 30.3,
+  "size_mb": 5.7,
+  "failures": [],
+  "checks": [
+    {
+      "name": "resolution",
+      "ok": true,
+      "detail": "1080x1920"
+    },
+    {
+      "name": "fps",
+      "ok": true,
+      "detail": "30/1"
+    },
+    {
+      "name": "codec",
+      "ok": true,
+      "detail": "h264 yuv420p"
+    },
+    {
+      "name": "silent",
+      "ok": true,
+      "detail": "no audio stream"
+    },
+    {
+      "name": "duration",
+      "ok": true,
+      "detail": "30.3s (allowed 8-45s)"
+    },
+    {
+      "name": "size",
+      "ok": true,
+      "detail": "5.7 MB (max 50)"
+    },
+    {
+      "name": "no frozen frames",
+      "ok": true,
+      "detail": "none over 0.8s"
+    },
+    {
+      "name": "no black frames",
+      "ok": true,
+      "detail": "none"
+    },
+    {
+      "name": "text inside safe zones",
+      "ok": true,
+      "detail": "8 text blocks checked"
+    },
+    {
+      "name": "captions are short",
+      "ok": true,
+      "detail": "all <= 6 words"
+    },
+    {
+      "name": "hook is short",
+      "ok": true,
+      "detail": "Chasing the deposit again?"
+    },
+    {
+      "name": "every click has an effect",
+      "ok": true,
+      "detail": "6/6 clicks highlighted"
+    },
+    {
+      "name": "claims backed",
+      "ok": true,
+      "detail": "2 price/limit/tier mentions all in the claims table"
+    },
+    {
+      "name": "claims cite real files",
+      "ok": true,
+      "detail": "6 claim(s) cite existing files"
+    }
+  ]
+}

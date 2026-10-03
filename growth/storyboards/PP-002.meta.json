@@ -1,0 +1,17 @@
+{
+  "hook": "Still chasing photo picks?",
+  "end": {
+    "claim": "Selections come back in one tap",
+    "note": "Picks, limits, deadlines",
+    "link": "snap.webcules.com"
+  },
+  "claims": [
+    { "text": "Clients pick right in the gallery", "source": "apps/snap/components/gallery-view.tsx" },
+    { "text": "Selection mode with a pick limit and a deadline", "source": "apps/snap/components/project-galleries.tsx" },
+    { "text": "The selection lands in the project", "source": "apps/snap/app/api/g/[token]/selection/route.ts" },
+    { "text": "Selection status shows on the gallery row", "source": "apps/snap/components/project-galleries.tsx" },
+    { "text": "Nudge gentle reminders on Lite", "source": "apps/snap/app/dashboard/projects/[id]/page.tsx" },
+    { "text": "Favorites lists and exports on paid tiers", "source": "apps/snap/app/api/grants/[id]/favorites/export/route.ts" }
+  ],
+  "mark": "snap.webcules.com"
+}
