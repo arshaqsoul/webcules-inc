@@ -17,6 +17,9 @@ export function ArrangeWorkspace({
   subtitle,
   onClose,
   doneLabel = "Done",
+  busy = false,
+  onCancel,
+  cancelLabel = "Discard changes",
   children,
 }: {
   open: boolean;
@@ -24,6 +27,11 @@ export function ArrangeWorkspace({
   subtitle?: string;
   onClose: () => void;
   doneLabel?: string;
+  /** Disables the buttons while a save is in flight. */
+  busy?: boolean;
+  /** When set, a secondary button (e.g. "Discard changes") sits beside Done. */
+  onCancel?: () => void;
+  cancelLabel?: string;
   children: React.ReactNode;
 }) {
   // Portals need `document`: render only after mount so server rendering is safe.
@@ -47,7 +55,10 @@ export function ArrangeWorkspace({
           <h2 className="truncate text-base font-semibold text-ink">{title}</h2>
           {subtitle && <p className="truncate text-xs text-ink-subtle">{subtitle}</p>}
         </div>
-        <Button onClick={onClose}>{doneLabel}</Button>
+        {onCancel && (
+          <Button variant="outline" disabled={busy} onClick={onCancel}>{cancelLabel}</Button>
+        )}
+        <Button disabled={busy} onClick={onClose}>{busy ? "Saving..." : doneLabel}</Button>
       </header>
       <div className="flex min-h-0 flex-1 flex-col p-4 sm:p-5">{children}</div>
     </div>,

@@ -109,8 +109,9 @@ export default function GalleryDelivery() {
         Files tab, choose the &ldquo;Photo order&rdquo; or press <strong>Arrange photos</strong> to
         open a full-screen workspace with large thumbnails: drag photos into place and the others
         make room live. Exactly the order you see is the order your client gets. Press{" "}
-        <strong>Arrange</strong> on any sent gallery to change it later &mdash; the change is live,
-        so the client sees the new order the next time they open the link and nothing needs
+        <strong>Arrange</strong> on any sent gallery to change it later: sort and drag as much as
+        you like (nothing is saved until you press <strong>Save &amp; close</strong>), and your
+        client sees the new order the next time they open the link &mdash; nothing needs
         re-sending.
       </p>
       <ul>

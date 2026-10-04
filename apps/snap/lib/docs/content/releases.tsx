@@ -42,7 +42,7 @@ export default function Releases() {
           is sent: Photo order menu, or Arrange photos to open a full-screen view with big
           thumbnails (and a size slider), where the other photos slide out of the way live as you
           drag. Select several photos to move them together, double-click any photo to see it full
-          size. The same workspace opens from Arrange on a sent gallery. Also fixed: the dragged
+          size. The same workspace opens from Arrange on a sent gallery, where your changes are saved once when you press Save & close. Also fixed: the dragged
           photo no longer jumps to the corner of the screen.
         </p>
       </Release>

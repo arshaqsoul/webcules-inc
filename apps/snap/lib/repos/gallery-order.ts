@@ -9,7 +9,7 @@ import * as schema from "../db-schema";
 import { exifCaptureDate } from "../exif";
 import { getObject } from "../storage/service";
 import { isValidColorKey } from "../color-sort";
-import { orderedIdsForSort, planMove, stepPositions, type OrderItem, type OrderMode, type SortMode } from "../gallery-order";
+import { planSet, type OrderItem, type OrderMode } from "../gallery-order";
 
 /** Rows per UPDATE statement - the JSON bind parameter must stay well under D1's statement size limit. */
 const WRITE_CHUNK = 500;
@@ -62,32 +62,29 @@ async function setMode(grantId: string, mode: OrderMode): Promise<void> {
   await getDb().update(schema.shareGrants).set({ orderMode: mode }).where(eq(schema.shareGrants.id, grantId));
 }
 
-/** Apply a sort to the whole gallery (inside each folder). */
-export async function sortGrant(params: { grantId: string; mode: SortMode; seed?: number }): Promise<string[]> {
-  const current = await getGrantOrder(params.grantId);
-  const ids = orderedIdsForSort(current, params.mode, params.seed ?? Math.floor(Math.random() * 2 ** 31));
-  await writePositions(params.grantId, stepPositions(ids));
-  await setMode(params.grantId, params.mode);
-  return ids;
-}
-
-/** Drag and drop: move `ids` to sit before `beforeId` (null = the end). */
-export async function moveInGrant(params: {
+/** Save the arrangement a photographer ended on (Arrange → Done). One call
+ * per editing session: sorting and dragging happen in the browser, and this
+ * writes only the photos that actually moved (planSet) plus - only if it
+ * changed - the gallery's order label. `ids` must be exactly the gallery's
+ * photos. */
+export async function setGrantOrder(params: {
   grantId: string;
   ids: string[];
-  beforeId: string | null;
-}): Promise<{ ok: true; order: string[]; renumbered: boolean } | { ok: false; error: "unknown_asset" }> {
+  mode: OrderMode;
+  /** The gallery's current label, so an unchanged label costs no write. */
+  currentMode?: OrderMode | string;
+}): Promise<{ ok: true; written: number; renumbered: boolean } | { ok: false; error: "mismatch" }> {
   const current = await getGrantOrder(params.grantId);
   const known = new Set(current.map((c) => c.id));
-  if (!params.ids.length || params.ids.some((id) => !known.has(id)) || (params.beforeId !== null && !known.has(params.beforeId))) {
-    return { ok: false, error: "unknown_asset" };
+  const given = new Set(params.ids);
+  if (params.ids.length !== current.length || given.size !== params.ids.length || params.ids.some((id) => !known.has(id))) {
+    return { ok: false, error: "mismatch" };
   }
-  const plan = planMove(current, params.ids, params.beforeId);
-  if (plan.positions.size) {
-    await writePositions(params.grantId, plan.positions);
-    await setMode(params.grantId, "custom");
-  }
-  return { ok: true, order: plan.order, renumbered: plan.renumbered };
+  const plan = planSet(current, params.ids);
+  if (plan.positions.size) await writePositions(params.grantId, plan.positions);
+  // "custom" when the order was hand-made, a sort's name while it still is one.
+  if (params.mode !== params.currentMode) await setMode(params.grantId, params.mode);
+  return { ok: true, written: plan.positions.size, renumbered: plan.renumbered };
 }
 
 /* ---------------- sort metadata (capture date + color) ---------------- */

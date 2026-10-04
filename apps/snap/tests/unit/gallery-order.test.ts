@@ -9,6 +9,7 @@ import {
   SORT_MODES,
   applyMove,
   dropTarget,
+  planSet,
   compareNatural,
   isOrderMode,
   isSortMode,
@@ -313,5 +314,94 @@ describe("live drag preview: applyMove + dropTarget", () => {
       expect(dropTarget(cur, ["a"], hover, true)).toBeUndefined();
     }
     expect(cur).toEqual(["b", "c", "d", "e", "f", "a"]);
+  });
+});
+
+describe("planSet (save the final arrangement with the fewest writes)", () => {
+  const gallery = (n: number) => Array.from({ length: n }, (_, i) => ({ id: `p${i + 1}`, position: (i + 1) * POSITION_STEP }));
+  const resulting = (cur: { id: string; position: number }[], final: string[]) => {
+    const { positions, renumbered } = planSet(cur, final);
+    const after = cur.map((c) => ({ id: c.id, position: positions.get(c.id) ?? c.position }));
+    return { positions, renumbered, ids: [...after].sort((a, b) => a.position - b.position).map((c) => c.id), unique: new Set(after.map((a) => a.position)).size === after.length };
+  };
+
+  it("no change → no writes", () => {
+    const cur = gallery(50);
+    expect(planSet(cur, cur.map((c) => c.id)).positions.size).toBe(0);
+  });
+
+  it("one photo moved anywhere → exactly one write", () => {
+    const cur = gallery(200);
+    for (const [from, to] of [[0, 199], [199, 0], [100, 3], [3, 100]]) {
+      const ids = cur.map((c) => c.id);
+      const [m] = ids.splice(from, 1);
+      ids.splice(to, 0, m);
+      const r = resulting(cur, ids);
+      expect(r.positions.size).toBe(1);
+      expect(r.ids).toEqual(ids);
+      expect(r.unique).toBe(true);
+    }
+  });
+
+  it("a block moved together → writes only the block", () => {
+    const cur = gallery(100);
+    const ids = cur.map((c) => c.id);
+    const block = ids.splice(10, 5); // 5 photos
+    ids.splice(60, 0, ...block);
+    const r = resulting(cur, ids);
+    expect(r.positions.size).toBe(5);
+    expect(r.ids).toEqual(ids);
+  });
+
+  it("reversing everything writes N-1 (one photo can stay)", () => {
+    const cur = gallery(40);
+    const r = resulting(cur, cur.map((c) => c.id).reverse());
+    expect(r.positions.size).toBe(39);
+    expect(r.ids).toEqual(cur.map((c) => c.id).reverse());
+  });
+
+  it("property: ANY permutation lands in exactly the requested order, with unique positions, writing no more than the photos out of place", () => {
+    let seed = 12345;
+    const rand = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+    for (let trial = 0; trial < 300; trial++) {
+      const n = 2 + Math.floor(rand() * 60);
+      const cur = gallery(n);
+      const ids = cur.map((c) => c.id);
+      // shuffle a random subset of positions
+      const swaps = Math.floor(rand() * n * 1.5);
+      for (let s = 0; s < swaps; s++) {
+        const a = Math.floor(rand() * n);
+        const b = Math.floor(rand() * n);
+        [ids[a], ids[b]] = [ids[b], ids[a]];
+      }
+      const r = resulting(cur, ids);
+      expect(r.ids, `trial ${trial}`).toEqual(ids);
+      expect(r.unique, `trial ${trial}`).toBe(true);
+      expect(r.positions.size).toBeLessThanOrEqual(n);
+    }
+  });
+
+  it("a stored order with tight gaps renumbers once instead of colliding", () => {
+    const cur = [
+      { id: "a", position: 1 },
+      { id: "b", position: 2 },
+      { id: "c", position: 3 },
+      { id: "d", position: 4 },
+    ];
+    const r = resulting(cur, ["a", "d", "b", "c"]);
+    expect(r.renumbered).toBe(true);
+    expect(r.ids).toEqual(["a", "d", "b", "c"]);
+    expect(r.unique).toBe(true);
+  });
+
+  it("negative / out-of-range stored positions (from earlier drags to the front) are handled", () => {
+    const cur = [
+      { id: "a", position: -2048 },
+      { id: "b", position: 0 },
+      { id: "c", position: 1024 },
+    ];
+    const r = resulting(cur, ["c", "a", "b"]);
+    expect(r.ids).toEqual(["c", "a", "b"]);
+    expect(r.unique).toBe(true);
   });
 });

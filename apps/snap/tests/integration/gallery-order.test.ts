@@ -13,17 +13,30 @@ import {
   backfillCapturedAt,
   getGrantOrder,
   grantAssetsMissingColor,
-  moveInGrant,
   saveColorKeys,
   scanCapturedAt,
-  sortGrant,
+  setGrantOrder,
 } from "@/lib/repos/gallery-order";
-import { POSITION_STEP, type SortMode } from "@/lib/gallery-order";
+import { POSITION_STEP, applyMove, orderedIdsForSort, type SortMode } from "@/lib/gallery-order";
 import m61 from "../../migrations/0061_gallery_order.sql?raw";
 import { resetDb } from "../helpers/db";
 import { seedAsset, seedProject, seedStudio } from "../helpers/seed";
 
 beforeEach(resetDb);
+
+/* Sorting and dragging are browser-side now; the server only ever sees the
+ * final arrangement (setGrantOrder, once per Arrange session). These helpers
+ * do what the browser does, then save - so the tests drive the real save path. */
+async function sortGrant(p: { grantId: string; mode: SortMode; seed?: number }) {
+  const current = await getGrantOrder(p.grantId);
+  const ids = orderedIdsForSort(current, p.mode, p.seed ?? 1);
+  await setGrantOrder({ grantId: p.grantId, ids, mode: p.mode });
+  return ids;
+}
+async function moveInGrant(p: { grantId: string; ids: string[]; beforeId: string | null }) {
+  const current = (await getGrantOrder(p.grantId)).map((c) => c.id);
+  return setGrantOrder({ grantId: p.grantId, ids: applyMove(current, p.ids, p.beforeId), mode: "custom" });
+}
 
 type Photo = { filename: string; createdAt?: Date; folder?: string; capturedAt?: number | null; colorKey?: number | null };
 
@@ -206,7 +219,7 @@ describe("drag and drop", () => {
     const g = await seedGrant(Array.from({ length: 6 }, (_, i) => ({ filename: `p${i}.jpg` })));
     const before = await getGrantOrder(g.grantId);
     const res = await moveInGrant({ grantId: g.grantId, ids: [g.ids[5]], beforeId: g.ids[0] });
-    expect(res).toMatchObject({ ok: true, renumbered: false });
+    expect(res).toEqual({ ok: true, written: 1, renumbered: false });
     expect(await namesOf(g.grantId)).toEqual(["p5.jpg", "p0.jpg", "p1.jpg", "p2.jpg", "p3.jpg", "p4.jpg"]);
     const after = await getGrantOrder(g.grantId);
     const changed = after.filter((a) => before.find((b) => b.id === a.id)!.position !== a.position);
@@ -238,12 +251,16 @@ describe("drag and drop", () => {
     expect(POSITION_STEP).toBeGreaterThan(1);
   });
 
-  it("refuses photos that are not in this gallery (no cross-gallery or cross-studio moves)", async () => {
-    const a = await seedGrant([{ filename: "a1.jpg" }, { filename: "a2.jpg" }]);
+  it("refuses an arrangement that is not exactly this gallery's photos (no foreign, missing or duplicated ids)", async () => {
+    const a = await seedGrant([{ filename: "a1.jpg" }, { filename: "a2.jpg" }, { filename: "a3.jpg" }]);
     const b = await seedGrant([{ filename: "b1.jpg" }, { filename: "b2.jpg" }]);
-    expect(await moveInGrant({ grantId: a.grantId, ids: [b.ids[0]], beforeId: null })).toEqual({ ok: false, error: "unknown_asset" });
-    expect(await moveInGrant({ grantId: a.grantId, ids: [a.ids[0]], beforeId: b.ids[1] })).toEqual({ ok: false, error: "unknown_asset" });
-    expect(await moveInGrant({ grantId: a.grantId, ids: [], beforeId: null })).toEqual({ ok: false, error: "unknown_asset" });
+    const save = (ids: string[]) => setGrantOrder({ grantId: a.grantId, ids, mode: "custom" });
+    expect(await save([a.ids[0], a.ids[1], b.ids[0]])).toEqual({ ok: false, error: "mismatch" }); // foreign photo
+    expect(await save([a.ids[0], a.ids[1]])).toEqual({ ok: false, error: "mismatch" }); // missing one
+    expect(await save([a.ids[0], a.ids[0], a.ids[1]])).toEqual({ ok: false, error: "mismatch" }); // duplicate
+    expect(await save([...a.ids, b.ids[0]])).toEqual({ ok: false, error: "mismatch" }); // extra
+    expect(await save([])).toEqual({ ok: false, error: "mismatch" });
+    expect(await namesOf(a.grantId)).toEqual(["a1.jpg", "a2.jpg", "a3.jpg"]); // nothing was written
     expect(await namesOf(b.grantId)).toEqual(["b1.jpg", "b2.jpg"]);
   });
 
@@ -252,6 +269,52 @@ describe("drag and drop", () => {
     const b = await seedGrant([{ filename: "b1.jpg" }]);
     expect(await getShareGrant(b.studio.organizationId, a.grantId)).toBeNull();
     expect(await getShareGrant(a.studio.organizationId, a.grantId)).not.toBeNull();
+  });
+});
+
+describe("saving once: only the photos that moved are written", () => {
+  const positionsOf = async (grantId: string) => new Map((await getGrantOrder(grantId)).map((r) => [r.id, r.position]));
+
+  it("30 drags in a 400-photo gallery, then ONE save, writes only the photos that ended up out of place", async () => {
+    const g = await seedGrant(Array.from({ length: 400 }, (_, i) => ({ filename: `p${String(i).padStart(3, "0")}.jpg` })));
+    const before = await positionsOf(g.grantId);
+    let order = g.ids;
+    const moved = new Set<string>();
+    for (let i = 0; i < 30; i++) {
+      const id = order[(i * 37) % order.length];
+      moved.add(id);
+      order = applyMove(order, [id], order[(i * 53 + 7) % order.length] === id ? null : order[(i * 53 + 7) % order.length]);
+    }
+    const res = await setGrantOrder({ grantId: g.grantId, ids: order, mode: "custom" });
+    expect(res.ok && res.written).toBeLessThanOrEqual(moved.size);
+    expect(res.ok && res.renumbered).toBe(false);
+    const after = await positionsOf(g.grantId);
+    const rewritten = [...after].filter(([id, pos]) => before.get(id) !== pos).length;
+    expect(rewritten).toBeLessThanOrEqual(moved.size); // 400 photos, ≤30 rows touched
+    expect((await getGrantOrder(g.grantId)).map((r) => r.id)).toEqual(order);
+  }, 60_000);
+
+  it("saving an unchanged arrangement writes nothing", async () => {
+    const g = await seedGrant(Array.from({ length: 20 }, (_, i) => ({ filename: `p${i}.jpg` })));
+    const current = (await getGrantOrder(g.grantId)).map((r) => r.id);
+    expect(await setGrantOrder({ grantId: g.grantId, ids: current, mode: "upload_old", currentMode: "upload_old" })).toEqual({ ok: true, written: 0, renumbered: false });
+  });
+
+  it("a full re-sort writes about N rows (everything moves) - once, however much you fiddled before", async () => {
+    const g = await seedGrant(Array.from({ length: 100 }, (_, i) => ({ filename: `IMG_${i}.jpg` })));
+    const res = await setGrantOrder({ grantId: g.grantId, ids: orderedIdsForSort(await getGrantOrder(g.grantId), "name_za"), mode: "name_za", currentMode: "upload_old" });
+    expect(res.ok && res.written).toBeGreaterThanOrEqual(99);
+    expect(res.ok && res.written).toBeLessThanOrEqual(100);
+  });
+
+  it("the mode label is stored only when it changes", async () => {
+    const g = await seedGrant([{ filename: "a.jpg" }, { filename: "b.jpg" }]);
+    await getDb().update(schema.shareGrants).set({ orderMode: "custom" }).where(eq(schema.shareGrants.id, g.grantId));
+    const reversed = [...(await getGrantOrder(g.grantId)).map((r) => r.id)].reverse();
+    await setGrantOrder({ grantId: g.grantId, ids: reversed, mode: "custom", currentMode: "custom" });
+    expect((await getShareGrant(g.studio.organizationId, g.grantId))?.orderMode).toBe("custom");
+    await setGrantOrder({ grantId: g.grantId, ids: reversed, mode: "name_za", currentMode: "custom" });
+    expect((await getShareGrant(g.studio.organizationId, g.grantId))?.orderMode).toBe("name_za");
   });
 });
 

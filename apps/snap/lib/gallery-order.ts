@@ -199,3 +199,67 @@ export function dropTarget(order: string[], moving: string[], hoverId: string, p
   // moving toward the start: swap once the pointer is before the centre → insert BEFORE the tile
   return pastCenter ? undefined : hoverId;
 }
+
+/** Indices (into `seq`) of one longest strictly-increasing subsequence. */
+function longestIncreasing(seq: number[]): Set<number> {
+  const tails: number[] = []; // tails[k] = index in seq ending the best subsequence of length k+1
+  const prev = new Array<number>(seq.length).fill(-1);
+  for (let i = 0; i < seq.length; i++) {
+    let lo = 0;
+    let hi = tails.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (seq[tails[mid]] < seq[i]) lo = mid + 1;
+      else hi = mid;
+    }
+    if (lo > 0) prev[i] = tails[lo - 1];
+    tails[lo] = i;
+  }
+  const keep = new Set<number>();
+  for (let at = tails.length ? tails[tails.length - 1] : -1; at >= 0; at = prev[at]) keep.add(at);
+  return keep;
+}
+
+/** Save a whole arrangement with the FEWEST row writes. `finalOrder` is the
+ * gallery order the photographer ended on (a permutation of `current`).
+ * Photos already in relative order keep their stored positions (a longest
+ * increasing subsequence); only the photos that actually moved get new
+ * positions, spaced into the gaps around their neighbours. So a handful of
+ * drags on a 1,500-photo gallery writes a handful of rows - while a full
+ * re-sort (where nearly everything moves) writes about N. If a gap runs out,
+ * everything is renumbered once. */
+export function planSet(current: { id: string; position: number }[], finalOrder: string[]): { positions: Map<string, number>; renumbered: boolean } {
+  const pos = new Map(current.map((c) => [c.id, c.position]));
+  const seq = finalOrder.map((id) => pos.get(id) ?? 0);
+  const keep = longestIncreasing(seq);
+  const out = new Map<string, number>();
+  const n = finalOrder.length;
+  const renumber = () => ({ positions: stepPositions(finalOrder), renumbered: true });
+
+  let i = 0;
+  while (i < n) {
+    if (keep.has(i)) {
+      i++;
+      continue;
+    }
+    let j = i;
+    while (j < n && !keep.has(j)) j++;
+    const k = j - i; // a maximal run of moved photos, between two kept ones
+    const left = i > 0 ? seq[i - 1] : null;
+    const right = j < n ? seq[j] : null;
+    if (left === null && right === null) return renumber();
+    for (let t = 0; t < k; t++) {
+      let at: number;
+      if (left === null) at = right! - POSITION_STEP * (k - t);
+      else if (right === null) at = left + POSITION_STEP * (t + 1);
+      else {
+        const gap = right - left;
+        if (gap < k + 1) return renumber();
+        at = left + Math.floor((gap * (t + 1)) / (k + 1));
+      }
+      out.set(finalOrder[i + t], at);
+    }
+    i = j;
+  }
+  return { positions: out, renumbered: false };
+}

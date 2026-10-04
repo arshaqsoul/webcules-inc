@@ -43,13 +43,11 @@ export function ArrangeHarness({ count, withFolders, transformed }: { count: num
       items={items}
       mode={"upload_old" as OrderMode}
       thumbUrl={(id) => swatch(Number(labelOf.get(id)), Number(labelOf.get(id)) % 4 === 0, labelOf.get(id) ?? "")}
-      onMove={async (ids, beforeId) => {
-        await new Promise((r) => setTimeout(r, 120)); // pretend network
-        setLog((l) => [...l.slice(-9), `move ${ids.map((i) => labelOf.get(i)).join(",")} before ${beforeId ? labelOf.get(beforeId) : "END"}`]);
-        return true;
+      onSort={async (mode: SortMode, _s, current) => ({ order: orderedIdsForSort(current.map((id) => items.find((i) => i.id === id)!), mode, 7) })}
+      onOrderChange={(order) => {
+        setLog((l) => [...l.slice(-9), `order ${order.slice(0, 8).map((i) => labelOf.get(i)).join(',')}...`]);
+        setLastOrder(order);
       }}
-      onSort={async (mode: SortMode) => ({ order: orderedIdsForSort(items.filter((i) => lastOrder.includes(i.id)), mode, 7) })}
-      onOrderChange={(order) => setLastOrder(order)}
     />
   );
 

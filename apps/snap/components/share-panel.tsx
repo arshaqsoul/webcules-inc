@@ -99,23 +99,23 @@ export function SharePanel({
 
   /** Sort before sending: make sure the sort's metadata exists, then order locally. */
   const sortBeforeSend = useCallback(
-    async (mode: SortMode, setStatus: (m: string) => void): Promise<{ order: string[] } | null> => {
-      await ensureSortMeta(projectId, mode, new Set(orderIds), setStatus);
+    async (mode: SortMode, setStatus: (m: string) => void, currentOrder: string[]): Promise<{ order: string[] } | null> => {
+      await ensureSortMeta(projectId, mode, new Set(currentOrder), setStatus);
       // Re-read so freshly scanned capture dates / analysed colors are included,
       // then sort the CURRENT arrangement (folders keep their order).
       const fresh = await fetchDeliverableItems(projectId, folders, Array.from(picked));
       const freshById = new Map(fresh.map((i) => [i.id, i]));
-      const current = orderIds.map((id) => freshById.get(id)).filter((i): i is ArrangeItem => Boolean(i));
+      const current = currentOrder.map((id) => freshById.get(id)).filter((i): i is ArrangeItem => Boolean(i));
       const order = orderedIdsForSort(current, mode, Math.floor(Math.random() * 2 ** 31));
       setItems(fresh);
       return { order };
     },
-    [projectId, folders, picked, orderIds],
+    [projectId, folders, picked],
   );
 
   async function quickSort(mode: SortMode) {
     setOrderStatus("");
-    const result = await sortBeforeSend(mode, setOrderStatus);
+    const result = await sortBeforeSend(mode, setOrderStatus, orderIds);
     if (result) {
       setOrderIds(result.order);
       setOrderMode(mode);
@@ -385,7 +385,6 @@ export function SharePanel({
             className="flex-1"
             items={arrangeItems}
             mode={orderMode}
-            onMove={async () => true /* nothing to persist yet - the order is kept in the panel */}
             onSort={sortBeforeSend}
             onOrderChange={(order, mode) => {
               setOrderIds(order);

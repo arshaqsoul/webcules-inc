@@ -39,11 +39,12 @@ export type PhotoArrangerProps = {
   items: ArrangeItem[];
   /** How the photos are currently ordered. */
   mode: OrderMode;
-  /** Persist a move (host decides how). Resolve false to revert the move. */
-  onMove: (ids: string[], beforeId: string | null) => Promise<boolean>;
-  /** Apply a sort (host decides how) and resolve the new full order. */
-  onSort: (mode: SortMode, setStatus: (message: string) => void) => Promise<SortResult>;
-  /** Fires after every successful change with the full order + mode. */
+  /** Sort (host prepares any metadata the sort needs - the arranger passes the
+   * order as it stands NOW) and resolve the new full order. Pure client work:
+   * nothing here should write to the server. */
+  onSort: (mode: SortMode, setStatus: (message: string) => void, currentOrder: string[]) => Promise<SortResult>;
+  /** Fires after every change with the full order + mode. Hosts keep the
+   * latest value and persist it ONCE (Done) - never per drag. */
   onOrderChange?: (order: string[], mode: OrderMode) => void;
   /** Override the thumbnail URL (the dev harness uses synthetic images). */
   thumbUrl?: (id: string, kind: string, px: number) => string;
@@ -74,7 +75,7 @@ function writePref(key: string, value: string | number) {
 
 type Drag = { ids: string[]; x: number; y: number; before: string | null };
 
-export function PhotoArranger({ items, mode: initialMode, onMove, onSort, onOrderChange, thumbUrl = defaultThumb, className = "" }: PhotoArrangerProps) {
+export function PhotoArranger({ items, mode: initialMode, onSort, onOrderChange, thumbUrl = defaultThumb, className = "" }: PhotoArrangerProps) {
   const byId = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
 
   const [order, setOrder] = useState<string[]>(() => items.map((i) => i.id));
@@ -97,7 +98,6 @@ export function PhotoArranger({ items, mode: initialMode, onMove, onSort, onOrde
   const lastClicked = useRef<string | null>(null);
   const dragRef = useRef<Drag | null>(null);
   const orderRef = useRef(order);
-  const queue = useRef<Promise<unknown>>(Promise.resolve());
   const prevOffsets = useRef(new Map<string, { x: number; y: number }>());
   orderRef.current = order;
 
@@ -164,18 +164,9 @@ export function PhotoArranger({ items, mode: initialMode, onMove, onSort, onOrde
       if (next.join() === current.join()) return;
       setOrder(next);
       setMode("custom");
-      queue.current = queue.current.then(async () => {
-        const ok = await onMove(ids, beforeId).catch(() => false);
-        if (!ok) {
-          setOrder(current);
-          setStatus("Couldn't save that move - try again.");
-          return;
-        }
-        setStatus("");
-        onOrderChange?.(next, "custom");
-      });
+      onOrderChange?.(next, "custom");
     },
-    [onMove, onOrderChange],
+    [onOrderChange],
   );
 
   function requestSort(next: SortMode) {
@@ -188,7 +179,7 @@ export function PhotoArranger({ items, mode: initialMode, onMove, onSort, onOrde
     setBusy(true);
     setStatus("");
     try {
-      const result = await onSort(next, setStatus);
+      const result = await onSort(next, setStatus, orderRef.current);
       if (!result) {
         setStatus("Couldn't sort - try again.");
       } else {
