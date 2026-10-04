@@ -1,9 +1,9 @@
 {
   "pass": true,
   "pain_point": "PP-003",
-  "checked_at": "2026-10-03T09:34:33.620Z",
+  "checked_at": "2026-10-04T21:26:49.604Z",
   "reel": "growth/out/PP-003/reel.mp4",
-  "duration_s": 27.7,
+  "duration_s": 27.2,
   "size_mb": 5.4,
   "failures": [],
   "checks": [
@@ -23,19 +23,34 @@
       "detail": "h264 yuv420p"
     },
     {
-      "name": "silent",
-      "ok": true,
-      "detail": "no audio stream"
-    },
-    {
       "name": "duration",
       "ok": true,
-      "detail": "27.7s (allowed 8-45s)"
+      "detail": "27.2s (allowed 8-45s)"
     },
     {
       "name": "size",
       "ok": true,
       "detail": "5.4 MB (max 50)"
+    },
+    {
+      "name": "sfx track",
+      "ok": true,
+      "detail": "aac 48000 Hz 2 ch"
+    },
+    {
+      "name": "sfx length matches video",
+      "ok": true,
+      "detail": "audio 27.23s, video 27.23s"
+    },
+    {
+      "name": "sfx level",
+      "ok": true,
+      "detail": "peak -6 dB (allowed -12 to -3)"
+    },
+    {
+      "name": "sfx on every click",
+      "ok": true,
+      "detail": "3 click(s) all audible"
     },
     {
       "name": "no frozen frames",
@@ -61,6 +76,11 @@
       "name": "hook is short",
       "ok": true,
       "detail": "Client forwarded your gallery link?"
+    },
+    {
+      "name": "every click is inside the frame",
+      "ok": true,
+      "detail": "3 click target(s) fully on screen"
     },
     {
       "name": "every click has an effect",

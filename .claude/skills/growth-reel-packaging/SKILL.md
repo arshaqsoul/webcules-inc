@@ -40,8 +40,9 @@ Suggest a window for a Canada-based audience with the reason, and note that the 
 
 ## Audio
 
-The reel is silent.
-If you suggest a trending sound, confirm in `growth/trends/` that it is validated and unexpired, and say it should be added inside Instagram at low volume.
+The reel carries synthesised sound effects and needs no added sound.
+Say that in the package, and that the captions still carry the story for viewers with sound off.
+If you suggest a trending sound on top, confirm in `growth/trends/` that it is validated and unexpired, and say it should be added inside Instagram at low volume.
 
 ## Engagement plan
 

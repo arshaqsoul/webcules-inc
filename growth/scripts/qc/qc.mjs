@@ -28,7 +28,7 @@ const edl = JSON.parse(fs.readFileSync(edlPath, "utf8"));
 const metaPath = path.resolve(ROOT, flag("meta") ?? path.join("growth", "storyboards", `${pp}.meta.json`));
 const meta = fs.existsSync(metaPath) ? JSON.parse(fs.readFileSync(metaPath, "utf8")) : null;
 
-const T = { minS: 8, maxS: 45, maxMB: 50, freezeS: 0.8, blackS: 0.15, maxWords: 6, safe: { top: 250, bottom: 340, right: 120, left: 60 } };
+const T = { minS: 8, maxS: 45, maxMB: 50, freezeS: 0.8, blackS: 0.15, maxWords: 6, sfxPeakDb: [-12, -3], sfxClickDb: -45, safe: { top: 250, bottom: 340, right: 120, left: 60 } };
 const checks = [];
 const failures = [];
 const check = (name, ok, detail) => {
@@ -37,16 +37,37 @@ const check = (name, ok, detail) => {
 };
 
 // ---- probe
-const probe = JSON.parse(spawnSync("ffprobe", ["-v", "error", "-show_entries", "stream=width,height,r_frame_rate,codec_name,pix_fmt,codec_type:format=duration,size", "-of", "json", reel], { encoding: "utf8" }).stdout);
+const probe = JSON.parse(spawnSync("ffprobe", ["-v", "error", "-show_entries", "stream=width,height,r_frame_rate,codec_name,pix_fmt,codec_type,sample_rate,channels,duration:format=duration,size", "-of", "json", reel], { encoding: "utf8" }).stdout);
 const v = probe.streams.find((s) => s.codec_type === "video");
 const dur = Number(probe.format.duration);
 const sizeMB = Number(probe.format.size) / 1e6;
 check("resolution", v.width === 1080 && v.height === 1920, `${v.width}x${v.height}`);
 check("fps", v.r_frame_rate === "30/1", v.r_frame_rate);
 check("codec", v.codec_name === "h264" && v.pix_fmt === "yuv420p", `${v.codec_name} ${v.pix_fmt}`);
-check("silent", !probe.streams.some((s) => s.codec_type === "audio"), "no audio stream");
 check("duration", dur >= T.minS && dur <= T.maxS, `${dur.toFixed(1)}s (allowed ${T.minS}-${T.maxS}s)`);
 check("size", sizeMB <= T.maxMB, `${sizeMB.toFixed(1)} MB (max ${T.maxMB})`);
+
+// ---- sound effects: a real AAC track at a sane level, the same length as the video, and audibly present at every click
+const aud = probe.streams.find((s) => s.codec_type === "audio");
+check("sfx track", !!aud && aud.codec_name === "aac" && Number(aud.sample_rate) === 48000, aud ? `${aud.codec_name} ${aud.sample_rate} Hz ${aud.channels} ch` : "no audio stream (run sfx.mjs)");
+if (aud) {
+  check("sfx length matches video", Math.abs(Number(aud.duration) - Number(v.duration)) <= 0.1, `audio ${Number(aud.duration).toFixed(2)}s, video ${Number(v.duration).toFixed(2)}s`);
+  const vol = spawnSync("ffmpeg", ["-hide_banner", "-nostats", "-i", reel, "-vn", "-af", "volumedetect", "-f", "null", "-"], { encoding: "utf8" }).stderr;
+  const maxDb = Number(vol.match(/max_volume: (-?[\d.]+) dB/)?.[1]);
+  check("sfx level", maxDb >= T.sfxPeakDb[0] && maxDb <= T.sfxPeakDb[1], `peak ${maxDb} dB (allowed ${T.sfxPeakDb[0]} to ${T.sfxPeakDb[1]})`);
+  // decode to mono floats and look for energy in the 80 ms after each click, so a track that drifted off the video fails
+  const pcm = spawnSync("ffmpeg", ["-v", "error", "-i", reel, "-vn", "-ac", "1", "-ar", "48000", "-f", "f32le", "-"], { maxBuffer: 1 << 28 }).stdout;
+  const samples = new Float32Array(pcm.buffer, pcm.byteOffset, Math.floor(pcm.length / 4));
+  const rmsDb = (ms) => {
+    const i0 = Math.round((ms / 1000) * 48000);
+    const n = Math.round(0.08 * 48000);
+    let sum = 0;
+    for (let i = i0; i < Math.min(samples.length, i0 + n); i++) sum += samples[i] * samples[i];
+    return 10 * Math.log10(sum / n + 1e-12);
+  };
+  const quiet = (edl.highlights ?? []).filter((h) => rmsDb(h.out_ms) < T.sfxClickDb);
+  check("sfx on every click", quiet.length === 0, quiet.length ? `silent at ${quiet.map((h) => `${(h.out_ms / 1000).toFixed(1)}s`).join(", ")}` : `${(edl.highlights ?? []).length} click(s) all audible`);
+}
 
 // ---- freeze and black frames (the end card is intentionally still, so it is excluded)
 const run = (vf) => spawnSync("ffmpeg", ["-hide_banner", "-nostats", "-i", reel, "-vf", vf, "-an", "-f", "null", "-"], { encoding: "utf8" }).stderr;
@@ -83,6 +104,10 @@ check("captions are short", longCaps.length === 0, longCaps.length ? longCaps.ma
 check("hook is short", !edl.hook || edl.hook.trim().split(/\s+/).length <= T.maxWords, edl.hook ?? "none");
 
 // ---- events coverage
+const views = edl.click_view ?? [];
+const cut = views.filter((c) => c.box_visible < 0.98 || !c.point_visible);
+const viewOk = views.length === edl.clicks_total && cut.length === 0;
+check("every click is inside the frame", viewOk, cut.length ? cut.map((c) => `${(c.out_ms / 1000).toFixed(1)}s (${Math.round(c.box_visible * 100)}% of the target visible${c.point_visible ? "" : ", click point off screen"})`).join(", ") : views.length !== edl.clicks_total ? `visibility recorded for ${views.length} of ${edl.clicks_total} clicks (re-run edit.mjs)` : `${views.length} click target(s) fully on screen`);
 check("every click has an effect", edl.clicks_covered === edl.clicks_total, `${edl.clicks_covered}/${edl.clicks_total} clicks highlighted`);
 
 // ---- claims: anything that looks like a price, size or tier on screen must be in the claims table, and each claim must cite a real file

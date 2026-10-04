@@ -35,7 +35,7 @@ Every effect lands exactly on a recorded action, because it is derived from `eve
 - Zoom, highlight and ripple coincide with the click, to the frame.
 - Captions are readable on a phone, inside the safe zones, and never cover the thing being clicked.
 - Pace feels deliberate: dead time is ramped, important moments are held.
-- The result is silent, 1080x1920, 30 fps, and small enough to upload quickly.
+- The result carries the synthesised sound effects track (QC checks it), is 1080x1920 at 30 fps, and is small enough to upload quickly.
 - Watch the whole reel once at normal speed before QC.
 
 ## Tooling

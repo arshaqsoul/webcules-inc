@@ -6,7 +6,7 @@
 //
 // Inputs : growth/recordings/<PP>/{frames.json, cursor.json, events.json, frames/*.jpg}
 //          growth/storyboards/<PP>.meta.json   { hook, end:{claim,link,note?}, claims:[{text,source}], mark? }
-// Outputs: growth/out/<PP>/{reel.mp4, cover.png, edl.json}
+// Outputs: growth/out/<PP>/{reel.mp4, cover.png, edl.json}   (reel.mp4 carries a synthesised sound-effects track, see sfx.mjs)
 // Spec   : growth/DEMO-STANDARD.md
 
 import fs from "node:fs";
@@ -15,6 +15,7 @@ import crypto from "node:crypto";
 import { spawn, spawnSync } from "node:child_process";
 import { pathToFileURL, fileURLToPath } from "node:url";
 import { launch, ROOT } from "../record/lib.mjs";
+import { addSfx } from "./sfx.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const FPS = 30;
@@ -152,26 +153,72 @@ const stepsList = events.steps.map((s, i) => ({ ...s, index: i, o0: srcToOut(s.t
 const home = { z: 1, cx: vw / 2, cy: vh / 2 };
 const keys = [{ t: 0, ...home }];
 const zooms = [];
+const maxW = format === "phone" ? 0.7 : 0.6;
+const zFor = (box) => clamp((0.5 * vw) / box.w, format === "phone" ? 1.35 : 1.6, format === "phone" ? 1.8 : 2.2);
+// The page area a camera shows. This is the composer's own clamp (the card never shows beyond the page), so the maths matches the pixels.
+const visRect = (c) => {
+  const hw = vw / (2 * c.z);
+  const hh = vh / (2 * c.z);
+  const cx = clamp(c.cx, hw, vw - hw);
+  const cy = clamp(c.cy, hh, vh - hh);
+  return { x0: cx - hw, x1: cx + hw, y0: cy - hh, y1: cy + hh };
+};
+// Is the box comfortably inside what the camera shows? The margin covers the slow breathing zoom and the drift, and is waived
+// on a side where the camera already sits at the page edge (nothing more can be revealed there).
+const shows = (c, box) => {
+  const r = visRect({ ...c, z: c.z * 1.07 });
+  const m = 28;
+  const lo = (v, edge) => v - (edge <= 0.5 ? 0 : m);
+  return box.x >= lo(r.x0, r.x0) && box.x + box.w <= r.x1 + (r.x1 >= vw - 0.5 ? 0 : -m) && box.y >= lo(r.y0, r.y0) && box.y + box.h <= r.y1 + (r.y1 >= vh - 0.5 ? 0 : -m);
+};
+const isHome = (c) => c.z <= 1.01;
+// The camera follows every interaction. A step zooms in on its first target, and each later click, entry or result that the
+// current framing does not already show gets its own pan before the action, so no click ever lands outside the reel.
 for (const st of stepsList) {
-  const ev = events.events.find((e) => e.step === st.id && e.box && ["click", "type", "select", "annotate", "hover"].includes(e.type));
-  if (!ev) continue;
-  const maxW = format === "phone" ? 0.7 : 0.6;
-  if (ev.box.w > maxW * vw) continue; // a wide target (table row, hero) reads better unzoomed
-  const z = clamp((0.5 * vw) / ev.box.w, format === "phone" ? 1.35 : 1.6, format === "phone" ? 1.8 : 2.2);
-  const tHit = srcToOut(ev.t_ms);
-  const inStart = Math.max(650, tHit - 450);
-  const inEnd = inStart + 350;
-  const holdEnd = Math.max(inEnd + 300, st.o1);
-  const target = { z, cx: ev.box.x + ev.box.w / 2, cy: ev.box.y + ev.box.h / 2 };
-  let last = keys.at(-1);
-  if (last.ret && last.t > inStart) keys.pop();
-  last = keys.at(-1);
-  if (inStart <= last.t) continue; // overlaps the previous window, skip rather than fight it
-  keys.push({ t: inStart, z: last.z, cx: last.cx, cy: last.cy });
-  keys.push({ t: inEnd, ...target });
-  keys.push({ t: holdEnd, ...target });
-  keys.push({ t: holdEnd + 350, ...home, ret: true });
-  zooms.push({ step: st.id, in_ms: Math.round(inStart), hold_end_ms: Math.round(holdEnd), z: Math.round(z * 100) / 100 });
+  const evs = events.events.filter((e) => e.step === st.id && e.box && ["click", "type", "select", "annotate", "hover"].includes(e.type));
+  let open = null; // the held framing of this step: { target, inEnd, entry }
+  let first = true;
+  let moved = false;
+  const closeHold = (until) => {
+    if (!open) return;
+    const t = Math.max(until, open.inEnd + 300);
+    keys.push({ t, ...open.target });
+    open.entry.hold_end_ms = Math.round(t);
+    open = null;
+  };
+  for (const ev of evs) {
+    const follow = first || ["click", "type", "select", "annotate"].includes(ev.type);
+    if (!follow) continue;
+    const wasFirst = first;
+    first = false;
+    const wide = ev.box.w > maxW * vw;
+    const target = wide ? { z: 1, cx: home.cx, cy: home.cy } : { z: zFor(ev.box), cx: ev.box.x + ev.box.w / 2, cy: ev.box.y + ev.box.h / 2 };
+    const tHit = srcToOut(ev.t_ms);
+    let inStart = Math.max(650, tHit - 450);
+    if (open) {
+      if (shows(open.target, ev.box)) continue; // already framed comfortably, stay put
+    } else if (!wasFirst || wide) {
+      continue; // an unzoomed view shows everything, so there is nothing to frame
+    }
+    let last = keys.at(-1);
+    if (!open && last.ret && last.t > inStart) {
+      keys.pop(); // the previous step's return to home would run into this move, so go straight there
+      last = keys.at(-1);
+    }
+    if (open) closeHold(inStart); // the held framing ends where the pan begins
+    last = keys.at(-1);
+    if (inStart <= last.t) inStart = last.t + 1;
+    const inEnd = Math.min(inStart + 350, Math.max(inStart + 120, tHit - 60));
+    if (inEnd <= inStart) continue;
+    keys.push({ t: inStart, z: last.z, cx: last.cx, cy: last.cy });
+    keys.push({ t: inEnd, ...target });
+    const entry = { step: st.id, in_ms: Math.round(inStart), hold_end_ms: Math.round(inEnd), z: Math.round(target.z * 100) / 100 };
+    zooms.push(entry);
+    open = { target, inEnd, entry };
+    moved = true;
+  }
+  closeHold(st.o1);
+  if (moved) keys.push({ t: keys.at(-1).t + 350, ...home, ret: true });
 }
 function viewAt(t) {
   if (t <= keys[0].t) return keys[0];
@@ -401,6 +448,22 @@ const edl = {
   ramps: segs.filter((s) => s.speed > 1).map((s) => ({ out_start_ms: Math.round(s.o0), out_end_ms: Math.round(s.o1), src_start_ms: s.s0, src_end_ms: s.s1, speed: s.speed })),
   zooms,
   highlights: clicks.map((e) => ({ event_index: e.i, out_ms: Math.round(srcToOut(e.t_ms)) })),
+  // How much of each click target is on screen at the moment of the click and while its ripple plays, from the exact camera
+  // (zoom, breathing, drift, page clamp) the renderer uses. QC fails a click that is cut off or outside the reel.
+  click_view: clicks.map((e) => {
+    const tHit = srcToOut(e.t_ms);
+    let boxMin = 1;
+    let pointIn = true;
+    for (const dt of [-150, 0, 150, 300]) {
+      const st = stateAt(Math.max(0, tHit + dt));
+      const r = visRect({ z: st.z, cx: st.cx, cy: st.cy });
+      const ix = Math.max(0, Math.min(e.box.x + e.box.w, r.x1) - Math.max(e.box.x, r.x0));
+      const iy = Math.max(0, Math.min(e.box.y + e.box.h, r.y1) - Math.max(e.box.y, r.y0));
+      boxMin = Math.min(boxMin, (ix * iy) / (e.box.w * e.box.h));
+      if (dt >= 0 && !(e.x >= r.x0 && e.x <= r.x1 && e.y >= r.y0 && e.y <= r.y1)) pointIn = false;
+    }
+    return { event_index: e.i, out_ms: Math.round(tHit), box_visible: Math.round(boxMin * 1000) / 1000, point_visible: pointIn };
+  }),
   // output-time intervals where the cursor visibly travels (over 150 px/s for 250 ms or more). The freeze detector cannot see
   // a small arrow crossing a large screen, so QC excuses a still-looking stretch only where the cursor is moving.
   cursor_motion: (() => {
@@ -431,6 +494,9 @@ const edl = {
   claims: meta.claims,
   layout: [...layoutSeen.values()],
 };
-fs.writeFileSync(path.join(outDir, "edl.json"), JSON.stringify(edl, null, 2));
+const edlPath = path.join(outDir, "edl.json");
+fs.writeFileSync(edlPath, JSON.stringify(edl, null, 2));
+// the frames are rendered silent, then the sound effects are derived from the finished edl and muxed in (video stream copied)
+const sfx = addSfx(reelPath, edl, { edlPath });
 const mb = (fs.statSync(reelPath).size / 1e6).toFixed(1);
-console.log(JSON.stringify({ ok: true, reel: path.relative(ROOT, reelPath), cover: path.relative(ROOT, path.join(outDir, "cover.png")), edl: path.relative(ROOT, path.join(outDir, "edl.json")), duration_s: Math.round(TOTAL_MS / 100) / 10, size_mb: Number(mb), ramps: edl.ramps.length, zooms: zooms.length }));
+console.log(JSON.stringify({ ok: true, reel: path.relative(ROOT, reelPath), cover: path.relative(ROOT, path.join(outDir, "cover.png")), edl: path.relative(ROOT, path.join(outDir, "edl.json")), duration_s: Math.round(TOTAL_MS / 100) / 10, size_mb: Number(mb), ramps: edl.ramps.length, zooms: zooms.length, sfx_cues: sfx.cues }));

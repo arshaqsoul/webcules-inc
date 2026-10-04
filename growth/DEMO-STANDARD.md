@@ -12,7 +12,8 @@ This standard is the contract between the designer, recorder, editor and QC.
 3. **Every enhancement is derived from the events timeline.**
    The editor zooms and highlights where the recorder says an action happened, not where it guesses.
 4. **Repeatable.** Same seed, same fixtures, same motion.
-5. **Silent output.** Trending audio is added by the founder inside Instagram at post time.
+5. **Sound effects only.** The reel carries a synthesised effects track derived from `edl.json`, with no music and no voice.
+   Any trending sound is still the founder's choice, added inside Instagram at post time at low volume.
 
 ## Pipeline
 
@@ -143,7 +144,7 @@ Brand colours and fonts come from the Snap theme tokens in `apps/snap`, never in
 
 | Effect | Rule |
 |---|---|
-| Zoom | On a click or focus box, ease to 1.6x to 2.2x centred on the box over 350 ms, hold until the step ends, ease out. One zoom at a time. No zoom in the first 600 ms. |
+| Zoom | On a click or focus box, ease to 1.6x to 2.2x centred on the box over 350 ms, hold until the step ends, ease out. One zoom at a time. No zoom in the first 600 ms. The camera follows every click, entry and result in a step: when the next target is not comfortably inside the current framing, it pans there before the action (350 ms, no zoom out in between). A click is never allowed to land outside the reel. |
 | Highlight | A rounded outline in the brand colour around the target, pulsing twice at the click, fading in 150 ms. |
 | Click ripple | A ring expanding from the click point over 450 ms. |
 | Cursor | Scaled to 1.15x over interactive elements. |
@@ -153,11 +154,27 @@ Brand colours and fonts come from the Snap theme tokens in `apps/snap`, never in
 | Framing | 1080x1920. Desktop captures sit in a rounded card with the caption area above. Phone captures fill the frame. |
 | End card | 1.5 to 2 seconds: the Snap name, the one claim from the storyboard, and the link text. Claims cite code. |
 | Safe zones | Keep text out of the top 250 px, bottom 340 px and right 120 px, where Instagram overlays its UI. |
-| Audio | None. |
+| Audio | Synthesised sound effects, one per event in the edl, built by `scripts/edit/sfx.mjs`. No music, no voice, no samples. |
+
+Sound effects follow the same rule as every other effect: derived from the timeline, never placed by hand.
+
+| Cue | Source in `edl.json` | Sound |
+|---|---|---|
+| Hook | the hook text, at 60 ms | low thump with a small bright pluck |
+| Step caption | each caption `start_ms` | very quiet bubble |
+| Click | each highlight `out_ms` | dry UI tick |
+| 4x ramp | each ramp `out_start_ms` | quick rising zip |
+| End card | `endcard_start_ms` | gentle C-E-G arpeggio |
+
+Zooms are deliberately silent: sweeping noise under every zoom was too loud and busy.
+The sounds are generated in code with a fixed seed, so the same edl always gives the same audio and there is no licence to track.
+The finished mix peaks at -6 dBFS, with about -17 LUFS integrated, and fades out over the last 250 ms.
+Most viewers scroll with sound off, so captions still carry every step and the sound only adds feel.
 
 ## Output format
 
-H.264 High profile, yuv420p limited range, 30 fps, 1080x1920, faststart, under 50 MB, no audio stream.
+H.264 High profile, yuv420p limited range, 30 fps, 1080x1920, faststart, under 50 MB, with one AAC stereo track at 48 kHz (the sound effects) whose length matches the video.
+The video stream is copied, never re-encoded, when the sound is added, so `sfx.mjs` can be rerun on any reel.
 A very slow push-in ("breathing", 3 percent over 5 seconds) runs under the whole reel, so held moments never read as frozen.
 Also export a cover frame (PNG, 1080x1920) chosen at the most legible moment.
 
@@ -174,8 +191,12 @@ Also export a cover frame (PNG, 1080x1920) chosen at the most legible moment.
 | Duration | under 8 s or over 45 s |
 | Safe zones | caption pixels outside the allowed area |
 | Events coverage | any click in `events.json` without a zoom or highlight |
+| Click in frame | any click whose target is under 98% visible, or whose click point is off screen, at the click or during its ripple (the edl records the real camera for every click, and a missing record fails too) |
 | Caption fit | any caption over six words or clipped |
 | Size | over 50 MB |
+| Sound track | no AAC 48 kHz audio stream, or its length differs from the video by over 0.1 s |
+| Sound level | peak outside -12 to -3 dBFS |
+| Sound on clicks | under -45 dBFS in the 80 ms after any click |
 | Claim check | any on-screen price, limit or tier not found in `storyboard.md` claims, and every claim must cite a file |
 
 A human preview always follows QC.

@@ -30,12 +30,11 @@ Link in bio if you want to try it.
 
 ## Audio
 
-Add a trending sound inside Instagram at the lowest volume that still counts, or keep it silent.
+The reel already carries synthesised sound effects (clicks, captions, the end chime), so it can be posted as is.
+The captions still carry every step for viewers who scroll with sound off.
+If you also add a trending sound inside Instagram, keep it at low volume and lower the reel's original audio slider a little so the effects stay audible.
 Suggested trend ids from `growth/trends/`: none.
-`growth/trends/` is empty, so no trend is named or claimed.
-Keep the reel silent.
-It is silent by design and the captions carry it, so no sound will clash.
-If you add a sound anyway, pick one you can see trending in Instagram right now, at low volume, knowing it has not been validated.
+`growth/trends/` has no validated trends yet, so no trend is claimed, and any sound you add is your own call.
 
 ## When to post
 
