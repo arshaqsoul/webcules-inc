@@ -176,7 +176,7 @@ export const DOC_CATEGORIES: DocCategory[] = [
         slug: "templates",
         title: "Gallery templates & page builder",
         description:
-          "Ten designer gallery templates — pick a look, preview it with your photos, apply in one click (free on every plan). On Lite+ the page builder makes any template yours: sections, fonts, colors, free-positioned collages.",
+          "Fifteen designer gallery templates — five free cover-only looks on every plan, full page layouts from Lite and collages from Studio. Preview any of them with your photos; on Lite+ the page builder makes any template yours.",
         icon: "layout-template",
       },
       {

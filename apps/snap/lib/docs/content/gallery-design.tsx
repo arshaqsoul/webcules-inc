@@ -21,7 +21,7 @@ export default function GalleryDesign() {
 
       <Shot
         src="/docs-shots/gallery-design/designer.png"
-        alt="The gallery designer on a project's Client gallery tab — cover picker with draggable focal point, layout and theme controls, a live phone-frame preview, and the preset list."
+        alt="A project's Client gallery tab — the template grid in its Free and Lite/Studio groups above the gallery designer: cover styles, layout and theme controls, presets, and the live phone-frame preview."
         grad="plum"
         wide
       />
@@ -39,17 +39,19 @@ export default function GalleryDesign() {
 
       <H2>Start from a template</H2>
       <p>
-        The Client gallery tab opens with a template picker in two groups. <strong>Free
-        templates</strong> — Classic (the default every gallery starts on), Soft Serif, After
-        Dark, Warm Family, and Clean Mono — are a look: layout, type, and colors. They carry no
-        copy of their own, so your title, subtitle, and cover photo from Gallery design stay
-        exactly as you set them when you switch. <strong>Lite and Studio templates</strong> are full
-        page layouts — wedding, family, party, corporate, editorial, and minimal — with their own
-        sections and photo placements; you can preview every one with <em>your</em> photos, but
-        applying needs Lite (the collage ones, Studio). <strong>Undo</strong> brings your previous
+        The Client gallery tab opens with a template picker — fifteen designer templates in two
+        groups. <strong>Free templates</strong> — Classic (the default every gallery starts on),
+        Soft Serif, Warm Family, After Dark, and Clean Mono — are a look: layout, type, and
+        colors. They carry no copy of their own, so your title, subtitle, and cover photo from
+        Gallery design stay exactly as you set them when you switch. <strong>Lite and Studio
+        templates</strong> are full page layouts — wedding, family, party, corporate, editorial,
+        and minimal — with their own sections and photo placements; you can preview every one
+        with <em>your</em> photos on any plan, but applying is gated on the server: Lite for the
+        page layouts, Studio for the three collage ones. <strong>Undo</strong> brings your previous
         design straight back, and applying is design-only: photos, favorites, and delivery
-        settings stay untouched. Making a template yours is the{" "}
-        <a href="/docs/templates">page builder</a>, Lite and above.
+        settings stay untouched. The full roster is on{" "}
+        <a href="/docs/templates">Gallery templates &amp; page builder</a>; making a template
+        yours is the page builder, Lite and above.
       </p>
 
       <H2>The design layer <Tier plan="lite" /></H2>
@@ -87,9 +89,14 @@ export default function GalleryDesign() {
         <strong>Grid</strong> (uniform rows), <strong>masonry</strong> (natural heights, no
         cropping), or <strong>cascade</strong> (an editorial, mixed-scale flow). On grid and
         masonry, Studio plans set the density per screen <Tier plan="studio" /> — 2–3 columns on
-        phones, 2–3 on tablets, 2–5 on desktop. Fewer columns, bigger photos. Cascade keeps its
-        justified rows and hides the control; leave the counts alone and the classic 2 / 3 / 4
-        ladder applies.
+        phones, 2–3 on tablets, 2–5 on desktop, with a phone floor: a phone never shows more than
+        two grid columns, whatever the count asks, and masonry stacks as one full-width column so
+        landscape photos keep their size. Photo gaps sit at a 4px floor on phones — the pictures
+        carry the layout — and your chosen compact, normal, or airy spacing returns from tablet
+        width up. The whole ladder responds to the gallery&apos;s own width, not the browser&apos;s,
+        so the preview&apos;s phone shell renders exactly what a real phone will. Fewer columns,
+        bigger photos. Cascade keeps its justified rows and hides the control; leave the counts
+        alone and the classic 2 / 3 / 4 ladder applies.
       </p>
 
       <H3>Theme</H3>
@@ -120,9 +127,9 @@ export default function GalleryDesign() {
         <strong>studio default</strong> — new galleries start styled instead of classic. Applying
         a preset keeps the gallery&apos;s current cover photo and takes everything else from the
         preset; editing a preset never rewrites galleries already sent. Presets are for looks you
-        composed yourself — the designer templates apply free as-is — and a saved look that
-        carries builder sections counts toward Lite&apos;s one saved custom look; the seeded
-        starters never count.
+        Presets are for looks you composed yourself — the seeded designer templates apply as-is
+        within your plan&apos;s tier and never count toward your saved-look limit — and a saved
+        look that carries builder sections counts toward Lite&apos;s one saved custom look.
       </p>
 
       <H2>Slideshows</H2>

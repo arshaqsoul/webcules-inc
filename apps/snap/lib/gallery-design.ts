@@ -645,8 +645,8 @@ export function themeVars(background: GalleryDesign["theme"]["background"]): Rec
  * gets exactly one design surface — a single hero/cover photo (with title,
  * subtitle, focal). Everything else (styles, layouts, themes, columns, hero
  * slider) stays Lite/Studio. WEB-318: a pristine seed-template application
- * (any of the 10) is also free-saveable — the free-tier wow; custom v2
- * sections are not. Input should be the CANONICAL parse. */
+ * is also free-saveable at its own tier — cover-only seeds on Free
+ * (WEB-320 gating); the free-tier wow. Custom v2 sections are not. Input should be the CANONICAL parse. */
 export function isCoverOnlyDesign(d: GalleryDesign | null | undefined): boolean {
   if (!d) return true; // clearing is always allowed
   if (designHasV2Fields(d)) {

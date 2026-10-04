@@ -42,7 +42,7 @@ export const TIER_CARDS: TierCard[] = [
       "20 GB storage (incl. 3 GB RAW trial)",
       "Unlimited bookings",
       "5 active galleries",
-      "10 designer gallery templates — pick a look, swap in your photos",
+      "5 designer gallery looks — pick one, swap in your photos",
       "Unified inbox — every conversation & event, free",
       "Secure client galleries with favorites",
       "Basic slideshow + video delivery",

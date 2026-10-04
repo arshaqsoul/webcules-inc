@@ -29,7 +29,7 @@ describe("TIER_CARDS", () => {
     // — no builder/app/social-sharing claims.
     expect(byTier.free).toMatch(/Secure client galleries/);
     expect(byTier.free).toMatch(/Basic slideshow/);
-    expect(byTier.free).toMatch(/designer gallery templates/);
+    expect(byTier.free).toMatch(/5 designer gallery looks/); // WEB-327: Free = 5 cover-only seeds, not 10
     expect(byTier.free).not.toMatch(/page builder|photo app \(\/my\)|ZIP|social sharing/i);
     // Lite: client app + the page builder (WEB-321), music slideshows + sharing, PIN + web-size (Download all itself is free).
     expect(byTier.lite).toMatch(/Client photo app/);

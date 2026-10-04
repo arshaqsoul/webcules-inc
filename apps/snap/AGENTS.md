@@ -164,7 +164,8 @@ projects/invoices/contracts-signatures (2 contract TEMPLATES, 5 email snippets, 
 1 questionnaire, 1 session type) · 5 concurrently-active galleries with the full client feature
 set · folders + folder delivery · one-click Download all (streamed ZIP parts, any size - every plan) · classic gallery, basic slideshow, video delivery · gallery
 cover photo + vignette and the zero-config default hero (cover-only designs; slider/columns
-are Studio+ server-enforced, WEB-302). Everything
+are Studio+ server-enforced, WEB-302) · 5 cover-only gallery templates apply free; the
+page-layout templates are Lite/Studio, server-gated (WEB-320). Everything
 beyond this greets the photographer with an upgrade CTA → `/dashboard/settings/billing` (the
 PlanPanel pricing page). Keep `lib/tier-cards.ts`, the landing grid, and `lib/plans-data.ts` in
 sync — `tests/unit/pricing-tiers.test.ts` + `gate-matrix` enforce it.
