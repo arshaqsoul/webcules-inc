@@ -790,8 +790,8 @@ export function GalleryHero({ design, studioName, coverAssetId, slides, coverSrc
   if (c.style === "split") {
     return (
       <section className="w-full" data-sec={secId}>
-        <div className="grid md:grid-cols-[1fr_minmax(300px,38%)]">
-          <div className="relative aspect-[4/3] overflow-hidden md:aspect-auto md:min-h-[400px]">
+        <div className="grid @snap-md:grid-cols-[1fr_minmax(300px,38%)]">
+          <div className="relative aspect-[4/3] overflow-hidden @snap-md:aspect-auto @snap-md:min-h-[400px]">
             {(slides?.length ?? 0) >= 2 ? (
               <HeroSlides slides={slides!} interval={c.interval ?? 0} kenburns={false} alt={c.title || studioName} />
             ) : coverAssetId ? (
@@ -811,7 +811,7 @@ export function GalleryHero({ design, studioName, coverAssetId, slides, coverSrc
               <div className="snap-hero-vignette pointer-events-none absolute inset-0" aria-hidden />
             )}
           </div>
-          <div className="flex items-center bg-surface-2 p-7 sm:p-10 md:min-h-[400px]">
+          <div className="flex items-center bg-surface-2 p-7 sm:p-10 @snap-md:min-h-[400px]">
             <div style={{ color: "var(--ink)" }}>
               {kicker}
               {title}
@@ -881,7 +881,7 @@ function GalleryTile(props: {
     size === "natural"
       ? `group relative block w-full overflow-hidden border bg-surface-1 ${props.radiusCls}`
       : size === "row"
-        ? `group relative h-44 overflow-hidden border bg-surface-1 sm:h-56 lg:h-64 ${props.radiusCls}`
+        ? `group relative h-44 overflow-hidden border bg-surface-1 @snap-sm:h-56 @snap-lg:h-64 ${props.radiusCls}`
         : size === "wide"
           ? `group relative aspect-video overflow-hidden border bg-surface-1 ${props.radiusCls}`
           : `group relative aspect-square overflow-hidden border bg-surface-1 ${props.radiusCls}`;
@@ -1076,7 +1076,7 @@ type SectionCtx = {
  * dresses, ballrooms, windows) gets a soft shadow so it never washes out. */
 const HERO_TEXT_SHADOW = "0 1px 3px rgba(0,0,0,0.55), 0 2px 14px rgba(0,0,0,0.35)";
 
-const SECTION_PAD: Record<string, string> = { compact: "px-4 py-4 sm:px-6", normal: "px-5 py-8 sm:px-8", airy: "px-6 py-12 sm:px-10 sm:py-16" };
+const SECTION_PAD: Record<string, string> = { compact: "px-4 py-4 @snap-sm:px-6", normal: "px-5 py-8 @snap-sm:px-8", airy: "px-6 py-12 @snap-sm:px-10 @snap-sm:py-16" };
 /** Type ramp for sectioned surfaces — sized off --snap-font-scale so the
  * typography editor scales the whole gallery coherently (v1 path untouched). */
 const ramp = {
@@ -1291,7 +1291,7 @@ function SlideshowSectionView({ section, assets, ctx }: { section: Extract<Rende
         className="group relative block w-full overflow-hidden rounded-[16px] border border-hairline"
         aria-label={`Play slideshow (${assets.length} photos)`}
       >
-        <div className="grid grid-cols-2 gap-0.5 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-0.5 @snap-sm:grid-cols-4">
           {posters.map((a) => (
             <span key={a.id} className="relative block aspect-[4/3] overflow-hidden bg-surface-1">
               <BackoffImage id={a.id} alt="" srcUrl={a.src} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]" protectedMedia={ctx.deterrents} />
@@ -1867,6 +1867,10 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
     return seed;
   });
   const [cols, setCols] = useState(4);
+  // Measures the gallery's own width — the preview phone shell renders the
+  // gallery in a ~420px frame on a desktop viewport, so window.innerWidth
+  // would pick desktop column counts inside a phone-narrow box.
+  const galRef = useRef<HTMLDivElement>(null);
   // WEB-318: nav view tabs — client state only, never routing.
   const [view, setView] = useState<"gallery" | "favorites" | "info">("gallery");
 
@@ -1874,25 +1878,30 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
   const themed = Boolean(design);
   const padding = design?.theme.padding ?? "normal";
   // Phones pin the photo gaps at the 4px floor (pictures carry the layout);
-  // the template's designed spacing returns from sm up.
+  // the template's designed spacing returns once the GALLERY is tablet-wide —
+  // @snap-sm keys off the gallery container, so the preview's phone shell on
+  // a desktop viewport still shows the phone values.
   const spacing = {
-    compact: { gap: "gap-1 sm:gap-2", mb: "mb-1 sm:mb-2", pad: "p-3" },
-    normal: { gap: "gap-1 sm:gap-3", mb: "mb-1 sm:mb-3", pad: "p-4 sm:p-5" },
-    airy: { gap: "gap-1 sm:gap-5", mb: "mb-1 sm:mb-5", pad: "p-5 sm:p-10" },
+    compact: { gap: "gap-1 @snap-sm:gap-2", mb: "mb-1 @snap-sm:mb-2", pad: "p-3" },
+    normal: { gap: "gap-1 @snap-sm:gap-3", mb: "mb-1 @snap-sm:mb-3", pad: "p-4 @snap-sm:p-5" },
+    airy: { gap: "gap-1 @snap-sm:gap-5", mb: "mb-1 @snap-sm:mb-5", pad: "p-5 @snap-sm:p-10" },
   }[padding];
   const radiusCls = design ? ({ "0px": "rounded-none", "8px": "rounded-[8px]", "16px": "rounded-[16px]" } as const)[design.theme.radius] : "rounded-[12px]";
   const captions = design?.theme.captions ?? "off";
 
   useEffect(() => {
     if (layout !== "cascade") return;
+    const el = galRef.current;
+    if (!el) return;
     const c = design?.columns;
-    const mq = () => {
-      const w = window.innerWidth;
+    const compute = () => {
+      const w = el.clientWidth;
       setCols(w >= 1024 ? (c?.md ?? 4) : w >= 640 ? (c?.sm ?? 3) : (c?.mobile ?? 2));
     };
-    mq();
-    window.addEventListener("resize", mq);
-    return () => window.removeEventListener("resize", mq);
+    compute();
+    const ro = new ResizeObserver(compute);
+    ro.observe(el);
+    return () => ro.disconnect();
   }, [layout, design?.columns]);
 
   const measureAspect = useCallback((id: string, aspect: number) => {
@@ -2173,6 +2182,13 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
       }}
     >
       <PwaRuntime enabled />
+      {/* The gallery's own container: every responsive ladder inside (grid /
+       * masonry columns, gaps, section padding, cascade rows) keys off THIS
+       * width via container queries, so the preview phone shell on a desktop
+       * viewport renders exactly like a real phone. Fixed overlays (lightbox,
+       * dialogs, slideshows) stay outside it — layout containment would trap
+       * their viewport positioning. */}
+      <div className="snap-gallery" ref={galRef}>
       {design && !plan && (
         <GalleryHero
           design={design}
@@ -2627,6 +2643,8 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
           ))}
         </div>
       )}
+
+      </div>
 
       {shareSheet && (
         <div role="dialog" aria-modal="true" aria-label="Share this photo" className="fixed inset-0 z-[70] flex items-end justify-center bg-black/50 p-4 sm:items-center" onClick={() => setShareSheet(null)}>
