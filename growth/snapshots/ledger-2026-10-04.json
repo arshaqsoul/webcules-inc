@@ -1,0 +1,419 @@
+{
+  "taken_at": "2026-10-04T06:36:20.912Z",
+  "records": [
+    {
+      "id": "PP-001",
+      "title": "Client gallery links go dead or vanish, forcing photographers to re-share",
+      "statement": "Delivered client galleries become inaccessible, are removed, archived or expire unexpectedly, so photographers must rebuild galleries and re-send links to past clients.",
+      "persona": "wedding",
+      "severity": 4,
+      "frequency": 3,
+      "state": "VALIDATED",
+      "evidence": [
+        {
+          "source": "review-site",
+          "url": "https://es.trustpilot.com/review/pic-time.com",
+          "summary": "Photographers report live client gallery links vanishing after an unannounced storage policy change (Aug 2026) and wedding galleries lost without notice (Jun 2026), forcing restores from backups and re-sharing with many clients.",
+          "captured_at": "2026-10-03"
+        },
+        {
+          "source": "review-site",
+          "url": "https://es.trustpilot.com/review/pic-time.com",
+          "summary": "Another Pic-Time review (Sep 2026) says clients could not open a delivered gallery at all, so the photographer had to recreate and re-upload it. Impact severity 4: loses time and client trust after delivery.",
+          "captured_at": "2026-10-03"
+        },
+        {
+          "source": "review-site",
+          "url": "https://www.trustpilot.com/review/shootproof.com",
+          "summary": "A ShootProof reviewer (Jan 2026) hit confusing archived-gallery behaviour, with charges for archived galleries not visible or controllable in the account.",
+          "captured_at": "2026-10-03"
+        },
+        {
+          "source": "review-site",
+          "url": "https://capterra.com/p/207189/Pixieset/reviews/",
+          "summary": "A Pixieset reviewer (Jul 2021) liked expiry and PIN controls but wanted scheduled expiry notifications so clients are not surprised by a dead link.",
+          "captured_at": "2026-10-03"
+        }
+      ],
+      "history": [
+        {
+          "to": "DISCOVERED",
+          "at": "2026-10-03T08:48:25.601Z",
+          "by": "researcher",
+          "note": "created"
+        },
+        {
+          "from": "DISCOVERED",
+          "to": "VALIDATED",
+          "at": "2026-10-03T08:48:28.227Z",
+          "by": "researcher",
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "PP-002",
+      "title": "Clients struggle to download images and revisit or make selections in galleries",
+      "statement": "Clients get confused downloading on mobile, cannot find their way back to favorites, or cannot make or submit selections, so photographers end up giving hands-on support after delivery.",
+      "persona": "wedding",
+      "severity": 3,
+      "frequency": 4,
+      "state": "VALIDATED",
+      "evidence": [
+        {
+          "source": "review-site",
+          "url": "https://capterra.com/p/207189/Pixieset/reviews/",
+          "summary": "Pixieset reviewers (Feb 2022, Dec 2024) say clients sometimes have a hard time downloading images and mobile saving takes too many steps. A Jul 2021 reviewer says clients struggled to get back to their favorites folder to change picks.",
+          "captured_at": "2026-10-03"
+        },
+        {
+          "source": "review-site",
+          "url": "https://capterra.com/p/207189/Pixieset/reviews/?page=2",
+          "summary": "Another Pixieset reviewer (Jul 2021) says clients get a little confused downloading and need step-by-step guidance from the photographer.",
+          "captured_at": "2026-10-03"
+        },
+        {
+          "source": "review-site",
+          "url": "https://es.trustpilot.com/review/pic-time.com",
+          "summary": "A Pic-Time reviewer (Sep 2026) says clients could not make selections or validate them, with blank pages shown, blocking the proofing step.",
+          "captured_at": "2026-10-03"
+        },
+        {
+          "source": "forum",
+          "url": "https://community.adobe.com/t5/lightroom-classic-discussions/gallery-requires-sign-in/m-p/10984041/highlight/true",
+          "summary": "Long-running Adobe community request thread (started 2015, 61 replies) asks that clients without an account be able to rate, like and comment on shared collections, because forced sign-up blocks client feedback.",
+          "captured_at": "2026-10-03"
+        },
+        {
+          "source": "forum",
+          "url": "https://community.adobe.com/questions-680/need-to-create-a-gallery-that-clients-can-use-to-choose-photos-for-editing-926205",
+          "summary": "A photographer asks how to let 160 headshot clients mark favorites in a password-protected gallery and get the selections back automatically; replies point to several workaround tools, none simple.",
+          "captured_at": "2026-10-03"
+        }
+      ],
+      "history": [
+        {
+          "to": "DISCOVERED",
+          "at": "2026-10-03T08:48:25.681Z",
+          "by": "researcher",
+          "note": "created"
+        },
+        {
+          "from": "DISCOVERED",
+          "to": "VALIDATED",
+          "at": "2026-10-03T08:48:28.287Z",
+          "by": "researcher",
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "PP-003",
+      "title": "Gallery links get forwarded and photographers cannot control who has access",
+      "statement": "Clients forward or post gallery links, and with link-only access the photographer cannot limit who views or downloads, risking privacy and lost print or download revenue.",
+      "persona": "wedding",
+      "severity": 4,
+      "frequency": 3,
+      "state": "PACKAGED",
+      "evidence": [
+        {
+          "source": "blog",
+          "url": "https://blog.ianmiddletonphotography.com/2025/10/04/secure-photo-sharing/",
+          "summary": "A photographer (Oct 2025) explains that anyone-with-the-link galleries let clients pass links to third parties, and prefers per-invite single-use access tokens so a forwarded invite does not work.",
+          "captured_at": "2026-10-03"
+        },
+        {
+          "source": "blog",
+          "url": "https://ericabuteau.com/2025/03/04/secure-photo-sharing-protect-your-business-and-build-client-trust/",
+          "summary": "A photographer (Mar 2025) lists unintended access to family, child and boudoir images and lost income when clients obtain files without paying as core risks of gallery sharing.",
+          "captured_at": "2026-10-03"
+        },
+        {
+          "source": "blog",
+          "url": "https://heatherhanson.photography/secure-photo-sharing-options-amp-protecting-your-business/",
+          "summary": "A wedding photographer (Mar 2025) cites non-clients getting unpaid downloads and parents and boudoir clients worrying images leak, motivating tighter access control.",
+          "captured_at": "2026-10-03"
+        },
+        {
+          "source": "forum",
+          "url": "https://ideas.gohighlevel.com/media-library/p/password-protected-gallery-with-downloadable-images-high-res",
+          "summary": "A feature-request board post (Sep 2024, 46 votes) asks for password-protected galleries with high-res downloads and expiration dates; commenters echo the need.",
+          "captured_at": "2026-10-03"
+        }
+      ],
+      "history": [
+        {
+          "to": "DISCOVERED",
+          "at": "2026-10-03T08:48:25.771Z",
+          "by": "researcher",
+          "note": "created"
+        },
+        {
+          "from": "DISCOVERED",
+          "to": "VALIDATED",
+          "at": "2026-10-03T08:48:28.349Z",
+          "by": "researcher",
+          "note": ""
+        },
+        {
+          "from": "VALIDATED",
+          "to": "TIER_MAPPED",
+          "at": "2026-10-03T08:52:28.310Z",
+          "by": "mapper",
+          "note": ""
+        },
+        {
+          "from": "TIER_MAPPED",
+          "to": "DEMO_SCRIPTED",
+          "at": "2026-10-03T08:53:49.758Z",
+          "by": "designer",
+          "note": ""
+        },
+        {
+          "from": "DEMO_SCRIPTED",
+          "to": "RECORDED",
+          "at": "2026-10-03T09:34:54.395Z",
+          "by": "orchestrator",
+          "note": "recorded by orchestrator after the recorder agent blocked on the demo email; founder approved arshaqhishamsl@gmail.com"
+        },
+        {
+          "from": "RECORDED",
+          "to": "ENHANCED",
+          "at": "2026-10-03T09:34:54.468Z",
+          "by": "orchestrator",
+          "note": "edited with edit.mjs, inbox scenes inserted"
+        },
+        {
+          "from": "ENHANCED",
+          "to": "QC_PASSED",
+          "at": "2026-10-03T09:34:54.541Z",
+          "by": "orchestrator",
+          "note": "qc.mjs all checks passed, thresholds unchanged"
+        },
+        {
+          "from": "QC_PASSED",
+          "to": "PACKAGED",
+          "at": "2026-10-03T09:35:56.043Z",
+          "by": "packager",
+          "note": ""
+        }
+      ],
+      "tier_mapping": {
+        "verdict": "solved",
+        "tier": "free",
+        "paid_tier_trigger": false,
+        "surfaces": [
+          "apps/snap/lib/plans-data.ts",
+          "apps/snap/lib/tier-cards.ts",
+          "apps/snap/lib/shares/gallery-auth.ts",
+          "apps/snap/app/g/[token]/page.tsx",
+          "apps/snap/app/g/[token]/otp/send/route.ts",
+          "apps/snap/app/api/grants/[id]/revoke/route.ts",
+          "apps/snap/app/api/grants/[id]/regenerate/route.ts",
+          "apps/snap/app/api/grants/[id]/route.ts",
+          "apps/snap/components/project-galleries.tsx",
+          "apps/snap/components/gallery-activity.tsx",
+          "apps/snap/lib/repos/gallery-analytics.ts",
+          "apps/snap/lib/docs/content/gallery-delivery.tsx",
+          "/dashboard/projects/{id}?tab=gallery",
+          "/dashboard/galleries",
+          "/g/{projectId}/preview"
+        ],
+        "notes": "WORKS (all tiers, ungated): every /g/{token} render requires an OTP-verified snap-g cookie pinned to that grant (page.tsx resolveGalleryAccess). OTP is emailed ONLY to grant.clientEmail (otp/send: typed email must equal grant.clientEmail, else invalid_email and no mail), Turnstile-gated, 6 digits, 10 min TTL, 5 attempts, caps 30/email/30d, 5/email/15min, 5/IP/hr. So a stranger holding a forwarded link sees the gate with the masked client email and cannot pass without the client inbox. Photographer can set expiry at send (7/30/90/365 or none), edit expiry on an existing link, Revoke (cuts open sessions live), New link (regenerate, old URL dead), Re-send; Galleries page lists states Active/Expiring soon/Expired/Revoked/Regenerated. Route: /dashboard/projects/{id}?tab=gallery -> section Client gallery -> row of link: expiry select (aria Edit expiry), View, Re-send, New link, Revoke (confirm dialog). /dashboard/galleries is READ-ONLY list (no revoke there). Lite+: Activity panel (per-client views, favorites, downloads, last seen; Free sees an upgrade card, canView = plan!=free), download PIN 4-8 digits + web-size (API 403 pin_requires_lite), guests/schedule/notify. Studio: download approvals, watermarks, deterrents, per-photo insights. Per-photo social share cards are Lite+ and children of the gallery (die on revoke). GAPS to keep claims honest: one grant = one client email, no allowed-recipient list or second verified recipient, no single-use/per-device tokens, a verified client browser stays valid 30d, a client can forward the 6-digit code or downloaded files; photographer cannot see failed/stranger attempts (otp_fail/otp_sent are logged in share_access_log but excluded from the Activity panel FAVORITE_EVENTS list); Activity is per client email, no IP/device list. Fallback: env GALLERY_OTP_MODE=off makes the link the only gate (wrangler.jsonc sets otp). PRODUCT BUGS: (1) docs gallery-delivery says expiry 7/30/60/90/365 but the per-link expiry select on the project page offers 7/30/90/1yr/none (60 only in Settings > Delivery); (2) docs gallery-delivery opens with everything ships on every gallery incl. insights text but the Activity panel is Lite+; plans-data.ts has no field for these gates (they live in route handlers), so tier claims must cite routes. EVIDENCE: staging logged in as Studio org (cannot observe Free UI; Free gating is from code: canView and pin_requires_lite). Staging live OTP stranger flow NOT exercised (needs a minted token and inbox); verified by code read plus staging: bogus /g token shows Access denied page, /g/demo-proj-wedding/preview is 404 anonymously and renders for the owner with no OTP and no view counting."
+      },
+      "demo": {
+        "storyboard": "growth/storyboards/PP-003.md",
+        "raw": "growth/recordings/PP-003/raw.mp4",
+        "events": "growth/recordings/PP-003/events.json",
+        "edited": "growth/out/PP-003/reel.mp4",
+        "qc": "growth/out/PP-003/qc.json",
+        "package": "growth/packages/PP-003/package.md"
+      }
+    },
+    {
+      "id": "PP-004",
+      "title": "Snap launch reel - your whole studio in one tab",
+      "statement": "Introduce Snap to working photographers on Instagram: booking, galleries, contracts and payments in one place, 0% commission, 20 GB free.",
+      "persona": "any",
+      "severity": 3,
+      "frequency": 3,
+      "kind": "launch",
+      "state": "PACKAGED",
+      "evidence": [],
+      "history": [
+        {
+          "to": "DISCOVERED",
+          "at": "2026-10-03T09:43:43.108Z",
+          "by": "researcher",
+          "note": "created"
+        },
+        {
+          "from": "DISCOVERED",
+          "to": "VALIDATED",
+          "at": "2026-10-03T09:43:43.183Z",
+          "by": "orchestrator",
+          "note": "launch record, validated against its brief"
+        },
+        {
+          "from": "VALIDATED",
+          "to": "TIER_MAPPED",
+          "at": "2026-10-03T09:50:15.787Z",
+          "by": "mapper",
+          "note": ""
+        },
+        {
+          "from": "TIER_MAPPED",
+          "to": "DEMO_SCRIPTED",
+          "at": "2026-10-03T09:51:58.945Z",
+          "by": "designer",
+          "note": ""
+        },
+        {
+          "from": "DEMO_SCRIPTED",
+          "to": "RECORDED",
+          "at": "2026-10-03T10:03:58.438Z",
+          "by": "recorder",
+          "note": ""
+        },
+        {
+          "from": "RECORDED",
+          "to": "ENHANCED",
+          "at": "2026-10-03T10:03:58.507Z",
+          "by": "editor",
+          "note": ""
+        },
+        {
+          "from": "ENHANCED",
+          "to": "QC_PASSED",
+          "at": "2026-10-03T10:03:58.578Z",
+          "by": "editor",
+          "note": ""
+        },
+        {
+          "from": "QC_PASSED",
+          "to": "PACKAGED",
+          "at": "2026-10-03T10:15:47.521Z",
+          "by": "packager",
+          "note": ""
+        }
+      ],
+      "priority": 40,
+      "launch": {
+        "brief": "growth/briefs/launch-reel.md"
+      },
+      "tier_mapping": {
+        "verdict": "solved",
+        "tier": "free",
+        "paid_tier_trigger": false,
+        "surfaces": [
+          "/dashboard",
+          "/dashboard/inbox",
+          "/dashboard/projects",
+          "/dashboard/projects/demo-proj-wedding?tab=files",
+          "/dashboard/projects/demo-proj-wedding?tab=payments",
+          "/dashboard/projects/demo-proj-family?tab=files",
+          "/dashboard/projects/demo-proj-family?tab=gallery",
+          "/dashboard/calendar",
+          "/dashboard/transactions",
+          "apps/snap/lib/plans-data.ts",
+          "apps/snap/lib/tier-cards.ts",
+          "apps/snap/components/landing/hero.tsx",
+          "apps/snap/components/landing/final-cta.tsx",
+          "apps/snap/lib/connect.ts",
+          "apps/snap/lib/docs/content/payouts.tsx"
+        ],
+        "notes": "All five flow screens exist on staging with seeded demo data and no plan gate in the page code; plans-data.ts Free has 20 GB, 5 galleries, unlimited bookings, 2 contract templates, unified inbox. Claims: 0% commission strongest source is lib/connect.ts header (application_fee_amount 0) plus lib/docs/content/payouts.tsx; marketing strings in components/landing/hero.tsx PROOF and final-cta.tsx (20 GB free, no credit card, 0% commission, ever). 20 GB: plans-data.ts free.storageBytes 20*GB and tier-cards.ts free feature 20 GB storage (incl. 3 GB RAW trial). Free list in tier-cards.ts does NOT name contracts, invoices or payments explicitly; those are free by code (maxContractTemplates 2, no gate) but not advertised in the Free card, so avoid on-screen claims about them being free. Staging org is Studio and was not verified on a real Free org. Avoid on screen: Studio setup sidebar card (every page), overpaid badge and 3550 quote input on wedding payments tab, Heat button on Files, Watermark row on gallery tab, Client gallery tab of the wedding project (6459 px of REGENERATED link rows with a real gmail address and Nudge buttons from PP-003 takes), inbox top ten rows (Gallery delivered arshaqhishamsl test rows). Projects board at 1360 px clips the Complete column. Product bug notes: none found between plans-data.ts and tier-cards.ts; docs/UI 60 day expiry bug is already known."
+      },
+      "demo": {
+        "storyboard": "growth/storyboards/PP-004.md",
+        "raw": "growth/recordings/PP-004/raw.mp4",
+        "events": "growth/recordings/PP-004/events.json",
+        "edited": "growth/out/PP-004/reel.mp4",
+        "qc": "growth/out/PP-004/qc.json",
+        "package": "growth/packages/PP-004/package.md"
+      }
+    },
+    {
+      "id": "PP-005",
+      "title": "Free gallery plans limit client downloads to web size, not full resolution",
+      "statement": "On the free tiers of competing gallery tools, clients can only download web-size files, so a photographer who does not pay cannot hand over the real full-resolution photos.",
+      "persona": "any",
+      "severity": 3,
+      "frequency": 3,
+      "kind": "pain_point",
+      "state": "VALIDATED",
+      "evidence": [
+        {
+          "source": "other",
+          "url": "https://pixieset.com/pricing/",
+          "captured_at": "2026-10-04",
+          "summary": "Vendor pricing page: the Free plan (3 GB) lists no full resolution download; every paid plan from $8/mo (billed annually) lists full resolution download."
+        },
+        {
+          "source": "other",
+          "url": "https://help.cloudspot.io/en/articles/114565-gallery-download-settings",
+          "captured_at": "2026-10-04",
+          "summary": "Vendor help page: on the Free plan the only download size in galleries is the 2048px social size; clients can download full-resolution images from the entry paid plan up."
+        },
+        {
+          "source": "forum",
+          "url": "https://www.lenspiration.com/forums/topic/what-size-photo-should-i-deliver-to-my-clients/",
+          "captured_at": "2026-10-04",
+          "summary": "2020 photographer forum thread: a free gallery account caps client downloads at 3600px and 3 GB storage, which pushes photographers to compare other hosts. No explicit complaint about download-all itself."
+        },
+        {
+          "source": "forum",
+          "url": "https://community.adobe.com/questions-680/client-downloaded-images-are-compressed-927537",
+          "captured_at": "2026-10-04",
+          "summary": "2018 Adobe community thread: a photographer finds clients download re-compressed files (about 5 MB shrinks to about 900 KB) from a web gallery; the answer is to share originals through a plain file-sharing link instead. Related pain on a different product."
+        },
+        {
+          "source": "other",
+          "url": "https://help.pixieset.com/hc/en-us/articles/115003810212-Downloads",
+          "captured_at": "2026-10-04",
+          "summary": "Linked by the founder. An automated fetch is blocked (HTTP 403), so this page was NOT read directly; a search snippet of the vendor's help center says original-resolution downloads need an upgraded plan, which the pricing page above corroborates."
+        }
+      ],
+      "history": [
+        {
+          "to": "DISCOVERED",
+          "at": "2026-10-04T06:36:00.489Z",
+          "by": "researcher",
+          "note": "created"
+        },
+        {
+          "from": "DISCOVERED",
+          "to": "VALIDATED",
+          "at": "2026-10-04T06:36:00.594Z",
+          "by": "researcher",
+          "note": "evidence opened 2026-10-04: 2 vendor policy pages read, 2 forum threads read, 1 founder-linked page blocked to automated fetch; see analysis for caveats"
+        }
+      ],
+      "analysis": {
+        "founder_lead": "Competitors do not give a full-quality download-all on free tiers (Pixieset help article).",
+        "verified_by_reading": [
+          "Pixieset: Free plan has no full resolution download (pricing page)",
+          "CloudSpot: Free plan downloads are 2048px only (help page)"
+        ],
+        "not_verified": [
+          "Pic-Time: its download permissions article shows high-res and web-size options but no free-vs-paid split",
+          "ShootProof",
+          "Zenfolio",
+          "SmugMug"
+        ],
+        "wording_correction": "Competitors DO offer download-all of a gallery. What free plans withhold is full resolution. Do not say 'competitors have no download all'.",
+        "snap_state": "WEB-261 (shipped 2026-10-04): download-all on every plan incl. Free, whole gallery/folder/favorites, full resolution by default with EXIF/GPS stripped, streamed ZIP parts up to 2 GiB each. Web-size option and download PIN are Lite+. Proofing galleries deliver watermarked previews only, never originals. See apps/snap/lib/gallery-downloads.ts, lib/zip-delivery.ts, app/api/g/[token]/zip/route.ts.",
+        "who_feels_it": "Free-tier and price-sensitive photographers and their clients. This is an acquisition angle (switching from a free competitor plan), NOT a paid-tier trigger, so it will not by itself produce paying users.",
+        "evidence_strength": "Moderate-low as a complaint: two vendor policies read directly, two older forum threads about adjacent pain, no first-hand current complaint found (Reddit is blocked in the browser extension).",
+        "reel_guardrails": [
+          "Make claims about Snap only: 'full-resolution download-all on the Free plan'. Do not name Pixieset or any competitor on screen or in the caption.",
+          "A comparison like 'many free galleries limit downloads to web size' is only safe as 'some', and only because two were verified.",
+          "Say 'full resolution', not 'original untouched files': GPS/EXIF location data is stripped from originals.",
+          "Do not claim 'no limit' beyond what the code and docs say; Free has 20 GB storage and 5 active galleries.",
+          "Do not show the Lite+ web-size or PIN controls in a zoom; the staging studio is on Studio.",
+          "Recording a download touches R2 and creates download events: use the safe staging account only, and never email an unknown address."
+        ]
+      }
+    }
+  ]
+}
