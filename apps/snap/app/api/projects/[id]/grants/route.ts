@@ -8,6 +8,8 @@ import * as schema from "@/lib/db-schema";
 import { getOrgContext } from "@/lib/session";
 import { clientUrl } from "@/lib/client-urls";
 import { createShareGrant, listProjectGrants, normalizeExpiry } from "@/lib/shares/grants";
+import { isSortMode } from "@/lib/gallery-order";
+import { backfillCapturedAt } from "@/lib/repos/gallery-order";
 import { sendGrantEmail } from "@/lib/shares/notify";
 import { getPlanEntitlements } from "@/lib/plans";
 
@@ -52,6 +54,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     selectionMode?: "off" | "favorites" | "selection";
     selectionLimit?: number | null;
     selectionDeadline?: number | null;
+    orderMode?: string;
   };
   try {
     body = (await req.json()) as typeof body;
@@ -136,11 +139,21 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     assetIds = rows.map((r) => r.id);
   }
 
+  // Date-taken sorts need capture dates: read any unscanned photos first
+  // (bounded; photos still unscanned simply order by upload time).
+  const orderMode = isSortMode(body.orderMode) ? body.orderMode : "upload_old";
+  if (orderMode === "taken_old" || orderMode === "taken_new") {
+    for (let pass = 0; pass < 5; pass++) {
+      if ((await backfillCapturedAt(ctx.organizationId, id)).remaining === 0) break;
+    }
+  }
+
   const created = await createShareGrant({
     organizationId: ctx.organizationId,
     projectId: id,
     clientEmail,
     assetIds,
+    orderMode,
     expiresAt,
     createdById: ctx.user.id,
     allowDownload: body.allowDownload !== false,

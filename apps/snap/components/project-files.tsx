@@ -20,6 +20,7 @@ import {
 } from "@webcules/ui/components/dialog";
 import { AssetManage } from "@/components/asset-manage";
 import { drawWatermark, loadWatermarkLogo } from "@/components/watermark-canvas";
+import { colorKeyFromRgba } from "@/lib/color-sort";
 import { FileTypeIcon } from "@/components/file-type-icon";
 import { useConfirm } from "@/components/confirm-provider";
 import { SharePanel } from "@/components/share-panel";
@@ -140,6 +141,21 @@ function canvasToBlob(bitmap: ImageBitmap | HTMLVideoElement, maxDim: number, qu
   return new Promise((resolve) => canvas.toBlob((b) => resolve(b), "image/jpeg", quality));
 }
 
+/** Rainbow-sort key from a 24x24 downsample (lib/color-sort.ts). */
+function colorKeyOfBitmap(bitmap: ImageBitmap): number | undefined {
+  try {
+    const canvas = document.createElement("canvas");
+    canvas.width = 24;
+    canvas.height = 24;
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    if (!ctx) return undefined;
+    ctx.drawImage(bitmap, 0, 0, 24, 24);
+    return colorKeyFromRgba(ctx.getImageData(0, 0, 24, 24).data);
+  } catch {
+    return undefined;
+  }
+}
+
 /** WEB-242: preview canvas + watermark composite in one pass. */
 async function canvasToBlobWatermarked(
   file: File,
@@ -172,7 +188,7 @@ async function uploadDerivative(
   kind: "thumb" | "preview" | "preview_wm",
   blob: Blob,
   replace = false,
-  meta?: { width?: number; height?: number; durationMs?: number },
+  meta?: { width?: number; height?: number; durationMs?: number; colorKey?: number },
 ): Promise<boolean> {
   const form = new FormData();
   form.set("kind", kind);
@@ -183,6 +199,7 @@ async function uploadDerivative(
   if (meta?.width) form.set("width", String(Math.round(meta.width)));
   if (meta?.height) form.set("height", String(Math.round(meta.height)));
   if (meta?.durationMs) form.set("durationMs", String(Math.round(meta.durationMs)));
+  if (meta?.colorKey !== undefined) form.set("colorKey", String(meta.colorKey));
   try {
     const res = await fetch(`/api/assets/${assetId}/derivative`, { method: "POST", body: form });
     return res.ok;
@@ -238,7 +255,7 @@ async function generateDerivatives(assetId: string, file: File): Promise<boolean
         canvasToBlob(bitmap, 320, 0.82),
         canvasToBlob(bitmap, 1600, 0.85),
       ]);
-      const dims = { width: bitmap.width, height: bitmap.height };
+      const dims = { width: bitmap.width, height: bitmap.height, colorKey: colorKeyOfBitmap(bitmap) };
       bitmap.close();
       let any = false;
       if (thumb) any = (await uploadDerivative(assetId, "thumb", thumb, false, dims)) || any;
@@ -261,11 +278,13 @@ async function generateDerivatives(assetId: string, file: File): Promise<boolean
       const frame = await videoFrame(file);
       if (!frame) return false;
       const thumb = await canvasToBlob(frame.bitmap, 640, 0.82);
+      const colorKey = colorKeyOfBitmap(frame.bitmap);
       frame.bitmap.close();
       return thumb
         ? uploadDerivative(assetId, "thumb", thumb, false, {
             width: frame.width,
             height: frame.height,
+            colorKey,
             ...(frame.durationMs ? { durationMs: frame.durationMs } : {}),
           })
         : false;

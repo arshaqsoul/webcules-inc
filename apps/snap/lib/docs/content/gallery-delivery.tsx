@@ -103,6 +103,34 @@ export default function GalleryDelivery() {
         progress &mdash; and renewing the link restores them.
       </p>
 
+      <H2>Arrange the order your client sees</H2>
+      <p>
+        <strong>Photo order is on every plan.</strong> Choose how a gallery is ordered when you send
+        it (the &ldquo;Photo order&rdquo; menu), or press <strong>Arrange</strong> on any sent gallery
+        to change it later &mdash; the change is live, so the client sees the new order the next time
+        they open the link and nothing needs re-sending.
+      </p>
+      <ul>
+        <li>
+          <strong>Sort</strong> by filename (A to Z or Z to A, with numbers in human order so IMG_2
+          comes before IMG_10), upload date, <strong>date taken</strong> (read from each photo&apos;s
+          camera data; photos without one fall back to upload time), <strong>color</strong> (a
+          rainbow from reds through to purples, then black &amp; white photos from dark to light), or
+          a random shuffle. In a gallery with folders, a sort applies inside each folder.
+        </li>
+        <li>
+          <strong>Drag and drop</strong> to fine-tune: drag a photo, or select several (click,
+          shift-click for a range) and drag them together. On a phone or with the keyboard use{" "}
+          <em>To start</em>, <em>Earlier</em>, <em>Later</em>, <em>To end</em> or{" "}
+          <em>Move to&hellip;</em>.
+        </li>
+        <li>
+          Every gallery keeps its own order, so the same photos can be arranged differently for
+          different clients. Renewing a link keeps the order. The client&apos;s grid, full-screen
+          view and slideshow all follow it.
+        </li>
+      </ul>
+
       <H2>Social sharing that markets you</H2>
       <p>
         Clients share a photo with the native share sheet; the recipient gets a beautiful card with

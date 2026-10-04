@@ -9,6 +9,18 @@ import { env } from "cloudflare:workers";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
+import { orderedIdsForSort, stepPositions, type SortMode } from "@/lib/gallery-order";
+import { forEachChunk, selectInChunks } from "@/lib/db-chunk";
+
+/** Rows inserted per statement (4 bound columns each, so 24 rows = 96 variables). */
+const INSERT_ROWS = 24;
+
+async function insertGrantAssets(rows: { grantId: string; assetId: string; folderName: string | null; position: number }[]): Promise<void> {
+  const db = getDb();
+  for (let i = 0; i < rows.length; i += INSERT_ROWS) {
+    await db.insert(schema.shareGrantAssets).values(rows.slice(i, i + INSERT_ROWS));
+  }
+}
 
 const TOKEN_BYTES = 32; // 256-bit
 const TOKEN_TTL_MS = 365 * 24 * 3600 * 1000; // sanity ceiling for expiry picks
@@ -113,6 +125,8 @@ export async function createShareGrant(params: {
   selectionMode?: "off" | "favorites" | "selection";
   selectionLimit?: number | null;
   selectionDeadline?: number | null;
+  /** How the photos are ordered in the gallery (default: upload date, oldest first). */
+  orderMode?: SortMode;
 }): Promise<
   | { ok: true; grantId: string; token: string }
   | { ok: false; error: "no_assets" | "asset_mismatch" }
@@ -120,27 +134,62 @@ export async function createShareGrant(params: {
   const db = getDb();
   if (!params.assetIds.length) return { ok: false, error: "no_assets" };
 
-  const owned = await db
-    .select({ id: schema.assets.id })
-    .from(schema.assets)
-    .where(
-      and(
-        eq(schema.assets.organizationId, params.organizationId),
-        eq(schema.assets.projectId, params.projectId),
-        inArray(schema.assets.id, params.assetIds),
+  const owned = await selectInChunks(params.assetIds, (chunk) =>
+    db
+      .select({ id: schema.assets.id })
+      .from(schema.assets)
+      .where(
+        and(
+          eq(schema.assets.organizationId, params.organizationId),
+          eq(schema.assets.projectId, params.projectId),
+          inArray(schema.assets.id, chunk),
+        ),
       ),
-    );
+  );
   if (owned.length !== params.assetIds.length) return { ok: false, error: "asset_mismatch" };
 
   // WEB-216: freeze the folder label each asset is delivered under — live
   // galleries group by this snapshot, so post-delivery renames/reorgs never
   // change what the client sees.
-  const folderRows = await db
-    .select({ assetId: schema.assets.id, folderName: schema.folders.name })
-    .from(schema.assets)
-    .leftJoin(schema.folders, eq(schema.folders.id, schema.assets.folderId))
-    .where(inArray(schema.assets.id, params.assetIds));
+  const folderRows = await selectInChunks(params.assetIds, (chunk) =>
+    db
+      .select({ assetId: schema.assets.id, folderName: schema.folders.name })
+      .from(schema.assets)
+      .leftJoin(schema.folders, eq(schema.folders.id, schema.assets.folderId))
+      .where(inArray(schema.assets.id, chunk)),
+  );
   const folderByAsset = new Map(folderRows.map((r) => [r.assetId, r.folderName]));
+
+  // Photo order: the chosen sort, applied inside each folder (folders keep
+  // the order their first photo was uploaded in).
+  const orderMode = params.orderMode ?? "upload_old";
+  const orderRows = await selectInChunks(params.assetIds, (chunk) =>
+    db
+      .select({
+        id: schema.assets.id,
+        filename: schema.assets.filename,
+        createdAt: schema.assets.createdAt,
+        capturedAt: schema.assets.capturedAt,
+        colorKey: schema.assets.colorKey,
+      })
+      .from(schema.assets)
+      .where(inArray(schema.assets.id, chunk)),
+  );
+  const orderedIds = orderedIdsForSort(
+    orderRows
+      .map((r) => ({
+        id: r.id,
+        filename: r.filename,
+        createdAtSec: Math.floor(r.createdAt.getTime() / 1000),
+        capturedAtSec: r.capturedAt,
+        colorKey: r.colorKey,
+        folder: folderByAsset.get(r.id) ?? null,
+      }))
+      .sort((a, b) => a.createdAtSec - b.createdAtSec || (a.id < b.id ? -1 : 1)),
+    orderMode,
+    Math.floor(Math.random() * 2 ** 31),
+  );
+  const positionOf = stepPositions(orderedIds);
 
   const token = mintToken();
   const tokenHash = await hashToken(token);
@@ -163,16 +212,22 @@ export async function createShareGrant(params: {
     selectionMode: params.selectionMode ?? "favorites",
     selectionLimit: params.selectionLimit ?? null,
     selectionDeadline: params.selectionDeadline ?? null,
+    orderMode,
   });
-  for (const assetId of params.assetIds) {
-    await db.insert(schema.shareGrantAssets).values({ grantId, assetId, folderName: folderByAsset.get(assetId) ?? null });
-  }
-  await db
-    .update(schema.assets)
-    .set({ status: "shared" })
-    .where(
-      and(eq(schema.assets.organizationId, params.organizationId), inArray(schema.assets.id, params.assetIds)),
-    );
+  await insertGrantAssets(
+    params.assetIds.map((assetId) => ({
+      grantId,
+      assetId,
+      folderName: folderByAsset.get(assetId) ?? null,
+      position: positionOf.get(assetId) ?? 0,
+    })),
+  );
+  await forEachChunk(params.assetIds, (chunk) =>
+    db
+      .update(schema.assets)
+      .set({ status: "shared" })
+      .where(and(eq(schema.assets.organizationId, params.organizationId), inArray(schema.assets.id, chunk))),
+  );
   await db.insert(schema.auditLog).values({
     id: crypto.randomUUID(),
     organizationId: params.organizationId,
@@ -420,7 +475,7 @@ export async function regenerateShareGrant(params: {
   if (old.status === "regenerated") return { ok: false, error: "superseded" };
 
   const assetRows = await db
-    .select({ assetId: schema.shareGrantAssets.assetId, folderName: schema.shareGrantAssets.folderName })
+    .select({ assetId: schema.shareGrantAssets.assetId, folderName: schema.shareGrantAssets.folderName, position: schema.shareGrantAssets.position })
     .from(schema.shareGrantAssets)
     .where(eq(schema.shareGrantAssets.grantId, old.id));
 
@@ -446,22 +501,18 @@ export async function regenerateShareGrant(params: {
     // WEB-261: download controls carry over to the fresh link.
     downloadSettings: old.downloadSettings,
     allowSharing: old.allowSharing,
+    // The renewed link keeps the photographer's photo order.
+    orderMode: old.orderMode,
   });
-  for (const row of assetRows) {
-    await db.insert(schema.shareGrantAssets).values({ grantId: newId, assetId: row.assetId, folderName: row.folderName ?? null });
-  }
-  await db
-    .update(schema.assets)
-    .set({ status: "shared" })
-    .where(
-      and(
-        eq(schema.assets.organizationId, old.organizationId),
-        inArray(
-          schema.assets.id,
-          assetRows.map((r) => r.assetId),
-        ),
-      ),
-    );
+  await insertGrantAssets(assetRows.map((row) => ({ grantId: newId, assetId: row.assetId, folderName: row.folderName ?? null, position: row.position })));
+  await forEachChunk(
+    assetRows.map((r) => r.assetId),
+    (chunk) =>
+      db
+        .update(schema.assets)
+        .set({ status: "shared" })
+        .where(and(eq(schema.assets.organizationId, old.organizationId), inArray(schema.assets.id, chunk))),
+  );
   await db.insert(schema.auditLog).values({
     id: crypto.randomUUID(),
     organizationId: old.organizationId,
@@ -522,7 +573,7 @@ export async function resolveGrantByToken(
   return grant && grantIsEffectivelyActive(grant) ? grant : null;
 }
 
-/** Assets in a grant (org re-verified via the grant row's org) with the
+/** Assets in a grant in the photographer's chosen order (position), with the
  * folder label snapshotted at delivery. */
 export async function getGrantAssets(grant: typeof schema.shareGrants.$inferSelect) {
   const db = getDb();
@@ -531,8 +582,8 @@ export async function getGrantAssets(grant: typeof schema.shareGrants.$inferSele
     .from(schema.assets)
     .innerJoin(schema.shareGrantAssets, eq(schema.shareGrantAssets.assetId, schema.assets.id))
     .where(eq(schema.shareGrantAssets.grantId, grant.id))
-    .orderBy(schema.assets.createdAt)
-    .then((rows) => rows.map((r) => ({ ...r.asset, folder: r.share_grant_asset.folderName })));
+    .orderBy(schema.shareGrantAssets.position, schema.assets.createdAt, schema.assets.id)
+    .then((rows) => rows.map((r) => ({ ...r.asset, folder: r.share_grant_asset.folderName, position: r.share_grant_asset.position })));
 }
 
 /** After a grant ends (revoked / superseded / expired), recompute 'shared'
@@ -549,31 +600,35 @@ async function refreshSharedStatuses(organizationId: string, grantId: string): P
   const assetIds = memberships.map((m) => m.assetId);
   if (!assetIds.length) return;
 
-  const rows = await db
-    .select({
-      assetId: schema.shareGrantAssets.assetId,
-      status: schema.shareGrants.status,
-      expiresAt: schema.shareGrants.expiresAt,
-    })
-    .from(schema.shareGrantAssets)
-    .innerJoin(schema.shareGrants, eq(schema.shareGrants.id, schema.shareGrantAssets.grantId))
-    .where(inArray(schema.shareGrantAssets.assetId, assetIds));
+  const rows = await selectInChunks(assetIds, (chunk) =>
+    db
+      .select({
+        assetId: schema.shareGrantAssets.assetId,
+        status: schema.shareGrants.status,
+        expiresAt: schema.shareGrants.expiresAt,
+      })
+      .from(schema.shareGrantAssets)
+      .innerJoin(schema.shareGrants, eq(schema.shareGrants.id, schema.shareGrantAssets.grantId))
+      .where(inArray(schema.shareGrantAssets.assetId, chunk)),
+  );
 
   const stillShared = new Set(
     rows.filter((r) => grantIsEffectivelyActive(r)).map((r) => r.assetId),
   );
   const revert = assetIds.filter((id) => !stillShared.has(id));
   if (revert.length) {
-    await db
-      .update(schema.assets)
-      .set({ status: "approved" })
-      .where(
-        and(
-          eq(schema.assets.organizationId, organizationId),
-          eq(schema.assets.status, "shared"),
-          inArray(schema.assets.id, revert),
+    await forEachChunk(revert, (chunk) =>
+      db
+        .update(schema.assets)
+        .set({ status: "approved" })
+        .where(
+          and(
+            eq(schema.assets.organizationId, organizationId),
+            eq(schema.assets.status, "shared"),
+            inArray(schema.assets.id, chunk),
+          ),
         ),
-      );
+    );
   }
 }
 

@@ -18,6 +18,8 @@ import {
 } from "@webcules/ui/components/dialog";
 import { useConfirm } from "@/components/confirm-provider";
 import { MediaLightbox, type LightboxItem } from "@/components/media-lightbox";
+import { GalleryArrange, analyzeColors } from "@/components/gallery-arrange";
+import { SORT_LABELS, SORT_MODES, type SortMode } from "@/lib/gallery-order";
 
 export type GrantItem = {
   id: string;
@@ -89,6 +91,10 @@ export function ProjectGalleries({
   const [email, setEmail] = useState(clientEmail);
   const [days, setDays] = useState("30");
   const [allowDownload, setAllowDownload] = useState(true);
+  // Photo order applied when sending, and the Arrange view (all plans).
+  const [orderMode, setOrderMode] = useState<SortMode>("upload_old");
+  const [arrangeGrant, setArrangeGrant] = useState<string | null>(null);
+  const [orderStatus, setOrderStatus] = useState("");
   const [selectionMode, setSelectionMode] = useState<"favorites" | "selection" | "off">("favorites");
   const [selectionLimitInput, setSelectionLimitInput] = useState("50");
   const [selectionDeadlineInput, setSelectionDeadlineInput] = useState("");
@@ -225,10 +231,31 @@ export function ProjectGalleries({
     });
   }
 
+  /** Rainbow order needs a color per photo: analyse any the project hasn't got yet. */
+  async function ensureProjectColors() {
+    const metaRes = await fetch(`/api/projects/${projectId}/assets/order-meta`);
+    const meta = (await metaRes.json().catch(() => ({}))) as { missingColor?: string[] };
+    const missing = meta.missingColor ?? [];
+    if (!missing.length) return;
+    await analyzeColors(
+      missing,
+      (done) => setOrderStatus(`Analyzing colors... ${done} of ${missing.length}`),
+      async (items) => {
+        await fetch(`/api/projects/${projectId}/assets/order-meta`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ colors: items }),
+        });
+      },
+    );
+    setOrderStatus("");
+  }
+
   async function createGrant() {
     setBusy(true);
     setError("");
     try {
+      if (orderMode === "color") await ensureProjectColors();
       const res = await fetch(`/api/projects/${projectId}/grants`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -237,6 +264,7 @@ export function ProjectGalleries({
           ...(deliverFolders.size ? { folderIds: Array.from(deliverFolders) } : {}),
           expiresInDays: days ? Number(days) : null,
           allowDownload,
+          orderMode,
           selectionMode,
           selectionLimit: selectionMode === "selection" ? Number(selectionLimitInput) || null : null,
           selectionDeadline:
@@ -410,6 +438,19 @@ export function ProjectGalleries({
           Allow downloads
         </label>
         <label className="flex flex-col gap-1 text-xs text-ink-subtle">
+          Photo order
+          <select
+            value={orderMode}
+            onChange={(e) => setOrderMode(e.target.value as SortMode)}
+            className="snap-select rounded-md border border-hairline bg-canvas px-3 py-2 text-sm text-ink outline-none focus:border-primary"
+          >
+            {SORT_MODES.map((m) => (
+              <option key={m} value={m}>{SORT_LABELS[m]}</option>
+            ))}
+          </select>
+          {orderStatus && <span className="text-[11px] text-ink-tertiary">{orderStatus}</span>}
+        </label>
+        <label className="flex flex-col gap-1 text-xs text-ink-subtle">
           Client picks
           <select
             value={selectionMode}
@@ -578,6 +619,11 @@ export function ProjectGalleries({
                     </Button>
                   )}
                   {live && (
+                    <Button size="sm" variant="outline" disabled={busy} onClick={() => setArrangeGrant(g.id)}>
+                      Arrange
+                    </Button>
+                  )}
+                  {live && (
                     <Button size="sm" variant="outline" disabled={busy} onClick={() => act(g.id, "resend")}>
                       Re-send
                     </Button>
@@ -625,6 +671,20 @@ export function ProjectGalleries({
           })}
         </div>
       )}
+
+      <GalleryArrange
+        grantId={arrangeGrant}
+        open={arrangeGrant !== null}
+        onOpenChange={(v) => !v && setArrangeGrant(null)}
+        onChanged={(grantId, order) =>
+          setSentAssets((cur) => {
+            const list = cur[grantId];
+            if (!list) return cur;
+            const rank = new Map(order.map((id, i) => [id, i]));
+            return { ...cur, [grantId]: [...list].sort((a, b) => (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0)) };
+          })
+        }
+      />
 
       {lightbox !== null && expanded && sentAssets[expanded] && (
         <MediaLightbox

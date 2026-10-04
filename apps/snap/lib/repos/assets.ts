@@ -1,6 +1,8 @@
 /* Asset repository — R2-backed project media. Keys are always
  * {orgId}/{projectId}/{assetId}/{filename}; every operation re-verifies the
  * org + project ownership. Status: uploaded → approved/rejected → shared. */
+import { isValidColorKey } from "../color-sort";
+import { forEachChunk, selectInChunks } from "../db-chunk";
 import { and, desc, eq, gt, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
@@ -204,6 +206,11 @@ export async function setAssetRating(
   return res.length ? { ok: true } : { ok: false, error: "not_found" };
 }
 
+/** audit_log rows are 8 bound columns each: 10 rows per statement stays under D1's 100-variable cap. */
+async function insertAuditRows(db: ReturnType<typeof getDb>, rows: (typeof schema.auditLog.$inferInsert)[]): Promise<void> {
+  for (let i = 0; i < rows.length; i += 10) await db.insert(schema.auditLog).values(rows.slice(i, i + 10));
+}
+
 /** Bulk stars/color over an explicit id list — ONE update statement
  * (no per-row loop) since ratings are uniform by construction. */
 export async function bulkSetRating(
@@ -218,12 +225,16 @@ export async function bulkSetRating(
   if (value.stars !== undefined) patch.stars = Math.max(0, Math.min(5, Math.trunc(value.stars)));
   if (value.color !== undefined) patch.color = Math.max(0, Math.min(5, Math.trunc(value.color)));
   if (!Object.keys(patch).length) return 0;
-  const res = await db
-    .update(schema.assets)
-    .set(patch)
-    .where(and(eq(schema.assets.organizationId, organizationId), inArray(schema.assets.id, ids)))
-    .returning({ id: schema.assets.id });
-  return res.length;
+  let done = 0;
+  await forEachChunk(ids, async (chunk) => {
+    const res = await db
+      .update(schema.assets)
+      .set(patch)
+      .where(and(eq(schema.assets.organizationId, organizationId), inArray(schema.assets.id, chunk)))
+      .returning({ id: schema.assets.id });
+    done += res.length;
+  });
+  return done;
 }
 
 /** Marginal rating distributions for the filter menu — both GROUP BYs in
@@ -260,10 +271,10 @@ export async function statusCounts(organizationId: string, projectId: string): P
 async function attachTags(rows: (typeof schema.assets.$inferSelect)[]): Promise<AssetRow[]> {
   if (!rows.length) return [];
   const db = getDb();
-  const tagRows = await db
-    .select()
-    .from(schema.assetTags)
-    .where(inArray(schema.assetTags.assetId, rows.map((r) => r.id)));
+  const tagRows = await selectInChunks(
+    rows.map((r) => r.id),
+    (chunk) => db.select().from(schema.assetTags).where(inArray(schema.assetTags.assetId, chunk)),
+  );
   const byAsset = new Map<string, string[]>();
   for (const t of tagRows) {
     const list = byAsset.get(t.assetId) ?? [];
@@ -328,32 +339,41 @@ export async function bulkAssetAction(
   // feel frozen (a query per file plus sequential object deletes).
   if (params.action === "delete" && ids.length) {
     const db = getDb();
-    const assets = await db
-      .select({ id: schema.assets.id, storageKey: schema.assets.storageKey, thumbKey: schema.assets.thumbKey, previewKey: schema.assets.previewKey, projectId: schema.assets.projectId })
-      .from(schema.assets)
-      .where(and(eq(schema.assets.organizationId, organizationId), inArray(schema.assets.id, ids)));
+    const assets = await selectInChunks(ids, (chunk) =>
+      db
+        .select({ id: schema.assets.id, storageKey: schema.assets.storageKey, thumbKey: schema.assets.thumbKey, previewKey: schema.assets.previewKey, projectId: schema.assets.projectId })
+        .from(schema.assets)
+        .where(and(eq(schema.assets.organizationId, organizationId), inArray(schema.assets.id, chunk))),
+    );
     const foundIds = new Set(assets.map((a) => a.id));
-    const guardedRows = await db
-      .select({ assetId: schema.shareGrantAssets.assetId })
-      .from(schema.shareGrantAssets)
-      .innerJoin(schema.shareGrants, eq(schema.shareGrants.id, schema.shareGrantAssets.grantId))
-      .where(
-        and(
-          inArray(schema.shareGrantAssets.assetId, assets.map((a) => a.id)),
-          eq(schema.shareGrants.status, "active"),
-          or(isNull(schema.shareGrants.expiresAt), gt(schema.shareGrants.expiresAt, new Date())),
-        ),
-      );
+    const guardedRows = await selectInChunks(
+      assets.map((a) => a.id),
+      (chunk) =>
+        db
+          .select({ assetId: schema.shareGrantAssets.assetId })
+          .from(schema.shareGrantAssets)
+          .innerJoin(schema.shareGrants, eq(schema.shareGrants.id, schema.shareGrantAssets.grantId))
+          .where(
+            and(
+              inArray(schema.shareGrantAssets.assetId, chunk),
+              eq(schema.shareGrants.status, "active"),
+              or(isNull(schema.shareGrants.expiresAt), gt(schema.shareGrants.expiresAt, new Date())),
+            ),
+          ),
+    );
     const guarded = new Set(guardedRows.map((r) => r.assetId));
     const doomed = assets.filter((a) => !guarded.has(a.id));
     if (doomed.length) {
-      await db.delete(schema.assets).where(and(eq(schema.assets.organizationId, organizationId), inArray(schema.assets.id, doomed.map((a) => a.id))));
+      await forEachChunk(
+        doomed.map((a) => a.id),
+        (chunk) => db.delete(schema.assets).where(and(eq(schema.assets.organizationId, organizationId), inArray(schema.assets.id, chunk))),
+      );
       await Promise.allSettled(
         doomed.flatMap((a) => [a.storageKey, a.thumbKey, a.previewKey].filter((k): k is string => Boolean(k)).map((k) => deleteObject(organizationId, k))),
       );
     }
     if (guarded.size) {
-      await db.insert(schema.auditLog).values(
+      await insertAuditRows(db, 
         Array.from(guarded).map((assetId) => ({
           id: crypto.randomUUID(),
           organizationId,
@@ -380,28 +400,34 @@ export async function bulkAssetAction(
   if ((params.action === "approve" || params.action === "reject" || params.action === "reset") && ids.length) {
     const db = getDb();
     const status = params.action === "approve" ? "approved" : params.action === "reject" ? "rejected" : "uploaded";
-    const assets = await db
-      .select({ id: schema.assets.id, projectId: schema.assets.projectId })
-      .from(schema.assets)
-      .where(and(eq(schema.assets.organizationId, organizationId), inArray(schema.assets.id, ids)));
+    const assets = await selectInChunks(ids, (chunk) =>
+      db
+        .select({ id: schema.assets.id, projectId: schema.assets.projectId })
+        .from(schema.assets)
+        .where(and(eq(schema.assets.organizationId, organizationId), inArray(schema.assets.id, chunk))),
+    );
     const foundIds = new Set(assets.map((a) => a.id));
     let allowed = assets;
     if (params.action === "reject") {
-      const guardedRows = await db
-        .select({ assetId: schema.shareGrantAssets.assetId })
-        .from(schema.shareGrantAssets)
-        .innerJoin(schema.shareGrants, eq(schema.shareGrants.id, schema.shareGrantAssets.grantId))
-        .where(
-          and(
-            inArray(schema.shareGrantAssets.assetId, assets.map((a) => a.id)),
-            eq(schema.shareGrants.status, "active"),
-            or(isNull(schema.shareGrants.expiresAt), gt(schema.shareGrants.expiresAt, new Date())),
-          ),
-        );
+      const guardedRows = await selectInChunks(
+        assets.map((a) => a.id),
+        (chunk) =>
+          db
+            .select({ assetId: schema.shareGrantAssets.assetId })
+            .from(schema.shareGrantAssets)
+            .innerJoin(schema.shareGrants, eq(schema.shareGrants.id, schema.shareGrantAssets.grantId))
+            .where(
+              and(
+                inArray(schema.shareGrantAssets.assetId, chunk),
+                eq(schema.shareGrants.status, "active"),
+                or(isNull(schema.shareGrants.expiresAt), gt(schema.shareGrants.expiresAt, new Date())),
+              ),
+            ),
+      );
       const guarded = new Set(guardedRows.map((r) => r.assetId));
       allowed = assets.filter((a) => !guarded.has(a.id));
       if (guarded.size) {
-        await db.insert(schema.auditLog).values(
+        await insertAuditRows(db, 
           Array.from(guarded).map((assetId) => ({
             id: crypto.randomUUID(),
             organizationId,
@@ -417,14 +443,18 @@ export async function bulkAssetAction(
       result.blocked.push(...Array.from(guarded).map((assetId) => ({ assetId, reason: "active client gallery" })));
     }
     if (allowed.length) {
-      await db
-        .update(schema.assets)
-        .set({
-          status,
-          // WEB-118: the retention clock starts on reject, stops otherwise.
-          rejectedAt: status === "rejected" ? Math.floor(Date.now() / 1000) : null,
-        })
-        .where(and(eq(schema.assets.organizationId, organizationId), inArray(schema.assets.id, allowed.map((a) => a.id))));
+      await forEachChunk(
+        allowed.map((a) => a.id),
+        (chunk) =>
+          db
+            .update(schema.assets)
+            .set({
+              status,
+              // WEB-118: the retention clock starts on reject, stops otherwise.
+              rejectedAt: status === "rejected" ? Math.floor(Date.now() / 1000) : null,
+            })
+            .where(and(eq(schema.assets.organizationId, organizationId), inArray(schema.assets.id, chunk))),
+      );
     }
     result.done = allowed.length;
     result.blocked.push(...ids.filter((id) => !foundIds.has(id)).map((assetId) => ({ assetId, reason: "not found" })));
@@ -434,20 +464,29 @@ export async function bulkAssetAction(
   if ((params.action === "tag" || params.action === "untag") && ids.length && params.tag) {
     const db = getDb();
     const clean = params.tag.trim().toLowerCase().slice(0, MAX_TAG_LEN);
-    const owned = await db
-      .select({ id: schema.assets.id })
-      .from(schema.assets)
-      .where(and(eq(schema.assets.organizationId, organizationId), inArray(schema.assets.id, ids)));
+    const owned = await selectInChunks(ids, (chunk) =>
+      db
+        .select({ id: schema.assets.id })
+        .from(schema.assets)
+        .where(and(eq(schema.assets.organizationId, organizationId), inArray(schema.assets.id, chunk))),
+    );
     if (owned.length) {
       if (params.action === "tag") {
-        await db
-          .insert(schema.assetTags)
-          .values(owned.map((a) => ({ organizationId, assetId: a.id, tag: clean })))
-          .onConflictDoNothing();
+        // 3 bound columns per row → 30 rows = 90 variables per statement.
+        for (let i = 0; i < owned.length; i += 30) {
+          await db
+            .insert(schema.assetTags)
+            .values(owned.slice(i, i + 30).map((a) => ({ organizationId, assetId: a.id, tag: clean })))
+            .onConflictDoNothing();
+        }
       } else {
-        await db
-          .delete(schema.assetTags)
-          .where(and(eq(schema.assetTags.organizationId, organizationId), eq(schema.assetTags.tag, clean), inArray(schema.assetTags.assetId, owned.map((a) => a.id))));
+        await forEachChunk(
+          owned.map((a) => a.id),
+          (chunk) =>
+            db
+              .delete(schema.assetTags)
+              .where(and(eq(schema.assetTags.organizationId, organizationId), eq(schema.assetTags.tag, clean), inArray(schema.assetTags.assetId, chunk))),
+        );
       }
     }
     result.done = owned.length;
@@ -523,6 +562,8 @@ export async function attachDerivative(params: {
   width?: number;
   height?: number;
   durationMs?: number;
+  /** Rainbow-sort key computed by the browser (lib/color-sort.ts). */
+  colorKey?: number;
 }): Promise<
   | { ok: true }
   | { ok: false; error: "not_found" | "unsupported_type" | "metadata_present" | "already_present" }
@@ -558,6 +599,7 @@ export async function attachDerivative(params: {
       ...(params.width && !asset.width ? { width: Math.round(params.width) } : {}),
       ...(params.height && !asset.height ? { height: Math.round(params.height) } : {}),
       ...(params.durationMs && !asset.durationMs ? { durationMs: Math.round(params.durationMs) } : {}),
+      ...(params.colorKey !== undefined && isValidColorKey(params.colorKey) ? { colorKey: params.colorKey } : {}),
     })
     .where(and(eq(schema.assets.id, asset.id), eq(schema.assets.organizationId, params.organizationId)));
   return { ok: true };

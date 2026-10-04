@@ -590,6 +590,11 @@ export const assets = sqliteTable(
     height: integer("height"),
     /** WEB-260: video duration ms (browser decoder at upload). */
     durationMs: integer("duration_ms"),
+    /** EXIF capture time, epoch seconds (set at upload confirm / backfill);
+     * -1 = scanned, none found; null = not scanned yet. Drives "date taken". */
+    capturedAt: integer("captured_at"),
+    /** Rainbow-sort key from the browser's thumbnail analysis (lib/color-sort.ts). */
+    colorKey: integer("color_key"),
     /** WEB-263: sneak peek — surfaces on the client home before the gallery
      * opens (Studio gate). */
     sneakPeek: integer("is_sneak_peek", { mode: "boolean" }).notNull().default(false),
@@ -698,6 +703,8 @@ export const shareGrants = sqliteTable(
     allowDownload: integer("allow_download", { mode: "boolean" }).notNull().default(true),
     /** WEB-242: proofing mode — downloads deliver the watermarked preview. */
     proofing: integer("proofing", { mode: "boolean" }).notNull().default(false),
+    /** How the gallery's photos are currently ordered (lib/gallery-order.ts OrderMode). */
+    orderMode: text("order_mode").notNull().default("upload_old"),
     /** Client interaction mode (0024): off | favorites | selection. */
     selectionMode: text("selection_mode").notNull().default("favorites"),
     /** Max picks for selection mode; null = unlimited. */
@@ -849,9 +856,13 @@ export const shareGrantAssets = sqliteTable(
     /** WEB-216: folder label frozen at delivery — post-delivery renames and
      * reorgs never change what a live gallery shows. */
     folderName: text("folder_name"),
+    /** Photo order inside this delivered gallery (ascending, gap-spaced -
+     * lib/gallery-order.ts). */
+    position: integer("position").notNull().default(0),
   },
   (t) => [
     index("share_grant_asset_pk_idx").on(t.grantId, t.assetId),
+    index("share_grant_asset_order_idx").on(t.grantId, t.position),
     index("share_grant_asset_asset_idx").on(t.assetId),
   ],
 );

@@ -9,6 +9,7 @@ import * as schema from "@/lib/db-schema";
 import { completeMultipartUpload, deleteUploadSession, getUploadSession, sniffKind } from "@/lib/uploads";
 import { getOrgContext } from "@/lib/session";
 import { deleteObject } from "@/lib/storage/service";
+import { scanCapturedAt } from "@/lib/repos/gallery-order";
 import { env } from "cloudflare:workers";
 
 export const dynamic = "force-dynamic";
@@ -88,6 +89,8 @@ export async function POST(req: Request) {
       uploadedBy: session.uploadedBy,
     });
     await deleteUploadSession(session.id);
+    // "Date taken" sort: read the EXIF capture time now (best effort - never fails the upload).
+    await scanCapturedAt(session.organizationId, { id: session.id, storageKey: session.storageKey, kind: session.kind });
     return Response.json({ ok: true, assetId: session.id });
   } catch (err) {
     const message = String(err instanceof Error ? err.message : err);

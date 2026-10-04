@@ -47,6 +47,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const durationMsRaw = Number(form.get("durationMs"));
   const durationMs = Number.isFinite(durationMsRaw) && durationMsRaw > 0 && durationMsRaw < 24 * 3600_000 ? Math.round(durationMsRaw) : undefined;
 
+  const colorRaw = Number(form.get("colorKey"));
+  const colorKey = form.get("colorKey") !== null && Number.isInteger(colorRaw) ? colorRaw : undefined;
+
   const result = await attachDerivative({
     organizationId: ctx.organizationId,
     assetId: id,
@@ -57,6 +60,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     ...(width ? { width } : {}),
     ...(height ? { height } : {}),
     ...(durationMs ? { durationMs } : {}),
+    ...(colorKey !== undefined ? { colorKey } : {}),
     // WEB-117: with the studio's strip policy on, a derivative carrying
     // EXIF/GPS is rejected — canvas output always passes, this is the guard.
     verifyNoExif: (await getStudioProfile(ctx.organizationId))?.exifStripDerived ?? false,

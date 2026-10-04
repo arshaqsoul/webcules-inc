@@ -35,6 +35,19 @@ export default function Releases() {
         polish fold into the next entry rather than getting their own.
       </Note>
 
+      <Release version="0.7.0" date="October 4, 2026">
+        <p>
+          <strong>Arrange the photos your client sees - on every plan.</strong> Sort a gallery by
+          filename (numbers in human order, so IMG_2 comes before IMG_10), upload date, date taken,
+          color (a rainbow from reds to purples, then black &amp; white), or shuffle it - then drag
+          photos, or groups of photos, into exactly the order you want. Pick the order when you send
+          a gallery, or press Arrange on any sent gallery: the change is live, with nothing to
+          re-send, and renewing a link keeps your order. Also fixed: sending, renewing or revoking a
+          gallery of 99 or more photos, and bulk actions on 100+ selected photos, could fail - a
+          500-photo wedding now sends in one go.
+        </p>
+      </Release>
+
       <Release version="0.6.0" date="October 4, 2026">
         <p>
           <strong>Download all, instantly, on every plan.</strong> Clients press Download and their
