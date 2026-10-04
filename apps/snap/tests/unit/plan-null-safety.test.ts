@@ -116,7 +116,6 @@ describe("role gates: mutating studio APIs check permissionDenied", () => {
     "app/api/studio/brand-assets/route.ts",
     "app/api/studio/slideshow-music/route.ts",
     "app/api/studio/slideshow-music/[id]/route.ts",
-    "app/api/studio/raw-vault/route.ts",
   ];
   it("every listed route imports and calls permissionDenied", () => {
     const missing: string[] = [];

@@ -1,21 +1,17 @@
-/* /api/g/{token}/download-request (WEB-261) — the client's ZIP surface:
- * GET lists their requests + download controls, POST creates one (async —
- * built by the cron). ZIPs are Lite+ (WEB-267); approval-toggled galleries
- * queue as `requested` for the studio hub. */
-import { and, eq } from "drizzle-orm";
-
-import { getDb } from "@/lib/db";
-import * as schema from "@/lib/db-schema";
-import { getPlanEntitlements } from "@/lib/plans";
+/* /api/g/{token}/download-request (WEB-261) — the client's download
+ * controls + approval surface. GET returns the gallery's download controls
+ * and the client's approval requests; POST files an approval request
+ * (Studio+ galleries that require sign-off). Download-all itself streams
+ * from /api/g/{token}/zip on every plan - nothing is queued or built. */
 import { resolveGalleryAccess } from "@/lib/shares/gallery-auth";
-import { assetInGrant, getGrantById } from "@/lib/shares/grants";
+import { assetInGrant } from "@/lib/shares/grants";
 import {
   createDownloadRequest,
   downloadSettingsOf,
   listGrantDownloadRequests,
   photoDownloadCount,
 } from "@/lib/repos/downloads";
-import { DOWNLOAD_SCOPES, isDownloadState, ZIP_MAX_FILES, type DownloadScope } from "@/lib/gallery-downloads";
+import { DOWNLOAD_SCOPES, REQUEST_MAX_ASSET_IDS, type DownloadScope } from "@/lib/gallery-downloads";
 import { resolveGrantByToken } from "@/lib/shares/grants";
 
 export const dynamic = "force-dynamic";
@@ -28,13 +24,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
   if (!access) return Response.json({ error: "unauthorized" }, { status: 401 });
   const grant = access.grant;
 
-  const [requests, ent, used] = await Promise.all([
-    listGrantDownloadRequests(grant.id, 10),
-    getPlanEntitlements(grant.organizationId),
-    photoDownloadCount(grant.id),
-  ]);
+  const [requests, used] = await Promise.all([listGrantDownloadRequests(grant.id, 10), photoDownloadCount(grant.id)]);
   const settings = downloadSettingsOf(grant);
-  const lite = (ent?.id ?? "free") !== "free";
   return Response.json({
     requests: requests.map((r) => ({
       id: r.id,
@@ -45,14 +36,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
       fileCount: r.fileCount,
       zipBytes: r.zipBytes,
       downloadCount: r.downloadCount,
-      expiresAt: r.expiresAt,
       createdAt: r.createdAt.toISOString(),
       decidedAt: r.decidedAt,
-      builtAt: r.builtAt,
     })),
     controls: {
       allowDownload: grant.allowDownload,
-      zip: lite && grant.allowDownload,
+      zip: grant.allowDownload,
       approval: settings.approval,
       webSize: settings.webSize,
       limit: settings.limit,
@@ -71,8 +60,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
   const grant = access.grant;
   if (!grant.allowDownload) return Response.json({ error: "downloads_disabled" }, { status: 403 });
 
-  const ent = await getPlanEntitlements(grant.organizationId);
-  if ((ent?.id ?? "free") === "free") return Response.json({ error: "zip_requires_lite" }, { status: 403 });
+  // Only approval galleries file requests; everyone else streams directly.
+  const settings = downloadSettingsOf(grant);
+  if (!settings.approval) return Response.json({ error: "approval_not_required" }, { status: 409 });
 
   const body = (await req.json().catch(() => ({}))) as {
     scope?: string;
@@ -86,14 +76,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
 
   // scope='photos' ids must be in this grant; folder must exist in it.
   if (scope === "photos") {
-    const ids = Array.isArray(body.assetIds) ? body.assetIds.slice(0, ZIP_MAX_FILES + 1) : [];
+    const ids = Array.isArray(body.assetIds) ? body.assetIds.slice(0, REQUEST_MAX_ASSET_IDS) : [];
     if (!ids.length) return Response.json({ error: "empty_scope" }, { status: 400 });
     for (const id of ids.slice(0, 50)) {
       if (!(await assetInGrant(grant.id, id))) return Response.json({ error: "empty_scope" }, { status: 400 });
     }
   }
 
-  const settings = downloadSettingsOf(grant);
   const result = await createDownloadRequest({
     grant,
     clientEmail: grant.clientEmail,
@@ -105,8 +94,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
     approvalRequired: settings.approval,
   });
   if (!result.ok) {
-    const status = result.error === "too_many_active" ? 429 : 400;
-    return Response.json({ error: result.error, ...(result.fileCount ? { fileCount: result.fileCount } : {}) }, { status });
+    return Response.json({ error: result.error }, { status: result.error === "too_many_active" ? 429 : 400 });
   }
   return Response.json({ id: result.request.id, state: result.request.state, fileCount: result.request.fileCount });
 }

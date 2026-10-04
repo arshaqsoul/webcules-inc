@@ -721,9 +721,10 @@ export const shareGrants = sqliteTable(
   (t) => [index("share_grant_org_project_idx").on(t.organizationId, t.projectId, t.status)],
 );
 
-/** WEB-261: async whole-gallery download requests — queued client-side,
- * built into R2 by the daily cron (never in the request path), served as a
- * 7-day ZIP link. State machine in lib/gallery-downloads.ts. */
+/** WEB-261: download approval requests. Download-all streams on demand
+ * (lib/zip-delivery.ts); a row exists only for galleries that require studio
+ * sign-off. State machine in lib/gallery-downloads.ts. `zip_key` is a
+ * pre-3.0 leftover pending purge (repos/downloads.ts purgeLegacyZips). */
 export const downloadRequests = sqliteTable(
   "download_request",
   {
@@ -746,8 +747,6 @@ export const downloadRequests = sqliteTable(
     fileCount: integer("file_count"),
     downloadCount: integer("download_count").notNull().default(0),
     decidedAt: integer("decided_at"),
-    builtAt: integer("built_at"),
-    expiresAt: integer("expires_at"),
     createdAt: ts("created_at"),
     updatedAt: ts("updated_at"),
   },

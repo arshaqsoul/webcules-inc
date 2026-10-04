@@ -6,6 +6,7 @@ import galleryDesignRoute from "../../app/api/projects/[id]/gallery-design/route
 import templatesRoute from "../../app/api/studio/templates/route.ts?raw";
 import slideshowMusicRoute from "../../app/api/studio/slideshow-music/route.ts?raw";
 import downloadRequestRoute from "../../app/api/g/[token]/download-request/route.ts?raw";
+import zipRoute from "../../app/api/g/[token]/zip/route.ts?raw";
 import shareRoute from "../../app/api/g/[token]/share/route.ts?raw";
 import listsRoute from "../../app/api/g/[token]/lists/route.ts?raw";
 import lifecycleRoute from "../../app/api/grants/[id]/lifecycle/route.ts?raw";
@@ -67,7 +68,6 @@ describe("WEB-267 gallery ladder (gates as shipped)", () => {
       ["design_requires_lite", galleryDesignRoute],
       ["presets_require_lite", templatesRoute],
       ["music_requires_lite", slideshowMusicRoute],
-      ["zip_requires_lite", downloadRequestRoute],
       ["sharing_requires_lite", shareRoute],
       ["lists_require_lite", listsRoute],
       ["scheduling_requires_lite", lifecycleRoute],
@@ -82,5 +82,12 @@ describe("WEB-267 gallery ladder (gates as shipped)", () => {
     for (const [marker, src] of gates) {
       expect(src, `gate ${marker} must stay`).toContain(marker);
     }
+  });
+
+  it("download-all is open to EVERY plan - no tier gate on the streaming route or the request route", () => {
+    for (const [name, src] of [["zip", zipRoute], ["download-request", downloadRequestRoute]] as const) {
+      expect(src, `${name} route must not gate on plan`).not.toMatch(/getPlanEntitlements|requires_lite|requires_studio|ent\?\.id/);
+    }
+    expect(zipRoute).toContain("allowDownload"); // the photographer's per-gallery switch still rules
   });
 });

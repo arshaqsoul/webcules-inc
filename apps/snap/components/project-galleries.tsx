@@ -139,8 +139,17 @@ export function ProjectGalleries({
         setTimeout(() => URL.revokeObjectURL(a.href), 30_000);
         setFlashNote("CSV downloaded.");
       } else if (res.ok) {
-        const body = (await res.json()) as { fileCount?: number };
-        setFlashNote(`ZIP of ${body.fileCount} previews queued — the client gets the link by email.`);
+        const body = (await res.json()) as { fileCount?: number; revision?: string; parts?: { index: number }[] };
+        const parts = body.parts ?? [];
+        // Each part streams straight from storage - the browser saves it as it arrives.
+        parts.forEach((p, i) => {
+          setTimeout(() => {
+            const a = document.createElement("a");
+            a.href = `/api/grants/${feedback.grant.id}/favorites/export?size=web&part=${p.index}&v=${body.revision}`;
+            a.click();
+          }, i * 1500);
+        });
+        setFlashNote(`Downloading ${body.fileCount} previews${parts.length > 1 ? ` as ${parts.length} ZIP parts` : ""}.`);
       } else {
         const body = (await res.json().catch(() => ({}))) as { error?: string };
         setFlashNote(body.error === "exports_require_studio" ? "Exports are a Studio feature." : body.error === "empty" ? "Nothing to export." : "Export failed — try again.");

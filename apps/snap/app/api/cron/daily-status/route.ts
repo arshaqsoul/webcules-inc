@@ -241,14 +241,15 @@ export async function POST(req: Request) {
     console.error("addon settle failed:", String(err));
   }
 
-  // WEB-261: async download pipeline — build approved ZIPs into R2, email
-  // ready links, sweep expired archives, fire 3-days-out expiry reminders.
-  let downloads = { built: 0, failed: 0, expired: 0, reminded: 0 };
+  // WEB-261: gallery sweeps — 3-days-out expiry reminders, scheduled
+  // galleries opening, and the one-time purge of pre-3.0 R2 archives.
+  // (Download-all itself streams on demand; nothing is built here.)
+  let galleries = { reminded: 0, opened: 0, legacyZipsPurged: 0 };
   try {
-    const { downloadsDailySweep } = await import("@/lib/repos/downloads-build");
-    downloads = await downloadsDailySweep();
+    const { gallerySweep } = await import("@/lib/repos/gallery-sweeps");
+    galleries = await gallerySweep();
   } catch (err) {
-    console.error("downloads sweep failed:", String(err));
+    console.error("gallery sweep failed:", String(err));
   }
 
   // WEB-273: booking reminders — exact-once per (booking, offset).
@@ -280,5 +281,5 @@ export async function POST(req: Request) {
     console.error("inbox prune failed:", String(err));
   }
 
-  return Response.json({ ok: true, moved: due.length, warned, downgraded, expiredHolds, vault, dormancy, margin, expiredUploads, rejectedPurged, domains, addonSettled, downloads, reminders, setup, inboxPrune });
+  return Response.json({ ok: true, moved: due.length, warned, downgraded, expiredHolds, vault, dormancy, margin, expiredUploads, rejectedPurged, domains, addonSettled, galleries, reminders, setup, inboxPrune });
 }

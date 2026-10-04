@@ -374,7 +374,7 @@ export type SlideshowProps = {
   musicStartAt: number;
 };
 
-/** WEB-261: downloads 2.0 — server-resolved controls + request list. */
+/** WEB-261: downloads — server-resolved controls + approval request list. */
 export type DlControls = {
   allowDownload: boolean;
   zip: boolean;
@@ -393,9 +393,36 @@ export type DlRequest = {
   fileCount: number | null;
   zipBytes: number | null;
   downloadCount: number;
-  expiresAt: number | null;
   createdAt: string;
 };
+
+/** Manifest of a streamed download-all (/api/g/{token}/zip). */
+export type ZipManifest = {
+  files: number;
+  bytes: number;
+  revision: string;
+  label: string;
+  parts: { index: number; files: number; bytes: number }[];
+  oversize: { id: string; filename: string }[];
+};
+
+function formatBytes(n: number): string {
+  if (n >= 1024 ** 3) return `${(n / 1024 ** 3).toFixed(1)} GB`;
+  if (n >= 1024 ** 2) return `${Math.max(1, Math.round(n / 1024 ** 2))} MB`;
+  return `${Math.max(1, Math.round(n / 1024))} KB`;
+}
+
+/** Hand a URL to the browser's own download manager (streams to disk - no
+ * in-memory blob, so a 20 GB wedding is fine). `download` keeps an error
+ * response from navigating the gallery away. */
+function startBrowserDownload(href: string) {
+  const a = document.createElement("a");
+  a.href = href;
+  a.download = "";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
 
 /** Autoplay slideshow: crossfade + optional Ken Burns drift per slide, pace
    * 3/5/8 s, arrows/swipe/keyboard, progress bar, 9:16 vertical (social)
@@ -1532,6 +1559,8 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
   const [dlBusy, setDlBusy] = useState(false);
   const [dlFlash, setDlFlash] = useState("");
   const [pinPrompt, setPinPrompt] = useState<{ retry: () => void } | null>(null);
+  // Download-all split into several archives (> 2 GB galleries): the parts sheet.
+  const [zipSheet, setZipSheet] = useState<{ manifest: ZipManifest; qs: string; started: number[] } | null>(null);
   const [pinValue, setPinValue] = useState("");
   // WEB-262: native share sheet (fallback menu) for the current lightbox photo.
   const [shareSheet, setShareSheet] = useState<{ url: string } | null>(null);
@@ -1583,8 +1612,65 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
     [],
   );
 
+  /** Download-all: resolve the plan, then hand the browser a streaming URL
+   * per part. Galleries that need studio approval file a request instead. */
   async function requestZip(scope: "all" | "folder" | "favorites", sizePref: "full" | "web") {
     setDlMenuOpen(false);
+    if (dl?.controls.approval) return fileApprovalRequest(scope, sizePref);
+    const qs = new URLSearchParams({ scope, size: sizePref });
+    if (scope === "folder" && activeFolder) qs.set("folder", activeFolder);
+    await pullZip(qs.toString());
+  }
+
+  async function pullZip(qs: string) {
+    setDlBusy(true);
+    try {
+      const res = await fetch(`/api/g/${clientToken}/zip?${qs}`);
+      const body = (await res.json().catch(() => ({}))) as Partial<ZipManifest> & { error?: string };
+      if (res.status === 401 && body.error === "pin_required") {
+        setDlBusy(false);
+        setPinPrompt({ retry: () => void pullZip(qs) });
+        return;
+      }
+      if (!res.ok || !body.parts) {
+        setDlFlash(
+          body.error === "empty_scope" ? "Nothing to download in that selection yet."
+          : body.error === "zip_rate_limited" ? "That's a lot of downloads today - try again in a while."
+          : body.error === "approval_required" || body.error === "awaiting_approval" ? "Your photographer needs to approve this download first."
+          : "Couldn't start the download - try again.",
+        );
+        setTimeout(() => setDlFlash(""), 4500);
+        setDlBusy(false);
+        return;
+      }
+      const manifest = body as ZipManifest;
+      if (manifest.parts.length === 1) {
+        startBrowserDownload(`/api/g/${clientToken}/zip?${qs}&part=1&v=${manifest.revision}`);
+        setDlFlash(`Your download is starting - ${manifest.files} file${manifest.files === 1 ? "" : "s"}, ${formatBytes(manifest.bytes)}.`);
+        setTimeout(() => setDlFlash(""), 5000);
+      } else {
+        setZipSheet({ manifest, qs, started: [] });
+      }
+    } catch {
+      setDlFlash("Network error - try again.");
+      setTimeout(() => setDlFlash(""), 3000);
+    }
+    setDlBusy(false);
+  }
+
+  function pullPart(index: number) {
+    if (!zipSheet) return;
+    startBrowserDownload(`/api/g/${clientToken}/zip?${zipSheet.qs}&part=${index}&v=${zipSheet.manifest.revision}`);
+    setZipSheet((cur) => (cur ? { ...cur, started: [...new Set([...cur.started, index])] } : cur));
+  }
+
+  function pullAllParts() {
+    if (!zipSheet) return;
+    // Spaced out so browsers treat them as one deliberate batch.
+    zipSheet.manifest.parts.forEach((p, i) => setTimeout(() => pullPart(p.index), i * 1500));
+  }
+
+  async function fileApprovalRequest(scope: "all" | "folder" | "favorites", sizePref: "full" | "web") {
     setDlBusy(true);
     try {
       const res = await fetch(`/api/g/${clientToken}/download-request`, {
@@ -1596,29 +1682,21 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
           sizePref,
         }),
       });
-      const body = (await res.json().catch(() => ({}))) as { id?: string; state?: string; error?: string; fileCount?: number };
+      const body = (await res.json().catch(() => ({}))) as { id?: string; state?: string; error?: string };
       if (!res.ok || !body.id) {
         setDlFlash(
-          body.error === "too_many_active" ? "Too many pending requests — wait for one to finish."
+          body.error === "too_many_active" ? "Too many pending requests - wait for your photographer to answer one."
           : body.error === "empty_scope" ? "Nothing to download in that selection yet."
-          : body.error === "too_many_files" ? `That's over the 1,000-photo limit (${body.fileCount}) — download by folder.`
-          : body.error === "zip_requires_lite" ? "Bulk downloads aren't available on this gallery's plan."
-          : "Couldn't request the download — try again.",
+          : "Couldn't request the download - try again.",
         );
-        setTimeout(() => setDlFlash(""), 4500);
       } else {
-        setDlFlash(
-          body.state === "requested"
-            ? "Request sent — your photographer will approve it shortly."
-            : `We're preparing your ZIP of ${body.fileCount} photo${body.fileCount === 1 ? "" : "s"} — we'll email you when it's ready.`,
-        );
-        setTimeout(() => setDlFlash(""), 5000);
+        setDlFlash("Request sent - your photographer will approve it shortly, and we'll email you.");
         await refreshDownloads();
       }
     } catch {
-      setDlFlash("Network error — try again.");
-      setTimeout(() => setDlFlash(""), 3000);
+      setDlFlash("Network error - try again.");
     }
+    setTimeout(() => setDlFlash(""), 5000);
     setDlBusy(false);
   }
 
@@ -2106,31 +2184,29 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
               </button>
               {dlMenuOpen && (
                 <div className="absolute left-0 top-full z-30 mt-2 w-64 rounded-[12px] border border-hairline bg-surface-1 p-3 shadow-lg" style={{ colorScheme: "light" }}>
-                  {dl.controls.zip ? (
-                    <>
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-tertiary">All photos (ZIP)</p>
-                      <button type="button" disabled={dlBusy} onClick={() => void requestZip("all", "full")} className="mt-1.5 w-full rounded-md bg-surface-2 px-3 py-2 text-left text-xs font-medium text-ink hover:bg-surface-3 disabled:opacity-60">
-                        Download everything · full resolution
-                      </button>
-                      {dl.controls.webSize && (
-                        <button type="button" disabled={dlBusy} onClick={() => void requestZip("all", "web")} className="mt-1.5 w-full rounded-md bg-surface-2 px-3 py-2 text-left text-xs font-medium text-ink hover:bg-surface-3 disabled:opacity-60">
-                          Download everything · web size (2048px)
-                        </button>
-                      )}
-                      {activeFolder && (
-                        <button type="button" disabled={dlBusy} onClick={() => void requestZip("folder", "full")} className="mt-1.5 w-full rounded-md bg-surface-2 px-3 py-2 text-left text-xs font-medium text-ink hover:bg-surface-3 disabled:opacity-60">
-                          Just “{activeFolder}”
-                        </button>
-                      )}
-                      {heartsOn && (
-                        <button type="button" disabled={dlBusy} onClick={() => void requestZip("favorites", "full")} className="mt-1.5 w-full rounded-md bg-surface-2 px-3 py-2 text-left text-xs font-medium text-ink hover:bg-surface-3 disabled:opacity-60">
-                          My favorites ({favorites.size})
-                        </button>
-                      )}
-                      {dl.controls.approval && <p className="mt-2 text-[11px] leading-relaxed text-ink-tertiary">Requests wait for your photographer's approval.</p>}
-                    </>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-tertiary">Download all</p>
+                  <button type="button" disabled={dlBusy} onClick={() => void requestZip("all", "full")} className="mt-1.5 w-full rounded-md bg-surface-2 px-3 py-2 text-left text-xs font-medium text-ink hover:bg-surface-3 disabled:opacity-60">
+                    Everything · full resolution
+                  </button>
+                  {dl.controls.webSize && (
+                    <button type="button" disabled={dlBusy} onClick={() => void requestZip("all", "web")} className="mt-1.5 w-full rounded-md bg-surface-2 px-3 py-2 text-left text-xs font-medium text-ink hover:bg-surface-3 disabled:opacity-60">
+                      Everything · web size (2048px)
+                    </button>
+                  )}
+                  {activeFolder && (
+                    <button type="button" disabled={dlBusy} onClick={() => void requestZip("folder", "full")} className="mt-1.5 w-full rounded-md bg-surface-2 px-3 py-2 text-left text-xs font-medium text-ink hover:bg-surface-3 disabled:opacity-60">
+                      Just “{activeFolder}”
+                    </button>
+                  )}
+                  {heartsOn && (
+                    <button type="button" disabled={dlBusy} onClick={() => void requestZip("favorites", "full")} className="mt-1.5 w-full rounded-md bg-surface-2 px-3 py-2 text-left text-xs font-medium text-ink hover:bg-surface-3 disabled:opacity-60">
+                      My favorites ({favorites.size})
+                    </button>
+                  )}
+                  {dl.controls.approval ? (
+                    <p className="mt-2 text-[11px] leading-relaxed text-ink-tertiary">Your photographer approves bulk downloads first - we'll email you the moment it is.</p>
                   ) : (
-                    <p className="text-[11px] leading-relaxed text-ink-tertiary">Single photos download from the full-screen view. Bulk ZIP downloads aren't enabled for this gallery.</p>
+                    <p className="mt-2 text-[11px] leading-relaxed text-ink-tertiary">Starts right away. Big galleries arrive as a few ZIP parts.</p>
                   )}
                   {dl.controls.limit !== null && (
                     <p className="mt-2 border-t border-hairline pt-2 text-[11px] text-ink-tertiary">
@@ -2467,32 +2543,23 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
         <div className="mx-auto max-w-6xl px-5 pt-3">
           {dl.requests.slice(0, 2).map((r) => (
             <div key={r.id} className="flex flex-wrap items-center gap-3 rounded-[12px] border border-hairline bg-surface-1 px-4 py-3 text-sm">
-              {r.state === "ready" ? (
+              {r.state === "approved" || r.state === "delivered" ? (
                 <>
-                  <span className="text-ink">Your ZIP is ready{r.fileCount ? ` — ${r.fileCount} photos` : ""}</span>
+                  <span className="text-ink">{r.state === "approved" ? "Approved" : "Approved - download again anytime"}{r.fileCount ? ` - ${r.fileCount} file${r.fileCount === 1 ? "" : "s"}` : ""}</span>
                   <button
                     type="button"
                     disabled={dlBusy}
-                    onClick={() => void downloadVia(`/api/g/${clientToken}/download/${r.id}`, "photos.zip")}
+                    onClick={() => void pullZip(`req=${r.id}`)}
                     className="rounded-md px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
                     style={{ background: "var(--accent)" }}
                   >
                     Download
                   </button>
-                  {r.expiresAt ? <span className="text-xs text-ink-tertiary">link expires {new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(new Date(r.expiresAt * 1000))}</span> : null}
                 </>
-              ) : r.state === "delivered" ? (
-                <span className="text-ink-subtle">ZIP downloaded{r.expiresAt ? " — link still open " + new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(new Date(r.expiresAt * 1000)) : ""}</span>
               ) : r.state === "requested" ? (
-                <span className="text-ink-subtle">Download requested — waiting for your photographer's approval.</span>
-              ) : r.state === "rejected" ? (
-                <span className="text-ink-subtle">Your photographer declined this download request{r.scope === "favorites" ? " — individual favorites still download from the full-screen view" : ""}.</span>
-              ) : r.state === "expired" ? (
-                <span className="text-ink-subtle">That download link expired — request a fresh one.</span>
-              ) : r.state === "failed" ? (
-                <span className="text-ink-subtle">Something went wrong building that ZIP — request it again or ask your photographer.</span>
+                <span className="text-ink-subtle">Download requested - waiting for your photographer's approval.</span>
               ) : (
-                <span className="text-ink-subtle">Preparing your ZIP{r.fileCount ? ` of ${r.fileCount} photos` : ""} — we'll email you when it's ready.</span>
+                <span className="text-ink-subtle">Your photographer declined this download request{r.scope === "favorites" ? " - individual favorites still download from the full-screen view" : ""}.</span>
               )}
             </div>
           ))}
@@ -2528,6 +2595,40 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
               </button>
             </div>
             <p className="mt-3 text-[11px] leading-relaxed text-ink-tertiary">Anyone with the link sees this photo (watermarked if your gallery uses watermarks). The link lives as long as the gallery does.</p>
+          </div>
+        </div>
+      )}
+
+      {zipSheet && (
+        <div role="dialog" aria-modal="true" aria-label="Download in parts" className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4" onClick={() => setZipSheet(null)}>
+          <div className="w-full max-w-md rounded-[16px] bg-surface-1 p-6" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-base font-semibold text-ink">Your download comes in {zipSheet.manifest.parts.length} parts</h2>
+            <p className="mt-1 text-sm text-ink-subtle">
+              {zipSheet.manifest.files} files · {formatBytes(zipSheet.manifest.bytes)}. Smaller ZIPs open everywhere and a hiccup only costs one part. Unzip them all into the same folder.
+            </p>
+            <ul className="mt-4 max-h-64 space-y-2 overflow-y-auto">
+              {zipSheet.manifest.parts.map((p) => (
+                <li key={p.index} className="flex items-center justify-between gap-3 rounded-lg bg-surface-2 px-3 py-2 text-sm">
+                  <span className="text-ink">Part {p.index} <span className="text-ink-tertiary">· {p.files} files · {formatBytes(p.bytes)}</span></span>
+                  <button type="button" onClick={() => pullPart(p.index)} className="rounded-md px-3 py-1 text-xs font-semibold text-white" style={{ background: "var(--accent)" }}>
+                    {zipSheet.started.includes(p.index) ? "Again" : "Download"}
+                  </button>
+                </li>
+              ))}
+            </ul>
+            {zipSheet.manifest.oversize.length > 0 && (
+              <p className="mt-3 text-[11px] leading-relaxed text-ink-tertiary">
+                {zipSheet.manifest.oversize.length} very large file{zipSheet.manifest.oversize.length === 1 ? "" : "s"} can't go in a ZIP - download {zipSheet.manifest.oversize.length === 1 ? "it" : "them"} from the full-screen view.
+              </p>
+            )}
+            <div className="mt-4 flex gap-2">
+              <button type="button" onClick={() => setZipSheet(null)} className="flex-1 rounded-lg border border-hairline px-4 py-2 text-sm text-ink-muted">
+                Close
+              </button>
+              <button type="button" onClick={pullAllParts} className="flex-1 rounded-lg px-4 py-2 text-sm font-semibold text-white" style={{ background: "var(--accent)" }}>
+                Download all parts
+              </button>
+            </div>
           </div>
         </div>
       )}

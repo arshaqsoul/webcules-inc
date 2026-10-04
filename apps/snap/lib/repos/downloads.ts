@@ -1,25 +1,29 @@
-/* Downloads 2.0 repository (WEB-261) — download-request lifecycle (client
- * creates → studio approves → cron zips → client downloads), per-gallery
- * settings writes, and the soft download-count check. Zip building itself
- * lives in the cron (lib/repos/downloads-build.ts) — never in a request. */
-import { and, desc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
+/* Downloads repository (WEB-261) — the approval lifecycle for download-all
+ * (client requests → studio approves → client streams), per-gallery
+ * settings writes, and the soft download-count check. Archives are never
+ * built ahead of time: lib/zip-delivery.ts streams them on demand. */
+import { and, desc, eq, inArray, isNotNull, sql } from "drizzle-orm";
 
 import { getDb } from "../db";
 import * as schema from "../db-schema";
+import { deleteObject } from "../storage/service";
+import { buildZipPlan } from "../zip-delivery";
 import {
   ACTIVE_STATES,
-  parseAssetIds,
+  REQUEST_MAX_ASSET_IDS,
+  canTransition,
   parseDownloadSettings,
   serializeDownloadSettings,
-  ZIP_MAX_FILES,
   type DownloadScope,
   type DownloadSettings,
-  type DownloadState,
   type SizePref,
 } from "../gallery-downloads";
 
 export type DownloadRequestRow = typeof schema.downloadRequests.$inferSelect;
 export type GrantRow = typeof schema.shareGrants.$inferSelect;
+
+/** Pending requests one grant may hold at once. */
+const MAX_PENDING_REQUESTS = 5;
 
 export function downloadSettingsOf(grant: { downloadSettings: string | null }): DownloadSettings {
   return parseDownloadSettings(grant.downloadSettings);
@@ -61,57 +65,10 @@ export async function listGrantDownloadRequests(grantId: string, limit = 10): Pr
     .limit(limit);
 }
 
-export async function listStudioDownloadRequests(organizationId: string, states: DownloadState[], limit = 50): Promise<DownloadRequestRow[]> {
-  return getDb()
-    .select()
-    .from(schema.downloadRequests)
-    .where(and(eq(schema.downloadRequests.organizationId, organizationId), inArray(schema.downloadRequests.state, states)))
-    .orderBy(desc(schema.downloadRequests.createdAt))
-    .limit(limit);
-}
+export type CreateRequestError = "empty_scope" | "too_many_active";
 
-/** Photos in the delivered set matching a request scope (WEB-216 frozen
- * folder labels; favorites = the client's hearted photos). Videos stay
- * per-photo downloads (v1 ZIPs are photos — size + format honesty). */
-export async function resolveScopeAssets(params: {
-  grantId: string;
-  scope: DownloadScope;
-  folderName?: string | null;
-  assetIds?: string[];
-}): Promise<{ assetIds: string[]; fileCount: number } | { error: "empty_scope" | "too_many_files" }> {
-  const db = getDb();
-  const photos = db
-    .select({ id: schema.shareGrantAssets.assetId, folderName: schema.shareGrantAssets.folderName })
-    .from(schema.shareGrantAssets)
-    .innerJoin(schema.assets, eq(schema.assets.id, schema.shareGrantAssets.assetId))
-    .where(and(eq(schema.shareGrantAssets.grantId, params.grantId), eq(schema.assets.kind, "image")));
-
-  let rows: { id: string }[];
-  if (params.scope === "photos") {
-    const wanted = new Set((params.assetIds ?? []).slice(0, ZIP_MAX_FILES + 1));
-    if (!wanted.size) return { error: "empty_scope" };
-    const all = await photos;
-    rows = all.filter((r) => wanted.has(r.id));
-  } else if (params.scope === "folder") {
-    const all = await photos;
-    rows = all.filter((r) => r.folderName === params.folderName);
-  } else if (params.scope === "favorites") {
-    rows = await db
-      .select({ id: schema.galleryFavorites.assetId })
-      .from(schema.galleryFavorites)
-      .where(eq(schema.galleryFavorites.grantId, params.grantId));
-  } else {
-    rows = await photos;
-  }
-
-  if (!rows.length) return { error: "empty_scope" };
-  const ids = rows.map((r) => r.id);
-  if (ids.length > ZIP_MAX_FILES) return { error: "too_many_files", fileCount: ids.length };
-  return { assetIds: ids, fileCount: ids.length };
-}
-
-export type CreateRequestError = "empty_scope" | "too_many_files" | "too_many_active" | "invalid";
-
+/** File an approval request. Only galleries that require studio approval
+ * create rows - everyone else streams straight away with no request. */
 export async function createDownloadRequest(params: {
   grant: GrantRow;
   clientEmail: string;
@@ -120,25 +77,24 @@ export async function createDownloadRequest(params: {
   assetIds?: string[];
   sizePref: SizePref;
   note?: string | null;
-  /** grant's approval toggle — requested vs auto-approved. */
+  /** grant's approval toggle - requested vs auto-approved. */
   approvalRequired: boolean;
-}): Promise<{ ok: true; request: DownloadRequestRow } | { ok: false; error: CreateRequestError; fileCount?: number }> {
+}): Promise<{ ok: true; request: DownloadRequestRow } | { ok: false; error: CreateRequestError }> {
   const db = getDb();
-  const active = await db
+  const pending = await db
     .select({ n: sql<number>`count(*)` })
     .from(schema.downloadRequests)
     .where(and(eq(schema.downloadRequests.grantId, params.grant.id), inArray(schema.downloadRequests.state, [...ACTIVE_STATES])));
-  if ((active[0]?.n ?? 0) >= 5) return { ok: false, error: "too_many_active" };
+  if ((pending[0]?.n ?? 0) >= MAX_PENDING_REQUESTS) return { ok: false, error: "too_many_active" };
 
-  const resolved = await resolveScopeAssets({
+  const assetIds = params.scope === "photos" ? (params.assetIds ?? []).slice(0, REQUEST_MAX_ASSET_IDS) : undefined;
+  const plan = await buildZipPlan({
+    organizationId: params.grant.organizationId,
     grantId: params.grant.id,
-    scope: params.scope,
-    folderName: params.folderName,
-    assetIds: params.assetIds,
+    proofing: params.grant.proofing,
+    selection: { scope: params.scope, folderName: params.folderName, assetIds, size: params.sizePref },
   });
-  if ("error" in resolved) {
-    return { ok: false, error: resolved.error, fileCount: "fileCount" in resolved ? (resolved as { fileCount: number }).fileCount : undefined };
-  }
+  if (!plan.items.length) return { ok: false, error: "empty_scope" };
 
   const row: typeof schema.downloadRequests.$inferInsert = {
     id: crypto.randomUUID(),
@@ -147,17 +103,18 @@ export async function createDownloadRequest(params: {
     clientEmail: params.clientEmail,
     scope: params.scope,
     folderName: params.scope === "folder" ? params.folderName ?? null : null,
-    assetIds: params.scope === "photos" ? JSON.stringify(resolved.assetIds) : null,
+    assetIds: assetIds ? JSON.stringify(assetIds) : null,
     sizePref: params.sizePref,
     state: params.approvalRequired ? "requested" : "approved",
     note: params.note?.slice(0, 500) ?? null,
-    fileCount: resolved.fileCount,
+    fileCount: plan.items.length,
+    zipBytes: plan.totalBytes,
   };
   await db.insert(schema.downloadRequests).values(row);
   return { ok: true, request: row as DownloadRequestRow };
 }
 
-/** Studio decision on a requested ZIP (state machine enforced). */
+/** Studio decision on a requested download (state machine enforced). */
 export async function decideDownloadRequest(params: {
   organizationId: string;
   id: string;
@@ -193,27 +150,18 @@ export async function decideDownloadRequest(params: {
   return { ok: true };
 }
 
-/** Cron transitions. */
-export async function markDownloadState(
-  id: string,
-  state: DownloadState,
-  extra?: Partial<{ zipKey: string; zipBytes: number; fileCount: number; builtAtSec: number; expiresAtSec: number }>,
-): Promise<void> {
+/** A client started pulling an approved request: count it, and flip
+ * approved → delivered on the first part (later parts and re-downloads keep
+ * working while the gallery is live). */
+export async function recordRequestDelivery(row: DownloadRequestRow): Promise<void> {
+  const next = row.state === "approved" && canTransition("approved", "delivered") ? "delivered" : row.state;
   await getDb()
     .update(schema.downloadRequests)
-    .set({
-      state,
-      updatedAt: new Date(),
-      ...(extra?.zipKey ? { zipKey: extra.zipKey } : {}),
-      ...(extra?.zipBytes ? { zipBytes: extra.zipBytes } : {}),
-      ...(extra?.fileCount ? { fileCount: extra.fileCount } : {}),
-      ...(extra?.builtAtSec ? { builtAt: extra.builtAtSec } : {}),
-      ...(extra?.expiresAtSec ? { expiresAt: extra.expiresAtSec } : {}),
-    })
-    .where(eq(schema.downloadRequests.id, id));
+    .set({ state: next, downloadCount: sql`${schema.downloadRequests.downloadCount} + 1`, updatedAt: new Date() })
+    .where(eq(schema.downloadRequests.id, row.id));
 }
 
-/** Photos downloaded this grant (per-photo events only — ZIP fetches log
+/** Photos downloaded this grant (per-photo events only — ZIP parts log
  * 'zip_download' and never consume the client's cap). */
 export async function photoDownloadCount(grantId: string): Promise<number> {
   const rows = await getDb()
@@ -223,44 +171,39 @@ export async function photoDownloadCount(grantId: string): Promise<number> {
   return rows[0]?.n ?? 0;
 }
 
-/** The soft cap check for the asset route's download path. */
-export async function downloadCapRemaining(grant: GrantRow): Promise<number | null> {
-  const settings = downloadSettingsOf(grant);
-  if (!settings.limit) return null;
-  const used = await photoDownloadCount(grant.id);
-  return settings.limit - used;
-}
-
-export async function countPendingZipBuilds(): Promise<number> {
+/** ZIP parts this grant started since `sinceMs` - the abuse ceiling that
+ * replaces the old "5 queued builds" cap. */
+export async function zipPartsStartedSince(grantId: string, sinceMs: number): Promise<number> {
   const rows = await getDb()
     .select({ n: sql<number>`count(*)` })
-    .from(schema.downloadRequests)
-    .where(eq(schema.downloadRequests.state, "approved"));
+    .from(schema.shareAccessLogs)
+    .where(
+      and(
+        eq(schema.shareAccessLogs.grantId, grantId),
+        eq(schema.shareAccessLogs.event, "zip_download"),
+        sql`${schema.shareAccessLogs.createdAt} >= ${Math.floor(sinceMs / 1000)}`,
+      ),
+    );
   return rows[0]?.n ?? 0;
 }
 
-/** Active grants expiring within the horizon that haven't had their
- * reminder yet (cron — the 3-days-out email). */
-export async function grantsExpiringWithin(hours: number, limit = 100): Promise<GrantRow[]> {
-  const nowSec = Math.floor(Date.now() / 1000);
-  const untilSec = nowSec + Math.round(hours * 3600);
-  return getDb()
-    .select()
-    .from(schema.shareGrants)
-    .where(
-      and(
-        eq(schema.shareGrants.status, "active"),
-        isNull(schema.shareGrants.expiryRemindedAt),
-        isNotNull(schema.shareGrants.expiresAt),
-        sql`${schema.shareGrants.expiresAt} > ${nowSec}`,
-        sql`${schema.shareGrants.expiresAt} <= ${untilSec}`,
-      ),
-    )
+/** One-time cleanup of archives the retired cron pipeline left in R2 (rows
+ * from before downloads 3.0 still carry a zip_key). Bounded per run; once it
+ * reports 0 everywhere this function and the zip_key column can be dropped. */
+export async function purgeLegacyZips(limit = 50): Promise<number> {
+  const db = getDb();
+  const stale = await db
+    .select({ id: schema.downloadRequests.id, organizationId: schema.downloadRequests.organizationId, zipKey: schema.downloadRequests.zipKey })
+    .from(schema.downloadRequests)
+    .where(isNotNull(schema.downloadRequests.zipKey))
     .limit(limit);
+  for (const row of stale) {
+    try {
+      if (row.zipKey) await deleteObject(row.organizationId, row.zipKey);
+      await db.update(schema.downloadRequests).set({ zipKey: null }).where(eq(schema.downloadRequests.id, row.id));
+    } catch (err) {
+      console.error("legacy zip purge failed:", String(err));
+    }
+  }
+  return stale.length;
 }
-
-export async function markExpiryReminder(grantId: string): Promise<void> {
-  await getDb().update(schema.shareGrants).set({ expiryRemindedAt: Math.floor(Date.now() / 1000) }).where(eq(schema.shareGrants.id, grantId));
-}
-
-export { parseAssetIds };

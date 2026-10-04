@@ -35,6 +35,20 @@ export default function Releases() {
         polish fold into the next entry rather than getting their own.
       </Note>
 
+      <Release version="0.6.0" date="October 4, 2026">
+        <p>
+          <strong>Download all, instantly, on every plan.</strong> Clients press Download and their
+          files start saving right away - no more waiting for an overnight ZIP and an email. It
+          works for the whole gallery, a folder, or favorites, includes films, and has no photo
+          limit: a 20&nbsp;GB wedding downloads as a few ZIP parts of about 2&nbsp;GB each that
+          open on any computer or phone, so a dropped connection only costs one part. Free
+          galleries get it too. Revoking or expiring a gallery now stops downloads even while
+          they&apos;re in progress, and renewing the link brings them back. Proofing galleries
+          deliver watermarked previews only, and original photos leave without location data.
+          Studios that require approval now email the client the moment they approve.
+        </p>
+      </Release>
+
       <Release version="0.5.4" date="October 2, 2026">
         <p>
           <strong>Safety release.</strong> A full independent review of every module found and

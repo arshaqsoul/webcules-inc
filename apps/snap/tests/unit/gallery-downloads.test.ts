@@ -1,16 +1,17 @@
-/* WEB-261 downloads 2.0 — pure model: settings validation, PIN helpers,
- * state machine, scope labels, zip name allocation, crc32. */
+/* WEB-261 downloads — pure model: settings validation, PIN helpers,
+ * the approval state machine, scope labels. (ZIP format: zip-stream.test.ts.) */
 import { describe, expect, it } from "vitest";
 
 import {
+  DOWNLOAD_STATES,
   canTransition,
+  isDownloadState,
   downloadScopeLabel,
   isValidPin,
   normalizeDownloadSettingsInput,
   parseDownloadSettings,
   type DownloadSettings,
 } from "@/lib/gallery-downloads";
-import { allocateZipName, crc32 } from "@/lib/zip-store";
 
 const SETTINGS: DownloadSettings = { pinHash: null, limit: null, approval: false, webSize: false };
 
@@ -57,38 +58,27 @@ describe("PIN (WEB-261)", () => {
   });
 });
 
-describe("state machine (WEB-261)", () => {
-  it("requested → approved/rejected only; approved → zipping → ready → delivered", () => {
+describe("approval state machine (downloads 3.0)", () => {
+  it("requested → approved/rejected; approved → delivered; nothing else", () => {
     expect(canTransition("requested", "approved")).toBe(true);
     expect(canTransition("requested", "rejected")).toBe(true);
-    expect(canTransition("requested", "ready")).toBe(false);
-    expect(canTransition("approved", "zipping")).toBe(true);
-    expect(canTransition("zipping", "ready")).toBe(true);
-    expect(canTransition("zipping", "failed")).toBe(true);
-    expect(canTransition("ready", "delivered")).toBe(true);
-    expect(canTransition("ready", "expired")).toBe(true);
-    expect(canTransition("delivered", "ready")).toBe(false);
+    expect(canTransition("requested", "delivered")).toBe(false);
+    expect(canTransition("approved", "delivered")).toBe(true);
+    expect(canTransition("approved", "rejected")).toBe(false);
+    expect(canTransition("delivered", "approved")).toBe(false);
     expect(canTransition("rejected", "approved")).toBe(false);
+  });
+
+  it("the retired build states are not states any more", () => {
+    for (const gone of ["zipping", "ready", "expired", "failed"]) expect(isDownloadState(gone)).toBe(false);
+    expect(DOWNLOAD_STATES).toEqual(["requested", "approved", "rejected", "delivered"]);
   });
 });
 
-describe("labels + zip helpers (WEB-261)", () => {
+describe("labels (WEB-261)", () => {
   it("scope labels", () => {
     expect(downloadScopeLabel("all", null)).toBe("the whole gallery");
     expect(downloadScopeLabel("favorites", null)).toBe("your favorites");
     expect(downloadScopeLabel("folder", "Ceremony")).toBe("“Ceremony”");
-  });
-
-  it("allocateZipName dedupes with folder prefixes and (n) suffixes", () => {
-    const taken = new Set<string>();
-    expect(allocateZipName(taken, "Ceremony", "IMG_1.jpg")).toBe("Ceremony/IMG_1.jpg");
-    expect(allocateZipName(taken, "Ceremony", "IMG_1.jpg")).toBe("Ceremony/IMG_1 (2).jpg");
-    expect(allocateZipName(taken, null, "IMG_1.jpg")).toBe("IMG_1.jpg");
-    expect(allocateZipName(taken, null, "IMG_1.jpg")).toBe("IMG_1 (2).jpg");
-    expect(allocateZipName(taken, "Par/ty", "x.jpg")).toBe("Par-ty/x.jpg");
-  });
-
-  it("crc32 matches the canonical vector", () => {
-    expect(crc32(new TextEncoder().encode("123456789"))).toBe(0xcbf43926);
   });
 });
