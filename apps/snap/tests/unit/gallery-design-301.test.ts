@@ -72,8 +72,9 @@ describe("parseGalleryDesign — WEB-301 additions", () => {
 describe("columnsVars / heroImages", () => {
   it("emits CSS vars only for configured breakpoints", () => {
     expect(columnsVars(parseGalleryDesign({ ...LEGACY, columns: { md: 2 } }))).toEqual({ "--snap-cols-md": "2" });
+    // Phone floor: a mobile count above 2 is clamped to 2.
     expect(columnsVars(parseGalleryDesign({ ...LEGACY, columns: { mobile: 3, sm: 2, md: 5 } }))).toEqual({
-      "--snap-cols": "3",
+      "--snap-cols": "2",
       "--snap-cols-sm": "2",
       "--snap-cols-md": "5",
     });
