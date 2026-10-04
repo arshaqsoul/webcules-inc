@@ -35,6 +35,19 @@ export default function Releases() {
         polish fold into the next entry rather than getting their own.
       </Note>
 
+      <Release version="0.9.0" date="October 4, 2026">
+        <p>
+          <strong>Galleries that fill the phone.</strong> Open any gallery on a phone and the photos
+          are the stars: grid layouts show at most two columns, masonry galleries stack as one
+          full-width column so landscape shots keep their shape, and photos sit 4px apart like a
+          camera roll — whatever spacing the template asks for. The Mobile view in the preview (the
+          phone-shaped frame) now renders exactly what a real phone shows, so what you check is what
+          your client gets. The template cards draw the template&rsquo;s real layout too — a masonry
+          template card finally looks like masonry, and every card shows its own canvas, colors and
+          corners.
+        </p>
+      </Release>
+
       <Release version="0.8.1" date="October 4, 2026">
         <p>
           <strong>Arranging photos is now a proper workspace.</strong> Press Share in the Files tab
