@@ -58,6 +58,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     orderMode?: string;
     /** Uploaded welcome collage (POST /api/projects/{id}/welcome) to head the email + gallery. */
     welcomeImageId?: string;
+    /** Also show the collage as the first image on the client gallery (opt-in). */
+    welcomeBanner?: boolean;
   };
   try {
     body = (await req.json()) as typeof body;
@@ -177,7 +179,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   // (Never on proofing galleries; a bad id just sends without it.)
   let welcomeImageUrl: string | null = null;
   if (typeof body.welcomeImageId === "string" && body.proofing !== true) {
-    const attached = await attachWelcomeImage({ organizationId: ctx.organizationId, grantId: created.grantId, imageId: body.welcomeImageId });
+    const attached = await attachWelcomeImage({
+      organizationId: ctx.organizationId,
+      grantId: created.grantId,
+      imageId: body.welcomeImageId,
+      banner: body.welcomeBanner === true,
+    });
     if (attached.ok) {
       const row = (await getDb().select().from(schema.shareGrants).where(eq(schema.shareGrants.id, created.grantId)).limit(1))[0];
       welcomeImageUrl = row ? await welcomeImageUrlFor(ctx.organizationId, row) : null;

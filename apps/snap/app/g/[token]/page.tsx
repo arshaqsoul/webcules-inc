@@ -268,6 +268,7 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
         projectTitle={projectTitle}
         eventDate={eventDate}
         welcomeImageUrl={grant.welcomeImageId ? await welcomeLink(grant.welcomeImageId) : null}
+        welcomeBanner={grant.welcomeBanner === true}
       />
       </>
     );
@@ -315,6 +316,7 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
       projectTitle={projectTitle}
       eventDate={eventDate}
       welcomeImageUrl={grant.welcomeImageId ? await welcomeLink(grant.welcomeImageId) : null}
+      welcomeBanner={grant.welcomeBanner === true}
     />
     </>
   );

@@ -83,11 +83,19 @@ export function WelcomeCollage({
   disabled,
   accent,
   defaultCaption,
+  inline,
+  banner,
+  onBanner,
 }: {
   projectId: string;
   value: WelcomeValue;
   onChange: (next: WelcomeValue) => void;
   disabled?: boolean;
+  /** Render as a row inside a parent form card (no own border/padding). */
+  inline?: boolean;
+  /** "First image on the client gallery" opt-in (email is unconditional). */
+  banner?: boolean;
+  onBanner?: (next: boolean) => void;
   /** Studio accent color, offered as a background in the maker. */
   accent?: string;
   /** Pre-fills the maker's caption (e.g. the project title). */
@@ -116,12 +124,12 @@ export function WelcomeCollage({
   }
 
   return (
-    <div className="rounded-lg border border-hairline bg-surface-1 p-3">
+    <div className={inline ? "w-full py-1" : "rounded-lg border border-hairline bg-surface-1 p-3"}>
       <div className="flex flex-wrap items-center gap-3">
         <div className="min-w-40 flex-1">
           <p className="text-xs font-medium text-ink">Welcome collage <span className="font-normal text-ink-tertiary">(optional)</span></p>
           <p className="text-[11px] leading-relaxed text-ink-tertiary">
-            Heads the email and the top of the gallery. It's visible to anyone who gets the email, so only use photos you're happy to show there.
+            Heads the "your photos are ready" email. It's visible to anyone who gets the email, so only use photos you're happy to show there.
           </p>
         </div>
         {value && (
@@ -143,6 +151,18 @@ export function WelcomeCollage({
           )}
         </div>
       </div>
+      {value && onBanner && (
+        <label className="flex items-center gap-2 pt-1 text-xs text-ink-subtle">
+          <input
+            type="checkbox"
+            checked={banner === true}
+            onChange={(e) => onBanner(e.target.checked)}
+            disabled={disabled}
+            className="h-4 w-4 accent-[var(--primary)]"
+          />
+          Show as the first image on the client gallery
+        </label>
+      )}
       {error && <p className="mt-2 text-xs text-destructive" role="alert">{error}</p>}
 
       <CollageMaker
@@ -446,7 +466,8 @@ export function GrantCollageDialog({
   accent?: string;
   defaultCaption?: string;
 }) {
-  const [current, setCurrent] = useState<{ url: string | null; proofing: boolean } | null>(null);
+  const [current, setCurrent] = useState<{ url: string | null; proofing: boolean; banner?: boolean } | null>(null);
+  const [banner, setBanner] = useState(false);
   const [value, setValue] = useState<WelcomeValue>(null);
   const [status, setStatus] = useState("");
 
@@ -454,10 +475,14 @@ export function GrantCollageDialog({
     if (!open || !grantId) return;
     setCurrent(null);
     setValue(null);
+    setBanner(false);
     setStatus("");
     void fetch(`/api/grants/${grantId}/welcome`)
-      .then((r) => (r.ok ? (r.json() as Promise<{ url: string | null; proofing: boolean }>) : null))
-      .then((body) => setCurrent(body ?? { url: null, proofing: false }))
+      .then((r) => (r.ok ? (r.json() as Promise<{ url: string | null; proofing: boolean; banner?: boolean }>) : null))
+      .then((body) => {
+        setCurrent(body ?? { url: null, proofing: false });
+        setBanner(body?.banner === true);
+      })
       .catch(() => setCurrent({ url: null, proofing: false }));
   }, [open, grantId]);
 
@@ -487,6 +512,16 @@ export function GrantCollageDialog({
     }
   }
 
+  async function toggleBanner(next: boolean) {
+    if (!grantId) return;
+    setBanner(next);
+    await fetch(`/api/grants/${grantId}/welcome`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ banner: next }),
+    }).catch(() => undefined);
+  }
+
   const shown = value?.previewUrl ?? current?.url ?? null;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -511,6 +546,8 @@ export function GrantCollageDialog({
               onChange={(next) => void change(next)}
               accent={accent}
               defaultCaption={defaultCaption}
+              banner={banner}
+              onBanner={(next) => void toggleBanner(next)}
             />
             {status && <p className="text-xs text-ink-subtle" aria-live="polite">{status}</p>}
           </div>

@@ -707,6 +707,9 @@ export const shareGrants = sqliteTable(
     orderMode: text("order_mode").notNull().default("upload_old"),
     /** Optional welcome collage (welcome_image.id) shown in the email + gallery header. */
     welcomeImageId: text("welcome_image_id"),
+    /** Show the welcome image as the first thing on the client gallery
+     * (the email always heads with it; the banner is opt-in). */
+    welcomeBanner: integer("welcome_banner", { mode: "boolean" }).notNull().default(false),
     /** Client interaction mode (0024): off | favorites | selection. */
     selectionMode: text("selection_mode").notNull().default("favorites"),
     /** Max picks for selection mode; null = unlimited. */

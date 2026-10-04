@@ -97,6 +97,8 @@ export function ProjectGalleries({
   const [arrangeGrant, setArrangeGrant] = useState<string | null>(null);
   // Optional welcome collage for the email + gallery header (all plans).
   const [welcome, setWelcome] = useState<WelcomeValue>(null);
+  // Opt-in: also show the collage as the first image on the client gallery.
+  const [welcomeBanner, setWelcomeBanner] = useState(false);
   const [collageGrant, setCollageGrant] = useState<string | null>(null);
   const [orderStatus, setOrderStatus] = useState("");
   const [selectionMode, setSelectionMode] = useState<"favorites" | "selection" | "off">("favorites");
@@ -269,7 +271,7 @@ export function ProjectGalleries({
           expiresInDays: days ? Number(days) : null,
           allowDownload,
           orderMode,
-          ...(welcome ? { welcomeImageId: welcome.imageId } : {}),
+          ...(welcome ? { welcomeImageId: welcome.imageId, welcomeBanner } : {}),
           selectionMode,
           selectionLimit: selectionMode === "selection" ? Number(selectionLimitInput) || null : null,
           selectionDeadline:
@@ -291,6 +293,7 @@ export function ProjectGalleries({
         setFlash({ url: body.url ?? "", emailed: Boolean(body.emailed) });
         setDeliverFolders(new Set());
         setWelcome(null);
+        setWelcomeBanner(false);
         router.refresh();
       }
     } catch {
@@ -492,6 +495,15 @@ export function ProjectGalleries({
             </label>
           </>
         )}
+        <WelcomeCollage
+          projectId={projectId}
+          value={welcome}
+          onChange={setWelcome}
+          disabled={busy}
+          inline
+          banner={welcomeBanner}
+          onBanner={setWelcomeBanner}
+        />
         <a
           href={`/g/${projectId}/preview`}
           target="_blank"
@@ -505,7 +517,6 @@ export function ProjectGalleries({
           {busy ? "Working…" : `Share ${deliverCount} approved file${deliverCount === 1 ? "" : "s"}${deliverFolders.size ? ` · ${deliverFolders.size} folder${deliverFolders.size === 1 ? "" : "s"}` : ""}`}
         </Button>
       </div>
-      <WelcomeCollage projectId={projectId} value={welcome} onChange={setWelcome} disabled={busy} />
       {deliverableFolders.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5 rounded-[12px] border border-hairline bg-surface-1 px-4 py-2.5">
           <span className="mr-1 text-xs text-ink-subtle">

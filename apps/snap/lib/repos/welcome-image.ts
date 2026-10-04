@@ -82,6 +82,8 @@ export async function attachWelcomeImage(params: {
   organizationId: string;
   grantId: string;
   imageId: string;
+  /** Show the image as the first thing on the gallery (email is unconditional). */
+  banner?: boolean;
 }): Promise<{ ok: true } | { ok: false; error: "not_found" | "proofing" | "wrong_project" }> {
   const db = getDb();
   const grant = (
@@ -103,12 +105,23 @@ export async function attachWelcomeImage(params: {
   if (image.projectId !== grant.projectId) return { ok: false, error: "wrong_project" };
 
   const previousId = grant.welcomeImageId;
-  await db.update(schema.shareGrants).set({ welcomeImageId: image.id }).where(eq(schema.shareGrants.id, grant.id));
+  await db
+    .update(schema.shareGrants)
+    .set({ welcomeImageId: image.id, ...(params.banner !== undefined ? { welcomeBanner: params.banner } : {}) })
+    .where(eq(schema.shareGrants.id, grant.id));
   if (previousId && previousId !== image.id && !(await referencedElsewhere(previousId, grant.id))) {
     const old = (await db.select().from(schema.welcomeImages).where(eq(schema.welcomeImages.id, previousId)).limit(1))[0];
     if (old) await deleteImage(old);
   }
   return { ok: true };
+}
+
+/** Toggle the gallery banner without touching the attached image. */
+export async function setWelcomeBanner(params: { organizationId: string; grantId: string; banner: boolean }): Promise<void> {
+  await getDb()
+    .update(schema.shareGrants)
+    .set({ welcomeBanner: params.banner })
+    .where(and(eq(schema.shareGrants.id, params.grantId), eq(schema.shareGrants.organizationId, params.organizationId)));
 }
 
 /** Detach (and delete, if unused elsewhere) a gallery's collage. */

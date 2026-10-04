@@ -11,6 +11,7 @@ import { Folder, X } from "lucide-react";
 
 import { Button } from "@webcules/ui/components/button";
 import { MediaLightbox, type LightboxItem } from "@/components/media-lightbox";
+import { WelcomeCollage, type WelcomeValue } from "@/components/welcome-collage";
 
 type DeliverFolder = { id: string; name: string; count: number };
 type PreviewAsset = { id: string; filename: string; kind: string };
@@ -73,6 +74,9 @@ export function SharePanel({
   const [email, setEmail] = useState(clientEmail ?? "");
   const [days, setDays] = useState(defaultExpiryDays === 0 ? "" : String(defaultExpiryDays));
   const [allowDownload, setAllowDownload] = useState(defaultAllowDownload);
+  // Optional welcome collage (heads the email; gallery banner is opt-in).
+  const [welcome, setWelcome] = useState<WelcomeValue>(null);
+  const [welcomeBanner, setWelcomeBanner] = useState(false);
   const [proofing, setProofing] = useState(false);
   const [folders, setFolders] = useState<DeliverFolder[]>([]);
   const [picked, setPicked] = useState<Set<string>>(new Set());
@@ -135,6 +139,7 @@ export function SharePanel({
           ...(picked.size ? { folderIds: Array.from(picked) } : {}),
           expiresInDays: days ? Number(days) : null,
           allowDownload,
+          ...(welcome && !proofing ? { welcomeImageId: welcome.imageId, welcomeBanner } : {}),
           // WEB-242: proofing — downloads deliver watermarked previews.
           proofing,
         }),
@@ -236,6 +241,18 @@ export function SharePanel({
               </span>
             </span>
           </label>
+
+          {!proofing && (
+            <WelcomeCollage
+              projectId={projectId}
+              value={welcome}
+              onChange={setWelcome}
+              disabled={sending}
+              inline
+              banner={welcomeBanner}
+              onBanner={setWelcomeBanner}
+            />
+          )}
 
           <div className="mt-4">
             <p className="text-xs font-medium text-ink">Deliver</p>
