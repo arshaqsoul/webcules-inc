@@ -868,6 +868,9 @@ function GalleryTile(props: {
   size: "square" | "natural" | "row" | "wide";
   rowAspect?: number;
   deterrents?: boolean;
+  /** Per-photo download on hover (images only; hidden when downloads are off). */
+  dlOk?: boolean;
+  onDownload?: () => void;
   onOpen: () => void;
   onHeart: () => void;
   onPick: () => void;
@@ -962,6 +965,30 @@ function GalleryTile(props: {
       {props.pickedLocked && (
         <span className="absolute left-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-[var(--accent)] text-xs font-bold text-white">✓</span>
       )}
+      {props.dlOk && props.onDownload && a.kind === "image" && (
+        <span
+          role="button"
+          tabIndex={0}
+          aria-label={`Download ${a.filename}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            props.onDownload?.();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              e.stopPropagation();
+              props.onDownload?.();
+            }
+          }}
+          className="absolute bottom-2 right-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/35 text-white/85 opacity-0 backdrop-blur transition-opacity hover:bg-black/55 focus-visible:opacity-100 group-hover:opacity-100"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+            <path d="M12 3v12m0 0 4-4m-4 4-4-4" />
+            <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+          </svg>
+        </span>
+      )}
       {a.kind === "image" ? (
         <BackoffImage
           id={a.id}
@@ -1030,6 +1057,9 @@ type SectionCtx = {
   deterrents?: boolean;
   onOpenAsset: (assetId: string) => void;
   onHeart: (assetId: string) => void;
+  /** Per-photo hover download (GalleryTile dlOk). */
+  downloadsOn: boolean;
+  onDownloadAsset: (assetId: string, filename: string) => void;
   onPick: (assetId: string) => void;
   onMeasured: (assetId: string, aspect: number) => void;
   onStartSlideshow: (assetId: string) => void;
@@ -1208,6 +1238,8 @@ function GallerySectionView({ section, assets, ctx }: { section: Extract<RenderS
       captions={ctx.design.theme.captions}
       radiusCls={ctx.radiusCls}
       deterrents={ctx.deterrents}
+      dlOk={ctx.downloadsOn}
+      onDownload={ctx.downloadsOn ? () => ctx.onDownloadAsset(a.id, a.filename) : undefined}
       onOpen={() => ctx.onOpenAsset(a.id)}
       onHeart={() => ctx.onHeart(a.id)}
       onPick={() => ctx.onPick(a.id)}
@@ -1304,6 +1336,8 @@ function FavoritesSectionView({ section, assets, ctx, fallbackHeading }: { secti
               captions={ctx.design.theme.captions}
               radiusCls={ctx.radiusCls}
               deterrents={ctx.deterrents}
+              dlOk={ctx.downloadsOn}
+              onDownload={ctx.downloadsOn ? () => ctx.onDownloadAsset(a.id, a.filename) : undefined}
               onOpen={() => ctx.onOpenAsset(a.id)}
               onHeart={() => ctx.onHeart(a.id)}
               onPick={() => ctx.onPick(a.id)}
@@ -2055,6 +2089,8 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
           deterrents,
           onOpenAsset: openAsset,
           onHeart: (id) => void heart(id),
+          downloadsOn: allowDownload,
+          onDownloadAsset: (id, filename) => void downloadVia(`/api/assets/${id}?download=1`, filename),
           onPick: togglePick,
           onMeasured: measureAspect,
           onStartSlideshow: startSlideshowAt,
@@ -2160,7 +2196,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
           coverAssetId={null}
         />
       )}
-      <header className="sticky top-0 z-10 border-b border-hairline bg-canvas/90 backdrop-blur">
+      <header className="sticky top-0 z-20 border-b border-hairline bg-canvas/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3.5">
           {logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element -- authorized proxy, no optimizer
@@ -2410,6 +2446,8 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
                           captions={captions}
                           radiusCls={radiusCls}
                           deterrents={deterrents}
+                          dlOk={allowDownload}
+                          onDownload={allowDownload ? () => void downloadVia(`/api/assets/${a.id}?download=1`, a.filename) : undefined}
                           onOpen={() => setOpen(idx)}
                           onHeart={() => void heart(a.id)}
                           onPick={() => togglePick(a.id)}
@@ -2433,6 +2471,8 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
                       captions={captions}
                       radiusCls={radiusCls}
                       deterrents={deterrents}
+                      dlOk={allowDownload}
+                      onDownload={allowDownload ? () => void downloadVia(`/api/assets/${a.id}?download=1`, a.filename) : undefined}
                       onOpen={() => setOpen(idx)}
                       onHeart={() => void heart(a.id)}
                       onPick={() => togglePick(a.id)}
@@ -2455,6 +2495,8 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
                         captions={captions}
                         radiusCls={radiusCls}
                         deterrents={deterrents}
+                        dlOk={allowDownload}
+                        onDownload={allowDownload ? () => void downloadVia(`/api/assets/${a.id}?download=1`, a.filename) : undefined}
                         onOpen={() => setOpen(idx)}
                         onHeart={() => void heart(a.id)}
                         onPick={() => togglePick(a.id)}
@@ -2481,6 +2523,8 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
                           captions={captions}
                           radiusCls={radiusCls}
                           deterrents={deterrents}
+                          dlOk={allowDownload}
+                          onDownload={allowDownload ? () => void downloadVia(`/api/assets/${a.id}?download=1`, a.filename) : undefined}
                           onOpen={() => setOpen(idx)}
                           onHeart={() => void heart(a.id)}
                           onPick={() => togglePick(a.id)}
@@ -2497,7 +2541,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
       )}
 
       {selectionMode === "selection" && (
-        <div className="sticky bottom-0 z-10 border-t border-hairline bg-canvas/95 backdrop-blur">
+        <div className="sticky bottom-0 z-20 border-t border-hairline bg-canvas/95 backdrop-blur">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-5 py-3">
             {deadlinePassed ? (
               <span className="text-sm text-ink-subtle">
