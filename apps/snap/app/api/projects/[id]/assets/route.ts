@@ -69,6 +69,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       folderId: a.folderId,
       tags: a.tags,
       createdAt: a.createdAt.toISOString(),
+      capturedAt: a.capturedAt && a.capturedAt > 0 ? a.capturedAt : null,
+      colorKey: a.colorKey,
     })),
     nextCursor: page.nextCursor,
     counts,

@@ -9,7 +9,7 @@ import { env } from "cloudflare:workers";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
-import { orderedIdsForSort, stepPositions, type SortMode } from "@/lib/gallery-order";
+import { isSortMode, orderedIdsForSort, stepPositions, type OrderMode } from "@/lib/gallery-order";
 import { forEachChunk, selectInChunks } from "@/lib/db-chunk";
 
 /** Rows inserted per statement (4 bound columns each, so 24 rows = 96 variables). */
@@ -126,7 +126,10 @@ export async function createShareGrant(params: {
   selectionLimit?: number | null;
   selectionDeadline?: number | null;
   /** How the photos are ordered in the gallery (default: upload date, oldest first). */
-  orderMode?: SortMode;
+  orderMode?: OrderMode;
+  /** The photographer's exact order (what they arranged before sending).
+   * Wins over `orderMode`; photos it omits follow in the default order. */
+  explicitOrder?: string[];
 }): Promise<
   | { ok: true; grantId: string; token: string }
   | { ok: false; error: "no_assets" | "asset_mismatch" }
@@ -162,7 +165,7 @@ export async function createShareGrant(params: {
 
   // Photo order: the chosen sort, applied inside each folder (folders keep
   // the order their first photo was uploaded in).
-  const orderMode = params.orderMode ?? "upload_old";
+  const orderMode: OrderMode = params.orderMode ?? (params.explicitOrder ? "custom" : "upload_old");
   const orderRows = await selectInChunks(params.assetIds, (chunk) =>
     db
       .select({
@@ -175,7 +178,7 @@ export async function createShareGrant(params: {
       .from(schema.assets)
       .where(inArray(schema.assets.id, chunk)),
   );
-  const orderedIds = orderedIdsForSort(
+  const defaultOrder = orderedIdsForSort(
     orderRows
       .map((r) => ({
         id: r.id,
@@ -186,9 +189,16 @@ export async function createShareGrant(params: {
         folder: folderByAsset.get(r.id) ?? null,
       }))
       .sort((a, b) => a.createdAtSec - b.createdAtSec || (a.id < b.id ? -1 : 1)),
-    orderMode,
+    isSortMode(orderMode) ? orderMode : "upload_old",
     Math.floor(Math.random() * 2 ** 31),
   );
+  let orderedIds = defaultOrder;
+  if (params.explicitOrder?.length) {
+    const wanted = new Set(params.assetIds);
+    const seen = new Set<string>();
+    const explicit = params.explicitOrder.filter((id) => wanted.has(id) && !seen.has(id) && seen.add(id));
+    orderedIds = [...explicit, ...defaultOrder.filter((id) => !seen.has(id))];
+  }
   const positionOf = stepPositions(orderedIds);
 
   const token = mintToken();
@@ -504,6 +514,7 @@ export async function regenerateShareGrant(params: {
     // The renewed link keeps the photographer's photo order and welcome collage.
     orderMode: old.orderMode,
     welcomeImageId: old.welcomeImageId,
+    welcomeBanner: old.welcomeBanner,
   });
   await insertGrantAssets(assetRows.map((row) => ({ grantId: newId, assetId: row.assetId, folderName: row.folderName ?? null, position: row.position })));
   await forEachChunk(

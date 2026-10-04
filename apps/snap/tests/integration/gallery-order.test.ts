@@ -97,6 +97,54 @@ describe("the order a client sees", () => {
   });
 });
 
+describe("sending in the exact order arranged before sending (Files-tab Share panel)", () => {
+  async function seedRaw(names: string[]) {
+    const s = await seedStudio({ plan: "free" });
+    const p = await seedProject(s.organizationId);
+    const ids: string[] = [];
+    for (const [i, filename] of names.entries()) {
+      ids.push(await seedAsset({ organizationId: s.organizationId, projectId: p, kind: "image", filename, status: "approved", createdAt: new Date(1_700_000_000_000 + i * 1000) }));
+    }
+    return { s, p, ids };
+  }
+  const send = async (g: Awaited<ReturnType<typeof seedRaw>>, extra: Parameters<typeof createShareGrant>[0] extends infer T ? Partial<T> : never) => {
+    const r = await createShareGrant({ organizationId: g.s.organizationId, projectId: g.p, clientEmail: "c@t.test", assetIds: g.ids, expiresAt: null, createdById: g.s.userId, ...extra });
+    if (!r.ok) throw new Error("grant");
+    return r.grantId;
+  };
+
+  it("the client gets precisely the arranged order, labelled custom", async () => {
+    const g = await seedRaw(["a.jpg", "b.jpg", "c.jpg", "d.jpg"]);
+    const grantId = await send(g, { explicitOrder: [g.ids[3], g.ids[1], g.ids[0], g.ids[2]] });
+    expect(await clientNames(grantId)).toEqual(["d.jpg", "b.jpg", "a.jpg", "c.jpg"]);
+    expect((await getShareGrant(g.s.organizationId, grantId))?.orderMode).toBe("custom");
+  });
+
+  it("a sort label is kept when the arranged order is a sort result", async () => {
+    const g = await seedRaw(["b.jpg", "a.jpg", "c.jpg"]);
+    const grantId = await send(g, { explicitOrder: [g.ids[1], g.ids[0], g.ids[2]], orderMode: "name_az" });
+    expect(await clientNames(grantId)).toEqual(["a.jpg", "b.jpg", "c.jpg"]);
+    expect((await getShareGrant(g.s.organizationId, grantId))?.orderMode).toBe("name_az");
+  });
+
+  it("photos the order omits follow in the default order; duplicates and foreign ids are ignored", async () => {
+    const g = await seedRaw(["a.jpg", "b.jpg", "c.jpg", "d.jpg"]);
+    const stranger = await seedRaw(["x.jpg"]);
+    const grantId = await send(g, { explicitOrder: [g.ids[2], g.ids[2], stranger.ids[0], "not-an-id", g.ids[0]] });
+    expect(await clientNames(grantId)).toEqual(["c.jpg", "a.jpg", "b.jpg", "d.jpg"]);
+    const members = await getGrantOrder(grantId);
+    expect(members.map((m) => m.id).sort()).toEqual([...g.ids].sort());
+    expect(new Set(members.map((m) => m.position)).size).toBe(4);
+  });
+
+  it("a 300-photo arrangement is stored exactly", async () => {
+    const g = await seedRaw(Array.from({ length: 300 }, (_, i) => `p${String(i).padStart(3, "0")}.jpg`));
+    const reversed = [...g.ids].reverse();
+    const grantId = await send(g, { explicitOrder: reversed });
+    expect((await getGrantOrder(grantId)).map((r) => r.id)).toEqual(reversed);
+  }, 60_000);
+});
+
 describe("sorting a delivered gallery", () => {
   it("applies every mode, records it, and is live for the client", async () => {
     const g = await seedGrant([

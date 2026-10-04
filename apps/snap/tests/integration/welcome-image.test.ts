@@ -14,6 +14,7 @@ import {
   attachWelcomeImage,
   removeWelcomeImage,
   saveWelcomeImage,
+  setWelcomeBanner,
   sweepOrphanWelcomeImages,
   welcomeImageUrlFor,
 } from "@/lib/repos/welcome-image";
@@ -190,6 +191,45 @@ describe("the public image route", () => {
     await attachWelcomeImage({ organizationId: s.organizationId, grantId, imageId: id });
     await removeWelcomeImage({ organizationId: s.organizationId, grantId });
     expect((await hit(id)).status).toBe(404);
+  });
+});
+
+describe("gallery banner (opt-in)", () => {
+  const bannerOf = async (grantId: string) => (await getDb().select().from(schema.shareGrants).where(eq(schema.shareGrants.id, grantId)))[0].welcomeBanner;
+
+  it("is OFF by default: the collage heads the email only", async () => {
+    const { s, p, grantId } = await seedGrant();
+    await attachWelcomeImage({ organizationId: s.organizationId, grantId, imageId: await upload(s, p) });
+    expect(await bannerOf(grantId)).toBe(false);
+  });
+
+  it("attach can switch it on; the toggle works without touching the image; it is org-scoped", async () => {
+    const { s, p, grantId } = await seedGrant();
+    const id = await upload(s, p);
+    await attachWelcomeImage({ organizationId: s.organizationId, grantId, imageId: id, banner: true });
+    expect(await bannerOf(grantId)).toBe(true);
+    await setWelcomeBanner({ organizationId: s.organizationId, grantId, banner: false });
+    expect(await bannerOf(grantId)).toBe(false);
+    expect((await imageRow(id)).id).toBe(id); // image untouched
+
+    const stranger = await seedGrant();
+    await setWelcomeBanner({ organizationId: stranger.s.organizationId, grantId, banner: true });
+    expect(await bannerOf(grantId)).toBe(false); // another studio can't flip it
+  });
+
+  it("replacing the image without a banner flag keeps the current choice", async () => {
+    const { s, p, grantId } = await seedGrant();
+    await attachWelcomeImage({ organizationId: s.organizationId, grantId, imageId: await upload(s, p), banner: true });
+    await attachWelcomeImage({ organizationId: s.organizationId, grantId, imageId: await upload(s, p) });
+    expect(await bannerOf(grantId)).toBe(true);
+  });
+
+  it("RENEWING a link keeps the banner choice (it used to be dropped)", async () => {
+    const { s, p, grantId } = await seedGrant();
+    await attachWelcomeImage({ organizationId: s.organizationId, grantId, imageId: await upload(s, p), banner: true });
+    const renewed = await regenerateShareGrant({ organizationId: s.organizationId, grantId, actorUserId: s.userId });
+    if (!renewed.ok) throw new Error("regen");
+    expect(await bannerOf(renewed.grantId)).toBe(true);
   });
 });
 

@@ -166,3 +166,36 @@ export function planMove(current: { id: string; position: number }[], moving: st
   }
   return { order, positions, renumbered: false };
 }
+
+/** The order after moving `ids` before `beforeId` (null = the end) - the pure
+ * "what would it look like" used for live drag previews and optimistic UI.
+ * Same result as planMove(...).order. */
+export function applyMove(order: string[], ids: string[], beforeId: string | null): string[] {
+  return planMove(
+    order.map((id, i) => ({ id, position: (i + 1) * POSITION_STEP })),
+    ids,
+    beforeId,
+  ).order;
+}
+
+/** Where a dragged group goes when the pointer is over `hoverId`: before it
+ * when moving toward the start, after it when moving toward the end. Returns
+ * `beforeId` for applyMove, or `undefined` for "no change" (hovering the
+ * group itself). Crossing the tile's CENTER is what triggers a swap, which
+ * is what stops a live-reflowing grid from flickering under the pointer. */
+export function dropTarget(order: string[], moving: string[], hoverId: string, pastCenter: boolean): string | null | undefined {
+  const movingSet = new Set(moving);
+  if (movingSet.has(hoverId)) return undefined;
+  const rest = order.filter((id) => !movingSet.has(id));
+  const hoverAt = rest.indexOf(hoverId);
+  if (hoverAt < 0) return undefined;
+  const groupAt = order.findIndex((id) => movingSet.has(id)); // where the block currently sits
+  const hoverOrderAt = order.indexOf(hoverId);
+  const hoverIsAfterBlock = hoverOrderAt > groupAt;
+  if (hoverIsAfterBlock) {
+    // moving toward the end: swap once the pointer is past the centre → insert AFTER the tile
+    return pastCenter ? (rest[hoverAt + 1] ?? null) : undefined;
+  }
+  // moving toward the start: swap once the pointer is before the centre → insert BEFORE the tile
+  return pastCenter ? undefined : hoverId;
+}

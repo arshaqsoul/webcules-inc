@@ -26,6 +26,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       kind: a.kind,
       folder: a.folder,
       colorKey: a.colorKey,
+      createdAtSec: a.createdAtSec,
       capturedAt: a.capturedAtSec && a.capturedAtSec > 0 ? a.capturedAtSec : null,
     })),
   });

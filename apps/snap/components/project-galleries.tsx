@@ -18,7 +18,8 @@ import {
 } from "@webcules/ui/components/dialog";
 import { useConfirm } from "@/components/confirm-provider";
 import { MediaLightbox, type LightboxItem } from "@/components/media-lightbox";
-import { GalleryArrange, analyzeColors } from "@/components/gallery-arrange";
+import { GalleryArrange } from "@/components/gallery-arrange";
+import { analyzeColors } from "@/lib/arrange-client";
 import { GrantCollageDialog, WelcomeCollage, type WelcomeValue } from "@/components/welcome-collage";
 import { SORT_LABELS, SORT_MODES, type SortMode } from "@/lib/gallery-order";
 
@@ -699,6 +700,7 @@ export function ProjectGalleries({
 
       <GalleryArrange
         grantId={arrangeGrant}
+        clientEmail={grants.find((g) => g.id === arrangeGrant)?.clientEmail}
         open={arrangeGrant !== null}
         onOpenChange={(v) => !v && setArrangeGrant(null)}
         onChanged={(grantId, order) =>

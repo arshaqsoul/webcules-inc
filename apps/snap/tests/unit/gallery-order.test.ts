@@ -7,6 +7,8 @@ import { exifCaptureDate } from "@/lib/exif";
 import {
   POSITION_STEP,
   SORT_MODES,
+  applyMove,
+  dropTarget,
   compareNatural,
   isOrderMode,
   isSortMode,
@@ -268,5 +270,48 @@ describe("exifCaptureDate", () => {
     const whole = jpegWithTiff(tiffWithDate("2026:06:14 15:30:05"));
     expect(exifCaptureDate(whole.slice(0, 40))).toBeNull();
     expect(exifCaptureDate(new ArrayBuffer(0))).toBeNull();
+  });
+});
+
+describe("live drag preview: applyMove + dropTarget", () => {
+  const order = ["a", "b", "c", "d", "e", "f"];
+
+  it("applyMove matches planMove's order", () => {
+    expect(applyMove(order, ["a"], "d")).toEqual(["b", "c", "a", "d", "e", "f"]);
+    expect(applyMove(order, ["e", "f"], "a")).toEqual(["e", "f", "a", "b", "c", "d"]);
+    expect(applyMove(order, ["b"], null)).toEqual(["a", "c", "d", "e", "f", "b"]);
+    expect(applyMove(order, ["a", "c"], "c")).toEqual(order); // dropped on itself
+  });
+
+  it("moving toward the end: swaps only once the pointer is PAST the tile's centre", () => {
+    expect(dropTarget(order, ["a"], "c", false)).toBeUndefined(); // still in c's near half: no flicker
+    expect(dropTarget(order, ["a"], "c", true)).toBe("d"); // → lands after c
+    expect(dropTarget(order, ["a"], "f", true)).toBeNull(); // past the last tile → the end
+  });
+
+  it("moving toward the start: swaps once the pointer is BEFORE the centre", () => {
+    expect(dropTarget(order, ["e"], "b", true)).toBeUndefined();
+    expect(dropTarget(order, ["e"], "b", false)).toBe("b"); // → lands before b
+  });
+
+  it("hovering the dragged group itself changes nothing; unknown tiles are ignored", () => {
+    expect(dropTarget(order, ["c", "d"], "c", true)).toBeUndefined();
+    expect(dropTarget(order, ["c", "d"], "d", false)).toBeUndefined();
+    expect(dropTarget(order, ["a"], "zzz", true)).toBeUndefined();
+  });
+
+  it("a slow drag across the grid walks the photo to the end one tile at a time, never skipping or oscillating", () => {
+    let cur = order;
+    let before: string | null = null;
+    const path = ["b", "c", "d", "e", "f"];
+    for (const hover of path) {
+      const shown = applyMove(cur, ["a"], before);
+      const t = dropTarget(shown, ["a"], hover, true);
+      if (t !== undefined) before = t;
+      cur = applyMove(order, ["a"], before);
+      // the same pointer position, re-evaluated after the reflow, must be a no-op
+      expect(dropTarget(cur, ["a"], hover, true)).toBeUndefined();
+    }
+    expect(cur).toEqual(["b", "c", "d", "e", "f", "a"]);
   });
 });

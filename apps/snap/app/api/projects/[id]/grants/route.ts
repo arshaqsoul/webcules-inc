@@ -8,7 +8,7 @@ import * as schema from "@/lib/db-schema";
 import { getOrgContext } from "@/lib/session";
 import { clientUrl } from "@/lib/client-urls";
 import { createShareGrant, listProjectGrants, normalizeExpiry } from "@/lib/shares/grants";
-import { isSortMode } from "@/lib/gallery-order";
+import { isOrderMode, isSortMode } from "@/lib/gallery-order";
 import { backfillCapturedAt } from "@/lib/repos/gallery-order";
 import { sendGrantEmail } from "@/lib/shares/notify";
 import { attachWelcomeImage, welcomeImageUrlFor } from "@/lib/repos/welcome-image";
@@ -56,6 +56,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     selectionLimit?: number | null;
     selectionDeadline?: number | null;
     orderMode?: string;
+    /** The exact photo order the photographer arranged before sending (asset ids). */
+    assetOrder?: string[];
     /** Uploaded welcome collage (POST /api/projects/{id}/welcome) to head the email + gallery. */
     welcomeImageId?: string;
     /** Also show the collage as the first image on the client gallery (opt-in). */
@@ -146,8 +148,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   // Date-taken sorts need capture dates: read any unscanned photos first
   // (bounded; photos still unscanned simply order by upload time).
-  const orderMode = isSortMode(body.orderMode) ? body.orderMode : "upload_old";
-  if (orderMode === "taken_old" || orderMode === "taken_new") {
+  const explicitOrder = Array.isArray(body.assetOrder) ? body.assetOrder.filter((x): x is string => typeof x === "string").slice(0, 20000) : undefined;
+  const orderMode = isOrderMode(body.orderMode) ? body.orderMode : explicitOrder?.length ? "custom" : "upload_old";
+  if (!explicitOrder?.length && isSortMode(orderMode) && (orderMode === "taken_old" || orderMode === "taken_new")) {
     for (let pass = 0; pass < 5; pass++) {
       if ((await backfillCapturedAt(ctx.organizationId, id)).remaining === 0) break;
     }
@@ -159,6 +162,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     clientEmail,
     assetIds,
     orderMode,
+    ...(explicitOrder?.length ? { explicitOrder } : {}),
     expiresAt,
     createdById: ctx.user.id,
     allowDownload: body.allowDownload !== false,

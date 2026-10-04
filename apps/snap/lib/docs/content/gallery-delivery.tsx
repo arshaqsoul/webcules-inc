@@ -105,10 +105,13 @@ export default function GalleryDelivery() {
 
       <H2>Arrange the order your client sees</H2>
       <p>
-        <strong>Photo order is on every plan.</strong> Choose how a gallery is ordered when you send
-        it (the &ldquo;Photo order&rdquo; menu), or press <strong>Arrange</strong> on any sent gallery
-        to change it later &mdash; the change is live, so the client sees the new order the next time
-        they open the link and nothing needs re-sending.
+        <strong>Photo order is on every plan.</strong> When you press <strong>Share</strong> in the
+        Files tab, choose the &ldquo;Photo order&rdquo; or press <strong>Arrange photos</strong> to
+        open a full-screen workspace with large thumbnails: drag photos into place and the others
+        make room live. Exactly the order you see is the order your client gets. Press{" "}
+        <strong>Arrange</strong> on any sent gallery to change it later &mdash; the change is live,
+        so the client sees the new order the next time they open the link and nothing needs
+        re-sending.
       </p>
       <ul>
         <li>
@@ -120,7 +123,8 @@ export default function GalleryDelivery() {
         </li>
         <li>
           <strong>Drag and drop</strong> to fine-tune: drag a photo, or select several (click,
-          shift-click for a range) and drag them together. On a phone or with the keyboard use{" "}
+          shift-click for a range) and drag them together. Use the size slider to see photos bigger,
+          and double-click any photo to view it full size. On a phone or with the keyboard use{" "}
           <em>To start</em>, <em>Earlier</em>, <em>Later</em>, <em>To end</em> or{" "}
           <em>Move to&hellip;</em>.
         </li>
@@ -139,7 +143,8 @@ export default function GalleryDelivery() {
         with a stack or a row, or a strip), a shape (landscape, square or portrait), spacing and
         background &mdash; plus an optional caption like &ldquo;Mia &amp; Leo &middot; June
         2026&rdquo;. It appears at the top of the &ldquo;your photos are ready&rdquo; email, linking
-        to the gallery, and at the top of the gallery itself.
+        to the gallery. Tick <em>Show as the first image on the client gallery</em> to also put it
+        at the top of the gallery itself (off by default).
       </p>
       <ul>
         <li>
