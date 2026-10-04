@@ -10,7 +10,7 @@ import { FadeUp } from "./text-reveal";
 const POINTS = [
   { icon: Smartphone, title: "A photo app, not a link", body: "Clients install your gallery to their home screen. Their photos, one tap away, forever." },
   { icon: Heart, title: "Favorites you can see", body: "Every heart lands on your side in real time - with notes, lists and exports for album design." },
-  { icon: Download, title: "Downloads on your terms", body: "PIN-protect downloads, offer web-size or full ZIPs, or require your approval first." },
+  { icon: Download, title: "Downloads on your terms", body: "One-click Download all for every client, PIN-protect downloads, offer web-size or full resolution, or require your approval first." },
   { icon: Palette, title: "Entirely your brand", body: "Your logo, accent color and domain. On Studio and above, Snap disappears completely." },
 ];
 

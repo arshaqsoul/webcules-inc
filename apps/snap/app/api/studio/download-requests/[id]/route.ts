@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { getOrgContext } from "@/lib/session";
 import { decideDownloadRequest } from "@/lib/repos/downloads";
+import { sendDownloadApprovedEmail } from "@/lib/repos/downloads-notify";
 
 export const dynamic = "force-dynamic";
 
@@ -29,5 +30,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     actorUserId: ctx.user.id,
   });
   if (!result.ok) return Response.json({ error: result.error }, { status: result.error === "not_found" ? 404 : 409 });
+  if (parsed.data.action === "approve") {
+    // Tell the client it is ready to pull; a mail failure never undoes the approval.
+    await sendDownloadApprovedEmail(id).catch((err) => console.error("download approved email failed:", String(err)));
+  }
   return Response.json({ ok: true });
 }

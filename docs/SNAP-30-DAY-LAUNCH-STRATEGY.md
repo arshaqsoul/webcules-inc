@@ -42,7 +42,7 @@ One login, one bill, **0% commission — ever**. 20 GB free, no credit card.
 
 **Pricing (public):**
 - **Free $0** — 20 GB (incl. 3 GB RAW pocket), unlimited bookings/leads/contracts/invoices, 5 active galleries, full CRM + pipeline.
-- **Lite $15/mo** — 150 GB pooled, unlimited RAW Vault, 15 galleries, client photo app `/my`, slideshows with your music, download PIN & bulk ZIPs, 3 studios, 3 session types.
+- **Lite $15/mo** — 150 GB pooled, unlimited RAW Vault, 15 galleries, client photo app `/my`, slideshows with your music, download PIN & web-size option, 3 studios, 3 session types.
 - **Studio $29/mo** (most popular) — 500 GB then $0.10/GB, unlimited galleries, sneak peeks + download approvals, favorites lists/notes/exports, per-photo insights + heat map, white-label (remove Snap branding), watermarks, custom domain +$5/mo, unlimited session types & form fields, RAW Vault + payment automations.
 - **Pro $59/mo** — 2 TB, teams & permissions, your own photo-app domain, 2 custom domains, white-label everything, contracts & e-sign, priority support.
 - Overage: flat $0.10/GB-month. Client payments run through the photographer's own Stripe at Stripe's rate — "that fee goes to Stripe, never to us."

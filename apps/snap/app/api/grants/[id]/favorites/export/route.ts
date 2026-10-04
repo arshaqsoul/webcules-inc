@@ -1,7 +1,8 @@
 /* /api/grants/{id}/favorites/export (WEB-264) — the studio's favorites
- * export. CSV now (request-path — tiny); "as ZIP" routes through the async
- * download_request flow (scope=photos with the resolved ids — cron builds
- * it like any other). Studio+ gate per WEB-267. */
+ * export. POST returns the CSV, or (zip:true) a manifest of the streamed
+ * ZIP parts; GET ?part=N streams one part straight from R2 (same engine as
+ * the client's download-all - nothing is built ahead or emailed).
+ * Studio+ gate per WEB-267. */
 import { and, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 
@@ -10,7 +11,7 @@ import * as schema from "@/lib/db-schema";
 import { getOrgContext } from "@/lib/session";
 import { getPlanEntitlements } from "@/lib/plans";
 import { listFavoriteDetails } from "@/lib/shares/selections";
-import { createDownloadRequest } from "@/lib/repos/downloads";
+import { buildZipPlan, manifestOf, zipPartResponse } from "@/lib/zip-delivery";
 
 export const dynamic = "force-dynamic";
 
@@ -24,11 +25,21 @@ function csvCell(value: string): string {
   return `"${value.replace(/"/g, '""')}"`;
 }
 
-export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const ctx = await getOrgContext();
-  if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
-  const { id } = await params;
+type GrantRow = typeof schema.shareGrants.$inferSelect;
 
+function zipPlanFor(grant: GrantRow, assetIds: string[], size: "full" | "web") {
+  return buildZipPlan({
+    organizationId: grant.organizationId,
+    grantId: grant.id,
+    // The studio exports its own gallery's photos; proofing watermarks protect the client view only.
+    proofing: false,
+    selection: { scope: "photos", assetIds, size },
+  });
+}
+
+async function loadStudioGrant(id: string) {
+  const ctx = await getOrgContext();
+  if (!ctx) return { error: Response.json({ error: "unauthorized" }, { status: 401 }) } as const;
   const grant = (
     await getDb()
       .select()
@@ -36,12 +47,35 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       .where(and(eq(schema.shareGrants.id, id), eq(schema.shareGrants.organizationId, ctx.organizationId)))
       .limit(1)
   )[0];
-  if (!grant) return Response.json({ error: "not_found" }, { status: 404 });
-
+  if (!grant) return { error: Response.json({ error: "not_found" }, { status: 404 }) } as const;
   const ent = await getPlanEntitlements(ctx.organizationId);
   if (ent?.id !== "studio" && ent?.id !== "pro") {
-    return Response.json({ error: "exports_require_studio" }, { status: 403 });
+    return { error: Response.json({ error: "exports_require_studio" }, { status: 403 }) } as const;
   }
+  return { grant } as const;
+}
+
+/** GET ?size=web&listId=&part=N[&v=] - one streamed ZIP part of the favorites. */
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const loaded = await loadStudioGrant(id);
+  if ("error" in loaded) return loaded.error;
+  const url = new URL(req.url);
+  const listId = url.searchParams.get("listId");
+  const details = (await listFavoriteDetails(loaded.grant.id)).filter((d) => !listId || d.listId === listId);
+  const plan = await zipPlanFor(loaded.grant, details.map((d) => d.assetId), url.searchParams.get("size") === "web" ? "web" : "full");
+  const part = Number(url.searchParams.get("part") ?? 1);
+  if (!plan.items.length || !Number.isInteger(part)) return Response.json({ error: "empty" }, { status: 400 });
+  const seen = url.searchParams.get("v");
+  if (seen && seen !== plan.revision) return Response.json({ error: "gallery_changed" }, { status: 409 });
+  return zipPartResponse(plan, part, { label: "Favorites" });
+}
+
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const loaded = await loadStudioGrant(id);
+  if ("error" in loaded) return loaded.error;
+  const grant = loaded.grant;
 
   const parsed = bodySchema.safeParse(await req.json().catch(() => ({})));
   const details = (await listFavoriteDetails(grant.id)).filter((d) => !parsed.data?.listId || d.listId === parsed.data.listId);
@@ -54,18 +88,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const nameOf = new Map(assetRows.map((a) => [a.id, a.filename]));
 
   if (parsed.data?.zip) {
-    // Async ZIP through the standard pipeline — cron builds it, the client
-    // (this grant's email = the studio's client) gets the ready email.
-    const result = await createDownloadRequest({
-      grant,
-      clientEmail: grant.clientEmail,
-      scope: "photos",
-      assetIds: details.map((d) => d.assetId),
-      sizePref: parsed.data.sizePref === "web" ? "web" : "full",
-      approvalRequired: false,
-    });
-    if (!result.ok) return Response.json({ error: result.error }, { status: 400 });
-    return Response.json({ zip: true, requestId: result.request.id, fileCount: result.request.fileCount });
+    const plan = await zipPlanFor(grant, details.map((d) => d.assetId), parsed.data.sizePref === "web" ? "web" : "full");
+    if (!plan.items.length) return Response.json({ error: "empty" }, { status: 400 });
+    return Response.json({ zip: true, fileCount: plan.items.length, ...manifestOf(plan) });
   }
 
   const header = "filename,list,note,client,favorited_at";

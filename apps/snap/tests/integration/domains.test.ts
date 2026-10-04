@@ -346,7 +346,9 @@ describe("custom-domain add-on entitlement (WEB-231)", () => {
     await getDb().update(schema.studioProfiles).set({ planPeriodEnd: past }).where(eq(schema.studioProfiles.organizationId, s.organizationId));
     await applySubscriptionState(fakeSub(s.organizationId, { periodEnd: past }) as never);
     expect((await getStudioProfileRow(s.organizationId))?.addonCustomDomain).toBe(false);
-  });
+    // 20s: the first dynamic import of @/lib/billing (Stripe SDK) is cold and
+    // blew the 5s default when the whole suite runs in parallel.
+  }, 20_000);
 
   it("canceled subscription clears the addon + pending flags", async () => {
     const { applySubscriptionState } = await import("@/lib/billing");

@@ -32,7 +32,6 @@ export async function GET(req: Request) {
       zipBytes: schema.downloadRequests.zipBytes,
       note: schema.downloadRequests.note,
       createdAt: schema.downloadRequests.createdAt,
-      expiresAt: schema.downloadRequests.expiresAt,
       projectTitle: schema.projects.title,
     })
     .from(schema.downloadRequests)

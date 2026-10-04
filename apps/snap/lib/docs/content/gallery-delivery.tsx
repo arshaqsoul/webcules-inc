@@ -85,11 +85,22 @@ export default function GalleryDelivery() {
 
       <H2>Downloads under your control</H2>
       <p>
-        Per gallery: allow downloads (or not), set a 4–8 digit PIN <Tier plan="lite" />, cap how
-        many photos a client can pull, offer a web-size option <Tier plan="lite" />, and require
-        your approval before bulk requests <Tier plan="studio" />. Whole-gallery, favorites, or
-        folder ZIPs are built overnight and emailed as links that live as long as the gallery — the
-        link never outlives your revocation.
+        <strong>Download all is on every plan.</strong> Your client presses Download and the files
+        start saving straight away &mdash; whole gallery, one folder, or their favorites. There is
+        no waiting for an email: the ZIP is assembled on the fly while it downloads, so a 20&nbsp;GB
+        wedding behaves like a 20&nbsp;MB one. Galleries over 2&nbsp;GB arrive as a few ZIP parts
+        (&ldquo;Part 1 of 6&rdquo;) &mdash; every part opens on any computer or phone, and a dropped
+        connection only costs one part. Photos and films are both included; a single file over
+        4&nbsp;GB is downloaded on its own from the full-screen view.
+      </p>
+      <p>
+        Per gallery you can also allow downloads (or not), set a 4&ndash;8 digit PIN{" "}
+        <Tier plan="lite" />, cap how many single photos a client can pull, offer a web-size option{" "}
+        <Tier plan="lite" />, and require your approval before bulk downloads{" "}
+        <Tier plan="studio" />. Downloads follow the gallery&apos;s protections: proofing galleries
+        deliver watermarked previews only, and original JPEGs leave without location data.
+        Revoking or expiring a gallery stops downloads immediately &mdash; even ones already in
+        progress &mdash; and renewing the link restores them.
       </p>
 
       <H2>Social sharing that markets you</H2>
@@ -128,17 +139,14 @@ export default function GalleryDelivery() {
             <a href="/docs/video">Films &amp; video delivery</a>).
           </li>
           <li>
-            ZIP archives deliver photo originals byte-exact; the per-photo EXIF strip applies to
-            individual downloads and previews.
+            Download-all ZIPs are plain, uncompressed archives (photos are already compressed), so
+            their size matches your gallery. Very large galleries split into parts of about
+            2&nbsp;GB each &mdash; unzip them into the same folder.
           </li>
           <li>
             Offline caches on a client&apos;s device can&apos;t be wiped retroactively by anyone
             (true of every platform) — expiry, watermarks, and revocation are the real protection
             layers, and our app purges its caches on the next launch after a gallery dies.
-          </li>
-          <li>
-            Bulk ZIPs build on a daily schedule — requests made today are usually in the
-            client&apos;s inbox within hours, always within a day.
           </li>
         </ul>
       </Callout>

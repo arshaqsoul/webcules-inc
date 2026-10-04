@@ -1,7 +1,8 @@
-/* Downloads 2.0 model (WEB-261) — pure + client-safe: per-gallery download
- * controls (validated JSON on share_grant.download_settings), the
- * download-request state machine, and PIN hashing helpers. Multi-size + PIN
- * + ZIP are Lite+; the approvals hub is Studio+ (WEB-267 gate table). */
+/* Downloads model (WEB-261, streaming since 3.0) — pure + client-safe:
+ * per-gallery download controls (validated JSON on
+ * share_grant.download_settings), the approval state machine, and PIN
+ * hashing helpers. PIN + web size are Lite+; the approvals hub is Studio+;
+ * download-all itself is on every plan (WEB-267 gate table). */
 
 export type DownloadSettings = {
   /** SHA-256 hex of `${pin}:${grantId}` — the PIN itself is never stored. */
@@ -73,28 +74,28 @@ export function isValidPin(pin: string): boolean {
   return /^[0-9]{4,8}$/.test(pin);
 }
 
-/* ---------------- state machine ---------------- */
+/* ---------------- approval state machine ---------------- */
 
-export const DOWNLOAD_STATES = ["requested", "approved", "rejected", "zipping", "ready", "delivered", "expired", "failed"] as const;
+/** Download-all streams on demand (lib/zip-delivery.ts) - there is no
+ * build step. A request row exists only for galleries that require studio
+ * approval (and the studio's favorites export): requested → approved |
+ * rejected, then `delivered` once the client starts pulling it. */
+export const DOWNLOAD_STATES = ["requested", "approved", "rejected", "delivered"] as const;
 export type DownloadState = (typeof DOWNLOAD_STATES)[number];
 
-/** Terminal-ish for "occupies an approval/build slot". */
-export const ACTIVE_STATES: readonly DownloadState[] = ["requested", "approved", "zipping"];
+/** Waiting on the studio: occupies one of the client's request slots. */
+export const ACTIVE_STATES: readonly DownloadState[] = ["requested"];
 
 export function isDownloadState(state: string): state is DownloadState {
   return (DOWNLOAD_STATES as readonly string[]).includes(state);
 }
 
-/** Studio decisions + cron transitions. Anything not listed is illegal. */
+/** Studio decisions + first delivery. Anything not listed is illegal. */
 const TRANSITIONS: Record<DownloadState, readonly DownloadState[]> = {
   requested: ["approved", "rejected"],
-  approved: ["zipping", "failed"],
+  approved: ["delivered"],
   rejected: [],
-  zipping: ["ready", "failed"],
-  ready: ["delivered", "expired"],
   delivered: [],
-  expired: [],
-  failed: [],
 };
 
 export function canTransition(from: DownloadState, to: DownloadState): boolean {
@@ -107,15 +108,14 @@ export const DOWNLOAD_SCOPES = ["all", "favorites", "photos", "folder"] as const
 export type DownloadScope = (typeof DOWNLOAD_SCOPES)[number];
 export type SizePref = "full" | "web";
 
-/** v1 keeps builds bounded: photos only (videos stay per-photo downloads),
- * ≤ 1,000 files per ZIP. */
-export const ZIP_MAX_FILES = 1000;
+/** Cap on explicit asset ids in a `photos` request (studio favorites). */
+export const REQUEST_MAX_ASSET_IDS = 5000;
 
 export function parseAssetIds(stored: string | null): string[] {
   if (!stored) return [];
   try {
     const parsed = JSON.parse(stored);
-    return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === "string").slice(0, ZIP_MAX_FILES) : [];
+    return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === "string").slice(0, REQUEST_MAX_ASSET_IDS) : [];
   } catch {
     return [];
   }
