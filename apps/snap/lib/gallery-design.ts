@@ -674,7 +674,9 @@ export function columnsVars(design: { columns?: ColumnCounts } | null | undefine
   const c = design?.columns;
   if (!c) return {};
   const vars: Record<string, string> = {};
-  if (c.mobile !== undefined) vars["--snap-cols"] = String(c.mobile);
+  // Phone floor: never more than 2 columns on mobile, whatever the
+  // design or template asked for (globals.css clamps the CSS default too).
+  if (c.mobile !== undefined) vars["--snap-cols"] = String(Math.min(2, c.mobile));
   if (c.sm !== undefined) vars["--snap-cols-sm"] = String(c.sm);
   if (c.md !== undefined) vars["--snap-cols-md"] = String(c.md);
   return vars;

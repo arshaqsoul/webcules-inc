@@ -1873,7 +1873,11 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
   const layout = design?.layout ?? "grid";
   const themed = Boolean(design);
   const padding = design?.theme.padding ?? "normal";
-  const spacing = { compact: { gap: "gap-2", mb: "mb-2", pad: "p-3" }, normal: { gap: "gap-3", mb: "mb-3", pad: "p-5" }, airy: { gap: "gap-5", mb: "mb-5", pad: "p-6 sm:p-10" } }[padding];
+  const spacing = {
+    compact: { gap: "gap-1.5 sm:gap-2", mb: "mb-1.5 sm:mb-2", pad: "p-3" },
+    normal: { gap: "gap-2 sm:gap-3", mb: "mb-2 sm:mb-3", pad: "p-4 sm:p-5" },
+    airy: { gap: "gap-3 sm:gap-5", mb: "mb-3 sm:mb-5", pad: "p-5 sm:p-10" },
+  }[padding];
   const radiusCls = design ? ({ "0px": "rounded-none", "8px": "rounded-[8px]", "16px": "rounded-[16px]" } as const)[design.theme.radius] : "rounded-[12px]";
   const captions = design?.theme.captions ?? "off";
 

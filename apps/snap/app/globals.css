@@ -236,10 +236,14 @@ body {
  * config render exactly as before. */
 .snap-grid {
   display: grid;
-  grid-template-columns: repeat(var(--snap-cols, 2), minmax(0, 1fr));
+  /* Mobile readability floor: at most 2 columns on a phone (the designer's
+   * mobile count is clamped in columnsVars too; the CSS default matches). */
+  grid-template-columns: repeat(min(var(--snap-cols, 2), 2), minmax(0, 1fr));
 }
 .snap-masonry {
-  columns: var(--snap-cols, 2);
+  /* Phones render masonry as ONE full-width column — landscape photos keep
+   * their width instead of shrinking into flat strips. */
+  columns: 1;
 }
 @media (min-width: 640px) {
   .snap-grid { grid-template-columns: repeat(var(--snap-cols-sm, 3), minmax(0, 1fr)); }
