@@ -11,8 +11,9 @@ import { sendEmail } from "../email";
 import { buildMergeValues } from "../merge";
 import { getStudioProfile } from "./studios";
 import { purgeLegacyZips } from "./downloads";
+import { sweepOrphanWelcomeImages } from "./welcome-image";
 
-export type GallerySweepSummary = { reminded: number; opened: number; legacyZipsPurged: number };
+export type GallerySweepSummary = { reminded: number; opened: number; legacyZipsPurged: number; welcomeOrphansPurged: number };
 
 /** 3-days-out expiry reminders (once per grant). */
 export async function sendExpiryReminders(): Promise<number> {
@@ -82,5 +83,6 @@ export async function gallerySweep(): Promise<GallerySweepSummary> {
   const reminded = await sendExpiryReminders();
   const opened = await openDueScheduledGrants();
   const legacyZipsPurged = await purgeLegacyZips();
-  return { reminded, opened, legacyZipsPurged };
+  const welcomeOrphansPurged = await sweepOrphanWelcomeImages();
+  return { reminded, opened, legacyZipsPurged, welcomeOrphansPurged };
 }

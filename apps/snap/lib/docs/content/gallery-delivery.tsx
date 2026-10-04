@@ -131,6 +131,35 @@ export default function GalleryDelivery() {
         </li>
       </ul>
 
+      <H2>A welcome collage in the email and the gallery</H2>
+      <p>
+        <strong>On every plan</strong>, you can head a gallery with a picture of your own. When you
+        send a gallery, the <em>Welcome collage</em> box lets you upload an image, or{" "}
+        <strong>make one in Snap</strong>: pick up to six photos, choose a layout (grid, a big photo
+        with a stack or a row, or a strip), a shape (landscape, square or portrait), spacing and
+        background &mdash; plus an optional caption like &ldquo;Mia &amp; Leo &middot; June
+        2026&rdquo;. It appears at the top of the &ldquo;your photos are ready&rdquo; email, linking
+        to the gallery, and at the top of the gallery itself.
+      </p>
+      <ul>
+        <li>
+          Change or remove it any time with <strong>Collage</strong> on a sent gallery. The gallery
+          updates straight away; press <strong>Re-send</strong> to put the new picture in a fresh
+          email. Renewing a link keeps it.
+        </li>
+        <li>
+          Revoking or expiring the gallery stops the picture loading in old emails (some mail apps
+          cache images for a short while).
+        </li>
+        <li>
+          The picture is resized and stripped of location data, and is visible to anyone who gets
+          the email &mdash; so use photos you&apos;re happy to show there. Proofing galleries
+          can&apos;t have one, because it would put clean, unwatermarked photos in a public email.
+          Some mail apps (Outlook, for one) hide images until the reader allows them; the &ldquo;View
+          gallery&rdquo; button always works.
+        </li>
+      </ul>
+
       <H2>Social sharing that markets you</H2>
       <p>
         Clients share a photo with the native share sheet; the recipient gets a beautiful card with

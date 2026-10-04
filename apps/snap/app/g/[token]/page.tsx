@@ -22,6 +22,7 @@ import { getPlanEntitlements } from "@/lib/plans";
 import { logShareAccess, resolveGalleryAccess } from "@/lib/shares/gallery-auth";
 import { getGrantAssets, getGrantByTokenHashAny, grantIsOpen, resolveGrantByToken } from "@/lib/shares/grants";
 import { GalleryPreRegister } from "@/components/gallery-preregister";
+import { welcomeLink } from "@/lib/welcome-link";
 import { ensureFavoriteLists, getFavoritesForList, getLatestSelection, listFavoriteDetails } from "@/lib/shares/selections";
 import { safeHexColor } from "@/lib/embed";
 import { countGalleryOpen } from "@/lib/limits";
@@ -266,6 +267,7 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
         allowSharing={grant.allowSharing && (ent?.id ?? "free") !== "free"}
         projectTitle={projectTitle}
         eventDate={eventDate}
+        welcomeImageUrl={grant.welcomeImageId ? await welcomeLink(grant.welcomeImageId) : null}
       />
       </>
     );
@@ -312,6 +314,7 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
       allowSharing={grant.allowSharing && (ent?.id ?? "free") !== "free"}
       projectTitle={projectTitle}
       eventDate={eventDate}
+      welcomeImageUrl={grant.welcomeImageId ? await welcomeLink(grant.welcomeImageId) : null}
     />
     </>
   );

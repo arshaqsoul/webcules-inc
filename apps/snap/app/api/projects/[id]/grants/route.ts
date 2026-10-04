@@ -11,6 +11,7 @@ import { createShareGrant, listProjectGrants, normalizeExpiry } from "@/lib/shar
 import { isSortMode } from "@/lib/gallery-order";
 import { backfillCapturedAt } from "@/lib/repos/gallery-order";
 import { sendGrantEmail } from "@/lib/shares/notify";
+import { attachWelcomeImage, welcomeImageUrlFor } from "@/lib/repos/welcome-image";
 import { getPlanEntitlements } from "@/lib/plans";
 
 export const dynamic = "force-dynamic";
@@ -55,6 +56,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     selectionLimit?: number | null;
     selectionDeadline?: number | null;
     orderMode?: string;
+    /** Uploaded welcome collage (POST /api/projects/{id}/welcome) to head the email + gallery. */
+    welcomeImageId?: string;
   };
   try {
     body = (await req.json()) as typeof body;
@@ -170,8 +173,20 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   });
   if (!created.ok) return Response.json({ error: created.error }, { status: 400 });
 
+  // Optional welcome collage: attach before the email goes out so it heads it.
+  // (Never on proofing galleries; a bad id just sends without it.)
+  let welcomeImageUrl: string | null = null;
+  if (typeof body.welcomeImageId === "string" && body.proofing !== true) {
+    const attached = await attachWelcomeImage({ organizationId: ctx.organizationId, grantId: created.grantId, imageId: body.welcomeImageId });
+    if (attached.ok) {
+      const row = (await getDb().select().from(schema.shareGrants).where(eq(schema.shareGrants.id, created.grantId)).limit(1))[0];
+      welcomeImageUrl = row ? await welcomeImageUrlFor(ctx.organizationId, row) : null;
+    }
+  }
+
   const galleryUrl = await clientUrl(ctx.organizationId, `/g/${created.token}`);
   const emailed = await sendGrantEmail({
+    welcomeImageUrl,
     organizationId: ctx.organizationId,
     clientEmail,
     clientName: clientEmail.split("@")[0],

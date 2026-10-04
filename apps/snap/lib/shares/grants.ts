@@ -501,8 +501,9 @@ export async function regenerateShareGrant(params: {
     // WEB-261: download controls carry over to the fresh link.
     downloadSettings: old.downloadSettings,
     allowSharing: old.allowSharing,
-    // The renewed link keeps the photographer's photo order.
+    // The renewed link keeps the photographer's photo order and welcome collage.
     orderMode: old.orderMode,
+    welcomeImageId: old.welcomeImageId,
   });
   await insertGrantAssets(assetRows.map((row) => ({ grantId: newId, assetId: row.assetId, folderName: row.folderName ?? null, position: row.position })));
   await forEachChunk(

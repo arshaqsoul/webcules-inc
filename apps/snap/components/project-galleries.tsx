@@ -19,6 +19,7 @@ import {
 import { useConfirm } from "@/components/confirm-provider";
 import { MediaLightbox, type LightboxItem } from "@/components/media-lightbox";
 import { GalleryArrange, analyzeColors } from "@/components/gallery-arrange";
+import { GrantCollageDialog, WelcomeCollage, type WelcomeValue } from "@/components/welcome-collage";
 import { SORT_LABELS, SORT_MODES, type SortMode } from "@/lib/gallery-order";
 
 export type GrantItem = {
@@ -94,6 +95,9 @@ export function ProjectGalleries({
   // Photo order applied when sending, and the Arrange view (all plans).
   const [orderMode, setOrderMode] = useState<SortMode>("upload_old");
   const [arrangeGrant, setArrangeGrant] = useState<string | null>(null);
+  // Optional welcome collage for the email + gallery header (all plans).
+  const [welcome, setWelcome] = useState<WelcomeValue>(null);
+  const [collageGrant, setCollageGrant] = useState<string | null>(null);
   const [orderStatus, setOrderStatus] = useState("");
   const [selectionMode, setSelectionMode] = useState<"favorites" | "selection" | "off">("favorites");
   const [selectionLimitInput, setSelectionLimitInput] = useState("50");
@@ -265,6 +269,7 @@ export function ProjectGalleries({
           expiresInDays: days ? Number(days) : null,
           allowDownload,
           orderMode,
+          ...(welcome ? { welcomeImageId: welcome.imageId } : {}),
           selectionMode,
           selectionLimit: selectionMode === "selection" ? Number(selectionLimitInput) || null : null,
           selectionDeadline:
@@ -285,6 +290,7 @@ export function ProjectGalleries({
       } else {
         setFlash({ url: body.url ?? "", emailed: Boolean(body.emailed) });
         setDeliverFolders(new Set());
+        setWelcome(null);
         router.refresh();
       }
     } catch {
@@ -499,6 +505,7 @@ export function ProjectGalleries({
           {busy ? "Working…" : `Share ${deliverCount} approved file${deliverCount === 1 ? "" : "s"}${deliverFolders.size ? ` · ${deliverFolders.size} folder${deliverFolders.size === 1 ? "" : "s"}` : ""}`}
         </Button>
       </div>
+      <WelcomeCollage projectId={projectId} value={welcome} onChange={setWelcome} disabled={busy} />
       {deliverableFolders.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5 rounded-[12px] border border-hairline bg-surface-1 px-4 py-2.5">
           <span className="mr-1 text-xs text-ink-subtle">
@@ -624,6 +631,11 @@ export function ProjectGalleries({
                     </Button>
                   )}
                   {live && (
+                    <Button size="sm" variant="outline" disabled={busy} onClick={() => setCollageGrant(g.id)}>
+                      Collage
+                    </Button>
+                  )}
+                  {live && (
                     <Button size="sm" variant="outline" disabled={busy} onClick={() => act(g.id, "resend")}>
                       Re-send
                     </Button>
@@ -671,6 +683,8 @@ export function ProjectGalleries({
           })}
         </div>
       )}
+
+      <GrantCollageDialog grantId={collageGrant} projectId={projectId} open={collageGrant !== null} onOpenChange={(v) => !v && setCollageGrant(null)} />
 
       <GalleryArrange
         grantId={arrangeGrant}

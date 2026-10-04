@@ -244,7 +244,7 @@ export async function POST(req: Request) {
   // WEB-261: gallery sweeps — 3-days-out expiry reminders, scheduled
   // galleries opening, and the one-time purge of pre-3.0 R2 archives.
   // (Download-all itself streams on demand; nothing is built here.)
-  let galleries = { reminded: 0, opened: 0, legacyZipsPurged: 0 };
+  let galleries = { reminded: 0, opened: 0, legacyZipsPurged: 0, welcomeOrphansPurged: 0 };
   try {
     const { gallerySweep } = await import("@/lib/repos/gallery-sweeps");
     galleries = await gallerySweep();

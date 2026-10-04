@@ -35,6 +35,17 @@ export default function Releases() {
         polish fold into the next entry rather than getting their own.
       </Note>
 
+      <Release version="0.8.0" date="October 4, 2026">
+        <p>
+          <strong>A welcome collage for your client - on every plan.</strong> When you send a
+          gallery you can now head the &ldquo;your photos are ready&rdquo; email, and the top of the
+          gallery, with a picture of your own: upload an image, or build a collage in Snap by
+          picking up to six photos and choosing a layout, shape, spacing, background and caption.
+          Change or remove it later with the Collage button on any sent gallery; revoking the
+          gallery stops the picture loading in old emails.
+        </p>
+      </Release>
+
       <Release version="0.7.0" date="October 4, 2026">
         <p>
           <strong>Arrange the photos your client sees - on every plan.</strong> Sort a gallery by

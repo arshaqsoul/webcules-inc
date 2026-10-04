@@ -1538,7 +1538,7 @@ function GalleryNav({ items, view, onView }: { items: ("gallery" | "favorites" |
   );
 }
 
-export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLabel, watermarked, deterrents, assets, allowDownload, expiresAt, selectionMode, selectionLimit, selectionDeadline, initialFavorites, submittedSelection, clientToken, design, plan, fontFamily, builder, onCollageEdit, slideshow, allowSharing, favoriteLists = [], initialNotes = {}, canMakeLists, canNote, projectTitle, eventDate }: Brand & {
+export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLabel, watermarked, deterrents, assets, allowDownload, expiresAt, selectionMode, selectionLimit, selectionDeadline, initialFavorites, submittedSelection, clientToken, design, plan, fontFamily, builder, onCollageEdit, slideshow, allowSharing, favoriteLists = [], initialNotes = {}, canMakeLists, canNote, projectTitle, eventDate, welcomeImageUrl }: Brand & {
   assets: GalleryAsset[];
   allowDownload: boolean;
   expiresAt: string | null;
@@ -1575,6 +1575,8 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
   /** WEB-301 WP-A: display strings for the zero-config default hero. */
   projectTitle?: string | null;
   eventDate?: string | null;
+  /** Welcome collage the photographer attached to this gallery (signed path). */
+  welcomeImageUrl?: string | null;
 }) {
   const [open, setOpen] = useState<number | null>(null);
   // WEB-259: slideshow start index into the photos-only slide list.
@@ -2268,6 +2270,14 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
           </span>
         </div>
       </header>
+
+      {/* Welcome collage the photographer attached - the same picture that heads the email. */}
+      {welcomeImageUrl && (
+        <div className="mx-auto max-w-6xl px-5 pt-5">
+          {/* eslint-disable-next-line @next/next/no-img-element -- signed route, no optimizer */}
+          <img src={welcomeImageUrl} alt={`A welcome from ${studioName}`} className="mx-auto block max-h-[70vh] w-auto max-w-full rounded-[14px] border border-hairline object-contain" />
+        </div>
+      )}
 
       {/* WEB-264: favorite lists — pills + create (Lite+). */}
       {heartsOn && (lists.length > 1 || canMakeLists) && (

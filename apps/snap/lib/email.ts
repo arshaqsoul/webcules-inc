@@ -918,8 +918,16 @@ export function galleryLinkEmail(studioName: string, params: {
   /** WEB-240: logo header + footer contact from the 2/8 asset bundle. */
   emailHeaderUrl?: string | null;
   contactEmail?: string | null;
+  /** Optional welcome collage (signed absolute URL) shown above the greeting. */
+  welcomeImageUrl?: string | null;
 }): { subject: string; html: string; text: string } {
   const wl = params.whiteLabel === true;
+  // The collage links to the gallery. No <p> here on purpose: a studio's
+  // custom intro (email overrides) replaces the FIRST paragraph, which must
+  // stay the greeting.
+  const welcomeHero = params.welcomeImageUrl
+    ? `<div style="margin:0 0 20px;"><a href="${params.galleryUrl}" style="display:block;text-decoration:none;"><img src="${params.welcomeImageUrl}" alt="A preview of your gallery from ${studioName}" width="520" style="display:block;width:100%;max-width:520px;height:auto;border:0;border-radius:8px;" /></a></div>`
+    : "";
   const expires = params.expiresAt
     ? new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" }).format(params.expiresAt)
     : null;
@@ -936,7 +944,7 @@ export function galleryLinkEmail(studioName: string, params: {
     html: shell(
       params.accent,
       title,
-      `${intro}
+      `${welcomeHero}${intro}
        <p style="margin:24px 0 0;"><a href="${params.galleryUrl}" style="display:inline-block;background:${params.accent};color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">View gallery</a></p>
        <p style="margin:16px 0 0;font-size:12px;color:#8a8f98;">Or paste this link into your browser:<br><a href="${params.galleryUrl}" style="color:${params.accent};word-break:break-all;">${params.galleryUrl}</a></p>
        ${expiryNote}`,

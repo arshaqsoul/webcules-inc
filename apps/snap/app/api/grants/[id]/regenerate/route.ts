@@ -5,6 +5,7 @@ import { getOrgContext } from "@/lib/session";
 import { clientUrl } from "@/lib/client-urls";
 import { getGrantAssets, getShareGrant, normalizeExpiry, regenerateShareGrant } from "@/lib/shares/grants";
 import { sendGrantEmail } from "@/lib/shares/notify";
+import { welcomeImageUrlFor } from "@/lib/repos/welcome-image";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +41,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   const galleryUrl = await clientUrl(ctx.organizationId, `/g/${result.token}`);
   const emailed = await sendGrantEmail({
+    welcomeImageUrl: grant ? await welcomeImageUrlFor(ctx.organizationId, grant) : null,
     organizationId: ctx.organizationId,
     clientEmail: grant?.clientEmail ?? "",
     clientName: (grant?.clientEmail ?? "").split("@")[0],

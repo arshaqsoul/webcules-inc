@@ -705,6 +705,8 @@ export const shareGrants = sqliteTable(
     proofing: integer("proofing", { mode: "boolean" }).notNull().default(false),
     /** How the gallery's photos are currently ordered (lib/gallery-order.ts OrderMode). */
     orderMode: text("order_mode").notNull().default("upload_old"),
+    /** Optional welcome collage (welcome_image.id) shown in the email + gallery header. */
+    welcomeImageId: text("welcome_image_id"),
     /** Client interaction mode (0024): off | favorites | selection. */
     selectionMode: text("selection_mode").notNull().default("favorites"),
     /** Max picks for selection mode; null = unlimited. */
@@ -761,6 +763,27 @@ export const downloadRequests = sqliteTable(
     index("download_request_grant_idx").on(t.grantId, t.state, t.createdAt),
     index("download_request_org_idx").on(t.organizationId, t.state, t.createdAt),
   ],
+);
+
+/** Welcome collage: a small JPEG (<= 2 MB, EXIF-free) the photographer
+ * attaches to a gallery. Created on upload, referenced by
+ * share_grant.welcome_image_id, served through a signed, grant-coupled URL
+ * (lib/welcome-link.ts) so revoking the gallery kills it. */
+export const welcomeImages = sqliteTable(
+  "welcome_image",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    r2Key: text("r2_key").notNull(),
+    bytes: integer("bytes").notNull(),
+    createdAt: ts("created_at"),
+  },
+  (t) => [index("welcome_image_org_idx").on(t.organizationId, t.createdAt)],
 );
 
 /** WEB-266: gallery guests — email-capture gate visitors + pre-registration

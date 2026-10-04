@@ -17,6 +17,8 @@ export async function sendGrantEmail(params: {
   expiresAt: Date | null;
   grantId: string;
   fresh: boolean;
+  /** Signed URL of the gallery's welcome collage, when it has one. */
+  welcomeImageUrl?: string | null;
 }): Promise<boolean> {
   const profile = await getStudioProfile(params.organizationId);
   if (!profile) return false;
@@ -34,6 +36,7 @@ export async function sendGrantEmail(params: {
     whiteLabel: b.whiteLabel,
     emailHeaderUrl: b.emailHeaderUrl,
     contactEmail: b.contactEmail,
+    welcomeImageUrl: params.welcomeImageUrl ?? null,
   });
   const slug = await getStudioSlug(params.organizationId);
   const sent = await sendEmail({
