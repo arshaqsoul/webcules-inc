@@ -19,7 +19,12 @@ import { env } from "cloudflare:workers";
 
 import { assertOrgKey } from "./service";
 
-const BUCKET = "snap-webcules";
+/** Bucket for S3-endpoint URLs (presigned uploads, class moves). Env-driven
+ * so staging can target its own bucket — presigned PUTs must land where the
+ * R2 binding reads, or staging writes into production storage. */
+function s3Bucket(): string {
+  return env.R2_S3_BUCKET ?? "snap-webcules";
+}
 /** R2's S3 enum for Infrequent Access (NOT AWS's INFREQUENT_ACCESS). */
 const R2_IA = "STANDARD_IA";
 
@@ -46,7 +51,7 @@ export function s3Client(): { client: AwsClient; base: string } {
 
 export function objectUrl(key: string): string {
   const { base } = s3Client();
-  return `${base}/${BUCKET}/${encodeKey(key)}`;
+  return `${base}/${s3Bucket()}/${encodeKey(key)}`;
 }
 
 async function copyClass(orgId: string, key: string, storageClass: string): Promise<void> {
@@ -58,7 +63,7 @@ async function copyClass(orgId: string, key: string, storageClass: string): Prom
   const head = await env.R2.head(key);
   if (!head) throw new Error(`R2 object missing for class move: ${key.slice(0, 32)}…`);
   const headers: Record<string, string> = {
-    "x-amz-copy-source": `/${BUCKET}/${encodeKey(key)}`,
+    "x-amz-copy-source": `/${s3Bucket()}/${encodeKey(key)}`,
     "x-amz-metadata-directive": "REPLACE",
     "x-amz-storage-class": storageClass,
   };
@@ -72,7 +77,7 @@ async function copyClass(orgId: string, key: string, storageClass: string): Prom
     headers[`x-amz-meta-${k}`] = v;
   }
 
-  const res = await client.fetch(`${base}/${BUCKET}/${encodeKey(key)}`, { method: "PUT", headers });
+  const res = await client.fetch(`${base}/${s3Bucket()}/${encodeKey(key)}`, { method: "PUT", headers });
   if (!res.ok) {
     throw new Error(`R2 class move failed (${res.status}): ${(await res.text()).slice(0, 300)}`);
   }

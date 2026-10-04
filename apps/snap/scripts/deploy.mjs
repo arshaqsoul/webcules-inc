@@ -68,6 +68,9 @@ function writeStagingConfig() {
   cfg.vars.NEXT_PUBLIC_APP_URL = STAGING.url;
   cfg.vars.BETTER_AUTH_URL = STAGING.url;
   cfg.vars.EMAIL_FROM = "Snap Staging <hello@snap.webcules.com>";
+  // Presigned S3 uploads (r2s3.ts) must target staging's own bucket — the
+  // code default is the production bucket name.
+  cfg.vars.R2_S3_BUCKET = STAGING.r2Bucket;
   // No Turnstile secret on staging → leave the site key out so client
   // widgets skip rendering (verifyTurnstile passes when secret is unset).
   delete cfg.vars.TURNSTILE_SITE_KEY;

@@ -12,6 +12,7 @@ declare namespace Cloudflare {
     TURNSTILE_SECRET_KEY?: string;
     R2_S3_ACCESS_KEY_ID?: string;
     R2_S3_SECRET_ACCESS_KEY?: string;
+    R2_S3_BUCKET?: string;
     /** Cloudflare account id — hosts the S3 endpoint ({id}.r2.cloudflarestorage.com). */
     R2_S3_ACCOUNT_ID?: string;
     /** "otp" (default) | "off" — email-shock contingency for gallery OTPs. */
@@ -42,6 +43,7 @@ interface Env {
   TURNSTILE_SECRET_KEY?: string;
   R2_S3_ACCESS_KEY_ID?: string;
   R2_S3_SECRET_ACCESS_KEY?: string;
+  R2_S3_BUCKET?: string;
   R2_S3_ACCOUNT_ID?: string;
   GALLERY_OTP_MODE?: string;
   R2_CLASS_MOVES_ENABLED?: string;
