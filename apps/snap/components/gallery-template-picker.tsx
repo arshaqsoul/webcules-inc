@@ -301,34 +301,112 @@ function TemplateGroup({ title, hint, templates, render }: { title: string; hint
   );
 }
 
-/** Themed stand-in for a template with no photographic thumb: the template's
- * own canvas, ink, accent and corner radius around a cover bar and a grid. */
+/** Themed stand-in for a template with no photographic thumb — drawn FROM the
+ * design itself so the card can't drift from what the template actually
+ * renders: the cover/hero style, the template's own canvas, ink, accent and
+ * radius, and above all the real body layout (grid = uniform squares,
+ * masonry = mixed-height columns, cascade = flush justified rows). */
 function TemplateSwatch({ design }: { design: GalleryDesign }) {
   const dark = design.theme.background === "dark";
   const bg = design.theme.colors?.bg ?? (dark ? "#141418" : "#ffffff");
   const text = design.theme.colors?.text ?? (dark ? "#f2f2f4" : "#1a1a1a");
   const accent = design.theme.colors?.accent ?? "#7c7c8a";
   const radius = design.theme.radius === "0px" ? 0 : design.theme.radius === "8px" ? 4 : 8;
-  const masonry = design.layout === "masonry";
-  const tiles = masonry ? [3, 2, 2, 3, 3, 2, 2, 3] : [2, 2, 2, 2, 2, 2, 2, 2];
-  return (
-    <span className="flex h-full w-full flex-col gap-2 p-3" style={{ background: bg }} aria-hidden>
-      <span className="relative block h-[34%] w-full overflow-hidden" style={{ background: `color-mix(in srgb, ${accent} 30%, ${bg})`, borderRadius: radius }}>
-        <span className="absolute bottom-2 left-2 block h-1.5 w-1/3 rounded-full" style={{ background: text, opacity: 0.85 }} />
-        <span className="absolute bottom-[3px] left-2 block h-1 w-1/5 rounded-full" style={{ background: text, opacity: 0.4 }} />
+  const mix = (i: number, base: number) => `color-mix(in srgb, ${accent} ${base + ((i * 7) % 4) * 8}%, ${bg})`;
+
+  const heroSection = design.sections?.find((s) => s.type === "hero") as { style: string } | undefined;
+  const heroStyle = design.cover?.style ?? heroSection?.style ?? "static";
+  const gallerySection = design.sections?.find((s) => s.type === "gallery") as { layout: GalleryDesign["layout"] } | undefined;
+  const layout = gallerySection?.layout ?? design.layout;
+
+  const inkLine = (w: string, opacity: number, h = 4) => (
+    <span className="block rounded-full" style={{ background: text, opacity, width: w, height: h }} />
+  );
+
+  // Cover band — split covers show the photo panel beside a text plate;
+  // static/kenburns/fullbleed are a full-width hero with title lines.
+  const hero =
+    heroStyle === "split" ? (
+      <span className="flex h-[34%] w-full gap-2 overflow-hidden" style={{ borderRadius: radius }} aria-hidden>
+        <span className="block h-full flex-1" style={{ background: mix(1, 30) }} />
+        <span className="flex h-full w-[38%] flex-col justify-center gap-1.5 px-2" style={{ background: `color-mix(in srgb, ${text} 8%, ${bg})` }}>
+          {inkLine("40%", 0.85, 3)}
+          {inkLine("75%", 0.9, 5)}
+          {inkLine("55%", 0.4, 3)}
+        </span>
       </span>
-      <span className="grid flex-1 grid-cols-4 gap-1.5">
-        {tiles.map((h, i) => (
-          <span
-            key={i}
-            style={{
-              background: `color-mix(in srgb, ${accent} ${18 + ((i * 7) % 4) * 8}%, ${bg})`,
-              borderRadius: radius,
-              gridRow: masonry && h === 3 ? "span 2" : undefined,
-            }}
-          />
+    ) : (
+      <span className="relative block h-[34%] w-full overflow-hidden" style={{ background: mix(1, 30), borderRadius: radius }} aria-hidden>
+        <span className="absolute bottom-2 left-2 flex flex-col gap-1">
+          {inkLine("64px", 0.7, 3)}
+          {inkLine("96px", 0.9, 6)}
+          {inkLine("48px", 0.4, 3)}
+        </span>
+      </span>
+    );
+
+  // Body — the actual layout the gallery renders with.
+  const body = (l: GalleryDesign["layout"], key: string) => {
+    if (l === "masonry") {
+      // Mixed-height column stacks — reads as masonry at card size.
+      const stacks = [
+        [28, 44, 20],
+        [44, 20, 32],
+        [20, 32, 44],
+        [32, 24, 40],
+      ];
+      return (
+        <span key={key} className="flex flex-1 gap-1.5 overflow-hidden" aria-hidden>
+          {stacks.map((col, c) => (
+            <span key={c} className="flex min-w-0 flex-1 flex-col gap-1.5">
+              {col.map((h, i) => (
+                <span key={i} className="block w-full" style={{ background: mix(c * 3 + i, 16), borderRadius: radius, height: h }} />
+              ))}
+            </span>
+          ))}
+        </span>
+      );
+    }
+    if (l === "cascade") {
+      // Flush rows of mixed widths at one height — justified rows.
+      const rows = [
+        [1.8, 1],
+        [1, 1.4, 0.8],
+        [1.2, 1.6],
+      ];
+      return (
+        <span key={key} className="flex flex-1 flex-col gap-1.5 overflow-hidden" aria-hidden>
+          {rows.map((row, r) => (
+            <span key={r} className="flex gap-1.5" style={{ height: 30 }}>
+              {row.map((w, i) => (
+                <span key={i} className="block" style={{ background: mix(r * 3 + i, 16), borderRadius: radius, flexGrow: w, flexBasis: 0 }} />
+              ))}
+            </span>
+          ))}
+        </span>
+      );
+    }
+    return (
+      <span key={key} className="grid flex-1 grid-cols-4 gap-1.5 overflow-hidden" aria-hidden>
+        {Array.from({ length: 8 }, (_, i) => (
+          <span key={i} className="block aspect-square w-full" style={{ background: mix(i, 16), borderRadius: radius }} />
         ))}
       </span>
+    );
+  };
+
+  const strips = design.sections?.some((s) => s.type === "text" || s.type === "contact" || s.type === "favorites") && (
+    <span className="flex flex-col items-center gap-1 py-0.5" aria-hidden>
+      {inkLine("70%", 0.5, 3)}
+      {inkLine("45%", 0.3, 3)}
+    </span>
+  );
+
+  return (
+    <span className="flex h-full w-full flex-col gap-2 p-3" style={{ background: bg }} aria-hidden>
+      {hero}
+      {body(layout, "main")}
+      {strips}
     </span>
   );
 }

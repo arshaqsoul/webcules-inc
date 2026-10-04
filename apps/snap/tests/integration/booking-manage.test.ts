@@ -240,7 +240,12 @@ describe("rescheduleBooking", () => {
       clientName: "Soon", clientEmail: "soon@t.test",
     });
     if (!res.ok) return;
-    const target = new Date(start.getTime() + 3600_000).toISOString();
+    // Tomorrow 10:00 — a live slot at any test hour (start+1h can land on
+    // 23:00, which the engine never offers: a 60-min slot there overruns
+    // the availability window's last minute — this broke runs after ~21:00 UTC).
+    const targetDate = new Date(start.getTime() + 24 * 3600_000);
+    targetDate.setUTCHours(10, 0, 0, 0);
+    const target = targetDate.toISOString();
 
     expect(await rescheduleBooking({
       organizationId: s.organizationId, bookingId: res.bookingId, slotStartIso: target,
