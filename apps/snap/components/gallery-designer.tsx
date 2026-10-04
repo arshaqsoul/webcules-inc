@@ -19,6 +19,7 @@ import {
   type GalleryDesign,
 } from "@/lib/gallery-design";
 import { SLIDESHOW_PACES, SLIDESHOW_TRANSITIONS, type SlideshowConfig } from "@/lib/slideshow";
+import { seedTemplateOf } from "@/lib/seed-templates";
 import { GalleryDualPreview } from "@/components/gallery-preview";
 import { UpgradeCta, LiteUpsell } from "@/components/lite-upsell";
 
@@ -308,7 +309,9 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
   const cover = draft.cover;
   const coverAsset = cover?.assetId ? (picker ?? []).find((a) => a.id === cover.assetId) ?? { id: cover.assetId, filename: "", status: "" } : null;
   const previewTiles = (picker ?? []).slice(0, 6);
-  const statusLabel = customized ? "Customized for this gallery" : inherited ? "Using your studio default preset" : "Classic Snap gallery";
+  const sectioned = Boolean(draft.sections?.length);
+  const templateName = draft.template && draft.template !== "custom" ? seedTemplateOf(draft.template)?.name ?? null : null;
+  const statusLabel = templateName ? `Template: ${templateName}` : customized ? "Customized for this gallery" : inherited ? "Using your studio default preset" : "Template: Classic";
 
   return (
     <div className="rounded-[12px] border border-hairline bg-surface-1 p-5">
@@ -333,6 +336,20 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
           {/* WEB-301 follow-up: the single hero/cover photo is FREE — every
            * studio can put their photo on the gallery cover. Styles, layouts,
            * themes and presets below stay Lite (slideshow is free-tier). */}
+          {sectioned ? (
+            <div className="rounded-lg border border-hairline bg-surface-2 p-4 text-xs text-ink-subtle">
+              <p className="font-medium text-ink">{templateName ?? "This template"} is a full page layout.</p>
+              <p className="mt-1">
+                Its title, subtitle and copy live in the page sections, not in a cover - edit them in the page builder.
+                Switch to a free template above to use a plain cover with just your own title and subtitle.
+              </p>
+              {canDesign && (
+                <Link href={`/dashboard/projects/${projectId}/builder`} className="mt-2 inline-block font-semibold text-primary underline underline-offset-2">
+                  Open page builder
+                </Link>
+              )}
+            </div>
+          ) : (
           <fieldset>
             <legend className="text-xs font-semibold uppercase tracking-wide text-ink-tertiary">Cover</legend>
             {canDesign ? (
@@ -495,6 +512,7 @@ export function GalleryDesigner({ projectId, initialDesign, inherited, canDesign
               </label>
             </div>
           </fieldset>
+          )}
 
           {!canDesign && (
             <LiteUpsell feature="Gallery design" note="Cinematic Ken Burns + split covers, editorial layouts, dark or brand-tinted themes, reusable presets." />

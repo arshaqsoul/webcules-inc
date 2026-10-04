@@ -1,0 +1,14 @@
+{
+  "key": "after-dark",
+  "name": "After Dark",
+  "tier": "free",
+  "category": "party",
+  "description": "Near-black canvas with gold accents - made for receptions and nights out.",
+  "genres": ["wedding"],
+  "harnessAccent": "#c8a45c",
+  "design": {
+    "template": "after-dark",
+    "layout": "grid",
+    "theme": { "background": "dark", "padding": "compact", "radius": "8px", "captions": "off", "font": "space-grotesk", "colors": { "bg": "#0f0f13", "text": "#f2f2f4", "accent": "#c8a45c" } }
+  }
+}

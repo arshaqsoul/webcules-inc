@@ -1,0 +1,14 @@
+{
+  "key": "warm-family",
+  "name": "Warm Family",
+  "tier": "free",
+  "category": "family",
+  "description": "Sunny cream backdrop, rounded tiles and a friendly sans - golden-hour warmth.",
+  "genres": ["family"],
+  "harnessAccent": "#c2410c",
+  "design": {
+    "template": "warm-family",
+    "layout": "masonry",
+    "theme": { "background": "light", "padding": "airy", "radius": "16px", "captions": "off", "font": "manrope", "colors": { "bg": "#fffaf3", "accent": "#c2410c" } }
+  }
+}

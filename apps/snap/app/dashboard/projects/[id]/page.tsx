@@ -288,12 +288,15 @@ export default async function ProjectDetailPage({
 
       {tab === "gallery" && (
         <>
-        {/* WEB-320: visual template picker — every tier; apply is design-only. */}
+        {/* WEB-320: visual template picker. Free templates (cover-only looks)
+          * apply on every tier; sectioned ones need Lite, collage Studio.
+          * No saved design and no studio default = the Classic template. */}
         <GalleryTemplatePicker
           projectId={id}
-          activeTemplateKey={design?.template ?? ""}
-          hasCustomDesign={Boolean(design)}
+          activeTemplateKey={design ? (design.template ?? "") : inheritedDesign ? "" : "classic"}
+          hasCustomDesign={Boolean(design && (!design.template || design.template === "custom" || design.sections?.length))}
           canBuild={(ent?.id ?? "free") !== "free"}
+          plan={ent?.id ?? "free"}
         />
         <GalleryDesigner
           projectId={id}

@@ -12,6 +12,9 @@ export type SeedTemplate = {
   key: string;
   name: string;
   category: "wedding" | "family" | "party" | "corporate" | "editorial" | "minimal";
+  /** Lowest plan that may apply it: free = cover-only look (title and
+   * subtitle only), lite = sectioned page, studio = collage. */
+  tier: "free" | "lite" | "studio";
   /** One line for the picker card. */
   description: string;
   /** The sample genres this seed is photographed with in previews/thumbs. */
@@ -23,8 +26,59 @@ export type SeedTemplate = {
 
 export const SEED_TEMPLATES: SeedTemplate[] = [
   {
+    key: "classic",
+    name: "Classic",
+    tier: "free",
+    category: "minimal",
+    description: "The default - a clean cover, a tidy grid, your photos front and centre.",
+    genres: ["wedding"],
+    harnessAccent: "",
+    design: {"template":"classic","layout":"grid","theme":{"background":"light","padding":"normal","radius":"16px","captions":"off"}},
+  },
+  {
+    key: "soft-serif",
+    name: "Soft Serif",
+    tier: "free",
+    category: "wedding",
+    description: "Warm paper tones, an elegant serif and a soft masonry grid.",
+    genres: ["wedding"],
+    harnessAccent: "#8a6a48",
+    design: {"template":"soft-serif","layout":"masonry","theme":{"background":"light","padding":"airy","radius":"16px","captions":"off","font":"playfair-display","colors":{"bg":"#fbf8f3","text":"#2a2420","accent":"#8a6a48"}}},
+  },
+  {
+    key: "warm-family",
+    name: "Warm Family",
+    tier: "free",
+    category: "family",
+    description: "Sunny cream backdrop, rounded tiles and a friendly sans - golden-hour warmth.",
+    genres: ["family"],
+    harnessAccent: "#c2410c",
+    design: {"template":"warm-family","layout":"masonry","theme":{"background":"light","padding":"airy","radius":"16px","captions":"off","font":"manrope","colors":{"bg":"#fffaf3","accent":"#c2410c"}}},
+  },
+  {
+    key: "after-dark",
+    name: "After Dark",
+    tier: "free",
+    category: "party",
+    description: "Near-black canvas with gold accents - made for receptions and nights out.",
+    genres: ["wedding"],
+    harnessAccent: "#c8a45c",
+    design: {"template":"after-dark","layout":"grid","theme":{"background":"dark","padding":"compact","radius":"8px","captions":"off","font":"space-grotesk","colors":{"bg":"#0f0f13","text":"#f2f2f4","accent":"#c8a45c"}}},
+  },
+  {
+    key: "clean-mono",
+    name: "Clean Mono",
+    tier: "free",
+    category: "minimal",
+    description: "Near-white canvas, ink-black type and a tight square grid.",
+    genres: ["editorial"],
+    harnessAccent: "#111111",
+    design: {"template":"clean-mono","layout":"grid","theme":{"background":"light","padding":"compact","radius":"0px","captions":"off","font":"inter","colors":{"bg":"#fafafa","text":"#111111","accent":"#111111"}}},
+  },
+  {
     key: "classic-wedding",
     name: "Classic Wedding",
+    tier: "lite",
     category: "wedding",
     description: "Split cover, soft masonry grid, serif headlines — timeless.",
     genres: ["wedding"],
@@ -32,17 +86,9 @@ export const SEED_TEMPLATES: SeedTemplate[] = [
     design: {"template":"classic-wedding","layout":"masonry","nav":{"enabled":true,"items":["gallery","favorites"]},"sections":[{"type":"hero","id":"cw-hero","style":"split","title":"Anna & Benjamin","subtitle":"A June wedding at Willow Creek Estate","images":[{"assetId":"wedding-02","focal":{"x":0.5,"y":0.35}},{"assetId":"wedding-09","focal":{"x":0.5,"y":0.4}},{"assetId":"wedding-10","focal":{"x":0.5,"y":0.35}}],"interval":5,"kicker":true},{"type":"gallery","id":"cw-gallery","binding":{"kind":"all"},"layout":"masonry","columns":{"mobile":2,"sm":3,"md":4},"heading":"Your photos"},{"type":"favorites","id":"cw-favorites","heading":"Your favorites","emptyHint":"Tap the ♥ on the photos you can't stop coming back to."},{"type":"contact","id":"cw-contact","heading":"Thank you for having us","body":"Questions about your gallery? We're one email away."}],"theme":{"background":"light","padding":"normal","radius":"16px","captions":"off","font":"playfair-display","fontScale":1}},
   },
   {
-    key: "dark-cinematic",
-    name: "Dark Cinematic",
-    category: "wedding",
-    description: "Night-reception energy — Ken Burns hero, tight dark grid, gold on black.",
-    genres: ["wedding"],
-    harnessAccent: "#c8a45c",
-    design: {"template":"dark-cinematic","layout":"grid","nav":{"enabled":true,"items":["gallery","favorites","info"]},"sections":[{"type":"hero","id":"dc-hero","style":"kenburns","title":"Vera & Julian","subtitle":"After midnight at The Waverly","images":[{"assetId":"wedding-08","focal":{"x":0.5,"y":0.45}},{"assetId":"wedding-07","focal":{"x":0.5,"y":0.4}},{"assetId":"wedding-05","focal":{"x":0.5,"y":0.5}},{"assetId":"wedding-10","focal":{"x":0.5,"y":0.5}}],"interval":6,"kicker":true},{"type":"gallery","id":"dc-grid","binding":{"kind":"all"},"layout":"grid","columns":{"mobile":2,"sm":3,"md":5},"padding":"compact"},{"type":"collage","id":"dc-collage","aspect":"16/9","mobileStack":true,"padding":"normal","items":[{"assetId":"wedding-02","x":2,"y":12,"w":27,"rotation":-3,"z":2,"focal":{"x":0.5,"y":0.35}},{"assetId":"wedding-09","x":21,"y":42,"w":23,"rotation":2,"z":3,"focal":{"x":0.5,"y":0.4}},{"assetId":"wedding-06","x":40,"y":8,"w":24,"rotation":-2,"z":2,"focal":{"x":0.5,"y":0.45}},{"assetId":"wedding-04","x":57,"y":30,"w":25,"rotation":3,"z":3,"focal":{"x":0.5,"y":0.3}},{"assetId":"wedding-03","x":76,"y":10,"w":22,"rotation":-3,"z":1,"focal":{"x":0.5,"y":0.5}}]},{"type":"slideshow","id":"dc-film","binding":{"kind":"picks","ids":["wedding-10","wedding-08","wedding-05","wedding-07"]},"heading":"Watch the film","posters":4,"bg":"surface","padding":"normal"},{"type":"favorites","id":"dc-favorites","heading":"Your favorites","emptyHint":"Tap the ♥ on any frame — the ones you keep will collect here."},{"type":"text","id":"dc-note","html":"<p><strong>Shot after midnight.</strong></p><p>Every frame in this gallery was made after sunset — candlelight, string lights, and a dance floor that never quite emptied. Mark the moments you love and we will finish them by hand.</p><p><em>Available light only. No flash, all night.</em></p>","align":"center","width":"prose"},{"type":"contact","id":"dc-contact","heading":"Your night, next","body":"We take a small number of weddings each season. Say hello and we'll share a full gallery from a real reception.","ctaLabel":"Check your date","ctaHref":"https://nocturne-studio.example"}],"theme":{"background":"dark","padding":"compact","radius":"8px","captions":"off","font":"space-grotesk","fontScale":1,"tracking":"wide","colors":{"bg":"#0f0f13","text":"#f2f2f4","accent":"#c8a45c"}}},
-  },
-  {
     key: "editorial-wedding",
     name: "Editorial Wedding",
+    tier: "lite",
     category: "wedding",
     description: "Full-bleed statement cover, justified photo rows, magazine serif — high fashion.",
     genres: ["wedding"],
@@ -50,17 +96,9 @@ export const SEED_TEMPLATES: SeedTemplate[] = [
     design: {"template":"editorial-wedding","layout":"cascade","columns":{"mobile":2,"sm":3,"md":3},"sections":[{"type":"hero","id":"ew-hero","style":"fullbleed","title":"Eloise & Julian","subtitle":"Château de Varennes · September","images":[{"assetId":"wedding-10","focal":{"x":0.5,"y":0.55}}],"interval":0,"kicker":true},{"type":"text","id":"ew-standfirst","html":"<p><em>It rained until noon, then the light broke over the vineyard — a day of slow hours, loud toasts, and one very quiet first dance.</em></p>","align":"center","width":"prose"},{"type":"gallery","id":"ew-gallery","binding":{"kind":"all"},"layout":"cascade","heading":"The Edit"},{"type":"favorites","id":"ew-favorites","heading":"The Shortlist","emptyHint":"Heart the frames you love — your shortlist gathers here."},{"type":"contact","id":"ew-contact","heading":"Begin your chapter","body":"A wedding told in quiet frames. We take a limited number of commissions each season.","ctaLabel":"Enquire about your date","ctaHref":"https://atelier.example/weddings"}],"theme":{"background":"light","padding":"airy","radius":"0px","captions":"off","font":"cormorant-garamond","fontScale":1.3,"colors":{"bg":"#faf7f2","text":"#221d17","accent":"#8a6a48"}}},
   },
   {
-    key: "family-warm",
-    name: "Family Warm",
-    category: "family",
-    description: "Sun-washed statement cover, playful collage, big cozy tiles — golden-hour warmth on every scroll.",
-    genres: ["family"],
-    harnessAccent: "#c2410c",
-    design: {"template":"family-warm","layout":"masonry","sections":[{"type":"hero","id":"fw-hero","style":"fullbleed","title":"The Hartleys","subtitle":"A golden-hour morning at Meadowlark Park — bare feet, big laughs, zero posing.","images":[{"assetId":"family-01","focal":{"x":0.5,"y":0.45}},{"assetId":"family-06","focal":{"x":0.5,"y":0.45}},{"assetId":"family-07","focal":{"x":0.5,"y":0.4}}],"interval":5,"kicker":true},{"type":"text","id":"fw-intro","padding":"normal","align":"center","width":"prose","html":"<p><strong>Welcome in — shoes off, snacks encouraged.</strong></p><p>Every giggle, piggyback ride, and last sliver of that golden-hour glow lives in here. Take your time, tap the heart on anything you love, and your favorites land straight in my retouching queue.</p>"},{"type":"gallery","id":"fw-peek","binding":{"kind":"rating","min":5},"layout":"masonry","columns":{"mobile":2,"sm":2,"md":4},"heading":"A first peek"},{"type":"collage","id":"fw-collage","padding":"airy","aspect":"3/2","mobileStack":true,"items":[{"assetId":"family-03","x":2,"y":26,"w":27,"rotation":-3,"z":2,"focal":{"x":0.5,"y":0.35}},{"assetId":"family-04","x":30,"y":6,"w":26,"rotation":2,"z":1,"focal":{"x":0.5,"y":0.3}},{"assetId":"family-08","x":57,"y":30,"w":27,"rotation":-2,"z":2,"focal":{"x":0.5,"y":0.35}},{"assetId":"family-05","x":76,"y":12,"w":22,"rotation":3,"z":3,"focal":{"x":0.5,"y":0.3}}]},{"type":"gallery","id":"fw-gallery","binding":{"kind":"all"},"layout":"masonry","columns":{"mobile":2,"sm":2,"md":3},"heading":"The whole session"},{"type":"favorites","id":"fw-favorites","padding":"airy","bg":"accent","heading":"Your favorites","emptyHint":"No hearts yet — tap the ♥ on any photo that makes you smile, and it will be waiting for you right here."},{"type":"contact","id":"fw-contact","padding":"airy","heading":"Let's plan your golden hour","body":"If your walls could use a little more of this light, I'd love to hear from you. Next season's calendar is open now.","ctaLabel":"Book your session"}],"theme":{"background":"light","padding":"airy","radius":"16px","captions":"off","font":"manrope","fontScale":1.05,"colors":{"bg":"#fffaf3","accent":"#c2410c"}}},
-  },
-  {
     key: "newborn-soft",
     name: "Newborn Soft",
+    tier: "lite",
     category: "family",
     description: "Cream linen calm, an airy serif, and first days in a soft three-column masonry.",
     genres: ["newborn"],
@@ -68,17 +106,9 @@ export const SEED_TEMPLATES: SeedTemplate[] = [
     design: {"template":"newborn-soft","layout":"masonry","columns":{"mobile":2,"sm":3,"md":3},"nav":{"enabled":false,"items":["gallery","favorites","info"]},"sections":[{"type":"hero","id":"nb-hero","style":"split","title":"Elodie Rose","subtitle":"Seven days young · one slow morning at home","images":[{"assetId":"newborn-01","focal":{"x":0.5,"y":0.3}},{"assetId":"newborn-06","focal":{"x":0.5,"y":0.42}},{"assetId":"newborn-02","focal":{"x":0.42,"y":0.45}}],"interval":7,"kicker":true},{"type":"text","id":"nb-welcome","padding":"airy","bg":"accent","html":"<p><strong><em>Ten tiny fingers, one sleepy sigh — welcome.</em></strong></p><p>These photographs were made in the calm of your own home, at your little one's pace: fed, held, and exactly as they are. Nothing posed, nothing rushed — only the first quiet days, kept for always.</p>","align":"center","width":"prose"},{"type":"gallery","id":"nb-gallery","padding":"airy","binding":{"kind":"all"},"layout":"masonry","columns":{"mobile":2,"sm":3,"md":3},"heading":"The first days"},{"type":"slideshow","id":"nb-slideshow","padding":"airy","binding":{"kind":"rating","min":5},"heading":"One more slow look","posters":4},{"type":"favorites","id":"nb-favorites","padding":"airy","heading":"Your little loves","emptyHint":"Tap the heart on any photograph — the ones you keep coming back to will gather here."},{"type":"contact","id":"nb-contact","padding":"airy","bg":"accent","heading":"With love, from our studio to yours","body":"When you are ready to choose keepsakes, order prints, or plan the next milestone, we are only a kind word away.","ctaLabel":"Say hello"}],"theme":{"background":"brand","padding":"airy","radius":"16px","captions":"off","font":"cormorant-garamond","fontScale":1.15,"tracking":"wide","colors":{"bg":"#faf7f2","text":"#55483d","accent":"#96685a"}}},
   },
   {
-    key: "party-energy",
-    name: "Party Energy",
-    category: "party",
-    description: "Neon-dark, tilted photo collage, Bebas headlines — pure party adrenaline.",
-    genres: ["party"],
-    harnessAccent: "#ff3d81",
-    design: {"template":"party-energy","layout":"grid","nav":{"enabled":false,"items":["gallery","favorites","info"]},"sections":[{"type":"hero","id":"pe-hero","style":"fullbleed","title":"Maya's 30th at Warehouse 21","subtitle":"One night, 300 frames, zero chill — the whole riot, right here.","images":[{"assetId":"party-01","focal":{"x":0.5,"y":0.45}},{"assetId":"party-05","focal":{"x":0.5,"y":0.5}},{"assetId":"party-10","focal":{"x":0.5,"y":0.45}}],"interval":4,"kicker":true},{"type":"collage","id":"pe-collage","aspect":"4/3","mobileStack":true,"padding":"airy","bg":"surface","items":[{"assetId":"party-04","x":2,"y":22,"w":26,"rotation":-8,"z":2,"focal":{"x":0.5,"y":0.42}},{"assetId":"party-08","x":21,"y":14,"w":24,"rotation":5,"z":3,"focal":{"x":0.5,"y":0.4}},{"assetId":"party-09","x":39,"y":26,"w":25,"rotation":-5,"z":4,"focal":{"x":0.5,"y":0.42}},{"assetId":"party-01","x":57,"y":10,"w":24,"rotation":9,"z":5,"focal":{"x":0.5,"y":0.45}},{"assetId":"party-06","x":74,"y":36,"w":26,"rotation":-12,"z":6,"focal":{"x":0.5,"y":0.45}},{"assetId":"party-03","x":13,"y":56,"w":22,"rotation":11,"z":7,"focal":{"x":0.5,"y":0.4}},{"assetId":"party-02","x":32,"y":2,"w":12,"rotation":14,"z":1,"focal":{"x":0.5,"y":0.45}}]},{"type":"text","id":"pe-text","html":"<p><strong>The confetti is still in the carpet.</strong> Dance floor at midnight, toasts that ran long, a photo booth that never got a break — every frame is here, edited and ready to share.</p><p><em>Grab your favorites, tag the crew, and relive it on loop.</em></p>","align":"center","width":"wide","bg":"accent","padding":"airy"},{"type":"gallery","id":"pe-gallery","binding":{"kind":"picks","ids":["party-05","party-07","party-10"]},"layout":"grid","columns":{"mobile":2,"sm":3,"md":3},"heading":"The rest of the riot"},{"type":"favorites","id":"pe-favorites","heading":"Your favorites","emptyHint":"No hearts yet — tap the ♥ on the shots that make you want to relive the night."},{"type":"contact","id":"pe-contact","heading":"Book your own riot","body":"Launches, birthdays, weddings — we shoot every party with this much energy.","ctaLabel":"Check your date","ctaHref":"https://snap.example"}],"theme":{"background":"dark","padding":"normal","radius":"8px","captions":"hover","font":"bebas-neue","fontScale":1.1,"tracking":"wide","colors":{"bg":"#0e0e13","text":"#f7f7f5","accent":"#ff3d81"}}},
-  },
-  {
     key: "corporate-clean",
     name: "Corporate Clean",
+    tier: "lite",
     category: "corporate",
     description: "Crisp square grid, Inter type, straight to the photos — headshot & event delivery without the frills.",
     genres: ["corporate"],
@@ -88,6 +118,7 @@ export const SEED_TEMPLATES: SeedTemplate[] = [
   {
     key: "luxury",
     name: "Luxury",
+    tier: "lite",
     category: "editorial",
     description: "Champagne gold on near-black — full-bleed hero, curated highlights, Playfair serif.",
     genres: ["wedding"],
@@ -97,6 +128,7 @@ export const SEED_TEMPLATES: SeedTemplate[] = [
   {
     key: "magazine",
     name: "Magazine",
+    tier: "lite",
     category: "editorial",
     description: "Full-bleed fashion cover, cover-story row, cascade spread — Fraunces serif, an actual issue.",
     genres: ["editorial"],
@@ -106,11 +138,42 @@ export const SEED_TEMPLATES: SeedTemplate[] = [
   {
     key: "minimal-mono",
     name: "Minimal Mono",
+    tier: "lite",
     category: "minimal",
     description: "Near-white canvas, ink-black type, tight square grid — the gallery as a quiet exhibition.",
     genres: ["editorial"],
     harnessAccent: "#111111",
     design: {"template":"minimal-mono","layout":"grid","sections":[{"type":"hero","id":"mm-hero","style":"static","title":"","subtitle":"Ten frames. No color. No noise.","images":[],"interval":0,"kicker":true},{"type":"gallery","id":"mm-grid","binding":{"kind":"all"},"layout":"grid","columns":{"mobile":2,"sm":3,"md":4},"heading":""},{"type":"text","id":"mm-statement","padding":"airy","html":"<p><strong>About the set.</strong> Shot in a single morning, one lens, no strobes — the frames stand on composition and light alone. <em>Every photograph here is a final, retouched selection.</em> For prints or a session of your own: <a href=\"https://atelier-noir.example/commissions\">atelier-noir.example</a>.</p>","align":"center","width":"prose"},{"type":"gallery","id":"mm-selects","binding":{"kind":"rating","min":5},"layout":"grid","columns":{"mobile":2,"sm":3,"md":4},"heading":"Studio selects"},{"type":"favorites","id":"mm-favorites","heading":"Your favorites","emptyHint":"Tap the ♥ on a photograph you love — it will wait for you here."},{"type":"contact","id":"mm-contact","heading":"Commission the studio","body":"Editorial, portrait, and campaign work — shot slow, delivered quiet. Tell us what you are making.","ctaLabel":"Start a conversation","ctaHref":"https://atelier-noir.example/commissions"}],"theme":{"background":"light","padding":"compact","radius":"0px","captions":"off","font":"space-grotesk","fontScale":0.9,"tracking":"wide","colors":{"bg":"#fafafa","text":"#111111","accent":"#111111"}}},
+  },
+  {
+    key: "dark-cinematic",
+    name: "Dark Cinematic",
+    tier: "studio",
+    category: "wedding",
+    description: "Night-reception energy — Ken Burns hero, tight dark grid, gold on black.",
+    genres: ["wedding"],
+    harnessAccent: "#c8a45c",
+    design: {"template":"dark-cinematic","layout":"grid","nav":{"enabled":true,"items":["gallery","favorites","info"]},"sections":[{"type":"hero","id":"dc-hero","style":"kenburns","title":"Vera & Julian","subtitle":"After midnight at The Waverly","images":[{"assetId":"wedding-08","focal":{"x":0.5,"y":0.45}},{"assetId":"wedding-07","focal":{"x":0.5,"y":0.4}},{"assetId":"wedding-05","focal":{"x":0.5,"y":0.5}},{"assetId":"wedding-10","focal":{"x":0.5,"y":0.5}}],"interval":6,"kicker":true},{"type":"gallery","id":"dc-grid","binding":{"kind":"all"},"layout":"grid","columns":{"mobile":2,"sm":3,"md":5},"padding":"compact"},{"type":"collage","id":"dc-collage","aspect":"16/9","mobileStack":true,"padding":"normal","items":[{"assetId":"wedding-02","x":2,"y":12,"w":27,"rotation":-3,"z":2,"focal":{"x":0.5,"y":0.35}},{"assetId":"wedding-09","x":21,"y":42,"w":23,"rotation":2,"z":3,"focal":{"x":0.5,"y":0.4}},{"assetId":"wedding-06","x":40,"y":8,"w":24,"rotation":-2,"z":2,"focal":{"x":0.5,"y":0.45}},{"assetId":"wedding-04","x":57,"y":30,"w":25,"rotation":3,"z":3,"focal":{"x":0.5,"y":0.3}},{"assetId":"wedding-03","x":76,"y":10,"w":22,"rotation":-3,"z":1,"focal":{"x":0.5,"y":0.5}}]},{"type":"slideshow","id":"dc-film","binding":{"kind":"picks","ids":["wedding-10","wedding-08","wedding-05","wedding-07"]},"heading":"Watch the film","posters":4,"bg":"surface","padding":"normal"},{"type":"favorites","id":"dc-favorites","heading":"Your favorites","emptyHint":"Tap the ♥ on any frame — the ones you keep will collect here."},{"type":"text","id":"dc-note","html":"<p><strong>Shot after midnight.</strong></p><p>Every frame in this gallery was made after sunset — candlelight, string lights, and a dance floor that never quite emptied. Mark the moments you love and we will finish them by hand.</p><p><em>Available light only. No flash, all night.</em></p>","align":"center","width":"prose"},{"type":"contact","id":"dc-contact","heading":"Your night, next","body":"We take a small number of weddings each season. Say hello and we'll share a full gallery from a real reception.","ctaLabel":"Check your date","ctaHref":"https://nocturne-studio.example"}],"theme":{"background":"dark","padding":"compact","radius":"8px","captions":"off","font":"space-grotesk","fontScale":1,"tracking":"wide","colors":{"bg":"#0f0f13","text":"#f2f2f4","accent":"#c8a45c"}}},
+  },
+  {
+    key: "family-warm",
+    name: "Family Warm",
+    tier: "studio",
+    category: "family",
+    description: "Sun-washed statement cover, playful collage, big cozy tiles — golden-hour warmth on every scroll.",
+    genres: ["family"],
+    harnessAccent: "#c2410c",
+    design: {"template":"family-warm","layout":"masonry","sections":[{"type":"hero","id":"fw-hero","style":"fullbleed","title":"The Hartleys","subtitle":"A golden-hour morning at Meadowlark Park — bare feet, big laughs, zero posing.","images":[{"assetId":"family-01","focal":{"x":0.5,"y":0.45}},{"assetId":"family-06","focal":{"x":0.5,"y":0.45}},{"assetId":"family-07","focal":{"x":0.5,"y":0.4}}],"interval":5,"kicker":true},{"type":"text","id":"fw-intro","padding":"normal","align":"center","width":"prose","html":"<p><strong>Welcome in — shoes off, snacks encouraged.</strong></p><p>Every giggle, piggyback ride, and last sliver of that golden-hour glow lives in here. Take your time, tap the heart on anything you love, and your favorites land straight in my retouching queue.</p>"},{"type":"gallery","id":"fw-peek","binding":{"kind":"rating","min":5},"layout":"masonry","columns":{"mobile":2,"sm":2,"md":4},"heading":"A first peek"},{"type":"collage","id":"fw-collage","padding":"airy","aspect":"3/2","mobileStack":true,"items":[{"assetId":"family-03","x":2,"y":26,"w":27,"rotation":-3,"z":2,"focal":{"x":0.5,"y":0.35}},{"assetId":"family-04","x":30,"y":6,"w":26,"rotation":2,"z":1,"focal":{"x":0.5,"y":0.3}},{"assetId":"family-08","x":57,"y":30,"w":27,"rotation":-2,"z":2,"focal":{"x":0.5,"y":0.35}},{"assetId":"family-05","x":76,"y":12,"w":22,"rotation":3,"z":3,"focal":{"x":0.5,"y":0.3}}]},{"type":"gallery","id":"fw-gallery","binding":{"kind":"all"},"layout":"masonry","columns":{"mobile":2,"sm":2,"md":3},"heading":"The whole session"},{"type":"favorites","id":"fw-favorites","padding":"airy","bg":"accent","heading":"Your favorites","emptyHint":"No hearts yet — tap the ♥ on any photo that makes you smile, and it will be waiting for you right here."},{"type":"contact","id":"fw-contact","padding":"airy","heading":"Let's plan your golden hour","body":"If your walls could use a little more of this light, I'd love to hear from you. Next season's calendar is open now.","ctaLabel":"Book your session"}],"theme":{"background":"light","padding":"airy","radius":"16px","captions":"off","font":"manrope","fontScale":1.05,"colors":{"bg":"#fffaf3","accent":"#c2410c"}}},
+  },
+  {
+    key: "party-energy",
+    name: "Party Energy",
+    tier: "studio",
+    category: "party",
+    description: "Neon-dark, tilted photo collage, Bebas headlines — pure party adrenaline.",
+    genres: ["party"],
+    harnessAccent: "#ff3d81",
+    design: {"template":"party-energy","layout":"grid","nav":{"enabled":false,"items":["gallery","favorites","info"]},"sections":[{"type":"hero","id":"pe-hero","style":"fullbleed","title":"Maya's 30th at Warehouse 21","subtitle":"One night, 300 frames, zero chill — the whole riot, right here.","images":[{"assetId":"party-01","focal":{"x":0.5,"y":0.45}},{"assetId":"party-05","focal":{"x":0.5,"y":0.5}},{"assetId":"party-10","focal":{"x":0.5,"y":0.45}}],"interval":4,"kicker":true},{"type":"collage","id":"pe-collage","aspect":"4/3","mobileStack":true,"padding":"airy","bg":"surface","items":[{"assetId":"party-04","x":2,"y":22,"w":26,"rotation":-8,"z":2,"focal":{"x":0.5,"y":0.42}},{"assetId":"party-08","x":21,"y":14,"w":24,"rotation":5,"z":3,"focal":{"x":0.5,"y":0.4}},{"assetId":"party-09","x":39,"y":26,"w":25,"rotation":-5,"z":4,"focal":{"x":0.5,"y":0.42}},{"assetId":"party-01","x":57,"y":10,"w":24,"rotation":9,"z":5,"focal":{"x":0.5,"y":0.45}},{"assetId":"party-06","x":74,"y":36,"w":26,"rotation":-12,"z":6,"focal":{"x":0.5,"y":0.45}},{"assetId":"party-03","x":13,"y":56,"w":22,"rotation":11,"z":7,"focal":{"x":0.5,"y":0.4}},{"assetId":"party-02","x":32,"y":2,"w":12,"rotation":14,"z":1,"focal":{"x":0.5,"y":0.45}}]},{"type":"text","id":"pe-text","html":"<p><strong>The confetti is still in the carpet.</strong> Dance floor at midnight, toasts that ran long, a photo booth that never got a break — every frame is here, edited and ready to share.</p><p><em>Grab your favorites, tag the crew, and relive it on loop.</em></p>","align":"center","width":"wide","bg":"accent","padding":"airy"},{"type":"gallery","id":"pe-gallery","binding":{"kind":"picks","ids":["party-05","party-07","party-10"]},"layout":"grid","columns":{"mobile":2,"sm":3,"md":3},"heading":"The rest of the riot"},{"type":"favorites","id":"pe-favorites","heading":"Your favorites","emptyHint":"No hearts yet — tap the ♥ on the shots that make you want to relive the night."},{"type":"contact","id":"pe-contact","heading":"Book your own riot","body":"Launches, birthdays, weddings — we shoot every party with this much energy.","ctaLabel":"Check your date","ctaHref":"https://snap.example"}],"theme":{"background":"dark","padding":"normal","radius":"8px","captions":"hover","font":"bebas-neue","fontScale":1.1,"tracking":"wide","colors":{"bg":"#0e0e13","text":"#f7f7f5","accent":"#ff3d81"}}},
   },
 ];
 
@@ -127,27 +190,43 @@ export function seedTemplateOf(key: string): SeedTemplate | null {
  * The seed KEY travels with the design (a pristine application is free-tier
  * saveable; the builder clears it on first edit). Photos shorter than the
  * seed's picks simply render fewer items. */
+export type AdaptOptions = {
+  /** Studio+ keeps a seed's hero slider and column counts; below Studio the
+   * hero is trimmed to its first photo and per-section columns are dropped
+   * (both are Studio controls). Default true. */
+  studio?: boolean;
+  /** The project's existing cover. A cover-only (free) template never
+   * carries copy of its own: the studio's title, subtitle and cover photo
+   * survive the switch. */
+  cover?: GalleryDesign["cover"] | null;
+};
+
 export function adaptSeedToProject(
   seed: SeedTemplate,
   photoIds: string[],
+  opts: AdaptOptions = {},
 ): GalleryDesign {
   let i = 0;
   /** Positional stand-ins, wrapping for short galleries (sections are
    * independent surfaces; reuse beats empty states). Empty gallery → []. */
   const take = (n: number): string[] =>
     photoIds.length === 0 ? [] : Array.from({ length: n }, () => photoIds[i++ % photoIds.length]);
+  const studio = opts.studio !== false;
   const design: GalleryDesign = JSON.parse(JSON.stringify(seed.design));
   design.template = seed.key;
+  if (!studio) delete design.columns;
   for (const s of design.sections ?? []) {
     if (s.type === "hero") {
-      const n = Math.max(1, s.images.length);
+      const n = studio ? Math.max(1, s.images.length) : 1;
       s.images = take(n).map((assetId, idx) => ({ assetId, focal: s.images[idx]?.focal ?? { x: 0.5, y: 0.4 } }));
     } else if (s.type === "gallery" || s.type === "slideshow") {
+      if (s.type === "gallery" && !studio) delete s.columns;
       if (s.binding.kind === "picks") s.binding = { kind: "picks", ids: take(s.binding.ids.length) };
       else if (s.binding.kind === "folder") s.binding = { kind: "all" };
     } else if (s.type === "collage") {
       s.items = s.items.map((it) => ({ ...it, assetId: take(1)[0] ?? it.assetId }));
     }
   }
+  if (seed.tier === "free" && opts.cover) design.cover = JSON.parse(JSON.stringify(opts.cover));
   return design;
 }

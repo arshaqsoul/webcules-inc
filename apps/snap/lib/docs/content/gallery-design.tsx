@@ -2,8 +2,8 @@
  * theme/columns enums, hero-slider parse, schema-v2 fields, the free-tier
  * cover-only + seed-design gates), components/gallery-designer.tsx (presets,
  * free cover, Studio+ hero slider + columns), components/
- * gallery-template-picker.tsx + lib/seed-templates.ts (the ten designer
- * templates, apply/undo), app/g/[token]/preview/page.tsx
+ * gallery-template-picker.tsx + lib/seed-templates.ts + lib/seed-gating.ts
+ * (the free / Lite / Studio designer templates, apply/undo), app/g/[token]/preview/page.tsx
  * (preview-as-client), and the gate matrix (design_requires_lite /
  * music_requires_lite). */
 import { H2, H3, Note, Shot, Tier, Related } from "@/lib/docs/primitives";
@@ -14,8 +14,9 @@ export default function GalleryDesign() {
       <p>
         Design each gallery to match the shoot: start from a designer template, or style it
         yourself — a cover photo, a layout, a theme — and save the combination as a preset your
-        whole studio reuses. Templates apply free on every plan, the design layer is Lite and
-        above, and the hero slider, column controls, and collages are Studio and above.
+        whole studio reuses. A handful of free templates apply on every plan, full page-layout
+        templates and the design layer are Lite and above, and the hero slider, column controls,
+        and collages are Studio and above.
       </p>
 
       <Shot
@@ -38,12 +39,16 @@ export default function GalleryDesign() {
 
       <H2>Start from a template</H2>
       <p>
-        The Client gallery tab now opens with ten designer gallery templates — wedding, family,
-        party, corporate, editorial, and minimal looks to browse by category. Click a card to
-        preview it with <em>your</em> photos, then <strong>Apply</strong>: sections, fonts, and
-        colors land in one click, and <strong>Undo</strong> brings your previous design straight
-        back. Applying is design-only — photos, favorites, and delivery settings stay untouched —
-        and free on every plan. Making a template yours is the{" "}
+        The Client gallery tab opens with a template picker in two groups. <strong>Free
+        templates</strong> — Classic (the default every gallery starts on), Soft Serif, After
+        Dark, Warm Family, and Clean Mono — are a look: layout, type, and colors. They carry no
+        copy of their own, so your title, subtitle, and cover photo from Gallery design stay
+        exactly as you set them when you switch. <strong>Lite and Studio templates</strong> are full
+        page layouts — wedding, family, party, corporate, editorial, and minimal — with their own
+        sections and photo placements; you can preview every one with <em>your</em> photos, but
+        applying needs Lite (the collage ones, Studio). <strong>Undo</strong> brings your previous
+        design straight back, and applying is design-only: photos, favorites, and delivery
+        settings stay untouched. Making a template yours is the{" "}
         <a href="/docs/templates">page builder</a>, Lite and above.
       </p>
 
@@ -53,7 +58,7 @@ export default function GalleryDesign() {
         the template grid, beside a live phone-frame preview. The <strong>Cover</strong> section
         renders for every plan; what Lite unlocks is everything around it — layouts, themes, cover
         motion, presets. On Free the upsell card sits below the cover, and saving accepts a
-        cover-only design or an untouched template — customizing one takes Lite.
+        cover-only design or an untouched free template with your own cover — customizing one takes Lite.
       </p>
 
       <H3>Cover</H3>

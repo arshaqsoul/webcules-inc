@@ -1,0 +1,14 @@
+{
+  "key": "soft-serif",
+  "name": "Soft Serif",
+  "tier": "free",
+  "category": "wedding",
+  "description": "Warm paper tones, an elegant serif and a soft masonry grid.",
+  "genres": ["wedding"],
+  "harnessAccent": "#8a6a48",
+  "design": {
+    "template": "soft-serif",
+    "layout": "masonry",
+    "theme": { "background": "light", "padding": "airy", "radius": "16px", "captions": "off", "font": "playfair-display", "colors": { "bg": "#fbf8f3", "text": "#2a2420", "accent": "#8a6a48" } }
+  }
+}

@@ -24,7 +24,13 @@ const drafts = readdirSync(DRAFTS)
 const errs = [];
 for (const d of drafts) {
   if (d.key !== d.design?.template) errs.push(`${d.key}: design.template (${d.design?.template}) must equal key`);
-  if (!Array.isArray(d.design?.sections) || d.design.sections.length === 0) errs.push(`${d.key}: no sections`);
+  // Free templates are cover-only (v1): theme + layout, no sections - the
+  // only copy is the cover title/subtitle, edited in the Gallery design
+  // panel. Every other tier ships a sectioned page.
+  const sectioned = Array.isArray(d.design?.sections) && d.design.sections.length > 0;
+  if (d.tier === "free" && sectioned) errs.push(`${d.key}: free templates must not carry sections`);
+  if (d.tier !== "free" && !sectioned) errs.push(`${d.key}: no sections`);
+  if (d.tier === "free" && d.design?.cover) errs.push(`${d.key}: free templates carry no cover (the studio's own is kept on apply)`);
   if (!Array.isArray(d.genres) || d.genres.length === 0) errs.push(`${d.key}: no genres`);
   if (typeof d.description !== "string" || !d.description) errs.push(`${d.key}: no description`);
 }
@@ -35,11 +41,23 @@ if (errs.length) {
 
 // Category ordering for the picker: wedding, family, party, corporate, editorial, minimal.
 const order = ["wedding", "family", "party", "corporate", "editorial", "minimal"];
-const sorted = [...drafts].sort((a, b) => order.indexOf(a.category) - order.indexOf(b.category) || a.key.localeCompare(b.key));
+// Tier: "free" is explicit in the draft; sectioned seeds are Lite, and any
+// collage makes them Studio. Free templates list first, "classic" (the
+// default) leading them.
+const tierOf = (d) => (d.tier === "free" ? "free" : d.design.sections.some((s) => s.type === "collage") ? "studio" : "lite");
+const tierRank = { free: 0, lite: 1, studio: 2 };
+const sorted = [...drafts].sort(
+  (a, b) =>
+    tierRank[tierOf(a)] - tierRank[tierOf(b)] ||
+    (a.key === "classic" ? -1 : b.key === "classic" ? 1 : 0) ||
+    order.indexOf(a.category) - order.indexOf(b.category) ||
+    a.key.localeCompare(b.key),
+);
 
 const entry = (d) => `  {
     key: ${JSON.stringify(d.key)},
     name: ${JSON.stringify(d.name)},
+    tier: ${JSON.stringify(tierOf(d))},
     category: ${JSON.stringify(d.category)},
     description: ${JSON.stringify(d.description)},
     genres: ${JSON.stringify(d.genres)},
@@ -61,6 +79,9 @@ export type SeedTemplate = {
   key: string;
   name: string;
   category: "wedding" | "family" | "party" | "corporate" | "editorial" | "minimal";
+  /** Lowest plan that may apply it: free = cover-only look (title and
+   * subtitle only), lite = sectioned page, studio = collage. */
+  tier: "free" | "lite" | "studio";
   /** One line for the picker card. */
   description: string;
   /** The sample genres this seed is photographed with in previews/thumbs. */
@@ -87,28 +108,44 @@ export function seedTemplateOf(key: string): SeedTemplate | null {
  * The seed KEY travels with the design (a pristine application is free-tier
  * saveable; the builder clears it on first edit). Photos shorter than the
  * seed's picks simply render fewer items. */
+export type AdaptOptions = {
+  /** Studio+ keeps a seed's hero slider and column counts; below Studio the
+   * hero is trimmed to its first photo and per-section columns are dropped
+   * (both are Studio controls). Default true. */
+  studio?: boolean;
+  /** The project's existing cover. A cover-only (free) template never
+   * carries copy of its own: the studio's title, subtitle and cover photo
+   * survive the switch. */
+  cover?: GalleryDesign["cover"] | null;
+};
+
 export function adaptSeedToProject(
   seed: SeedTemplate,
   photoIds: string[],
+  opts: AdaptOptions = {},
 ): GalleryDesign {
   let i = 0;
   /** Positional stand-ins, wrapping for short galleries (sections are
    * independent surfaces; reuse beats empty states). Empty gallery → []. */
   const take = (n: number): string[] =>
     photoIds.length === 0 ? [] : Array.from({ length: n }, () => photoIds[i++ % photoIds.length]);
+  const studio = opts.studio !== false;
   const design: GalleryDesign = JSON.parse(JSON.stringify(seed.design));
   design.template = seed.key;
+  if (!studio) delete design.columns;
   for (const s of design.sections ?? []) {
     if (s.type === "hero") {
-      const n = Math.max(1, s.images.length);
+      const n = studio ? Math.max(1, s.images.length) : 1;
       s.images = take(n).map((assetId, idx) => ({ assetId, focal: s.images[idx]?.focal ?? { x: 0.5, y: 0.4 } }));
     } else if (s.type === "gallery" || s.type === "slideshow") {
+      if (s.type === "gallery" && !studio) delete s.columns;
       if (s.binding.kind === "picks") s.binding = { kind: "picks", ids: take(s.binding.ids.length) };
       else if (s.binding.kind === "folder") s.binding = { kind: "all" };
     } else if (s.type === "collage") {
       s.items = s.items.map((it) => ({ ...it, assetId: take(1)[0] ?? it.assetId }));
     }
   }
+  if (seed.tier === "free" && opts.cover) design.cover = JSON.parse(JSON.stringify(opts.cover));
   return design;
 }
 `;

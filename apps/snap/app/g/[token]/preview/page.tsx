@@ -26,6 +26,7 @@ import { mergeRenderDesign, resolveDesignSections } from "@/lib/gallery-sections
 import { fontFamilyOf, FONTS_CSS_HREF } from "@/lib/fonts";
 import { safeHexColor } from "@/lib/embed";
 import { adaptSeedToProject, seedTemplateOf } from "@/lib/seed-templates";
+import { hasStudioControls, planMeetsSeedTier } from "@/lib/seed-gating";
 import type { GalleryDesign } from "@/lib/gallery-design";
 import type { SlideshowProps } from "@/components/gallery-view";
 
@@ -145,7 +146,12 @@ export default async function GalleryPreviewPage({ params, searchParams }: { par
     const seed = seedTemplateOf(templateKey);
     if (seed) {
       previewDesign = mergeRenderDesign(
-        adaptSeedToProject(seed, viewAssets.filter((a) => a.kind === "image").map((a) => a.id)),
+        adaptSeedToProject(seed, viewAssets.filter((a) => a.kind === "image").map((a) => a.id), {
+          // A locked template previews in full (that's the upsell); an
+          // applicable one previews exactly what applying would give.
+          studio: hasStudioControls(tier) || !planMeetsSeedTier(tier, seed.tier),
+          cover: design?.cover ?? null,
+        }),
         await buildMergeValues({ organizationId: ctx.organizationId, projectId }),
       );
       previewPlan = resolveDesignSections(previewDesign, viewAssets);

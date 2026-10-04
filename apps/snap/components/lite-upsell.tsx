@@ -22,8 +22,7 @@ export function LiteUpsell({ feature, note }: { feature: string; note?: string }
     <div className="rounded-[12px] border border-hairline bg-surface-1 p-5">
       <p className="text-sm font-medium text-ink">{feature} are included with Lite.</p>
       <p className="mt-1 text-sm text-ink-subtle">
-        {note ?? "Define them once and reuse them on every project."} Free studios can browse the starters —
-        creating and editing your own is part of the Lite plan.
+        {note ?? "Define them once and reuse them on every project."} Creating and editing your own is part of the Lite plan.
       </p>
       <div className="mt-3">
         <UpgradeCta to="lite" />

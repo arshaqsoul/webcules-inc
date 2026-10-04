@@ -13,6 +13,7 @@ import { and, asc, eq, inArray } from "drizzle-orm";
 
 import { designMinTier, isCoverOnlyDesign, isSeedDesign, parseGalleryDesign, serializeGalleryDesign } from "@/lib/gallery-design";
 import { adaptSeedToProject, seedTemplateOf } from "@/lib/seed-templates";
+import { hasStudioControls, seedGateError } from "@/lib/seed-gating";
 
 export const dynamic = "force-dynamic";
 
@@ -67,9 +68,20 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
           )
           .orderBy(asc(schema.assets.createdAt))
       ).map((r) => r.id);
-      const pristine = parseGalleryDesign(adaptSeedToProject(seed, photos));
+      // A cover-only (free) template carries no copy of its own, so the
+      // studio's cover (title, subtitle, photo) is part of what "pristine"
+      // means; whether that cover is Free-saveable is checked below.
+      const pristine = parseGalleryDesign(
+        adaptSeedToProject(seed, photos, { studio: hasStudioControls(ent?.id), cover: parsedDesign.cover ?? null }),
+      );
       if (!pristine || serializeGalleryDesign(pristine) !== serializeGalleryDesign(parsedDesign)) {
         parsedDesign = { ...parsedDesign, template: "custom" };
+      } else {
+        // A pristine seed still needs the plan its tier names.
+        const gate = seedGateError(ent?.id, seed.tier);
+        if (gate) {
+          return Response.json({ error: gate === "template_requires_studio" ? "design_requires_studio" : "design_requires_lite", plan: ent?.id ?? "free" }, { status: 403 });
+        }
       }
     } else {
       parsedDesign = { ...parsedDesign, template: "custom" };

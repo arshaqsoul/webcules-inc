@@ -63,11 +63,14 @@ test("template picker: browse → apply → gallery reflects → undo", async ({
   await expect(page.getByText("Start from a template")).toBeVisible({ timeout: 20_000 });
   // Category chips + at least the reference seed card.
   await expect(page.getByRole("tab", { name: "Wedding" })).toBeVisible();
-  const card = page.locator("div", { hasText: "Classic Wedding" }).filter({ has: page.getByRole("button", { name: "Apply" }) }).first();
-  await expect(page.getByText("Classic Wedding").first()).toBeVisible();
+  const card = page.locator("div.group", { hasText: "Classic Wedding" }).first();
+  await expect(card).toBeVisible();
+  // Two groups: free looks first, then the Lite/Studio page layouts.
+  await expect(page.getByText("Free templates", { exact: true })).toBeVisible();
+  await expect(page.getByText("Lite and Studio templates", { exact: true })).toBeVisible();
 
   // Applying replaces an existing design → inline confirm appears.
-  await page.getByRole("button", { name: "Apply" }).first().click();
+  await card.getByRole("button", { name: "Apply" }).click();
   const confirm = page.getByRole("button", { name: "Confirm" });
   try {
     await confirm.waitFor({ state: "visible", timeout: 4_000 });
@@ -75,7 +78,7 @@ test("template picker: browse → apply → gallery reflects → undo", async ({
   } catch {
     // no prior design → applied immediately
   }
-  await expect(page.getByText(/applied — your photos, a new look/i)).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText(/applied - your photos, a new look/i)).toBeVisible({ timeout: 15_000 });
 
   // The client-view preview renders the seed's hero copy.
   await gotoWithRetry(page, `/g/${seed.previewProjectId}/preview`);
@@ -87,6 +90,31 @@ test("template picker: browse → apply → gallery reflects → undo", async ({
   await expect(page.getByText("Previous design restored.")).toBeVisible({ timeout: 15_000 });
   await gotoWithRetry(page, `/g/${seed.previewProjectId}/preview`);
   await expect(page.getByText("Anna & Elias").first()).toBeVisible({ timeout: 20_000 });
+});
+
+test("free template: applies a look only - the studio's own cover copy survives", async ({ page }) => {
+  test.setTimeout(180_000);
+  await login(page);
+  await gotoWithRetry(page, `/dashboard/projects/${seed.previewProjectId}?tab=gallery`);
+  await expect(page.getByText("Start from a template")).toBeVisible({ timeout: 20_000 });
+
+  const card = page.locator("div.group", { hasText: "Soft Serif" }).first();
+  await card.getByRole("button", { name: "Apply" }).click();
+  const confirm = page.getByRole("button", { name: "Confirm" });
+  try {
+    await confirm.waitFor({ state: "visible", timeout: 4_000 });
+    await confirm.click();
+  } catch {
+    // no prior design → applied immediately
+  }
+  await expect(page.getByText(/applied - your title, subtitle and cover are unchanged/i)).toBeVisible({ timeout: 15_000 });
+
+  // No seed copy leaks into the client view; the Gallery design panel is the editor.
+  await gotoWithRetry(page, `/g/${seed.previewProjectId}/preview`);
+  await expect(page.getByText("Anna & Benjamin")).toHaveCount(0);
+  await gotoWithRetry(page, `/dashboard/projects/${seed.previewProjectId}?tab=gallery`);
+  await expect(page.getByText("Template: Soft Serif")).toBeVisible({ timeout: 20_000 });
+  await page.getByRole("button", { name: "Undo" }).click().catch(() => {});
 });
 
 test("page builder loads for the pro org", async ({ page }) => {

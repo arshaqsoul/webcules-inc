@@ -649,7 +649,10 @@ export function themeVars(background: GalleryDesign["theme"]["background"]): Rec
  * sections are not. Input should be the CANONICAL parse. */
 export function isCoverOnlyDesign(d: GalleryDesign | null | undefined): boolean {
   if (!d) return true; // clearing is always allowed
-  if (designHasV2Fields(d)) return isSeedDesign(d);
+  if (designHasV2Fields(d)) {
+    // A seed application; Free may only add a plain cover on top of it.
+    return isSeedDesign(d) && (!d.cover || (d.cover.style === "static" && !d.cover.images?.length && !d.cover.interval));
+  }
   return (
     d.layout === CLASSIC_LAYOUT &&
     d.films !== true &&

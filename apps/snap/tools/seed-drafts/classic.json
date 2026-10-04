@@ -1,0 +1,14 @@
+{
+  "key": "classic",
+  "name": "Classic",
+  "tier": "free",
+  "category": "minimal",
+  "description": "The default - a clean cover, a tidy grid, your photos front and centre.",
+  "genres": ["wedding"],
+  "harnessAccent": "",
+  "design": {
+    "template": "classic",
+    "layout": "grid",
+    "theme": { "background": "light", "padding": "normal", "radius": "16px", "captions": "off" }
+  }
+}

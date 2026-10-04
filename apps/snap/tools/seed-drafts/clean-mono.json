@@ -1,0 +1,14 @@
+{
+  "key": "clean-mono",
+  "name": "Clean Mono",
+  "tier": "free",
+  "category": "minimal",
+  "description": "Near-white canvas, ink-black type and a tight square grid.",
+  "genres": ["editorial"],
+  "harnessAccent": "#111111",
+  "design": {
+    "template": "clean-mono",
+    "layout": "grid",
+    "theme": { "background": "light", "padding": "compact", "radius": "0px", "captions": "off", "font": "inter", "colors": { "bg": "#fafafa", "text": "#111111", "accent": "#111111" } }
+  }
+}
