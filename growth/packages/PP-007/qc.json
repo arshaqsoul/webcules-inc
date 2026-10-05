@@ -1,0 +1,101 @@
+{
+  "pass": true,
+  "pain_point": "PP-007",
+  "checked_at": "2026-10-04T23:24:06.434Z",
+  "reel": "growth\\out\\PP-007\\reel.mp4",
+  "duration_s": 23.8,
+  "size_mb": 3.7,
+  "failures": [],
+  "checks": [
+    {
+      "name": "resolution",
+      "ok": true,
+      "detail": "1080x1920"
+    },
+    {
+      "name": "fps",
+      "ok": true,
+      "detail": "30/1"
+    },
+    {
+      "name": "codec",
+      "ok": true,
+      "detail": "h264 yuv420p"
+    },
+    {
+      "name": "duration",
+      "ok": true,
+      "detail": "23.8s (allowed 8-45s)"
+    },
+    {
+      "name": "size",
+      "ok": true,
+      "detail": "3.7 MB (max 50)"
+    },
+    {
+      "name": "sfx track",
+      "ok": true,
+      "detail": "aac 48000 Hz 2 ch"
+    },
+    {
+      "name": "sfx length matches video",
+      "ok": true,
+      "detail": "audio 23.80s, video 23.80s"
+    },
+    {
+      "name": "sfx level",
+      "ok": true,
+      "detail": "peak -6 dB (allowed -12 to -3)"
+    },
+    {
+      "name": "sfx on every click",
+      "ok": true,
+      "detail": "3 click(s) all audible"
+    },
+    {
+      "name": "no frozen frames",
+      "ok": true,
+      "detail": "none over 0.8s"
+    },
+    {
+      "name": "no black frames",
+      "ok": true,
+      "detail": "none"
+    },
+    {
+      "name": "text inside safe zones",
+      "ok": true,
+      "detail": "8 text blocks checked"
+    },
+    {
+      "name": "captions are short",
+      "ok": true,
+      "detail": "all <= 6 words"
+    },
+    {
+      "name": "hook is short",
+      "ok": true,
+      "detail": "Inquiries in five places?"
+    },
+    {
+      "name": "every click is inside the frame",
+      "ok": true,
+      "detail": "3 click target(s) fully on screen"
+    },
+    {
+      "name": "every click has an effect",
+      "ok": true,
+      "detail": "3/3 clicks highlighted"
+    },
+    {
+      "name": "claims backed",
+      "ok": true,
+      "detail": "0 price/limit/tier mentions all in the claims table"
+    },
+    {
+      "name": "claims cite real files",
+      "ok": true,
+      "detail": "5 claim(s) cite existing files"
+    }
+  ]
+}

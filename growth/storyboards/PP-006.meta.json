@@ -1,0 +1,16 @@
+{
+  "hook": "Still chasing signed contracts?",
+  "end": {
+    "claim": "Signed before you asked",
+    "note": "Timestamp, IP and PDF archived",
+    "link": "snap.webcules.com"
+  },
+  "claims": [
+    { "text": "Contracts build from reusable templates", "source": "apps/snap/components/project-contracts.tsx" },
+    { "text": "Merge fields fill at send time", "source": "apps/snap/lib/merge.ts" },
+    { "text": "Signing records name, time and IP", "source": "apps/snap/lib/contracts.ts" },
+    { "text": "A signed PDF is archived and emailed", "source": "apps/snap/lib/contracts.ts" },
+    { "text": "Contracts work on the Free plan", "source": "apps/snap/lib/plans-data.ts" }
+  ],
+  "mark": "snap.webcules.com"
+}
