@@ -1,0 +1,13 @@
+{
+  "hook": "Their download failed again?",
+  "end": {
+    "claim": "Every photo, one click",
+    "note": "Download all on every plan",
+    "link": "snap.webcules.com"
+  },
+  "claims": [
+    { "text": "The download menu scopes everything or favorites", "source": "apps/snap/components/gallery-view.tsx" },
+    { "text": "Download all is on every plan", "source": "apps/snap/lib/gallery-downloads.ts" }
+  ],
+  "mark": "snap.webcules.com"
+}

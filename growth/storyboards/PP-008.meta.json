@@ -1,0 +1,15 @@
+{
+  "hook": "Their brand on your gallery?",
+  "end": {
+    "claim": "Your brand, end to end",
+    "note": "Studio and Pro plans",
+    "link": "snap.webcules.com"
+  },
+  "claims": [
+    { "text": "The gallery badge swaps for the studio name", "source": "apps/snap/components/gallery-view.tsx" },
+    { "text": "White-label needs the plan and the toggle", "source": "apps/snap/lib/branding.ts" },
+    { "text": "The setup card walks the flip", "source": "apps/snap/components/white-label-card.tsx" },
+    { "text": "White-label is Studio and Pro", "source": "apps/snap/lib/plans-data.ts" }
+  ],
+  "mark": "snap.webcules.com"
+}
