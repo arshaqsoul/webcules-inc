@@ -1,10 +1,10 @@
 {
   "pass": true,
   "pain_point": "PP-002",
-  "checked_at": "2026-10-03T14:26:18.293Z",
+  "checked_at": "2026-10-04T21:44:49.914Z",
   "reel": "growth\\out\\PP-002\\reel.mp4",
   "duration_s": 36.9,
-  "size_mb": 11.7,
+  "size_mb": 12.2,
   "failures": [],
   "checks": [
     {
@@ -23,11 +23,6 @@
       "detail": "h264 yuv420p"
     },
     {
-      "name": "silent",
-      "ok": true,
-      "detail": "no audio stream"
-    },
-    {
       "name": "duration",
       "ok": true,
       "detail": "36.9s (allowed 8-45s)"
@@ -35,7 +30,27 @@
     {
       "name": "size",
       "ok": true,
-      "detail": "11.7 MB (max 50)"
+      "detail": "12.2 MB (max 50)"
+    },
+    {
+      "name": "sfx track",
+      "ok": true,
+      "detail": "aac 48000 Hz 2 ch"
+    },
+    {
+      "name": "sfx length matches video",
+      "ok": true,
+      "detail": "audio 36.87s, video 36.87s"
+    },
+    {
+      "name": "sfx level",
+      "ok": true,
+      "detail": "peak -6 dB (allowed -12 to -3)"
+    },
+    {
+      "name": "sfx on every click",
+      "ok": true,
+      "detail": "5 click(s) all audible"
     },
     {
       "name": "no frozen frames",
@@ -61,6 +76,11 @@
       "name": "hook is short",
       "ok": true,
       "detail": "Still chasing photo picks?"
+    },
+    {
+      "name": "every click is inside the frame",
+      "ok": true,
+      "detail": "5 click target(s) fully on screen"
     },
     {
       "name": "every click has an effect",

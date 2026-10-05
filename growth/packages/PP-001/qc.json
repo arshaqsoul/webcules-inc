@@ -1,10 +1,10 @@
 {
   "pass": true,
   "pain_point": "PP-001",
-  "checked_at": "2026-10-03T13:49:21.334Z",
+  "checked_at": "2026-10-04T21:43:25.584Z",
   "reel": "growth\\out\\PP-001\\reel.mp4",
   "duration_s": 30.3,
-  "size_mb": 5.7,
+  "size_mb": 6.1,
   "failures": [],
   "checks": [
     {
@@ -23,11 +23,6 @@
       "detail": "h264 yuv420p"
     },
     {
-      "name": "silent",
-      "ok": true,
-      "detail": "no audio stream"
-    },
-    {
       "name": "duration",
       "ok": true,
       "detail": "30.3s (allowed 8-45s)"
@@ -35,7 +30,27 @@
     {
       "name": "size",
       "ok": true,
-      "detail": "5.7 MB (max 50)"
+      "detail": "6.1 MB (max 50)"
+    },
+    {
+      "name": "sfx track",
+      "ok": true,
+      "detail": "aac 48000 Hz 2 ch"
+    },
+    {
+      "name": "sfx length matches video",
+      "ok": true,
+      "detail": "audio 30.27s, video 30.27s"
+    },
+    {
+      "name": "sfx level",
+      "ok": true,
+      "detail": "peak -6 dB (allowed -12 to -3)"
+    },
+    {
+      "name": "sfx on every click",
+      "ok": true,
+      "detail": "6 click(s) all audible"
     },
     {
       "name": "no frozen frames",
@@ -61,6 +76,11 @@
       "name": "hook is short",
       "ok": true,
       "detail": "Chasing the deposit again?"
+    },
+    {
+      "name": "every click is inside the frame",
+      "ok": true,
+      "detail": "6 click target(s) fully on screen"
     },
     {
       "name": "every click has an effect",
