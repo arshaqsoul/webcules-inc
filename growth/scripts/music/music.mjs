@@ -32,6 +32,12 @@ import { standinBed } from "./standin.mjs";
 import { preflight, generate } from "./comfy.mjs";
 
 const STYLES = {
+  ethereal: {
+    key: "A major",
+    bpm: [88, 108],
+    accent: "pop",
+    tags: "Dreamy ethereal electronic pop, instrumental only, no vocals. Spacious and emotional, a sparse steady pulse with a soft kick, shimmering airy synth pads, gentle piano arpeggios, glassy plucked synths, warm sub bass, lots of reverb and room to breathe, a slow build that lifts into a bright euphoric peak, hopeful and tender, clean polished modern pop production, ends with one soft final chord",
+  },
   heroic: {
     key: "C major",
     bpm: [96, 124],

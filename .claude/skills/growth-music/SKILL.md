@@ -30,6 +30,7 @@ Styles (`--style`), each with its own prompt, key and tempo range:
 | `tropical` | summer groove: congas, marimba, steel drum; bright accents | 100-118 |
 | `caper` | playful jazz heist-comedy: brushes, walking bass, pizzicato, muted trumpet; bright accents | 112-132 |
 | `chiptune` | 8-bit arcade: pulse-wave lead, bouncing bass, fast arpeggios; bright accents | 120-140 |
+| `ethereal` | dreamy, spacious, emotional electronic pop that slowly builds: soft pulse, airy pads, piano arpeggios; bright accents | 88-108 |
 | `heroic` | triumphant superhero-style orchestral fanfare: horns, marching snare, timpani, soaring strings; cinematic impacts | 96-124 |
 | `techintro` | slick tech-channel intro: punchy electronic, plucked arpeggios, bright synth hook; bright accents | 118-134 |
 | `sunny` | fun, feel-good dance-pop: four-on-the-floor, handclaps, bouncy synth bass, catchy lead; bright accents, not dark booms | 108-126 |
