@@ -3,6 +3,7 @@
 //
 //   node growth/scripts/music/music.mjs --pp PP-004 [--engine comfy|standin] [--style trailer|upbeat|calm]
 //                                       [--tags "..."] [--seed N] [--tries N] [--bpm N] [--no-hits] [--no-sweep] [--label name]
+//   --ref <audio file>     steer tempo and key by a reference track you supply (only two measured numbers are used, never the audio)
 //   --sfx tonal|classic    tonal (default): the effects are notes in the track's measured key, snapped to its groove. classic: the noise effects.
 //   --quantize off         keep every cue at its exact time (tonal mode otherwise nudges cues onto sixteenth-note slots, see sync.mjs snapCues)
 //   styles: heroic, techintro, funk, indie, tropical, caper, chiptune, sunny, synthpop (all bright accents), orchestral, thriller, action, trailer (default), upbeat, calm.
@@ -157,13 +158,30 @@ const events = keyEvents(edl);
 
 // ---- 1. plan: the tempo whose beat grid fits this reel's moments best
 const [bpmMin, bpmMax] = STYLES[style].bpm;
-const plan = has("bpm") ? { bpm: Number(flag("bpm")), cost: null, offset_s: null } : planGrid(events, { bpmMin, bpmMax, prior: Math.round((bpmMin + bpmMax) / 2) });
+
+// --ref <audio file>: take only the TEMPO and KEY of a reference track the founder supplies, and steer the generation with those two
+// numbers. The audio itself is never copied, uploaded, mixed or kept: the generator is not given it and nothing here stores it.
+let reference = null;
+if (flag("ref")) {
+  const refPath = path.resolve(flag("ref"));
+  if (!fs.existsSync(refPath)) {
+    console.error(`--ref file not found: ${refPath}`);
+    process.exit(2);
+  }
+  const an = analyzeFile(refPath, { seconds: 90 });
+  const k = estimateKey(decodeMono(refPath, { seconds: 90 }));
+  reference = { name: path.basename(refPath), bpm: Math.round(an.bpm * 10) / 10, beat_confidence: Math.round(an.confidence * 10) / 10, key: keyName(k), key_margin: Math.round(k.margin * 1000) / 1000 };
+  console.log(`[music] reference ${reference.name}: ${reference.bpm} BPM (confidence ${reference.beat_confidence}), key ${reference.key} (margin ${reference.key_margin}). Only these numbers are used.`);
+  if (reference.beat_confidence < 2) console.warn("[music] WARNING the reference has no clear beat, so its tempo may be wrong: pass --bpm to set it yourself");
+}
+const KEY = reference && reference.key_margin >= 0.04 ? reference.key : STYLES[style].key;
+const plan = has("bpm") ? { bpm: Number(flag("bpm")), cost: null, offset_s: null } : reference ? { bpm: Math.max(60, Math.min(180, Math.round(reference.bpm))), cost: null, offset_s: null } : planGrid(events, { bpmMin, bpmMax, prior: Math.round((bpmMin + bpmMax) / 2) });
 const reelS = edl.duration_ms / 1000;
 // generate longer than the reel: the alignment trims up to one bar off the front and may slow the track by up to 8 percent
 const seconds = Math.ceil(reelS * 1.1 + 4 * (60 / plan.bpm) + 3);
 const seedBase = Number(pp.slice(3)) * 1000 + Number(flag("seed") ?? 0);
 const tries = Number(flag("tries") ?? (engine === "comfy" ? 2 : 1));
-const tags = `${flag("tags") ?? STYLES[style].tags}. ${plan.bpm} BPM, ${STYLES[style].key}.`;
+const tags = `${flag("tags") ?? STYLES[style].tags}. ${plan.bpm} BPM, ${KEY}.`;
 console.log(`[music] ${pp}: ${engine}/${style}, plan ${plan.bpm} BPM (grid fit cost ${plan.cost?.toFixed?.(3) ?? "n/a"}), ${seconds} s bed, ${tries} try/tries`);
 
 // ---- 2. get a bed per try, measure its real beats, align, keep the best
@@ -190,7 +208,7 @@ for (let t = 0; t < tries; t++) {
   let file;
   let meta = {};
   if (engine === "comfy") {
-    const g = await generate({ tags, seed, bpm: plan.bpm, seconds, keyscale: STYLES[style].key, prefix: `growth/${pp}` }, { variant, onStatus: (m) => console.log(`[music]   ${m}`) });
+    const g = await generate({ tags, seed, bpm: plan.bpm, seconds, keyscale: KEY, prefix: `growth/${pp}` }, { variant, onStatus: (m) => console.log(`[music]   ${m}`) });
     file = g.file;
     meta = { cached: g.cached, took_s: g.took_s ?? null, cache_key: g.key };
   } else {
@@ -221,7 +239,7 @@ if (!["tonal", "classic"].includes(sfxMode)) {
   console.error('--sfx must be "tonal" or "classic"');
   process.exit(2);
 }
-const requestedKey = parseKey(STYLES[style].key);
+const requestedKey = parseKey(KEY);
 const measuredKey = estimateKey(decodeMono(best.file, { seconds }));
 const key = measuredKey.margin >= 0.04 ? { tonic: measuredKey.tonic, mode: measuredKey.mode } : requestedKey;
 const keySource = measuredKey.margin >= 0.04 ? "measured" : "requested (the measurement was not clear enough)";
@@ -237,6 +255,7 @@ const info = {
   version: 1,
   pain_point: pp,
   label: label ?? null,
+  reference, // tempo and key measured from a supplied reference file, or null. The audio is never stored.
   engine,
   engine_note: engine === "standin" ? "a synthesised stand-in bed, NOT generated music" : `ACE-Step 1.5 via ComfyUI (${variant})`,
   style,
@@ -254,7 +273,7 @@ const info = {
     mode: sfxMode,
     key: keyName(key),
     key_source: keySource,
-    key_requested: STYLES[style].key,
+    key_requested: KEY,
     key_margin: Math.round(measuredKey.margin * 1000) / 1000,
     cues_snapped: moved.length,
     cues_total: baseCues.length,

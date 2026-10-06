@@ -140,3 +140,23 @@ test("bright styles plan a dance tempo and use bright accents, not the dark trai
   assert.doesNotMatch(m.tags, /robyn|dancing on my own/i, "the prompt describes a sound, it never names an artist or song");
   assert.ok(m.alignment.ratio >= 0.8);
 });
+
+test("--ref uses only the reference's measured tempo and key, and never keeps the audio", async () => {
+  makeReel();
+  const { standinBed } = await import("./standin.mjs");
+  const { wavStereo } = await import("./mix.mjs");
+  const refFile = path.join(OUT, "my-reference.wav");
+  const bed = standinBed({ bpm: 100, seconds: 24, seed: 3, phase_s: 0.2 });
+  fs.writeFileSync(refFile, wavStereo(bed, bed));
+  const r = music("--engine", "standin", "--ref", refFile, "--label", "ref");
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  const m = JSON.parse(fs.readFileSync(path.join(OUT, "music.ref.json"), "utf8"));
+  assert.ok(Math.abs(m.reference.bpm - 100) < 1.5, `measured ${m.reference.bpm}`);
+  assert.equal(m.bpm_planned, 100);
+  assert.equal(m.reference.name, "my-reference.wav");
+  // nothing of the reference leaks into the result: no path, no audio copy, and the bed is a different file generated for this reel
+  assert.doesNotMatch(JSON.stringify(m), new RegExp(OUT.replace(/[/\\]/g, ".")));
+  assert.notEqual(path.basename(m.bed), "my-reference.wav");
+  const r2 = music("--engine", "standin", "--ref", path.join(OUT, "does-not-exist.wav"));
+  assert.equal(r2.status, 2);
+});

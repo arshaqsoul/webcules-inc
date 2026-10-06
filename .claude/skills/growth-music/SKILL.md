@@ -48,6 +48,21 @@ It plans a BPM from the reel's own cut points, generates a bed, measures its rea
 Then it runs `qc.mjs --variant music`.
 The original `reel.mp4` is never touched.
 
+## Matching the feel of a track the founder likes
+
+If the founder wants "a beat like this song", do NOT download the song (from YouTube or anywhere): that breaks the site's terms, the recording is someone else's work, and "AI-generated" does not tell you who owns it or whether it imitates a real artist.
+Instead, ask for the founder's own file, or for the tempo and a description in words, and use one of:
+
+```bash
+node growth/scripts/reel.mjs music PP-### --ref path/to/their-file.wav --style indie --label like-this
+node growth/scripts/reel.mjs music PP-### --bpm 117 --style synthpop --label pinned
+```
+
+`--ref` measures ONLY the reference's tempo and key and steers the generation with those two numbers.
+The audio is never copied, uploaded, stored or mixed, and `music.json` records only its file name, tempo and key.
+The result is a new, original track in the chosen style.
+Never put an artist or song name in a style prompt.
+
 ## Sound effects that match the tune
 
 By default (`--sfx tonal`) the sound effects are retuned to the track:

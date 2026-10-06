@@ -134,6 +134,9 @@ Each has a fix already in the tooling, but knowing why saves you from reinventin
 38. **Snap sound to the groove with a lopsided window.**
     Audio that lags the picture by up to about 60 ms is not noticed. Audio that leads it by 40 ms is. Allow 25 ms early and 60 ms late, and leave a cue alone if no slot fits.
 
+39. **Never rip audio for a reference.**
+    Terms, copyright and imitation of a real artist all argue against it, and it gives you nothing a number cannot. Measure the tempo and key of a file the founder supplies (`--ref`), or take a description in words, and generate something original.
+
 ## Product facts worth remembering
 
 - The staging demo org is "Amara & Oak Photography" and is on Studio, so Studio-only controls appear on the page even when a reel claims the Free plan.
