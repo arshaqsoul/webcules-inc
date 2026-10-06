@@ -4,7 +4,8 @@
 //   node growth/scripts/music/music.mjs --pp PP-004 [--engine comfy|standin] [--style trailer|upbeat|calm]
 //                                       [--tags "..."] [--seed N] [--tries N] [--bpm N] [--no-hits] [--no-sweep] [--label name]
 //   --ref <audio file>     steer tempo and key by a reference track you supply (only two measured numbers are used, never the audio)
-//   --sfx tonal|classic    tonal (default): the effects are notes in the track's measured key, snapped to its groove. classic: the noise effects.
+//   --sfx tonal|light|whisper|classic   tonal (default): notes in the track's measured key. light: soft bells and tiny plucks, no buzz or clap,
+//                          the music barely dips. whisper: softer still, one quiet note per step change, no dip. classic: the noise effects.
 //   --retime on|off        on (default): nudge the PICTURE between cues by a few percent so every cue lands on the groove, sounds stay exact.
 //   --quantize snap        the old way, only with --retime off: nudge the SOUNDS onto the groove (up to 60 ms late)
 //   styles: heroic, techintro, funk, indie, tropical, caper, chiptune, sunny, synthpop (all bright accents), orchestral, thriller, action, trailer (default), upbeat, calm.
@@ -243,10 +244,11 @@ const best = attempts[0];
 const bed = readBed(best.file, { trim_s: best.al.trim_s, rate: best.al.rate, seconds: reelS + 2 }); // a little extra: the retime may lengthen the reel by a few frames
 // the effects are retuned to the key the generated track is REALLY in (the model does not reliably obey the key it is asked for)
 const sfxMode = flag("sfx") ?? "tonal";
-if (!["tonal", "classic"].includes(sfxMode)) {
-  console.error('--sfx must be "tonal" or "classic"');
+if (!["tonal", "light", "whisper", "classic"].includes(sfxMode)) {
+  console.error('--sfx must be "tonal", "light", "whisper" or "classic"');
   process.exit(2);
 }
+const sfxTuned = sfxMode !== "classic"; // tonal, light and whisper are all notes in the track's key
 const requestedKey = parseKey(KEY);
 const measuredKey = estimateKey(decodeMono(best.file, { seconds }));
 const key = measuredKey.margin >= 0.04 ? { tonic: measuredKey.tonic, mode: measuredKey.mode } : requestedKey;
@@ -275,12 +277,12 @@ if (retimeOn) {
 }
 const finalCues = cuesFromEdl(mixEdl);
 // the old way, kept as an option: nudge the SOUNDS onto the groove (up to 60 ms late). Not the default: it puts sound and picture out of step.
-const snapped = sfxMode === "tonal" && !warp && flag("quantize") === "snap" ? snapCues(finalCues, grid) : finalCues;
+const snapped = sfxTuned && !warp && flag("quantize") === "snap" ? snapCues(finalCues, grid) : finalCues;
 const moved = snapped.filter((c) => c.snapped_ms !== undefined);
 const deviations = deviationsOn(keyEvents(mixEdl), grid);
 const score = alignmentScore(deviations, 70);
 console.log(`[music] key ${keyName(key)} (${keySource}); effects: ${sfxMode}; ${warp ? `picture retimed: biggest speed change ${(warp.stats.max_factor_dev * 100).toFixed(1)}%, cues moved up to ${warp.stats.max_shift_ms} ms, ${Math.round(warp.stats.on_groove_ratio * 100)}% on the groove, now ${(mixEdl.duration_ms / 1000).toFixed(1)} s` : "exact timing, no retime"}`);
-const mixed = mixMusic({ bed, edl: mixEdl, hits: !has("no-hits"), sweep: !has("no-sweep"), accent: STYLES[style].accent ?? "trailer", sfx: sfxMode === "tonal" ? { mode: "tonal", key, cues: snapped } : null });
+const mixed = mixMusic({ bed, edl: mixEdl, hits: !has("no-hits"), sweep: !has("no-sweep"), accent: STYLES[style].accent ?? "trailer", sfx: sfxTuned ? { mode: "tonal", style: sfxMode, key, cues: snapped } : null });
 const outFile = path.join(outDir, `reel.music${sfxLabel}.mp4`);
 muxMix({ reel: mixReel, L: mixed.L, R: mixed.R, out: outFile });
 fs.rmSync(retimedReel, { force: true });

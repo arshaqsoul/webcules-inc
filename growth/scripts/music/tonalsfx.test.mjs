@@ -84,3 +84,62 @@ test("every note in the track belongs to the key", () => {
   }
   assert.ok(freq(6, 3) > 0);
 });
+
+import { softBell, softPluck, softRun, STYLES } from "./tonalsfx.mjs";
+
+const rms = (x, from = 0, to = x.length) => Math.sqrt(x.slice(from, to).reduce((s, v) => s + v * v, 0) / Math.max(1, to - from));
+/** Share of a signal's energy above `hz`, by a plain DFT sweep: how buzzy or hissy it is. */
+function energyAbove(x, hz) {
+  let hi = 0;
+  let all = 0;
+  const n = Math.min(x.length, Math.round(0.2 * SR));
+  for (let f = 100; f <= 12000; f += 100) {
+    let re = 0;
+    let im = 0;
+    for (let i = 0; i < n; i++) {
+      re += x[i] * Math.cos((2 * Math.PI * f * i) / SR);
+      im -= x[i] * Math.sin((2 * Math.PI * f * i) / SR);
+    }
+    const e = re * re + im * im;
+    all += e;
+    if (f >= hz) hi += e;
+  }
+  return hi / (all || 1);
+}
+
+test("the light step change is far quieter, rounder and less buzzy than the full stab", () => {
+  const key = parseKey("A major");
+  const cues = [{ kind: "caption", t_ms: 300 }];
+  const full = tonalTrack(cues, { key, durationMs: 1500, style: "tonal" });
+  const light = tonalTrack(cues, { key, durationMs: 1500, style: "light" });
+  const whisper = tonalTrack(cues, { key, durationMs: 1500, style: "whisper" });
+  const db = (a, b) => 20 * Math.log10(rms(a, Math.round(0.3 * SR), Math.round(0.8 * SR)) / rms(b, Math.round(0.3 * SR), Math.round(0.8 * SR)));
+  assert.ok(db(light, full) <= -8, `light is only ${db(light, full).toFixed(1)} dB below the full stab`);
+  assert.ok(db(whisper, light) <= -4, `whisper is only ${db(whisper, light).toFixed(1)} dB below light`);
+  // buzz lives in the upper harmonics of a saw wave and the noise of a clap
+  assert.ok(energyAbove(light.slice(Math.round(0.3 * SR)), 3000) < 0.02, "the light step change has almost no energy above 3 kHz");
+  assert.ok(energyAbove(full.slice(Math.round(0.3 * SR)), 3000) > energyAbove(light.slice(Math.round(0.3 * SR)), 3000) * 5, "the full stab is far brighter and buzzier");
+});
+
+test("soft sounds have a rounded attack: no abrupt first sample, no click", () => {
+  for (const s of [softBell({ freqs: [440, 660] }), softPluck({ f: 880 }), softRun({ key: parseKey("A major"), ms: 500 })]) {
+    // an abrupt start is a click; a rounded attack starts from silence
+    const first = Math.max(...Array.from(s.slice(0, Math.round(0.0003 * SR)), Math.abs));
+    assert.ok(first < 0.1, `the first 0.3 ms already reaches ${first.toFixed(2)} of the peak`);
+  }
+});
+
+test("a click right next to a step change is not doubled up in the light styles", () => {
+  const key = parseKey("A major");
+  const near = tonalTrack([{ kind: "caption", t_ms: 400 }, { kind: "click", t_ms: 553 }], { key, durationMs: 1500, style: "light" });
+  const alone = tonalTrack([{ kind: "caption", t_ms: 400 }], { key, durationMs: 1500, style: "light" });
+  const a = rms(near, Math.round(0.545 * SR), Math.round(0.6 * SR));
+  const b = rms(alone, Math.round(0.545 * SR), Math.round(0.6 * SR));
+  assert.ok(Math.abs(a - b) / b < 0.2, "the click adds nothing audible on top of the bell");
+});
+
+test("the light and whisper styles dip the music much less than the normal ones", () => {
+  assert.ok(STYLES.light.duck < STYLES.tonal.duck * 0.5);
+  assert.equal(STYLES.whisper.duck, 0);
+  assert.ok(STYLES.light.rms < STYLES.tonal.rms && STYLES.whisper.rms < STYLES.light.rms);
+});

@@ -11,7 +11,7 @@ import fs from "node:fs";
 import { spawnSync } from "node:child_process";
 import { SR, synthesize, cuesFromEdl } from "../edit/sfx.mjs";
 import { impact, riser, popHit, popRiser, popFinale } from "./hits.mjs";
-import { tonalTrack } from "./tonalsfx.mjs";
+import { tonalTrack, STYLES as SFX_STYLES } from "./tonalsfx.mjs";
 import { freq } from "./keys.mjs";
 
 const TAU = Math.PI * 2;
@@ -85,6 +85,9 @@ export function wavStereo(L, R) {
 export function mixMusic({ bed, edl, hits = true, sweep = true, accent = "trailer", sfx = null }) {
   // sfx: null for the classic noise effects, or { mode: "tonal", key, cues } for notes in the track's key on snapped cues
   const tonal = sfx?.mode === "tonal";
+  const sfxStyle = sfx?.style ?? "tonal"; // tonal | light | whisper
+  const lightSfx = sfxStyle === "light" || sfxStyle === "whisper";
+  const duckScale = tonal ? (SFX_STYLES[sfxStyle]?.duck ?? 1) : 1;
   const durationMs = edl.duration_ms;
   const n = Math.round((durationMs / 1000) * SR);
   const L = new Float32Array(n);
@@ -99,7 +102,7 @@ export function mixMusic({ bed, edl, hits = true, sweep = true, accent = "traile
 
   const firstStepMs = (edl.captions?.[0]?.start_ms ?? 1500);
   const sfxCues = sfx?.cues ?? cuesFromEdl(edl);
-  const duck = duckCurve(n, sfxCues.map((c) => ({ t_ms: c.t_ms, depth: DUCK[c.kind] ?? 0.3 })));
+  const duck = duckCurve(n, sfxCues.map((c) => ({ t_ms: c.t_ms, depth: (DUCK[c.kind] ?? 0.3) * duckScale })));
   const fadeInN = Math.round(0.12 * SR);
   const endMs = edl.endcard_start_ms;
   const fadeStart = Math.round(((endMs + 400) / 1000) * SR);
@@ -146,8 +149,8 @@ export function mixMusic({ bed, edl, hits = true, sweep = true, accent = "traile
     }
     const lastStep = Math.max(0, ...(edl.captions ?? []).filter((c) => c.start_ms < endMs).map((c) => c.start_ms));
     const riseMs = Math.min(1100, Math.max(400, endMs - lastStep - 300));
-    addMono(popRiser({ ms: riseMs, seed: 7 }), endMs - riseMs, 0.5);
-    addMono(popFinale({ ms: 1700, seed: 61, root: tonal ? freq(sfx.key.tonic, 3) : 220 }), endMs, 0.85);
+    addMono(popRiser({ ms: riseMs, seed: 7 }), endMs - riseMs, lightSfx ? 0.22 : 0.5);
+    addMono(popFinale({ ms: 1700, seed: 61, root: tonal ? freq(sfx.key.tonic, 3) : 220 }), endMs, lightSfx ? 0.5 : 0.85);
   } else if (hits) {
     addMono(impact({ ms: 900, seed: 3 }), 0, 0.42); // the cold open
     (edl.captions ?? []).forEach((c, k) => addMono(impact({ ms: 800, seed: 20 + k, crack: 0.8 }), c.start_ms, 0.5));
@@ -158,7 +161,7 @@ export function mixMusic({ bed, edl, hits = true, sweep = true, accent = "traile
   }
 
   // ---- the existing sound effects, unchanged
-  const sfxTrack = tonal ? tonalTrack(sfxCues, { key: sfx.key, durationMs }) : synthesize(sfxCues, durationMs);
+  const sfxTrack = tonal ? tonalTrack(sfxCues, { key: sfx.key, durationMs, style: sfxStyle }) : synthesize(sfxCues, durationMs);
   for (let i = 0; i < n; i++) {
     L[i] += sfxTrack[i] * 0.9;
     R[i] += sfxTrack[i] * 0.9;

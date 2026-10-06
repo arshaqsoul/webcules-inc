@@ -80,7 +80,12 @@ By default (`--sfx tonal`) the sound effects are retuned to the track:
   Long stretches stay within about 7 percent of normal speed (QC allows 15); a short stretch between cues that sit close together is judged by milliseconds, since 14 percent over 130 ms moves the picture by under 20 ms.
   The video is re-encoded once (CRF 17) and the retimed edit list is written to `music.<label>.edl.json`, which QC uses.
 
+`--sfx light` is soft bells and tiny plucks with the music barely dipping, and the step change a further 12 dB below the tonal one.
+`--sfx whisper` is one quiet note per step change, no dip, about 20 dB below the tonal step change.
+Both are levelled by RMS, not peak, and the step change gets its own level after that, so it is never normalised back up.
+Judge effect loudness against the music in the same window, not by overall LUFS, which stays equal across styles.
 `--sfx classic` keeps the old noise effects.
+To rebuild a version on the same bed, repeat its `--seed` and `--tries` exactly (seed is the PP number times 1000, plus --seed, plus the try index).
 `--retime off` keeps the picture untouched and the effects at their exact times, with no groove lock.
 `--quantize snap` (only with `--retime off`) is the old approach of nudging the SOUNDS onto the groove up to 60 ms late: do not use it, it puts the sound out of step with the picture.
 What the retime did is in `music.json` under `retime`: every cue's original and new time, the biggest speed change, and the share of cues on the groove.

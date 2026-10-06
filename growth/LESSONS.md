@@ -149,3 +149,4 @@ Each has a fix already in the tooling, but knowing why saves you from reinventin
 - The Activity panel is Lite and above, watermarks are Studio and above.
 - The OTP gate means a forwarded link needs a code emailed only to the client, but a client can still forward the code or the downloaded files.
 - The docs and the per-link expiry control disagree on the 60 day option (a known product bug).
+- Sound effects that feel harsh are usually the step change, not the clicks. Level soft styles by RMS, give the step change its own gain after calibration, and measure each effect against the music in the same window, because overall loudness stays equal across styles.
