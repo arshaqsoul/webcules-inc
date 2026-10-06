@@ -5,7 +5,8 @@
 //                                       [--tags "..."] [--seed N] [--tries N] [--bpm N] [--no-hits] [--no-sweep] [--label name]
 //   --ref <audio file>     steer tempo and key by a reference track you supply (only two measured numbers are used, never the audio)
 //   --sfx tonal|classic    tonal (default): the effects are notes in the track's measured key, snapped to its groove. classic: the noise effects.
-//   --quantize off         keep every cue at its exact time (tonal mode otherwise nudges cues onto sixteenth-note slots, see sync.mjs snapCues)
+//   --retime on|off        on (default): nudge the PICTURE between cues by a few percent so every cue lands on the groove, sounds stay exact.
+//   --quantize snap        the old way, only with --retime off: nudge the SOUNDS onto the groove (up to 60 ms late)
 //   styles: heroic, techintro, funk, indie, tropical, caper, chiptune, sunny, synthpop (all bright accents), orchestral, thriller, action, trailer (default), upbeat, calm.
 //   --label keeps several versions side by side.
 //
@@ -23,7 +24,8 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { ROOT } from "../record/lib.mjs";
 import { SR } from "../edit/sfx.mjs";
-import { keyEvents, planGrid, alignToBeats, alignmentScore, snapCues } from "./sync.mjs";
+import { keyEvents, planGrid, alignToBeats, alignmentScore, snapCues, deviationsOn } from "./sync.mjs";
+import { planWarp, warpEdl, warpVideo } from "./retime.mjs";
 import { analyzeFile, decodeMono } from "./beats.mjs";
 import { estimateKey, parseKey, keyName } from "./keys.mjs";
 import { cuesFromEdl } from "../edit/sfx.mjs";
@@ -238,7 +240,7 @@ attempts.sort((x, y) => y.score.ratio - x.score.ratio || x.al.cost - y.al.cost);
 const best = attempts[0];
 
 // ---- 3. mix, mux, record
-const bed = readBed(best.file, { trim_s: best.al.trim_s, rate: best.al.rate, seconds: reelS + 0.5 });
+const bed = readBed(best.file, { trim_s: best.al.trim_s, rate: best.al.rate, seconds: reelS + 2 }); // a little extra: the retime may lengthen the reel by a few frames
 // the effects are retuned to the key the generated track is REALLY in (the model does not reliably obey the key it is asked for)
 const sfxMode = flag("sfx") ?? "tonal";
 if (!["tonal", "classic"].includes(sfxMode)) {
@@ -250,12 +252,42 @@ const measuredKey = estimateKey(decodeMono(best.file, { seconds }));
 const key = measuredKey.margin >= 0.04 ? { tonic: measuredKey.tonic, mode: measuredKey.mode } : requestedKey;
 const keySource = measuredKey.margin >= 0.04 ? "measured" : "requested (the measurement was not clear enough)";
 const baseCues = cuesFromEdl(edl);
-const snapped = sfxMode === "tonal" && flag("quantize") !== "off" ? snapCues(baseCues, { phase_s: best.al.phase_s, period_s: best.al.period_s }) : baseCues;
+const grid = { phase_s: best.al.phase_s, period_s: best.al.period_s };
+
+// BEAT-LOCKED RETIME (default): a sound effect must play at the exact moment of what you see, so the sounds never move. Instead the
+// PICTURE is nudged onto the music: each stretch of video between cues speeds up or slows down by a few percent so every click, step
+// change and fast-forward lands on a groove slot (end card on a beat, step changes on a beat or eighth, clicks on a sixteenth).
+const retimeOn = flag("retime") !== "off";
+const retimedReel = path.join(outDir, `.retimed${sfxLabel}.mp4`);
+let mixEdl = edl;
+let mixReel = reel;
+let warp = null;
+if (retimeOn) {
+  warp = planWarp(baseCues, grid, { durationMs: edl.duration_ms });
+  if (warp.stats.infeasible) {
+    console.warn("[music] WARNING no gentle retime fits these cues, so the picture is left as it is and every effect keeps its exact time");
+    warp = null;
+  } else {
+    mixEdl = warpEdl(edl, warp.points);
+    warpVideo({ reel, points: warp.points, out: retimedReel });
+    mixReel = retimedReel;
+  }
+}
+const finalCues = cuesFromEdl(mixEdl);
+// the old way, kept as an option: nudge the SOUNDS onto the groove (up to 60 ms late). Not the default: it puts sound and picture out of step.
+const snapped = sfxMode === "tonal" && !warp && flag("quantize") === "snap" ? snapCues(finalCues, grid) : finalCues;
 const moved = snapped.filter((c) => c.snapped_ms !== undefined);
-console.log(`[music] key ${keyName(key)} (${keySource}); effects: ${sfxMode}${sfxMode === "tonal" ? `, ${moved.length}/${baseCues.length} cues snapped to the groove` : ""}`);
-const mixed = mixMusic({ bed, edl, hits: !has("no-hits"), sweep: !has("no-sweep"), accent: STYLES[style].accent ?? "trailer", sfx: sfxMode === "tonal" ? { mode: "tonal", key, cues: snapped } : null });
+const deviations = deviationsOn(keyEvents(mixEdl), grid);
+const score = alignmentScore(deviations, 70);
+console.log(`[music] key ${keyName(key)} (${keySource}); effects: ${sfxMode}; ${warp ? `picture retimed: biggest speed change ${(warp.stats.max_factor_dev * 100).toFixed(1)}%, cues moved up to ${warp.stats.max_shift_ms} ms, ${Math.round(warp.stats.on_groove_ratio * 100)}% on the groove, now ${(mixEdl.duration_ms / 1000).toFixed(1)} s` : "exact timing, no retime"}`);
+const mixed = mixMusic({ bed, edl: mixEdl, hits: !has("no-hits"), sweep: !has("no-sweep"), accent: STYLES[style].accent ?? "trailer", sfx: sfxMode === "tonal" ? { mode: "tonal", key, cues: snapped } : null });
 const outFile = path.join(outDir, `reel.music${sfxLabel}.mp4`);
-muxMix({ reel, L: mixed.L, R: mixed.R, out: outFile });
+muxMix({ reel: mixReel, L: mixed.L, R: mixed.R, out: outFile });
+fs.rmSync(retimedReel, { force: true });
+// QC and anything else that checks times must look at the timeline the video really has
+const mixEdlPath = path.join(outDir, `music${sfxLabel}.edl.json`);
+if (warp) fs.writeFileSync(mixEdlPath, JSON.stringify(mixEdl, null, 2));
+else fs.rmSync(mixEdlPath, { force: true });
 
 const info = {
   version: 1,
@@ -274,7 +306,8 @@ const info = {
   stretch_rate: Math.round(best.al.rate * 1000) / 1000,
   trim_s: Math.round(best.al.trim_s * 1000) / 1000,
   bpm_final: Math.round(best.al.bpm_final * 10) / 10,
-  alignment: { ...best.score, deviations: best.al.deviations },
+  alignment: { ...score, deviations },
+  retime: warp ? { on: true, ...warp.stats, anchors: warp.anchors } : { on: false },
   sfx: {
     mode: sfxMode,
     key: keyName(key),
@@ -292,10 +325,10 @@ const info = {
   tries: attempts.map((t) => ({ seed: t.seed, bpm: Math.round(t.an.bpm * 10) / 10, ratio: Math.round(t.score.ratio * 100) / 100 })),
   edl_sha: crypto.createHash("sha1").update(edlRaw).digest("hex"),
   warnings: mixed.warnings,
-  duration_ms: edl.duration_ms,
+  duration_ms: mixEdl.duration_ms,
   sample_rate: SR,
 };
 fs.writeFileSync(path.join(outDir, `music${sfxLabel}.json`), JSON.stringify(info, null, 2));
 for (const w of mixed.warnings) console.warn(`[music] WARNING ${w}`);
-console.log(JSON.stringify({ ok: true, reel: path.relative(ROOT, outFile), engine, bpm_final: info.bpm_final, within_70ms: `${best.score.within}/${best.score.total}`, size_mb: Math.round((fs.statSync(outFile).size / 1e6) * 10) / 10 }));
+console.log(JSON.stringify({ ok: true, reel: path.relative(ROOT, outFile), engine, bpm_final: info.bpm_final, within_70ms: `${score.within}/${score.total}`, size_mb: Math.round((fs.statSync(outFile).size / 1e6) * 10) / 10 }));
 console.log(`next: node growth/scripts/qc/qc.mjs --pp ${pp} --variant music${label ? ` --label ${label}` : ""}`);

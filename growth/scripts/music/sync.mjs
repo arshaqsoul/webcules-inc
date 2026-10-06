@@ -101,3 +101,11 @@ export function snapCues(cues, grid, { leadMs = 25, lagMs = 60, subdivision = 4,
     return best ? { ...c, t_ms: Math.round(best.ts * 1000), t_orig_ms: c.t_ms, snapped_ms: Math.round(best.d) } : { ...c };
   });
 }
+
+/** How far each moment sits from the nearest beat or eighth of a final grid { phase_s, period_s }. Same shape alignToBeats reports. */
+export function deviationsOn(events, grid) {
+  return events.map((e) => {
+    const g = gridDistance(e.t, grid.period_s, grid.phase_s);
+    return { kind: e.kind, t_ms: Math.round(e.t * 1000), dev_ms: Math.round((g.on === "eighth" ? g.raw : g.d) * 1000), grid: g.on, w: e.w };
+  });
+}

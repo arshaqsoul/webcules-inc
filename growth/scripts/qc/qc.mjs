@@ -37,7 +37,10 @@ if (!fs.existsSync(reel) || !fs.existsSync(edlPath)) {
   console.error(`${path.basename(reel)} and edl.json are required (${variant === "music" ? "run music.mjs first" : "run edit.mjs first"})`);
   process.exit(1);
 }
-const edl = JSON.parse(fs.readFileSync(edlPath, "utf8"));
+let edl = JSON.parse(fs.readFileSync(edlPath, "utf8"));
+// a retimed music version has its own edit list: every time in it is on the timeline the music video really has
+const musicEdlPath = path.join(outDir, `music${lab}.edl.json`);
+if (variant === "music" && fs.existsSync(musicEdlPath)) edl = JSON.parse(fs.readFileSync(musicEdlPath, "utf8"));
 const metaPath = path.resolve(ROOT, flag("meta") ?? path.join("growth", "storyboards", `${pp}.meta.json`));
 const meta = fs.existsSync(metaPath) ? JSON.parse(fs.readFileSync(metaPath, "utf8")) : null;
 
@@ -96,6 +99,10 @@ if (variant === "music") {
     check("moments on the beat", al.ratio >= 0.8, `${al.within}/${al.total} step changes, hook and end card within ${al.tol_ms ?? 70} ms of a beat (${Math.round(al.ratio * 100)} percent weighted, need 80)`);
     const end = (al.deviations ?? []).find((d) => d.kind === "end");
     check("end card hit on the beat", !!end && end.dev_ms <= 70, end ? `${end.dev_ms} ms off a beat` : "no end card moment recorded");
+    if (music.retime?.on) {
+      check("picture retimed gently", music.retime.max_factor_dev <= 0.15 && (music.retime.max_short_change_ms ?? 0) <= 150, `the biggest speed change over any stretch of 600 ms or more is ${(music.retime.max_factor_dev * 100).toFixed(1)}% (allowed 15), shorter stretches change by at most ${music.retime.max_short_change_ms ?? 0} ms (allowed 150), cues moved up to ${music.retime.max_shift_ms} ms`);
+      check("effects on the groove", music.retime.on_groove_ratio >= 0.8, `${Math.round(music.retime.on_groove_ratio * 100)}% of the cues sit within ${music.retime.tol_ms} ms of a groove slot (need 80)`);
+    }
     check("music not over-stretched", music.stretch_rate >= 0.92 && music.stretch_rate <= 1.08, `rate ${music.stretch_rate} (allowed 0.92 to 1.08)`);
     check("music tempo is steady", music.beat_confidence >= 2, `beat confidence ${music.beat_confidence} (need 2 or more: below that the generated track has no clear beat to sync to)`);
   }

@@ -74,11 +74,16 @@ By default (`--sfx tonal`) the sound effects are retuned to the track:
   Each step change is a chord stab on I, V, vi, IV.
   The fast-forward is a rising pentatonic run.
   The hook is a bell chord, and the end card lands on the key's tonic chord.
-- **Groove.** Each cue snaps to the nearest sixteenth-note slot of the track, but only if that moves the sound at most 25 ms EARLY or 60 ms LATE.
-  Late is tolerated far better than early. A cue with no slot in that window keeps its true time.
+- **Groove, by moving the PICTURE.** A sound effect must play at the exact moment of what you see, so the sounds never move.
+  Instead the video is retimed: each stretch between cues speeds up or slows down by a few percent so every click, step change and fast-forward lands on a groove slot.
+  The end card lands on a beat, step changes and the hook on a beat or an eighth, clicks and fast-forwards on any sixteenth.
+  Long stretches stay within about 7 percent of normal speed (QC allows 15); a short stretch between cues that sit close together is judged by milliseconds, since 14 percent over 130 ms moves the picture by under 20 ms.
+  The video is re-encoded once (CRF 17) and the retimed edit list is written to `music.<label>.edl.json`, which QC uses.
 
-`--sfx classic` keeps the old noise effects, `--quantize off` keeps every cue at its exact time.
-The shifts actually applied are listed in `music.json` under `sfx.snap_shift_ms`.
+`--sfx classic` keeps the old noise effects.
+`--retime off` keeps the picture untouched and the effects at their exact times, with no groove lock.
+`--quantize snap` (only with `--retime off`) is the old approach of nudging the SOUNDS onto the groove up to 60 ms late: do not use it, it puts the sound out of step with the picture.
+What the retime did is in `music.json` under `retime`: every cue's original and new time, the biggest speed change, and the share of cues on the groove.
 
 ## If ComfyUI is not ready
 
@@ -99,7 +104,8 @@ It cannot hear.
 Before you hand a music version over:
 
 1. Read `music.json`: planned BPM, measured BPM, stretch (a few percent is natural, near 8 percent is a smell), beat confidence, and each moment's deviation.
-2. Check the stretch AND the final tempo. The aligner may pick a faster or slower tempo (up to 8 percent) when that fits the cut points better: if `bpm_final` is far from `bpm_planned` (for a thriller, 124 planned and 132 final), the track will feel rushed. Rerun with `--seed` or `--tries 3`, or pass `--bpm` to pin the tempo.
+2. Read `retime` too: a biggest speed change near the 15 percent limit, or cues moved by more than about 120 ms, means the cue pattern fights the tempo. Try another `--seed`.
+   Check the stretch AND the final tempo. The aligner may pick a faster or slower tempo (up to 8 percent) when that fits the cut points better: if `bpm_final` is far from `bpm_planned` (for a thriller, 124 planned and 132 final), the track will feel rushed. Rerun with `--seed` or `--tries 3`, or pass `--bpm` to pin the tempo.
 3. Say plainly in your handoff that you could not listen to it, and ask the founder to play it.
 4. A track with vocals or a drifting tempo is a bad take even if QC passes: try another seed.
 

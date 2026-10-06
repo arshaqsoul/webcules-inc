@@ -131,11 +131,16 @@ Each has a fix already in the tooling, but knowing why saves you from reinventin
     "C major" came back in G major. Measure the key of what you got and tune everything else to that.
 37. **Relative major and minor are the same notes.**
     F# minor and A major share all seven notes, so a key detector may pick either. The pentatonic effects are identical either way, which is why they are the safe choice.
-38. **Snap sound to the groove with a lopsided window.**
-    Audio that lags the picture by up to about 60 ms is not noticed. Audio that leads it by 40 ms is. Allow 25 ms early and 60 ms late, and leave a cue alone if no slot fits.
+38. **Move the picture to the music, never the sound to the picture.**
+    Snapping the SOUNDS onto the groove (up to 60 ms late, only some of them) made the first version of the tuned effects feel out of sync: some cues moved, some did not, and all that moved arrived late. The fix is the editor's: retime the video a few percent between cues so each cue lands on a groove slot, then every sound plays at its exact moment.
+    A 14 percent speed change over a 130 ms stretch moves the picture by under 20 ms and is invisible, so judge short stretches by milliseconds and long ones by percent.
+    Important moments take the coarser grid: the end card a beat, step changes a beat or an eighth, clicks any sixteenth.
 
 39. **Never rip audio for a reference.**
     Terms, copyright and imitation of a real artist all argue against it, and it gives you nothing a number cannot. Measure the tempo and key of a file the founder supplies (`--ref`), or take a description in words, and generate something original.
+
+40. **Measure the final file, not the code.**
+    Find where each sound really starts in the muxed audio and compare it with its moment in the picture (clicks and step changes were within about 2 ms). Beware the measurement itself: two cues one sixteenth apart fool a wide search window into reporting the louder one, so use a tight window of about 45 ms.
 
 ## Product facts worth remembering
 

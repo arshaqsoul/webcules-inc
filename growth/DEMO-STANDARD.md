@@ -190,8 +190,10 @@ How it syncs, in order:
 2. **Generate the bed** with ACE-Step 1.5 on ComfyUI at that BPM, in a minor key for `trailer` style, 10 percent longer than the reel plus one bar.
 3. **Measure the real beats.** No generator hits the requested tempo or starts on beat one, so `beats.mjs` finds the true BPM and first-beat phase of what came back.
 4. **Align.** The bed is time-stretched by at most 8 percent (pitch preserved) and trimmed by at most one bar so the measured beats land on the moments, with a 70 ms tolerance and eighth notes counting for a little less than beats.
-5. **Shape it like a trailer.** A filter that opens up as the first step arrives, an impact on every step change, a riser into a big impact on the end card, ducking under the existing sound effects so clicks stay crisp, and a fade out after the end card.
-6. **Mix and mux** into 48 kHz stereo AAC, peak about -3.5 dBFS, onto a copy of the original video.
+5. **Retime the picture onto the groove.** The sound effects play at the exact moment of what you see and are never moved. Instead the video between cues speeds up or slows down by a few percent (long stretches within 15 percent, short ones within 150 ms of duration change) so the end card lands on a beat, step changes and the hook on a beat or eighth, and clicks and fast-forwards on a sixteenth. The retimed edit list is `music.<label>.edl.json`.
+6. **Retune the effects to the track.** Each click is the next pentatonic note of the track's measured key, each step change a chord stab (I, V, vi, IV), the fast-forward a rising run, the end card the tonic chord.
+7. **Shape it like a trailer.** A filter that opens up as the first step arrives, an impact on every step change, a riser into a big impact on the end card, ducking under the existing sound effects so clicks stay crisp, and a fade out after the end card.
+8. **Mix and mux** into 48 kHz stereo AAC, peak about -3.5 dBFS, onto a copy of the original video.
 
 Engines:
 
@@ -213,6 +215,8 @@ Music QC (`qc.mjs --variant music`, writes `qc.music.json`) adds to the normal c
 | music is generated | the engine is `standin` (unless `--allow-standin`) |
 | moments on the beat | under 80 percent (weighted) of the hook, step changes and end card land within 70 ms of a beat |
 | end card hit on the beat | the end card is more than 70 ms off a beat |
+| picture retimed gently | a stretch of 600 ms or more changes speed by more than 15 percent, or a shorter one changes duration by more than 150 ms |
+| effects on the groove | under 80 percent of the cues sit within 20 ms of a groove slot |
 | music not over-stretched | the stretch is outside 0.92 to 1.08 |
 | music tempo is steady | beat confidence is under 2: the track has no clear beat to sync to |
 | music is continuous | the sound goes silent for 0.35 s or more before the final fade |

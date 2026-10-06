@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { syncable, localFiles, dirStore, status, push, pull } from "./sync.mjs";
+import { syncable, localFiles, dirStore, status, push, pull, remove } from "./sync.mjs";
 
 const mk = () => fs.mkdtempSync(path.join(os.tmpdir(), "growth-sync-"));
 const put = (root, rel, content) => {
@@ -14,7 +14,7 @@ const put = (root, rel, content) => {
 const quiet = () => {};
 
 test("only finished media is allowed to leave the machine", () => {
-  for (const ok of ["growth/packages/PP-003/reel.mp4", "growth/packages/PP-003/cover.png", "growth/out/PP-004/reel.music.mp4", "growth/out/PP-004/edl.json", "growth/out/PP-004/qc.music.json", "growth/assets/music/abc123.flac"]) {
+  for (const ok of ["growth/out/PP-003/music.ethereal.edl.json", "growth/packages/PP-003/reel.mp4", "growth/packages/PP-003/cover.png", "growth/out/PP-004/reel.music.mp4", "growth/out/PP-004/edl.json", "growth/out/PP-004/qc.music.json", "growth/assets/music/abc123.flac"]) {
     assert.equal(syncable(ok), true, ok);
   }
 });
@@ -125,4 +125,18 @@ test("a file that differs and is newer in the bucket is skipped unless forced", 
   assert.equal(s.skipped.length, 1);
   assert.equal(pull({ store, root: b, force: true, log: quiet }).pulled.length, 1);
   assert.equal(fs.readFileSync(path.join(b, "growth/out/PP-004/reel.mp4"), "utf8"), "from-a");
+});
+
+test("remove deletes from the bucket and the manifest but leaves local files alone", () => {
+  const store = dirStore(mk());
+  const a = mk();
+  put(a, "growth/out/PP-004/reel.mp4", "keep");
+  put(a, "growth/out/PP-004/reel.music.old.mp4", "drop");
+  push({ store, root: a, log: quiet });
+  const r = remove({ store, rels: ["growth/out/PP-004/reel.music.old.mp4", "growth/out/PP-004/never-uploaded.mp4"], log: quiet });
+  assert.deepEqual(r.removed, ["growth/out/PP-004/reel.music.old.mp4"]);
+  assert.equal(store.get("v1/growth/out/PP-004/reel.music.old.mp4"), null);
+  assert.ok(fs.existsSync(path.join(a, "growth/out/PP-004/reel.music.old.mp4")), "local copy untouched");
+  const b = mk();
+  assert.deepEqual(pull({ store, root: b, log: quiet }).pulled, ["growth/out/PP-004/reel.mp4"]);
 });

@@ -5,6 +5,7 @@
 //   node growth/scripts/sync.mjs status [--dry-run]       what differs between this PC and the bucket
 //   node growth/scripts/sync.mjs push   [--dry-run]       upload what is new or changed here
 //   node growth/scripts/sync.mjs pull   [--dry-run] [--force]   download what is new or changed in the bucket
+//   node growth/scripts/sync.mjs remove <repo-relative path> ...   delete files from the bucket and its manifest (local files untouched)
 //
 // Config (growth/.env.local): GROWTH_R2_BUCKET (default webcules-growth). Uses `wrangler` from apps/snap, so `wrangler login`
 // must have been done on this PC. GROWTH_SYNC_DIR=<folder> swaps R2 for a local folder (tests, or a shared drive).
@@ -25,7 +26,7 @@ const PREFIX = "v1/";
 /** What is allowed to leave this machine. Anything not matching is never synced. */
 export const ALLOW = [
   /^growth\/packages\/[^/]+\/(reel\.mp4|reel\.music(\.[a-z0-9-]+)?\.mp4|cover\.png)$/,
-  /^growth\/out\/[^/]+\/(reel\.mp4|reel\.music(\.[a-z0-9-]+)?\.mp4|cover\.png|edl\.json|qc\.json|qc\.music(\.[a-z0-9-]+)?\.json|music(\.[a-z0-9-]+)?\.json)$/,
+  /^growth\/out\/[^/]+\/(reel\.mp4|reel\.music(\.[a-z0-9-]+)?\.mp4|cover\.png|edl\.json|qc\.json|qc\.music(\.[a-z0-9-]+)?\.json|music(\.[a-z0-9-]+)?\.json|music(\.[a-z0-9-]+)?\.edl\.json)$/,
   /^growth\/assets\/music\/[^/]+\.(flac|wav)$/,
 ];
 /** Defence in depth: even if an allow rule is widened by mistake, these never sync (mailbox crops, secrets, raw footage, ledger). */
@@ -48,7 +49,7 @@ export function walk(dir, out = []) {
 /** A music version made with the synthesised stand-in is a test artefact, not a deliverable: it must not be mistaken for real music elsewhere. */
 function isStandin(root, rel) {
   if (/^growth\/assets\/music\/standin-/.test(rel)) return true;
-  const m = rel.match(/^(growth\/(?:out|packages)\/[^/]+)\/(?:reel\.music|music|qc\.music)((?:\.[a-z0-9-]+)?)\.(?:mp4|json)$/);
+  const m = rel.match(/^(growth\/(?:out|packages)\/[^/]+)\/(?:reel\.music|music|qc\.music)((?:\.[a-z0-9-]+)?)(?:\.edl)?\.(?:mp4|json)$/);
   if (!m) return false;
   try {
     return JSON.parse(fs.readFileSync(path.join(root, m[1].replace("/packages/", "/out/"), `music${m[2]}.json`), "utf8")).engine === "standin";
@@ -89,6 +90,10 @@ export function r2Store(bucket) {
       fs.rmSync(tmp, { force: true });
       return buf;
     },
+    delete(key) {
+      const r = run(["r2", "object", "delete", `${bucket}/${key}`, "--remote"]);
+      if (r.status !== 0 && !/does not exist|not found|NoSuchKey|10007/i.test(r.stdout + r.stderr)) throw new Error(`r2 delete ${key} failed: ${(r.stderr || r.stdout).trim().slice(0, 400)}`);
+    },
     put(key, buf, contentType) {
       const tmp = path.join(os.tmpdir(), `growth-sync-${crypto.randomBytes(6).toString("hex")}`);
       fs.writeFileSync(tmp, buf);
@@ -107,6 +112,7 @@ export function dirStore(dir) {
   return {
     name: `dir:${dir}`,
     get: (key) => (fs.existsSync(f(key)) ? fs.readFileSync(f(key)) : null),
+    delete: (key) => fs.rmSync(f(key), { force: true }),
     put(key, buf) {
       fs.mkdirSync(path.dirname(f(key)), { recursive: true });
       fs.writeFileSync(f(key), buf);
@@ -158,6 +164,21 @@ export function push({ store, root = ROOT, dry = false, log = console.log }) {
   return { pushed: todo };
 }
 
+/** Remove files from the bucket and the manifest (never touches local files). Other PCs keep any copy they already pulled. */
+export function remove({ store, rels, log = console.log }) {
+  const manifest = readManifest(store);
+  const gone = [];
+  for (const rel of rels) {
+    if (!manifest.files[rel]) continue;
+    store.delete(PREFIX + rel);
+    delete manifest.files[rel];
+    gone.push(rel);
+    log(`  removed ${rel}`);
+  }
+  if (gone.length) store.put(PREFIX + "manifest.json", Buffer.from(JSON.stringify(manifest, null, 2)), "application/json");
+  return { removed: gone };
+}
+
 export function pull({ store, root = ROOT, dry = false, force = false, log = console.log }) {
   const { pull: missing, conflict, manifest } = status({ store, root });
   const todo = [...missing, ...(force ? conflict : [])];
@@ -192,8 +213,8 @@ export function pull({ store, root = ROOT, dry = false, force = false, log = con
 if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url))) {
   const [cmd, ...rest] = process.argv.slice(2);
   readEnvFile();
-  if (!["status", "push", "pull"].includes(cmd)) {
-    console.error("usage: sync.mjs <status|push|pull> [--dry-run] [--force]");
+  if (!["status", "push", "pull", "remove"].includes(cmd)) {
+    console.error("usage: sync.mjs <status|push|pull> [--dry-run] [--force]   |   sync.mjs remove <repo-relative path> [...]");
     process.exit(2);
   }
   const dry = rest.includes("--dry-run");
@@ -206,6 +227,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToP
       const s = status({ store });
       console.log(`  here only (push): ${s.push.length}\n  bucket only (pull): ${s.pull.length}\n  identical: ${s.same.length}\n  differs, bucket newer: ${s.conflict.length}`);
       for (const k of ["push", "pull", "conflict"]) for (const rel of s[k]) console.log(`   ${k.padEnd(8)} ${rel}`);
+    } else if (cmd === "remove") {
+      const r = remove({ store, rels: rest.filter((x) => !x.startsWith("--")) });
+      console.log(`[sync] removed ${r.removed.length} file(s) from the bucket`);
     } else if (cmd === "push") {
       const r = push({ store });
       console.log(`[sync] pushed ${r.pushed.length} file(s)`);
