@@ -127,6 +127,13 @@ Each has a fix already in the tooling, but knowing why saves you from reinventin
 35. **When a style misses, change the GENRE, not the adjectives.**
     "Sunny" and "synth-pop" both got a no. A spread of five genres (funk, indie, tropical, jazz caper, chiptune) lets the founder point at one and say why, which is faster than tuning one prompt blind.
 
+36. **A generator ignores the key you ask for.**
+    "C major" came back in G major. Measure the key of what you got and tune everything else to that.
+37. **Relative major and minor are the same notes.**
+    F# minor and A major share all seven notes, so a key detector may pick either. The pentatonic effects are identical either way, which is why they are the safe choice.
+38. **Snap sound to the groove with a lopsided window.**
+    Audio that lags the picture by up to about 60 ms is not noticed. Audio that leads it by 40 ms is. Allow 25 ms early and 60 ms late, and leave a cue alone if no slot fits.
+
 ## Product facts worth remembering
 
 - The staging demo org is "Amara & Oak Photography" and is on Studio, so Studio-only controls appear on the page even when a reel claims the Free plan.

@@ -30,6 +30,8 @@ Styles (`--style`), each with its own prompt, key and tempo range:
 | `tropical` | summer groove: congas, marimba, steel drum; bright accents | 100-118 |
 | `caper` | playful jazz heist-comedy: brushes, walking bass, pizzicato, muted trumpet; bright accents | 112-132 |
 | `chiptune` | 8-bit arcade: pulse-wave lead, bouncing bass, fast arpeggios; bright accents | 120-140 |
+| `heroic` | triumphant superhero-style orchestral fanfare: horns, marching snare, timpani, soaring strings; cinematic impacts | 96-124 |
+| `techintro` | slick tech-channel intro: punchy electronic, plucked arpeggios, bright synth hook; bright accents | 118-134 |
 | `sunny` | fun, feel-good dance-pop: four-on-the-floor, handclaps, bouncy synth bass, catchy lead; bright accents, not dark booms | 108-126 |
 | `synthpop` | euphoric driving synth-pop dance anthem; bright accents | 112-124 |
 | `upbeat`, `calm` | product-launch and ambient styles | 96-128, 70-100 |
@@ -45,6 +47,22 @@ Check one with `qc.mjs --pp PP-### --variant music --label orchestral`.
 It plans a BPM from the reel's own cut points, generates a bed, measures its real beats, stretches and trims it so the step changes and end card land on beats, adds trailer impacts, a riser and ducking, and writes `reel.music.mp4` and `music.json`.
 Then it runs `qc.mjs --variant music`.
 The original `reel.mp4` is never touched.
+
+## Sound effects that match the tune
+
+By default (`--sfx tonal`) the sound effects are retuned to the track:
+
+- **Key.** The generated track's key is MEASURED (the model does not reliably obey the key it is asked for: a "C major" prompt came back in G major).
+  If the measurement is unclear, the requested key is used and `music.json` says so.
+- **Notes, not ticks.** Each click plays the next note of the key's pentatonic scale, climbing within a step so a run of clicks is a small melody that cannot be wrong.
+  Each step change is a chord stab on I, V, vi, IV.
+  The fast-forward is a rising pentatonic run.
+  The hook is a bell chord, and the end card lands on the key's tonic chord.
+- **Groove.** Each cue snaps to the nearest sixteenth-note slot of the track, but only if that moves the sound at most 25 ms EARLY or 60 ms LATE.
+  Late is tolerated far better than early. A cue with no slot in that window keeps its true time.
+
+`--sfx classic` keeps the old noise effects, `--quantize off` keeps every cue at its exact time.
+The shifts actually applied are listed in `music.json` under `sfx.snap_shift_ms`.
 
 ## If ComfyUI is not ready
 

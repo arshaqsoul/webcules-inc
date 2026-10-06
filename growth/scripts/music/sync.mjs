@@ -77,3 +77,27 @@ export function alignmentScore(deviations, tolMs = 70) {
   const ok = main.filter((d) => d.dev_ms <= tolMs).reduce((s, d) => s + d.w, 0);
   return { within: main.filter((d) => d.dev_ms <= tolMs).length, total: main.length, ratio: ok / w, tol_ms: tolMs };
 }
+
+/**
+ * Nudge sound-effect cues onto the music's groove so they play as part of the rhythm.
+ * Each cue snaps to the nearest sixteenth-note slot of the final beat grid, but only within a window that is lopsided on purpose:
+ * a sound that arrives slightly LATE feels fine (people tolerate audio lagging the picture by about 100 ms), while one that arrives
+ * EARLY feels wrong after about 40 ms. A cue with no slot in the window keeps its true time, so a click is never moved far from the click.
+ *
+ * grid: { phase_s, period_s } of the final timeline. Returns new cues, with t_orig_ms and snapped_ms on the ones that moved.
+ */
+export function snapCues(cues, grid, { leadMs = 25, lagMs = 60, subdivision = 4, kinds = ["click", "caption", "ramp", "hook"] } = {}) {
+  const slot = grid.period_s / subdivision;
+  return cues.map((c) => {
+    if (!kinds.includes(c.kind)) return { ...c };
+    const t = c.t_ms / 1000;
+    const k = Math.round((t - grid.phase_s) / slot);
+    let best = null;
+    for (const kk of [k - 1, k, k + 1]) {
+      const ts = grid.phase_s + kk * slot;
+      const d = (ts - t) * 1000; // positive: the sound arrives after the picture
+      if (d >= -leadMs && d <= lagMs && (!best || Math.abs(d) < Math.abs(best.d))) best = { ts, d };
+    }
+    return best ? { ...c, t_ms: Math.round(best.ts * 1000), t_orig_ms: c.t_ms, snapped_ms: Math.round(best.d) } : { ...c };
+  });
+}

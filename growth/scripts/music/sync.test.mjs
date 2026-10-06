@@ -62,3 +62,34 @@ test("alignmentScore only counts non-click moments and respects the tolerance", 
   assert.equal(s.within, 2);
   assert.ok(Math.abs(s.ratio - 0.75) < 1e-9);
 });
+
+import { snapCues } from "./sync.mjs";
+
+test("snapCues moves a cue onto the groove only within the lopsided window", () => {
+  const grid = { phase_s: 0, period_s: 0.5 }; // 120 BPM: a sixteenth every 125 ms
+  const cues = [
+    { kind: "click", t_ms: 1000 }, // already on a slot
+    { kind: "click", t_ms: 1040 }, // 85 ms before the next slot at 1125: 85 > 60 lag window, and 40 after the slot at 1000 is beyond the 25 ms lead
+    { kind: "click", t_ms: 1090 }, // 35 ms before the slot at 1125: sound arrives 35 ms late, inside the 60 ms lag
+    { kind: "click", t_ms: 1140 }, // 15 ms after the slot at 1125: the sound would arrive 15 ms EARLY, inside the 25 ms lead
+    { kind: "end", t_ms: 1090 }, // the end card is never snapped here
+  ];
+  const out = snapCues(cues, grid);
+  assert.equal(out[0].t_ms, 1000);
+  assert.equal(out[1].t_ms, 1040, "no slot in the window: keeps its true time");
+  assert.equal(out[1].snapped_ms, undefined);
+  assert.equal(out[2].t_ms, 1125);
+  assert.equal(out[2].snapped_ms, 35);
+  assert.equal(out[3].t_ms, 1125);
+  assert.equal(out[3].snapped_ms, -15);
+  assert.equal(out[4].t_ms, 1090);
+});
+
+test("snapCues never moves a sound early by more than the lead limit or late by more than the lag limit", () => {
+  const grid = { phase_s: 0.137, period_s: 0.508 };
+  const cues = Array.from({ length: 200 }, (_, i) => ({ kind: "click", t_ms: 500 + i * 37 }));
+  for (const c of snapCues(cues, grid)) {
+    if (c.snapped_ms === undefined) continue;
+    assert.ok(c.snapped_ms >= -25 && c.snapped_ms <= 60, `moved ${c.snapped_ms} ms`);
+  }
+});

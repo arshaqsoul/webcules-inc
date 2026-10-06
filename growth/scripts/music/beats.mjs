@@ -24,6 +24,10 @@ export function decodeMono(file, { seconds } = {}) {
   return new Float32Array(r.stdout.buffer, r.stdout.byteOffset, Math.floor(r.stdout.length / 4));
 }
 
+export function fftReal(re, im) {
+  return fft(re, im);
+}
+
 function fft(re, im) {
   const n = re.length;
   for (let i = 1, j = 0; i < n; i++) {

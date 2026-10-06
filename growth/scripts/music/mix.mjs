@@ -11,6 +11,8 @@ import fs from "node:fs";
 import { spawnSync } from "node:child_process";
 import { SR, synthesize, cuesFromEdl } from "../edit/sfx.mjs";
 import { impact, riser, popHit, popRiser, popFinale } from "./hits.mjs";
+import { tonalTrack } from "./tonalsfx.mjs";
+import { freq } from "./keys.mjs";
 
 const TAU = Math.PI * 2;
 export const FINAL_PEAK = 0.589; // about -4.6 dBFS: AAC encoding overshoots by up to ~2 dB on dense music, and QC allows a peak of -3 dB at most
@@ -80,7 +82,9 @@ export function wavStereo(L, R) {
  * @param edl    the reel's edit list (captions, endcard_start_ms, duration_ms, highlights, ramps)
  * @param opts   { hits, sweep }
  */
-export function mixMusic({ bed, edl, hits = true, sweep = true, accent = "trailer" }) {
+export function mixMusic({ bed, edl, hits = true, sweep = true, accent = "trailer", sfx = null }) {
+  // sfx: null for the classic noise effects, or { mode: "tonal", key, cues } for notes in the track's key on snapped cues
+  const tonal = sfx?.mode === "tonal";
   const durationMs = edl.duration_ms;
   const n = Math.round((durationMs / 1000) * SR);
   const L = new Float32Array(n);
@@ -94,7 +98,7 @@ export function mixMusic({ bed, edl, hits = true, sweep = true, accent = "traile
   if (bed.L.length < n - SR * 0.05) warnings.push(`the bed is ${((n - bed.L.length) / SR).toFixed(1)} s shorter than the reel: generate a longer one`);
 
   const firstStepMs = (edl.captions?.[0]?.start_ms ?? 1500);
-  const sfxCues = cuesFromEdl(edl);
+  const sfxCues = sfx?.cues ?? cuesFromEdl(edl);
   const duck = duckCurve(n, sfxCues.map((c) => ({ t_ms: c.t_ms, depth: DUCK[c.kind] ?? 0.3 })));
   const fadeInN = Math.round(0.12 * SR);
   const endMs = edl.endcard_start_ms;
@@ -134,13 +138,16 @@ export function mixMusic({ bed, edl, hits = true, sweep = true, accent = "traile
   // ---- trailer accents
   if (hits && accent === "pop") {
     // bright, friendly accents for sunny styles: chord stabs with handclaps, a short riser, a cymbal-swell finish
-    const rootFor = (k) => [220, 246.94, 277.18, 220, 329.63][k % 5]; // A, B, C#, A, E: stays inside A major
-    addMono(popHit({ ms: 420, seed: 3, root: 220, clap: 0.7 }), 0, 0.4);
-    (edl.captions ?? []).forEach((c, k) => addMono(popHit({ ms: 460, seed: 30 + k, root: rootFor(k) }), c.start_ms, 0.5));
+    // with tuned effects the step-change stabs are already played in the track's key, so these generic ones are skipped
+    if (!tonal) {
+      const rootFor = (k) => [220, 246.94, 277.18, 220, 329.63][k % 5]; // A, B, C#, A, E: stays inside A major
+      addMono(popHit({ ms: 420, seed: 3, root: 220, clap: 0.7 }), 0, 0.4);
+      (edl.captions ?? []).forEach((c, k) => addMono(popHit({ ms: 460, seed: 30 + k, root: rootFor(k) }), c.start_ms, 0.5));
+    }
     const lastStep = Math.max(0, ...(edl.captions ?? []).filter((c) => c.start_ms < endMs).map((c) => c.start_ms));
     const riseMs = Math.min(1100, Math.max(400, endMs - lastStep - 300));
     addMono(popRiser({ ms: riseMs, seed: 7 }), endMs - riseMs, 0.5);
-    addMono(popFinale({ ms: 1700, seed: 61 }), endMs, 0.85);
+    addMono(popFinale({ ms: 1700, seed: 61, root: tonal ? freq(sfx.key.tonic, 3) : 220 }), endMs, 0.85);
   } else if (hits) {
     addMono(impact({ ms: 900, seed: 3 }), 0, 0.42); // the cold open
     (edl.captions ?? []).forEach((c, k) => addMono(impact({ ms: 800, seed: 20 + k, crack: 0.8 }), c.start_ms, 0.5));
@@ -151,10 +158,10 @@ export function mixMusic({ bed, edl, hits = true, sweep = true, accent = "traile
   }
 
   // ---- the existing sound effects, unchanged
-  const sfx = synthesize(sfxCues, durationMs);
+  const sfxTrack = tonal ? tonalTrack(sfxCues, { key: sfx.key, durationMs }) : synthesize(sfxCues, durationMs);
   for (let i = 0; i < n; i++) {
-    L[i] += sfx[i] * 0.9;
-    R[i] += sfx[i] * 0.9;
+    L[i] += sfxTrack[i] * 0.9;
+    R[i] += sfxTrack[i] * 0.9;
   }
 
   // ---- limit, normalise, and fade the last few milliseconds

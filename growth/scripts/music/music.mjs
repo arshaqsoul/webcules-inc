@@ -3,7 +3,9 @@
 //
 //   node growth/scripts/music/music.mjs --pp PP-004 [--engine comfy|standin] [--style trailer|upbeat|calm]
 //                                       [--tags "..."] [--seed N] [--tries N] [--bpm N] [--no-hits] [--no-sweep] [--label name]
-//   styles: funk, indie, tropical, caper, chiptune, sunny, synthpop (all bright accents), orchestral, thriller, action, trailer (default), upbeat, calm.
+//   --sfx tonal|classic    tonal (default): the effects are notes in the track's measured key, snapped to its groove. classic: the noise effects.
+//   --quantize off         keep every cue at its exact time (tonal mode otherwise nudges cues onto sixteenth-note slots, see sync.mjs snapCues)
+//   styles: heroic, techintro, funk, indie, tropical, caper, chiptune, sunny, synthpop (all bright accents), orchestral, thriller, action, trailer (default), upbeat, calm.
 //   --label keeps several versions side by side.
 //
 // Reads  : growth/out/<PP>/{reel.mp4, edl.json}      (reel.mp4 is never modified)
@@ -20,13 +22,27 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { ROOT } from "../record/lib.mjs";
 import { SR } from "../edit/sfx.mjs";
-import { keyEvents, planGrid, alignToBeats, alignmentScore } from "./sync.mjs";
-import { analyzeFile } from "./beats.mjs";
+import { keyEvents, planGrid, alignToBeats, alignmentScore, snapCues } from "./sync.mjs";
+import { analyzeFile, decodeMono } from "./beats.mjs";
+import { estimateKey, parseKey, keyName } from "./keys.mjs";
+import { cuesFromEdl } from "../edit/sfx.mjs";
 import { readBed, mixMusic, muxMix, wavStereo } from "./mix.mjs";
 import { standinBed } from "./standin.mjs";
 import { preflight, generate } from "./comfy.mjs";
 
 const STYLES = {
+  heroic: {
+    key: "C major",
+    bpm: [96, 124],
+    accent: "trailer",
+    tags: "Heroic epic superhero-movie orchestral score, instrumental only, no vocals. A triumphant brass fanfare theme with powerful French horns and trumpets, a steady marching snare and pounding timpani, soaring strings playing an uplifting rising melody, big heroic crescendos, hopeful and courageous, full cinematic orchestra recorded in a large hall, major key, ends with one huge triumphant final hit",
+  },
+  techintro: {
+    key: "E minor",
+    bpm: [118, 134],
+    accent: "pop",
+    tags: "Modern tech-conference YouTube channel intro, instrumental only, no vocals. Punchy clean electronic production, a tight four-on-the-floor kick, rhythmic plucked synth arpeggios, a confident bright synth lead hook, subtle glitchy percussion and quick risers, forward-looking and energetic, short and slick, ends with one clean final hit",
+  },
   funk: {
     key: "E minor",
     bpm: [100, 118],
@@ -199,7 +215,21 @@ const best = attempts[0];
 
 // ---- 3. mix, mux, record
 const bed = readBed(best.file, { trim_s: best.al.trim_s, rate: best.al.rate, seconds: reelS + 0.5 });
-const mixed = mixMusic({ bed, edl, hits: !has("no-hits"), sweep: !has("no-sweep"), accent: STYLES[style].accent ?? "trailer" });
+// the effects are retuned to the key the generated track is REALLY in (the model does not reliably obey the key it is asked for)
+const sfxMode = flag("sfx") ?? "tonal";
+if (!["tonal", "classic"].includes(sfxMode)) {
+  console.error('--sfx must be "tonal" or "classic"');
+  process.exit(2);
+}
+const requestedKey = parseKey(STYLES[style].key);
+const measuredKey = estimateKey(decodeMono(best.file, { seconds }));
+const key = measuredKey.margin >= 0.04 ? { tonic: measuredKey.tonic, mode: measuredKey.mode } : requestedKey;
+const keySource = measuredKey.margin >= 0.04 ? "measured" : "requested (the measurement was not clear enough)";
+const baseCues = cuesFromEdl(edl);
+const snapped = sfxMode === "tonal" && flag("quantize") !== "off" ? snapCues(baseCues, { phase_s: best.al.phase_s, period_s: best.al.period_s }) : baseCues;
+const moved = snapped.filter((c) => c.snapped_ms !== undefined);
+console.log(`[music] key ${keyName(key)} (${keySource}); effects: ${sfxMode}${sfxMode === "tonal" ? `, ${moved.length}/${baseCues.length} cues snapped to the groove` : ""}`);
+const mixed = mixMusic({ bed, edl, hits: !has("no-hits"), sweep: !has("no-sweep"), accent: STYLES[style].accent ?? "trailer", sfx: sfxMode === "tonal" ? { mode: "tonal", key, cues: snapped } : null });
 const outFile = path.join(outDir, `reel.music${sfxLabel}.mp4`);
 muxMix({ reel, L: mixed.L, R: mixed.R, out: outFile });
 
@@ -220,6 +250,16 @@ const info = {
   trim_s: Math.round(best.al.trim_s * 1000) / 1000,
   bpm_final: Math.round(best.al.bpm_final * 10) / 10,
   alignment: { ...best.score, deviations: best.al.deviations },
+  sfx: {
+    mode: sfxMode,
+    key: keyName(key),
+    key_source: keySource,
+    key_requested: STYLES[style].key,
+    key_margin: Math.round(measuredKey.margin * 1000) / 1000,
+    cues_snapped: moved.length,
+    cues_total: baseCues.length,
+    snap_shift_ms: moved.map((c) => ({ kind: c.kind, from_ms: c.t_orig_ms, to_ms: c.t_ms, shift_ms: c.snapped_ms })),
+  },
   hits: !has("no-hits"),
   sweep: !has("no-sweep"),
   bed: path.relative(ROOT, best.file),
