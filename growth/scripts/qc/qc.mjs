@@ -2,7 +2,7 @@
 // Automated QC for a finished reel. Writes growth/out/<PP>/qc.json; `pass` is true only if every check passes.
 //
 //   node growth/scripts/qc/qc.mjs --pp PP-001 [--meta growth/storyboards/PP-001.meta.json]
-//   node growth/scripts/qc/qc.mjs --pp PP-001 --variant music [--allow-standin]    checks reel.music.mp4 and writes qc.music.json
+//   node growth/scripts/qc/qc.mjs --pp PP-001 --variant music [--label name] [--allow-standin]    checks reel.music[.name].mp4, writes qc.music[.name].json
 //
 // Thresholds are the ones in growth/DEMO-STANDARD.md. Do not loosen them to get a pass.
 
@@ -24,8 +24,14 @@ if (variant && variant !== "music") {
   console.error(`unknown --variant ${variant} (only "music")`);
   process.exit(2);
 }
+const label = flag("label"); // with --variant music: check reel.music.<label>.mp4
+if (label && (variant !== "music" || !/^[a-z0-9-]+$/.test(label))) {
+  console.error("--label is only for --variant music, lowercase letters, digits and dashes");
+  process.exit(2);
+}
+const lab = label ? `.${label}` : "";
 const outDir = path.join(ROOT, "growth", "out", pp);
-const reel = path.join(outDir, variant === "music" ? "reel.music.mp4" : "reel.mp4");
+const reel = path.join(outDir, variant === "music" ? `reel.music${lab}.mp4` : "reel.mp4");
 const edlPath = path.join(outDir, "edl.json");
 if (!fs.existsSync(reel) || !fs.existsSync(edlPath)) {
   console.error(`${path.basename(reel)} and edl.json are required (${variant === "music" ? "run music.mjs first" : "run edit.mjs first"})`);
@@ -78,7 +84,7 @@ if (aud) {
 
 // ---- music version: continuous, real, fresh, and on the beat
 if (variant === "music") {
-  const musicPath = path.join(outDir, "music.json");
+  const musicPath = path.join(outDir, `music${lab}.json`);
   const music = fs.existsSync(musicPath) ? JSON.parse(fs.readFileSync(musicPath, "utf8")) : null;
   check("music record", !!music, music ? `${music.engine}, ${music.bpm_final} BPM` : "music.json missing (run music.mjs)");
   if (music) {
@@ -151,7 +157,7 @@ const missingSrc = claims.filter((c) => !c.source || !fs.existsSync(path.join(RO
 check("claims cite real files", missingSrc.length === 0, missingSrc.length ? missingSrc.map((c) => `"${c.text}" -> ${c.source ?? "no source"}`).join("; ") : `${claims.length} claim(s) cite existing files`);
 
 const report = { pass: failures.length === 0, variant: variant ?? "reel", pain_point: pp, checked_at: new Date().toISOString(), reel: path.relative(ROOT, reel), duration_s: Math.round(dur * 10) / 10, size_mb: Math.round(sizeMB * 10) / 10, failures, checks };
-fs.writeFileSync(path.join(outDir, variant === "music" ? "qc.music.json" : "qc.json"), JSON.stringify(report, null, 2));
+fs.writeFileSync(path.join(outDir, variant === "music" ? `qc.music${lab}.json` : "qc.json"), JSON.stringify(report, null, 2));
 for (const c of checks) console.log(`${c.ok ? "PASS" : "FAIL"}  ${c.name} - ${c.detail}`);
 console.log(report.pass ? "\nQC PASSED" : `\nQC FAILED (${failures.length})`);
 process.exit(report.pass ? 0 : 1);

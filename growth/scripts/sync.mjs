@@ -24,8 +24,8 @@ const PREFIX = "v1/";
 
 /** What is allowed to leave this machine. Anything not matching is never synced. */
 export const ALLOW = [
-  /^growth\/packages\/[^/]+\/(reel\.mp4|reel\.music\.mp4|cover\.png)$/,
-  /^growth\/out\/[^/]+\/(reel\.mp4|reel\.music\.mp4|cover\.png|edl\.json|qc\.json|qc\.music\.json|music\.json)$/,
+  /^growth\/packages\/[^/]+\/(reel\.mp4|reel\.music(\.[a-z0-9-]+)?\.mp4|cover\.png)$/,
+  /^growth\/out\/[^/]+\/(reel\.mp4|reel\.music(\.[a-z0-9-]+)?\.mp4|cover\.png|edl\.json|qc\.json|qc\.music(\.[a-z0-9-]+)?\.json|music(\.[a-z0-9-]+)?\.json)$/,
   /^growth\/assets\/music\/[^/]+\.(flac|wav)$/,
 ];
 /** Defence in depth: even if an allow rule is widened by mistake, these never sync (mailbox crops, secrets, raw footage, ledger). */
@@ -48,10 +48,10 @@ export function walk(dir, out = []) {
 /** A music version made with the synthesised stand-in is a test artefact, not a deliverable: it must not be mistaken for real music elsewhere. */
 function isStandin(root, rel) {
   if (/^growth\/assets\/music\/standin-/.test(rel)) return true;
-  const m = rel.match(/^(growth\/(?:out|packages)\/[^/]+)\/(reel\.music\.mp4|music\.json|qc\.music\.json)$/);
+  const m = rel.match(/^(growth\/(?:out|packages)\/[^/]+)\/(?:reel\.music|music|qc\.music)((?:\.[a-z0-9-]+)?)\.(?:mp4|json)$/);
   if (!m) return false;
   try {
-    return JSON.parse(fs.readFileSync(path.join(root, m[1].replace("/packages/", "/out/"), "music.json"), "utf8")).engine === "standin";
+    return JSON.parse(fs.readFileSync(path.join(root, m[1].replace("/packages/", "/out/"), `music${m[2]}.json`), "utf8")).engine === "standin";
   } catch {
     return false;
   }

@@ -202,8 +202,10 @@ function status() {
 function music() {
   const passthrough = rest.filter((x) => x !== "--allow-standin");
   step("music version", [path.join(HERE, "music", "music.mjs"), "--pp", pp, ...passthrough]);
-  step("qc (music)", [path.join(HERE, "qc", "qc.mjs"), "--pp", pp, "--variant", "music", ...(rest.includes("--allow-standin") || rest.includes("standin") ? ["--allow-standin"] : [])]);
-  console.log(`\nDONE. growth/out/${pp}/reel.music.mp4 passed QC. Push it to the other PCs: node growth/scripts/sync.mjs push`);
+  const li = rest.indexOf("--label");
+  const label = li >= 0 ? rest[li + 1] : null;
+  step("qc (music)", [path.join(HERE, "qc", "qc.mjs"), "--pp", pp, "--variant", "music", ...(label ? ["--label", label] : []), ...(rest.includes("--allow-standin") || rest.includes("standin") ? ["--allow-standin"] : [])]);
+  console.log(`\nDONE. growth/out/${pp}/reel.music${label ? "." + label : ""}.mp4 passed QC. Push it to the other PCs: node growth/scripts/sync.mjs push`);
 }
 
 if (cmd === "new") await scaffold();

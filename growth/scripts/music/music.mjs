@@ -2,10 +2,11 @@
 // Make a music version of a finished reel: a continuous, trailer-style track whose beats land on the reel's step changes.
 //
 //   node growth/scripts/music/music.mjs --pp PP-004 [--engine comfy|standin] [--style trailer|upbeat|calm]
-//                                       [--tags "..."] [--seed N] [--tries N] [--bpm N] [--no-hits] [--no-sweep]
+//                                       [--tags "..."] [--seed N] [--tries N] [--bpm N] [--no-hits] [--no-sweep] [--label name]
+//   styles: orchestral, thriller, action, trailer (default), upbeat, calm. --label keeps several versions side by side.
 //
 // Reads  : growth/out/<PP>/{reel.mp4, edl.json}      (reel.mp4 is never modified)
-// Writes : growth/out/<PP>/reel.music.mp4 and growth/out/<PP>/music.json
+// Writes : growth/out/<PP>/reel.music[.label].mp4 and growth/out/<PP>/music[.label].json
 // Then   : node growth/scripts/qc/qc.mjs --pp <PP> --variant music
 //
 // Engines: "comfy" generates the bed with ACE-Step 1.5 on the ComfyUI server (GROWTH_COMFY_URL). If the model is not installed it
@@ -25,16 +26,34 @@ import { standinBed } from "./standin.mjs";
 import { preflight, generate } from "./comfy.mjs";
 
 const STYLES = {
+  orchestral: {
+    key: "D minor",
+    bpm: [90, 118],
+    tags: "Epic orchestral film score, instrumental only, no vocals. A full symphony orchestra: pounding timpani and taiko ostinato, relentless staccato low strings (cellos and double basses) driving the rhythm, powerful brass stabs and braams, soaring violins, steadily rising tension building to a huge dramatic crescendo, cinematic live orchestra recording, no electronic drums, no synthesizers, no pop beat, ends with one big final hit",
+  },
+  thriller: {
+    key: "C minor",
+    bpm: [96, 124],
+    tags: "Dark tense action-thriller film score, instrumental only, no vocals. Pulsing low string ostinato, ticking percussion and suspenseful staccato strings, deep brass hits, a menacing sub-bass drone underneath, spy-chase urgency, tension that keeps building, cinematic orchestral with subtle hybrid sound design, no pop drums, no melody-heavy synth, ends with one big final hit",
+  },
+  action: {
+    key: "E minor",
+    bpm: [118, 140],
+    tags: "High-energy action movie score, instrumental only, no vocals. Fast driving orchestral ostinato strings, heavy epic percussion and taiko, aggressive brass, big dramatic hits and risers, relentless forward momentum like a car chase, powerful and heroic, cinematic orchestral with modern hybrid power, ends with one big final hit",
+  },
   trailer: {
     key: "A minor",
+    bpm: [88, 132],
     tags: "Epic cinematic movie-trailer score, instrumental only, no vocals. A driving heartbeat kick on every beat, deep sub bass pulse, tense staccato strings ostinato, taiko and braam hits, steadily building intensity, modern hybrid orchestral, dark and confident, tight clean mix, ends cleanly",
   },
   upbeat: {
     key: "C major",
+    bpm: [96, 128],
     tags: "Modern upbeat tech product-launch instrumental, no vocals. Tight punchy drums, bright plucked synth arpeggio, warm bass, optimistic and energetic, clean polished mix, ends cleanly",
   },
   calm: {
     key: "D major",
+    bpm: [70, 100],
     tags: "Warm minimal cinematic instrumental, no vocals. A soft steady pulse, evolving pads, a gentle piano motif, calm and confident, clean mix, ends cleanly",
   },
 };
@@ -49,12 +68,18 @@ if (!pp || !/^PP-\d{3,}$/.test(pp)) {
 }
 const engine = flag("engine") ?? "comfy";
 const style = flag("style") ?? "trailer";
+const label = flag("label"); // keep several versions side by side: reel.music.<label>.mp4
+if (label && !/^[a-z0-9-]+$/.test(label)) {
+  console.error("--label must be lowercase letters, digits and dashes");
+  process.exit(2);
+}
+const sfxLabel = label ? `.${label}` : "";
 if (!["comfy", "standin"].includes(engine)) {
   console.error(`unknown engine ${engine}`);
   process.exit(2);
 }
 if (!STYLES[style]) {
-  console.error(`unknown style ${style} (trailer, upbeat, calm)`);
+  console.error(`unknown style ${style} (${Object.keys(STYLES).join(", ")})`);
   process.exit(2);
 }
 
@@ -72,7 +97,8 @@ const edl = JSON.parse(edlRaw);
 const events = keyEvents(edl);
 
 // ---- 1. plan: the tempo whose beat grid fits this reel's moments best
-const plan = has("bpm") ? { bpm: Number(flag("bpm")), cost: null, offset_s: null } : planGrid(events);
+const [bpmMin, bpmMax] = STYLES[style].bpm;
+const plan = has("bpm") ? { bpm: Number(flag("bpm")), cost: null, offset_s: null } : planGrid(events, { bpmMin, bpmMax, prior: Math.round((bpmMin + bpmMax) / 2) });
 const reelS = edl.duration_ms / 1000;
 // generate longer than the reel: the alignment trims up to one bar off the front and may slow the track by up to 8 percent
 const seconds = Math.ceil(reelS * 1.1 + 4 * (60 / plan.bpm) + 3);
@@ -131,12 +157,13 @@ const best = attempts[0];
 // ---- 3. mix, mux, record
 const bed = readBed(best.file, { trim_s: best.al.trim_s, rate: best.al.rate, seconds: reelS + 0.5 });
 const mixed = mixMusic({ bed, edl, hits: !has("no-hits"), sweep: !has("no-sweep") });
-const outFile = path.join(outDir, "reel.music.mp4");
+const outFile = path.join(outDir, `reel.music${sfxLabel}.mp4`);
 muxMix({ reel, L: mixed.L, R: mixed.R, out: outFile });
 
 const info = {
   version: 1,
   pain_point: pp,
+  label: label ?? null,
   engine,
   engine_note: engine === "standin" ? "a synthesised stand-in bed, NOT generated music" : `ACE-Step 1.5 via ComfyUI (${variant})`,
   style,
@@ -159,7 +186,7 @@ const info = {
   duration_ms: edl.duration_ms,
   sample_rate: SR,
 };
-fs.writeFileSync(path.join(outDir, "music.json"), JSON.stringify(info, null, 2));
+fs.writeFileSync(path.join(outDir, `music${sfxLabel}.json`), JSON.stringify(info, null, 2));
 for (const w of mixed.warnings) console.warn(`[music] WARNING ${w}`);
 console.log(JSON.stringify({ ok: true, reel: path.relative(ROOT, outFile), engine, bpm_final: info.bpm_final, within_70ms: `${best.score.within}/${best.score.total}`, size_mb: Math.round((fs.statSync(outFile).size / 1e6) * 10) / 10 }));
-console.log(`next: node growth/scripts/qc/qc.mjs --pp ${pp} --variant music`);
+console.log(`next: node growth/scripts/qc/qc.mjs --pp ${pp} --variant music${label ? ` --label ${label}` : ""}`);

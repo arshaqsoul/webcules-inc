@@ -114,3 +114,18 @@ test("the ACE-Step workflow is a closed, valid graph for both model layouts", ()
   }
   assert.equal(buildWorkflow("aio", { tags: "x", seed: 1, bpm: 110, seconds: 5 })["1"].inputs.ckpt_name, AIO_CKPT);
 });
+
+test("labelled versions sit side by side and are checked separately", () => {
+  makeReel();
+  assert.equal(music("--engine", "standin", "--style", "orchestral", "--label", "orch").status, 0);
+  assert.equal(music("--engine", "standin", "--style", "action", "--label", "act").status, 0);
+  for (const f of ["reel.music.orch.mp4", "music.orch.json", "reel.music.act.mp4", "music.act.json"]) assert.ok(fs.existsSync(path.join(OUT, f)), f);
+  assert.equal(fs.existsSync(path.join(OUT, "reel.music.mp4")), false, "a labelled run must not touch the unlabelled version");
+  const a = JSON.parse(fs.readFileSync(path.join(OUT, "music.act.json"), "utf8"));
+  const o = JSON.parse(fs.readFileSync(path.join(OUT, "music.orch.json"), "utf8"));
+  assert.ok(a.bpm_planned >= 118 && a.bpm_planned <= 140, `action planned ${a.bpm_planned}`);
+  assert.ok(o.bpm_planned >= 90 && o.bpm_planned <= 118, `orchestral planned ${o.bpm_planned}`);
+  const r = qc("--label", "orch", "--allow-standin");
+  assert.match(r.stdout, /PASS\s+music record - standin/);
+  assert.ok(fs.existsSync(path.join(OUT, "qc.music.orch.json")));
+});

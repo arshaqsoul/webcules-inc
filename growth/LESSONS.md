@@ -114,6 +114,11 @@ Each has a fix already in the tooling, but knowing why saves you from reinventin
     The ledger is per checkout, so two PCs can both create `PP-005`.
     Check `growth/storyboards/` and the committed snapshots before you create a record, and pull first.
 
+31. **The style prompt decides the sound, so name instruments, not a mood.**
+    "Hybrid orchestral trailer" came out electronic and pulse-driven. "Symphony orchestra, timpani, cellos and basses, no electronic drums, no synthesizers" gets a different sound. Keep a labelled version per style so the founder can compare.
+32. **The aligner can quietly speed a track up.**
+    It minimises misses within a 0.92-1.08 stretch, so for some reels it picks a tempo several percent off the plan. Read `bpm_final` in `music.json`, not only the QC verdict.
+
 ## Product facts worth remembering
 
 - The staging demo org is "Amara & Oak Photography" and is on Studio, so Studio-only controls appear on the page even when a reel claims the Free plan.

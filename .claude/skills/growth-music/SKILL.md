@@ -14,9 +14,22 @@ Prerequisite: the reel passed QC (`reel.mp4`, `edl.json` in `growth/out/PP-###/`
 
 ```bash
 node growth/scripts/reel.mjs music PP-###                 # trailer style, ComfyUI
-node growth/scripts/reel.mjs music PP-### --style upbeat  # or calm
 node growth/scripts/reel.mjs music PP-### --seed 3        # a different take of the same idea
 ```
+
+Styles (`--style`), each with its own prompt, key and tempo range:
+
+| Style | Sound | BPM planned within |
+|---|---|---|
+| `trailer` (default) | hybrid trailer pulse: heartbeat kick, sub bass, strings | 88-132 |
+| `orchestral` | live symphony orchestra: timpani, driving cellos and basses, brass, no electronic drums | 90-118 |
+| `thriller` | dark tense action-thriller: low string ostinato, ticking percussion, sub drone | 96-124 |
+| `action` | fast heroic action-movie score: relentless strings, taiko, aggressive brass | 118-140 |
+| `upbeat`, `calm` | product-launch and ambient styles | 96-128, 70-100 |
+
+To compare several versions of one reel, give each a label: `--label orchestral` writes `reel.music.orchestral.mp4`, `music.orchestral.json` and `qc.music.orchestral.json` and leaves the other versions alone.
+Check one with `qc.mjs --pp PP-### --variant music --label orchestral`.
+`--tries 3` generates three takes and keeps the best-aligned one.
 
 It plans a BPM from the reel's own cut points, generates a bed, measures its real beats, stretches and trims it so the step changes and end card land on beats, adds trailer impacts, a riser and ducking, and writes `reel.music.mp4` and `music.json`.
 Then it runs `qc.mjs --variant music`.
@@ -41,7 +54,7 @@ It cannot hear.
 Before you hand a music version over:
 
 1. Read `music.json`: planned BPM, measured BPM, stretch (a few percent is natural, near 8 percent is a smell), beat confidence, and each moment's deviation.
-2. Check that the stretch is small. If it is large, rerun with `--seed` or `--tries 3` for a take that came out closer to the requested tempo.
+2. Check the stretch AND the final tempo. The aligner may pick a faster or slower tempo (up to 8 percent) when that fits the cut points better: if `bpm_final` is far from `bpm_planned` (for a thriller, 124 planned and 132 final), the track will feel rushed. Rerun with `--seed` or `--tries 3`, or pass `--bpm` to pin the tempo.
 3. Say plainly in your handoff that you could not listen to it, and ask the founder to play it.
 4. A track with vocals or a drifting tempo is a bad take even if QC passes: try another seed.
 
