@@ -181,8 +181,8 @@ const NEXT = {
   DEMO_SCRIPTED: ["recorder", `reel.mjs check ${pp}, then reel.mjs make ${pp}`],
   RECORDED: ["editor", `reel.mjs make ${pp} --skip-record`],
   ENHANCED: ["editor", `node growth/scripts/qc/qc.mjs --pp ${pp}`],
-  QC_PASSED: ["packager", "build growth/packages/<PP>/package.md from the template"],
-  PACKAGED: ["the founder", "post it, then ledger transition HUMAN_POSTED --by human"],
+  QC_PASSED: ["packager", `optionally first: reel.mjs music ${pp} (needs ACE-Step in ComfyUI); then build growth/packages/<PP>/package.md from the template`],
+  PACKAGED: ["the founder", "post it, then ledger transition HUMAN_POSTED --by human (sync.mjs push shares the media with your other PCs)"],
   HUMAN_POSTED: ["analyst", "measure after 48 hours"],
   MEASURED: ["nobody", "done"],
 };

@@ -31,7 +31,11 @@ You do not research, design, build, record or edit yourself.
 6. Read each worker's handoff.
    If it says blocked or reworked, decide: retry with more context, block for the founder, or drop with a reason.
 7. When a record reaches PACKAGED, tell the founder in plain words which reel is ready, where it is, and the suggested time to post.
-8. At the end of a run, `ledger.mjs snapshot` and report.
+8. When a record reaches QC_PASSED, you may ask the **editor** for a music version (`node growth/scripts/reel.mjs music PP-###`) before packaging.
+   Only if ComfyUI is ready: check with `node -e "import('./growth/scripts/music/comfy.mjs').then(async m=>console.log(JSON.stringify(await m.preflight())))"`.
+   If it is not ready, say so to the founder once and carry on with the sound-effects reel, do not wait on it.
+9. On a PC you have not used for a while, run `node growth/scripts/sync.mjs pull` first, and `sync.mjs push` after any reel is made or packaged.
+10. At the end of a run, `ledger.mjs snapshot` and report.
 
 ## Dispatch rules
 

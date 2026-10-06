@@ -9,6 +9,11 @@ description: Procedure for assembling the final Instagram package for the founde
 
 1. Create `growth/packages/PP-###/` and copy `reel.mp4`, `cover.png` and `qc.json` from `growth/out/PP-###/`.
 2. Copy `growth/templates/reel-package.md` to `growth/packages/PP-###/package.md` and fill every field.
+3. **Music version.** If `growth/out/PP-###/reel.music.mp4` exists, check `growth/out/PP-###/qc.music.json` says `pass: true` and `music.json` says the engine is not `standin`.
+   If so, copy `reel.music.mp4` and `qc.music.json` into the package folder, fill the soundtrack block in the template, and record the path with `ledger.mjs transition ... --set demo.music=growth/packages/PP-###/reel.music.mp4` (it does not change the state).
+   If it is a stand-in, failed QC or is stale, leave it out and say so in the handoff.
+   A missing music version never blocks packaging: the sound-effects reel is complete on its own.
+4. After the transition to PACKAGED, run `node growth/scripts/sync.mjs push` so the founder's other PCs get the files.
 
 ## Caption
 

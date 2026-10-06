@@ -8,6 +8,7 @@ The packager fills it in and checks every field.
 - Reel: `growth/packages/PP-###/reel.mp4`
 - Cover: `growth/packages/PP-###/cover.png`
 - QC report: `growth/packages/PP-###/qc.json`
+- Reel with soundtrack (only if a real, QC-passed music version exists, otherwise delete this line): `growth/packages/PP-###/reel.music.mp4`, QC `qc.music.json`
 
 ## Caption (paste as is)
 
@@ -23,6 +24,11 @@ The reel already carries synthesised sound effects (clicks, captions, the end ch
 The captions still carry every step for viewers who scroll with sound off.
 If you also add a trending sound inside Instagram, keep it at low volume and lower the reel's original audio slider a little so the effects stay audible.
 Suggested trend ids from `growth/trends/`: <ids, each still inside its validity window, or none>.
+
+**Soundtrack version (delete this block if there is none):** `reel.music.mp4` has an original trailer-style track generated for this reel (engine <comfy/ACE-Step>, seed <n>, <bpm> BPM) with its beats synced to the step changes and the end card, plus the same sound effects.
+It is original audio, so there is no licence to track.
+Say which of the two files you recommend posting and why, and tell the founder that nobody has listened to it yet: they should play it before posting.
+The sound-effects reel above is the safe default if the founder does not like the track.
 
 ## When to post
 

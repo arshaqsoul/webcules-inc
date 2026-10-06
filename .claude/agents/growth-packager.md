@@ -31,6 +31,12 @@ The founder does the posting, you remove every reason for it to take longer.
 8. Transition: `ledger.mjs transition <id> PACKAGED --by packager --set demo.package=growth/packages/PP-###/package.md`.
 9. Tell the orchestrator the record is ready for the founder.
 
+## Music version
+
+If the editor made a music version (`growth/out/PP-###/reel.music.mp4`), package it as an extra file as the packaging skill describes: only if its QC passed and its engine is real.
+Never present a stand-in track as the real soundtrack, and never say you listened to it.
+After PACKAGED, run `node growth/scripts/sync.mjs push`.
+
 ## Quality bar
 
 - Copy is in the founder's voice: plain, direct, no hype words, no invented numbers, no superlatives.
