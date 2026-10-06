@@ -25,6 +25,11 @@ Styles (`--style`), each with its own prompt, key and tempo range:
 | `orchestral` | live symphony orchestra: timpani, driving cellos and basses, brass, no electronic drums | 90-118 |
 | `thriller` | dark tense action-thriller: low string ostinato, ticking percussion, sub drone | 96-124 |
 | `action` | fast heroic action-movie score: relentless strings, taiko, aggressive brass | 118-140 |
+| `funk` | disco-funk groove: slap bass, wah guitar, brass stabs; bright accents | 100-118 |
+| `indie` | handclap, stomp, ukulele, glockenspiel and whistle feel-good pop; bright accents | 108-124 |
+| `tropical` | summer groove: congas, marimba, steel drum; bright accents | 100-118 |
+| `caper` | playful jazz heist-comedy: brushes, walking bass, pizzicato, muted trumpet; bright accents | 112-132 |
+| `chiptune` | 8-bit arcade: pulse-wave lead, bouncing bass, fast arpeggios; bright accents | 120-140 |
 | `sunny` | fun, feel-good dance-pop: four-on-the-floor, handclaps, bouncy synth bass, catchy lead; bright accents, not dark booms | 108-126 |
 | `synthpop` | euphoric driving synth-pop dance anthem; bright accents | 112-124 |
 | `upbeat`, `calm` | product-launch and ambient styles | 96-128, 70-100 |

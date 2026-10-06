@@ -3,7 +3,7 @@
 //
 //   node growth/scripts/music/music.mjs --pp PP-004 [--engine comfy|standin] [--style trailer|upbeat|calm]
 //                                       [--tags "..."] [--seed N] [--tries N] [--bpm N] [--no-hits] [--no-sweep] [--label name]
-//   styles: sunny, synthpop (bright dance-pop, bright accents), orchestral, thriller, action, trailer (default), upbeat, calm.
+//   styles: funk, indie, tropical, caper, chiptune, sunny, synthpop (all bright accents), orchestral, thriller, action, trailer (default), upbeat, calm.
 //   --label keeps several versions side by side.
 //
 // Reads  : growth/out/<PP>/{reel.mp4, edl.json}      (reel.mp4 is never modified)
@@ -27,6 +27,36 @@ import { standinBed } from "./standin.mjs";
 import { preflight, generate } from "./comfy.mjs";
 
 const STYLES = {
+  funk: {
+    key: "E minor",
+    bpm: [100, 118],
+    accent: "pop",
+    tags: "Fun upbeat disco-funk groove, instrumental only, no vocals. A tight funky drum beat, a slapped and popping electric bass line, a wah-wah rhythm guitar playing choppy 16th-note chords, punchy brass section stabs, bright electric piano, a playful strut, feel-good and confident, clean live-band production, ends with one bright final hit",
+  },
+  indie: {
+    key: "G major",
+    bpm: [108, 124],
+    accent: "pop",
+    tags: "Happy feel-good indie-folk pop, instrumental only, no vocals. Stomping kick and tambourine, lots of handclaps, a bright strummed acoustic guitar, a bouncy ukulele, glockenspiel and a cheerful whistled melody, warm upright bass, a sing-along energy, sunny and carefree, organic live recording, ends with one bright final hit",
+  },
+  tropical: {
+    key: "D major",
+    bpm: [100, 118],
+    accent: "pop",
+    tags: "Fun tropical summer groove, instrumental only, no vocals. A relaxed dancehall-style rhythm with congas, shakers and a woodblock, a bubbly marimba and steel drum melody, plucked nylon guitar, a warm round bass, bright sunny beach-party mood, light and playful, clean polished production, ends with one bright final hit",
+  },
+  caper: {
+    key: "F major",
+    bpm: [112, 132],
+    accent: "pop",
+    tags: "Playful quirky jazz caper, instrumental only, no vocals. A light swinging drum groove with brushes, a walking upright bass, sneaky pizzicato strings, a cheeky muted trumpet and bouncy piano, whimsical heist-comedy energy, mischievous and fun, tight vintage film-score recording, ends with one bright final hit",
+  },
+  chiptune: {
+    key: "C major",
+    bpm: [120, 140],
+    accent: "pop",
+    tags: "Fun upbeat 8-bit chiptune video-game music, instrumental only, no vocals. Square-wave and pulse-wave lead melody, a bouncing triangle-wave bass, fast arpeggios, crisp noise-channel drums, retro arcade energy, cheerful and playful, ends with one bright final hit",
+  },
   sunny: {
     key: "A major",
     bpm: [108, 126],

@@ -124,6 +124,9 @@ Each has a fix already in the tooling, but knowing why saves you from reinventin
 34. **Accents must match the mood.**
     Deep booms and risers read as serious. Fun styles get bright chord stabs and handclaps.
 
+35. **When a style misses, change the GENRE, not the adjectives.**
+    "Sunny" and "synth-pop" both got a no. A spread of five genres (funk, indie, tropical, jazz caper, chiptune) lets the founder point at one and say why, which is faster than tuning one prompt blind.
+
 ## Product facts worth remembering
 
 - The staging demo org is "Amara & Oak Photography" and is on Studio, so Studio-only controls appear on the page even when a reel claims the Free plan.

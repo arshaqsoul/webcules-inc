@@ -10,7 +10,7 @@ import { buildWorkflow, REQUIRED_NODES, AIO_CKPT } from "./comfy.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "..", "..", "..");
-const ID = "PP-974";
+const ID = "PP-958"; // scratch id: must not collide with the ids used by the other test files, which run in parallel
 const OUT = path.join(ROOT, "growth", "out", ID);
 
 after(() => {
