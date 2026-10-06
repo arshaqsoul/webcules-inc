@@ -13,7 +13,7 @@ import { SR, synthesize, cuesFromEdl } from "../edit/sfx.mjs";
 import { impact, riser } from "./hits.mjs";
 
 const TAU = Math.PI * 2;
-export const FINAL_PEAK = 0.668; // about -3.5 dBFS
+export const FINAL_PEAK = 0.589; // about -4.6 dBFS: AAC encoding overshoots by up to ~2 dB on dense music, and QC allows a peak of -3 dB at most
 
 /** Decode the bed with the alignment applied: drop `trim_s` of the original, then change speed by `rate` (pitch preserved). */
 export function readBed(file, { trim_s = 0, rate = 1, seconds }) {
