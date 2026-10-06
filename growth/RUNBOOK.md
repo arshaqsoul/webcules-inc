@@ -104,6 +104,34 @@ Copy the reel, cover and qc.json into `growth/packages/PP-###/`, fill `package.m
 Posts the reel, then runs `ledger.mjs transition PP-### HUMAN_POSTED --by human --set post.url=<url> --set post.posted_by=human`.
 Agents never post, comment, follow or message.
 
+### Optional - the music version
+
+After a reel passes QC, make a second version with a trailer-style soundtrack synced to the beats:
+
+```bash
+node growth/scripts/reel.mjs music PP-###
+```
+
+It needs ACE-Step 1.5 installed on the ComfyUI server in `GROWTH_COMFY_URL`.
+If it is not, the command stops with the exact files to install and writes nothing.
+`--engine standin` runs the whole pipeline with a synthesised stand-in bed, which is for testing only and which QC will not pass for posting.
+Details and checks: `growth/DEMO-STANDARD.md` (Music version), skill `growth-music`.
+
+### Keeping every PC in sync
+
+Reels, covers and generated music are gitignored, so they travel through a private R2 bucket (`GROWTH_R2_BUCKET`, default `webcules-growth`):
+
+```bash
+node growth/scripts/sync.mjs status      # what differs between this PC and the bucket
+node growth/scripts/sync.mjs push        # after you make or change a reel
+node growth/scripts/sync.mjs pull        # on another PC, before you work
+```
+
+It only moves finished media (reels, music versions, covers, QC and edit files, generated beds), verifies every download by checksum, and never moves mailbox screenshots (`growth/assets/PP-###/`), raw footage, secrets or the ledger.
+Stand-in music versions are never synced.
+Needs `wrangler login` on the PC (it uses the wrangler in `apps/snap`).
+The ledger is NOT synced: it lives in each checkout, so give every PC its own range of PP numbers or use `ledger.mjs snapshot` and the committed snapshots.
+
 ## 3. Pre-flight checklist before `make`
 
 - [ ] `reel.mjs check PP-###` prints OK.

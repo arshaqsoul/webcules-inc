@@ -2,11 +2,13 @@
 // Automated QC for a finished reel. Writes growth/out/<PP>/qc.json; `pass` is true only if every check passes.
 //
 //   node growth/scripts/qc/qc.mjs --pp PP-001 [--meta growth/storyboards/PP-001.meta.json]
+//   node growth/scripts/qc/qc.mjs --pp PP-001 --variant music [--allow-standin]    checks reel.music.mp4 and writes qc.music.json
 //
 // Thresholds are the ones in growth/DEMO-STANDARD.md. Do not loosen them to get a pass.
 
 import fs from "node:fs";
 import path from "node:path";
+import crypto from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { ROOT } from "../record/lib.mjs";
 
@@ -17,11 +19,16 @@ if (!pp || !/^PP-\d{3,}$/.test(pp)) {
   console.error("usage: qc.mjs --pp PP-### [--meta file]");
   process.exit(2);
 }
+const variant = flag("variant"); // undefined (the normal reel) or "music"
+if (variant && variant !== "music") {
+  console.error(`unknown --variant ${variant} (only "music")`);
+  process.exit(2);
+}
 const outDir = path.join(ROOT, "growth", "out", pp);
-const reel = path.join(outDir, "reel.mp4");
+const reel = path.join(outDir, variant === "music" ? "reel.music.mp4" : "reel.mp4");
 const edlPath = path.join(outDir, "edl.json");
 if (!fs.existsSync(reel) || !fs.existsSync(edlPath)) {
-  console.error("reel.mp4 and edl.json are required (run edit.mjs first)");
+  console.error(`${path.basename(reel)} and edl.json are required (${variant === "music" ? "run music.mjs first" : "run edit.mjs first"})`);
   process.exit(1);
 }
 const edl = JSON.parse(fs.readFileSync(edlPath, "utf8"));
@@ -67,6 +74,29 @@ if (aud) {
   };
   const quiet = (edl.highlights ?? []).filter((h) => rmsDb(h.out_ms) < T.sfxClickDb);
   check("sfx on every click", quiet.length === 0, quiet.length ? `silent at ${quiet.map((h) => `${(h.out_ms / 1000).toFixed(1)}s`).join(", ")}` : `${(edl.highlights ?? []).length} click(s) all audible`);
+}
+
+// ---- music version: continuous, real, fresh, and on the beat
+if (variant === "music") {
+  const musicPath = path.join(outDir, "music.json");
+  const music = fs.existsSync(musicPath) ? JSON.parse(fs.readFileSync(musicPath, "utf8")) : null;
+  check("music record", !!music, music ? `${music.engine}, ${music.bpm_final} BPM` : "music.json missing (run music.mjs)");
+  if (music) {
+    const sha = crypto.createHash("sha1").update(fs.readFileSync(edlPath)).digest("hex");
+    check("music matches this edit", music.edl_sha === sha, music.edl_sha === sha ? "built from the current edl.json" : "edl.json changed after the music was made: rerun music.mjs");
+    const real = music.engine !== "standin" || a.includes("--allow-standin");
+    check("music is generated", real, music.engine === "standin" ? (real ? "STAND-IN allowed by flag, not for posting" : "this is a synthesised stand-in, not generated music: generate with ComfyUI before packaging") : music.engine_note);
+    const al = music.alignment ?? { ratio: 0, deviations: [] };
+    check("moments on the beat", al.ratio >= 0.8, `${al.within}/${al.total} step changes, hook and end card within ${al.tol_ms ?? 70} ms of a beat (${Math.round(al.ratio * 100)} percent weighted, need 80)`);
+    const end = (al.deviations ?? []).find((d) => d.kind === "end");
+    check("end card hit on the beat", !!end && end.dev_ms <= 70, end ? `${end.dev_ms} ms off a beat` : "no end card moment recorded");
+    check("music not over-stretched", music.stretch_rate >= 0.92 && music.stretch_rate <= 1.08, `rate ${music.stretch_rate} (allowed 0.92 to 1.08)`);
+    check("music tempo is steady", music.beat_confidence >= 2, `beat confidence ${music.beat_confidence} (need 2 or more: below that the generated track has no clear beat to sync to)`);
+  }
+  // continuous: no gap in the sound until the final fade
+  const sil = spawnSync("ffmpeg", ["-hide_banner", "-nostats", "-i", reel, "-vn", "-af", "silencedetect=noise=-50dB:d=0.35", "-f", "null", "-"], { encoding: "utf8" }).stderr;
+  const gaps = [...sil.matchAll(/silence_start: ([\d.]+)/g)].map((m) => Number(m[1])).filter((s) => s < dur - 0.7);
+  check("music is continuous", gaps.length === 0, gaps.length ? `silent from ${gaps.map((g) => g.toFixed(1) + "s").join(", ")}` : "no gap in the sound before the final fade");
 }
 
 // ---- freeze and black frames (the end card is intentionally still, so it is excluded)
@@ -120,8 +150,8 @@ check("claims backed", unbacked.length === 0, unbacked.length ? `on screen but n
 const missingSrc = claims.filter((c) => !c.source || !fs.existsSync(path.join(ROOT, c.source)));
 check("claims cite real files", missingSrc.length === 0, missingSrc.length ? missingSrc.map((c) => `"${c.text}" -> ${c.source ?? "no source"}`).join("; ") : `${claims.length} claim(s) cite existing files`);
 
-const report = { pass: failures.length === 0, pain_point: pp, checked_at: new Date().toISOString(), reel: path.relative(ROOT, reel), duration_s: Math.round(dur * 10) / 10, size_mb: Math.round(sizeMB * 10) / 10, failures, checks };
-fs.writeFileSync(path.join(outDir, "qc.json"), JSON.stringify(report, null, 2));
+const report = { pass: failures.length === 0, variant: variant ?? "reel", pain_point: pp, checked_at: new Date().toISOString(), reel: path.relative(ROOT, reel), duration_s: Math.round(dur * 10) / 10, size_mb: Math.round(sizeMB * 10) / 10, failures, checks };
+fs.writeFileSync(path.join(outDir, variant === "music" ? "qc.music.json" : "qc.json"), JSON.stringify(report, null, 2));
 for (const c of checks) console.log(`${c.ok ? "PASS" : "FAIL"}  ${c.name} - ${c.detail}`);
 console.log(report.pass ? "\nQC PASSED" : `\nQC FAILED (${failures.length})`);
 process.exit(report.pass ? 0 : 1);

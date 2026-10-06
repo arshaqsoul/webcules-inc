@@ -28,6 +28,8 @@ node growth/scripts/reel.mjs make   PP-###     # record on staging, edit, QC
 node growth/scripts/reel.mjs status PP-###     # where the record is and what to do next
 ```
 
+Then optionally `node growth/scripts/reel.mjs music PP-###` for a trailer-score version (needs ACE-Step in ComfyUI), and `node growth/scripts/sync.mjs push` to share the media with your other PCs.
+
 The full procedure is `growth/RUNBOOK.md`.
 The pitfalls are `growth/LESSONS.md`.
 The worked example is `growth/examples/PP-003/WALKTHROUGH.md`.

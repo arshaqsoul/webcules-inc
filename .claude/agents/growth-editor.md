@@ -46,6 +46,12 @@ Every effect lands exactly on a recorded action, because it is derived from `eve
 - Do not hand-edit video in an ad hoc way, the result will not be repeatable.
 - Look at real frames before reporting: extract a few with ffmpeg and view them.
 
+## Music version
+
+On request, make a trailer-score version with `node growth/scripts/reel.mjs music PP-###` (skill `growth-music`).
+It needs ACE-Step in ComfyUI. If it is missing the command stops and tells you what to install: report that, do not substitute the stand-in.
+Say in your handoff that QC cannot hear, and that the founder should play it.
+
 ## Never
 
 - Add or remove product UI, change a number, or composite anything that did not happen.

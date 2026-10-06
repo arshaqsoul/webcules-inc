@@ -93,6 +93,27 @@ Each has a fix already in the tooling, but knowing why saves you from reinventin
     QC passing is necessary, not sufficient.
     Most real defects (wrong highlight, clipped text, a payoff too small to read) were found by viewing frames.
 
+## Music and sync (learned adding the trailer score)
+
+23. **A generator never hits the tempo you ask for, and its first beat is anywhere.**
+    Sync to the MEASURED beats (`beats.mjs`), not the requested ones, then stretch and trim.
+24. **Beat analysis has a built-in lag.**
+    A spectral-flux frame is stamped about 35 ms before the transient it detects, so beat positions read early until you compensate.
+    `beats.mjs` does, and the test uses synthetic rhythms with known tempo and phase.
+25. **Pick the tempo before you generate.**
+    `planGrid` finds the BPM whose grid already fits the reel's cut points, so the later stretch is small (a few percent) and the music still sounds natural.
+26. **Never silently swap in a stand-in.**
+    The real engine refuses with exit code 3 and the install steps, and QC fails a stand-in for posting.
+27. **A music version goes stale when the reel is re-edited.**
+    `music.json` stores a hash of the edit list, and QC fails a mismatch.
+28. **ComfyUI cannot install its own models.**
+    Without the Manager add-on there is no download endpoint: the model files go into the server's `models` folders by hand, then refresh ComfyUI.
+29. **Wrangler cannot list objects.**
+    The sync keeps a checksum manifest in the bucket instead, and writes it last so a failed upload is never advertised.
+30. **Ledger IDs collide across PCs.**
+    The ledger is per checkout, so two PCs can both create `PP-005`.
+    Check `growth/storyboards/` and the committed snapshots before you create a record, and pull first.
+
 ## Product facts worth remembering
 
 - The staging demo org is "Amara & Oak Photography" and is on Studio, so Studio-only controls appear on the page even when a reel claims the Free plan.

@@ -5,6 +5,7 @@
 //   node growth/scripts/reel.mjs check  PP-###              lint the storyboard, meta and take BEFORE anything touches staging
 //   node growth/scripts/reel.mjs make   PP-### [--fast] [--skip-record]   record, edit, QC, stop at the first failure
 //   node growth/scripts/reel.mjs status PP-###              where the record is and exactly what to do next
+//   node growth/scripts/reel.mjs music  PP-### [flags]      make reel.music.mp4 (trailer score synced to the beats) and QC it; flags go to music.mjs
 //
 // `check` is cheap and offline. Run it every time you change a file. `make` is the only command that touches staging.
 // Worked example: growth/examples/PP-003/WALKTHROUGH.md. Pitfalls: growth/LESSONS.md. Full procedure: growth/RUNBOOK.md.
@@ -28,10 +29,10 @@ const files = (id) => ({
 const rel = (f) => path.relative(ROOT, f);
 
 function usage() {
-  console.error("usage: reel.mjs <new|check|make|status> PP-### [--fast] [--skip-record]");
+  console.error("usage: reel.mjs <new|check|make|status|music> PP-### [--fast] [--skip-record] [music flags]");
   process.exit(2);
 }
-if (!["new", "check", "make", "status"].includes(cmd) || !/^PP-\d{3,}$/.test(pp ?? "")) usage();
+if (!["new", "check", "make", "status", "music"].includes(cmd) || !/^PP-\d{3,}$/.test(pp ?? "")) usage();
 const F = files(pp);
 
 // ------------------------------------------------------------------ new
@@ -198,7 +199,15 @@ function status() {
   console.log(`  files: storyboard ${f.storyboard ? "yes" : "no"}, meta ${f.meta ? "yes" : "no"}, take ${f.take ? "yes" : "no"}`);
 }
 
+function music() {
+  const passthrough = rest.filter((x) => x !== "--allow-standin");
+  step("music version", [path.join(HERE, "music", "music.mjs"), "--pp", pp, ...passthrough]);
+  step("qc (music)", [path.join(HERE, "qc", "qc.mjs"), "--pp", pp, "--variant", "music", ...(rest.includes("--allow-standin") || rest.includes("standin") ? ["--allow-standin"] : [])]);
+  console.log(`\nDONE. growth/out/${pp}/reel.music.mp4 passed QC. Push it to the other PCs: node growth/scripts/sync.mjs push`);
+}
+
 if (cmd === "new") await scaffold();
 else if (cmd === "check") process.exit((await check()) ? 0 : 1);
 else if (cmd === "make") await make();
+else if (cmd === "music") music();
 else status();

@@ -168,7 +168,9 @@ NOTES: <at most 5 lines: decisions, risks, anything the next role must know>
 | `growth/RUNBOOK.md` | **start here to make a reel**: the step-by-step path with exact commands |
 | `growth/LESSONS.md` | every pitfall already hit, and why |
 | `growth/examples/PP-003/WALKTHROUGH.md` | the worked example, annotated |
-| `growth/scripts/reel.mjs` | `new`, `check`, `make`, `status` for any reel |
+| `growth/scripts/reel.mjs` | `new`, `check`, `make`, `status`, `music` for any reel |
+| `growth/scripts/music/` | the trailer-score pipeline: ComfyUI client, beat analysis, sync planner, mixer |
+| `growth/scripts/sync.mjs` | push and pull finished media through the private R2 bucket |
 | `growth/briefs/` | briefs for launch records (committed) |
 | `growth/assets/` | prepared scene images, may show a real inbox, never committed |
 | `growth/ARCHITECTURE.md` | how the system fits together |

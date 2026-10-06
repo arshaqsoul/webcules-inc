@@ -178,6 +178,45 @@ The video stream is copied, never re-encoded, when the sound is added, so `sfx.m
 A very slow push-in ("breathing", 3 percent over 5 seconds) runs under the whole reel, so held moments never read as frozen.
 Also export a cover frame (PNG, 1080x1920) chosen at the most legible moment.
 
+## Music version
+
+A reel can have a second version, `reel.music.mp4`, with a continuous trailer-style soundtrack whose beats land on the reel's moments.
+It is a new file next to the sound-effects reel, which is never modified.
+Make it with `node growth/scripts/reel.mjs music PP-###` (or `music.mjs` then `qc.mjs --variant music`).
+
+How it syncs, in order:
+
+1. **Plan the tempo.** `sync.mjs` looks at the reel's key moments (the hook, every step change, the end card, lightly the clicks) and picks the BPM, 88 to 132, whose beat grid fits them best.
+2. **Generate the bed** with ACE-Step 1.5 on ComfyUI at that BPM, in a minor key for `trailer` style, 10 percent longer than the reel plus one bar.
+3. **Measure the real beats.** No generator hits the requested tempo or starts on beat one, so `beats.mjs` finds the true BPM and first-beat phase of what came back.
+4. **Align.** The bed is time-stretched by at most 8 percent (pitch preserved) and trimmed by at most one bar so the measured beats land on the moments, with a 70 ms tolerance and eighth notes counting for a little less than beats.
+5. **Shape it like a trailer.** A filter that opens up as the first step arrives, an impact on every step change, a riser into a big impact on the end card, ducking under the existing sound effects so clicks stay crisp, and a fade out after the end card.
+6. **Mix and mux** into 48 kHz stereo AAC, peak about -3.5 dBFS, onto a copy of the original video.
+
+Engines:
+
+| Engine | What it is | Allowed for posting |
+|---|---|---|
+| `comfy` (default) | ACE-Step 1.5 through ComfyUI (`GROWTH_COMFY_URL`) | yes |
+| `standin` | a deterministic synthesised bed, for testing the pipeline or an offline run | no, QC fails it unless `--allow-standin` |
+
+If ComfyUI is unreachable or the model is not installed, `music.mjs` stops with exit code 3 and says exactly what to install.
+It never silently substitutes the stand-in.
+`music.json` records the engine, BPM planned and measured, the stretch, the trim, every moment's deviation from the nearest beat, and a hash of the edit list it was built from.
+
+Music QC (`qc.mjs --variant music`, writes `qc.music.json`) adds to the normal checks:
+
+| Check | Fails if |
+|---|---|
+| music record | `music.json` is missing |
+| music matches this edit | `edl.json` changed after the music was made (rerun `music.mjs`) |
+| music is generated | the engine is `standin` (unless `--allow-standin`) |
+| moments on the beat | under 80 percent (weighted) of the hook, step changes and end card land within 70 ms of a beat |
+| end card hit on the beat | the end card is more than 70 ms off a beat |
+| music not over-stretched | the stretch is outside 0.92 to 1.08 |
+| music tempo is steady | beat confidence is under 2: the track has no clear beat to sync to |
+| music is continuous | the sound goes silent for 0.35 s or more before the final fade |
+
 ## Automated QC
 
 `qc.json` is written next to the reel and the ledger reads it.
