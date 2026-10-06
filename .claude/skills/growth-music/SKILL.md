@@ -25,7 +25,13 @@ Styles (`--style`), each with its own prompt, key and tempo range:
 | `orchestral` | live symphony orchestra: timpani, driving cellos and basses, brass, no electronic drums | 90-118 |
 | `thriller` | dark tense action-thriller: low string ostinato, ticking percussion, sub drone | 96-124 |
 | `action` | fast heroic action-movie score: relentless strings, taiko, aggressive brass | 118-140 |
+| `sunny` | fun, feel-good dance-pop: four-on-the-floor, handclaps, bouncy synth bass, catchy lead; bright accents, not dark booms | 108-126 |
+| `synthpop` | euphoric driving synth-pop dance anthem; bright accents | 112-124 |
 | `upbeat`, `calm` | product-launch and ambient styles | 96-128, 70-100 |
+
+The prompts describe a sound with instruments and energy.
+Never put an artist or song name in a prompt: it asks the model to imitate, and the founder would be posting something that may sound like someone else's work.
+`sunny` and `synthpop` use bright accents (chord stabs with handclaps, a short riser, a cymbal-swell finish) instead of the dark impacts the other styles use.
 
 To compare several versions of one reel, give each a label: `--label orchestral` writes `reel.music.orchestral.mp4`, `music.orchestral.json` and `qc.music.orchestral.json` and leaves the other versions alone.
 Check one with `qc.mjs --pp PP-### --variant music --label orchestral`.

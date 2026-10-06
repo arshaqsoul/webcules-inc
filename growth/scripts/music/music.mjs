@@ -3,7 +3,8 @@
 //
 //   node growth/scripts/music/music.mjs --pp PP-004 [--engine comfy|standin] [--style trailer|upbeat|calm]
 //                                       [--tags "..."] [--seed N] [--tries N] [--bpm N] [--no-hits] [--no-sweep] [--label name]
-//   styles: orchestral, thriller, action, trailer (default), upbeat, calm. --label keeps several versions side by side.
+//   styles: sunny, synthpop (bright dance-pop, bright accents), orchestral, thriller, action, trailer (default), upbeat, calm.
+//   --label keeps several versions side by side.
 //
 // Reads  : growth/out/<PP>/{reel.mp4, edl.json}      (reel.mp4 is never modified)
 // Writes : growth/out/<PP>/reel.music[.label].mp4 and growth/out/<PP>/music[.label].json
@@ -26,6 +27,18 @@ import { standinBed } from "./standin.mjs";
 import { preflight, generate } from "./comfy.mjs";
 
 const STYLES = {
+  sunny: {
+    key: "A major",
+    bpm: [108, 126],
+    accent: "pop",
+    tags: "Fun, sunny, feel-good dance-pop, instrumental only, no vocals. A bright four-on-the-floor beat with a punchy kick and handclaps on 2 and 4, bouncy pulsing analog synth bass, sparkling bright arpeggios, a catchy singable synth lead hook, warm lush pads, joyful summer energy that makes you want to dance, bright major key, clean polished modern pop production, light and playful, ends with one bright final hit",
+  },
+  synthpop: {
+    key: "F# minor",
+    bpm: [112, 124],
+    accent: "pop",
+    tags: "Euphoric synth-pop dance anthem, instrumental only, no vocals. Driving four-on-the-floor kick, pulsing analog synth bass, shimmering arpeggiated synths, big soaring synth lead melody, handclaps and open hi-hats, warm lush pads, uplifting and emotional but full of energy, dancing-alone-on-the-dance-floor feeling, clean polished modern pop production, ends with one bright final hit",
+  },
   orchestral: {
     key: "D minor",
     bpm: [90, 118],
@@ -156,7 +169,7 @@ const best = attempts[0];
 
 // ---- 3. mix, mux, record
 const bed = readBed(best.file, { trim_s: best.al.trim_s, rate: best.al.rate, seconds: reelS + 0.5 });
-const mixed = mixMusic({ bed, edl, hits: !has("no-hits"), sweep: !has("no-sweep") });
+const mixed = mixMusic({ bed, edl, hits: !has("no-hits"), sweep: !has("no-sweep"), accent: STYLES[style].accent ?? "trailer" });
 const outFile = path.join(outDir, `reel.music${sfxLabel}.mp4`);
 muxMix({ reel, L: mixed.L, R: mixed.R, out: outFile });
 
@@ -167,6 +180,7 @@ const info = {
   engine,
   engine_note: engine === "standin" ? "a synthesised stand-in bed, NOT generated music" : `ACE-Step 1.5 via ComfyUI (${variant})`,
   style,
+  accent: STYLES[style].accent ?? "trailer",
   tags,
   seed: best.seed,
   bpm_planned: plan.bpm,

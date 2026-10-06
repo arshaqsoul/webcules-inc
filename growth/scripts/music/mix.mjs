@@ -10,7 +10,7 @@
 import fs from "node:fs";
 import { spawnSync } from "node:child_process";
 import { SR, synthesize, cuesFromEdl } from "../edit/sfx.mjs";
-import { impact, riser } from "./hits.mjs";
+import { impact, riser, popHit, popRiser, popFinale } from "./hits.mjs";
 
 const TAU = Math.PI * 2;
 export const FINAL_PEAK = 0.589; // about -4.6 dBFS: AAC encoding overshoots by up to ~2 dB on dense music, and QC allows a peak of -3 dB at most
@@ -80,7 +80,7 @@ export function wavStereo(L, R) {
  * @param edl    the reel's edit list (captions, endcard_start_ms, duration_ms, highlights, ramps)
  * @param opts   { hits, sweep }
  */
-export function mixMusic({ bed, edl, hits = true, sweep = true }) {
+export function mixMusic({ bed, edl, hits = true, sweep = true, accent = "trailer" }) {
   const durationMs = edl.duration_ms;
   const n = Math.round((durationMs / 1000) * SR);
   const L = new Float32Array(n);
@@ -132,7 +132,16 @@ export function mixMusic({ bed, edl, hits = true, sweep = true }) {
   };
 
   // ---- trailer accents
-  if (hits) {
+  if (hits && accent === "pop") {
+    // bright, friendly accents for sunny styles: chord stabs with handclaps, a short riser, a cymbal-swell finish
+    const rootFor = (k) => [220, 246.94, 277.18, 220, 329.63][k % 5]; // A, B, C#, A, E: stays inside A major
+    addMono(popHit({ ms: 420, seed: 3, root: 220, clap: 0.7 }), 0, 0.4);
+    (edl.captions ?? []).forEach((c, k) => addMono(popHit({ ms: 460, seed: 30 + k, root: rootFor(k) }), c.start_ms, 0.5));
+    const lastStep = Math.max(0, ...(edl.captions ?? []).filter((c) => c.start_ms < endMs).map((c) => c.start_ms));
+    const riseMs = Math.min(1100, Math.max(400, endMs - lastStep - 300));
+    addMono(popRiser({ ms: riseMs, seed: 7 }), endMs - riseMs, 0.5);
+    addMono(popFinale({ ms: 1700, seed: 61 }), endMs, 0.85);
+  } else if (hits) {
     addMono(impact({ ms: 900, seed: 3 }), 0, 0.42); // the cold open
     (edl.captions ?? []).forEach((c, k) => addMono(impact({ ms: 800, seed: 20 + k, crack: 0.8 }), c.start_ms, 0.5));
     const lastStep = Math.max(0, ...(edl.captions ?? []).filter((c) => c.start_ms < endMs).map((c) => c.start_ms));

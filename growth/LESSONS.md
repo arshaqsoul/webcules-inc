@@ -119,6 +119,11 @@ Each has a fix already in the tooling, but knowing why saves you from reinventin
 32. **The aligner can quietly speed a track up.**
     It minimises misses within a 0.92-1.08 stretch, so for some reels it picks a tempo several percent off the plan. Read `bpm_final` in `music.json`, not only the QC verdict.
 
+33. **Score a candidate alignment by tempo drift as well as by beats hit.**
+    With only the beat cost, one rescued cut made the aligner speed a track up 6 percent. A pull toward the planned tempo gave the SAME track a natural tempo and a better fit.
+34. **Accents must match the mood.**
+    Deep booms and risers read as serious. Fun styles get bright chord stabs and handclaps.
+
 ## Product facts worth remembering
 
 - The staging demo org is "Amara & Oak Photography" and is on Studio, so Studio-only controls appear on the page even when a reel claims the Free plan.

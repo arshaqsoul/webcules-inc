@@ -129,3 +129,14 @@ test("labelled versions sit side by side and are checked separately", () => {
   assert.match(r.stdout, /PASS\s+music record - standin/);
   assert.ok(fs.existsSync(path.join(OUT, "qc.music.orch.json")));
 });
+
+test("bright styles plan a dance tempo and use bright accents, not the dark trailer booms", () => {
+  makeReel();
+  assert.equal(music("--engine", "standin", "--style", "sunny", "--label", "sun").status, 0);
+  const m = JSON.parse(fs.readFileSync(path.join(OUT, "music.sun.json"), "utf8"));
+  assert.equal(m.accent, "pop");
+  assert.ok(m.bpm_planned >= 108 && m.bpm_planned <= 126, `planned ${m.bpm_planned}`);
+  assert.match(m.tags, /four-on-the-floor/);
+  assert.doesNotMatch(m.tags, /robyn|dancing on my own/i, "the prompt describes a sound, it never names an artist or song");
+  assert.ok(m.alignment.ratio >= 0.8);
+});

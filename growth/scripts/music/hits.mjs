@@ -63,3 +63,79 @@ export function riser({ ms = 1400, seed = 11 } = {}) {
   for (let i = 0; i < out.length; i++) out[i] /= peak || 1;
   return out;
 }
+
+// ------------------------------------------------------------------ bright accents for fun, sunny styles
+
+/** A major chord stab (root in Hz) with a handclap: a short, bright "pop" for a step change. Peak about 1. */
+export function popHit({ ms = 460, seed = 31, root = 220, clap = 1 } = {}) {
+  const out = buf(ms);
+  const r = rng(seed);
+  const ratios = [1, 1.2599, 1.4983, 2]; // a major triad plus the octave: root, major third, fifth, octave (equal temperament)
+  let lp = 0;
+  for (let i = 0; i < out.length; i++) {
+    const t = i / SR;
+    let s = 0;
+    for (const k of ratios) {
+      const f = root * k;
+      s += 2 * ((t * f) % 1) - 1; // saw
+      s += 2 * ((t * f * 1.004) % 1) - 1; // detuned twin for width
+    }
+    const env = Math.exp(-t / 0.13) * Math.min(1, t / 0.002);
+    const w = r() * 2 - 1;
+    lp += 0.4 * (w - lp);
+    const c = clap * 0.55 * (w - lp) * Math.exp(-t / 0.05) * (t < 0.012 ? 0.6 : 1);
+    out[i] = (s / 8) * env + c;
+  }
+  let peak = 0;
+  for (const v of out) peak = Math.max(peak, Math.abs(v));
+  for (let i = 0; i < out.length; i++) out[i] /= peak || 1;
+  return out;
+}
+
+/** A short, bright riser: a rising tone plus an airy noise sweep, with a tiny gap before the hit. */
+export function popRiser({ ms = 1000, seed = 41 } = {}) {
+  const out = buf(ms);
+  const r = rng(seed);
+  let lp = 0;
+  let hp = 0;
+  for (let i = 0; i < out.length; i++) {
+    const p = i / out.length;
+    const w = r() * 2 - 1;
+    lp += 0.7 * (w - lp);
+    hp += 0.25 * (lp - hp);
+    const air = lp - hp;
+    const tone = Math.sin(TAU * (330 + 1320 * p * p) * (i / SR)) + 0.4 * Math.sin(TAU * (660 + 2640 * p * p) * (i / SR));
+    const amp = Math.pow(p, 1.6);
+    const gap = i > out.length - 0.03 * SR ? (out.length - i) / (0.03 * SR) : 1;
+    out[i] = (0.6 * air + 0.35 * tone) * amp * gap;
+  }
+  let peak = 0;
+  for (const v of out) peak = Math.max(peak, Math.abs(v));
+  for (let i = 0; i < out.length; i++) out[i] /= peak || 1;
+  return out;
+}
+
+/** The big finish for a bright style: a wide chord stack, a cymbal-like swell and a soft kick. Not a dark boom. */
+export function popFinale({ ms = 1700, seed = 51, root = 220 } = {}) {
+  const out = buf(ms);
+  const r = rng(seed);
+  let lp = 0;
+  for (let i = 0; i < out.length; i++) {
+    const t = i / SR;
+    let s = 0;
+    for (const k of [0.5, 1, 1.2599, 1.4983, 2, 2.5198]) {
+      s += 2 * (((t * root * k) % 1)) - 1;
+      s += 2 * (((t * root * k * 1.005) % 1)) - 1;
+    }
+    const chord = (s / 12) * Math.exp(-t / 0.55) * Math.min(1, t / 0.002);
+    const w = r() * 2 - 1;
+    lp += 0.9 * (w - lp);
+    const crash = 0.55 * (w - lp) * Math.exp(-t / 0.5); // bright, long noise decay
+    const kick = 0.7 * Math.sin(TAU * (50 + 90 * Math.exp(-t / 0.025)) * t) * Math.exp(-t / 0.12);
+    out[i] = chord + crash + kick;
+  }
+  let peak = 0;
+  for (const v of out) peak = Math.max(peak, Math.abs(v));
+  for (let i = 0; i < out.length; i++) out[i] /= peak || 1;
+  return out;
+}

@@ -54,7 +54,9 @@ export function alignToBeats(events, { bpm0, phase0, target_bpm }, { rateMin = 0
     // trim: drop 0 .. 4 beats off the front (a bar), in 4 ms steps; trimming a whole bar keeps the arrangement intact
     for (let trim = 0; trim < 4 * p0; trim += 0.004) {
       const phase = (phase0 - trim) / r;
-      const c = costOf(events, p, phase) + 300 * Math.abs(r - 1) * 0.001 + 0.00005 * trim;
+      // a pull toward the PLANNED tempo: without it a 6 percent speed-up that rescues one cut beats a natural tempo, and the track feels rushed
+      const drift = target_bpm ? 2.5 * Math.abs((bpm0 * r) / target_bpm - 1) : 0;
+      const c = costOf(events, p, phase) + 300 * Math.abs(r - 1) * 0.001 + drift + 0.00005 * trim;
       if (!best || c < best.cost) best = { rate: r, trim_s: trim, cost: c, phase_s: phase, period_s: p };
     }
   }
