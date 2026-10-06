@@ -1,10 +1,11 @@
 {
   "pass": true,
+  "variant": "reel",
   "pain_point": "PP-006",
-  "checked_at": "2026-10-04T23:16:17.583Z",
+  "checked_at": "2026-10-06T01:51:25.824Z",
   "reel": "growth\\out\\PP-006\\reel.mp4",
-  "duration_s": 41,
-  "size_mb": 10.6,
+  "duration_s": 41.7,
+  "size_mb": 11.5,
   "failures": [],
   "checks": [
     {
@@ -25,12 +26,12 @@
     {
       "name": "duration",
       "ok": true,
-      "detail": "41.0s (allowed 8-45s)"
+      "detail": "41.7s (allowed 8-45s)"
     },
     {
       "name": "size",
       "ok": true,
-      "detail": "10.6 MB (max 50)"
+      "detail": "11.5 MB (max 50)"
     },
     {
       "name": "sfx track",
@@ -40,7 +41,7 @@
     {
       "name": "sfx length matches video",
       "ok": true,
-      "detail": "audio 41.00s, video 41.00s"
+      "detail": "audio 41.67s, video 41.67s"
     },
     {
       "name": "sfx level",
@@ -55,7 +56,7 @@
     {
       "name": "no frozen frames",
       "ok": true,
-      "detail": "none (1 still-looking stretch excused because the cursor is visibly moving: 14.9s)"
+      "detail": "none (1 still-looking stretch excused because the cursor is visibly moving: 15.5s)"
     },
     {
       "name": "no black frames",

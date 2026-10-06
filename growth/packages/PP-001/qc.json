@@ -1,10 +1,11 @@
 {
   "pass": true,
+  "variant": "reel",
   "pain_point": "PP-001",
-  "checked_at": "2026-10-04T21:43:25.584Z",
+  "checked_at": "2026-10-06T02:28:27.802Z",
   "reel": "growth\\out\\PP-001\\reel.mp4",
-  "duration_s": 30.3,
-  "size_mb": 6.1,
+  "duration_s": 32.8,
+  "size_mb": 8.2,
   "failures": [],
   "checks": [
     {
@@ -25,12 +26,12 @@
     {
       "name": "duration",
       "ok": true,
-      "detail": "30.3s (allowed 8-45s)"
+      "detail": "32.8s (allowed 8-45s)"
     },
     {
       "name": "size",
       "ok": true,
-      "detail": "6.1 MB (max 50)"
+      "detail": "8.2 MB (max 50)"
     },
     {
       "name": "sfx track",
@@ -40,7 +41,7 @@
     {
       "name": "sfx length matches video",
       "ok": true,
-      "detail": "audio 30.27s, video 30.27s"
+      "detail": "audio 32.77s, video 32.77s"
     },
     {
       "name": "sfx level",
@@ -50,7 +51,7 @@
     {
       "name": "sfx on every click",
       "ok": true,
-      "detail": "6 click(s) all audible"
+      "detail": "7 click(s) all audible"
     },
     {
       "name": "no frozen frames",
@@ -80,12 +81,12 @@
     {
       "name": "every click is inside the frame",
       "ok": true,
-      "detail": "6 click target(s) fully on screen"
+      "detail": "7 click target(s) fully on screen"
     },
     {
       "name": "every click has an effect",
       "ok": true,
-      "detail": "6/6 clicks highlighted"
+      "detail": "7/7 clicks highlighted"
     },
     {
       "name": "claims backed",

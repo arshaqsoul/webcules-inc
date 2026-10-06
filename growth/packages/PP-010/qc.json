@@ -1,10 +1,11 @@
 {
   "pass": true,
+  "variant": "reel",
   "pain_point": "PP-010",
-  "checked_at": "2026-10-05T01:05:41.479Z",
+  "checked_at": "2026-10-06T02:04:43.924Z",
   "reel": "growth\\out\\PP-010\\reel.mp4",
-  "duration_s": 22.8,
-  "size_mb": 2.1,
+  "duration_s": 22.3,
+  "size_mb": 2,
   "failures": [],
   "checks": [
     {
@@ -25,12 +26,12 @@
     {
       "name": "duration",
       "ok": true,
-      "detail": "22.8s (allowed 8-45s)"
+      "detail": "22.3s (allowed 8-45s)"
     },
     {
       "name": "size",
       "ok": true,
-      "detail": "2.1 MB (max 50)"
+      "detail": "2.0 MB (max 50)"
     },
     {
       "name": "sfx track",
@@ -40,7 +41,7 @@
     {
       "name": "sfx length matches video",
       "ok": true,
-      "detail": "audio 22.80s, video 22.80s"
+      "detail": "audio 22.27s, video 22.27s"
     },
     {
       "name": "sfx level",

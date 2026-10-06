@@ -105,9 +105,6 @@ export async function run({ p, page, env }) {
   await convertBtn.waitFor({ state: "visible", timeout: 15000 });
   await p.move(convertBtn);
   await p.hover(convertBtn, 300);
-  const convertPost = page
-    .waitForResponse((r) => r.url().includes(`/api/leads/${leadId}`) && r.request().method() === "POST", { timeout: 20000 })
-    .catch(() => null);
   await p.click(convertBtn, { selector: "button Convert to project" });
   const dialogTitle = page.getByRole("heading", { name: "Convert to project" });
   await dialogTitle.waitFor({ state: "visible", timeout: 15000 });
@@ -116,9 +113,6 @@ export async function run({ p, page, env }) {
   await p.hover(titleInput, 500);
   const createBtn = page.getByRole("button", { name: "Create project" });
   await p.click(createBtn, { selector: "button Create project" });
-  const body = await (await convertPost)?.json().catch(() => null);
-  projectId = body?.projectId ?? body?.project?.id ?? null;
-  if (!projectId) throw new Error("TAKE STOP: the convert response carried no project id, teardown cannot verify the board");
 
   // s4 - the lead record shows it converted
   p.step("s4", "It becomes a project");
@@ -128,8 +122,13 @@ export async function run({ p, page, env }) {
   await p.focus(panel, { label: "payoff", tight: true });
   await p.hold(1700, { label: "payoff" });
 
-  // s5 - the project sits on the board
+  // s5 - the project sits on the board (its id comes from the panel's own link)
   p.step("s5", "Straight onto the board");
+  const trackLink = page.getByRole("link", { name: "Track it under Projects" });
+  await trackLink.waitFor({ state: "visible", timeout: 15000 });
+  const href = await trackLink.getAttribute("href");
+  projectId = href ? href.split("/projects/")[1].split(/[/?#]/)[0] : null;
+  if (!projectId) throw new Error("TAKE STOP: the converted panel carried no project link");
   await p.navigate(env.url + "/dashboard/projects");
   const cardLink = page.locator(`a[href*='${projectId}']`).first();
   await cardLink.waitFor({ state: "visible", timeout: 20000 });

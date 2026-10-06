@@ -13,7 +13,7 @@ const CLIENT = "client@example.com";
 export const mask = { allowEmails: [CLIENT] }; // every other address on screen is blurred
 export const sendsEmail = true; // minting the grant emails the client: record.mjs refuses unless CLIENT is in GROWTH_SAFE_EMAILS
 
-const PROJECT_TITLE = "Autumn Winds Shoot";
+const PROJECT_TITLE = "Willow Creek Estate Wedding";
 const PICKS = 3;
 const LIMIT = 5;
 // The gallery write APIs need the snap-g session cookie, which only an OTP

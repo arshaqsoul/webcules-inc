@@ -17,6 +17,7 @@ import os from "node:os";
 import path from "node:path";
 import crypto from "node:crypto";
 import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { ROOT, readEnvFile } from "./record/lib.mjs";
 
 const PREFIX = "v1/";
@@ -74,7 +75,7 @@ const CT = { ".mp4": "video/mp4", ".png": "image/png", ".json": "application/jso
 // ------------------------------------------------------------------ stores: R2 through wrangler, or a plain folder
 export function r2Store(bucket) {
   const cwd = path.join(ROOT, "apps", "snap"); // the repo's wrangler lives here
-  const run = (args) => spawnSync("npx", ["wrangler", ...args], { cwd, encoding: "utf8", maxBuffer: 1 << 26 });
+  const run = (args) => spawnSync("npx", ["wrangler", ...args], { cwd, encoding: "utf8", maxBuffer: 1 << 26, shell: process.platform === "win32" });
   return {
     name: `r2:${bucket}`,
     get(key) {
@@ -188,7 +189,7 @@ export function pull({ store, root = ROOT, dry = false, force = false, log = con
 }
 
 // ------------------------------------------------------------------ cli
-if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname)) {
+if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url))) {
   const [cmd, ...rest] = process.argv.slice(2);
   readEnvFile();
   if (!["status", "push", "pull"].includes(cmd)) {

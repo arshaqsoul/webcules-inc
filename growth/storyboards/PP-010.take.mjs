@@ -69,10 +69,10 @@ export async function run({ p, page, env }) {
   // so the wait never reads as a frozen frame.
   let code = null;
   const otpStart = Date.now() - 4000;
-  for (let i = 0; i < 30 && !code; i++) {
-    await page.waitForTimeout(900);
+  for (let i = 0; i < 40 && !code; i++) {
+    await page.waitForTimeout(500);
     code = capturedOtpCode(otpStart);
-    if (!code) await p.hover(codeInput, 120);
+    if (!code) await p.hover(codeInput, 150);
   }
   if (!code) throw new Error("TAKE STOP: no portal code appeared in the local email capture within 30s");
   await p.type(codeInput, code);
