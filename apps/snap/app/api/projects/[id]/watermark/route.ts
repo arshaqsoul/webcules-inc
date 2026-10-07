@@ -5,7 +5,9 @@ import { z } from "zod";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
+import { getPlanEntitlements } from "@/lib/plans";
 import { getOrgContext } from "@/lib/session";
+import { watermarkOverrideAllowed } from "@/lib/watermark";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +22,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   const parsed = bodySchema.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) return Response.json({ error: "invalid_body" }, { status: 400 });
+
+  const ent = await getPlanEntitlements(ctx.organizationId);
+  if (!watermarkOverrideAllowed(ent, parsed.data.override)) {
+    return Response.json({ error: "watermark_requires_studio", plan: ent?.id ?? "free" }, { status: 403 });
+  }
 
   const updated = await getDb()
     .update(schema.projects)

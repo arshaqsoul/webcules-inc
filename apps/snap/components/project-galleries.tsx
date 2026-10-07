@@ -402,17 +402,27 @@ export function ProjectGalleries({
           <span className="font-medium text-ink">Watermark on this project's galleries</span>
           <span className="ml-1 text-ink-tertiary">(previews only — originals and standard downloads stay clean)</span>
         </p>
-        <select
-          value={wmOverride}
-          onChange={(e) => void setOverride(e.target.value as "inherit" | "on" | "off")}
-          disabled={wmBusy}
-          aria-label="Watermark override"
-          className="snap-select rounded-md border border-hairline bg-canvas px-2 py-1.5 text-xs text-ink-muted outline-none"
-        >
-          <option value="inherit">Use studio setting</option>
-          <option value="on">Always watermark</option>
-          <option value="off">Never watermark</option>
-        </select>
+        <div className="flex items-center gap-2">
+          {canStudio === false && (
+            <span className="text-xs text-ink-tertiary">
+              Watermarks are a Studio feature.{" "}
+              <a href="/dashboard/settings/billing" className="font-medium text-primary hover:underline">
+                Upgrade
+              </a>
+            </span>
+          )}
+          <select
+            value={canStudio === false ? "inherit" : wmOverride}
+            onChange={(e) => void setOverride(e.target.value as "inherit" | "on" | "off")}
+            disabled={wmBusy || canStudio === false}
+            aria-label="Watermark override"
+            className="snap-select rounded-md border border-hairline bg-canvas px-2 py-1.5 text-xs text-ink-muted outline-none"
+          >
+            <option value="inherit">Use studio setting</option>
+            <option value="on">Always watermark</option>
+            <option value="off">Never watermark</option>
+          </select>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-end gap-3 rounded-[12px] border border-hairline bg-surface-1 p-4">

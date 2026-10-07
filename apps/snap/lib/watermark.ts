@@ -81,3 +81,11 @@ export function effectiveWatermark(opts: {
   }
   return cfg; // inherit (null = studio watermark off)
 }
+
+/** Whether a plan may set a per-project override. Watermarks are Studio+
+ * (whiteLabel): effectiveWatermark ignores them elsewhere, so accepting "on"
+ * or "off" would save a setting that silently does nothing. "inherit" stays
+ * allowed everywhere so a downgraded studio can always clear an old value. */
+export function watermarkOverrideAllowed(ent: WatermarkEnt, override: "inherit" | "on" | "off"): boolean {
+  return override === "inherit" || Boolean(ent?.whiteLabel);
+}

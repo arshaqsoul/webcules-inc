@@ -3,7 +3,7 @@
  * on-without-config fallback). */
 import { describe, expect, it } from "vitest";
 
-import { effectiveWatermark, parseWatermarkConfig, sanitizeWatermarkInput } from "@/lib/watermark";
+import { effectiveWatermark, parseWatermarkConfig, sanitizeWatermarkInput, watermarkOverrideAllowed } from "@/lib/watermark";
 
 const ENT_ON = { whiteLabel: true };
 const ENT_OFF = { whiteLabel: false };
@@ -76,5 +76,22 @@ describe("effectiveWatermark (WEB-242)", () => {
 
   it("override on with a config uses the config", () => {
     expect(effectiveWatermark({ ent: ENT_ON, brand: branded, override: "on" })?.mode).toBe("corner");
+  });
+});
+
+describe("watermarkOverrideAllowed (Lite/Free must not save a setting that does nothing)", () => {
+  it("Studio+ may set every override", () => {
+    for (const o of ["inherit", "on", "off"] as const) expect(watermarkOverrideAllowed(ENT_ON, o)).toBe(true);
+  });
+
+  it("plans without white-label may only clear back to inherit", () => {
+    expect(watermarkOverrideAllowed(ENT_OFF, "inherit")).toBe(true);
+    expect(watermarkOverrideAllowed(ENT_OFF, "on")).toBe(false);
+    expect(watermarkOverrideAllowed(ENT_OFF, "off")).toBe(false);
+  });
+
+  it("missing entitlements behave like no white-label", () => {
+    expect(watermarkOverrideAllowed(null, "on")).toBe(false);
+    expect(watermarkOverrideAllowed(null, "inherit")).toBe(true);
   });
 });

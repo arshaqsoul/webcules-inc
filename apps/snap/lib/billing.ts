@@ -48,13 +48,31 @@ async function ensurePrice(stripe: Stripe, planId: PlanId): Promise<Stripe.Price
   }
 }
 
-/** Ensure a platform customer for the studio; idempotent, stored on profile. */
+/** True only when Stripe definitively says the customer is gone (never created
+ * on this Stripe account, or deleted). Transient/auth errors are NOT "gone". */
+async function customerIsGone(stripe: Stripe, customerId: string): Promise<boolean> {
+  try {
+    const existing = await stripe.customers.retrieve(customerId);
+    return Boolean((existing as Stripe.DeletedCustomer).deleted);
+  } catch (err) {
+    const e = err as { code?: string; statusCode?: number };
+    return e.code === "resource_missing" || e.statusCode === 404;
+  }
+}
+
+/** Ensure a platform customer for the studio; idempotent, stored on profile.
+ * A stored id is verified against Stripe: ids from another Stripe account (or
+ * a deleted customer) would otherwise fail every checkout with "No such
+ * customer", so they are replaced and the dead subscription link cleared. */
 export async function ensureCustomer(organizationId: string): Promise<string | null> {
   const stripe = await getStripe();
   const profile = await getStudioProfile(organizationId);
   if (!stripe || !profile) return null;
 
-  if (profile.stripeCustomerId) return profile.stripeCustomerId;
+  if (profile.stripeCustomerId) {
+    if (!(await customerIsGone(stripe, profile.stripeCustomerId))) return profile.stripeCustomerId;
+    console.warn(`billing: stored customer missing on Stripe, recreating (org ${organizationId})`);
+  }
   try {
     const customer = await stripe.customers.create({
       email: profile.contactEmail ?? undefined,
@@ -63,7 +81,12 @@ export async function ensureCustomer(organizationId: string): Promise<string | n
     });
     await getDb()
       .update(schema.studioProfiles)
-      .set({ stripeCustomerId: customer.id, updatedAt: new Date() })
+      .set({
+        stripeCustomerId: customer.id,
+        // A subscription lives on its customer: if the customer was gone, so is it.
+        ...(profile.stripeCustomerId ? { stripeSubscriptionId: null } : {}),
+        updatedAt: new Date(),
+      })
       .where(eq(schema.studioProfiles.organizationId, organizationId));
     return customer.id;
   } catch (err) {
