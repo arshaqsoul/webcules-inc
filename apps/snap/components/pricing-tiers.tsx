@@ -8,10 +8,10 @@
 import Link from "next/link";
 
 import { Button } from "@webcules/ui/components/button";
-import { TIER_CARDS, type TierCard, type TierId } from "@/lib/tier-cards";
+import { TEAMS_CTA, TIER_CARDS, type PublicTierId, type TierCard, type TierId } from "@/lib/tier-cards";
 
 export { TIER_CARDS };
-export type { TierCard, TierId };
+export type { PublicTierId, TierCard, TierId };
 
 /** Full marketing-style tier cards. mode="marketing" links each CTA to its
  * signup URL; mode="onboarding" fires onChoose (checkout / dashboard) and
@@ -28,10 +28,11 @@ export function PricingTiers({
   currentPlan?: TierId | null;
   busyPlan?: TierId | null;
   disabled?: boolean;
-  onChoose?: (id: TierId) => void;
+  onChoose?: (id: PublicTierId) => void;
 }) {
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <>
+      <div className="grid gap-4 md:grid-cols-3">
       {TIER_CARDS.map((t) => (
         <div
           key={t.id}
@@ -90,6 +91,21 @@ export function PricingTiers({
           )}
         </div>
       ))}
-    </div>
+      </div>
+      <div className="mt-4 flex flex-col items-start justify-between gap-3 rounded-[16px] border border-hairline bg-surface-1 px-6 py-5 sm:flex-row sm:items-center">
+        <div>
+          <h3 className="text-[15px] font-medium text-ink">{TEAMS_CTA.title}</h3>
+          <p className="mt-1 text-sm text-ink-muted">{TEAMS_CTA.body}</p>
+        </div>
+        <a
+          href={TEAMS_CTA.href}
+          target="_blank"
+          rel="noreferrer"
+          className="shrink-0 rounded-md border border-hairline bg-background px-4 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-surface-2"
+        >
+          {TEAMS_CTA.cta}
+        </a>
+      </div>
+    </>
   );
 }

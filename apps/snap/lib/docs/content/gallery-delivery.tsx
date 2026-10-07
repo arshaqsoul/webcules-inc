@@ -178,8 +178,8 @@ export default function GalleryDelivery() {
       <p>
         Your clients verify once by email and get a home for every gallery you&apos;ve ever sent
         them — installable to their home screen with your name and icon, working offline for the
-        photos they&apos;ve opened, with favorites that sync when they&apos;re back. On Pro, it
-        even runs on your own custom domain. It&apos;s a web app, not an App Store app — no store
+        photos they&apos;ve opened, with favorites that sync when they&apos;re back. On Studio with the
+        custom domain add-on, it even runs on your own domain. It&apos;s a web app, not an App Store app — no store
         review, instant updates, ~95% of the value at ~zero cost.
       </p>
 

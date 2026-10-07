@@ -8,8 +8,9 @@ export default function BillingPlans() {
   return (
     <>
       <p>
-        Four plans, all monthly, all in USD: <strong>Free</strong>, <strong>Lite</strong> ($15/mo),{" "}
-        <strong>Studio</strong> ($29/mo), and <strong>Pro</strong> ($59/mo). Every plan runs the
+        Three plans, all monthly, all in USD: <strong>Free</strong>, <strong>Lite</strong> ($15/mo),
+        and <strong>Studio</strong> ($29/mo). Running a team or need more than 1 TB?{" "}
+        <a href="https://cal.com/webcules/snap">Talk to us</a> for a custom plan. Every plan runs the
         whole workflow — leads, bookings, projects, galleries, contracts, payments — so the tiers
         differ in capacity and branding, not in features you need to deliver a job. This page is
         the exact ladder the app enforces.
@@ -17,7 +18,7 @@ export default function BillingPlans() {
 
       <Shot
         src="/docs-shots/billing-plans/panel.png"
-        alt="Settings → Billing: the current plan, live storage usage against the cap, and the four plan cards."
+        alt="Settings → Billing: the current plan, live storage usage against the cap, and the plan cards."
         grad="moss"
       />
 
@@ -29,7 +30,6 @@ export default function BillingPlans() {
             <th>Free</th>
             <th>Lite</th>
             <th>Studio</th>
-            <th>Pro</th>
           </tr>
         </thead>
         <tbody>
@@ -38,27 +38,23 @@ export default function BillingPlans() {
             <td>$0</td>
             <td>$15/mo</td>
             <td>$29/mo</td>
-            <td>$59/mo</td>
           </tr>
           <tr>
             <td>Storage</td>
             <td>20 GB</td>
             <td>150 GB</td>
             <td>500 GB</td>
-            <td>2 TB</td>
           </tr>
           <tr>
             <td>Hard lock (2× storage)</td>
             <td>40 GB</td>
             <td>300 GB</td>
             <td>1 TB</td>
-            <td>4 TB</td>
           </tr>
           <tr>
             <td>Storage overage</td>
             <td>—</td>
             <td>—</td>
-            <td>$0.10/GB·mo</td>
             <td>$0.10/GB·mo</td>
           </tr>
           <tr>
@@ -66,13 +62,11 @@ export default function BillingPlans() {
             <td>5</td>
             <td>15</td>
             <td>Unlimited</td>
-            <td>Unlimited</td>
           </tr>
           <tr>
             <td>Linked studios</td>
             <td>1</td>
             <td>3</td>
-            <td>Unlimited</td>
             <td>Unlimited</td>
           </tr>
           <tr>
@@ -80,13 +74,11 @@ export default function BillingPlans() {
             <td>1</td>
             <td>3</td>
             <td>Unlimited</td>
-            <td>Unlimited</td>
           </tr>
           <tr>
             <td>Contract templates</td>
             <td>2</td>
             <td>2</td>
-            <td>Unlimited</td>
             <td>Unlimited</td>
           </tr>
           <tr>
@@ -94,13 +86,11 @@ export default function BillingPlans() {
             <td>5</td>
             <td>5</td>
             <td>Unlimited</td>
-            <td>Unlimited</td>
           </tr>
           <tr>
             <td>Contact forms</td>
             <td>1</td>
             <td>1</td>
-            <td>Unlimited</td>
             <td>Unlimited</td>
           </tr>
           <tr>
@@ -108,25 +98,21 @@ export default function BillingPlans() {
             <td>1</td>
             <td>3</td>
             <td>Unlimited</td>
-            <td>Unlimited</td>
           </tr>
           <tr>
             <td>Team seats</td>
             <td>1</td>
             <td>1</td>
             <td>3</td>
-            <td>10</td>
           </tr>
           <tr>
             <td>Custom domains</td>
             <td>—</td>
             <td>—</td>
             <td>+$5/mo add-on</td>
-            <td>2 included</td>
           </tr>
           <tr>
             <td>Gallery templates — apply any of the 10</td>
-            <td>Included</td>
             <td>Included</td>
             <td>Included</td>
             <td>Included</td>
@@ -136,13 +122,11 @@ export default function BillingPlans() {
             <td>—</td>
             <td>Included</td>
             <td>Included</td>
-            <td>Included</td>
           </tr>
           <tr>
             <td>Collage sections</td>
             <td>—</td>
             <td>—</td>
-            <td>Included</td>
             <td>Included</td>
           </tr>
           <tr>
@@ -150,19 +134,16 @@ export default function BillingPlans() {
             <td>—</td>
             <td>1</td>
             <td>Unlimited</td>
-            <td>Unlimited</td>
           </tr>
           <tr>
             <td>White-label</td>
             <td>—</td>
             <td>—</td>
             <td>Included</td>
-            <td>Included</td>
           </tr>
           <tr>
             <td>RAW files</td>
             <td>3 GB trial</td>
-            <td>Unlimited</td>
             <td>Unlimited</td>
             <td>Unlimited</td>
           </tr>
@@ -185,11 +166,10 @@ export default function BillingPlans() {
         Overage billing <Tier plan="studio" />
       </H3>
       <p>
-        On Studio and Pro, storage beyond the cap bills at <strong>$0.10 per GB per month</strong>
-        , added to your regular invoice and capped at the price difference to the next tier. On
-        Studio, for example: 500 GB included, you are using 620 GB — that&apos;s 120 GB over, so
-        $12/mo on your bill. Going $30/mo deep is the signal to move to Pro, because 2 TB at
-        $59/mo would cost less.
+        On Studio, storage beyond the cap bills at <strong>$0.10 per GB per month</strong>, added
+        to your regular invoice. For example: 500 GB included, you are using 620 GB — that&apos;s
+        120 GB over, so $12/mo on your bill. If you are heading toward the 1 TB hard lock, that is
+        the signal to <a href="https://cal.com/webcules/snap">talk to us</a> about a larger plan.
       </p>
       <H3>Free and Lite</H3>
       <p>
@@ -197,8 +177,8 @@ export default function BillingPlans() {
         billing panel turns amber, and the honest fix is upgrading.
       </p>
       <Callout tone="warn" title="At the hard lock, uploads stop">
-        Hit 2× your plan&apos;s storage (40 GB on Free, 300 GB on Lite, 1 TB on Studio, 4 TB on
-        Pro) and new uploads are refused. Nothing is deleted: downloads, galleries, and the rest
+        Hit 2× your plan&apos;s storage (40 GB on Free, 300 GB on Lite, 1 TB on Studio) and new
+        uploads are refused. Nothing is deleted: downloads, galleries, and the rest
         of the app keep working normally. Upgrading unlocks uploads immediately.
       </Callout>
       <H3>RAW files</H3>
@@ -212,17 +192,17 @@ export default function BillingPlans() {
       <p>
         Team seats cover members plus pending invites, and the owner always occupies one — so
         Studio&apos;s 3 seats mean two teammates. Linked studios pool storage and billing under
-        the parent&apos;s subscription. Custom domains are per studio: Pro includes two slots,{" "}
-        <Tier plan="studio" /> buys one through the $5/mo add-on, and Free and Lite have no
-        purchase path. <Tier plan="studio" /> white-labeling removes Snap&apos;s name from
+        the parent&apos;s subscription. Custom domains are per studio: <Tier plan="studio" /> buys one through the $5/mo add-on,
+        and Free and Lite have no purchase path. Need more seats or several domains? That is a
+        custom plan - <a href="https://cal.com/webcules/snap">talk to us</a>. <Tier plan="studio" /> white-labeling removes Snap&apos;s name from
         galleries, emails, and invoices — see <a href="/docs/brand">Brand &amp; white-label</a>.
       </p>
 
       <H2>Which tier fits</H2>
       <p>
         The pricing page says it straight, and it holds: Free is for trying the whole thing,
-        Lite is for part-timers growing, Studio is the working pro&apos;s tier, and Pro is for
-        studios and teams. Studio is where most full-time photographers land — white-label,
+        Lite is for part-timers growing, and Studio is the working pro&apos;s tier. Bigger
+        teams get a custom plan. Studio is where most full-time photographers land — white-label,
         unlimited galleries and templates, and a 500 GB pool. Change plans any time from{" "}
         <a href="/dashboard/settings/billing">Settings → Billing</a>; how the money moves is on{" "}
         <a href="/docs/billing">Subscription &amp; billing</a>.

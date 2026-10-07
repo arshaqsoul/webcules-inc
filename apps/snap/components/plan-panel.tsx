@@ -16,7 +16,7 @@ import {
 } from "@webcules/ui/components/dialog";
 import { useConfirm } from "@/components/confirm-provider";
 import { DocHint } from "@/components/doc-hint";
-import { TIER_CARDS } from "@/components/pricing-tiers";
+import { PRO_CARD, TEAMS_CTA, TIER_CARDS } from "@/lib/tier-cards";
 import { planDef } from "@/lib/plans-data";
 
 type PlanStatus = {
@@ -69,9 +69,10 @@ function fmtBytes(b: number): string {
   return `${Math.max(1, Math.round(b / 1024 / 1024))}MB`;
 }
 
-/* Tier identity (names, prices, spec lines) comes from the shared pricing
- * component — one source across landing, onboarding, and this panel. */
-const ALL_PLANS = TIER_CARDS;
+/* Tier identity (names, prices, spec lines) comes from the shared tier data —
+ * one source across landing, onboarding, and this panel. WEB-329: Pro is not
+ * offered here; it only appears as the current plan for studios already on it. */
+const PUBLIC_PLANS = TIER_CARDS;
 
 export function PlanPanel({ returnHint }: { returnHint?: string }) {
   const confirm = useConfirm();
@@ -81,6 +82,8 @@ export function PlanPanel({ returnHint }: { returnHint?: string }) {
   // Reversal choice (upgraded this cycle, now stepping down): Slack-style
   // explicit pick between switch-back-now (prorated credit) and next-cycle.
   const [reversal, setReversal] = useState<string | null>(null);
+  // Public ladder, plus Pro only when this studio is on it (shown as current).
+  const ALL_PLANS = st?.plan === "pro" ? [...PUBLIC_PLANS, PRO_CARD] : PUBLIC_PLANS;
 
   const refresh = useCallback(async () => {
     try {
@@ -404,7 +407,7 @@ export function PlanPanel({ returnHint }: { returnHint?: string }) {
       {notice && <p className="mt-2 text-xs text-ink-muted">{notice}</p>}
 
       {/* Plan cards */}
-      <div className="mt-5 grid grid-cols-2 gap-2 lg:grid-cols-4">
+      <div className={`mt-5 grid grid-cols-2 gap-2 ${ALL_PLANS.length === 4 ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}>
         {ALL_PLANS.map((p) => {
           const current = p.id === st.plan;
           return (
@@ -428,6 +431,12 @@ export function PlanPanel({ returnHint }: { returnHint?: string }) {
           );
         })}
       </div>
+      <p className="mt-3 text-xs text-ink-subtle">
+        {TEAMS_CTA.title}{" "}
+        <a href={TEAMS_CTA.href} target="_blank" rel="noreferrer" className="font-medium text-primary underline underline-offset-2">
+          {TEAMS_CTA.cta}
+        </a>
+      </p>
       <p className="mt-3 text-[11px] text-ink-tertiary">
         Stripe processing fees apply to payments. Upgrades apply immediately with proration; downgrades take effect on your next billing cycle — your files are never deleted.
       </p>

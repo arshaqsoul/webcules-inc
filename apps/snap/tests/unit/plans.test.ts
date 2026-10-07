@@ -8,7 +8,7 @@ import { TIER_CARDS } from "@/lib/tier-cards";
 const ORDER = ["free", "lite", "studio", "pro"] as const;
 
 describe("PLANS", () => {
-  it("has exactly the four tiers in price order", () => {
+  it("has exactly the four internal plan ids in price order (Pro is sales-assigned, WEB-329)", () => {
     expect(Object.keys(PLANS)).toEqual([...ORDER]);
     const prices = ORDER.map((id) => PLANS[id].priceMonthlyUsd);
     expect(prices).toEqual([...prices].sort((a, b) => a - b));

@@ -57,7 +57,7 @@ export function WhiteLabelCard({
         if (next && !wasOnAtMount) setJustFlipped(true);
         if (!next) setJustFlipped(false);
       } else if (res.status === 403) {
-        setError("White-label is part of the Studio and Pro plans.");
+        setError("White-label is part of the Studio plan.");
       } else {
         setError("Couldn't save — try again.");
       }
@@ -79,7 +79,7 @@ export function WhiteLabelCard({
     <div className="mt-5 rounded-[12px] border border-hairline bg-surface-1 p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-64 flex-1">
-          <h3 className="text-sm font-semibold text-ink">White-label{entitled ? "" : " (Studio & Pro)"}</h3>
+          <h3 className="text-sm font-semibold text-ink">White-label{entitled ? "" : " (Studio)"}</h3>
           <p className="mt-1 text-xs leading-relaxed text-ink-subtle">
             Your clients should never meet us. One switch removes Snap from every surface they touch — and you can
             flip it back any time; nothing is deleted.
@@ -91,7 +91,7 @@ export function WhiteLabelCard({
           </a>
         ) : plan === "studio" ? (
           <a href="/dashboard/settings/billing" className="text-xs font-medium text-primary hover:underline">
-            Add your own domain → Pro
+            Add your own domain ($5/mo) →
           </a>
         ) : null}
       </div>
@@ -123,7 +123,7 @@ export function WhiteLabelCard({
               </tr>
             ))}
             <tr className="border-t border-hairline">
-              <td className="py-1.5 pr-3 text-ink">And with Pro</td>
+              <td className="py-1.5 pr-3 text-ink">Plus a custom domain</td>
               <td className="py-1.5 pr-3 text-ink-subtle">—</td>
               <td className={`py-1.5 ${entitled ? "text-ink" : "text-ink-tertiary/60"}`}>Your own domain: gallery.yourstudio.com</td>
             </tr>
@@ -204,7 +204,7 @@ export function WhiteLabelCard({
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <p className="min-w-52 flex-1 text-xs leading-relaxed text-ink-subtle">
             Every client surface becomes 100% yours — gallery, emails, invoices, browser tab. Included on the Studio
-            and Pro plans.
+            plan.
           </p>
           <a href="/dashboard/settings/billing">
             <Button size="sm">Unlock on Studio</Button>

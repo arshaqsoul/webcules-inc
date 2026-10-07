@@ -69,28 +69,21 @@ export default function Storage() {
             <td>$0.10/GB-mo</td>
             <td>1 TB</td>
           </tr>
-          <tr>
-            <td>Pro</td>
-            <td>2 TB</td>
-            <td>4 TB</td>
-            <td>$0.10/GB-mo</td>
-            <td>4 TB</td>
-          </tr>
         </tbody>
       </table>
       <p>
-        All four tiers share one more ceiling: <strong>250,000 files</strong> per organization.
+        All tiers share one more ceiling: <strong>250,000 files</strong> per organization.
       </p>
 
       <H2>
         Approaching the cap: the overage zone <Tier plan="studio" />
       </H2>
       <p>
-        Past your included storage there's headroom up to the hard lock. On Studio and Pro that
+        Past your included storage there's headroom up to the hard lock. On Studio that
         headroom is billed as overage: <strong>$0.10 per GB per month</strong> beyond your cap,
-        charged monthly and capped at the next tier's price difference — so a heavy Studio month
-        can never cost more than just upgrading. On Free and Lite the zone is unbilled breathing
-        room; the charge is Studio-and-above only.
+        charged monthly. Heading toward the 1 TB hard lock? <a href="https://cal.com/webcules/snap">Talk to us</a>{" "}
+        about a larger plan. On Free and Lite the zone is unbilled breathing room; the charge is
+        Studio only.
       </p>
 
       <H3>The hard lock</H3>

@@ -9,7 +9,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { PricingTiers, type TierId } from "@/components/pricing-tiers";
+import { PricingTiers, type PublicTierId, type TierId } from "@/components/pricing-tiers";
 import { SnapMark } from "@/components/snap-mark";
 
 export default function PlanOnboardingPage() {
@@ -29,7 +29,7 @@ export default function PlanOnboardingPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  async function choose(plan: TierId) {
+  async function choose(plan: PublicTierId) {
     if (busy) return;
     setError(null);
     if (plan === "free") {

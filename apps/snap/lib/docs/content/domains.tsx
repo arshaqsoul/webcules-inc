@@ -179,8 +179,8 @@ export default function Domains() {
         configures its own domains in its own Settings → Domains.
       </p>
       <p>
-        <strong>What does it cost?</strong> <Tier plan="pro" /> includes two domains on Pro. On
-        Studio, it's the +$5/mo add-on for one — billed on your existing subscription.
+        <strong>What does it cost?</strong> On Studio, a custom domain is the +$5/mo add-on for
+        one — billed on your existing subscription. Need several domains? <a href="https://cal.com/webcules/snap">Talk to us</a>.
       </p>
 
       <H2>Troubleshooting</H2>

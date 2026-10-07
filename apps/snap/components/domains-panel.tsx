@@ -201,8 +201,8 @@ export function DomainsPanel({
             </>
           ) : (
             <>
-              <p className="text-ink">Included with <span className="font-medium">Pro</span> — two custom domains, white-label galleries, 2TB storage.</p>
-              <p className="mt-1 text-xs text-ink-tertiary">Free and Lite plans use the standard snap.webcules.com links.</p>
+              <p className="text-ink">Available on <span className="font-medium">Studio</span> - add a custom domain for $5/mo, with white-label galleries and 500GB storage.</p>
+              <p className="mt-1 text-xs text-ink-tertiary">Free and Lite plans use the standard snap.webcules.com links. Need more than one domain? <a href="https://cal.com/webcules/snap" target="_blank" rel="noreferrer" className="underline underline-offset-2">Talk to us</a>.</p>
             </>
           )}
         </div>
@@ -213,7 +213,7 @@ export function DomainsPanel({
             </Button>
           ) : (
             <Button variant="secondary" size="sm" onClick={() => router.push("/dashboard/settings/billing")}>
-              {studioAddOn ? "Get the domain add-on" : "Upgrade to Pro"}
+              {studioAddOn ? "Get the domain add-on" : "Upgrade to Studio"}
             </Button>
           )}
         </div>

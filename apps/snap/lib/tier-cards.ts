@@ -8,9 +8,16 @@
  * paid tier lists only its deltas under an "Everything in <prev>, plus"
  * inherits label — never repeat an inherited feature on a higher card. */
 export type TierId = "free" | "lite" | "studio" | "pro";
+/** WEB-329: the tiers anyone can pick and pay for. Pro is sales-assigned
+ * (Teams / 1 TB+) — it stays a valid plan id for existing subscribers and
+ * every `studio || pro` gate, but is never offered or purchasable self-serve. */
+export type PublicTierId = Exclude<TierId, "pro">;
 
-export type TierCard = {
-  id: TierId;
+/** Booking link for "Talk to us" — the one place sales conversations start. */
+export const TALK_TO_US_HREF = "https://cal.com/webcules/snap";
+
+export type TierCard<Id extends TierId = TierId> = {
+  id: Id;
   name: string;
   /** Numeric price for dialogs and dense layouts (Settings → Plan). */
   price: number;
@@ -29,7 +36,7 @@ export type TierCard = {
   href: string;
 };
 
-export const TIER_CARDS: TierCard[] = [
+const ALL_TIER_CARDS: TierCard[] = [
   {
     id: "free",
     name: "Free",
@@ -114,7 +121,7 @@ export const TIER_CARDS: TierCard[] = [
     price: 59,
     priceLabel: "$59",
     cadence: "/mo",
-    tagline: "Studios & teams",
+    tagline: "Studios & teams - by arrangement",
     spec: "2TB · white-label · $0.10/GB",
     inherits: "Everything in Studio, plus",
     features: [
@@ -124,7 +131,24 @@ export const TIER_CARDS: TierCard[] = [
       "Priority support",
     ],
     highlight: false,
-    cta: "Start Pro",
-    href: "/signup?plan=pro",
+    cta: "Talk to us",
+    href: TALK_TO_US_HREF,
   },
 ];
+
+/** The public pricing ladder: Free, Lite, Studio (WEB-329). Landing,
+ * onboarding and Settings → Plan all render this. */
+export const TIER_CARDS = ALL_TIER_CARDS.filter((t): t is TierCard<PublicTierId> => t.id !== "pro");
+
+/** Pro, kept only so Settings → Plan can show it as the current plan for the
+ * studios already on it. Never rendered as a purchasable option. */
+export const PRO_CARD = ALL_TIER_CARDS.find((t) => t.id === "pro")!;
+
+/** Replaces the old Pro card under the public tiers: bigger teams and heavy
+ * storage get a conversation and a custom quote, not a flat self-serve price. */
+export const TEAMS_CTA = {
+  title: "Teams, multiple photographers or 1 TB+?",
+  body: "Team seats and permissions, more storage and extra custom domains, priced to fit your studio.",
+  cta: "Talk to us",
+  href: TALK_TO_US_HREF,
+} as const;

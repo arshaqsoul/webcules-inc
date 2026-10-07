@@ -6,6 +6,8 @@
  *   Lite    $15   150GB  RAW allowed, 15 galleries, unlimited bookings
  *   Studio  $29   500GB  white-label, $0.10/GB-mo overage
  *   Pro     $59   2TB    white-label, $0.10/GB-mo overage
+ *           (WEB-329: sales-assigned only - not offered or purchasable self-serve;
+ *            public ladder is Free / Lite / Studio + "Talk to us")
  *
  * Storage is 97–98.5% of COGS; the guardrails below come from the worst-case
  * simulation: hard upload lock at 2× included bytes (overage zone between cap

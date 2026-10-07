@@ -92,7 +92,7 @@ export async function POST(req: Request) {
   // Proration preview (no mutation) — powers the confirm dialog's exact
   // "you will be charged $X now" copy before any change.
   if (body.preview) {
-    if (body.preview !== "lite" && body.preview !== "studio" && body.preview !== "pro") {
+    if (body.preview !== "lite" && body.preview !== "studio") {
       return Response.json({ error: "invalid_plan" }, { status: 400 });
     }
     const preview = await previewPlanChange(rootOrgId, body.preview);
@@ -117,7 +117,14 @@ export async function POST(req: Request) {
       ? Response.json({ ok: true, mode: "swapped", message: "Moved to the Free plan — you had no active subscription." })
       : Response.json({ error: "no_subscription" }, { status: 409 });
   }
-  if (plan !== "lite" && plan !== "studio" && plan !== "pro") {
+  // WEB-329: Pro is sales-assigned (Teams / 1 TB+), never self-serve checkout.
+  if (plan === "pro") {
+    return Response.json(
+      { error: "contact_sales", message: "Teams and 1 TB+ plans are set up with us directly - book a call at https://cal.com/webcules/snap." },
+      { status: 400 },
+    );
+  }
+  if (plan !== "lite" && plan !== "studio") {
     return Response.json({ error: "invalid_plan" }, { status: 400 });
   }
 

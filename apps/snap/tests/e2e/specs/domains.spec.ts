@@ -85,7 +85,7 @@ function err0(): Error {
 test("free studio sees the tier-locked upsell", async ({ page }) => {
   await setActiveOrg(page, seed.freeOrgId);
   await page.goto("/dashboard/settings/domains");
-  await expect(page.getByRole("button", { name: "Upgrade to Pro" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Upgrade to Studio" })).toBeVisible();
   await expect(page.getByText(HOSTNAME)).toHaveCount(0);
 });
 
@@ -159,6 +159,6 @@ test("removal takes the domain off the panel", async ({ page }) => {
 test("switching studios re-scopes the panel", async ({ page }) => {
   await setActiveOrg(page, seed.freeOrgId);
   await page.goto("/dashboard/settings/domains");
-  await expect(page.getByRole("button", { name: "Upgrade to Pro" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Upgrade to Studio" })).toBeVisible();
   await expect(page.getByText(HOSTNAME)).toHaveCount(0);
 });

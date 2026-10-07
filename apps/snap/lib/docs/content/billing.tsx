@@ -61,19 +61,18 @@ export default function Billing() {
         <strong>$5/mo</strong> — galleries, booking page, and client portal on your own hostname.
         It is a second line item on your existing subscription (never a separate bill), added
         with a prorated charge from today. Cancelling it keeps the domain live until the end of
-        the paid period, then the bill drops by $5/mo; your domain settings are preserved. Pro
-        needs none of this — two domains are included. See{" "}
+        the paid period, then the bill drops by $5/mo; your domain settings are preserved. Need
+        more than one domain? <a href="https://cal.com/webcules/snap">Talk to us</a>. See{" "}
         <a href="/docs/domains">Custom domains</a>.
       </p>
 
       <H2>Storage overage, in real numbers</H2>
       <p>
-        <Tier plan="studio" /> storage past your cap bills at $0.10 per GB per month, capped at
-        the next tier&apos;s price difference. The billing panel tracks it live: the storage bar
+        <Tier plan="studio" /> storage past your cap bills at $0.10 per GB per month. The billing panel tracks it live: the storage bar
         turns amber at 90%, and the overage zone shows the exact rate. Worked example on Studio —
         500 GB included, 620 GB used: 120 GB over × $0.10 = <strong>$12/mo</strong> on top of
-        your $29. The charge can never exceed $30 (the Studio→Pro delta), because at that point
-        Pro&apos;s 2 TB is the better buy.
+        your $29. If you are regularly past 700 GB, <a href="https://cal.com/webcules/snap">talk to us</a>{" "}
+        about a plan sized for your studio.
       </p>
       <Callout tone="warn" title="The hard lock is honest about being a lock">
         At 2× your plan&apos;s storage (1 TB on Studio), uploads are refused outright — galleries

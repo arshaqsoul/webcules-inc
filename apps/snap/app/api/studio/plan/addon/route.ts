@@ -24,15 +24,15 @@ export async function POST(req: Request) {
     return Response.json({ error: "invalid_body" }, { status: 400 });
   }
 
-  // Studio-only purchase path (WEB-231): Pro includes two domains; Free/Lite
-  // upgrade the plan instead.
+  // Studio-only purchase path (WEB-231): Pro (sales-assigned, WEB-329) includes
+  // two domains; Free/Lite upgrade to Studio instead.
   const ent = await getPlanEntitlements(ctx.organizationId);
   if (!ent) return Response.json({ error: "no_studio" }, { status: 404 });
   if (body.enable && ent.id === "pro") {
-    return Response.json({ ok: true, message: "Pro includes two custom domains — no add-on needed." });
+    return Response.json({ ok: true, message: "Your plan includes two custom domains - no add-on needed." });
   }
   if (body.enable && (ent.id === "free" || ent.id === "lite")) {
-    return Response.json({ ok: false, message: "Custom domains come with Pro (2 included) — or the $5/mo add-on on Studio." }, { status: 402 });
+    return Response.json({ ok: false, message: "Custom domains are a $5/mo add-on on Studio. Upgrade to Studio first, or talk to us if you need more than one." }, { status: 402 });
   }
 
   const r = await setCustomDomainAddon(ent.rootOrganizationId, body.enable);

@@ -21,7 +21,7 @@ const FAQS = [
   },
   {
     q: "Can I use my own brand and domain?",
-    a: "Yes. Studio and above remove Snap branding from galleries, emails and invoices. Add a custom domain, such as photos.yourstudio.com, with SSL handled for you. Pro includes two.",
+    a: "Yes. Studio and above remove Snap branding from galleries, emails and invoices. Add a custom domain, such as photos.yourstudio.com, with SSL handled for you (a $5/mo add-on on Studio). Need several domains or team seats? Talk to us.",
   },
   {
     q: "I already use another gallery or CRM tool. Is switching painful?",
@@ -29,7 +29,7 @@ const FAQS = [
   },
   {
     q: "What happens if I go over my storage?",
-    a: "We show you the cheaper upgrade first. If you stay put, overage is a flat $0.10 per GB per month, with no surprise tiers.",
+    a: "On Studio, overage is a flat $0.10 per GB per month, with no surprise tiers. Heading toward 1 TB? Talk to us and we will size a plan for your studio.",
   },
 ];
 

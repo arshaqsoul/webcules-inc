@@ -204,7 +204,7 @@ export const DOC_CATEGORIES: DocCategory[] = [
         slug: "billing-plans",
         title: "Plans & tiers",
         description:
-          "Free, Lite, Studio, Pro — what each tier includes, what's gated where, and how the numbers (storage, galleries, studios, seats) actually work.",
+          "Free, Lite and Studio — what each tier includes, what's gated where, and how the numbers (storage, galleries, studios, seats) actually work.",
         icon: "layers",
       },
       {
@@ -295,7 +295,7 @@ export const DOC_CATEGORIES: DocCategory[] = [
         slug: "storage",
         title: "Storage & limits",
         description:
-          "How your plan's storage pool works: what counts against it, what happens near the cap, the hard lock, and the overage math on Studio and Pro.",
+          "How your plan's storage pool works: what counts against it, what happens near the cap, the hard lock, and the overage math on Studio.",
         icon: "database",
       },
     ],

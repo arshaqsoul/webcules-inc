@@ -35,6 +35,23 @@ export default function Releases() {
         polish fold into the next entry rather than getting their own.
       </Note>
 
+      <Release version="0.10.0" date="October 7, 2026">
+        <p>
+          <strong>Simpler pricing: Free, Lite and Studio.</strong> The pricing page now shows three
+          plans instead of four, with Studio highlighted. Prices and what each plan includes are
+          unchanged.
+        </p>
+        <p>
+          <strong>Teams and bigger studios: talk to us.</strong> If you run a team, need more than
+          1 TB of storage or want several custom domains, book a call and we will set up a plan
+          that fits your studio. Studios already on Pro keep everything they have today.
+        </p>
+        <p>
+          <strong>Clearer upgrade prompts.</strong> White-label, watermarks and custom domains now
+          point straight to Studio, with the $5/mo domain add-on called out.
+        </p>
+      </Release>
+
       <Release version="0.9.1" date="October 6, 2026">
         <p>
           <strong>Clearer Studio-only watermarks.</strong> On Free and Lite, a project&rsquo;s
