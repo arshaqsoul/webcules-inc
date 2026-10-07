@@ -35,6 +35,20 @@ export default function Releases() {
         polish fold into the next entry rather than getting their own.
       </Note>
 
+      <Release version="0.9.1" date="October 6, 2026">
+        <p>
+          <strong>Clearer Studio-only watermarks.</strong> On Free and Lite, a project&rsquo;s
+          watermark control now says &ldquo;Watermarks are a Studio feature&rdquo; with an Upgrade
+          link, instead of letting you pick &ldquo;Always watermark&rdquo; and quietly doing
+          nothing for your clients.
+        </p>
+        <p>
+          <strong>Smoother upgrades.</strong> Upgrading to a paid plan no longer stops with an
+          error if your saved billing record can&rsquo;t be found &mdash; Snap now sets it up
+          again and carries on to checkout.
+        </p>
+      </Release>
+
       <Release version="0.9.0" date="October 4, 2026">
         <p>
           <strong>Galleries that fill the phone.</strong> Open any gallery on a phone and the photos
