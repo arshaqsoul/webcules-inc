@@ -10,7 +10,8 @@ import { SignupForm } from "./signup-form";
 
 export const dynamic = "force-dynamic";
 
-const PLANS = ["free", "lite", "studio", "pro"] as const;
+// WEB-329: Pro is not self-serve; an old ?plan=pro link falls back to the plan picker.
+const PLANS = ["free", "lite", "studio"] as const;
 type PlanChoice = (typeof PLANS)[number];
 
 export default async function SignupPage({ searchParams }: { searchParams: Promise<{ plan?: string }> }) {

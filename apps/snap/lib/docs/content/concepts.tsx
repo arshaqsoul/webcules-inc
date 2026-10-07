@@ -95,12 +95,12 @@ export default function Concepts() {
 
       <H2>Plans and what they gate</H2>
       <p>
-        Snap has four tiers: <strong>Free</strong>, <strong>Lite</strong> ($15/mo),{" "}
-        <strong>Studio</strong> ($29/mo), and <strong>Pro</strong> ($59/mo). The shape of the
+        Snap has three tiers: <strong>Free</strong>, <strong>Lite</strong> ($15/mo), and{" "}
+        <strong>Studio</strong> ($29/mo), plus custom plans for teams. The shape of the
         ladder: Free is the full workflow with capped capacity (20 GB, 5 active galleries, 1 of
         each template); Lite adds RAW storage and headroom; Studio adds white-labeling, your own
-        domain option, and unlimited templates; Pro adds a 2 TB pool, two custom domains, and ten
-        team seats. Everything tier-gated in the docs carries a badge naming the minimum plan, and{" "}
+        domain option, and unlimited templates. Teams, extra domains and 1 TB+ storage are set up
+        as a custom plan - <a href="https://cal.com/webcules/snap">talk to us</a>. Everything tier-gated in the docs carries a badge naming the minimum plan, and{" "}
         <a href="/docs/billing-plans">Plans &amp; tiers</a> has the exact table.
       </p>
       <Note>

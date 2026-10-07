@@ -26,7 +26,7 @@ export function PricingSection() {
 
       <FadeUp delay={0.15}>
         <p className="mx-auto mt-6 max-w-2xl text-center text-xs leading-relaxed text-ink-tertiary">
-          Overage beyond your tier's storage is $0.10/GB-month - we always show you the cheaper upgrade first.
+          Studio storage beyond 500 GB is $0.10/GB-month. Need 1 TB or more? Talk to us.
           Client payments run through your own Stripe account at Stripe's standard rate; that fee goes to Stripe, never to us.
         </p>
       </FadeUp>

@@ -125,7 +125,7 @@ export function SettingsBrand({
     } else if (out.error === "no_logo") {
       setStatus("Upload a logo first — brand assets generate from it.");
     } else if (out.error === "plan_required") {
-      setStatus("Brand assets are part of white-label (Studio & Pro).");
+      setStatus("Brand assets are part of white-label (Studio).");
     } else {
       setStatus(`Brand asset generation failed: ${out.error}`);
     }
@@ -262,7 +262,7 @@ export function SettingsBrand({
           <>
             <p className="text-sm font-medium text-ink">Gallery protection</p>
             <p className="mt-1 text-xs leading-relaxed text-ink-subtle">
-              Right-click, drag and long-press deterrence on client galleries. Included on the Studio and Pro plans.
+              Right-click, drag and long-press deterrence on client galleries. Included on the Studio plan.
             </p>
             <a href="/dashboard/settings/billing" className="mt-3 inline-block text-xs font-medium text-primary hover:underline">
               Upgrade to Studio →

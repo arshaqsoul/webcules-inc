@@ -64,7 +64,7 @@ export default function Brand() {
       </H2>
       <p>
         One toggle, self-serve, reversible at any time — nothing is deleted when you flip it. The
-        entitlement comes with Studio and Pro; the switch is yours. What changes:
+        entitlement comes with Studio; the switch is yours. What changes:
       </p>
       <table>
         <thead>

@@ -11,13 +11,12 @@ import { Label } from "@webcules/ui/components/label";
 import { authClient, signUp } from "@/lib/auth-client";
 import { SnapMark } from "@/components/snap-mark";
 
-type PlanChoice = "free" | "lite" | "studio" | "pro";
+type PlanChoice = "free" | "lite" | "studio";
 
 const PLAN_INFO: Record<PlanChoice, { name: string; price: string }> = {
   free: { name: "Free", price: "$0" },
   lite: { name: "Lite", price: "$15/mo" },
   studio: { name: "Studio", price: "$29/mo" },
-  pro: { name: "Pro", price: "$59/mo" },
 };
 
 function detectTimezone(): string {

@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+
+import { TALK_TO_US_HREF } from "@/lib/tier-cards";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Check } from "lucide-react";
@@ -31,12 +33,12 @@ const PERSONAS = [
   {
     id: "team",
     tab: "Multi-shooter studio",
-    plan: "Pro - $59",
+    plan: "Custom - talk to us",
     title: "One platform for the whole team.",
-    body: "2 TB of pooled storage, teams and permissions, custom domains included, and priority support. Associate shooters and editors get exactly the access they need.",
-    points: ["Teams and role permissions", "2 TB storage, flat overage rate", "Two custom domains included", "Priority support"],
+    body: "Teams and permissions, a bigger storage pool, extra custom domains and priority support, priced to fit your studio. Associate shooters and editors get exactly the access they need.",
+    points: ["Teams and role permissions", "1 TB+ pooled storage", "Extra custom domains", "Priority support"],
     photos: ["street-dusk.jpg", "scenery-lake.jpg", "wedding-dance.jpg"],
-    cta: { label: "Start Pro", href: "/signup?plan=pro" },
+    cta: { label: "Talk to us", href: TALK_TO_US_HREF },
   },
 ] as const;
 

@@ -63,7 +63,7 @@ export default function StartGuide() {
           </>,
           <>
             <strong>Pick a plan</strong> — Free to try the whole thing, Lite when you&apos;re
-            growing, Studio for the working pro&apos;s tier, Pro for studios and teams. You can
+            growing, and Studio for the working pro&apos;s tier. You can
             change anytime from <a href="/dashboard/settings/billing">Settings → Billing</a>; see{" "}
             <a href="/docs/billing-plans">Plans &amp; tiers</a> for exactly what each includes.
           </>,

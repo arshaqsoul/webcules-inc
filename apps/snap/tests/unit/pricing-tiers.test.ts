@@ -3,12 +3,23 @@
 import { describe, expect, it } from "vitest";
 
 import { PLANS } from "@/lib/plans";
-import { TIER_CARDS } from "@/lib/tier-cards";
+import { PRO_CARD, TALK_TO_US_HREF, TEAMS_CTA, TIER_CARDS } from "@/lib/tier-cards";
 
 describe("TIER_CARDS", () => {
+  it("WEB-329: the public ladder is Free, Lite, Studio - Pro is never offered self-serve", () => {
+    expect(TIER_CARDS.map((t) => t.id)).toEqual(["free", "lite", "studio"]);
+    expect(TIER_CARDS.some((t) => (t.id as string) === "pro")).toBe(false);
+    expect(TIER_CARDS.some((t) => t.href.includes("plan=pro"))).toBe(false);
+    // Pro lives on as a sales-assigned plan: a card for the current-plan view
+    // and a Talk to us CTA - never a signup/checkout link.
+    expect(PRO_CARD.id).toBe("pro");
+    expect(PRO_CARD.href).toBe(TALK_TO_US_HREF);
+    expect(TEAMS_CTA.href).toBe(TALK_TO_US_HREF);
+    expect(TEAMS_CTA.cta).toBe("Talk to us");
+  });
+
   it("mirrors lib/plans ids, names, and prices exactly", () => {
-    expect(TIER_CARDS.map((t) => t.id)).toEqual(["free", "lite", "studio", "pro"]);
-    for (const card of TIER_CARDS) {
+    for (const card of [...TIER_CARDS, PRO_CARD]) {
       expect(card.name.toLowerCase()).toBe(PLANS[card.id].name.toLowerCase());
       expect(card.price).toBe(PLANS[card.id].priceMonthlyUsd);
     }
@@ -47,8 +58,8 @@ describe("TIER_CARDS", () => {
     expect(byTier.studio).toMatch(/download approvals/);
     expect(byTier.studio).toMatch(/lists, notes/);
     expect(byTier.studio).toMatch(/Per-photo insights/);
-    // Pro: the client app fully theirs (own domain).
-    expect(byTier.pro).toMatch(/photo app domain/);
+    // Pro (current-plan view only): the client app fully theirs (own domain).
+    expect(PRO_CARD.features.join(" ")).toMatch(/photo app domain/);
   });
 
   it("exactly one highlighted tier; every tier has a signup href and CTA", () => {
@@ -61,7 +72,8 @@ describe("TIER_CARDS", () => {
   });
 
   it("cumulative ladder: paid tiers inherit the one below; features never repeat upward", () => {
-    const [free, lite, studio, pro] = TIER_CARDS;
+    const [free, lite, studio] = TIER_CARDS;
+    const pro = PRO_CARD;
     expect(free.inherits).toBeUndefined();
     expect(lite.inherits).toMatch(/^Everything in Free/);
     expect(studio.inherits).toMatch(/^Everything in Lite/);

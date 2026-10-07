@@ -93,7 +93,7 @@ export function WatermarkCard({
       setStatus(wm.mode === "off" ? "Watermark off — galleries serve clean previews." : "Watermark saved. Regenerate previews to apply to existing photos.");
       router.refresh();
     } else if (res.status === 403) {
-      setStatus("Watermarks are part of white-label (Studio & Pro).");
+      setStatus("Watermarks are part of white-label (Studio).");
     } else {
       setStatus("Save failed — try again.");
     }
@@ -164,7 +164,7 @@ export function WatermarkCard({
         <p className="text-sm font-medium text-ink">Watermark your gallery previews</p>
         <p className="mt-1 text-xs leading-relaxed text-ink-subtle">
           Your logo or studio name on gallery previews — originals and client downloads stay clean. Included on the
-          Studio and Pro plans.
+          Studio plan.
         </p>
         <a href="/dashboard/settings/billing" className="mt-3 inline-block text-xs font-medium text-primary hover:underline">
           Upgrade to Studio →
