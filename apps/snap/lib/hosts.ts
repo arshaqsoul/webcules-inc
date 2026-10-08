@@ -12,9 +12,10 @@
  *                  used for brand links. Flip to NEW_HOST once snaphq.app is
  *                  attached to the production worker.
  *   EMAIL_DOMAIN - the domain client email is sent from / received on
- *                  (hello@, hello+{slug}@, thread ids, .ics UIDs). Flip
- *                  separately, only after snaphq.app is a verified sending
- *                  domain AND Email Routing delivers it to webcules-snap-email.
+ *                  (hello@, hello+{slug}@, thread ids, .ics UIDs). snaphq.app
+ *                  is a verified sending domain and Email Routing delivers it
+ *                  to webcules-snap-email. The legacy mail domain is NOT
+ *                  supported any more (no backward compatibility for email).
  * Request-time origins (links in emails, auth, checkout returns) come from the
  * NEXT_PUBLIC_APP_URL / BETTER_AUTH_URL worker vars via lib/app-origin.ts. */
 
@@ -24,7 +25,7 @@ export const NEW_HOST = "snaphq.app";
 export const PUBLIC_HOST: string = NEW_HOST;
 export const PUBLIC_ORIGIN = `https://${PUBLIC_HOST}`;
 
-export const EMAIL_DOMAIN: string = LEGACY_HOST;
+export const EMAIL_DOMAIN: string = NEW_HOST;
 
 /** The isolated staging deploy (webcules-snap-staging). */
 export const STAGING_HOSTS = ["snap-staging.webcules.com", "staging.snaphq.app"] as const;
@@ -61,11 +62,10 @@ export function emailAddress(localPart: string): string {
   return `${localPart}@${EMAIL_DOMAIN}`;
 }
 
-/** True for any address on a Snap-controlled mail domain (current or legacy) -
- * used to recognize our own plumbing addresses and Message-IDs. */
+/** True only for the Snap mail domain - used to recognize our own plumbing
+ * addresses and Message-IDs. */
 export function isSnapMailDomain(domain: string): boolean {
-  const d = domain.toLowerCase();
-  return d === EMAIL_DOMAIN || d === LEGACY_HOST || d === NEW_HOST;
+  return domain.toLowerCase() === EMAIL_DOMAIN;
 }
 
 /** The origin to use for a request that arrived on `host`: that host when it

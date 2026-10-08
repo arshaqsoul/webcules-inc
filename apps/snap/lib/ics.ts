@@ -3,11 +3,10 @@
  * are UTC in TZID-less basic form: every major client (Google / Apple /
  * Outlook) imports them correctly, and Outlook notoriously fails to resolve
  * bare TZIDs without a full VTIMEZONE block. UID stays
- * {bookingId}@snap.webcules.com (the LEGACY host, forever - never follows the
- * domain move) — stable per booking, so a re-downloaded
+ * {bookingId}@<mail domain> — stable per booking, so a re-downloaded
  * file after a reschedule updates the SAME event instead of duplicating. */
 
-import { LEGACY_HOST } from "@/lib/hosts";
+import { EMAIL_DOMAIN } from "@/lib/hosts";
 
 export function icsStamp(d: Date): string {
   return d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
@@ -38,7 +37,7 @@ export function buildSingleEventIcs(event: IcsEvent, opts?: { whiteLabel?: boole
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",
-    `UID:${event.uid}@${LEGACY_HOST}`,
+    `UID:${event.uid}@${EMAIL_DOMAIN}`,
     `DTSTAMP:${icsStamp(new Date())}`,
     `DTSTART:${icsStamp(event.startAt)}`,
     `DTEND:${icsStamp(event.endAt)}`,

@@ -3,13 +3,10 @@
  * the threading corpus (In-Reply-To chains, stripped-header replies,
  * Outlook Thread-Index, RFC 5256 subject fallback, DSN detection). */
 
-import { EMAIL_DOMAIN, LEGACY_HOST, NEW_HOST, emailAddress } from "@/lib/hosts";
+import { EMAIL_DOMAIN, emailAddress } from "@/lib/hosts";
 
-/** Inbound routing accepts every Snap mail domain forever: replies to threads
- * started on the legacy domain must still land after the domain move. */
-const SNAP_MAIL_DOMAINS = [...new Set([EMAIL_DOMAIN, LEGACY_HOST, NEW_HOST])];
-const SNAP_ADDRESS_RE = new RegExp(`[^\\s<>,]+@(?:${SNAP_MAIL_DOMAINS.map((d) => d.replace(/\./g, "\\.")).join("|")})`, "gi");
-const SNAP_MESSAGE_ID_DOMAINS = SNAP_MAIL_DOMAINS;
+/** Inbound routing recognizes the Snap mail domain only. */
+const SNAP_ADDRESS_RE = new RegExp(`[^\\s<>,]+@${EMAIL_DOMAIN.replace(/\./g, "\\.")}`, "gi");
 
 
 /** Extract every <…@…> message-id token from an In-Reply-To/References value. */
@@ -121,7 +118,7 @@ export type InboundAddress =
 
 /** Parse the recipients for our routing local-parts (the To/Cc headers as
  * delivered): t-{threadId}-{token}@, hello+{leadId}@ and hello+{slug}@ on
- * the Snap mail domain (current AND legacy - old threads keep routing). First match wins; display names tolerated. */
+ * the Snap mail domain. First match wins; display names tolerated. */
 export function parseInboundAddress(toHeader: string | null | undefined): InboundAddress | null {
   if (!toHeader) return null;
   const addrs = toHeader.match(SNAP_ADDRESS_RE) ?? [];
@@ -170,7 +167,7 @@ export function looksLikeDsn(payload: {
  * in In-Reply-To/References or the failed-message headers). */
 export function extractSnapMessageIds(body: string | null | undefined): string[] {
   if (!body) return [];
-  return parseMessageIds(body).filter((id) => SNAP_MESSAGE_ID_DOMAINS.some((d) => id.endsWith(`@${d}>`)));
+  return parseMessageIds(body).filter((id) => id.endsWith(`@${EMAIL_DOMAIN}>`));
 }
 
 /** Detect auto-forwarded mail (Gmail's "forward a copy" recipe wraps the

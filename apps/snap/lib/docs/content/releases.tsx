@@ -35,6 +35,18 @@ export default function Releases() {
         polish fold into the next entry rather than getting their own.
       </Note>
 
+      <Release version="0.11.1" date="October 8, 2026">
+        <p>
+          <strong>Emails now come from snaphq.app.</strong> Gallery links, login codes, booking
+          confirmations and replies are sent from hello@snaphq.app, and customer replies thread
+          into your Snap inbox through snaphq.app addresses.
+        </p>
+        <p>
+          <strong>Heads up:</strong> reply addresses from emails sent before this release no
+          longer work. Links inside those emails still open normally.
+        </p>
+      </Release>
+
       <Release version="0.11.0" date="October 8, 2026">
         <p>
           <strong>Snap has a new home: snaphq.app.</strong> Galleries, booking pages, the client
