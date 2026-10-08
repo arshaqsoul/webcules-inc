@@ -11,6 +11,8 @@ declare namespace Cloudflare {
     /** WEB-352: signing secret of the Connect-scoped webhook endpoint ("Connected accounts"). */
     STRIPE_CONNECT_WEBHOOK_SECRET?: string;
     STRIPE_SECRET_KEY?: string;
+    /** WEB-352: Stripe Connect OAuth client id (ca_...) - enables "connect an existing Stripe account". */
+    STRIPE_CONNECT_CLIENT_ID?: string;
     TURNSTILE_SECRET_KEY?: string;
     R2_S3_ACCESS_KEY_ID?: string;
     R2_S3_SECRET_ACCESS_KEY?: string;
@@ -43,6 +45,7 @@ interface Env {
   STRIPE_WEBHOOK_SECRET?: string;
   STRIPE_CONNECT_WEBHOOK_SECRET?: string;
   STRIPE_SECRET_KEY?: string;
+  STRIPE_CONNECT_CLIENT_ID?: string;
   TURNSTILE_SECRET_KEY?: string;
   R2_S3_ACCESS_KEY_ID?: string;
   R2_S3_SECRET_ACCESS_KEY?: string;

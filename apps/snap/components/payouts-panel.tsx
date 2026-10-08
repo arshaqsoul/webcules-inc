@@ -21,6 +21,18 @@ type ConnectStatus = {
   payoutSchedule?: { interval?: string; delay_days?: number } | null;
   balance?: { availableMinor: number; pendingMinor: number; currency: string } | null;
   lastPayout?: { amountMinor: number; currency: string; arrivalAt: string; status: string } | null;
+  /** WEB-352: "connect an existing Stripe account" is configured (STRIPE_CONNECT_CLIENT_ID). */
+  oauthAvailable?: boolean;
+};
+
+const OAUTH_RESULT_COPY: Record<string, { tone: "ok" | "err"; text: string }> = {
+  connected: { tone: "ok", text: "Your existing Stripe account is connected." },
+  denied: { tone: "err", text: "You cancelled the connection - nothing was changed." },
+  invalid_state: { tone: "err", text: "That connection link expired or didn't start here. Please try again." },
+  invalid_code: { tone: "err", text: "Stripe didn't return a valid code. Please try again." },
+  already_connected: { tone: "err", text: "This studio already has a Stripe account connected." },
+  account_in_use: { tone: "err", text: "That Stripe account is already connected to another studio." },
+  failed: { tone: "err", text: "Couldn't finish connecting your Stripe account. Please try again." },
 };
 
 function money(amountMinor: number, currency: string): string {
@@ -59,7 +71,7 @@ const STATE_COPY: Record<ConnectStatus["state"], { label: string; tone: string; 
   },
 };
 
-export function PayoutsPanel({ returnHint }: { returnHint?: string }) {
+export function PayoutsPanel({ returnHint, oauthResult }: { returnHint?: string; oauthResult?: string }) {
   const [status, setStatus] = useState<ConnectStatus | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -138,6 +150,12 @@ export function PayoutsPanel({ returnHint }: { returnHint?: string }) {
         <p className="mt-2 text-xs text-ink-tertiary">If the link expired, click below to get a fresh one.</p>
       )}
 
+      {oauthResult && OAUTH_RESULT_COPY[oauthResult] && (
+        <p className={`mt-2 text-xs ${OAUTH_RESULT_COPY[oauthResult].tone === "ok" ? "text-success-text" : "text-destructive"}`}>
+          {OAUTH_RESULT_COPY[oauthResult].text}
+        </p>
+      )}
+
       {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
 
       {status?.state === "restricted" && (status.pastDue?.length ?? 0) > 0 && (
@@ -178,6 +196,14 @@ export function PayoutsPanel({ returnHint }: { returnHint?: string }) {
           <Button size="sm" disabled={busy} onClick={() => void startConnect(false)}>
             {busy ? "Redirecting…" : "Connect payouts"}
           </Button>
+        )}
+        {status?.state === "not_connected" && status.oauthAvailable && (
+          <a
+            href="/api/studio/payouts/oauth/start"
+            className="inline-flex h-8 items-center rounded-md border border-hairline px-3 text-[13px] font-medium text-ink hover:bg-surface-2"
+          >
+            I already have a Stripe account
+          </a>
         )}
         {status?.state === "pending" && (
           <Button size="sm" disabled={busy} onClick={() => void startConnect(false)}>

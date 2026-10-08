@@ -8,6 +8,7 @@
  *   charge.dispute.created          → payment flagged disputed (refunds frozen)
  *   charge.dispute.closed           → dispute outcome recorded (won restores, lost stays flagged)
  *   account.updated                 → Connect onboarding state refresh (Epic 14)
+ *   account.application.deauthorized→ a connected studio revoked Snap's access (WEB-352)
  *
  * WEB-352: client payments are DIRECT charges on the studio's Stripe account, so
  * their events arrive from a second endpoint scoped to "Connected accounts"
@@ -336,6 +337,14 @@ export async function POST(req: Request) {
           const { deriveConnectState, paymentCurrencyOf, saveConnectState } = await import("@/lib/connect");
           await saveConnectState(organizationId, account.id, deriveConnectState(account), paymentCurrencyOf(account));
         }
+        break;
+      }
+      case "account.application.deauthorized": {
+        // WEB-352: an OAuth-connected studio revoked Snap's access in their Stripe dashboard.
+        // Forget the account so payments stop being attempted on it (the studio can reconnect).
+        if (!connectedAccount) break;
+        const { disconnectStudioAccount } = await import("@/lib/connect");
+        await disconnectStudioAccount(connectedAccount);
         break;
       }
       case "customer.subscription.created":

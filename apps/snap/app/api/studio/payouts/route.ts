@@ -6,6 +6,7 @@ import { getOrgContext } from "@/lib/session";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { readConnectStatus, type ConnectState } from "@/lib/connect";
 import { getStripe } from "@/lib/stripe";
+import { env } from "cloudflare:workers";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +21,7 @@ export async function GET() {
   if (!profile) return Response.json({ error: "no_studio" }, { status: 404 });
 
   if (!profile.stripeAccountId) {
-    return Response.json({ state: "not_connected" as ConnectState, accountId: null });
+    return Response.json({ state: "not_connected" as ConnectState, accountId: null, oauthAvailable: Boolean(env.STRIPE_CONNECT_CLIENT_ID) });
   }
 
   const stripe = await getStripe();

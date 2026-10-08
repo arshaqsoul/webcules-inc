@@ -20,6 +20,15 @@ export default function Payouts() {
         grad="sea"
       />
 
+      <H2>Already have a Stripe account?</H2>
+      <p>
+        If your studio already uses Stripe, choose <strong>I already have a Stripe account</strong> next to
+        Connect payouts. You sign in to Stripe, approve Snap, and payments go to that account with
+        no new account to create. Stripe&apos;s fees come out of your own account, exactly as with a
+        new one. To disconnect later, revoke Snap in your Stripe dashboard and Snap stops charging
+        on it. (The option only appears once Snap has it switched on for your region.)
+      </p>
+
       <H2>Connecting your Stripe account</H2>
       <p>
         Press <strong>Connect payouts</strong> and Stripe hosts the whole onboarding — identity

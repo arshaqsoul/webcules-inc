@@ -57,6 +57,34 @@ export function chargeAccountId(
   return profile?.stripeAccountId && profile.stripeConnectState === "active" ? profile.stripeAccountId : null;
 }
 
+/** A studio revoked Snap's access in its Stripe dashboard (OAuth-connected accounts): drop the
+ * account so no payment is attempted on it, and audit it. Idempotent. */
+export async function disconnectStudioAccount(accountId: string): Promise<void> {
+  const db = getDb();
+  const row = (
+    await db
+      .select({ organizationId: schema.studioProfiles.organizationId })
+      .from(schema.studioProfiles)
+      .where(eq(schema.studioProfiles.stripeAccountId, accountId))
+      .limit(1)
+  )[0];
+  if (!row) return;
+  await db.batch([
+    db
+      .update(schema.studioProfiles)
+      .set({ stripeAccountId: null, stripeConnectState: "not_connected", updatedAt: new Date() })
+      .where(eq(schema.studioProfiles.organizationId, row.organizationId)),
+    db.insert(schema.auditLog).values({
+      id: crypto.randomUUID(),
+      organizationId: row.organizationId,
+      actorType: "system",
+      action: "connect.account_deauthorized",
+      targetType: "stripe_account",
+      targetId: accountId,
+    }),
+  ]);
+}
+
 /** Can this studio take client payments right now? (active connected account) */
 export async function studioCanTakePayments(organizationId: string): Promise<boolean> {
   const row = (

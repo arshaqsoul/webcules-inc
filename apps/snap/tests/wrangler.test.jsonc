@@ -30,6 +30,8 @@
     "R2_S3_ACCESS_KEY_ID": "test-access-key",
     "R2_S3_SECRET_ACCESS_KEY": "test-secret-key",
     // Test-only secret — token encryption (AES-GCM under a derived key) needs one.
-    "BETTER_AUTH_SECRET": "test-secret-test-secret-test-secret-0123456789"
+    "BETTER_AUTH_SECRET": "test-secret-test-secret-test-secret-0123456789",
+    // WEB-352: enables the "connect an existing Stripe account" OAuth routes under test.
+    "STRIPE_CONNECT_CLIENT_ID": "ca_test_client"
   }
 }
