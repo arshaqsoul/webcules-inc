@@ -35,6 +35,15 @@ export default function Releases() {
         polish fold into the next entry rather than getting their own.
       </Note>
 
+      <Release version="0.11.2" date="October 8, 2026">
+        <p>
+          <strong>Connecting your own domain finishes by itself.</strong> After you add the
+          CNAME and the ownership record, the certificate for your domain is now issued
+          automatically. Previously it could sit on &ldquo;Certificate issuing&rdquo; forever
+          waiting for a record the settings page never showed.
+        </p>
+      </Release>
+
       <Release version="0.11.1" date="October 8, 2026">
         <p>
           <strong>Emails now come from snaphq.app.</strong> Gallery links, login codes, booking

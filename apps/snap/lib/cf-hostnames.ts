@@ -124,9 +124,13 @@ export async function createCustomHostname(
 ): Promise<CfResult<CfHostname>> {
   return cfCall<CfHostname>(cfg, "POST", `/zones/${cfg.zoneId}/custom_hostnames`, {
     hostname,
-    // CA selection (google) is Enterprise-only on our zone — leave the default CA;
-    // per-hostname TXT DCV works the same either way.
-    ssl: { method: "txt", type: "dv" },
+    // CA selection (google) is Enterprise-only on our zone — leave the default CA.
+    // HTTP DCV (WEB-332): once the studio's CNAME points at us, Cloudflare
+    // completes certificate validation by itself (verified live: active in
+    // ~40s with only the CNAME). TXT DCV needed two extra _acme-challenge
+    // records that the settings page never showed, so certs stayed stuck at
+    // pending_validation for customers following the on-screen steps.
+    ssl: { method: "http", type: "dv" },
     // Host stays the fallback origin so the zone's workers route matches;
     // the ORIGINAL studio hostname arrives in X-Forwarded-Host (the worker
     // resolves the studio from it — see requestHost() in lib/domains.ts).

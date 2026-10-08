@@ -39,7 +39,7 @@ describe("createCustomHostname", () => {
     expect(captured!.method).toBe("POST");
     expect(captured!.body).toEqual({
       hostname: "gallery.studio.com",
-      ssl: { method: "txt", type: "dv" },
+      ssl: { method: "http", type: "dv" },
       custom_origin_server: "domains.snaphq.app",
     });
   });
