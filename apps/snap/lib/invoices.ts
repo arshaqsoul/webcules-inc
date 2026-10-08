@@ -272,6 +272,26 @@ export async function sendInvoice(organizationId: string, invoiceId: string): Pr
   return { ok: true, url };
 }
 
+/** Deactivate an invoice's Stripe Payment Link (WEB-352). New links live on the studio's own
+ * account, so the call must run there; links minted before direct charges live on the platform
+ * account, so fall back to it. Returns whether either account accepted the update. */
+export async function deactivatePaymentLink(
+  stripe: { paymentLinks: { update(id: string, params: { active: boolean }, opts?: { stripeAccount: string }): Promise<unknown> } },
+  linkId: string,
+  studioAccountId: string | null,
+): Promise<boolean> {
+  const attempts: Array<{ stripeAccount: string } | undefined> = studioAccountId ? [onAccount(studioAccountId), undefined] : [undefined];
+  for (const opts of attempts) {
+    try {
+      await stripe.paymentLinks.update(linkId, { active: false }, opts);
+      return true;
+    } catch (err) {
+      console.error(`payment link deactivate failed (${opts ? "studio account" : "platform"}):`, String(err));
+    }
+  }
+  return false;
+}
+
 export async function setInvoiceStatus(
   organizationId: string,
   invoiceId: string,
@@ -284,9 +304,8 @@ export async function setInvoiceStatus(
   if (status === "void" && invoice.stripePaymentLinkId) {
     const stripe = await getStripe();
     if (stripe) {
-      await stripe.paymentLinks
-        .update(invoice.stripePaymentLinkId, { active: false })
-        .catch((err) => console.error("payment link deactivate failed:", String(err)));
+      const profile = await getStudioProfile(organizationId);
+      await deactivatePaymentLink(stripe, invoice.stripePaymentLinkId, profile?.stripeAccountId ?? null);
     }
   }
   await db

@@ -59,9 +59,9 @@ Model 2 needs **included credits** (a gap in the current epics, see G6).
    Snap may be paying about 2.9% + 30 cents on every booking payment today.
    The FAQ says that fee "goes to Stripe, never to us".
    Not verified in a live account: this needs a spike (G1).
-3. **Connect fees unverified.**
-   Stripe lists $2 per monthly active account and 0.25% + 25 cents per payout for Express.
-   Who bears that under Snap's account setup is not confirmed, so "bounded ~$2/mo" in C1 and C2 is an assumption.
+3. **Connect fees.**
+   Stripe lists $2 per monthly active account and 0.25% + 25 cents per payout for platforms that handle pricing.
+   Resolved 2026-10-08: with `fees.payer = account` (what Snap now creates) Stripe collects its fees from the studio's own account and charges no Connect fees to the platform, so the per-studio platform cost is $0.
 4. **No reusable module.**
    Everything is scoped inside `apps/snap`.
 5. **No cross-epic launch gate.**
@@ -99,7 +99,10 @@ What this means:
    A controller-based Express-dashboard account (the closest match to today's Express onboarding) needs a browser-completed test onboarding.
    Stripe notes that fee behavior for direct charges on Express accounts varies between Stripe features, so the exact fee split must be confirmed on that account type before committing C2.
 
-Decision needed: use controller-based accounts with direct charges (studio pays Stripe fees, Snap earns no fee, matches the 0% brand), or keep destination charges and accept or recover the fee.
+Update 2026-10-08: the fix shipped. Studio accounts use a full dashboard, `fees.payer = account`, `losses.payments = stripe`; client payments are direct charges.
+Stripe's fee-behavior docs put processing, dispute, Radar, Stripe Tax and currency-conversion fees on the studio's account, and no Connect fees on Snap.
+
+Original decision framing: use controller-based accounts with direct charges (studio pays Stripe fees, Snap earns no fee, matches the 0% brand), or keep destination charges and accept or recover the fee.
 Recommendation: controller-based accounts, `fees.payer = account`, `losses.payments = stripe`, direct charges.
 
 ## 4. Filing status

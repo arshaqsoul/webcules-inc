@@ -4,6 +4,7 @@
  * charge costing the platform 4.00 on a 100.00 payment. */
 import { describe, expect, it } from "vitest";
 
+import { deactivatePaymentLink } from "@/lib/invoices";
 import { STUDIO_ACCOUNT_CONTROLLER, chargeAccountId, deriveConnectState, onAccount, paymentCurrencyOf, studioAccountParams } from "@/lib/connect";
 
 describe("studio account creation (WEB-352)", () => {
@@ -121,5 +122,44 @@ describe("payment currency from the Stripe account (WEB-352)", () => {
     expect(paymentCurrencyOf({ default_currency: undefined })).toBe("usd");
     expect(paymentCurrencyOf({ default_currency: "" })).toBe("usd");
     expect(paymentCurrencyOf({ default_currency: "c" })).toBe("usd");
+  });
+});
+
+describe("invoice payment link deactivation (WEB-352)", () => {
+  const stub = (failOn: Array<string | undefined>) => {
+    const calls: Array<string | undefined> = [];
+    return {
+      calls,
+      paymentLinks: {
+        update: async (_id: string, _p: { active: boolean }, opts?: { stripeAccount: string }) => {
+          calls.push(opts?.stripeAccount);
+          if (failOn.includes(opts?.stripeAccount)) throw new Error("No such payment link");
+          return {};
+        },
+      },
+    };
+  };
+
+  it("deactivates on the studio account first", async () => {
+    const s = stub([]);
+    expect(await deactivatePaymentLink(s, "plink_1", "acct_9")).toBe(true);
+    expect(s.calls).toEqual(["acct_9"]);
+  });
+
+  it("falls back to the platform account for links minted before direct charges", async () => {
+    const s = stub(["acct_9"]);
+    expect(await deactivatePaymentLink(s, "plink_1", "acct_9")).toBe(true);
+    expect(s.calls).toEqual(["acct_9", undefined]);
+  });
+
+  it("uses the platform account when the studio has no connected account", async () => {
+    const s = stub([]);
+    expect(await deactivatePaymentLink(s, "plink_1", null)).toBe(true);
+    expect(s.calls).toEqual([undefined]);
+  });
+
+  it("reports failure when neither account accepts it", async () => {
+    const s = stub(["acct_9", undefined]);
+    expect(await deactivatePaymentLink(s, "plink_1", "acct_9")).toBe(false);
   });
 });
