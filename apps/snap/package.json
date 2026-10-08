@@ -22,6 +22,7 @@
     "@tiptap/react": "^3.31.3",
     "@tiptap/starter-kit": "^3.31.3",
     "@vinext/cloudflare": "latest",
+    "@webcules/commerce": "workspace:*",
     "@webcules/snap-react": "workspace:*",
     "@webcules/ui": "workspace:*",
     "aws4fetch": "^1.0.20",

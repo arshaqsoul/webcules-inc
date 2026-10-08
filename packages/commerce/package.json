@@ -1,0 +1,23 @@
+{
+  "name": "@webcules/commerce",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Host-agnostic commerce core: catalog, pricing, carts, orders and entitlements. Snap is the first host.",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./host": "./src/host.ts",
+    "./money": "./src/money.ts",
+    "./catalog": "./src/catalog.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@webcules/typescript-config": "workspace:*",
+    "typescript": "^5.8.3",
+    "vitest": "^4.1.11"
+  }
+}
