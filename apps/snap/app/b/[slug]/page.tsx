@@ -16,6 +16,7 @@ import { isWhiteLabeled } from "@/lib/branding";
 import { brandIcons, brandOgImage, parseBrandAssets } from "@/lib/brand-assets";
 import { getPlanEntitlements } from "@/lib/plans";
 import { parseBookingPageConfig } from "@/lib/booking-page";
+import { bookingFrameHostScript } from "@/lib/booking-frame-host";
 import { safeHexColor } from "@/lib/embed";
 
 export const dynamic = "force-dynamic";
@@ -174,23 +175,11 @@ export default async function PublicBookingPage({
           ) : null}
         </p>
       </div>
-      {/* The widget reports its height like any other host — grow/shrink the
-       * frame with it (fixed h-[640px] only seeds the first paint). Same-origin
-       * page, so the widget's referrer-derived target origin matches. */}
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `(function () {
-  window.addEventListener("message", function (e) {
-    var f = document.getElementById("snap-booking-frame");
-    if (!f || e.source !== f.contentWindow) return;
-    var d = e.data || {};
-    if (d.type === "snap:height" && typeof d.height === "number") {
-      f.style.height = Math.max(420, Math.round(d.height) + 16) + "px";
-    }
-  });
-})();`,
-        }}
-      />
+      {/* The widget reports its height like any other host - grow/shrink the
+       * frame with it (fixed h-[640px] only seeds the first paint) - and hands
+       * paid bookings up as snap:checkout (WEB-352). Same-origin page, so the
+       * widget's referrer-derived target origin matches. */}
+      <script dangerouslySetInnerHTML={{ __html: bookingFrameHostScript() }} />
     </main>
   );
 }
