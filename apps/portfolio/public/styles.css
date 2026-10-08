@@ -372,6 +372,38 @@ h3 { font-size: 1.12rem; font-weight: 650; }
 }
 .project-wide { grid-column: 1 / -1; border-top-color: var(--sky); }
 
+/* live-site screenshots on project cards */
+.proj-shot {
+  display: block;
+  margin: -26px -26px 16px;
+  border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+  aspect-ratio: 16 / 10;
+  background: var(--bg-soft);
+}
+.proj-shot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+  transition: transform 0.35s ease;
+}
+.proj-shot:hover img { transform: scale(1.045); }
+.proj-credit {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--faint);
+  margin: 14px 0 0 !important;
+}
+.products-head { margin-top: 54px; }
+.products-title { font-size: 1.35rem; margin: 0 0 6px; }
+.project.mini { border-top-color: var(--sky); }
+.project.mini h3 { font-size: 1.08rem; }
+.project.mini .proj-sub { font-size: 0.88rem; }
+.project.mini .proj-tags { margin-top: 14px !important; }
+
 /* ---------- skills ---------- */
 .skill {
   background: var(--surface);

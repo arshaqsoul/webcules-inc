@@ -98,9 +98,9 @@
         </div>
         <dl class="hero-stats reveal" aria-label="Highlights">
           <div><dt>10 yrs</dt><dd>consulting, healthcare &amp; platforms</dd></div>
-          <div><dt>2</dt><dd>production platforms shipped</dd></div>
-          <div><dt>~81k</dt><dd>lines of TypeScript in production</dd></div>
-          <div><dt>37</dt><dd>open notes in the knowledge graph</dd></div>
+          <div><dt>3</dt><dd>production platforms shipped</dd></div>
+          <div><dt>5</dt><dd>live products under my own studio</dd></div>
+          <div><dt>100+</dt><dd>integrations built into tru's catalog</dd></div>
         </dl>
       </div>
     </div>
@@ -345,13 +345,16 @@
         </article>
 
         <article class="card project reveal">
+          <a class="proj-shot" href="https://eluxtravels.uk" target="_blank" rel="noopener" aria-label="Open eluxtravels.uk">
+            <img src="/imgs/projects/eluxtravels.jpg" alt="ELUX Travels — holiday, flight and cruise search homepage" width="1280" height="800" loading="lazy">
+          </a>
           <div class="proj-top">
             <span class="status status-live">● Production</span>
             <a class="status-link" href="https://eluxtravels.uk" target="_blank" rel="noopener">eluxtravels.uk ↗</a>
           </div>
           <h3>ELUX Travels</h3>
           <p class="proj-sub">Multi-region travel booking platform — tours, hotels, flights, cruises —
-            designed, built and shipped solo.</p>
+            built and shipped end to end. UI design: Irfan Faiz.</p>
           <ul class="proj-list">
             <li><strong>~46k lines of hand-written TypeScript</strong>, 23 routes, 22 CMS collections,
               42 server actions, 460+ commits over an 11-month build.</li>
@@ -364,6 +367,7 @@
             <li>Production data migrated from Neon Postgres to Cloudflare D1 via chunked replay scripts.</li>
           </ul>
           <p class="proj-tags"><span>Next.js</span><span>Payload CMS</span><span>Cloudflare Workers</span><span>D1</span><span>R2</span><span>TypeScript</span></p>
+          <p class="proj-credit">UI / visual design by Irfan Faiz · implementation, architecture and product engineering by Arshaq Hisham.</p>
         </article>
 
         <article class="card project reveal">
@@ -415,10 +419,72 @@
           <h3>webcules-init &amp; adjacent experiments</h3>
           <p class="proj-sub">The earlier iteration of the AI app-generation platform — prototyped on the
             Vercel AI SDK with Supabase persistence and component-library-aware generation — later rebuilt
-            into the AI App Generator on Mastra + E2B to add agent memory, sandboxing and orchestration.
-            Alongside it: tru, a workflow-automation experiment on Cloudflare's edge stack, and
-            webcules-ai-platform, an intent-to-execution agentic automation concept.</p>
+            into the AI App Generator on Mastra + E2B to add agent memory, sandboxing and orchestration,
+            alongside webcules-ai-platform, an intent-to-execution agentic automation concept.</p>
           <p class="proj-tags"><span>Vercel AI SDK</span><span>Supabase</span><span>Cloudflare</span></p>
+        </article>
+      </div>
+
+      <header class="section-head reveal products-head">
+        <p class="eyebrow">Live products · webcules</p>
+        <h3 class="products-title">Shipped under my own studio</h3>
+        <p class="section-sub">Click any card to open the live site.</p>
+      </header>
+      <div class="grid grid-4">
+        <article class="card project mini reveal">
+          <a class="proj-shot" href="https://snaphq.app" target="_blank" rel="noopener" aria-label="Open snaphq.app">
+            <img src="/imgs/projects/snap.jpg" alt="Snap — the studio platform for photographers" width="1280" height="800" loading="lazy">
+          </a>
+          <div class="proj-top">
+            <span class="status status-live">● Production</span>
+            <a class="status-link" href="https://snaphq.app" target="_blank" rel="noopener">snaphq.app ↗</a>
+          </div>
+          <h3>Snap</h3>
+          <p class="proj-sub">Multi-tenant SaaS for photographers — booking, pipelines, client galleries,
+            contracts, and payouts to each studio's own Stripe. Launched 2026-09-29; ~93k lines, 18 releases.</p>
+          <p class="proj-tags"><span>Cloudflare Workers</span><span>D1 + R2</span><span>Stripe Connect</span><span>Custom domains</span></p>
+        </article>
+
+        <article class="card project mini reveal">
+          <a class="proj-shot" href="https://tru.webcules.com" target="_blank" rel="noopener" aria-label="Open tru.webcules.com">
+            <img src="/imgs/projects/tru.jpg" alt="tru.webcules — workflow automation, priced per run" width="1280" height="800" loading="lazy">
+          </a>
+          <div class="proj-top">
+            <span class="status status-personal">● Staging</span>
+            <a class="status-link" href="https://tru.webcules.com" target="_blank" rel="noopener">tru.webcules.com ↗</a>
+          </div>
+          <h3>tru</h3>
+          <p class="proj-sub">Workflow automation priced per run, not per seat — a custom Durable Objects
+            engine, 100+ connectors, and a confirm-then-act AI copilot. 41 documented architecture decisions.</p>
+          <p class="proj-tags"><span>Durable Objects</span><span>Queues</span><span>AI copilot</span><span>Polar billing</span></p>
+        </article>
+
+        <article class="card project mini reveal">
+          <a class="proj-shot" href="https://webcules.com" target="_blank" rel="noopener" aria-label="Open webcules.com">
+            <img src="/imgs/projects/webcules.jpg" alt="Webcules — web, design and data studio" width="1280" height="800" loading="lazy">
+          </a>
+          <div class="proj-top">
+            <span class="status status-live">● Studio</span>
+            <a class="status-link" href="https://webcules.com" target="_blank" rel="noopener">webcules.com ↗</a>
+          </div>
+          <h3>Webcules</h3>
+          <p class="proj-sub">My own studio — the human touch behind AI-powered web, design and data,
+            shipping marketing sites to full SaaS platforms in weeks, for clients and for the products above.</p>
+          <p class="proj-tags"><span>Next.js</span><span>Cloudflare</span><span>Data engineering</span></p>
+        </article>
+
+        <article class="card project mini reveal">
+          <a class="proj-shot" href="https://backgrounds.webcules.com" target="_blank" rel="noopener" aria-label="Open backgrounds.webcules.com">
+            <img src="/imgs/projects/backgrounds.jpg" alt="Backgrounds by webcules — AI-crafted design backdrops" width="1280" height="800" loading="lazy">
+          </a>
+          <div class="proj-top">
+            <span class="status status-live">● Live</span>
+            <a class="status-link" href="https://backgrounds.webcules.com" target="_blank" rel="noopener">backgrounds.webcules.com ↗</a>
+          </div>
+          <h3>Backgrounds</h3>
+          <p class="proj-sub">AI-crafted design backdrops for creatives — a curated collection library
+            generated with AI image tooling and shipped as a Next.js storefront.</p>
+          <p class="proj-tags"><span>Next.js</span><span>AI imagery</span><span>R2</span></p>
         </article>
       </div>
     </div>
