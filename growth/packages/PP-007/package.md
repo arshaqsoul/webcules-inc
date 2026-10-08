@@ -17,7 +17,7 @@ Every inquiry lands in one Leads list: contact form, booking page, or typed in b
 No spreadsheet, no lost DMs, no "sorry, I never saw this".
 It is not magic: leads and the unified inbox are on the Free plan.
 
-Gather your inquiries at snap.webcules.com
+Gather your inquiries at snaphq.app
 
 ## Hashtags (paste as the first comment or at the end)
 
@@ -46,7 +46,7 @@ Do not post two reels from a young account on the same day.
 
 ## Link and call to action
 
-Link in bio points to: https://snap.webcules.com/?utm_source=instagram&utm_medium=reel&utm_campaign=PP-007
+Link in bio points to: https://snaphq.app/?utm_source=instagram&utm_medium=reel&utm_campaign=PP-007
 Pinned first comment: Leads and the unified inbox are on the free plan. One contact form embed included; more on paid tiers. Questions welcome here.
 
 ## Engagement plan (human actions only)

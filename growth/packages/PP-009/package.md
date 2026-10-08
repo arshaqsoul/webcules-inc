@@ -17,7 +17,7 @@ One tap, "Everything, full resolution" - and the whole gallery is on its way, st
 No Drive links, no email attachment caps, no "can you resend it?"
 It is not magic: download all is on every plan, and it never costs your client a thing.
 
-Deliver the whole set at snap.webcules.com
+Deliver the whole set at snaphq.app
 
 ## Hashtags (paste as the first comment or at the end)
 
@@ -46,7 +46,7 @@ Do not post two reels from a young account on the same day.
 
 ## Link and call to action
 
-Link in bio points to: https://snap.webcules.com/?utm_source=instagram&utm_medium=reel&utm_campaign=PP-009
+Link in bio points to: https://snaphq.app/?utm_source=instagram&utm_medium=reel&utm_campaign=PP-009
 Pinned first comment: Download all works on every plan, full resolution included. Big galleries leave in parts so nothing times out. Questions welcome here.
 
 ## Engagement plan (human actions only)

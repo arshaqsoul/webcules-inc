@@ -17,7 +17,7 @@ One toggle and every client surface is yours: the badge becomes your copyright l
 White-label is part of Studio and Pro, and the card walks you through it step by step.
 It is not magic: Free and Lite keep the badge; Studio and Pro remove it everywhere.
 
-Make it yours at snap.webcules.com
+Make it yours at snaphq.app
 
 ## Hashtags (paste as the first comment or at the end)
 
@@ -46,7 +46,7 @@ Do not post two reels from a young account on the same day.
 
 ## Link and call to action
 
-Link in bio points to: https://snap.webcules.com/?utm_source=instagram&utm_medium=reel&utm_campaign=PP-008
+Link in bio points to: https://snaphq.app/?utm_source=instagram&utm_medium=reel&utm_campaign=PP-008
 Pinned first comment: White-label is part of Studio and Pro. Free and Lite keep the badge - everything else you saw works on free. Questions welcome here.
 
 ## Engagement plan (human actions only)

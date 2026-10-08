@@ -3,7 +3,7 @@
   "end": {
     "claim": "Expire or replace a gallery link in seconds",
     "note": "Available on the Free plan",
-    "link": "snap.webcules.com"
+    "link": "snaphq.app"
   },
   "claims": [
     {
@@ -27,7 +27,7 @@
       "source": "apps/snap/app/api/grants/[id]/route.ts"
     }
   ],
-  "mark": "snap.webcules.com",
+  "mark": "snaphq.app",
   "inserts": [
     {
       "image": "growth/assets/PP-003/inbox-1.png",

@@ -34,7 +34,7 @@ The moment that proves the pain is gone, held for at least 1.2 s:
 ## End card
 
 Claim line:
-Link text: snap.webcules.com
+Link text: snaphq.app
 
 ## Claims (each must cite code)
 

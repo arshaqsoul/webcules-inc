@@ -30,7 +30,7 @@ function fixture(id, { source, seconds = 12, size = "1080x1920", edl = {}, meta 
     layout: [{ kind: "caption", text: "Open galleries", x: 120, y: 330, w: 600, h: 90, clipped: false }],
     captions: [{ index: 0, text: "Open galleries", words: 2, start_ms: 0, end_ms: 2000 }],
     hook: "Short hook here",
-    end: { claim: "All in one place", link: "snap.webcules.com" },
+    end: { claim: "All in one place", link: "snaphq.app" },
     clicks_total: 1,
     clicks_covered: 1,
     click_view: [{ event_index: 1, out_ms: 3000, box_visible: 1, point_visible: true }],
@@ -63,7 +63,7 @@ test("wrong size fails", () => {
 });
 
 test("unbacked price on screen fails the claims check", () => {
-  const r = fixture("PP-993", { source: "testsrc2", edl: { end: { claim: "Studio plan is $29", link: "snap.webcules.com" } } });
+  const r = fixture("PP-993", { source: "testsrc2", edl: { end: { claim: "Studio plan is $29", link: "snaphq.app" } } });
   assert.ok(r.report.failures.some((f) => f.startsWith("claims backed")), JSON.stringify(r.report.failures));
 });
 

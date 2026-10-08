@@ -393,7 +393,7 @@ await page.evaluate((cfg) => window.setup(cfg), {
   vh,
   layout: layoutFor(),
   stepCount: stepsList.length + insertDefs.length,
-  mark: meta.mark === false ? "" : (meta.mark ?? "snap.webcules.com"),
+  mark: meta.mark === false ? "" : (meta.mark ?? "snaphq.app"),
   end: meta.end,
 });
 

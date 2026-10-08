@@ -3,7 +3,7 @@
   "end": {
     "claim": "No inquiry slips past",
     "note": "One list, one inbox",
-    "link": "snap.webcules.com"
+    "link": "snaphq.app"
   },
   "claims": [
     { "text": "Contact form inquiries land in Leads", "source": "apps/snap/lib/repos/leads.ts" },
@@ -12,5 +12,5 @@
     { "text": "Conversion creates a Booked project", "source": "apps/snap/components/lead-conversation.tsx" },
     { "text": "Leads and inbox on the Free plan", "source": "apps/snap/lib/tier-cards.ts" }
   ],
-  "mark": "snap.webcules.com"
+  "mark": "snaphq.app"
 }

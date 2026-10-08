@@ -6,7 +6,7 @@ If a rule here conflicts with your own judgment, the rule wins and you raise the
 
 ## Mission
 
-Get Snap (https://snap.webcules.com) in front of working photographers and convert them to paid tiers.
+Get Snap (https://snaphq.app) in front of working photographers and convert them to paid tiers.
 The founder's goal is **10 paid users in 30 days** from the `snap.webcules` Instagram account.
 Snap is a photographer SaaS: booking, client galleries, contracts, invoices and payments, 0% commission.
 Tiers and prices come from `apps/snap/lib/tier-cards.ts` and `apps/snap/lib/plans-data.ts`.

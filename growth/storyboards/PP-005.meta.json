@@ -3,7 +3,7 @@
   "end": {
     "claim": "Booked while you shoot",
     "note": "Reminders included",
-    "link": "snap.webcules.com"
+    "link": "snaphq.app"
   },
   "claims": [
     { "text": "Session types carry duration and price", "source": "apps/snap/lib/db-schema.ts" },
@@ -12,5 +12,5 @@
     { "text": "Reminder emails go out on their own", "source": "apps/snap/lib/booking-reminders.ts" },
     { "text": "Booking works on the Free plan", "source": "apps/snap/lib/plans-data.ts" }
   ],
-  "mark": "snap.webcules.com"
+  "mark": "snaphq.app"
 }

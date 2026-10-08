@@ -17,7 +17,7 @@ Share the gallery in selection mode: the client taps a check on the photos they 
 The selection lands straight on the gallery row in your project, and View picks shows exactly what they chose. Set a deadline so the date is on screen while they browse.
 It is not magic: selection mode is on every plan; the nudge button and favorites exports start on Lite and Studio.
 
-Let them pick at snap.webcules.com
+Let them pick at snaphq.app
 
 ## Hashtags (paste as the first comment or at the end)
 
@@ -46,7 +46,7 @@ Do not post two reels from a young account on the same day.
 
 ## Link and call to action
 
-Link in bio points to: https://snap.webcules.com/?utm_source=instagram&utm_medium=reel&utm_campaign=PP-002
+Link in bio points to: https://snaphq.app/?utm_source=instagram&utm_medium=reel&utm_campaign=PP-002
 Pinned first comment: Selection mode with limits and deadlines works on every plan. Nudges and favorites exports start on Lite. Questions welcome here.
 
 ## Engagement plan (human actions only)

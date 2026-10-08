@@ -18,7 +18,7 @@ You can set an expiry on the link, or replace it with a new one.
 The old link stops working right away, and the new one goes to your client by email.
 It is not magic. A client can still share a code or downloaded files, so you control the link, not what people do with it.
 
-Try it free at snap.webcules.com
+Try it free at snaphq.app
 
 ## Hashtags (paste as the first comment or at the end)
 
@@ -42,7 +42,7 @@ You can override it, and the analyst will compare results after 48 hours.
 
 ## Link and call to action
 
-Link in bio points to: https://snap.webcules.com/?utm_source=instagram&utm_medium=reel&utm_campaign=PP-003
+Link in bio points to: https://snaphq.app/?utm_source=instagram&utm_medium=reel&utm_campaign=PP-003
 Pinned first comment: Free plan covers expiry and New link. The emailed code and the limits are as described in the caption, and I am happy to answer questions here.
 
 ## Engagement plan (human actions only)

@@ -17,7 +17,7 @@ Put your booking page link in your bio. The client picks a session, sees your re
 The booking lands straight on your Snap calendar with a reminder email on the way, so nobody no-shows by accident.
 It is not magic: booking works on the Free plan (one session type); Lite raises it to three, and every plan above that is unlimited.
 
-Send the link at snap.webcules.com
+Send the link at snaphq.app
 
 ## Hashtags (paste as the first comment or at the end)
 
@@ -46,7 +46,7 @@ Do not post two reels from a young account on the same day.
 
 ## Link and call to action
 
-Link in bio points to: https://snap.webcules.com/?utm_source=instagram&utm_medium=reel&utm_campaign=PP-005
+Link in bio points to: https://snaphq.app/?utm_source=instagram&utm_medium=reel&utm_campaign=PP-005
 Pinned first comment: Booking pages work on the free plan (one session type). Lite gives you three. Happy to answer questions here.
 
 ## Engagement plan (human actions only)

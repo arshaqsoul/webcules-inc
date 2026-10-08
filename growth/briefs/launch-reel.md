@@ -64,7 +64,7 @@ Every screen must exist and show real demo data.
 
 Claim line: something like "Booking, galleries and payments in one place".
 Note line: "0% commission. 20 GB free." (only if both are in the claims table with sources).
-Link text: `snap.webcules.com`.
+Link text: `snaphq.app`.
 
 ## Success looks like
 

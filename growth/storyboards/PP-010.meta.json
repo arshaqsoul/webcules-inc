@@ -3,7 +3,7 @@
   "end": {
     "claim": "One login for everything",
     "note": "Free for clients",
-    "link": "snap.webcules.com"
+    "link": "snaphq.app"
   },
   "claims": [
     { "text": "Clients sign in with a magic code", "source": "apps/snap/components/portal-login.tsx" },
@@ -11,5 +11,5 @@
     { "text": "Studios only see their own clients", "source": "apps/snap/lib/portal.ts" },
     { "text": "The client portal is free", "source": "apps/snap/lib/plans-data.ts" }
   ],
-  "mark": "snap.webcules.com"
+  "mark": "snaphq.app"
 }

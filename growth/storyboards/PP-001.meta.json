@@ -3,7 +3,7 @@
   "end": {
     "claim": "Secure invoice links, 0% commission",
     "note": "Available on Lite",
-    "link": "snap.webcules.com"
+    "link": "snaphq.app"
   },
   "claims": [
     { "text": "Secure invoice links on send", "source": "apps/snap/components/project-invoices.tsx" },
@@ -13,5 +13,5 @@
     { "text": "Package presets start on Lite", "source": "apps/snap/components/invoice-preset-editor.tsx" },
     { "text": "Mark paid settles an invoice", "source": "apps/snap/components/project-invoices.tsx" }
   ],
-  "mark": "snap.webcules.com"
+  "mark": "snaphq.app"
 }

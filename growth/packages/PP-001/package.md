@@ -17,7 +17,7 @@ Snap invoices carry a secure link for your client. Pick your package preset, cre
 Payments go through your own Stripe, straight to your account. Snap takes 0% of it, ever.
 It is not magic: package presets start on the Lite plan, and invoicing itself is on every plan.
 
-Send your next invoice from snap.webcules.com
+Send your next invoice from snaphq.app
 
 ## Hashtags (paste as the first comment or at the end)
 
@@ -46,7 +46,7 @@ Do not post two reels from a young account on the same day.
 
 ## Link and call to action
 
-Link in bio points to: https://snap.webcules.com/?utm_source=instagram&utm_medium=reel&utm_campaign=PP-001
+Link in bio points to: https://snaphq.app/?utm_source=instagram&utm_medium=reel&utm_campaign=PP-001
 Pinned first comment: Presets and invoices: presets start on Lite ($15/mo), invoicing works on the free plan. Happy to answer questions here.
 
 ## Engagement plan (human actions only)

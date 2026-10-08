@@ -3,7 +3,7 @@
   "end": {
     "claim": "Selections come back in one tap",
     "note": "Picks, limits, deadlines",
-    "link": "snap.webcules.com"
+    "link": "snaphq.app"
   },
   "claims": [
     { "text": "Clients pick right in the gallery", "source": "apps/snap/components/gallery-view.tsx" },
@@ -13,5 +13,5 @@
     { "text": "Nudge gentle reminders on Lite", "source": "apps/snap/app/dashboard/projects/[id]/page.tsx" },
     { "text": "Favorites lists and exports on paid tiers", "source": "apps/snap/app/api/grants/[id]/favorites/export/route.ts" }
   ],
-  "mark": "snap.webcules.com"
+  "mark": "snaphq.app"
 }

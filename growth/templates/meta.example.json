@@ -3,10 +3,10 @@
   "end": {
     "claim": "Revoke any gallery link in one click",
     "note": "Available on the Free plan",
-    "link": "snap.webcules.com"
+    "link": "snaphq.app"
   },
   "claims": [
     { "text": "Free plan", "source": "apps/snap/lib/plans-data.ts" }
   ],
-  "mark": "snap.webcules.com"
+  "mark": "snaphq.app"
 }

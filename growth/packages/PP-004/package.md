@@ -64,7 +64,7 @@ Reasoning:
 
 ## Link and call to action
 
-Link in bio points to: https://snap.webcules.com/?utm_source=instagram&utm_medium=reel&utm_campaign=PP-004
+Link in bio points to: https://snaphq.app/?utm_source=instagram&utm_medium=reel&utm_campaign=PP-004
 Pinned first comment: The studio in the reel is a demo studio on a paid plan, so some of what you see goes beyond the free plan. The pricing page on the site lists exactly what each plan includes. I'm happy to answer questions here.
 
 ## Engagement plan (human actions only)

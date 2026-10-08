@@ -30,7 +30,7 @@ description: Procedure for assembling the final Instagram package for the founde
 
 ## Link
 
-`https://snap.webcules.com/?utm_source=instagram&utm_medium=reel&utm_campaign=PP-###`
+`https://snaphq.app/?utm_source=instagram&utm_medium=reel&utm_campaign=PP-###`
 Use the landing or pricing page depending on the pain point.
 The campaign value is the ledger id so signups trace back to a reel.
 

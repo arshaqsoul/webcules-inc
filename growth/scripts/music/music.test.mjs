@@ -37,7 +37,7 @@ function makeReel() {
     ],
     highlights: [{ event_index: 1, out_ms: 3000 }, { event_index: 2, out_ms: 6000 }],
     ramps: [],
-    end: { claim: "All in one place", link: "snap.webcules.com" },
+    end: { claim: "All in one place", link: "snaphq.app" },
     claims: [],
     clicks_total: 0,
     clicks_covered: 0,

@@ -17,7 +17,7 @@ Your clients get one login. They sign in with their email and a six-digit code, 
 No expired links, no re-sending files, no support emails at 11pm.
 It is not magic: the client portal is free, and studios only ever see their own clients.
 
-Give clients one place at snap.webcules.com
+Give clients one place at snaphq.app
 
 ## Hashtags (paste as the first comment or at the end)
 
@@ -46,7 +46,7 @@ Do not post two reels from a young account on the same day.
 
 ## Link and call to action
 
-Link in bio points to: https://snap.webcules.com/?utm_source=instagram&utm_medium=reel&utm_campaign=PP-010
+Link in bio points to: https://snaphq.app/?utm_source=instagram&utm_medium=reel&utm_campaign=PP-010
 Pinned first comment: The client portal is free and every studio only sees its own clients. Your clients sign in with their email and a code we email them. Questions welcome here.
 
 ## Engagement plan (human actions only)

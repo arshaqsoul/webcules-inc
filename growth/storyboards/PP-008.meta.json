@@ -3,7 +3,7 @@
   "end": {
     "claim": "Your brand, end to end",
     "note": "Studio and Pro plans",
-    "link": "snap.webcules.com"
+    "link": "snaphq.app"
   },
   "claims": [
     { "text": "The gallery badge swaps for the studio name", "source": "apps/snap/components/gallery-view.tsx" },
@@ -11,5 +11,5 @@
     { "text": "The setup card walks the flip", "source": "apps/snap/components/white-label-card.tsx" },
     { "text": "White-label is Studio and Pro", "source": "apps/snap/lib/plans-data.ts" }
   ],
-  "mark": "snap.webcules.com"
+  "mark": "snaphq.app"
 }

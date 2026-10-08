@@ -44,7 +44,7 @@ Never position an effect by looking at the picture.
    1080x1920 output.
    Desktop captures sit in a rounded card with the caption area above, phone captures fill the frame.
 7. **Hook and end card.**
-   Hook text in the first 1.5 s, an end card of 1.5 to 2 s with the claim line and `snap.webcules.com`.
+   Hook text in the first 1.5 s, an end card of 1.5 to 2 s with the claim line and `snaphq.app`.
 8. **Encode.**
    H.264 High, yuv420p, 30 fps, faststart, under 50 MB.
    `edit.mjs` then adds the sound effects track (`scripts/edit/sfx.mjs`, derived from `edl.json`, video stream copied).

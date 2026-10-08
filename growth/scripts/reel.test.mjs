@@ -22,7 +22,7 @@ function validReel(id, takeSource) {
   const f = (ext) => path.join(SB, `${id}${ext}`);
   made.push(f(".md"), f(".meta.json"), f(".take.mjs"));
   fs.writeFileSync(f(".md"), "# Storyboard\n\n## Claims\n\n| claim | source |\n|---|---|\n\n## Do not show\n\nNothing private.\n");
-  fs.writeFileSync(f(".meta.json"), JSON.stringify({ hook: "A short hook", end: { claim: "All in one place", link: "snap.webcules.com" }, claims: [{ text: "Free plan", source: "apps/snap/lib/plans-data.ts" }] }));
+  fs.writeFileSync(f(".meta.json"), JSON.stringify({ hook: "A short hook", end: { claim: "All in one place", link: "snaphq.app" }, claims: [{ text: "Free plan", source: "apps/snap/lib/plans-data.ts" }] }));
   fs.writeFileSync(
     f(".take.mjs"),
     takeSource ??

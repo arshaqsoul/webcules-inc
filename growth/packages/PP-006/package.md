@@ -17,7 +17,7 @@ Build the agreement once from a template, send it from the project, and your cli
 No printing, no "just checking in" emails, no lost attachments.
 It is not magic: contracts work on the Free plan (two templates); Studio lifts the template limit.
 
-Send your next contract at snap.webcules.com
+Send your next contract at snaphq.app
 
 ## Hashtags (paste as the first comment or at the end)
 
@@ -46,7 +46,7 @@ Do not post two reels from a young account on the same day.
 
 ## Link and call to action
 
-Link in bio points to: https://snap.webcules.com/?utm_source=instagram&utm_medium=reel&utm_campaign=PP-006
+Link in bio points to: https://snaphq.app/?utm_source=instagram&utm_medium=reel&utm_campaign=PP-006
 Pinned first comment: Contracts and e-signature work on the free plan (two templates). Studio removes the template cap. Questions welcome here.
 
 ## Engagement plan (human actions only)
