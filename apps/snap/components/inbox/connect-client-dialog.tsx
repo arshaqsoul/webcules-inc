@@ -78,7 +78,9 @@ export function ConnectClientDialog({
                 />
               </label>
               <label className="flex flex-col gap-1">
-                Client name <span className="text-ink-tertiary">(optional)</span>
+                <span>
+                  Client name <span className="text-ink-tertiary">(optional)</span>
+                </span>
                 <input value={name} onChange={(e) => setName(e.target.value)} className={inputCls} />
               </label>
               {error && <p className="text-[13px] text-destructive">{error}</p>}
