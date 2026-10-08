@@ -28,6 +28,17 @@
   // Outbound transactional email (Cloudflare Email Service beta).
   "send_email": [{ "name": "EMAIL" }],
   "routes": [
+    // WEB-330: snaphq.app is the canonical host; snap.webcules.com stays attached
+    // forever (links already emailed, embed loader on photographers' sites, the
+    // Stripe webhook). Attaching a custom domain creates its DNS record.
+    {
+      "pattern": "snaphq.app",
+      "custom_domain": true
+    },
+    {
+      "pattern": "www.snaphq.app",
+      "custom_domain": true
+    },
     {
       "pattern": "snap.webcules.com",
       "custom_domain": true
@@ -56,8 +67,8 @@
   ],
   "observability": { "enabled": true },
   "vars": {
-    "NEXT_PUBLIC_APP_URL": "https://snap.webcules.com",
-    "BETTER_AUTH_URL": "https://snap.webcules.com",
+    "NEXT_PUBLIC_APP_URL": "https://snaphq.app",
+    "BETTER_AUTH_URL": "https://snaphq.app",
     "EMAIL_FROM": "Snap <hello@snap.webcules.com>",
     "TURNSTILE_SITE_KEY": "0x4AAAAAAFEC0tEjN8W9HSIe",
     // Email-shock contingency (WEB-132): "off" stops gallery OTP emails entirely;

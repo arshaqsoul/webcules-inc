@@ -32,7 +32,8 @@ const STAGING = {
   d1Id: "9b850d02-67d3-4c1b-a7ed-482cc587b2d5",
   r2Bucket: "snap-staging",
 };
-const PROD_URL = "https://snap.webcules.com";
+const PROD_URL = "https://snaphq.app";
+const LEGACY_PROD_URL = "https://snap.webcules.com"; // must keep answering forever (WEB-330)
 const ZONE_ID = "5de72a6806708f95960d382acaa466b0";
 
 const args = process.argv.slice(2);
@@ -165,14 +166,14 @@ if (target === "staging") {
   }
   console.log("== SNAP PRODUCTION DEPLOY (staging-verified) ==");
   build();
-  console.log("• deploying production worker (snap.webcules.com)");
+  console.log("• deploying production worker (snaphq.app + legacy snap.webcules.com)");
   // Plain wrangler deploy on the generated config — `pnpm deploy`
   // (vinext-cloudflare) currently crashes on Windows and would also rebuild,
   // discarding the cache-clean build above.
   run("npx wrangler deploy --config dist/server/wrangler.json");
   console.log("• smoke check:");
-  const ok = await smoke(PROD_URL);
-  console.log(ok ? "✅ production live at " + PROD_URL : "⚠️  smoke check failed — CHECK IMMEDIATELY");
+  const ok = (await smoke(PROD_URL)) && (await smoke(LEGACY_PROD_URL));
+  console.log(ok ? "✅ production live at " + PROD_URL + " and " + LEGACY_PROD_URL : "⚠️  smoke check failed — CHECK IMMEDIATELY");
   console.log("   D1 reminder: apply any new migrations to BOTH databases (staging first, then prod).");
   await ensureActiveDomainRoutes();
 } else {

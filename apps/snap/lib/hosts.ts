@@ -21,7 +21,7 @@
 export const LEGACY_HOST = "snap.webcules.com";
 export const NEW_HOST = "snaphq.app";
 
-export const PUBLIC_HOST: string = LEGACY_HOST;
+export const PUBLIC_HOST: string = NEW_HOST;
 export const PUBLIC_ORIGIN = `https://${PUBLIC_HOST}`;
 
 export const EMAIL_DOMAIN: string = LEGACY_HOST;
