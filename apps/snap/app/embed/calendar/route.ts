@@ -645,7 +645,7 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
         msg.textContent = body.error === "captcha_failed"
           ? "Verification failed — please try again."
           : body.error === "payments_unavailable"
-            ? "This studio can't take online payments right now — please contact them directly to book."
+            ? "This studio can't take online payments right now - please contact them directly to book."
             : "Booking failed — please try again.";
         btn.disabled = false;
       }

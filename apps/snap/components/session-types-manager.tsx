@@ -43,7 +43,7 @@ export function SessionTypesManager({
   initial: SessionTypeView[];
   formTemplates: Array<{ id: string; name: string }>;
   limit: number | null;
-  /** Studio payment currency (lowercase ISO) — what clients are charged in. */
+  /** Studio payment currency (lowercase ISO) - what clients are charged in. */
   currency?: string;
   /** WEB-352: the studio's Stripe account is connected and can take charges. */
   payoutsReady?: boolean;
@@ -259,7 +259,7 @@ function TypeForm({
           </select>
           {!payoutsReady && (t.depositKind === "deposit" || t.depositKind === "full") && (
             <span className="mt-1 text-xs text-amber-600 dark:text-amber-400">
-              Connect Stripe first — clients can&apos;t pay until you do.{" "}
+              Connect Stripe first - clients can&apos;t pay until you do.{" "}
               <a href="/dashboard/settings/payouts" className="font-medium underline underline-offset-2">Settings → Payouts</a>
             </span>
           )}

@@ -1,4 +1,4 @@
-/* Payouts — connecting your own Stripe account and where client money goes. Read from
+/* Payouts - connecting your own Stripe account and where client money goes. Read from
  * components/payouts-panel.tsx, lib/connect.ts, and the booking/invoice
  * charge paths (direct charges on the studio account, no application fee, WEB-352). Fee and
  * timing claims stay within what the code and panel actually show. */
@@ -71,7 +71,7 @@ export default function Payouts() {
       <p>
         Snap takes nothing from a booking, and no payment ever passes through Snap&apos;s Stripe
         account: clients pay you directly. Stripe&apos;s standard processing fees apply to card
-        payments and are charged to your own Stripe account — they&apos;re visible per transaction
+        payments and are charged to your own Stripe account - they&apos;re visible per transaction
         in your Stripe dashboard.
         Check Stripe&apos;s pricing for current rates; Snap doesn&apos;t add anything on top.
       </p>

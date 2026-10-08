@@ -1,4 +1,4 @@
-/* Start (or resume) Stripe onboarding for the studio's own Stripe account — creates the connected account
+/* Start (or resume) Stripe onboarding for the studio's own Stripe account - creates the connected account
  * on first call, then returns a Stripe-hosted Account Link. Body
  * { update?: true } requests the re-auth variant for restricted accounts. */
 import { permissionDenied } from "@/lib/permissions";

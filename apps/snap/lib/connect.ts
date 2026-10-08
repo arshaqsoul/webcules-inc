@@ -1,4 +1,4 @@
-/* Stripe Connect (Epic 14) — the photographer's own Stripe account.
+/* Stripe Connect (Epic 14) - the photographer's own Stripe account.
  * Snap stores only the account id + a DERIVED state; all KYC/bank data stays
  * in Stripe. Monetization is subscription-only: every client payment is a
  * DIRECT charge on the studio's account (WEB-352) - the money, the Stripe
