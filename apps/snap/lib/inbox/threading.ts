@@ -3,7 +3,7 @@
  * the threading corpus (In-Reply-To chains, stripped-header replies,
  * Outlook Thread-Index, RFC 5256 subject fallback, DSN detection). */
 
-import { EMAIL_DOMAIN, emailAddress } from "@/lib/hosts";
+import { EMAIL_DOMAIN, LEGACY_HOST, NEW_HOST, emailAddress } from "@/lib/hosts";
 
 /** Inbound routing recognizes the Snap mail domain only. */
 const SNAP_ADDRESS_RE = new RegExp(`[^\\s<>,]+@${EMAIL_DOMAIN.replace(/\./g, "\\.")}`, "gi");
@@ -181,4 +181,12 @@ export function unwrapForwardedSender(payload: {
   if (!payload.autoSubmitted || !payload.xForwardedFor) return null;
   const inner = payload.xForwardedFor.match(/[^\s<>,]+@[^\s<>,]+/);
   return inner ? inner[0] : null;
+}
+
+/** The stand-in recipient stored on a conversation that has no real client
+ * email (lib/repos/inbox.ts) - on the current or the legacy Snap domain. A
+ * reply to it can never be delivered, so the composer refuses it (WEB-334). */
+export function isPlaceholderClientEmail(email: string | null | undefined): boolean {
+  const m = /^unknown@(.+)$/i.exec((email ?? "").trim());
+  return Boolean(m) && [LEGACY_HOST, NEW_HOST, EMAIL_DOMAIN].includes(m![1].toLowerCase());
 }

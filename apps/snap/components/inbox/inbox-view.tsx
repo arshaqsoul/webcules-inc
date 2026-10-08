@@ -284,6 +284,8 @@ export function InboxView({
   const [reply, setReply] = useState("");
   const [sending, setSending] = useState(false);
   const [sendFailed, setSendFailed] = useState(false);
+  // WEB-334: set when the server refuses the reply outright (no real client email).
+  const [sendBlocked, setSendBlocked] = useState<string | null>(null);
   const [mirror, setMirror] = useState(true);
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map());
@@ -592,6 +594,7 @@ export function InboxView({
     if (!openThreadId || !reply.trim() || sending) return;
     setSending(true);
     setSendFailed(false);
+    setSendBlocked(null);
     const body = reply;
     const pending: TimelineMessage = {
       type: "message",
@@ -611,7 +614,12 @@ export function InboxView({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ body, mirrorCopy: mirror }),
       });
-      const out = (await res.json().catch(() => ({}))) as { delivered?: boolean };
+      const out = (await res.json().catch(() => ({}))) as { delivered?: boolean; error?: string };
+      if (res.status === 422 && out.error === "no_client_email") {
+        setThread((t) => (t ? { ...t, timeline: t.timeline.filter((e) => e.id !== pending.id) } : t));
+        setSendBlocked("This conversation has no client email address, so there is nobody to send to. Link a client to the project first.");
+        return;
+      }
       if (!res.ok) throw new Error("reply_failed");
       if (out.delivered === false) {
         // Recorded but not delivered — keep the draft so Retry (and edits) work.
@@ -954,6 +962,9 @@ export function InboxView({
 
               {/* Composer */}
               <div className="border-t border-hairline bg-surface-1 px-5 py-3.5">
+                {sendBlocked && (
+                  <p className="mb-2 rounded-md bg-amber-500/10 px-3 py-2 text-[13px] text-amber-700 dark:text-amber-400">{sendBlocked}</p>
+                )}
                 {sendFailed && (
                   <p className="mb-2 flex items-center justify-between gap-3 rounded-md bg-amber-500/10 px-3 py-2 text-[13px] text-amber-700 dark:text-amber-400">
                     <span>Email delivery didn&rsquo;t go out — your reply is saved on the thread.</span>

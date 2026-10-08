@@ -17,10 +17,10 @@ import { getThreadWithMessages, appendThreadMessage, resolveOrCreateThread } fro
 import { recordOutboundReply } from "@/lib/repos/leads";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { getEmailBrand } from "@/lib/branding";
-import { sendEmail } from "@/lib/email";
+import { sendEmail, sendEmailDetailed } from "@/lib/email";
 import { renderMergeFrom } from "@/lib/merge";
 import { buildReplyEmail, studioSignature } from "@/lib/inbox/compose";
-import { threadAddress } from "@/lib/inbox/threading";
+import { isPlaceholderClientEmail, threadAddress } from "@/lib/inbox/threading";
 import { ensureThreadRouting } from "@/lib/inbox/ingest";
 import { safeHexColor } from "@/lib/embed";
 import { EMAIL_DOMAIN } from "@/lib/hosts";
@@ -50,6 +50,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const data = await getThreadWithMessages(ctx.organizationId, id);
   if (!data) return Response.json({ error: "not_found" }, { status: 404 });
   const { thread } = data;
+  // A conversation with no real client email stores a placeholder recipient;
+  // nothing sent to it can arrive, so say so instead of failing delivery.
+  if (isPlaceholderClientEmail(thread.clientEmail)) {
+    return Response.json({ error: "no_client_email" }, { status: 422 });
+  }
 
   const profile = await getStudioProfile(ctx.organizationId);
   if (!profile) return Response.json({ error: "no_studio" }, { status: 404 });
@@ -71,9 +76,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   // WEB-307: the reply sends from the per-thread address
   // (t-{threadId}-{token}@) — a client answer to it self-identifies the
-  // thread even with every header stripped — and carries full threading
-  // headers: our Message-ID, the References chain, a Thread-Index Outlook
-  // groups on, and X-Snap-Thread-ID as the fast lane.
+  // thread even with every header stripped — and carries In-Reply-To, the
+  // References chain and X-Snap-Thread-ID as the fast lane. WEB-334: the Email
+  // Service rejects Message-ID and Thread-Index (it generates its own
+  // Message-ID, returned from send()), so those are never set here.
   const threadRow = await ensureThreadRouting(ctx.organizationId, thread.id);
   const fromAddress = threadAddress(thread.id, threadRow.addressToken);
   const priorIds = (
@@ -85,11 +91,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   )
     .map((r) => r.id!)
     .filter((id) => !id.startsWith("<bounce-"));
-  const messageId = `<${crypto.randomUUID()}@${EMAIL_DOMAIN}>`;
   const headers: Record<string, string> = {
-    "Message-ID": messageId,
     "X-Snap-Thread-ID": thread.id,
-    "Thread-Index": threadRow.threadIndexBase64,
   };
   if (priorIds.length) {
     headers["In-Reply-To"] = priorIds[priorIds.length - 1];
@@ -105,7 +108,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     signature,
   });
 
-  const sent = await sendEmail({
+  const result = await sendEmailDetailed({
     to: thread.clientEmail,
     subject,
     html: tmpl.html,
@@ -118,6 +121,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     refId: thread.id,
     headers,
   });
+  const sent = result.ok;
+  // The id the service assigned - what a client reply's In-Reply-To will carry,
+  // so inbound mail threads back here. A locally minted id only stands in when
+  // the send failed (the record still needs a unique key).
+  const messageId = result.messageId ?? `<${crypto.randomUUID()}@${EMAIL_DOMAIN}>`;
 
   // Mirror copy (dual delivery during the trust period): the studio's own
   // inbox keeps a searchable record while Snap's inbox proves itself.
