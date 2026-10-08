@@ -18,6 +18,7 @@ import { getStudioProfile } from "./repos/studios";
 import { safeHexColor } from "./embed";
 import { deleteAsset, assetProtectedByGrant } from "./repos/assets";
 import { toInfrequentAccess, toStandard } from "./storage/r2s3";
+import { appUrl } from "@/lib/app-origin";
 
 const DAY = 86400;
 /** Hot window before first archive eligibility (spec: 6 months). */
@@ -75,7 +76,7 @@ async function emailStage(
   const tmpl = render({
     studioName: profile.studioName,
     accent: safeHexColor(JSON.parse(profile.brand || "{}").accent) ?? "#5e6ad2",
-    vaultUrl: "https://snap.webcules.com/dashboard/raw-vault",
+    vaultUrl: await appUrl("/dashboard/raw-vault"),
     bytes: assets.reduce((n, a) => n + a.bytes, 0),
     projects: [...new Set(assets.map((a) => titles.get(a.projectId) ?? "a project"))],
     count: assets.length,

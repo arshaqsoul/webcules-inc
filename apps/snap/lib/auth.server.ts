@@ -19,6 +19,7 @@ import { env } from "cloudflare:workers";
 
 import { getDb } from "./db";
 import * as schema from "./db-schema";
+import { PUBLIC_HOST, emailAddress, trustedAppOrigins } from "@/lib/hosts";
 
 const SNAP_BRAND = {
   canvas: "#010102",
@@ -41,7 +42,7 @@ function otpEmailHtml(code: string, purpose: string): string {
       </td></tr>
       <tr><td style="padding-top:32px;border-top:1px solid ${SNAP_BRAND.hairline};"><p style="margin:0;font-size:12px;line-height:1.5;color:${SNAP_BRAND.inkSubtle};">If you didn&rsquo;t request this, you can safely ignore this email.</p></td></tr>
     </table>
-    <p style="margin:16px 0 0;font-size:12px;color:${SNAP_BRAND.inkSubtle};">snap.webcules.com</p>
+    <p style="margin:16px 0 0;font-size:12px;color:${SNAP_BRAND.inkSubtle};">${PUBLIC_HOST}</p>
   </td></tr></table></body></html>`;
 }
 
@@ -60,7 +61,7 @@ function resetPasswordEmailHtml(url: string): string {
       </td></tr>
       <tr><td style="padding-top:32px;border-top:1px solid ${SNAP_BRAND.hairline};"><p style="margin:0;font-size:12px;line-height:1.5;color:${SNAP_BRAND.inkSubtle};">If you didn&rsquo;t request this, you can safely ignore this email &mdash; your current password stays unchanged.</p></td></tr>
     </table>
-    <p style="margin:16px 0 0;font-size:12px;color:${SNAP_BRAND.inkSubtle};">snap.webcules.com</p>
+    <p style="margin:16px 0 0;font-size:12px;color:${SNAP_BRAND.inkSubtle};">${PUBLIC_HOST}</p>
   </td></tr></table></body></html>`;
 }
 
@@ -79,7 +80,7 @@ const INVITE_HTML = `<!doctype html><html><body style="margin:0;padding:0;backgr
     </td></tr>
     <tr><td style="padding-top:32px;border-top:1px solid ${SNAP_BRAND.hairline};"><p style="margin:0;font-size:12px;line-height:1.5;color:${SNAP_BRAND.inkSubtle};">The invitation expires in 7 days. If you didn&rsquo;t expect it, you can ignore this email.</p></td></tr>
   </table>
-  <p style="margin:16px 0 0;font-size:12px;color:${SNAP_BRAND.inkSubtle};">snap.webcules.com</p>
+  <p style="margin:16px 0 0;font-size:12px;color:${SNAP_BRAND.inkSubtle};">${PUBLIC_HOST}</p>
 </td></tr></table></body></html>`;
 
 async function deliverResetLink(to: string, url: string): Promise<void> {
@@ -91,7 +92,7 @@ async function deliverResetLink(to: string, url: string): Promise<void> {
   }
   await env.EMAIL.send({
     to,
-    from: env.EMAIL_FROM || "Snap <hello@snap.webcules.com>",
+    from: env.EMAIL_FROM || `Snap <${emailAddress("hello")}>`,
     subject: "Reset your Snap password",
     html: resetPasswordEmailHtml(url),
     text: `Reset your Snap password: ${url} — the link expires in 60 minutes and can only be used once.`,
@@ -118,7 +119,7 @@ async function deliverOtp(to: string, code: string, purpose: string): Promise<vo
   }
   await env.EMAIL.send({
     to,
-    from: env.EMAIL_FROM || "Snap <hello@snap.webcules.com>",
+    from: env.EMAIL_FROM || `Snap <${emailAddress("hello")}>`,
     subject: "Your Snap verification code",
     html: otpEmailHtml(code, purpose),
     text: `Your Snap verification code is ${code}. It expires in 10 minutes. (${purpose})`,
@@ -166,9 +167,7 @@ async function createAuthInstance() {
     appName: "Snap",
     baseURL: env.BETTER_AUTH_URL,
     secret: env.BETTER_AUTH_SECRET,
-    trustedOrigins: [env.BETTER_AUTH_URL, "http://localhost:5173", "http://localhost:3000"].filter(
-      Boolean,
-    ) as string[],
+    trustedOrigins: [...trustedAppOrigins(env.BETTER_AUTH_URL), "http://localhost:5173", "http://localhost:3000"],
     database: drizzleAdapter(getDb(), { provider: "sqlite" }),
     emailAndPassword: {
       enabled: true,
@@ -336,7 +335,7 @@ async function createAuthInstance() {
           }
           await env.EMAIL.send({
             to: email,
-            from: env.EMAIL_FROM || "Snap <hello@snap.webcules.com>",
+            from: env.EMAIL_FROM || `Snap <${emailAddress("hello")}>`,
             subject: `${inviter.user.name} invited you to ${organization.name} on Snap`,
             html: INVITE_HTML.replace(/__URL__/g, url)
               .replace(/__ORG__/g, organization.name)

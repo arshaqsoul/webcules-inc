@@ -11,8 +11,9 @@ import { DocsCode } from "@/components/docs-code";
 import { DocsLiveDemo } from "@/components/docs-live-demo";
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
+import { PUBLIC_ORIGIN } from "@/lib/hosts";
 
-const LOADER = "https://snap.webcules.com/embed/loader.js";
+const LOADER = `${PUBLIC_ORIGIN}/embed/loader.js`;
 
 async function LiveDemo() {
   const row = (
@@ -42,8 +43,8 @@ export default function Embeds() {
       <Callout tone="warn" title="Before you embed">
         Widgets render inside an iframe guarded by <code>frame-ancestors</code>. Add your site
         under Settings → Embeds → Allowed embed sites, or the browser will block the iframe. If
-        your site ships its own CSP, allow <code>script-src https://snap.webcules.com</code> and{" "}
-        <code>frame-src https://snap.webcules.com</code>.
+        your site ships its own CSP, allow <code>script-src {PUBLIC_ORIGIN}</code> and{" "}
+        <code>frame-src {PUBLIC_ORIGIN}</code>.
       </Callout>
 
       <H2>Live demo (React package)</H2>

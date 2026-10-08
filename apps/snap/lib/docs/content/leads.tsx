@@ -4,6 +4,7 @@
  * components/inbox/*, lib/repos/inbox.ts and lib/inbox/ingest.ts
  * (WEB-303..309 — the inbox epic). */
 import { H2, Note, Callout, Shot, Tier, Related } from "@/lib/docs/primitives";
+import { EMAIL_DOMAIN } from "@/lib/hosts";
 
 export default function Leads() {
   return (
@@ -88,7 +89,7 @@ export default function Leads() {
 
       <H2>Replying &amp; the composer</H2>
       <p>
-        Replies send from the conversation&apos;s own address on snap.webcules.com — your
+        Replies send from the conversation&apos;s own address on {EMAIL_DOMAIN} — your
         studio&apos;s display name up front, your contact address as Reply-To — so the client just
         hits reply and lands back on the same thread. <strong>Insert a saved reply…</strong>{" "}
         drops in one of your email snippets from{" "}

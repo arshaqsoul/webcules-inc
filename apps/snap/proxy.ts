@@ -6,12 +6,13 @@
  * on any host unchanged. */
 import { NextResponse, type NextRequest } from "next/server";
 
+import { appOrigin } from "@/lib/app-origin";
 import { nonClientPathRedirect } from "@/lib/domains";
 
-export const proxy = (req: NextRequest) => {
+export const proxy = async (req: NextRequest) => {
   const host = req.headers.get("x-forwarded-host")?.split(",")[0].trim() || req.headers.get("host") || new URL(req.url).host;
   const { pathname } = new URL(req.url);
-  const target = nonClientPathRedirect(host, pathname);
+  const target = nonClientPathRedirect(host, pathname, await appOrigin());
   if (target) {
     const url = new URL(target);
     url.search = new URL(req.url).search;

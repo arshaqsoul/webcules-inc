@@ -10,6 +10,7 @@ import { env } from "cloudflare:workers";
 import { getPlanEntitlements } from "./plans";
 import { getStudioProfile } from "./repos/studios";
 import { safeHexColor } from "./embed";
+import { PUBLIC_ORIGIN } from "@/lib/hosts";
 
 export type WhiteLabelEnt = { whiteLabel: boolean } | null | undefined;
 
@@ -81,7 +82,7 @@ export async function getEmailBrand(organizationId: string): Promise<EmailBrand>
   if (whiteLabel) {
     const assets = parseEmailAssetBag(profile?.brandAssets);
     if (assets.emailHeader && assets.rev) {
-      const origin = env.NEXT_PUBLIC_APP_URL ?? "https://snap.webcules.com";
+      const origin = env.NEXT_PUBLIC_APP_URL ?? PUBLIC_ORIGIN;
       emailHeaderUrl = `${origin}/api/brand/${organizationId}/email-header.png?rev=${assets.rev}`;
     }
   }

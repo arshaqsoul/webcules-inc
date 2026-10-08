@@ -9,6 +9,7 @@ import { getDb } from "./db";
 import { UNIT_COSTS, orgMonthlyCogs, usdCents } from "./unit-costs";
 import { PLANS } from "./plans";
 import { sendEmail, marginAlertEmail } from "./email";
+import { appUrl } from "@/lib/app-origin";
 
 function monthKey(d = new Date()): string {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
@@ -179,7 +180,7 @@ export async function sendMarginAlertIfTripped(): Promise<{ sent: boolean; alert
   if (!founder) return { sent: false, alerts: report.alerts.length };
 
   const tmpl = marginAlertEmail(report.alerts.map((a) => `${a.studioName ?? "Account"}: ${a.detail}`), {
-    reportUrl: "https://snap.webcules.com/dashboard/settings",
+    reportUrl: await appUrl("/dashboard/settings"),
     month: report.month,
   });
   try {

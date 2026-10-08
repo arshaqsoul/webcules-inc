@@ -6,6 +6,7 @@
 import { env } from "cloudflare:workers";
 
 import { getObject } from "./storage/service";
+import { PUBLIC_ORIGIN } from "@/lib/hosts";
 export const BRAND_ASSET_NAMES = ["favicon", "appleTouch", "emailHeader", "ogCard", "watermark"] as const;
 export type BrandAssetName = (typeof BRAND_ASSET_NAMES)[number];
 
@@ -97,7 +98,7 @@ export function brandIcons(
  * default base (localhost in dev) instead of the app origin. */
 export function brandOgImage(bag: BrandAssetBag, organizationId: string): string | null {
   if (!bag.ogCard) return null;
-  const origin = env.NEXT_PUBLIC_APP_URL ?? "https://snap.webcules.com";
+  const origin = env.NEXT_PUBLIC_APP_URL ?? PUBLIC_ORIGIN;
   return `${origin}${brandAssetUrl(organizationId, "ogCard", bag.rev)}`;
 }
 

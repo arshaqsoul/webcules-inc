@@ -3,6 +3,7 @@
  * first-party logs, Stripe/Cloudflare as the only processors, dormancy purge,
  * 180-day gallery access-log retention, photographer-as-controller framing. */
 import type { Metadata } from "next";
+import { PUBLIC_HOST, emailAddress } from "@/lib/hosts";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,7 @@ export default function PrivacyPage() {
         <h1 className="text-3xl font-semibold tracking-[-.8px] text-ink">Privacy Policy</h1>
         <p className="text-sm leading-relaxed text-ink-subtle">
           Effective September 29, 2026. This policy explains how <strong>Webcules Inc.</strong> (&ldquo;Snap&rdquo;,
-          &ldquo;we&rdquo;) handles personal data when you use snap.webcules.com. Snap is built for professional
+          &ldquo;we&rdquo;) handles personal data when you use {PUBLIC_HOST}. Snap is built for professional
           photographers, so it matters from the start: <strong>you are the controller of your clients&apos; personal
           data</strong> (their email addresses, gallery activity, and the photos you upload of them) and we process
           that data on your behalf as a processor. For your account and billing data, we are the controller.
@@ -88,7 +89,7 @@ export default function PrivacyPage() {
           keep your plan&apos;s storage behavior visible in Settings → Billing. Depending on where you live (for
           example in the EU, UK, or California), you may have rights to access, correct, export, or delete
           personal data, to object to or restrict processing, and to lodge a complaint with a supervisory
-          authority. To exercise any of these, email <strong>hello@snap.webcules.com</strong> — we respond within
+          authority. To exercise any of these, email <strong>{emailAddress("hello")}</strong> — we respond within
           30 days.
         </p>
         <p>
@@ -117,7 +118,7 @@ export default function PrivacyPage() {
       <Section title="Changes and contact">
         <p>
           We may update this policy; material changes are announced by email at least 7 days before they take
-          effect. Questions or requests: <strong>hello@snap.webcules.com</strong>.
+          effect. Questions or requests: <strong>{emailAddress("hello")}</strong>.
         </p>
       </Section>
     </div>

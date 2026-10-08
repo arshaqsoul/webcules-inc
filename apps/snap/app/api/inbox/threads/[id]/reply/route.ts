@@ -1,5 +1,5 @@
 /* Inbox reply (WEB-305) — sends from the studio's own address
- * (hello+{slug}@snap.webcules.com, display name = the studio, WEB-240
+ * (hello+{slug}@<mail domain>, display name = the studio, WEB-240
  * white-label rules), records the outbound message on the thread (and the
  * lead, when the conversation began as an inquiry), optional dual-delivery
  * mirror copy to the studio's contact inbox. Merge fields resolve
@@ -23,6 +23,7 @@ import { buildReplyEmail, studioSignature } from "@/lib/inbox/compose";
 import { threadAddress } from "@/lib/inbox/threading";
 import { ensureThreadRouting } from "@/lib/inbox/ingest";
 import { safeHexColor } from "@/lib/embed";
+import { EMAIL_DOMAIN } from "@/lib/hosts";
 
 export const dynamic = "force-dynamic";
 
@@ -84,7 +85,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   )
     .map((r) => r.id!)
     .filter((id) => !id.startsWith("<bounce-"));
-  const messageId = `<${crypto.randomUUID()}@snap.webcules.com>`;
+  const messageId = `<${crypto.randomUUID()}@${EMAIL_DOMAIN}>`;
   const headers: Record<string, string> = {
     "Message-ID": messageId,
     "X-Snap-Thread-ID": thread.id,

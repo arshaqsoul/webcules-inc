@@ -11,6 +11,7 @@ import { Input } from "@webcules/ui/components/input";
 import { Label } from "@webcules/ui/components/label";
 
 import { TAX_LABELS, type BusinessIdentity } from "@/lib/business";
+import { EMAIL_DOMAIN } from "@/lib/hosts";
 
 export function SettingsGeneral({
   studioName: initialName,
@@ -116,7 +117,7 @@ export function SettingsGeneral({
               minLength={3}
               maxLength={40}
             />
-            <span>@snap.webcules.com</span>
+            <span>@{EMAIL_DOMAIN}</span>
           </div>
           <p className="text-xs text-ink-tertiary">Customer replies thread into Snap via this address.</p>
         </div>

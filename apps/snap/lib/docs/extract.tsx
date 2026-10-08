@@ -12,6 +12,7 @@ import type { ReactElement, ReactNode } from "react";
 import { DocsCode } from "@/components/docs-code";
 
 import { headingId, headingTextOf } from "./primitives";
+import { PUBLIC_ORIGIN } from "@/lib/hosts";
 
 /** Primitive recognition by stable marker, not object identity — bundlers
  * may duplicate the primitives module across chunks, which would break
@@ -154,7 +155,7 @@ function flattenBlocks(root: ReactNode): string[] {
       blocks.push(`### ${headingTextOf(childrenOf(el)).trim()}`);
     } else if (isKind(el, "shot")) {
       const { src, alt } = propsOf(el) as { src: string; alt: string };
-      blocks.push(`![${alt}](https://snap.webcules.com${src})`);
+      blocks.push(`![${alt}](${PUBLIC_ORIGIN}${src})`);
     } else if (isKind(el, "note")) {
       blocks.push(`> Note: ${inline(childrenOf(el))}`);
     } else if (isKind(el, "callout")) {

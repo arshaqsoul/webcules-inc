@@ -6,6 +6,7 @@ import { H2, H3, Callout, Steps, Tier, Related } from "@/lib/docs/primitives";
 
 import { DocsCode } from "@/components/docs-code";
 import { CNAME_TARGET } from "@/lib/domains";
+import { PUBLIC_HOST, PUBLIC_ORIGIN, emailAddress } from "@/lib/hosts";
 
 export default function Domains() {
   return (
@@ -22,7 +23,7 @@ export default function Domains() {
       <p>Every client link you send can live on your own hostname instead of the standard address:</p>
       <DocsCode
         label="Before → after"
-        code={`https://snap.webcules.com/g/abc123def456\nhttps://gallery.brightlightstudio.com/g/abc123def456`}
+        code={`${PUBLIC_ORIGIN}/g/abc123def456\nhttps://gallery.brightlightstudio.com/g/abc123def456`}
       />
       <p>
         <strong>Subdomains only.</strong> You point a hostname like <code>gallery.yourstudio.com</code>{" "}
@@ -163,7 +164,7 @@ export default function Domains() {
       </p>
       <p>
         <strong>What happens to links I already sent?</strong> They keep working forever — the
-        standard snap.webcules.com links never go away. New links you send simply use your domain.
+        standard {PUBLIC_HOST} links never go away. New links you send simply use your domain.
       </p>
       <p>
         <strong>I'm moving from Pixieset — can I reuse the same subdomain?</strong> Yes. Delete the
@@ -202,7 +203,7 @@ export default function Domains() {
         <li>
           <strong>Certificate stuck for over 30 minutes:</strong> double-check the CNAME resolves
           (dig/nslookup), then press Check status again. Still stuck?{" "}
-          <a href="mailto:hello@snap.webcules.com">hello@snap.webcules.com</a>.
+          <a href={`mailto:${emailAddress("hello")}`}>{emailAddress("hello")}</a>.
         </li>
       </ul>
       <Related slugs={["brand", "embeds", "booking-page"]} />

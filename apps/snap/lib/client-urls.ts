@@ -20,16 +20,16 @@
  *     and billing-portal returns (lib/billing.ts, app/api/studio/*)
  *   - the embed loader origin (widgets always load from the main origin by
  *     design) and /docs pages
- *   - From/reply-to addresses on @snap.webcules.com (email plumbing, not URLs)
+ *   - From/reply-to addresses on the Snap mail domain (email plumbing, not URLs)
  *   - booking deposit checkout success/cancel (app/api/embed/bookings) —
  *     already request-origin (${url.origin}), which under preserve_host_header
  *     IS the custom hostname when the booking page runs there
  */
+import { appOrigin } from "@/lib/app-origin";
 import { getPrimaryDomain, resolveStudioByHost } from "@/lib/repos/domains";
 
 export async function defaultClientOrigin(): Promise<string> {
-  const { env } = await import("cloudflare:workers");
-  return env.NEXT_PUBLIC_APP_URL || "https://snap.webcules.com";
+  return appOrigin();
 }
 
 /** Org-scoped client URL: primary ACTIVE custom domain when the org has one,

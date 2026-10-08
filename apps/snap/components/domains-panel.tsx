@@ -15,6 +15,7 @@ import { Input } from "@webcules/ui/components/input";
 import { useConfirm } from "@/components/confirm-provider";
 import { DocHint } from "@/components/doc-hint";
 import { normalizeHostname } from "@/lib/domains";
+import { PUBLIC_HOST } from "@/lib/hosts";
 
 type DomainRow = {
   id: string;
@@ -147,7 +148,7 @@ export function DomainsPanel({
       const domain = data.domains.find((d) => d.id === id);
       const okToProceed = await confirm({
         title: `Remove ${domain?.hostname ?? "this domain"}?`,
-        body: "Client links on this domain stop working. Existing emails keep working on the standard snap.webcules.com link, and links you already sent stay valid there. You can re-add the domain later.",
+        body: "Client links on this domain stop working. Existing emails keep working on the standard Snap link, and links you already sent stay valid there. You can re-add the domain later.",
         confirmLabel: "Remove domain",
       });
       if (!okToProceed) return;
@@ -191,7 +192,7 @@ export function DomainsPanel({
       <section className={card}>
         <h2 className="text-[15px] font-medium text-ink">Custom domains</h2>
         <p className="mt-2 text-sm text-ink-subtle">
-          Put your galleries, booking page, and client portal on your own domain — <span className="font-medium text-ink">gallery.{slug ? `${slug}.` : ""}yourstudio.com</span> instead of snap.webcules.com.
+          Put your galleries, booking page, and client portal on your own domain — <span className="font-medium text-ink">gallery.{slug ? `${slug}.` : ""}yourstudio.com</span> instead of {PUBLIC_HOST}.
         </p>
         <div className="mt-4 rounded-lg border border-hairline bg-canvas p-4 text-sm">
           {studioAddOn ? (
@@ -202,7 +203,7 @@ export function DomainsPanel({
           ) : (
             <>
               <p className="text-ink">Available on <span className="font-medium">Studio</span> - add a custom domain for $5/mo, with white-label galleries and 500GB storage.</p>
-              <p className="mt-1 text-xs text-ink-tertiary">Free and Lite plans use the standard snap.webcules.com links. Need more than one domain? <a href="https://cal.com/webcules/snap" target="_blank" rel="noreferrer" className="underline underline-offset-2">Talk to us</a>.</p>
+              <p className="mt-1 text-xs text-ink-tertiary">Free and Lite plans use the standard {PUBLIC_HOST} links. Need more than one domain? <a href="https://cal.com/webcules/snap" target="_blank" rel="noreferrer" className="underline underline-offset-2">Talk to us</a>.</p>
             </>
           )}
         </div>

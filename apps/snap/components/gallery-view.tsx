@@ -22,6 +22,7 @@ import {
   type GalleryDesign,
 } from "@/lib/gallery-design";
 import type { RenderPlan, RenderSection, SectionAsset } from "@/lib/gallery-sections";
+import { PUBLIC_HOST } from "@/lib/hosts";
 
 declare global {
   interface Window {
@@ -160,7 +161,7 @@ export function GalleryDenied({ reason, studioName, contactEmail, whiteLabel }: 
           </p>
         )}
         <p className="mt-6 text-xs text-ink-tertiary">
-          {whiteLabel && studioName ? `© ${studioName}` : <SnapBadge medium="gallery">Delivered by Snap · snap.webcules.com</SnapBadge>}
+          {whiteLabel && studioName ? `© ${studioName}` : <SnapBadge medium="gallery">Delivered by Snap · {PUBLIC_HOST}</SnapBadge>}
         </p>
       </div>
     </main>
@@ -358,7 +359,7 @@ export function GalleryGate({ studioName, accent, logoUrl, whiteLabel, token, ma
         </form>
 
         <p className="mt-6 border-t border-hairline pt-4 text-xs text-ink-tertiary">
-          {whiteLabel ? `© ${studioName}` : <SnapBadge medium="gallery">Delivered by Snap · snap.webcules.com</SnapBadge>}
+          {whiteLabel ? `© ${studioName}` : <SnapBadge medium="gallery">Delivered by Snap · {PUBLIC_HOST}</SnapBadge>}
         </p>
       </div>
     </main>

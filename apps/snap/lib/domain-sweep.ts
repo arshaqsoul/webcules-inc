@@ -27,6 +27,7 @@ import { expireStalePending, markDomainStatus } from "@/lib/repos/domains";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { safeHexColor } from "@/lib/embed";
 import { domainDegradedEmail, domainRecoveredEmail, sendEmail } from "@/lib/email";
+import { PUBLIC_HOST } from "@/lib/hosts";
 
 const DEGRADED_EMAIL_THROTTLE_S = 7 * 86400;
 
@@ -87,7 +88,7 @@ export async function runDomainSweep(
           organizationId: d.organizationId,
           domainId: d.id,
           status: "suspended_entitlement",
-          lastError: "Your plan no longer includes custom domains — links fall back to the standard snap.webcules.com address.",
+          lastError: `Your plan no longer includes custom domains — links fall back to the standard ${PUBLIC_HOST} address.`,
         });
         result.suspended++;
         continue;

@@ -5,6 +5,7 @@
  * (list/actions/bulk/badge), lib/inbox/sources.ts (what mints items),
  * lib/notify-client.ts (the toggles that gate minting). */
 import { H2, Callout, Related } from "@/lib/docs/primitives";
+import { EMAIL_DOMAIN } from "@/lib/hosts";
 
 export default function Inbox() {
   return (
@@ -51,7 +52,7 @@ export default function Inbox() {
       <H2>Replying</H2>
       <p>
         Replies send from <strong>the thread&rsquo;s own address</strong> — a private{" "}
-        <code>t-…@snap.webcules.com</code> endpoint minted per conversation, with your contact
+        <code>t-…@{EMAIL_DOMAIN}</code> endpoint minted per conversation, with your contact
         address as Reply-To — so the client&rsquo;s answer threads straight back into the same
         conversation even if every header is stripped, and never into a no-reply void.
       </p>
@@ -135,7 +136,7 @@ export default function Inbox() {
       <Callout tone="info" title="Keep your existing Gmail flowing in">
         Want the mail you already receive to appear in Snap too? In Gmail, set up a filter
         (or forwarding rule) that forwards a copy to your studio&rsquo;s Snap reply address —
-        <code>hello+your-studio@snap.webcules.com</code>. Forwarded copies keep their original
+        <code>hello+your-studio@{EMAIL_DOMAIN}</code>. Forwarded copies keep their original
         sender (Snap unwraps the forwarding envelope), so they thread to the right client.
       </Callout>
 

@@ -36,6 +36,7 @@ import { neutralizeTrackingPixels, sanitizeEmailHtml } from "@/lib/inbox/sanitiz
 import { stripQuotedReply } from "@/lib/strip-reply";
 import { putObject } from "@/lib/storage/service";
 import { sendEmail } from "@/lib/email";
+import { appUrl } from "@/lib/app-origin";
 
 export type InboundEmailPayload = {
   from: string;
@@ -75,7 +76,7 @@ export type IngestResult = {
 /* ---------------- org + thread routing ---------------- */
 
 /** Org routing from the envelope recipient: per-thread / per-lead / studio
- * +tag local-parts on snap.webcules.com. Returns null for foreign mail. */
+ * +tag local-parts on the Snap mail domain. Returns null for foreign mail. */
 async function resolveOrg(to: string): Promise<{ organizationId: string; threadId?: string } | null> {
   const addr = parseInboundAddress(to);
   if (addr?.kind === "thread") {
@@ -492,7 +493,7 @@ async function mirrorToContact(
     const senderLabel = clientName ?? payload.from;
     const excerpt = stripQuotedReply(payload.text ?? payload.html ?? "").slice(0, 240);
     const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
-    const url = `https://snap.webcules.com/dashboard/inbox`;
+    const url = await appUrl("/dashboard/inbox");
     await sendEmail({
       to: profile.contactEmail,
       subject: `💬 ${senderLabel.split(" ")[0]} replied — view in Snap`,

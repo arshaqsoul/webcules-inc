@@ -21,6 +21,7 @@ import { env } from "cloudflare:workers";
 import { getDb } from "./db";
 import * as schema from "./db-schema";
 import { snapBrandUrl } from "./snap-url";
+import { EMAIL_DOMAIN, PUBLIC_HOST, emailAddress, isSnapMailDomain } from "@/lib/hosts";
 
 export type EmailAttachment = {
   filename: string;
@@ -35,10 +36,10 @@ export async function sendEmail(params: {
   html: string;
   text: string;
   replyTo?: string;
-  /** Override the From address (must be @snap.webcules.com, e.g. hello+{leadId}@). */
+  /** Override the From address (must be on the Snap mail domain, e.g. hello+{leadId}@). */
   fromOverride?: string;
   /** WEB-238: From display name for white-labeled studios — the address
-   * stays on snap.webcules.com (signed domain), the visible name is the
+   * stays on the Snap mail domain (signed domain), the visible name is the
    * studio's. Ignored when absent → default display unchanged. */
   fromName?: string;
   organizationId?: string | null;
@@ -61,8 +62,8 @@ export async function sendEmail(params: {
     // Accept "addr@domain" or "Display Name <addr@domain>" — validate the
     // address part only (the display format is what EMAIL.send expects).
     const addr = params.fromOverride.match(/<(.+)>/)?.[1] ?? params.fromOverride;
-    if (!addr.endsWith("@snap.webcules.com")) {
-      throw new Error("fromOverride must be on the snap.webcules.com domain");
+    if (!isSnapMailDomain(addr.split("@").pop() ?? "")) {
+      throw new Error(`fromOverride must be on the ${EMAIL_DOMAIN} domain`);
     }
   }
   // WEB-253: studio copy overrides (subject + intro) for client-facing
@@ -87,7 +88,7 @@ export async function sendEmail(params: {
       /* overrides are cosmetic — never block a send */
     }
   }
-  let from = params.fromOverride ?? env.EMAIL_FROM ?? "Snap <hello@snap.webcules.com>";
+  let from = params.fromOverride ?? env.EMAIL_FROM ?? `Snap <${emailAddress("hello")}>`;
   if (params.fromName) {
     const addr = from.match(/<(.+)>/)?.[1] ?? from;
     from = `${params.fromName} <${addr}>`;
@@ -137,7 +138,7 @@ export async function sendEmail(params: {
 
 /** WEB-238/240: white-label context for client templates — header (logo
  * image when the 2/8 email-header asset exists, studio-name wordmark
- * otherwise), the snap.webcules.com pre-footer line, and the footer
+ * otherwise), the Snap host pre-footer line, and the footer
  * contact mailto flip; per-template footer copy stays with each template. */
 export type EmailBrand = {
   studioName: string;
@@ -168,7 +169,7 @@ export function shell(accent: string, title: string, bodyHtml: string, footer: s
       <tr><td style="font-size:15px;line-height:1.6;color:#3f4149;">${bodyHtml}</tr>
       <tr><td style="padding-top:32px;border-top:1px solid #e3e5e8;"><p style="margin:0;font-size:12px;line-height:1.5;color:#8a8f98;">${footerHtml}</p></td></tr>
     </table>
-    ${brand?.whiteLabel ? "" : `<p style="margin:16px 0 0;font-size:12px;color:#8a8f98;"><a href="${snapBrandUrl("email")}" style="color:#8a8f98;text-decoration:none;">snap.webcules.com</a></p>`}
+    ${brand?.whiteLabel ? "" : `<p style="margin:16px 0 0;font-size:12px;color:#8a8f98;"><a href="${snapBrandUrl("email")}" style="color:#8a8f98;text-decoration:none;">${PUBLIC_HOST}</a></p>`}
   </td></tr></table></body></html>`;
 }
 

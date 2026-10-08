@@ -22,6 +22,7 @@ import { clientUrl } from "@/lib/client-urls";
 import { checkImageView, countGalleryOpen } from "@/lib/limits";
 import { clientIp, logShareAccess } from "@/lib/shares/gallery-auth";
 import { safeHexColor } from "@/lib/embed";
+import { PUBLIC_HOST } from "@/lib/hosts";
 
 export const dynamic = "force-dynamic";
 
@@ -125,7 +126,7 @@ export default async function SharedPhotoPage({ params }: { params: Promise<{ to
         ) : (
           <p className="text-sm text-white/70">Photographed by {studioName}</p>
         )}
-          {!whiteLabel ? <p className="mt-1 text-[11px] text-white/40"><SnapBadge medium="portal">Delivered by Snap · snap.webcules.com</SnapBadge></p> : null}
+          {!whiteLabel ? <p className="mt-1 text-[11px] text-white/40"><SnapBadge medium="portal">Delivered by Snap · {PUBLIC_HOST}</SnapBadge></p> : null}
       </footer>
     </main>
   );
