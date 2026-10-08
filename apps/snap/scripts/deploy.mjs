@@ -24,7 +24,10 @@ import { fileURLToPath } from "node:url";
 const appDir = join(dirname(fileURLToPath(import.meta.url)), "..");
 const STAGING = {
   worker: "webcules-snap-staging",
-  url: "https://snap-staging.webcules.com",
+  // WEB-330: staging rehearses the production cutover - staging.snaphq.app is
+  // the canonical origin (links in emails/galleries, auth); snap-staging.webcules.com
+  // stays attached like the legacy host does on production.
+  url: "https://staging.snaphq.app",
   d1Name: "webcules-snap-staging",
   d1Id: "9b850d02-67d3-4c1b-a7ed-482cc587b2d5",
   r2Bucket: "snap-staging",

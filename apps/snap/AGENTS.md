@@ -72,7 +72,7 @@ drops into the public docs unchanged. Commit messages are written for the docs p
 
 | | Production | Staging |
 |---|---|---|
-| URL | https://snap.webcules.com | https://snap-staging.webcules.com |
+| URL | https://snap.webcules.com (legacy; moving to snaphq.app) | https://staging.snaphq.app (canonical; snap-staging.webcules.com still attached) |
 | Worker | `webcules-snap` | `webcules-snap-staging` |
 | D1 | `webcules-snap` (`badece16-2231-4b37-81ac-54f7c4bbf464` — recreated fresh 2026-09-29 at launch; pre-launch backup in repo `.backups/`) | `webcules-snap-staging` (`9b850d02-67d3-4c1b-a7ed-482cc587b2d5`) |
 | R2 | `snap-webcules` | `snap-staging` |
