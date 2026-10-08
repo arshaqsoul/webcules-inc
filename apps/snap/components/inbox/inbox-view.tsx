@@ -35,6 +35,8 @@ import { ShortcutsSheet } from "@/components/inbox/shortcuts-sheet";
 import { SnoozeDialog } from "@/components/inbox/snooze-dialog";
 import { TriagePane } from "@/components/inbox/triage-pane";
 import { splitReplyForDisplay } from "@/lib/strip-reply";
+import { isPlaceholderClientEmail } from "@/lib/inbox/threading";
+import { ConnectClientDialog } from "@/components/inbox/connect-client-dialog";
 
 type Tab = "all" | "unread" | "needs-reply" | "needs-triage";
 
@@ -286,6 +288,10 @@ export function InboxView({
   const [sendFailed, setSendFailed] = useState(false);
   // WEB-334: set when the server refuses the reply outright (no real client email).
   const [sendBlocked, setSendBlocked] = useState<string | null>(null);
+  // WEB-335: conversations created before clients were required have no real recipient.
+  const [connectOpen, setConnectOpen] = useState(false);
+  const [connecting, setConnecting] = useState(false);
+  const [connectError, setConnectError] = useState<string | null>(null);
   const [mirror, setMirror] = useState(true);
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map());
@@ -641,6 +647,34 @@ export function InboxView({
     }
   }
 
+  /** WEB-335: connect a real client to a conversation that has no client email. */
+  async function connectClient(c: { email: string; name: string }) {
+    if (!openThreadId || connecting) return;
+    setConnecting(true);
+    setConnectError(null);
+    try {
+      const res = await fetch(`/api/inbox/threads/${openThreadId}/client`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: c.email, ...(c.name ? { name: c.name } : {}) }),
+      });
+      const out = (await res.json().catch(() => ({}))) as { threadId?: string; error?: string };
+      if (!res.ok || !out.threadId) {
+        setConnectError(
+          out.error === "invalid_email" ? "That email address doesn't look right." : "Couldn't connect the client - try again.",
+        );
+        return;
+      }
+      setConnectOpen(false);
+      await openThread(out.threadId);
+      void fetchList();
+    } catch {
+      setConnectError("Network error - try again.");
+    } finally {
+      setConnecting(false);
+    }
+  }
+
   const cmdTarget = {
     hasSelection: Boolean(selectedItem),
     leadId: thread?.thread.leadId ?? null,
@@ -909,9 +943,13 @@ export function InboxView({
             <>
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-hairline px-5 py-3.5">
                 <div className="min-w-0">
-                  <h2 className="truncate text-[15px] font-medium text-ink">{thread.thread.clientName}</h2>
+                  <h2 className="truncate text-[15px] font-medium text-ink">
+                    {isPlaceholderClientEmail(thread.thread.clientEmail)
+                      ? (thread.thread.projectTitle ?? "Conversation")
+                      : thread.thread.clientName}
+                  </h2>
                   <p className="truncate text-xs text-ink-subtle">
-                    {thread.thread.clientEmail}
+                    {isPlaceholderClientEmail(thread.thread.clientEmail) ? "No client linked yet" : thread.thread.clientEmail}
                     {thread.thread.leadId ? (
                       <>
                         {" · "}
@@ -960,7 +998,18 @@ export function InboxView({
                 </div>
               </div>
 
-              {/* Composer */}
+              {/* Composer - or, for a conversation with no client email, the prompt to connect one (WEB-335) */}
+              {isPlaceholderClientEmail(thread.thread.clientEmail) ? (
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-hairline bg-surface-1 px-5 py-4">
+                  <p className="min-w-0 flex-1 text-sm text-ink-subtle">
+                    <span className="font-medium text-ink">No client is connected to this conversation.</span>{" "}
+                    Connect one to reply, and the history stays together.
+                  </p>
+                  <Button size="sm" onClick={() => { setConnectError(null); setConnectOpen(true); }}>
+                    Connect a client
+                  </Button>
+                </div>
+              ) : (
               <div className="border-t border-hairline bg-surface-1 px-5 py-3.5">
                 {sendBlocked && (
                   <p className="mb-2 rounded-md bg-amber-500/10 px-3 py-2 text-[13px] text-amber-700 dark:text-amber-400">{sendBlocked}</p>
@@ -1026,10 +1075,21 @@ export function InboxView({
                   </Button>
                 </div>
               </div>
+              )}
             </>
           )}
         </section>
       </div>
+
+      <ConnectClientDialog
+        open={connectOpen}
+        onOpenChange={setConnectOpen}
+        projectTitle={thread?.thread.projectTitle ?? null}
+        busy={connecting}
+        error={connectError}
+        confirmLabel="Connect client"
+        onSubmit={(c) => void connectClient(c)}
+      />
 
       {/* WEB-309: free-tier snooze upgrade hint (dismissible, honest). */}
       {upgradeHint && (

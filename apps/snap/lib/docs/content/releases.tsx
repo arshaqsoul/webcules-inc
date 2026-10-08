@@ -35,6 +35,16 @@ export default function Releases() {
         polish fold into the next entry rather than getting their own.
       </Note>
 
+      <Release version="0.11.5" date="October 8, 2026">
+        <p>
+          <strong>Snap asks you to connect a client instead of guessing.</strong> When you attach
+          an unmatched email to a project that has no client, Snap now asks you to connect one,
+          with the sender already filled in, and links them to the project. Conversations that
+          were left without a client show a &ldquo;Connect a client&rdquo; button where the reply
+          box would be, instead of a made-up address.
+        </p>
+      </Release>
+
       <Release version="0.11.4" date="October 8, 2026">
         <p>
           <strong>Replies from your Snap inbox send again.</strong> Every reply typed into the

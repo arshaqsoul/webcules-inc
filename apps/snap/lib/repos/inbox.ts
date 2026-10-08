@@ -8,7 +8,9 @@ import { and, asc, desc, eq, gt, isNull, lt, or, sql } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
-import { emailAddress } from "@/lib/hosts";
+import { isPlaceholderClientEmail } from "@/lib/inbox/threading";
+import { senderFromTriageTitle } from "@/lib/inbox/triage";
+import { upsertClient } from "@/lib/repos/clients";
 
 /** Linear's open-notification cap — pruned oldest-first by the daily cron. */
 export const INBOX_OPEN_CAP = 2000;
@@ -462,7 +464,13 @@ export async function attachTriageItem(params: {
   itemId: string;
   kind: "lead" | "client" | "project";
   recordId: string;
-}): Promise<{ ok: true; threadId: string; title: string } | { ok: false; error: "item_not_found" | "already_threaded" | "record_not_found" }> {
+  /** WEB-335: the client to connect when the project has none. */
+  client?: { email: string; name?: string | null };
+}): Promise<
+  | { ok: true; threadId: string; title: string }
+  | { ok: false; error: "item_not_found" | "already_threaded" | "record_not_found" }
+  | { ok: false; error: "client_required"; suggested: { email: string; name: string | null } | null }
+> {
   const db = getDb();
   const item = (
     await db
@@ -519,10 +527,24 @@ export async function attachTriageItem(params: {
         .limit(1)
     )[0];
     if (!project) return { ok: false, error: "record_not_found" };
-    const client = project.clientId
+    let client = project.clientId
       ? (await db.select().from(schema.clients).where(eq(schema.clients.id, project.clientId)).limit(1))[0]
       : undefined;
-    clientEmail = client?.email ?? emailAddress("unknown");
+    if (!client) {
+      // WEB-335: never invent a recipient. Ask for a client (the unmatched
+      // email's sender pre-fills the prompt); once given, link it to the project.
+      if (!params.client) {
+        return { ok: false, error: "client_required", suggested: senderFromTriageTitle(item.title) };
+      }
+      client = await upsertClient({
+        organizationId: params.organizationId,
+        email: params.client.email,
+        name: params.client.name ?? null,
+      });
+      await db.update(schema.projects).set({ clientId: client.id }).where(eq(schema.projects.id, project.id));
+    }
+    clientEmail = client.email;
+    clientId = client.id;
     title = `Conversation — ${project.title}`;
     projectId = project.id;
   }
@@ -601,4 +623,70 @@ export async function pruneInboxCaps(cap = INBOX_OPEN_CAP): Promise<{ users: num
     pruned += out.length;
   }
   return { users: over.length, pruned };
+}
+
+/** WEB-335: connect a real client to a conversation that was created with the
+ * old stand-in recipient (unknown@). Re-addresses the thread, or folds it into
+ * the client's existing thread, and links the client to the thread's project
+ * when that project has none. */
+export async function linkClientToPlaceholderThread(params: {
+  organizationId: string;
+  threadId: string;
+  email: string;
+  name?: string | null;
+}): Promise<{ ok: true; threadId: string } | { ok: false; error: "not_found" | "not_placeholder" }> {
+  const db = getDb();
+  const thread = (
+    await db
+      .select()
+      .from(schema.threads)
+      .where(and(eq(schema.threads.id, params.threadId), eq(schema.threads.organizationId, params.organizationId)))
+      .limit(1)
+  )[0];
+  if (!thread) return { ok: false, error: "not_found" };
+  if (!isPlaceholderClientEmail(thread.clientEmail)) return { ok: false, error: "not_placeholder" };
+
+  const client = await upsertClient({ organizationId: params.organizationId, email: params.email, name: params.name ?? null });
+
+  if (thread.projectId) {
+    await db
+      .update(schema.projects)
+      .set({ clientId: client.id })
+      .where(
+        and(
+          eq(schema.projects.id, thread.projectId),
+          eq(schema.projects.organizationId, params.organizationId),
+          isNull(schema.projects.clientId),
+        ),
+      );
+  }
+
+  const existing = (
+    await db
+      .select({ id: schema.threads.id })
+      .from(schema.threads)
+      .where(
+        and(
+          eq(schema.threads.organizationId, params.organizationId),
+          eq(schema.threads.clientEmail, client.email),
+          sql`${schema.threads.id} <> ${thread.id}`,
+        ),
+      )
+      .orderBy(desc(schema.threads.lastActivityAt))
+      .limit(1)
+  )[0];
+
+  if (existing) {
+    // Fold this conversation into the client's own thread.
+    await db.update(schema.threadMessages).set({ threadId: existing.id }).where(eq(schema.threadMessages.threadId, thread.id));
+    await db.update(schema.inboxItems).set({ threadId: existing.id }).where(eq(schema.inboxItems.threadId, thread.id));
+    await db.delete(schema.threads).where(eq(schema.threads.id, thread.id));
+    return { ok: true, threadId: existing.id };
+  }
+
+  await db
+    .update(schema.threads)
+    .set({ clientEmail: client.email, clientId: client.id })
+    .where(eq(schema.threads.id, thread.id));
+  return { ok: true, threadId: thread.id };
 }
