@@ -116,7 +116,7 @@ function mapHostname(r: CfHostname): CfHostname {
   return r;
 }
 
-/** Create the custom hostname on webcules.com: per-hostname cert (Google CA,
+/** Create the custom hostname on the snaphq.app SaaS zone: per-hostname cert (Google CA,
  * TXT DCV) routing to our fallback origin with the client's Host preserved. */
 export async function createCustomHostname(
   cfg: CfConfig,
