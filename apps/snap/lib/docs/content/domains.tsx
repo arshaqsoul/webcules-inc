@@ -41,8 +41,8 @@ export default function Domains() {
             records it needs — a CNAME pointing your hostname at{" "}
             <code>{CNAME_TARGET}</code>, and a TXT record on{" "}
             <code>_snap-verify.gallery.yourstudio.com</code> holding your personal{" "}
-            <code>snap-verify=</code> token (a third TXT for certificate validation appears when
-            Cloudflare requires one — copy whatever the settings page shows).
+            <code>snap-verify=</code> token. Nothing else is needed for the certificate: once the
+            CNAME is in place Cloudflare issues it automatically.
           </>,
           <>
             <strong>Add the records at your DNS provider</strong> — provider-specific walkthroughs

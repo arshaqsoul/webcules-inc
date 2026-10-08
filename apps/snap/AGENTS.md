@@ -100,8 +100,10 @@ drops into the public docs unchanged. Commit messages are written for the docs p
   re-ensured by scripts/deploy.mjs after every deploy. `CLOUDFLARE_ZONE_ID` is the snaphq.app zone
   and the `CLOUDFLARE_API_TOKEN` secret needs Custom Hostnames edit there. The
   worker resolves the studio from `x-forwarded-host` (see requestHost in lib/domains.ts).
-  Custom hostname payloads: `ssl: {method: "txt", type: "dv"}` — NO `certificate_authority`
-  (Enterprise-only on our zone) and no `preserve_host_header`.
+  Custom hostname payloads: `ssl: {method: "http", type: "dv"}` (WEB-332: TXT DCV needs two
+  `_acme-challenge` records the UI never showed; HTTP DCV validates by itself once the CNAME
+  points at us) — NO `certificate_authority` (Enterprise-only on our zone) and no
+  `preserve_host_header`.
 - Operator setup (done, one-time): `CLOUDFLARE_ZONE_ID` var in wrangler.jsonc +
   `CLOUDFLARE_API_TOKEN` worker secret = the `snap-saas-full-prod` user token (SSL and
   Certificates R/W + Workers Routes R/W, zone-scoped to webcules.com).
