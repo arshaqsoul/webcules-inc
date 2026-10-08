@@ -30,9 +30,10 @@ export const EMAIL_DOMAIN: string = NEW_HOST;
 /** The isolated staging deploy (webcules-snap-staging). */
 export const STAGING_HOSTS = ["snap-staging.webcules.com", "staging.snaphq.app"] as const;
 
-/** Cloudflare for SaaS fallback origin: routes studio custom hostnames to the
- * worker. Not a client surface itself. */
-export const FALLBACK_ORIGIN_HOST = "snap-saas-origin.webcules.com";
+/** Cloudflare for SaaS fallback origin (zone: snaphq.app): studios CNAME their
+ * custom hostname here and Cloudflare routes it to the worker. Not a client
+ * surface itself. */
+export const FALLBACK_ORIGIN_HOST = "domains.snaphq.app";
 
 /** Every hostname that IS the app (never a studio custom hostname). */
 export const APP_HOSTS: readonly string[] = [

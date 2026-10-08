@@ -115,7 +115,7 @@ test("pro studio: add domain renders the DNS records", async ({ page }) => {
   const token = text.match(/snap-verify=[0-9a-f]{32}/)?.[0];
   expect(token).toBeTruthy();
   await mockDns(`_snap-verify.${HOSTNAME}`, "TXT", token!);
-  await mockDns(HOSTNAME, "CNAME", "snap-saas-origin.webcules.com");
+  await mockDns(HOSTNAME, "CNAME", "domains.snaphq.app");
 });
 
 test("check status verifies ownership and issues the certificate", async ({ page }) => {

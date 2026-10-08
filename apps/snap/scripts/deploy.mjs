@@ -34,7 +34,8 @@ const STAGING = {
 };
 const PROD_URL = "https://snaphq.app";
 const LEGACY_PROD_URL = "https://snap.webcules.com"; // must keep answering forever (WEB-330)
-const ZONE_ID = "5de72a6806708f95960d382acaa466b0";
+// WEB-330: the Cloudflare for SaaS zone moved from webcules.com to snaphq.app.
+const ZONE_ID = "9576286851f6ba68ddcb3ff31a1e74db";
 
 const args = process.argv.slice(2);
 const target = args[0];
