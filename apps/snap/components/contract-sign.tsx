@@ -1,44 +1,14 @@
 "use client";
 
 /* Public contract signing form (WEB-158) — typed name + Turnstile. */
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import { useTurnstile } from "@/components/use-turnstile";
 
 export function ContractSignForm({ token, accent, turnstileSiteKey }: { token: string; accent: string; turnstileSiteKey: string }) {
   const [name, setName] = useState("");
-  const [tsToken, setTsToken] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const tsRef = useRef<HTMLDivElement>(null);
-  const tsIdRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (!turnstileSiteKey) return;
-    let cancelled = false;
-    if (!document.querySelector("script[data-snap-turnstile]")) {
-      const s = document.createElement("script");
-      s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
-      s.async = true;
-      s.defer = true;
-      s.dataset.snapTurnstile = "1";
-      document.head.appendChild(s);
-    }
-    const tryRender = () => {
-      if (cancelled || tsIdRef.current || !window.turnstile || !tsRef.current) return;
-      tsIdRef.current = window.turnstile.render(tsRef.current, {
-        sitekey: turnstileSiteKey,
-        callback: (t) => setTsToken(t),
-      });
-    };
-    tryRender();
-    const iv = setInterval(() => {
-      if (tsIdRef.current) return clearInterval(iv);
-      tryRender();
-    }, 400);
-    return () => {
-      cancelled = true;
-      clearInterval(iv);
-    };
-  }, [turnstileSiteKey]);
+  const { ref: tsRef, token: tsToken } = useTurnstile(turnstileSiteKey);
 
   async function sign() {
     if (busy) return;

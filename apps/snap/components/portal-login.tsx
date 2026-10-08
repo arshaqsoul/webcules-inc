@@ -3,47 +3,17 @@
 /* Portal login form (WEB-131) — email → 6-digit magic code. Copy mirrors the
  * enumeration-safe API: the same "check your email" message whether or not a
  * portal exists for the address. */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { useTurnstile } from "@/components/use-turnstile";
 
 export function PortalLogin({ turnstileSiteKey }: { turnstileSiteKey: string }) {
   const [step, setStep] = useState<"email" | "code">("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
-  const [tsToken, setTsToken] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [cooldown, setCooldown] = useState(0);
-  const tsRef = useRef<HTMLDivElement>(null);
-  const tsIdRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (!turnstileSiteKey) return;
-    let cancelled = false;
-    if (!document.querySelector("script[data-snap-turnstile]")) {
-      const s = document.createElement("script");
-      s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
-      s.async = true;
-      s.defer = true;
-      s.dataset.snapTurnstile = "1";
-      document.head.appendChild(s);
-    }
-    const tryRender = () => {
-      if (cancelled || tsIdRef.current || !window.turnstile || !tsRef.current) return;
-      tsIdRef.current = window.turnstile.render(tsRef.current, {
-        sitekey: turnstileSiteKey,
-        callback: (t) => setTsToken(t),
-      });
-    };
-    tryRender();
-    const iv = setInterval(() => {
-      if (tsIdRef.current) return clearInterval(iv);
-      tryRender();
-    }, 400);
-    return () => {
-      cancelled = true;
-      clearInterval(iv);
-    };
-  }, [turnstileSiteKey]);
+  const { ref: tsRef, token: tsToken } = useTurnstile(turnstileSiteKey);
 
   useEffect(() => {
     if (cooldown <= 0) return;

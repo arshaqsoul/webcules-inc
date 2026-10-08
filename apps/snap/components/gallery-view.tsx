@@ -23,15 +23,7 @@ import {
 } from "@/lib/gallery-design";
 import type { RenderPlan, RenderSection, SectionAsset } from "@/lib/gallery-sections";
 import { PUBLIC_HOST } from "@/lib/hosts";
-
-declare global {
-  interface Window {
-    turnstile?: {
-      render: (el: string | HTMLElement, opts: { sitekey: string; callback: (t: string) => void }) => string;
-      reset: (id?: string) => void;
-    };
-  }
-}
+import { useTurnstile } from "@/components/use-turnstile";
 
 type Brand = {
   studioName: string;
@@ -179,39 +171,10 @@ export function GalleryGate({ studioName, accent, logoUrl, whiteLabel, token, ma
   const [step, setStep] = useState<"email" | "code">("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
-  const [tsToken, setTsToken] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [cooldown, setCooldown] = useState(0);
-  const tsRef = useRef<HTMLDivElement>(null);
-  const tsIdRef = useRef<string | null>(null);
-
-  // Load the Turnstile script (once) and render the widget explicitly.
-  useEffect(() => {
-    if (!turnstileSiteKey) return;
-    let cancelled = false;
-    if (!document.querySelector("script[data-snap-turnstile]")) {
-      const s = document.createElement("script");
-      s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
-      s.async = true;
-      s.defer = true;
-      s.dataset.snapTurnstile = "1";
-      document.head.appendChild(s);
-    }
-    const tryRender = () => {
-      if (cancelled || tsIdRef.current || !window.turnstile || !tsRef.current) return;
-      tsIdRef.current = window.turnstile.render(tsRef.current, {
-        sitekey: turnstileSiteKey,
-        callback: (t) => setTsToken(t),
-      });
-    };
-    tryRender();
-    const iv = setInterval(() => {
-      if (tsIdRef.current) return clearInterval(iv);
-      tryRender();
-    }, 400);
-    return () => { cancelled = true; clearInterval(iv); };
-  }, [turnstileSiteKey]);
+  const { ref: tsRef, token: tsToken, reset: resetTs } = useTurnstile(turnstileSiteKey);
 
   // Resend cooldown ticker.
   useEffect(() => {
@@ -243,8 +206,7 @@ export function GalleryGate({ studioName, accent, logoUrl, whiteLabel, token, ma
       } else {
         setStep("code");
         setCooldown(30);
-        window.turnstile?.reset(tsIdRef.current ?? undefined);
-        setTsToken("");
+        resetTs();
       }
     } catch {
       setError("Network error — please try again.");
