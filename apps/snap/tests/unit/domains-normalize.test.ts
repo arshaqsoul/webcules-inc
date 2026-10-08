@@ -53,6 +53,7 @@ describe("normalizeHostname", () => {
   bad("snap.webcules.com", "reserved");
   bad("snap-fallback.webcules.com", "reserved");
   bad("snap-saas-origin.webcules.com", "reserved");
+  bad("domains.snaphq.app", "reserved");
   bad("anything.webcules.com", "reserved");
   bad("localhost", "reserved");
   // rejected — subdomain-only policy
@@ -115,13 +116,13 @@ describe("verification records", () => {
   });
 
   it("CNAME target is the fallback origin hostname", () => {
-    expect(CNAME_TARGET).toBe("snap-saas-origin.webcules.com");
+    expect(CNAME_TARGET).toBe("domains.snaphq.app");
   });
 });
 
 describe("requestHost (SaaS X-Forwarded-Host)", () => {
   it("prefers x-forwarded-host — the SaaS fallback-origin leg carries the studio host there", () => {
-    expect(requestHost(new Headers({ host: "snap-saas-origin.webcules.com", "x-forwarded-host": "gallery.studio.com" }))).toBe("gallery.studio.com");
+    expect(requestHost(new Headers({ host: "domains.snaphq.app", "x-forwarded-host": "gallery.studio.com" }))).toBe("gallery.studio.com");
   });
   it("first value of a comma list; plain Host when absent", () => {
     expect(requestHost(new Headers({ "x-forwarded-host": "gallery.studio.com, proxy.example" }))).toBe("gallery.studio.com");
@@ -147,7 +148,7 @@ describe("serving guard (WEB-227)", () => {
   });
 
   it("default/dev/preview hosts never redirect", () => {
-    for (const h of ["snap.webcules.com", "snap-saas-origin.webcules.com", "localhost:8787", "127.0.0.1", "snap.webcules-inc.workers.dev"]) {
+    for (const h of ["snap.webcules.com", "domains.snaphq.app", "localhost:8787", "127.0.0.1", "snap.webcules-inc.workers.dev"]) {
       expect(nonClientPathRedirect(h, "/dashboard")).toBeNull();
       expect(isCustomAppHost(h)).toBe(false);
     }

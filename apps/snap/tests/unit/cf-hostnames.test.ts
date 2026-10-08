@@ -40,7 +40,7 @@ describe("createCustomHostname", () => {
     expect(captured!.body).toEqual({
       hostname: "gallery.studio.com",
       ssl: { method: "txt", type: "dv" },
-      custom_origin_server: "snap-saas-origin.webcules.com",
+      custom_origin_server: "domains.snaphq.app",
     });
   });
 

@@ -64,7 +64,7 @@ describe("originForHost - embed loader origin", () => {
   it("never reflects a foreign or fallback-origin Host header", () => {
     expect(originForHost("evil.example")).toBe(PUBLIC_ORIGIN);
     expect(originForHost('x"};alert(1);//')).toBe(PUBLIC_ORIGIN);
-    expect(originForHost("snap-saas-origin.webcules.com")).toBe(PUBLIC_ORIGIN);
+    expect(originForHost("domains.snaphq.app")).toBe(PUBLIC_ORIGIN);
     expect(originForHost(null)).toBe(PUBLIC_ORIGIN);
   });
 });

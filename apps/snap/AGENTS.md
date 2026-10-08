@@ -93,10 +93,12 @@ drops into the public docs unchanged. Commit messages are written for the docs p
   `37d24772-98e5-4371-bcd1-2e0424361b0d`, plan free). Recreate freely; staging data is disposable.
 - Manual staging cron: `curl -X POST -H "Authorization: Bearer $STAGING_SNAP_INBOUND_WEBHOOK_SECRET" https://snap-staging.webcules.com/api/cron/daily-status`
 - Custom-hostname serving architecture (WEB-233 runbook, verified live on
-  prairiepeakgear.com 2026-09-30): zone fallback origin = `snap-saas-origin.webcules.com`
-  (ORIGINLESS proxied A → 192.0.2.1 — never a real IP), plus a `*/*` workers route on
-  webcules.com → webcules-snap (declared in wrangler.jsonc — a matching route is REQUIRED or
-  Cloudflare 522s; more-specific routes like webcules.com/* → landing keep precedence). The
+  prairiepeakgear.com 2026-09-30; moved to the snaphq.app zone in WEB-330): zone fallback origin =
+  `domains.snaphq.app` (ORIGINLESS proxied A -> 192.0.2.1 - never a real IP), plus a
+  `domains.snaphq.app/*` workers route -> webcules-snap (declared in wrangler.jsonc - a matching
+  route is REQUIRED or Cloudflare 522s) and one `<hostname>/*` route per active custom hostname,
+  re-ensured by scripts/deploy.mjs after every deploy. `CLOUDFLARE_ZONE_ID` is the snaphq.app zone
+  and the `CLOUDFLARE_API_TOKEN` secret needs Custom Hostnames edit there. The
   worker resolves the studio from `x-forwarded-host` (see requestHost in lib/domains.ts).
   Custom hostname payloads: `ssl: {method: "txt", type: "dv"}` — NO `certificate_authority`
   (Enterprise-only on our zone) and no `preserve_host_header`.

@@ -1,7 +1,7 @@
 /* Cloudflare for SaaS — Custom Hostnames API client (WEB-224/226).
  * Mechanism: custom hostname → CF edge (per-hostname cert via Google CA,
- * TXT DCV) → custom_origin_server = snap-saas-origin.webcules.com (a workers
- * ROUTE on a proxied record in the webcules.com zone) with the worker
+ * TXT DCV) → custom_origin_server = domains.snaphq.app (a workers
+ * ROUTE on a proxied record in the snaphq.app zone) with the worker
  * reads Host to resolve the studio (serving story, WEB-227).
  *
  * Everything takes an injectable fetch + optional token/zone override so the
@@ -10,11 +10,11 @@
  * caller persists as last_error — CF being down never 500s a request.
  *
  * One-time operator steps (runbook — see WEB-226):
- *   1. wrangler.jsonc: snap-saas-origin.webcules.com/* workers route (done).
+ *   1. wrangler.jsonc: domains.snaphq.app/* workers route (done).
  *   2. CF dashboard → SSL/TLS → Custom Hostnames → fallback origin =
- *      snap-saas-origin.webcules.com.
+ *      domains.snaphq.app.
  *   3. wrangler secret put CLOUDFLARE_API_TOKEN (Zone → Custom Hostnames →
- *      Edit, scoped to webcules.com) + CLOUDFLARE_ZONE_ID var.
+ *      Edit, scoped to snaphq.app) + CLOUDFLARE_ZONE_ID var.
  *   4. Turnstile widget hostname allowlist gains each activated hostname
  *      (manual dashboard step for v1 — call it out in the activation email).
  */

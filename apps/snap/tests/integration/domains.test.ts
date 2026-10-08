@@ -240,7 +240,7 @@ describe("daily domain sweep (WEB-230)", () => {
     }) as CfFetch;
   }
 
-  const TARGET = "snap-saas-origin.webcules.com";
+  const TARGET = "domains.snaphq.app";
 
   async function seedActiveDomain(org: string, hostname = "live.studio.test") {
     const a = await createDomain({ organizationId: org, hostname, actorUserId: "u" });

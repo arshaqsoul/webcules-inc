@@ -53,8 +53,8 @@
       // activation and re-ensured after every deploy by scripts/deploy.mjs
       // (wrangler prunes API-created routes on deploy). A wildcard does NOT
       // work here (asset-layer 404s) and would hijack sibling workers.
-      "pattern": "snap-saas-origin.webcules.com/*",
-      "zone_name": "webcules.com"
+      "pattern": "domains.snaphq.app/*",
+      "zone_name": "snaphq.app"
     },
     // WEB-224/233: staging probe host — exercises the serving guard and the
     // neutral org-less 404 on a live third-party-shaped hostname (our zone's
@@ -82,7 +82,7 @@
     // Founder allowlist — margin report (WEB-161) access + alert recipient.
     "FOUNDER_EMAILS": "arshaqhishamsl@gmail.com",
     // webcules.com zone — Custom Hostnames (Cloudflare for SaaS) target zone.
-    "CLOUDFLARE_ZONE_ID": "5de72a6806708f95960d382acaa466b0",
+    "CLOUDFLARE_ZONE_ID": "9576286851f6ba68ddcb3ff31a1e74db",
     // WEB-319: Template Studio harness (/dev/template-harness) — always open
     // in local dev (NODE_ENV), this flips it on for a deployed environment
     // (staging sets "1"; production keeps it off).
