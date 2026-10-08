@@ -117,7 +117,12 @@ export async function refundPayment(
   if (!stripe) return { ok: false, error: "stripe_failed" };
 
   try {
-    await stripe.refunds.create({ payment_intent: payment.stripePaymentIntentId });
+    // WEB-352: direct charges live on the studio's account, so the refund runs there.
+    // Legacy rows (no account id) were platform charges.
+    await stripe.refunds.create(
+      { payment_intent: payment.stripePaymentIntentId },
+      payment.stripeAccountId ? { stripeAccount: payment.stripeAccountId } : undefined,
+    );
   } catch (err) {
     console.error("refund create failed:", String(err));
     return { ok: false, error: "stripe_failed" };

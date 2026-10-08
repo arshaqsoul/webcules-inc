@@ -1,7 +1,14 @@
-/* Stripe Connect (Epic 14) — Express accounts for photographer payouts.
+/* Stripe Connect (Epic 14) — the photographer's own Stripe account.
  * Snap stores only the account id + a DERIVED state; all KYC/bank data stays
- * in Stripe. Monetization is subscription-only: destination charges carry
- * application_fee_amount 0 (the platform takes nothing from bookings).
+ * in Stripe. Monetization is subscription-only: every client payment is a
+ * DIRECT charge on the studio's account (WEB-352) - the money, the Stripe
+ * processing fee and refunds all live in the studio's Stripe, and Snap's
+ * platform balance is never touched. No application_fee_amount, ever.
+ *
+ * Why not Express: Stripe requires the platform to collect fees and carry
+ * losses when the dashboard type is express, and (since 2026) rejects direct
+ * charges on legacy type=express accounts for new platforms. Spike WEB-351
+ * measured it: a destination charge cost the platform 4.00 on a 100.00 payment.
  *
  * State machine:
  *   not_connected → pending (account created, onboarding not finished)
@@ -14,6 +21,46 @@ import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 
 export type ConnectState = "not_connected" | "pending" | "active" | "restricted";
+
+/** Controller settings for every studio account. Verified against Snap's own
+ * Stripe account (WEB-351/352): full Stripe dashboard, the STUDIO account pays
+ * Stripe fees, Stripe holds negative-balance liability. Direct charges on an
+ * account created this way put the fee on the studio and nothing on Snap. */
+export const STUDIO_ACCOUNT_CONTROLLER: Stripe.AccountCreateParams.Controller = {
+  stripe_dashboard: { type: "full" },
+  fees: { payer: "account" },
+  losses: { payments: "stripe" },
+  requirement_collection: "stripe",
+};
+
+/** Params for `stripe.accounts.create` - no legacy `type`, controller only. */
+export function studioAccountParams(input: {
+  organizationId: string;
+  studioName: string;
+  contactEmail?: string | null;
+}): Stripe.AccountCreateParams {
+  return {
+    controller: STUDIO_ACCOUNT_CONTROLLER,
+    capabilities: { card_payments: { requested: true }, transfers: { requested: true } },
+    email: input.contactEmail ?? undefined,
+    business_profile: { name: input.studioName, mcc: "8062", product_description: "Photography services" },
+    metadata: { organizationId: input.organizationId, studio: input.studioName },
+  };
+}
+
+/** The studio's connected account id when it can take charges, else null.
+ * Client money may ONLY be charged on this account: callers must refuse
+ * (never fall back to the platform account) when this returns null. */
+export function chargeAccountId(
+  profile: { stripeAccountId: string | null; stripeConnectState: string | null } | null | undefined,
+): string | null {
+  return profile?.stripeAccountId && profile.stripeConnectState === "active" ? profile.stripeAccountId : null;
+}
+
+/** Stripe request options that make a call run ON the studio's account. */
+export function onAccount(accountId: string): { stripeAccount: string } {
+  return { stripeAccount: accountId };
+}
 
 export function deriveConnectState(account: Stripe.Account): ConnectState {
   // Never finished onboarding → pending (a fresh Express account carries

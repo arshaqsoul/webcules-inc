@@ -230,6 +230,8 @@ export async function confirmBookingPaid(params: {
   bookingId: string;
   organizationId: string;
   stripePaymentIntentId: string | null;
+  /** WEB-352: connected account the charge was made on. */
+  stripeAccountId?: string | null;
   amountMinor?: number | null;
   currency?: string | null;
 }): Promise<{ ok: boolean; booking?: typeof schema.bookings.$inferSelect }> {
@@ -297,6 +299,7 @@ export async function confirmBookingPaid(params: {
       organizationId: params.organizationId,
       projectId,
       stripePaymentIntentId: params.stripePaymentIntentId,
+      stripeAccountId: params.stripeAccountId ?? null,
       kind: "booking",
       amountMinor: params.amountMinor ?? 0,
       currency: params.currency ?? "usd",

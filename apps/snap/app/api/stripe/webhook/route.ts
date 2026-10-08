@@ -8,6 +8,11 @@
  *   charge.dispute.created          → payment flagged disputed (refunds frozen)
  *   charge.dispute.closed           → dispute outcome recorded (won restores, lost stays flagged)
  *   account.updated                 → Connect onboarding state refresh (Epic 14)
+ *
+ * WEB-352: client payments are DIRECT charges on the studio's Stripe account, so
+ * their events arrive from a second endpoint scoped to "Connected accounts"
+ * (own signing secret: STRIPE_CONNECT_WEBHOOK_SECRET) and carry event.account.
+ * Both endpoints may point at this route. Register the same events on both.
  */
 import { and, eq } from "drizzle-orm";
 import type Stripe from "stripe";
@@ -26,9 +31,21 @@ import { emitInboxItem, formatMoney } from "@/lib/inbox/sources";
 
 export const dynamic = "force-dynamic";
 
+/** WEB-352 defense in depth: an event from a connected account may only touch the
+ * org that account belongs to. Platform events (no account) are not restricted. */
+async function accountOwnsOrg(account: string | null, organizationId: string | undefined): Promise<boolean> {
+  if (!account) return true;
+  if (!organizationId) return false;
+  const profile = await getStudioProfile(organizationId);
+  if (profile?.stripeAccountId === account) return true;
+  console.error(`stripe webhook: ignoring event from ${account} for org ${organizationId} (account mismatch)`);
+  return false;
+}
+
 export async function POST(req: Request) {
   const stripe = await getStripe();
   const webhookSecret = env.STRIPE_WEBHOOK_SECRET;
+  const connectSecret = env.STRIPE_CONNECT_WEBHOOK_SECRET;
   if (!stripe || !webhookSecret) {
     return Response.json({ error: "stripe_not_configured" }, { status: 503 });
   }
@@ -37,13 +54,24 @@ export async function POST(req: Request) {
   if (!signature) return Response.json({ error: "missing_signature" }, { status: 400 });
   const rawBody = await req.text();
 
+  // The platform endpoint and the Connect endpoint sign with different secrets.
   let event: Stripe.Event;
   try {
     event = await stripe.webhooks.constructEventAsync(rawBody, signature, webhookSecret);
   } catch (err) {
-    console.error("stripe webhook signature verification failed:", String(err));
-    return Response.json({ error: "invalid_signature" }, { status: 400 });
+    if (!connectSecret) {
+      console.error("stripe webhook signature verification failed:", String(err));
+      return Response.json({ error: "invalid_signature" }, { status: 400 });
+    }
+    try {
+      event = await stripe.webhooks.constructEventAsync(rawBody, signature, connectSecret);
+    } catch (err2) {
+      console.error("stripe webhook signature verification failed:", String(err2));
+      return Response.json({ error: "invalid_signature" }, { status: 400 });
+    }
   }
+  // Set on events from a connected (studio) account; undefined on platform events.
+  const connectedAccount = event.account ?? null;
 
   // Idempotency: skip events we've already processed.
   const db = getDb();
@@ -70,7 +98,7 @@ export async function POST(req: Request) {
         const session = event.data.object as Stripe.Checkout.Session;
 
         // Snap plan subscription checkout (WEB-152) — distinct from bookings.
-        if (session.mode === "subscription" && session.metadata?.kind === "plan_checkout") {
+        if (!connectedAccount && session.mode === "subscription" && session.metadata?.kind === "plan_checkout") {
           const organizationId = session.metadata.organizationId;
           const subId = typeof session.subscription === "string" ? session.subscription : null;
           if (organizationId && subId) {
@@ -82,6 +110,7 @@ export async function POST(req: Request) {
 
         // WEB-174: invoice Payment Link checkout — flip the invoice paid.
         if (session.metadata?.kind === "invoice") {
+          if (!(await accountOwnsOrg(connectedAccount, session.metadata.organizationId))) break;
           const { markInvoicePaidFromSession } = await import("@/lib/invoices");
           await markInvoicePaidFromSession({
             id: session.id,
@@ -90,6 +119,7 @@ export async function POST(req: Request) {
             currency: session.currency ?? null,
             payment_status: session.payment_status ?? null,
             metadata: session.metadata,
+            stripeAccountId: connectedAccount,
           });
           break;
         }
@@ -97,9 +127,11 @@ export async function POST(req: Request) {
         const bookingId = session.metadata?.bookingId;
         const organizationId = session.metadata?.organizationId;
         if (bookingId && organizationId) {
+          if (!(await accountOwnsOrg(connectedAccount, organizationId))) break;
           await confirmBookingPaid({
             bookingId,
             organizationId,
+            stripeAccountId: connectedAccount,
             stripePaymentIntentId:
               typeof session.payment_intent === "string" ? session.payment_intent : null,
             amountMinor: session.amount_total ?? null,
@@ -324,6 +356,7 @@ export async function POST(req: Request) {
         // WEB-165: abandoned payment — release the slot hold.
         const session = event.data.object as Stripe.Checkout.Session;
         if (session.metadata?.bookingId && session.metadata?.organizationId) {
+          if (!(await accountOwnsOrg(connectedAccount, session.metadata.organizationId))) break;
           await cancelBooking(session.metadata.organizationId, session.metadata.bookingId, "system");
         }
         break;

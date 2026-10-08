@@ -1,6 +1,6 @@
 "use client";
 
-/* Settings → Payouts (WEB-154) — Stripe Connect Express onboarding + live
+/* Settings → Payouts (WEB-154) — Stripe Connect onboarding (the studio's own Stripe account) + live
  * status. WEB-157 extends this panel with balance/payout schedule; the state
  * machine lives in lib/connect.ts and is refreshed from Stripe on every view. */
 import { useCallback, useEffect, useState } from "react";

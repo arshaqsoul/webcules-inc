@@ -9,6 +9,7 @@ import { eq } from "drizzle-orm";
 
 import { getDb, schema } from "@/lib/db";
 import { getStripe } from "@/lib/stripe";
+import { chargeAccountId, onAccount } from "@/lib/connect";
 import { getBookingSettings } from "@/lib/repos/availability";
 import { effectiveBookingPayment } from "@/lib/repos/session-types";
 import { getStudioProfile } from "@/lib/repos/studios";
@@ -72,10 +73,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
       try {
         const url = new URL(req.url);
         const profile = await getStudioProfile(booking.organizationId);
-        let transferData: { destination: string } | undefined;
-        if (profile?.stripeAccountId && profile.stripeConnectState === "active") {
-          transferData = { destination: profile.stripeAccountId };
-        }
+        // WEB-352: charge ONLY on the studio's own Stripe account (direct charge) -
+        // no platform fallback. Without an active account the re-offer is skipped.
+        const chargeAccount = chargeAccountId(profile);
+        if (!chargeAccount) throw new Error("studio has no active Stripe account");
         const session = await stripe.checkout.sessions.create({
           mode: "payment",
           customer_email: result.booking.clientEmail,
@@ -97,8 +98,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
           metadata: { bookingId: booking.id, organizationId: booking.organizationId },
           success_url: `${url.origin}/booking/success?booking=${booking.id}`,
           cancel_url: `${url.origin}/booking/${token}`,
-          ...(transferData ? { payment_intent_data: { transfer_data: transferData } } : {}),
-        });
+        }, onAccount(chargeAccount));
         return Response.json({ ok: true, checkoutUrl: session.url });
       } catch (err) {
         // The booking has already MOVED — a Stripe hiccup must not 500 the

@@ -1,6 +1,6 @@
-/* Payouts — Stripe Express onboarding and where client money goes. Read from
+/* Payouts — connecting your own Stripe account and where client money goes. Read from
  * components/payouts-panel.tsx, lib/connect.ts, and the booking/invoice
- * charge paths (destination charges, application_fee_amount 0). Fee and
+ * charge paths (direct charges on the studio account, no application fee, WEB-352). Fee and
  * timing claims stay within what the code and panel actually show. */
 import { H2, Note, Callout, Shot, Related } from "@/lib/docs/primitives";
 
@@ -16,11 +16,11 @@ export default function Payouts() {
 
       <Shot
         src="/docs-shots/payouts/panel.png"
-        alt="Settings → Payouts: a connected Stripe Express account showing available and pending balance, the last payout, and the payout schedule."
+        alt="Settings → Payouts: a connected Stripe account showing available and pending balance, the last payout, and the payout schedule."
         grad="sea"
       />
 
-      <H2>Connecting with Stripe Express</H2>
+      <H2>Connecting your Stripe account</H2>
       <p>
         Press <strong>Connect payouts</strong> and Stripe hosts the whole onboarding — identity
         verification and bank details happen on Stripe&apos;s pages, usually a few minutes. You
@@ -53,7 +53,7 @@ export default function Payouts() {
         </tbody>
       </table>
       <Note>
-        Once connected, the <strong>Stripe dashboard</strong> button opens your Express dashboard
+        Once connected, the <strong>Stripe dashboard</strong> button opens your Stripe dashboard
         — payout history, bank settings, and tax documents live there.
       </Note>
 
@@ -69,8 +69,10 @@ export default function Payouts() {
 
       <H2>Fees</H2>
       <p>
-        Snap takes nothing from a booking. Stripe&apos;s standard processing fees still apply to
-        card payments — they&apos;re visible per transaction in your Stripe Express dashboard.
+        Snap takes nothing from a booking, and no payment ever passes through Snap&apos;s Stripe
+        account: clients pay you directly. Stripe&apos;s standard processing fees apply to card
+        payments and are charged to your own Stripe account — they&apos;re visible per transaction
+        in your Stripe dashboard.
         Check Stripe&apos;s pricing for current rates; Snap doesn&apos;t add anything on top.
       </p>
 
@@ -78,7 +80,7 @@ export default function Payouts() {
       <p>
         Payouts follow the schedule Stripe sets on your account, shown verbatim in the panel —
         the interval and any delay in days (for example, a daily interval with a 2-day delay).
-        The schedule itself is managed in your Stripe Express dashboard; payments sitting in
+        The schedule itself is managed in your Stripe dashboard; payments sitting in
         <em> Pending</em> balance are in that window.
       </p>
 

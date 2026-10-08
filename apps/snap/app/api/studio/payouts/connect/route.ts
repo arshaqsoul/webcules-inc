@@ -1,10 +1,10 @@
-/* Start (or resume) Stripe Express onboarding — creates the connected account
+/* Start (or resume) Stripe onboarding for the studio's own Stripe account — creates the connected account
  * on first call, then returns a Stripe-hosted Account Link. Body
  * { update?: true } requests the re-auth variant for restricted accounts. */
 import { permissionDenied } from "@/lib/permissions";
 import { getOrgContext } from "@/lib/session";
 import { getStudioProfile, setStudioStripeAccount } from "@/lib/repos/studios";
-import { createAccountLink } from "@/lib/connect";
+import { createAccountLink, studioAccountParams } from "@/lib/connect";
 import { getStripe } from "@/lib/stripe";
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
@@ -34,12 +34,13 @@ export async function POST(req: Request) {
 
   if (!accountId) {
     try {
-      const account = await stripe.accounts.create({
-        type: "express",
-        email: profile.contactEmail ?? undefined,
-        business_profile: { name: profile.studioName, mcc: "8062", product_description: "Photography services" },
-        metadata: { organizationId: ctx.organizationId, studio: profile.studioName },
-      });
+      const account = await stripe.accounts.create(
+        studioAccountParams({
+          organizationId: ctx.organizationId,
+          studioName: profile.studioName,
+          contactEmail: profile.contactEmail,
+        }),
+      );
       accountId = account.id;
       await setStudioStripeAccount(ctx.organizationId, accountId);
       await getDb().insert(schema.auditLog).values({

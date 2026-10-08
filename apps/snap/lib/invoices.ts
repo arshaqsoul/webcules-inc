@@ -17,6 +17,7 @@ import { getEmailBrand } from "./branding";
 import { getStudioProfile } from "./repos/studios";
 import { safeHexColor } from "./embed";
 import { getStripe } from "./stripe";
+import { chargeAccountId, onAccount } from "./connect";
 import { emitInboxItem, formatMoney } from "./inbox/sources";
 
 export type InvoiceLine = { description: string; qty: number; amountMinor: number };
@@ -164,20 +165,21 @@ async function generateAndArchivePdf(invoice: InvoiceRow, projectTitle: string |
   return `${invoice.organizationId}/${suffix}`;
 }
 
-/** WEB-174: mint a persistent Stripe Payment Link for the invoice total —
- * on the studio's connected account when live (direct charge, no platform
- * fee), falling back to the platform account otherwise. Links don't expire
+/** WEB-174/WEB-352: mint a persistent Stripe Payment Link for the invoice total
+ * ON THE STUDIO'S OWN STRIPE ACCOUNT (direct charge, no platform fee). The studio's
+ * Stripe takes the payment and pays the Stripe fee. There is deliberately NO
+ * fallback to the platform account: without an active studio account no link is
+ * created (null) so client money can never land on Snap. Links don't expire
  * (checkout sessions cap at 24h, invoices live longer). */
 async function createInvoicePaymentLink(organizationId: string, invoice: InvoiceRow): Promise<{ url: string; id: string } | null> {
   const stripe = await getStripe();
   if (!stripe) return null;
   const profile = await getStudioProfile(organizationId);
-  const connected =
-    profile?.stripeAccountId && profile.stripeConnectState === "active"
-      ? { stripeAccount: profile.stripeAccountId }
-      : undefined;
+  const account = chargeAccountId(profile);
+  if (!account) return null;
+  const opts = onAccount(account);
   const studioLabel = profile?.studioName ?? "Studio";
-  const lineItem = async (opts: { stripeAccount?: string } | undefined) => {
+  try {
     const price = await stripe.prices.create(
       {
         currency: invoice.currency,
@@ -186,29 +188,17 @@ async function createInvoicePaymentLink(organizationId: string, invoice: Invoice
       },
       opts,
     );
-    return stripe.paymentLinks.create(
+    const link = await stripe.paymentLinks.create(
       {
         line_items: [{ price: price.id, quantity: 1 }],
         metadata: { kind: "invoice", invoiceId: invoice.id, organizationId },
       },
       opts,
     );
-  };
-  try {
-    const link = await lineItem(connected);
     return { url: link.url, id: link.id };
   } catch (err) {
-    if (!connected) {
-      console.error("invoice payment link create failed:", String(err));
-      return null;
-    }
-    console.error("connect payment link failed — falling back to platform:", String(err));
-    try {
-      const link = await lineItem(undefined);
-      return { url: link.url, id: link.id };
-    } catch {
-      return null;
-    }
+    console.error("invoice payment link create failed:", String(err));
+    return null;
   }
 }
 
@@ -346,6 +336,8 @@ export async function markInvoicePaidFromSession(session: {
   currency: string | null;
   payment_status?: string | null;
   metadata: Record<string, string | null> | null;
+  /** WEB-352: connected account the payment was taken on. */
+  stripeAccountId?: string | null;
 }): Promise<void> {
   const db = getDb();
   const invoiceId = session.metadata?.invoiceId;
@@ -376,6 +368,7 @@ export async function markInvoicePaidFromSession(session: {
       method: "stripe",
       note: `Invoice ${invoice.number}`,
       stripePaymentIntentId: session.payment_intent,
+      stripeAccountId: session.stripeAccountId ?? null,
       occurredAt: new Date(),
     }),
     db.insert(schema.auditLog).values({

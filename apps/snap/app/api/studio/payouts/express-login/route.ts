@@ -1,5 +1,7 @@
-/* Stripe Express dashboard deep-link (WEB-157) — photographers manage bank
- * details and payouts there without a separate password. */
+/* Stripe dashboard deep-link (WEB-157, WEB-352). Studio accounts have the full
+ * Stripe dashboard (the photographer owns a regular Stripe account), so there
+ * is no Express login link: legacy Express accounts still get one, everyone
+ * else is sent to dashboard.stripe.com. */
 import { permissionDenied } from "@/lib/permissions";
 import { getOrgContext } from "@/lib/session";
 import { getStudioProfile } from "@/lib/repos/studios";
@@ -22,8 +24,8 @@ export async function POST() {
   try {
     const link = await stripe.accounts.createLoginLink(profile.stripeAccountId);
     return Response.json({ ok: true, url: link.url });
-  } catch (err) {
-    console.error("connect: login link failed:", String(err));
-    return Response.json({ error: "link_failed" }, { status: 502 });
+  } catch {
+    // Full-dashboard accounts reject login links - the studio signs in to Stripe directly.
+    return Response.json({ ok: true, url: "https://dashboard.stripe.com/" });
   }
 }

@@ -8,6 +8,8 @@ declare namespace Cloudflare {
     BETTER_AUTH_SECRET?: string;
     SNAP_INBOUND_WEBHOOK_SECRET?: string;
     STRIPE_WEBHOOK_SECRET?: string;
+    /** WEB-352: signing secret of the Connect-scoped webhook endpoint ("Connected accounts"). */
+    STRIPE_CONNECT_WEBHOOK_SECRET?: string;
     STRIPE_SECRET_KEY?: string;
     TURNSTILE_SECRET_KEY?: string;
     R2_S3_ACCESS_KEY_ID?: string;
@@ -39,6 +41,7 @@ interface Env {
   BETTER_AUTH_SECRET?: string;
   SNAP_INBOUND_WEBHOOK_SECRET?: string;
   STRIPE_WEBHOOK_SECRET?: string;
+  STRIPE_CONNECT_WEBHOOK_SECRET?: string;
   STRIPE_SECRET_KEY?: string;
   TURNSTILE_SECRET_KEY?: string;
   R2_S3_ACCESS_KEY_ID?: string;

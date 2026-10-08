@@ -15,6 +15,7 @@ import { ensureManageToken } from "@/lib/repos/booking-manage";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { notificationPrefValue } from "@/lib/notify-client";
 import { getStripe } from "@/lib/stripe";
+import { chargeAccountId, onAccount } from "@/lib/connect";
 import { verifyTurnstile } from "@/lib/turnstile";
 
 export const dynamic = "force-dynamic";
@@ -82,6 +83,11 @@ export async function POST(req: Request) {
   if (payment?.enabled) {
     const stripe = await getStripe();
     if (stripe) {
+      // WEB-352: payments settle in the studio's own Stripe account only. A studio that
+      // requires payment but has no active account cannot take a paid booking; refuse
+      // BEFORE holding a slot rather than charging the platform account.
+      const chargeAccount = chargeAccountId(await getStudioProfile(studio.organizationId));
+      if (!chargeAccount) return Response.json({ error: "payments_unavailable" }, { status: 409 });
       const held = await createBookingFromWidget({
         organizationId: studio.organizationId,
         slotStartIso: body.slotStart,
@@ -98,16 +104,10 @@ export async function POST(req: Request) {
         return Response.json({ error: held.error }, { status });
       }
 
-      // Connected studios (active Express account) get a DESTINATION charge —
-      // money lands in the photographer's balance, platform takes $0
-      // (application_fee_amount omitted = 0). Unconnected/pending studios
-      // fall back to the platform account (founder-approved testing phase);
-      // if a stale "active" cache fails at Stripe, retry once as platform.
-      const profile = await getStudioProfile(studio.organizationId);
-      let transferData: { destination: string } | undefined;
-      if (profile?.stripeAccountId && profile.stripeConnectState === "active") {
-        transferData = { destination: profile.stripeAccountId };
-      }
+      // WEB-352: client money is charged DIRECTLY on the studio's own Stripe
+      // account - the studio's Stripe takes the payment and pays the Stripe
+      // fee; Snap's platform account is never charged and never receives
+      // client money. There is no platform fallback: see the guard above.
       const sessionArgs = {
         mode: "payment" as const,
         customer_email: body.email.toLowerCase(),
@@ -121,7 +121,7 @@ export async function POST(req: Request) {
                   payment.kind === "deposit"
                     ? `Session deposit — ${studio.studioName}`
                     : `Session payment — ${studio.studioName}`,
-              },
+                },
             },
             quantity: 1,
           },
@@ -129,19 +129,8 @@ export async function POST(req: Request) {
         metadata: { bookingId: held.bookingId, organizationId: studio.organizationId },
         success_url: `${url.origin}/booking/success?booking=${held.bookingId}`,
         cancel_url: `${url.origin}/booking/cancel?booking=${held.bookingId}`,
-        ...(transferData ? { payment_intent_data: { transfer_data: transferData } } : {}),
       };
-      let session;
-      try {
-        session = await stripe.checkout.sessions.create(sessionArgs);
-      } catch (err) {
-        if (transferData && /destination|transfers/i.test(String(err))) {
-          console.error("connect destination charge failed — falling back to platform account:", String(err));
-          session = await stripe.checkout.sessions.create({ ...sessionArgs, payment_intent_data: undefined });
-        } else {
-          throw err;
-        }
-      }
+      const session = await stripe.checkout.sessions.create(sessionArgs, onAccount(chargeAccount));
       return Response.json({ ok: true, requiresPayment: true, checkoutUrl: session.url });
     }
   }

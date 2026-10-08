@@ -1021,6 +1021,9 @@ export const payments = sqliteTable(
       .notNull()
       .references(() => projects.id, { onDelete: "cascade" }),
     stripePaymentIntentId: text("stripe_payment_intent_id"),
+    /** WEB-352: the studio's connected account the charge was made on (refunds
+     * run there). NULL = legacy payment taken on the platform account. */
+    stripeAccountId: text("stripe_account_id"),
     /** booking | deposit | balance | manual */
     kind: text("kind").notNull(),
     amountMinor: integer("amount_minor").notNull(),
