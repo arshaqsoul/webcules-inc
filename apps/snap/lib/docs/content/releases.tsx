@@ -35,6 +35,19 @@ export default function Releases() {
         polish fold into the next entry rather than getting their own.
       </Note>
 
+      <Release version="0.11.4" date="October 8, 2026">
+        <p>
+          <strong>Replies from your Snap inbox send again.</strong> Every reply typed into the
+          inbox was being refused by our email provider and showed &ldquo;delivery failed&rdquo;.
+          They now go out from the conversation&rsquo;s own address, and client answers still
+          land back in the same thread.
+        </p>
+        <p>
+          <strong>Clearer when there is nobody to send to.</strong> A conversation that has no
+          client email address now says so, instead of failing after you hit send.
+        </p>
+      </Release>
+
       <Release version="0.11.3" date="October 8, 2026">
         <p>
           <strong>Your own domain works for sign-in codes and forms too.</strong> On a custom
