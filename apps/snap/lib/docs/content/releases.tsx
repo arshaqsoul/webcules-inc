@@ -35,6 +35,19 @@ export default function Releases() {
         polish fold into the next entry rather than getting their own.
       </Note>
 
+      <Release version="0.11.0" date="October 8, 2026">
+        <p>
+          <strong>Snap has a new home: snaphq.app.</strong> Galleries, booking pages, the client
+          portal and every new link and email now use snaphq.app, and the &ldquo;Delivered by
+          Snap&rdquo; badge shows it too.
+        </p>
+        <p>
+          <strong>Nothing you already sent breaks.</strong> Every link you have emailed from
+          snap.webcules.com keeps working, and so does any embed code already on your website.
+          You will be asked to sign in once more on the new address.
+        </p>
+      </Release>
+
       <Release version="0.10.0" date="October 7, 2026">
         <p>
           <strong>Simpler pricing: Free, Lite and Studio.</strong> The pricing page now shows three

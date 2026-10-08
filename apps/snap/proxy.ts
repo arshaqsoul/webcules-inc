@@ -8,10 +8,13 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { appOrigin } from "@/lib/app-origin";
 import { nonClientPathRedirect } from "@/lib/domains";
+import { wwwRedirectTarget } from "@/lib/hosts";
 
 export const proxy = async (req: NextRequest) => {
   const host = req.headers.get("x-forwarded-host")?.split(",")[0].trim() || req.headers.get("host") || new URL(req.url).host;
   const { pathname } = new URL(req.url);
+  const www = wwwRedirectTarget(host, pathname, new URL(req.url).search);
+  if (www) return NextResponse.redirect(www, 308);
   const target = nonClientPathRedirect(host, pathname, await appOrigin());
   if (target) {
     const url = new URL(target);

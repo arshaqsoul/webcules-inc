@@ -2,7 +2,7 @@
  * rest, revocation, reissue), cutoff gates, reschedule through the live
  * slot engine (own-row exclusion, payment carry-over, race guard), and
  * client cancel freeing the slot instantly. */
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { eq } from "drizzle-orm";
 
 import { getDb, schema } from "@/lib/db";
@@ -102,13 +102,22 @@ describe("manage token lifecycle", () => {
   });
 
   it("rate-limits per token (fixed window)", async () => {
-    const token = "rate-test-token-abcdefghijklmnop";
-    for (let i = 0; i < 8; i++) {
-      expect(await checkManageRate(token)).toBe(true);
+    // Pin the clock mid-window: a fixed-window limiter legitimately resets
+    // when the calls straddle a boundary, which made this test flaky.
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      const now = Math.floor(Date.now() / 1000);
+      vi.setSystemTime(new Date((now - (now % 60) + 10) * 1000));
+      const token = "rate-test-token-abcdefghijklmnop";
+      for (let i = 0; i < 8; i++) {
+        expect(await checkManageRate(token)).toBe(true);
+      }
+      expect(await checkManageRate(token)).toBe(false);
+      // A different token has its own bucket.
+      expect(await checkManageRate("rate-test-token-other-qrstuvwxyz")).toBe(true);
+    } finally {
+      vi.useRealTimers();
     }
-    expect(await checkManageRate(token)).toBe(false);
-    // A different token has its own bucket.
-    expect(await checkManageRate("rate-test-token-other-qrstuvwxyz")).toBe(true);
   });
 });
 

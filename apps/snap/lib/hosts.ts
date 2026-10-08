@@ -45,6 +45,17 @@ export const APP_HOSTS: readonly string[] = [
 /** Registrable zones studios can never put a custom hostname under. */
 export const RESERVED_ZONES = ["webcules.com", NEW_HOST] as const;
 
+/** www.snaphq.app -> snaphq.app (WEB-330): one canonical site for search
+ * engines. Returns the absolute target, or null to serve as usual. Never
+ * redirects API or embed paths: webhooks, uploads and widgets must not be
+ * bounced (a redirect would turn a POST into a GET or drop its body). */
+export function wwwRedirectTarget(host: string, pathname: string, search = ""): string | null {
+  const h = host.split(":")[0].toLowerCase();
+  if (h !== `www.${NEW_HOST}`) return null;
+  if (pathname === "/api" || pathname.startsWith("/api/") || pathname === "/embed" || pathname.startsWith("/embed/")) return null;
+  return `https://${NEW_HOST}${pathname}${search}`;
+}
+
 /** An email address on the Snap mail domain, e.g. emailAddress("hello+acme"). */
 export function emailAddress(localPart: string): string {
   return `${localPart}@${EMAIL_DOMAIN}`;

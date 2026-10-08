@@ -14,6 +14,7 @@ import {
   isSnapMailDomain,
   originForHost,
   trustedAppOrigins,
+  wwwRedirectTarget,
 } from "@/lib/hosts";
 import { extractSnapMessageIds, parseInboundAddress, threadAddress } from "@/lib/inbox/threading";
 
@@ -105,5 +106,21 @@ describe("email domain flip keeps old threads routable", () => {
     expect(threadAddress(THREAD, "abc123xyz")).toBe(`t-${THREAD}-abc123xyz@${EMAIL_DOMAIN}`);
     const body = `In-Reply-To: <a@${LEGACY_HOST}>\nReferences: <b@${NEW_HOST}> <c@other.example>`;
     expect(extractSnapMessageIds(body).sort()).toEqual([`<a@${LEGACY_HOST}>`, `<b@${NEW_HOST}>`].sort());
+  });
+});
+
+describe("www redirect", () => {
+  it("sends www.snaphq.app pages to the apex, keeping path and query", () => {
+    expect(wwwRedirectTarget("www.snaphq.app", "/g/abc", "?x=1")).toBe("https://snaphq.app/g/abc?x=1");
+    expect(wwwRedirectTarget("WWW.snaphq.app:443", "/", "")).toBe("https://snaphq.app/");
+  });
+
+  it("never bounces API or embed paths, and ignores every other host", () => {
+    for (const p of ["/api/stripe/webhook", "/api/assets/upload", "/embed/loader.js", "/embed"]) {
+      expect(wwwRedirectTarget("www.snaphq.app", p), p).toBeNull();
+    }
+    for (const h of ["snaphq.app", "snap.webcules.com", "staging.snaphq.app", "www.example.com"]) {
+      expect(wwwRedirectTarget(h, "/login"), h).toBeNull();
+    }
   });
 });
