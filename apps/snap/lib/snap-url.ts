@@ -3,6 +3,8 @@
  * the growth loop the "Remove Snap branding" upgrade sells against.
  * Single self-domain link, visible text matches the href (spam-safe in
  * email footers). */
+import { PUBLIC_ORIGIN } from "@/lib/hosts";
+
 export function snapBrandUrl(medium: string): string {
-  return `https://snap.webcules.com/?utm_source=brand&utm_medium=${encodeURIComponent(medium)}`;
+  return `${PUBLIC_ORIGIN}/?utm_source=brand&utm_medium=${encodeURIComponent(medium)}`;
 }

@@ -3,6 +3,15 @@
  * the threading corpus (In-Reply-To chains, stripped-header replies,
  * Outlook Thread-Index, RFC 5256 subject fallback, DSN detection). */
 
+import { EMAIL_DOMAIN, LEGACY_HOST, NEW_HOST, emailAddress } from "@/lib/hosts";
+
+/** Inbound routing accepts every Snap mail domain forever: replies to threads
+ * started on the legacy domain must still land after the domain move. */
+const SNAP_MAIL_DOMAINS = [...new Set([EMAIL_DOMAIN, LEGACY_HOST, NEW_HOST])];
+const SNAP_ADDRESS_RE = new RegExp(`[^\\s<>,]+@(?:${SNAP_MAIL_DOMAINS.map((d) => d.replace(/\./g, "\\.")).join("|")})`, "gi");
+const SNAP_MESSAGE_ID_DOMAINS = SNAP_MAIL_DOMAINS;
+
+
 /** Extract every <…@…> message-id token from an In-Reply-To/References value. */
 export function parseMessageIds(headerValue: string | null | undefined): string[] {
   if (!headerValue) return [];
@@ -112,10 +121,10 @@ export type InboundAddress =
 
 /** Parse the recipients for our routing local-parts (the To/Cc headers as
  * delivered): t-{threadId}-{token}@, hello+{leadId}@ and hello+{slug}@ on
- * snap.webcules.com. First match wins; display names tolerated. */
+ * the Snap mail domain (current AND legacy - old threads keep routing). First match wins; display names tolerated. */
 export function parseInboundAddress(toHeader: string | null | undefined): InboundAddress | null {
   if (!toHeader) return null;
-  const addrs = toHeader.match(/[^\s<>,]+@snap\.webcules\.com/gi) ?? [];
+  const addrs = toHeader.match(SNAP_ADDRESS_RE) ?? [];
   for (const raw of addrs) {
     const local = raw.split("@")[0].toLowerCase();
     const t = local.match(/^t-([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})-([a-z0-9]{6,12})$/);
@@ -130,7 +139,7 @@ export function parseInboundAddress(toHeader: string | null | undefined): Inboun
 
 /** The per-thread reply address we send from (and clients reply to). */
 export function threadAddress(threadId: string, token: string): string {
-  return `t-${threadId}-${token}@snap.webcules.com`;
+  return emailAddress(`t-${threadId}-${token}`);
 }
 
 /** Short unguessable token for the thread address. */
@@ -161,7 +170,7 @@ export function looksLikeDsn(payload: {
  * in In-Reply-To/References or the failed-message headers). */
 export function extractSnapMessageIds(body: string | null | undefined): string[] {
   if (!body) return [];
-  return parseMessageIds(body).filter((id) => id.endsWith("@snap.webcules.com>"));
+  return parseMessageIds(body).filter((id) => SNAP_MESSAGE_ID_DOMAINS.some((d) => id.endsWith(`@${d}>`)));
 }
 
 /** Detect auto-forwarded mail (Gmail's "forward a copy" recipe wraps the

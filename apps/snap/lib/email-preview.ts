@@ -6,6 +6,7 @@ import { shell } from "./email";
 import { getEmailBrand } from "./branding";
 import { applyEmailOverride, loadEmailOverrides } from "./email-overrides";
 import { buildMergeValues } from "./merge";
+import { PUBLIC_ORIGIN } from "@/lib/hosts";
 
 const SAMPLE_INTROS: Record<string, string> = {
   "lead.ack": "Your inquiry to <strong>{{studio_name}}</strong> is in. They typically reply within a day — keep an eye on your inbox.",
@@ -47,7 +48,7 @@ export async function renderEmailPreview(organizationId: string, templateKey: st
   const overrides = await loadEmailOverrides(organizationId);
   const override = overrides[templateKey];
   const values = await buildMergeValues({ organizationId, clientEmail: "maya@example.com" });
-  const sample = { ...values, client_name: "Maya", gallery_link: "https://snap.webcules.com/g/sample" };
+  const sample = { ...values, client_name: "Maya", gallery_link: `${PUBLIC_ORIGIN}/g/sample` };
   const applied = applyEmailOverride(
     {
       subject: "Sample subject",

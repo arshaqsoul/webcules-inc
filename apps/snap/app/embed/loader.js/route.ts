@@ -1,7 +1,7 @@
 /* The embed loader v2 (WEB-164 + WEB-163) — the single <script> a
  * photographer pastes into their site.
  *
- *   <script src="https://snap.webcules.com/embed/loader.js"
+ *   <script src="https://snaphq.app/embed/loader.js"
  *           data-snap-key="{embedKey}" async></script>
  *
  * Mount modes (first match wins):
@@ -17,13 +17,20 @@
  * data-snap-inherit="auto" samples the host page's computed font/color/
  * background so widgets blend in without any config.
  *
+ * Host-agnostic (WEB-330): the SAME script is served by every app host
+ * (snaphq.app and the legacy snap.webcules.com, which photographers already
+ * have pasted into their sites and must keep working forever). It points its
+ * widgets at the host it was served from.
+ *
  * Imperative API for SPAs: window.Snap.mount(selector|el, opts) /
  * window.Snap.destroy(el). Framework-free, ~2KB gzipped.
  */
+import { originForHost } from "@/lib/hosts";
+
 export const dynamic = "force-dynamic";
 
-const LOADER_JS = `(function () {
-  var ORIGIN = "https://snap.webcules.com";
+const loaderJs = (origin: string) => `(function () {
+  var ORIGIN = ${JSON.stringify(origin)};
   var TOKEN_ATTRS = ["accent","bg","surface","text","muted","border","radius","fontFamily","theme","inherit","label"];
 
   function sanitizeHex(v) {
@@ -240,11 +247,13 @@ const LOADER_JS = `(function () {
   window.addEventListener("hashchange", scan);
 })();`;
 
-export function GET() {
-  return new Response(LOADER_JS, {
+export function GET(req: Request) {
+  const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host");
+  return new Response(loaderJs(originForHost(host)), {
     headers: {
       "Content-Type": "application/javascript; charset=utf-8",
       "Cache-Control": "public, max-age=300",
+      Vary: "Host",
     },
   });
 }

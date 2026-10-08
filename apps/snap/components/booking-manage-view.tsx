@@ -6,6 +6,7 @@
  * manage mode) and the cutoff-gated cancel flow. Every mutation ends in a
  * reload so the page re-renders from server truth. */
 import { useEffect, useRef, useState } from "react";
+import { PUBLIC_HOST } from "@/lib/hosts";
 
 type Props = {
   studioName: string;
@@ -320,7 +321,7 @@ export function BookingManageView(props: Props) {
           ) : (
             <>Questions? Just reply to your booking email.</>
           )}
-          {!props.whiteLabel && <> · Delivered by Snap · snap.webcules.com</>}
+          {!props.whiteLabel && <> · Delivered by Snap · {PUBLIC_HOST}</>}
         </p>
       </div>
     </main>

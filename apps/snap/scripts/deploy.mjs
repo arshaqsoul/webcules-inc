@@ -61,7 +61,11 @@ function writeStagingConfig() {
   const cfg = JSON.parse(readFileSync(src, "utf8"));
   cfg.name = STAGING.worker;
   // Prod-only routes stay on prod; staging is its own custom domain.
-  cfg.routes = [{ pattern: "snap-staging.webcules.com", custom_domain: true }];
+  // WEB-330: staging.snaphq.app rehearses the snaphq.app move on staging first.
+  cfg.routes = [
+    { pattern: "snap-staging.webcules.com", custom_domain: true },
+    { pattern: "staging.snaphq.app", custom_domain: true },
+  ];
   cfg.d1_databases[0].database_name = STAGING.d1Name;
   cfg.d1_databases[0].database_id = STAGING.d1Id;
   cfg.r2_buckets[0].bucket_name = STAGING.r2Bucket;

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { snapBrandUrl } from "@/lib/snap-url";
+import { PUBLIC_HOST } from "@/lib/hosts";
 
 /** Clickable Snap attribution for non-white-labeled surfaces (galleries,
  * /my, portal). Pass surface text as children; sizing/color come from the
@@ -16,7 +17,7 @@ export function SnapBadge({
 }) {
   return (
     <a href={snapBrandUrl(medium)} className={`hover:underline underline-offset-2 ${className}`}>
-      {children ?? "Delivered by Snap · snap.webcules.com"}
+      {children ?? `Delivered by Snap · ${PUBLIC_HOST}`}
     </a>
   );
 }

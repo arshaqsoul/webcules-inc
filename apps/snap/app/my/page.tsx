@@ -13,6 +13,7 @@ import { MyInstallBanner, PwaRuntime } from "@/components/my-pwa";
 import { SnapBadge } from "@/components/snap-badge";
 import { resolveMySession } from "@/lib/shares/my-auth";
 import { listMyGalleries, listMyPeeks } from "@/lib/repos/my-home";
+import { PUBLIC_HOST } from "@/lib/hosts";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -117,7 +118,7 @@ export default async function MyHomePage() {
           )}
         </section>
 
-        <p className="text-center text-xs text-ink-tertiary"><SnapBadge medium="my">Delivered by Snap · snap.webcules.com</SnapBadge></p>
+        <p className="text-center text-xs text-ink-tertiary"><SnapBadge medium="my">Delivered by Snap · {PUBLIC_HOST}</SnapBadge></p>
       </div>
     </main>
   );

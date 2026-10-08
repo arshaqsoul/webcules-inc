@@ -11,6 +11,7 @@ import { useState } from "react";
 
 import { Button } from "@webcules/ui/components/button";
 import { useConfirm } from "@/components/confirm-provider";
+import { PUBLIC_ORIGIN } from "@/lib/hosts";
 
 type Props = {
   embedKey: string;
@@ -37,7 +38,7 @@ type Props = {
   forms?: Array<{ id: string; name: string; isDefault: boolean }>;
 };
 
-const APP_ORIGIN = "https://snap.webcules.com";
+const APP_ORIGIN = PUBLIC_ORIGIN;
 const LOADER = `${APP_ORIGIN}/embed/loader.js`;
 
 const inputCls =

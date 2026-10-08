@@ -2,6 +2,7 @@
  * no-bypass recovery path. Facts from components/settings-security.tsx,
  * lib/auth.server.ts (WEB-279) and migrations/0053_two_factor.sql. */
 import { H2, Note, Callout, Shot, Steps, Related } from "@/lib/docs/primitives";
+import { emailAddress } from "@/lib/hosts";
 
 export default function Security() {
   return (
@@ -89,7 +90,7 @@ export default function Security() {
       </p>
       <p>
         If you've lost both the device and every code, email{" "}
-        <a href="mailto:hello@snap.webcules.com">hello@snap.webcules.com</a> from your account's
+        <a href={`mailto:${emailAddress("hello")}`}>{emailAddress("hello")}</a> from your account's
         email address. We verify your identity before resetting two-factor — there is no
         self-serve bypass, because anything a thief could click through wouldn't be security at
         all.

@@ -7,6 +7,7 @@ import { getStudioProfile, getStudioSlug } from "@/lib/repos/studios";
 import { safeHexColor } from "@/lib/embed";
 import { clientWantsEmail } from "@/lib/notify-client";
 import { emitInboxItem } from "@/lib/inbox/sources";
+import { emailAddress } from "@/lib/hosts";
 
 export async function sendGrantEmail(params: {
   organizationId: string;
@@ -45,8 +46,8 @@ export async function sendGrantEmail(params: {
     html: tmpl.html,
     text: tmpl.text,
     fromOverride: b.whiteLabel
-      ? `hello+${slug}@snap.webcules.com`
-      : `${profile.studioName} via Snap <hello+${slug}@snap.webcules.com>`,
+      ? emailAddress(`hello+${slug}`)
+      : `${profile.studioName} via Snap <${emailAddress(`hello+${slug}`)}>`,
     ...(b.whiteLabel ? { fromName: profile.studioName } : {}),
     replyTo: profile.contactEmail ?? undefined,
     organizationId: params.organizationId,

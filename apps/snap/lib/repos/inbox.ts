@@ -8,6 +8,7 @@ import { and, asc, desc, eq, gt, isNull, lt, or, sql } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
+import { emailAddress } from "@/lib/hosts";
 
 /** Linear's open-notification cap — pruned oldest-first by the daily cron. */
 export const INBOX_OPEN_CAP = 2000;
@@ -521,7 +522,7 @@ export async function attachTriageItem(params: {
     const client = project.clientId
       ? (await db.select().from(schema.clients).where(eq(schema.clients.id, project.clientId)).limit(1))[0]
       : undefined;
-    clientEmail = client?.email ?? "unknown@snap.webcules.com";
+    clientEmail = client?.email ?? emailAddress("unknown");
     title = `Conversation — ${project.title}`;
     projectId = project.id;
   }

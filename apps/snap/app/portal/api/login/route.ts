@@ -9,6 +9,7 @@ import { verifyTurnstile } from "@/lib/turnstile";
 import { clientIp } from "@/lib/shares/gallery-auth";
 import { getClientRows } from "@/lib/portal";
 import { isStaffEmail, issuePortalOtp } from "@/lib/portal-auth";
+import { appUrl } from "@/lib/app-origin";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +32,7 @@ export async function POST(req: Request) {
   if (clientRows.length === 0) {
     if (await isStaffEmail(email)) {
       try {
-        const tmpl = portalStaffRedirectEmail("https://snap.webcules.com/login");
+        const tmpl = portalStaffRedirectEmail(await appUrl("/login"));
         await sendEmail({ to: email, subject: tmpl.subject, html: tmpl.html, text: tmpl.text, template: "portal.staff_redirect" });
       } catch { /* delivery failures must not leak existence */ }
     }

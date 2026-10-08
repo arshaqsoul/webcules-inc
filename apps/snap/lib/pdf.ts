@@ -3,6 +3,7 @@
 import { PDFDocument, PDFString, StandardFonts, rgb, type PDFPage } from "pdf-lib";
 import { contractBodyToText } from "./contract-body";
 import { snapBrandUrl } from "./snap-url";
+import { PUBLIC_HOST } from "@/lib/hosts";
 
 export type PdfLine = { description: string; qty: number; amountMinor: number };
 
@@ -29,7 +30,7 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
 /** WEB-238: PDF footer line — white-labeled studios get `© {studio}`
  * instead of the platform mention. Exported for the zero-Snap audit test. */
 export function pdfFooterLine(studioName: string, whiteLabel: boolean): string {
-  return whiteLabel ? `© ${studioName}` : "Powered by Snap - snap.webcules.com";
+  return whiteLabel ? `© ${studioName}` : `Powered by Snap - ${PUBLIC_HOST}`;
 }
 
 /** Overlay a URI link annotation on a drawn footer line — pdf-lib has no

@@ -17,6 +17,7 @@ import { SnapMark } from "@/components/snap-mark";
 
 import { DocIcon } from "./icons";
 import { openDocsSearch } from "./search";
+import { emailAddress } from "@/lib/hosts";
 
 export function DocsSidebar() {
   const pathname = usePathname();
@@ -233,7 +234,7 @@ function SidebarBody({
           Learn
         </Link>
         <a
-          href="mailto:hello@snap.webcules.com"
+          href={`mailto:${emailAddress("hello")}`}
           className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-[13.5px] text-ink-subtle transition-colors hover:bg-surface-1 hover:text-ink"
         >
           <LifeBuoy className="h-4 w-4 shrink-0 text-ink-tertiary" aria-hidden />

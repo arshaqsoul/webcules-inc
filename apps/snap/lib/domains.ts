@@ -6,6 +6,8 @@
  * Rules: subdomains only (gallery.yourstudio.com — apex domains can't CNAME),
  * never our own zone (*.webcules.com), no ports/IPs/wildcards; punycode (xn--)
  * accepted and displayed as-is in v1. */
+import { APP_HOSTS, FALLBACK_ORIGIN_HOST, PUBLIC_ORIGIN, RESERVED_ZONES } from "@/lib/hosts";
+
 /** The studio-resolving host for a request. On the Cloudflare for SaaS leg
  * (custom hostname → fallback-origin workers route) the Host header is the
  * FALLBACK origin and the original studio hostname arrives in
@@ -19,7 +21,7 @@ export function requestHost(headers: Headers): string | null {
   return headers.get("host");
 }
 
-export const CF_FALLBACK_ORIGIN = "snap-saas-origin.webcules.com";
+export const CF_FALLBACK_ORIGIN = FALLBACK_ORIGIN_HOST;
 /** The CNAME record studios publish for their hostname. */
 export const CNAME_TARGET = CF_FALLBACK_ORIGIN;
 /** Pending-verification window before the sweep reclaims the row (30 d). */
@@ -40,12 +42,12 @@ export const DOMAIN_STATUSES: DomainStatus[] = [
   "degraded", "failed", "suspended_entitlement", "removed",
 ];
 
-/** Names the hostnames we can never hand out: our own zone (the app, the
- * fallback origin and everything under webcules.com) and localhost variants. */
+/** Names the hostnames we can never hand out: our own zones (the app, the
+ * fallback origin and everything under webcules.com / snaphq.app) and
+ * localhost variants. */
 export function isReservedHost(hostname: string): boolean {
   return (
-    hostname === "webcules.com" ||
-    hostname.endsWith(".webcules.com") ||
+    RESERVED_ZONES.some((zone) => hostname === zone || hostname.endsWith(`.${zone}`)) ||
     hostname === "localhost" ||
     hostname.endsWith(".localhost") ||
     hostname === "localhost.localdomain"
@@ -146,11 +148,7 @@ export function txtMatches(token: string, records: string[] | null): boolean {
  * its own name is not a client surface. The staging host guards the isolated
  * staging deploy (webcules-snap-staging) — without it, staging auth paths
  * would 302 to the production origin. */
-export const DEFAULT_APP_HOSTS = new Set([
-  "snap.webcules.com",
-  "snap-saas-origin.webcules.com",
-  "snap-staging.webcules.com",
-]);
+export const DEFAULT_APP_HOSTS = new Set<string>(APP_HOSTS);
 
 function bareHost(host: string): string {
   const h = host.toLowerCase();
@@ -196,11 +194,15 @@ const NON_CLIENT_PREFIXES = [
  * gets a 302 to the same path on the main origin. Returns the absolute
  * redirect URL, or null to pass through. Pure — unit-tested, called by
  * middleware. */
-export function nonClientPathRedirect(host: string, pathname: string): string | null {
+export function nonClientPathRedirect(
+  host: string,
+  pathname: string,
+  appOrigin: string = PUBLIC_ORIGIN,
+): string | null {
   if (!isCustomAppHost(host)) return null;
   const hit = NON_CLIENT_PREFIXES.some(
     (p) => pathname === p || pathname.startsWith(p + "/"),
   );
   if (!hit) return null;
-  return `https://snap.webcules.com${pathname}`;
+  return `${appOrigin}${pathname}`;
 }

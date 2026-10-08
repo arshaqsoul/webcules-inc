@@ -3,7 +3,7 @@
  * never throws on Cloudflare trouble — failures persist as last_error and
  * the sweep retries, so a CF outage can't break a user-facing request. */
 import { getCustomHostname, CfConfig, CfHostname, getCfConfig } from "@/lib/cf-hostnames";
-import { DomainStatus } from "@/lib/domains";
+import { CNAME_TARGET, DomainStatus } from "@/lib/domains";
 import { getDomain, markDomainStatus } from "@/lib/repos/domains";
 
 /** SSL sub-states CF documents (v4 custom_hostnames). Everything pending-*
@@ -39,7 +39,7 @@ export function mapCfToDomainStatus(cf: CfHostname): CfMapping {
     }
     return {
       status: "cert_pending",
-      reason: "Certificate issued — waiting on Cloudflare to activate the hostname. Check the CNAME points at snap-saas-origin.webcules.com and is DNS-only (grey cloud), not proxied.",
+      reason: `Certificate issued — waiting on Cloudflare to activate the hostname. Check the CNAME points at ${CNAME_TARGET} and is DNS-only (grey cloud), not proxied.`,
     };
   }
   if (SSL_FAILED.has(ssl)) {

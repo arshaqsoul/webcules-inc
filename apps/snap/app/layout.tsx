@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 import { ThemeProvider } from "@/components/theme-provider";
+import { PUBLIC_HOST } from "@/lib/hosts";
 
 export const metadata: Metadata = {
   title: {
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
     template: "%s · Snap",
   },
   description:
-    "Branded booking + inquiry widgets, project pipeline, secure client galleries, and payments — snap.webcules.com.",
+    `Branded booking + inquiry widgets, project pipeline, secure client galleries, and payments — ${PUBLIC_HOST}.`,
 };
 
 export const viewport: Viewport = {

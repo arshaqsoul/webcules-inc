@@ -3,6 +3,7 @@
  * claim here mirrors shipped behavior (billing via Stripe, dormancy purge,
  * RAW vault lifecycle, plan limits from lib/plans-data.ts). */
 import type { Metadata } from "next";
+import { PUBLIC_HOST, emailAddress } from "@/lib/hosts";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,7 @@ export default function TermsPage() {
         <p className="text-sm leading-relaxed text-ink-subtle">
           Effective September 29, 2026. These terms (&ldquo;Terms&rdquo;) govern your use of Snap, the studio
           management platform operated by <strong>Webcules Inc.</strong> (&ldquo;Snap&rdquo;, &ldquo;we&rdquo;,
-          &ldquo;us&rdquo;) at snap.webcules.com. By creating an account or using Snap, you agree to them.
+          &ldquo;us&rdquo;) at {PUBLIC_HOST}. By creating an account or using Snap, you agree to them.
         </p>
       </header>
 
@@ -154,7 +155,7 @@ export default function TermsPage() {
           days before taking effect. Continued use after the effective date means acceptance.
         </p>
         <p>
-          Questions, notices, or refund requests: <strong>hello@snap.webcules.com</strong>. These Terms are
+          Questions, notices, or refund requests: <strong>{emailAddress("hello")}</strong>. These Terms are
           governed by the laws of the State of Delaware, USA, without regard to conflict-of-law rules.
         </p>
       </Section>

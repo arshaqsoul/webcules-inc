@@ -4,6 +4,7 @@ import { getBookingByRef } from "@/lib/repos/bookings";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { parseBookingPageConfig } from "@/lib/booking-page";
 import { clientUrl } from "@/lib/client-urls";
+import { PUBLIC_HOST } from "@/lib/hosts";
 
 export const metadata = { title: "Booking confirmed" };
 
@@ -47,7 +48,7 @@ export default async function BookingSuccessPage({
           </p>
         )}
         <Link href="/" className="mt-6 inline-block text-sm text-primary hover:underline">
-          Back to snap.webcules.com
+          Back to {PUBLIC_HOST}
         </Link>
       </div>
     </main>

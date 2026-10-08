@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import { FadeUp } from "./text-reveal";
+import { PUBLIC_HOST } from "@/lib/hosts";
 
 /** The dark finale - one last offer over a quiet frame, plus the footer. */
 export function FinalCta({ signedIn }: { signedIn: boolean }) {
@@ -67,7 +68,7 @@ export function FinalCta({ signedIn }: { signedIn: boolean }) {
                 />
               </svg>
             </span>
-            snap.webcules.com - a Webcules platform
+            {PUBLIC_HOST} - a Webcules platform
           </span>
           <nav aria-label="Footer" className="flex flex-wrap items-center justify-center gap-5">
             <a href="#pricing" className="transition-colors hover:text-white">Pricing</a>

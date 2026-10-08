@@ -7,6 +7,7 @@ import { env } from "cloudflare:workers";
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { claimThrottleGate } from "@/lib/system-state";
+import { appUrl } from "@/lib/app-origin";
 
 export const dynamic = "force-dynamic";
 
@@ -110,7 +111,7 @@ export async function POST(req: Request) {
       capLabel: gb(ent.storageBytes),
       pct: ent.storagePct,
       planName: ent.name,
-      settingsUrl: "https://snap.webcules.com/dashboard/settings",
+      settingsUrl: await appUrl("/dashboard/settings"),
       accent: safeHexColor(JSON.parse(profile.brand || "{}").accent) ?? "#5e6ad2",
     });
     await sendEmail({

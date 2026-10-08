@@ -18,6 +18,7 @@ import { getStudioProfile } from "./repos/studios";
 import { safeHexColor } from "./embed";
 import { assetProtectedByGrant, deleteAsset } from "./repos/assets";
 import { toInfrequentAccess, toStandard } from "./storage/r2s3";
+import { appUrl } from "@/lib/app-origin";
 
 const DAY = 86400;
 /** Paid: warn → cold at 90d; purge notices at 350/365d; purge at 375d. */
@@ -90,7 +91,7 @@ async function sendDormancyMail(
   const tmpl = dormancyEmail(profile.studioName, {
     variant,
     accent: safeHexColor(JSON.parse(profile.brand || "{}").accent) ?? "#5e6ad2",
-    dashboardUrl: "https://snap.webcules.com/dashboard",
+    dashboardUrl: await appUrl("/dashboard"),
     bytesLabel: fmtBytes(opts.bytes),
     deleteOn: opts.deleteOn ? fmtDate(opts.deleteOn) : null,
     free: profile.plan === "free",
