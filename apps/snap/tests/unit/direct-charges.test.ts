@@ -4,7 +4,7 @@
  * charge costing the platform 4.00 on a 100.00 payment. */
 import { describe, expect, it } from "vitest";
 
-import { STUDIO_ACCOUNT_CONTROLLER, chargeAccountId, onAccount, studioAccountParams } from "@/lib/connect";
+import { STUDIO_ACCOUNT_CONTROLLER, chargeAccountId, deriveConnectState, onAccount, studioAccountParams } from "@/lib/connect";
 
 describe("studio account creation (WEB-352)", () => {
   it("uses controller settings: full dashboard, studio pays fees, Stripe holds losses", () => {
@@ -74,5 +74,39 @@ describe("source guard: Snap never takes a cut or routes client money through th
         expect(stripComments(raw), path).not.toMatch(/payment_intent_data:\s*undefined/);
       }
     }
+  });
+});
+
+describe("connect state derivation (WEB-352)", () => {
+  type Acct = Parameters<typeof deriveConnectState>[0];
+  const acct = (over: Record<string, unknown>) =>
+    ({ details_submitted: true, charges_enabled: true, payouts_enabled: true, requirements: { past_due: [], currently_due: [], pending_verification: [], disabled_reason: null }, ...over }) as unknown as Acct;
+
+  it("is pending until details are submitted", () => {
+    expect(deriveConnectState(acct({ details_submitted: false, charges_enabled: false }))).toBe("pending");
+  });
+
+  it("is active when Stripe allows charges, even with payouts or identity verification still pending", () => {
+    expect(deriveConnectState(acct({}))).toBe("active");
+    expect(
+      deriveConnectState(
+        acct({ payouts_enabled: false, requirements: { past_due: [], currently_due: [], pending_verification: ["individual.verification.document"], disabled_reason: "requirements.pending_verification" } }),
+      ),
+    ).toBe("active");
+  });
+
+  it("is restricted when requirements are past due", () => {
+    expect(deriveConnectState(acct({ charges_enabled: false, requirements: { past_due: ["external_account"], currently_due: ["external_account"], pending_verification: [], disabled_reason: "requirements.past_due" } }))).toBe("restricted");
+    expect(deriveConnectState(acct({ requirements: { past_due: ["external_account"], currently_due: [], pending_verification: [], disabled_reason: null } }))).toBe("restricted");
+  });
+
+  it("is pending (not restricted) while Stripe only verifies and charges are not yet enabled", () => {
+    expect(
+      deriveConnectState(acct({ charges_enabled: false, requirements: { past_due: [], currently_due: [], pending_verification: ["individual.verification.document"], disabled_reason: "requirements.pending_verification" } })),
+    ).toBe("pending");
+  });
+
+  it("is restricted when Stripe disabled the account for another reason", () => {
+    expect(deriveConnectState(acct({ charges_enabled: false, requirements: { past_due: [], currently_due: [], pending_verification: [], disabled_reason: "rejected.fraud" } }))).toBe("restricted");
   });
 });

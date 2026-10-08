@@ -63,17 +63,22 @@ export function onAccount(accountId: string): { stripeAccount: string } {
 }
 
 export function deriveConnectState(account: Stripe.Account): ConnectState {
-  // Never finished onboarding → pending (a fresh Express account carries
+  // Never finished onboarding → pending (a fresh account carries
   // requirements.past_due from day one — that's not "restricted").
   if (!account.details_submitted) return "pending";
   const req = account.requirements;
-  const blocked =
-    Boolean(req?.disabled_reason) ||
-    (req?.past_due?.length ?? 0) > 0 ||
-    (req?.pending_verification?.length ?? 0) > 0;
-  if (blocked) return "restricted";
-  if (account.charges_enabled && account.payouts_enabled) return "active";
-  return "pending";
+  const pastDue = (req?.past_due?.length ?? 0) > 0;
+  // Stripe is the authority on whether the account may take charges. While Stripe
+  // verifies identity documents, charges_enabled stays true and only payouts wait
+  // (WEB-352 staging test) - that must not block client payments or show an alarm.
+  if (account.charges_enabled && !pastDue) return "active";
+  // Verification in flight and nothing for the studio to do → still pending, not restricted.
+  const onlyVerifying =
+    !pastDue &&
+    (req?.currently_due?.length ?? 0) === 0 &&
+    (!req?.disabled_reason || req.disabled_reason === "requirements.pending_verification");
+  if (onlyVerifying) return "pending";
+  return "restricted";
 }
 
 /** Cache the derived state on the studio profile (idempotent). */
