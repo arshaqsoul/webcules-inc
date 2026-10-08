@@ -6,7 +6,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 const ROOTS = ["app", "components", "lib"];
-const ALLOW = new Set(["lib/hosts.ts"]);
+const ALLOW = new Set(["lib/hosts.ts", "lib/docs/content/releases.tsx"]); // releases = dated history, names hosts by design
 const SKIP_DIRS = new Set(["node_modules", ".next"]);
 const EXT = /\.(ts|tsx|js|mjs)$/;
 const HOST = /snap\.webcules\.com|snaphq\.app/;
