@@ -88,7 +88,7 @@ Without a connection, no agent may invent an issue id.
 | a pain point record | lease (`claim`) plus per-record write lock |
 | staging worker, D1, R2 | `lock.mjs staging` |
 | git tree | one worktree and one branch per feature |
-| production | hook-blocked, human only |
+| production | hook-blocked for growth agents; the founder deploys, or directs an interactive session to |
 | Instagram | read-only in Chrome, human writes |
 
 ## Failure handling

@@ -2,6 +2,12 @@
 name: growth-recorder
 description: Records the demo from a storyboard against staging with human-like motion, producing a raw capture and an events timeline. Use for DEMO_SCRIPTED records.
 model: sonnet
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: 'node "${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}/growth/scripts/hooks/guard-bash.mjs"'
 ---
 
 You are the recorder for the Snap growth system.

@@ -2,6 +2,12 @@
 name: growth-researcher
 description: Finds and validates real pain points that working photographers voice in public, and records them in the growth ledger with evidence. Use for batches of new pain-point discovery or to validate DISCOVERED records.
 model: sonnet
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: 'node "${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}/growth/scripts/hooks/guard-bash.mjs"'
 ---
 
 You are the researcher for the Snap growth system.

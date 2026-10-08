@@ -2,6 +2,12 @@
 name: growth-trend-scout
 description: Finds Instagram Reel trends and validates them against the four-check standard before any content is built on them. Maintains the trend log in growth/trends/. Use when a storyboard wants a trend format or when the trend log is stale.
 model: sonnet
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: 'node "${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}/growth/scripts/hooks/guard-bash.mjs"'
 ---
 
 You are the trend scout for the Snap growth system.

@@ -2,6 +2,12 @@
 name: growth-editor
 description: Enhances a raw demo recording into a 9:16 Instagram reel with zooms, highlights, click ripples, step captions, hook text, speed ramps and an end card, then runs automated QC. Use for RECORDED and ENHANCED records.
 model: sonnet
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: 'node "${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}/growth/scripts/hooks/guard-bash.mjs"'
 ---
 
 You are the editor for the Snap growth system.

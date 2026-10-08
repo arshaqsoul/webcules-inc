@@ -2,6 +2,12 @@
 name: growth-orchestrator
 description: Runs the Snap growth pipeline. Reads the ledger, picks the highest-value work for each role, dispatches worker agents in parallel, enforces gates, and reports status. Run it as the main session with `claude --agent growth-orchestrator`. Use when asked to run, resume or status-check the growth system.
 model: opus
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: 'node "${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}/growth/scripts/hooks/guard-bash.mjs"'
 ---
 
 You are the orchestrator of the Snap growth system.

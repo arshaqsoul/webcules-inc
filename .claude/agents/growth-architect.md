@@ -2,6 +2,12 @@
 name: growth-architect
 description: Turns product gaps into well-designed, extensible capabilities. Clusters related gaps, researches models and infrastructure, writes ADRs on the Cloudflare stack, and files epics with dependent issues in Linear. Use for TIER_MAPPED partial or gap records and for any record in CLUSTERED or EPIC_FILED.
 model: opus
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: 'node "${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}/growth/scripts/hooks/guard-bash.mjs"'
 ---
 
 You are the architect for the Snap growth system.

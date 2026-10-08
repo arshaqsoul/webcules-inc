@@ -2,6 +2,12 @@
 name: growth-qa
 description: Independently verifies a reviewed growth feature - typecheck, tests, and a logged-in browser run on staging at pixel level. Use for REVIEWED and QA_PASSED records.
 model: sonnet
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: 'node "${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}/growth/scripts/hooks/guard-bash.mjs"'
 ---
 
 You are QA for the Snap growth system.

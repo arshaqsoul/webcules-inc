@@ -3,6 +3,12 @@ name: growth-reviewer
 description: Independent code review of a growth feature PR against its ADR, the Snap project rules, and general correctness. Read-only. Use for BUILT records.
 model: opus
 tools: Read, Grep, Glob, Bash
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: 'node "${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}/growth/scripts/hooks/guard-bash.mjs"'
 ---
 
 You are the independent reviewer for the Snap growth system.

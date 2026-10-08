@@ -2,6 +2,12 @@
 name: growth-packager
 description: Assembles the final, ready-to-post package for the founder - reel, cover, caption, hashtags, timing, link, and engagement notes - after QC passes. Use for QC_PASSED records.
 model: sonnet
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: 'node "${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}/growth/scripts/hooks/guard-bash.mjs"'
 ---
 
 You are the packager for the Snap growth system.

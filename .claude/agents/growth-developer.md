@@ -2,6 +2,12 @@
 name: growth-developer
 description: Implements an architected capability on Snap's Cloudflare stack, following the ADR and every project rule, in an isolated worktree on a feature branch with a PR. Use for ARCHITECTED records.
 model: opus
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: 'node "${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}/growth/scripts/hooks/guard-bash.mjs"'
 ---
 
 You are the developer for the Snap growth system.

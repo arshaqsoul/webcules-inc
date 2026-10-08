@@ -31,7 +31,10 @@ Language models are not deterministic, so determinism comes from structure.
   An agent cannot claim a step it has not produced evidence for.
 - **File contracts.** Agents exchange typed files (JSON validated by `growth/schemas/`, markdown from `growth/templates/`), never chat summaries.
 - **Leases.** `claim` before working, `release` or `transition` when done, so two agents never process the same record.
-- **Hooks.** `.claude/settings.json` blocks the irreversible actions no matter what an agent decides.
+- **Hooks.** A Bash guard (`growth/scripts/hooks/guard-bash.mjs`) blocks the irreversible actions no matter what an agent decides.
+  It is registered in the frontmatter of every `.claude/agents/growth-*.md`, so it gates the growth agents (including `claude --agent growth-orchestrator`) and not interactive sessions.
+  `node growth/scripts/hooks/verify.mjs` checks that every growth agent still carries it.
+  The ledger and secrets write guard stays project-wide in `.claude/settings.json`.
 - **Seeds.** Anything random in a recording (cursor jitter, typing rhythm) is seeded from the pain point id, so a re-record is repeatable.
 
 Never edit `growth/state/` or `growth/locks/` by hand.
@@ -83,7 +86,8 @@ The developer does not review its own work, and QA does not fix what it finds.
 2. **Never DM strangers, never automate Instagram or Facebook writes.**
 3. **Production deploys are a human gate.**
    Agents deploy to staging only.
-   A hook blocks the production command.
+   A hook blocks the production command for every growth agent.
+   An interactive session with the founder is not a growth agent: the founder can direct it to deploy.
 4. **Feature work goes through feature branches and PRs.**
    Work in your own git worktree (`git worktree add ../snap-wt-PP-004 -b feat/pp-004-short-name`).
    Never commit feature code straight to master.

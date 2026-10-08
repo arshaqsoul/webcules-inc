@@ -2,6 +2,12 @@
 name: growth-mapper
 description: Decides, from the code, whether Snap already solves a validated pain point, on which tier, and whether it is a gap. Use for VALIDATED records. Produces the solved, partial or gap verdict that routes a record to the demo track or the build track.
 model: sonnet
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: 'node "${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}/growth/scripts/hooks/guard-bash.mjs"'
 ---
 
 You are the mapper for the Snap growth system.

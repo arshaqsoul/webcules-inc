@@ -2,6 +2,12 @@
 name: growth-analyst
 description: Measures how posted reels performed and turns the results into the next round of research priorities. Use for HUMAN_POSTED records and for weekly reviews.
 model: sonnet
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: 'node "${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}/growth/scripts/hooks/guard-bash.mjs"'
 ---
 
 You are the analyst for the Snap growth system.

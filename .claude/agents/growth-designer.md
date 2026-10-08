@@ -2,6 +2,12 @@
 name: growth-designer
 description: Designs the demo reel for a pain point - the hook, the step-by-step storyboard, captions, claims and Instagram caption - so the recorder has an exact script. Use for solved-track TIER_MAPPED records and for STAGING_VERIFIED records.
 model: sonnet
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: 'node "${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel)}/growth/scripts/hooks/guard-bash.mjs"'
 ---
 
 You are the designer for the Snap growth system.

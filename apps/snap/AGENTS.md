@@ -76,7 +76,7 @@ drops into the public docs unchanged. Commit messages are written for the docs p
 | Worker | `snap` | `snap-staging` |
 | D1 | `webcules-snap` (`badece16-2231-4b37-81ac-54f7c4bbf464` — recreated fresh 2026-09-29 at launch; pre-launch backup in repo `.backups/`) | `webcules-snap-staging` (`9b850d02-67d3-4c1b-a7ed-482cc587b2d5`) |
 | R2 | `snap-webcules` | `snap-staging` |
-| Stripe | LIVE keys + live webhook endpoint (`we_1ULAApDQylYjEBwsSCHyGmh8`, 11 events) — live since 2026-09-29 | TEST keys + test webhook endpoint (`we_1ULAB5DQylYjEBwsnrODOCT8`) |
+| Stripe | LIVE keys + live webhook endpoint (`we_1ULAApDQylYjEBwsSCHyGmh8`, 11 events) — live since 2026-09-29. Plus a second endpoint scoped to **Connected accounts** (events from studios' own Stripe accounts, WEB-352) whose signing secret is the worker secret `STRIPE_CONNECT_WEBHOOK_SECRET` | TEST keys + test webhook endpoint (`we_1ULAB5DQylYjEBwsnrODOCT8`) + Connect-scoped test endpoint (`we_1UODS6DRtu5FIpWgXokvjR1V`, secret `STRIPE_CONNECT_WEBHOOK_SECRET`) |
 | Cron | `snap-email` daily 06:00 UTC → `POST /api/cron/daily-status` | none — call the endpoint manually (below) |
 
 - Staging has its **own** `BETTER_AUTH_SECRET` and `SNAP_INBOUND_WEBHOOK_SECRET` (set via
