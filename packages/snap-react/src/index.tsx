@@ -10,7 +10,7 @@
  * over global script tags. */
 import { useEffect, useRef, type CSSProperties } from "react";
 
-export const SNAP_LOADER_SRC = "https://snap.webcules.com/embed/loader.js";
+export const SNAP_LOADER_SRC = "https://snaphq.app/embed/loader.js";
 
 export type SnapTheme = "light" | "dark" | "auto";
 

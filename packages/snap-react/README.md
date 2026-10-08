@@ -1,6 +1,6 @@
 # @webcules/snap-react
 
-React components for embedding [Snap](https://snap.webcules.com) widgets — the contact form, the booking calendar and the booking button — on top of the framework-free Snap embed loader.
+React components for embedding [Snap](https://snaphq.app) widgets — the contact form, the booking calendar and the booking button — on top of the framework-free Snap embed loader.
 
 The plain script-tag snippet from **Settings → Embeds** in your Snap dashboard works in any framework (Astro, plain HTML, WordPress…). This package is for React apps that prefer components over global script tags, with correct mount/unmount lifecycle (StrictMode-safe).
 
@@ -54,4 +54,6 @@ export function Booking() {
 
 ### CSP / allowed origins
 
-Snap widgets render inside an iframe protected by `frame-ancestors`. Add your site's origin under **Settings → Embeds → Allowed embed sites** in the Snap dashboard, or the iframe will be blocked by the browser. If your site ships a CSP, allow `script-src https://snap.webcules.com` and `frame-src https://snap.webcules.com`.
+Snap widgets render inside an iframe protected by `frame-ancestors`. Add your site's origin under **Settings → Embeds → Allowed embed sites** in the Snap dashboard, or the iframe will be blocked by the browser. If your site ships a CSP, allow `script-src https://snaphq.app` and `frame-src https://snaphq.app`.
+
+Upgrading from 0.1.x: the loader moved from `snap.webcules.com` to `snaphq.app`. Sites still on 0.1.x keep working, because the old address keeps serving the same loader, but update your CSP if you set one.
