@@ -44,6 +44,30 @@ const stagingVerified = args.includes("--staging-verified");
 // renamed Worker can get its secrets before any traffic moves to it.
 const noRoutes = args.includes("--no-routes");
 
+/* WEB-331 guard: a Worker must never take over a domain while its secrets are
+ * missing (a renamed Worker starts with none, and secrets cannot be copied).
+ * Fails closed when the secret list cannot be read. --no-routes skips it. */
+const REQUIRED_SECRETS = {
+  staging: ["BETTER_AUTH_SECRET", "R2_S3_ACCESS_KEY_ID", "R2_S3_SECRET_ACCESS_KEY", "SNAP_INBOUND_WEBHOOK_SECRET", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"],
+  production: ["BETTER_AUTH_SECRET", "CLOUDFLARE_API_TOKEN", "R2_S3_ACCESS_KEY_ID", "R2_S3_SECRET_ACCESS_KEY", "SNAP_INBOUND_WEBHOOK_SECRET", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET", "TURNSTILE_SECRET_KEY"],
+};
+function assertSecretsPresent(worker, env) {
+  if (noRoutes || args.includes("--skip-secret-check")) return;
+  let have;
+  try {
+    const out = execSync(`cf workers secrets list --worker ${worker}`, { cwd: appDir, stdio: ["ignore", "pipe", "ignore"] }).toString();
+    have = new Set([...out.matchAll(/"name":\s*"([A-Z0-9_]+)"/g)].map((m) => m[1]));
+  } catch {
+    console.error(`⛔ Could not read the secret list for ${worker}. Refusing to move domains onto it. Use --no-routes to upload only, or --skip-secret-check to override.`);
+    process.exit(1);
+  }
+  const missing = REQUIRED_SECRETS[env].filter((n) => !have.has(n));
+  if (missing.length) {
+    console.error(`⛔ ${worker} is missing secrets: ${missing.join(", ")}.\n   Set them first (cf workers secrets update <NAME> --worker ${worker} --type secret_text --text ...), or use --no-routes. See docs/SNAP-WORKER-RENAME.md.`);
+    process.exit(1);
+  }
+}
+
 function run(cmd) {
   console.log(`  $ ${cmd}`);
   execSync(cmd, { cwd: appDir, stdio: "inherit", shell: process.platform === "win32" ? "bash" : true });
@@ -150,6 +174,7 @@ if (target === "staging") {
   console.log("== SNAP STAGING DEPLOY ==");
   build();
   const cfg = writeStagingConfig();
+  assertSecretsPresent(STAGING.worker, "staging");
   console.log("• deploying staging worker");
   // Plain wrangler deploy — vinext-cloudflare deploy rebuilds and wipes the
   // generated dist/server (including this staging config) mid-run.
@@ -176,6 +201,7 @@ if (target === "staging") {
   }
   console.log("== SNAP PRODUCTION DEPLOY (staging-verified) ==");
   build();
+  assertSecretsPresent(JSON.parse(readFileSync(join(appDir, "dist/server/wrangler.json"), "utf8")).name, "production");
   console.log("• deploying production worker (snaphq.app + legacy snap.webcules.com)");
   // Plain wrangler deploy on the generated config — `pnpm deploy`
   // (vinext-cloudflare) currently crashes on Windows and would also rebuild,
