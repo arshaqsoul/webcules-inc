@@ -57,6 +57,18 @@ export function chargeAccountId(
   return profile?.stripeAccountId && profile.stripeConnectState === "active" ? profile.stripeAccountId : null;
 }
 
+/** Can this studio take client payments right now? (active connected account) */
+export async function studioCanTakePayments(organizationId: string): Promise<boolean> {
+  const row = (
+    await getDb()
+      .select({ stripeAccountId: schema.studioProfiles.stripeAccountId, stripeConnectState: schema.studioProfiles.stripeConnectState })
+      .from(schema.studioProfiles)
+      .where(eq(schema.studioProfiles.organizationId, organizationId))
+      .limit(1)
+  )[0];
+  return chargeAccountId(row) !== null;
+}
+
 /** Stripe request options that make a call run ON the studio's account. */
 export function onAccount(accountId: string): { stripeAccount: string } {
   return { stripeAccount: accountId };
@@ -81,11 +93,28 @@ export function deriveConnectState(account: Stripe.Account): ConnectState {
   return "restricted";
 }
 
-/** Cache the derived state on the studio profile (idempotent). */
-export async function saveConnectState(organizationId: string, accountId: string, state: ConnectState): Promise<void> {
+/** The currency a studio's clients are charged in: the connected account's default
+ * currency (lowercase ISO), or 'usd' when Stripe doesn't report one. */
+export function paymentCurrencyOf(account: Pick<Stripe.Account, "default_currency">): string {
+  const c = (account.default_currency ?? "").toLowerCase();
+  return /^[a-z]{3}$/.test(c) ? c : "usd";
+}
+
+/** Cache the derived state (and payment currency) on the studio profile (idempotent). */
+export async function saveConnectState(
+  organizationId: string,
+  accountId: string,
+  state: ConnectState,
+  currency?: string,
+): Promise<void> {
   await getDb()
     .update(schema.studioProfiles)
-    .set({ stripeAccountId: accountId, stripeConnectState: state, updatedAt: new Date() })
+    .set({
+      stripeAccountId: accountId,
+      stripeConnectState: state,
+      ...(currency ? { paymentCurrency: currency } : {}),
+      updatedAt: new Date(),
+    })
     .where(eq(schema.studioProfiles.organizationId, organizationId));
 }
 
@@ -104,7 +133,7 @@ export async function readConnectStatus(
     return null;
   }
   const state = deriveConnectState(account);
-  await saveConnectState(organizationId, accountId, state);
+  await saveConnectState(organizationId, accountId, state, paymentCurrencyOf(account));
   return { state, account };
 }
 

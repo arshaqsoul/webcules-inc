@@ -4,6 +4,7 @@ import { permissionDenied } from "@/lib/permissions";
 import { z } from "zod";
 
 import { getOrgContext } from "@/lib/session";
+import { studioCanTakePayments } from "@/lib/connect";
 import { getPlanEntitlements } from "@/lib/plans";
 import { countActiveSessionTypes, createSessionType, listSessionTypes } from "@/lib/repos/session-types";
 
@@ -46,6 +47,10 @@ export async function POST(req: Request) {
     body = sessionTypeInput.parse(await req.json());
   } catch {
     return Response.json({ error: "invalid_body" }, { status: 400 });
+  }
+  // WEB-352: a deposit/full-payment type needs a connected Stripe account.
+  if ((body.depositKind === "deposit" || body.depositKind === "full") && !(await studioCanTakePayments(ctx.organizationId))) {
+    return Response.json({ error: "connect_required" }, { status: 409 });
   }
   const ent = await getPlanEntitlements(ctx.organizationId);
   const result = await createSessionType(ctx.organizationId, body, ent?.maxSessionTypes ?? null);

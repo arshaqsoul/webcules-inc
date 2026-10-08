@@ -103,7 +103,7 @@ export async function createInvoice(params: {
     status: "draft",
     lines: JSON.stringify(params.lines),
     totalMinor,
-    currency: "usd",
+    currency: (await getStudioProfile(params.organizationId))?.paymentCurrency ?? "usd",
     dueAt,
     clientEmail: params.clientEmail?.toLowerCase() ?? null,
     taxLabel: taxLabel || null,

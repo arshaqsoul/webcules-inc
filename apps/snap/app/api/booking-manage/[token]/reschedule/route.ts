@@ -83,7 +83,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
           line_items: [
             {
               price_data: {
-                currency: "usd",
+                currency: profile?.paymentCurrency ?? "usd",
                 unit_amount: payment.amountMinor,
                 product_data: {
                   name:

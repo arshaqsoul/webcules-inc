@@ -9,6 +9,7 @@ import { listSessionTypes } from "@/lib/repos/session-types";
 import { listTemplates } from "@/lib/repos/templates";
 import { getPlanEntitlements } from "@/lib/plans";
 import { getOrgContext } from "@/lib/session";
+import { getStudioProfile } from "@/lib/repos/studios";
 
 export const dynamic = "force-dynamic";
 
@@ -18,10 +19,11 @@ export default async function SessionTypesPage() {
   const ctx = await getOrgContext();
   if (!ctx) redirect("/login");
 
-  const [types, formTemplates, ent] = await Promise.all([
+  const [types, formTemplates, ent, profile] = await Promise.all([
     listSessionTypes(ctx.organizationId, { includeInactive: true }),
     listTemplates(ctx.organizationId, "form"),
     getPlanEntitlements(ctx.organizationId),
+    getStudioProfile(ctx.organizationId),
   ]);
 
   return (
@@ -33,6 +35,8 @@ export default async function SessionTypesPage() {
         </p>
       </div>
       <SessionTypesManager
+        currency={profile?.paymentCurrency ?? "usd"}
+        payoutsReady={profile?.stripeConnectState === "active"}
         initial={types.map((t) => ({
           id: t.id,
           name: t.name,

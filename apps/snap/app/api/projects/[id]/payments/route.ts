@@ -38,7 +38,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       organizationId: ctx.organizationId,
       projectId: id,
       amountMinor: parsed.data.amountMinor,
-      currency: "usd",
+      currency: (await (await import("@/lib/repos/studios")).getStudioProfile(ctx.organizationId))?.paymentCurrency ?? "usd",
       method: parsed.data.method,
       note: parsed.data.note,
       occurredAt: parsed.data.occurredAt ? new Date(parsed.data.occurredAt) : undefined,

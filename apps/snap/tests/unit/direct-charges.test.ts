@@ -4,7 +4,7 @@
  * charge costing the platform 4.00 on a 100.00 payment. */
 import { describe, expect, it } from "vitest";
 
-import { STUDIO_ACCOUNT_CONTROLLER, chargeAccountId, deriveConnectState, onAccount, studioAccountParams } from "@/lib/connect";
+import { STUDIO_ACCOUNT_CONTROLLER, chargeAccountId, deriveConnectState, onAccount, paymentCurrencyOf, studioAccountParams } from "@/lib/connect";
 
 describe("studio account creation (WEB-352)", () => {
   it("uses controller settings: full dashboard, studio pays fees, Stripe holds losses", () => {
@@ -108,5 +108,18 @@ describe("connect state derivation (WEB-352)", () => {
 
   it("is restricted when Stripe disabled the account for another reason", () => {
     expect(deriveConnectState(acct({ charges_enabled: false, requirements: { past_due: [], currently_due: [], pending_verification: [], disabled_reason: "rejected.fraud" } }))).toBe("restricted");
+  });
+});
+
+describe("payment currency from the Stripe account (WEB-352)", () => {
+  it("lowercases the account default currency", () => {
+    expect(paymentCurrencyOf({ default_currency: "CAD" })).toBe("cad");
+    expect(paymentCurrencyOf({ default_currency: "usd" })).toBe("usd");
+  });
+
+  it("falls back to usd when Stripe reports nothing usable", () => {
+    expect(paymentCurrencyOf({ default_currency: undefined })).toBe("usd");
+    expect(paymentCurrencyOf({ default_currency: "" })).toBe("usd");
+    expect(paymentCurrencyOf({ default_currency: "c" })).toBe("usd");
   });
 });

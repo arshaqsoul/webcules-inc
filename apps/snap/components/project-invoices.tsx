@@ -37,12 +37,15 @@ export function ProjectInvoices({
   clientEmail,
   quotedTotalMinor,
   presets,
+  currency = "usd",
 }: {
   projectId: string;
   invoices: InvoiceItem[];
   clientEmail: string | null;
   quotedTotalMinor: number | null;
   presets: Array<{ id: string; name: string; lines: Array<{ description: string; qty: number; amountMinor: number }> }>;
+  /** Studio payment currency (lowercase ISO) for new invoices. */
+  currency?: string;
 }) {
   const router = useRouter();
   const confirm = useConfirm();
@@ -149,7 +152,7 @@ export function ProjectInvoices({
               {preset && (
                 <>
                   <span className="text-xs text-ink-subtle">
-                    {preset.name} · {money(preset.lines.reduce((n, l) => n + l.amountMinor * l.qty, 0), "usd")}
+                    {preset.name} · {money(preset.lines.reduce((n, l) => n + l.amountMinor * l.qty, 0), currency)}
                   </span>
                   <button type="button" className="text-xs font-medium text-primary hover:underline" onClick={() => setPreset(null)}>Clear</button>
                 </>
@@ -161,7 +164,7 @@ export function ProjectInvoices({
               {preset.lines.map((l, i) => (
                 <li key={i} className="flex justify-between gap-3">
                   <span>{l.description} ×{l.qty}</span>
-                  <span className="text-ink-subtle">{money(l.amountMinor * l.qty, "usd")}</span>
+                  <span className="text-ink-subtle">{money(l.amountMinor * l.qty, currency)}</span>
                 </li>
               ))}
             </ul>

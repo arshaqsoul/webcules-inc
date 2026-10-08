@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { getAvailability, saveAvailability } from "@/lib/repos/availability";
 import { getOrgContext } from "@/lib/session";
+import { studioCanTakePayments } from "@/lib/connect";
 
 export const dynamic = "force-dynamic";
 
@@ -80,6 +81,14 @@ export async function PUT(req: Request) {
   } catch (e) {
     const issues = e instanceof z.ZodError ? e.issues : undefined;
     return Response.json({ error: "invalid_body", issues }, { status: 400 });
+  }
+
+  // WEB-352: client payments settle in the studio's own Stripe account, so paid bookings
+  // can only be switched ON once that account is connected. Studios that already had it
+  // on keep saving (the editor warns them instead of blocking unrelated edits).
+  if (body.settings?.payment?.enabled && !(await studioCanTakePayments(ctx.organizationId))) {
+    const before = (await getAvailability(ctx.organizationId)).settings.payment?.enabled ?? false;
+    if (!before) return Response.json({ error: "connect_required" }, { status: 409 });
   }
 
   await saveAvailability({

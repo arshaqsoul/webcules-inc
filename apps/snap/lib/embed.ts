@@ -13,6 +13,8 @@ export type ResolvedStudio = {
   logoKey: string | null;
   brand: { accent?: string };
   embedOrigins: string[];
+  /** Currency clients are charged in (the studio's Stripe account currency). */
+  paymentCurrency: string;
 };
 
 export async function resolveStudioByEmbedKey(embedKey: string): Promise<ResolvedStudio | null> {
@@ -32,6 +34,7 @@ export async function resolveStudioByEmbedKey(embedKey: string): Promise<Resolve
     logoKey: profile.logoKey,
     brand: safeParseJson(profile.brand, {}),
     embedOrigins: safeParseJson<string[]>(profile.embedOrigins, []),
+    paymentCurrency: profile.paymentCurrency,
   };
 }
 

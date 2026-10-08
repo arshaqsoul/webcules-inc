@@ -29,18 +29,24 @@ const COLORS = ["#5e6ad2", "#e5912d", "#1e8e3e", "#c0271f", "#8f5fee", "#0ea5e9"
 
 const input = "rounded-md border border-hairline bg-canvas px-2.5 py-2 text-sm text-ink outline-none focus:border-primary";
 
-function money(minor: number | null): string {
-  return minor === null || minor === undefined ? "" : new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(minor / 100);
+function money(minor: number | null, currency: string): string {
+  return minor === null || minor === undefined ? "" : new Intl.NumberFormat("en-US", { style: "currency", currency: currency.toUpperCase() }).format(minor / 100);
 }
 
 export function SessionTypesManager({
   initial,
   formTemplates,
   limit,
+  currency = "usd",
+  payoutsReady = true,
 }: {
   initial: SessionTypeView[];
   formTemplates: Array<{ id: string; name: string }>;
   limit: number | null;
+  /** Studio payment currency (lowercase ISO) — what clients are charged in. */
+  currency?: string;
+  /** WEB-352: the studio's Stripe account is connected and can take charges. */
+  payoutsReady?: boolean;
 }) {
   const router = useRouter();
   const [types, setTypes] = useState(initial);
@@ -105,7 +111,9 @@ export function SessionTypesManager({
         setError(
           body.error === "limit_reached"
             ? `Your plan includes ${body.limit ?? limit} session type${body.limit === 1 ? "" : "s"} — Studio is unlimited.`
-            : body.error === "invalid_template"
+            : body.error === "connect_required"
+              ? "Connect your Stripe account in Settings → Payouts before asking clients to pay at booking."
+              : body.error === "invalid_template"
               ? "That booking form no longer exists."
               : "Couldn't save — check the values.",
         );
@@ -152,8 +160,8 @@ export function SessionTypesManager({
               <span className="block truncate text-sm font-medium text-ink">{t.name}</span>
               <span className="block truncate text-xs text-ink-subtle">
                 {t.slotMinutes ? `${t.slotMinutes} min` : "studio duration"}
-                {t.priceMinor ? ` · ${money(t.priceMinor)}` : ""}
-                {t.depositKind === "deposit" ? ` · deposit ${money(t.depositMinor)}` : t.depositKind === "full" ? " · paid in full" : ""}
+                {t.priceMinor ? ` · ${money(t.priceMinor, currency)}` : ""}
+                {t.depositKind === "deposit" ? ` · deposit ${money(t.depositMinor, currency)}` : t.depositKind === "full" ? " · paid in full" : ""}
                 {` · ${t.availabilityMode === "own" ? "own hours" : "studio hours"}`}
                 {!t.active ? " · inactive" : ""}
               </span>
@@ -182,6 +190,8 @@ export function SessionTypesManager({
               ? { id: "", name: "", slug: "", description: null, color: COLORS[0], slotMinutes: null, priceMinor: null, depositKind: null, depositMinor: null, availabilityMode: "inherit", bookingFormTemplateId: null, active: true }
               : editing}
             formTemplates={formTemplates}
+            currency={currency}
+            payoutsReady={payoutsReady}
             busy={busy}
             error={error}
             upsell={upsell}
@@ -197,6 +207,8 @@ export function SessionTypesManager({
 function TypeForm({
   value,
   formTemplates,
+  currency,
+  payoutsReady,
   busy,
   error,
   upsell,
@@ -205,6 +217,8 @@ function TypeForm({
 }: {
   value: SessionTypeView;
   formTemplates: Array<{ id: string; name: string }>;
+  currency: string;
+  payoutsReady: boolean;
   busy: boolean;
   error: string;
   /** WEB-250: plan-limit hit — upgrade CTA rides along with the message. */
@@ -232,7 +246,7 @@ function TypeForm({
           <input type="number" min={5} max={1440} value={t.slotMinutes ?? ""} onChange={(e) => set({ slotMinutes: e.target.value ? Number(e.target.value) : null })} className={input} placeholder="studio default" />
         </label>
         <label className={label}>
-          Price (USD)
+          Price ({currency.toUpperCase()})
           <input type="number" min={0} step="0.01" value={t.priceMinor !== null && t.priceMinor !== undefined ? t.priceMinor / 100 : ""} onChange={(e) => set({ priceMinor: e.target.value ? Math.round(Number(e.target.value) * 100) : null })} className={input} placeholder="optional" />
         </label>
         <label className={label}>
@@ -243,9 +257,15 @@ function TypeForm({
             <option value="deposit">Deposit</option>
             <option value="full">Full amount</option>
           </select>
+          {!payoutsReady && (t.depositKind === "deposit" || t.depositKind === "full") && (
+            <span className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+              Connect Stripe first — clients can&apos;t pay until you do.{" "}
+              <a href="/dashboard/settings/payouts" className="font-medium underline underline-offset-2">Settings → Payouts</a>
+            </span>
+          )}
         </label>
         <label className={label}>
-          Deposit amount (USD)
+          Deposit amount ({currency.toUpperCase()})
           <input type="number" min={1} step="0.01" disabled={t.depositKind !== "deposit" && t.depositKind !== "full"} value={t.depositMinor !== null && t.depositMinor !== undefined ? t.depositMinor / 100 : ""} onChange={(e) => set({ depositMinor: e.target.value ? Math.round(Number(e.target.value) * 100) : null })} className={input} placeholder="—" />
         </label>
         <label className={label}>

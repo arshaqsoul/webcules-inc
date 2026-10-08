@@ -333,8 +333,8 @@ export async function POST(req: Request) {
         const account = event.data.object as Stripe.Account;
         const organizationId = account.metadata?.organizationId;
         if (organizationId) {
-          const { deriveConnectState, saveConnectState } = await import("@/lib/connect");
-          await saveConnectState(organizationId, account.id, deriveConnectState(account));
+          const { deriveConnectState, paymentCurrencyOf, saveConnectState } = await import("@/lib/connect");
+          await saveConnectState(organizationId, account.id, deriveConnectState(account), paymentCurrencyOf(account));
         }
         break;
       }

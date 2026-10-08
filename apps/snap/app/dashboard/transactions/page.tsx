@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { listPayments } from "@/lib/repos/payments";
 import { getOrgContext } from "@/lib/session";
 import { can } from "@/lib/permissions";
+import { getStudioProfile } from "@/lib/repos/studios";
 
 export const metadata = { title: "Transactions" };
 
@@ -26,16 +27,19 @@ export default async function TransactionsPage() {
   if (!ctx) redirect("/login");
   // WEB-275: the payments ledger is a money surface — owner only.
   if (!can(ctx.role, "billing.read")) redirect("/dashboard");
-  const payments = await listPayments(ctx.organizationId);
+  const [payments, profile] = await Promise.all([listPayments(ctx.organizationId), getStudioProfile(ctx.organizationId)]);
 
-  const totals = payments.reduce(
-    (acc, p) => {
-      if (p.status === "succeeded") acc.succeeded += p.amountMinor;
-      if (p.status === "refunded") acc.refunded += p.amountMinor;
-      return acc;
-    },
-    { succeeded: 0, refunded: 0 },
-  );
+  // Totals per currency (a studio that switched Stripe accounts can have both);
+  // the studio's current payment currency always leads.
+  const primary = profile?.paymentCurrency ?? "usd";
+  const byCurrency = new Map<string, { succeeded: number; refunded: number }>([[primary, { succeeded: 0, refunded: 0 }]]);
+  for (const p of payments) {
+    const cur = (p.currency ?? primary).toLowerCase();
+    const t = byCurrency.get(cur) ?? { succeeded: 0, refunded: 0 };
+    if (p.status === "succeeded") t.succeeded += p.amountMinor;
+    if (p.status === "refunded") t.refunded += p.amountMinor;
+    byCurrency.set(cur, t);
+  }
 
   return (
     <div className="flex flex-col gap-5">
@@ -44,15 +48,19 @@ export default async function TransactionsPage() {
           <h1 className="text-2xl font-semibold tracking-[-0.6px] text-ink">Transactions</h1>
           <p className="mt-1 text-sm text-ink-subtle">Every booking payment across your studio.</p>
         </div>
-        <div className="flex gap-5 text-sm">
-          <div>
-            <p className="text-xs text-ink-tertiary">Collected</p>
-            <p className="font-medium text-success-text">{money(totals.succeeded, "usd")}</p>
-          </div>
-          <div>
-            <p className="text-xs text-ink-tertiary">Refunded</p>
-            <p className="font-medium text-ink-subtle">{money(totals.refunded, "usd")}</p>
-          </div>
+        <div className="flex flex-col gap-2 text-sm">
+          {[...byCurrency.entries()].map(([cur, t]) => (
+            <div key={cur} className="flex gap-5">
+              <div>
+                <p className="text-xs text-ink-tertiary">Collected{byCurrency.size > 1 ? ` (${cur.toUpperCase()})` : ""}</p>
+                <p className="font-medium text-success-text">{money(t.succeeded, cur)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-ink-tertiary">Refunded{byCurrency.size > 1 ? ` (${cur.toUpperCase()})` : ""}</p>
+                <p className="font-medium text-ink-subtle">{money(t.refunded, cur)}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 

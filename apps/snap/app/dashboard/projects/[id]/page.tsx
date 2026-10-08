@@ -77,6 +77,7 @@ export default async function ProjectDetailPage({
       .select({
         defaultExpiryDays: schema.studioProfiles.defaultExpiryDays,
         defaultAllowDownload: schema.studioProfiles.defaultAllowDownload,
+        paymentCurrency: schema.studioProfiles.paymentCurrency,
       })
       .from(schema.studioProfiles)
       .where(eq(schema.studioProfiles.organizationId, ctx.organizationId))
@@ -84,6 +85,7 @@ export default async function ProjectDetailPage({
     return {
       expiryDays: rows[0]?.defaultExpiryDays ?? 90,
       allowDownload: rows[0]?.defaultAllowDownload ?? true,
+      paymentCurrency: rows[0]?.paymentCurrency ?? "usd",
     };
   })();
   const project = (
@@ -370,6 +372,7 @@ export default async function ProjectDetailPage({
             <h2 className="text-[15px] font-medium text-ink">Invoices</h2>
             <p className="mb-4 mt-1 text-xs text-ink-subtle">Branded, numbered invoices with secure client links.</p>
             <ProjectInvoices
+              currency={deliveryDefaults.paymentCurrency}
             presets={invoicePresets.filter((t) => parsePresetLines(t.body).length > 0).map((t) => ({ id: t.id, name: t.name, lines: parsePresetLines(t.body) }))}
               projectId={id}
               invoices={invoices.map((inv) => ({

@@ -81,7 +81,7 @@ export default async function CalendarPage({
             </span>
             <span className="shrink-0 font-medium text-primary">Manage →</span>
           </Link>
-          <AvailabilityEditor initial={await getAvailability(ctx.organizationId)} />
+          <AvailabilityEditor initial={await getAvailability(ctx.organizationId)} currency={profile?.paymentCurrency ?? "usd"} payoutsReady={profile?.stripeConnectState === "active"} />
         </div>
       ) : (
         <CalendarMonth

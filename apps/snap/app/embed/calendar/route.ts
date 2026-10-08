@@ -27,17 +27,17 @@ function esc(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }
 
-function money(minor: number | null): string {
+function money(minor: number | null, currency: string): string {
   if (minor === null || minor === undefined) return "";
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(minor / 100);
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: currency.toUpperCase(), maximumFractionDigits: 0 }).format(minor / 100);
 }
 
-function typePickerHtml(types: SessionTypeRow[], selectedId: string | null): string {
+function typePickerHtml(types: SessionTypeRow[], selectedId: string | null, currency: string): string {
   const cards = types
     .map(
       (t) => `      <button type="button" class="type-card${t.id === selectedId ? " sel" : ""}" data-type-slug="${esc(t.slug)}" data-type-id="${esc(t.id)}">
         <p class="type-name"><span class="type-dot" style="background:${esc(t.color ?? "var(--snap-accent)")}"></span>${esc(t.name)}</p>
-        <p class="type-meta">${t.slotMinutes ? `${t.slotMinutes} min` : ""}${t.priceMinor ? `${t.slotMinutes ? " · " : ""}${money(t.priceMinor)}` : ""}</p>
+        <p class="type-meta">${t.slotMinutes ? `${t.slotMinutes} min` : ""}${t.priceMinor ? `${t.slotMinutes ? " · " : ""}${money(t.priceMinor, currency)}` : ""}</p>
         ${t.description ? `<p class="type-desc">${esc(t.description)}</p>` : ""}
       </button>`,
     )
@@ -236,7 +236,7 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
 <body>
   <div class="brand">${logo}<span class="tz" id="visitor-tz"></span></div>
 
-  ${showPicker ? typePickerHtml(types, initialType?.id ?? null) : ""}
+  ${showPicker ? typePickerHtml(types, initialType?.id ?? null, studio.paymentCurrency) : ""}
   <div class="shell" id="shell" ${showPicker && !initialType ? "hidden" : ""}>
   <div class="cal-wrap">
   <div class="cal-head">
@@ -644,7 +644,9 @@ const { vars, theme } = resolveWidgetVars(brand, overrides);
         msg.className = "msg err";
         msg.textContent = body.error === "captcha_failed"
           ? "Verification failed — please try again."
-          : "Booking failed — please try again.";
+          : body.error === "payments_unavailable"
+            ? "This studio can't take online payments right now — please contact them directly to book."
+            : "Booking failed — please try again.";
         btn.disabled = false;
       }
     } catch (err) {

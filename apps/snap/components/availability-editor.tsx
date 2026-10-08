@@ -56,7 +56,16 @@ const fromHHMM = (s: string) => {
   return (h || 0) * 60 + (m || 0);
 };
 
-export function AvailabilityEditor({ initial }: { initial: Initial }) {
+export function AvailabilityEditor({
+  initial,
+  currency = "usd",
+  payoutsReady = true,
+}: {
+  initial: Initial;
+  currency?: string;
+  /** WEB-352: the studio's Stripe account is connected and can take charges. */
+  payoutsReady?: boolean;
+}) {
   const router = useRouter();
   const [rules, setRules] = useState<Rule[]>(initial.rules);
   const [settings, setSettings] = useState(initial.settings);
@@ -134,7 +143,13 @@ export function AvailabilityEditor({ initial }: { initial: Initial }) {
     });
     const out = (await res.json().catch(() => ({}))) as { error?: string };
     setBusy(false);
-    setStatus(res.ok ? "Availability saved." : `Save failed: ${out.error ?? "unknown"}`);
+    setStatus(
+      res.ok
+        ? "Availability saved."
+        : out.error === "connect_required"
+          ? "Connect your Stripe account in Settings → Payouts before turning on paid bookings."
+          : `Save failed: ${out.error ?? "unknown"}`,
+    );
     if (res.ok) router.refresh();
   }
 
@@ -223,6 +238,21 @@ export function AvailabilityEditor({ initial }: { initial: Initial }) {
           When on, clients pay through Stripe at booking — the slot is held until payment completes.
           When off, bookings are confirmed instantly with no payment step.
         </p>
+        {!payoutsReady && (
+          <div
+            id="payConnectNotice"
+            role="status"
+            className="mt-4 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2.5 text-xs text-ink"
+          >
+            <strong className="font-medium">Connect your Stripe account to take payments.</strong>{" "}
+            {payEnabled
+              ? "Payment is on, but clients can't complete a paid booking until Stripe is connected — they will see an error. Connect now, or turn payment off."
+              : "Paid bookings stay off until Stripe is connected. Clients pay you directly, and Stripe's fee comes out of your own Stripe account."}{" "}
+            <a href="/dashboard/settings/payouts" className="font-medium text-primary underline underline-offset-2">
+              Connect Stripe in Settings → Payouts
+            </a>
+          </div>
+        )}
         <div className="mt-4 grid gap-4 sm:grid-cols-3">
           <div className="flex flex-col gap-2">
             <Label htmlFor="payEnabled">Collect payment</Label>
@@ -231,7 +261,8 @@ export function AvailabilityEditor({ initial }: { initial: Initial }) {
               type="button"
               role="switch"
               aria-checked={payEnabled}
-              onClick={() => setPayEnabled((v) => !v)}
+              onClick={() => setPayEnabled((v) => (v ? false : payoutsReady))}
+              aria-describedby={payoutsReady ? undefined : "payConnectNotice"}
               className={`relative h-6 w-11 rounded-full transition-colors ${payEnabled ? "bg-primary" : "bg-surface-2 shadow-[inset_0_0_0_1px_var(--hairline)]"}`}
             >
               {/* Thumb is anchored with left-0.5 and moved with translate —
@@ -258,7 +289,7 @@ export function AvailabilityEditor({ initial }: { initial: Initial }) {
             </select>
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="payAmount">Amount (USD)</Label>
+            <Label htmlFor="payAmount">Amount ({currency.toUpperCase()})</Label>
             <Input id="payAmount" type="number" min={1} step="0.01" inputMode="decimal" value={payAmount}
               disabled={!payEnabled}
               onChange={(e) => setPayAmount(e.target.value)} />

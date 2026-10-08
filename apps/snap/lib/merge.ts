@@ -44,7 +44,11 @@ async function resolveDeposit(organizationId: string, project: typeof schema.pro
   try {
     const { getBookingSettings } = await import("./repos/availability");
     const settings = await getBookingSettings(organizationId);
-    if (settings.payment?.enabled && settings.payment.amountMinor > 0) return formatMoney(settings.payment.amountMinor, "usd");
+    if (settings.payment?.enabled && settings.payment.amountMinor > 0) {
+      const { getStudioProfile } = await import("./repos/studios");
+      const currency = (await getStudioProfile(organizationId))?.paymentCurrency ?? "usd";
+      return formatMoney(settings.payment.amountMinor, currency);
+    }
   } catch {
     /* settings unavailable — fall through */
   }

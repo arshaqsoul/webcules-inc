@@ -205,6 +205,9 @@ export const studioProfiles = sqliteTable("studio_profile", {
   business: text("business"),
   /** Stripe Connect Express account (KYC/bank data lives in Stripe, never here). */
   stripeAccountId: text("stripe_account_id"),
+  /** WEB-352: ISO currency (lowercase) clients are charged in = the studio's Stripe
+   * account default currency; 'usd' until connected. */
+  paymentCurrency: text("payment_currency").notNull().default("usd"),
   /** not_connected | pending | active | restricted — derived from Stripe, cached. */
   stripeConnectState: text("stripe_connect_state").notNull().default("not_connected"),
   /** Snap plan: free | lite | studio | pro (definitions in lib/plans.ts). */

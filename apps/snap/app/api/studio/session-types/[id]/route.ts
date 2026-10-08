@@ -3,7 +3,8 @@ import { permissionDenied } from "@/lib/permissions";
 import { z } from "zod";
 
 import { getOrgContext } from "@/lib/session";
-import { deleteSessionType, reorderSessionTypes, updateSessionType } from "@/lib/repos/session-types";
+import { studioCanTakePayments } from "@/lib/connect";
+import { deleteSessionType, listSessionTypes, reorderSessionTypes, updateSessionType } from "@/lib/repos/session-types";
 import { sessionTypeInput } from "../route";
 
 export const dynamic = "force-dynamic";
@@ -21,6 +22,12 @@ export async function PATCH(req: Request, { params }: Params) {
     body = sessionTypeInput.parse(await req.json());
   } catch {
     return Response.json({ error: "invalid_body" }, { status: 400 });
+  }
+  // WEB-352: switching a type to take payment needs a connected Stripe account
+  // (types already set up keep saving other edits).
+  if ((body.depositKind === "deposit" || body.depositKind === "full") && !(await studioCanTakePayments(ctx.organizationId))) {
+    const current = (await listSessionTypes(ctx.organizationId, { includeInactive: true })).find((t) => t.id === id);
+    if (current && current.depositKind !== body.depositKind) return Response.json({ error: "connect_required" }, { status: 409 });
   }
   const result = await updateSessionType(ctx.organizationId, id, body);
   if (!result.ok) return Response.json({ error: result.error }, { status: result.error === "not_found" ? 404 : 400 });

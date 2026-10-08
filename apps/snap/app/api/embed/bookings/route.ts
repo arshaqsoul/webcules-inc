@@ -86,7 +86,8 @@ export async function POST(req: Request) {
       // WEB-352: payments settle in the studio's own Stripe account only. A studio that
       // requires payment but has no active account cannot take a paid booking; refuse
       // BEFORE holding a slot rather than charging the platform account.
-      const chargeAccount = chargeAccountId(await getStudioProfile(studio.organizationId));
+      const chargeProfile = await getStudioProfile(studio.organizationId);
+      const chargeAccount = chargeAccountId(chargeProfile);
       if (!chargeAccount) return Response.json({ error: "payments_unavailable" }, { status: 409 });
       const held = await createBookingFromWidget({
         organizationId: studio.organizationId,
@@ -114,7 +115,7 @@ export async function POST(req: Request) {
         line_items: [
           {
             price_data: {
-              currency: "usd",
+              currency: chargeProfile?.paymentCurrency ?? "usd",
               unit_amount: payment.amountMinor,
               product_data: {
                 name:
