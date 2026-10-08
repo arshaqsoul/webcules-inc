@@ -22,6 +22,10 @@ const attachSchema = z.object({
   attach: z.literal(true),
   kind: z.enum(["lead", "client", "project"]),
   recordId: z.string().min(1).max(64),
+  /** WEB-335: connect this client when the project has none. */
+  client: z
+    .object({ email: z.string().trim().toLowerCase().email().max(200), name: z.string().trim().max(120).optional() })
+    .optional(),
 });
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -48,8 +52,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       itemId: id,
       kind: attach.data.kind,
       recordId: attach.data.recordId,
+      client: attach.data.client,
     });
     if (result.ok) return Response.json({ ok: true, threadId: result.threadId, title: result.title });
+    if (result.error === "client_required") {
+      return Response.json({ error: result.error, suggested: result.suggested }, { status: 409 });
+    }
     return Response.json({ error: result.error }, { status: result.error === "already_threaded" ? 409 : 404 });
   }
 

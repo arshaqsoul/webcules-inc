@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { Inbox, Search } from "lucide-react";
 
 import { Button } from "@webcules/ui/components/button";
+import { ConnectClientDialog } from "@/components/inbox/connect-client-dialog";
 
 type Option =
   | { kind: "lead"; id: string; label: string; sub: string; status: string }
@@ -34,6 +35,9 @@ export function TriagePane({
   const [loading, setLoading] = useState(true);
   const [attaching, setAttaching] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // WEB-335: a project with no client asks for one instead of guessing.
+  const [needClient, setNeedClient] = useState<{ recordId: string; title: string; email: string; name: string } | null>(null);
+  const [clientError, setClientError] = useState<string | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(q.trim()), 250);
@@ -57,21 +61,38 @@ export function TriagePane({
     };
   }, [debounced]);
 
-  async function attach(kind: "lead" | "client" | "project", recordId: string) {
+  async function attach(
+    kind: "lead" | "client" | "project",
+    recordId: string,
+    client?: { email: string; name: string },
+  ) {
     if (attaching) return;
     setAttaching(recordId);
     setError(null);
+    setClientError(null);
     try {
       const res = await fetch(`/api/inbox/items/${item.id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ attach: true, kind, recordId }),
+        body: JSON.stringify({ attach: true, kind, recordId, ...(client ? { client: { email: client.email, ...(client.name ? { name: client.name } : {}) } } : {}) }),
       });
-      const body = (await res.json().catch(() => ({}))) as { threadId?: string; error?: string };
+      const body = (await res.json().catch(() => ({}))) as {
+        threadId?: string;
+        error?: string;
+        suggested?: { email: string; name: string | null } | null;
+      };
+      if (res.status === 409 && body.error === "client_required") {
+        const label = rows.find((r) => r.kind === kind && r.id === recordId)?.label ?? "this project";
+        setNeedClient({ recordId, title: label, email: body.suggested?.email ?? "", name: body.suggested?.name ?? "" });
+        return;
+      }
       if (!res.ok || !body.threadId) throw new Error(body.error ?? "attach_failed");
+      setNeedClient(null);
       onAttached(body.threadId);
     } catch (e) {
-      setError(String(e).includes("already_threaded") ? "Already attached to a conversation." : "Attach failed — try again.");
+      const msg = String(e).includes("already_threaded") ? "Already attached to a conversation." : "Attach failed — try again.";
+      if (client) setClientError(msg);
+      else setError(msg);
     } finally {
       setAttaching(null);
     }
@@ -143,6 +164,18 @@ export function TriagePane({
           </Button>
         </div>
       </div>
+
+      <ConnectClientDialog
+        open={needClient !== null}
+        onOpenChange={(v) => !v && setNeedClient(null)}
+        projectTitle={needClient?.title}
+        initialEmail={needClient?.email}
+        initialName={needClient?.name}
+        busy={attaching !== null}
+        error={clientError}
+        confirmLabel="Connect and attach"
+        onSubmit={(c) => needClient && void attach("project", needClient.recordId, c)}
+      />
     </div>
   );
 }
