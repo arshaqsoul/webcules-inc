@@ -68,6 +68,40 @@ Model 2 needs **included credits** (a gap in the current epics, see G6).
    Other epics have one (WEB-267, WEB-309, WEB-316).
 6. **Missing features** (stories G4 to G10 below).
 
+### 3.3 Spike result (WEB-351, run 2026-10-08, Stripe test mode, Snap's own account)
+
+Script: `apps/snap/scripts/spike-stripe-fees.mjs`.
+Connected account: a test-mode Custom account in Canada (Express onboarding cannot be completed headlessly).
+Destination-charge fee payer does not depend on the connected account type, per Stripe's docs.
+
+| Charge | Result |
+|---|---|
+| A) Destination charge, 100.00 CAD, no application fee (booking checkout today) | **The platform was debited a 4.00 CAD Stripe fee.** The connected account received the full 100.00 CAD with a 0.00 fee. |
+| B) Direct charge on the connected account | **Rejected by Stripe:** "Creating direct charges with type=express or type=custom is not supported for new platforms." |
+
+What this means:
+1. **The fee leak is confirmed.**
+   Every booking deposit or payment made through the connected-studio path costs Snap about 4% of the payment.
+   On a 500.00 deposit that is 20.00 out of Snap's pocket, against a 15.00 Lite subscription.
+   The FAQ claim ("that fee goes to Stripe, never to us") is wrong for these payments.
+2. **C2's direct-charge plan does not work with the account type Snap uses.**
+   `app/api/studio/payouts/connect/route.ts` creates studio accounts with `type: "express"`.
+   Snap's Stripe account is new (since 2026-10-06), so legacy Express and Custom direct charges are blocked.
+3. **Invoices are probably affected too.**
+   `lib/invoices.ts` mints a payment link on the studio account and, on any error, silently falls back to the platform account.
+   If the connected path fails for the same reason, the client would pay Snap's platform account instead of the studio.
+   Not yet reproduced: verify before relying on it.
+4. **There is a free window to fix this.**
+   Stripe's docs say new platforms should use controller-based accounts (dashboard type, `fees.payer`, `losses.payments`) or Accounts v2.
+   Direct charges are supported there, with the connected account paying fees and Stripe holding negative-balance liability.
+   Snap has no studio accounts yet on the new Stripe account, so there is nothing to migrate if this is done before launch.
+5. **Not yet tested.**
+   A controller-based Express-dashboard account (the closest match to today's Express onboarding) needs a browser-completed test onboarding.
+   Stripe notes that fee behavior for direct charges on Express accounts varies between Stripe features, so the exact fee split must be confirmed on that account type before committing C2.
+
+Decision needed: use controller-based accounts with direct charges (studio pays Stripe fees, Snap earns no fee, matches the 0% brand), or keep destination charges and accept or recover the fee.
+Recommendation: controller-based accounts, `fees.payer = account`, `losses.payments = stripe`, direct charges.
+
 ## 4. Filing status
 
 Filed in Linear on 2026-10-08 (all under C1, WEB-280):
