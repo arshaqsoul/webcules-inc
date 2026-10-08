@@ -10,7 +10,7 @@
  *       deployed to staging and manually verified (surfaced, DB, key flows).
  *
  * Staging resources (isolated from prod by design):
- *   worker  webcules-snap-staging   https://snap-staging.webcules.com
+ *   worker  snap-staging            https://staging.snaphq.app
  *   D1      webcules-snap-staging   9b850d02-67d3-4c1b-a7ed-482cc587b2d5
  *   R2      snap-staging
  * Secrets on staging are its OWN; Stripe on staging = TEST keys. Never copy
@@ -23,7 +23,7 @@ import { fileURLToPath } from "node:url";
 
 const appDir = join(dirname(fileURLToPath(import.meta.url)), "..");
 const STAGING = {
-  worker: "webcules-snap-staging",
+  worker: "snap-staging",
   // WEB-330: staging rehearses the production cutover - staging.snaphq.app is
   // the canonical origin (links in emails/galleries, auth); snap-staging.webcules.com
   // stays attached like the legacy host does on production.
@@ -40,6 +40,9 @@ const ZONE_ID = "9576286851f6ba68ddcb3ff31a1e74db";
 const args = process.argv.slice(2);
 const target = args[0];
 const stagingVerified = args.includes("--staging-verified");
+// WEB-331: create/update the Worker WITHOUT touching custom domains or routes, so a
+// renamed Worker can get its secrets before any traffic moves to it.
+const noRoutes = args.includes("--no-routes");
 
 function run(cmd) {
   console.log(`  $ ${cmd}`);
@@ -67,10 +70,12 @@ function writeStagingConfig() {
   cfg.name = STAGING.worker;
   // Prod-only routes stay on prod; staging is its own custom domain.
   // WEB-330: staging.snaphq.app rehearses the snaphq.app move on staging first.
-  cfg.routes = [
-    { pattern: "snap-staging.webcules.com", custom_domain: true },
-    { pattern: "staging.snaphq.app", custom_domain: true },
-  ];
+  cfg.routes = noRoutes
+    ? []
+    : [
+        { pattern: "staging.snaphq.app", custom_domain: true },
+        { pattern: "snap-staging.webcules.com", custom_domain: true },
+      ];
   cfg.d1_databases[0].database_name = STAGING.d1Name;
   cfg.d1_databases[0].database_id = STAGING.d1Id;
   cfg.r2_buckets[0].bucket_name = STAGING.r2Bucket;
@@ -131,7 +136,7 @@ async function ensureActiveDomainRoutes() {
       const res = await fetch(`https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/workers/routes`, {
         method: "POST",
         headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
-        body: JSON.stringify({ pattern, script: "webcules-snap" }),
+        body: JSON.stringify({ pattern, script: "snap" }),
       });
       console.log(res.ok ? `  route re-ensured: ${pattern}` : `  route ensure FAILED for ${pattern} (${res.status}) — SaaS host may 522!`);
     }
@@ -149,6 +154,10 @@ if (target === "staging") {
   // Plain wrangler deploy — vinext-cloudflare deploy rebuilds and wipes the
   // generated dist/server (including this staging config) mid-run.
   run(`npx wrangler deploy --config ${cfg.replace(/\\/g, "/")}`);
+  if (noRoutes) {
+    console.log("✅ staging worker uploaded WITHOUT routes (no traffic moved). Set its secrets, then deploy again without --no-routes.");
+    process.exit(0);
+  }
   console.log("• smoke check (expect 200/3xx on all):");
   const ok = await smoke(STAGING.url);
   console.log(ok ? "✅ staging live — verify your change at " + STAGING.url : "⚠️  smoke check failed — inspect before proceeding");
@@ -171,6 +180,15 @@ if (target === "staging") {
   // Plain wrangler deploy on the generated config — `pnpm deploy`
   // (vinext-cloudflare) currently crashes on Windows and would also rebuild,
   // discarding the cache-clean build above.
+  if (noRoutes) {
+    const cfg = JSON.parse(readFileSync(join(appDir, "dist/server/wrangler.json"), "utf8"));
+    cfg.routes = [];
+    const out = join(appDir, "dist/server/wrangler.noroutes.json");
+    writeFileSync(out, JSON.stringify(cfg, null, 2));
+    run(`npx wrangler deploy --config ${out.replace(/\\/g, "/")}`);
+    console.log("✅ production worker uploaded WITHOUT routes (no traffic moved). Set its secrets, then deploy again without --no-routes.");
+    process.exit(0);
+  }
   run("npx wrangler deploy --config dist/server/wrangler.json");
   console.log("• smoke check:");
   const ok = (await smoke(PROD_URL)) && (await smoke(LEGACY_PROD_URL));
@@ -178,6 +196,6 @@ if (target === "staging") {
   console.log("   D1 reminder: apply any new migrations to BOTH databases (staging first, then prod).");
   await ensureActiveDomainRoutes();
 } else {
-  console.error("usage: node scripts/deploy.mjs <staging|production> [--staging-verified]");
+  console.error("usage: node scripts/deploy.mjs <staging|production> [--staging-verified] [--no-routes]");
   process.exit(1);
 }

@@ -1,4 +1,4 @@
-/* Inbound email webhook — consumed by the `webcules-snap-email` worker
+/* Inbound email webhook — consumed by the `snap-email` worker
  * (postal-mime parsed payloads). Bearer-authed with the shared
  * SNAP_INBOUND_WEBHOOK_SECRET set on both workers. WEB-307: the full
  * threading pipeline (lib/inbox/ingest.ts) resolves the conversation —

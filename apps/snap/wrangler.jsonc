@@ -1,6 +1,9 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "webcules-snap",
+  "name": "snap",
+  // WEB-331: snaphq.app (custom domains below) is the only way in - no workers.dev or preview URLs.
+  "workers_dev": false,
+  "preview_urls": false,
   "compatibility_date": "2026-09-26",
   "compatibility_flags": ["nodejs_compat"],
   "main": "vinext/server/fetch-handler",

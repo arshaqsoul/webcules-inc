@@ -178,7 +178,7 @@ export async function ensureHostnameRoute(cfg: CfConfig, hostname: string): Prom
   if (existing) return { ok: true, result: existing };
   return cfCall<{ id: string }>(cfg, "POST", `/zones/${cfg.zoneId}/workers/routes`, {
     pattern,
-    script: "webcules-snap",
+    script: "snap",
   });
 }
 
