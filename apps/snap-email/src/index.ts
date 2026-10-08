@@ -1,5 +1,5 @@
 /**
- * webcules-snap-email — inbound email worker for Snap (snaphq.app).
+ * snap-email — inbound email worker for Snap (snaphq.app).
  *
  * Cloudflare Email Routing delivers mail addressed to @snaphq.app
  * here (catch-all). The handler parses with postal-mime, enforces the

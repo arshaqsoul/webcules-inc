@@ -1,6 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "webcules-snap-email",
+  "name": "snap-email",
+  "workers_dev": false,
   "main": "src/index.ts",
   "compatibility_date": "2025-08-15",
   "compatibility_flags": ["nodejs_compat"],

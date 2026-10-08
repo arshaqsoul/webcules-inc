@@ -14,7 +14,7 @@ security, domain model, design system).
   regenerates `worker-configuration.d.ts`).
 - **D1** `webcules-snap` (dedicated — tenant data isolated from webcules-cms) +
   Drizzle. **R2** `snap-webcules` (private). **Email**: Cloudflare Email Service
-  (`send_email` binding) + the `webcules-snap-email` inbound worker (apps/snap-email).
+  (`send_email` binding) + the `snap-email` inbound worker (apps/snap-email).
 - UI: `@webcules/ui` primitives themed with Snap's Linear-style dark tokens
   (`app/globals.css` — see the *Snap · Design System* doc).
 

@@ -73,14 +73,14 @@ drops into the public docs unchanged. Commit messages are written for the docs p
 | | Production | Staging |
 |---|---|---|
 | URL | https://snap.webcules.com (legacy; moving to snaphq.app) | https://staging.snaphq.app (canonical; snap-staging.webcules.com still attached) |
-| Worker | `webcules-snap` | `webcules-snap-staging` |
+| Worker | `snap` | `snap-staging` |
 | D1 | `webcules-snap` (`badece16-2231-4b37-81ac-54f7c4bbf464` — recreated fresh 2026-09-29 at launch; pre-launch backup in repo `.backups/`) | `webcules-snap-staging` (`9b850d02-67d3-4c1b-a7ed-482cc587b2d5`) |
 | R2 | `snap-webcules` | `snap-staging` |
 | Stripe | LIVE keys + live webhook endpoint (`we_1ULAApDQylYjEBwsSCHyGmh8`, 11 events) — live since 2026-09-29 | TEST keys + test webhook endpoint (`we_1ULAB5DQylYjEBwsnrODOCT8`) |
-| Cron | `webcules-snap-email` daily 06:00 UTC → `POST /api/cron/daily-status` | none — call the endpoint manually (below) |
+| Cron | `snap-email` daily 06:00 UTC → `POST /api/cron/daily-status` | none — call the endpoint manually (below) |
 
 - Staging has its **own** `BETTER_AUTH_SECRET` and `SNAP_INBOUND_WEBHOOK_SECRET` (set via
-  `cf workers secrets update <NAME> --worker webcules-snap-staging --type secret_text --text …`).
+  `cf workers secrets update <NAME> --worker snap-staging --type secret_text --text …`).
   Never copy production secret values into staging or vice versa.
 - Stripe on staging = the sandbox/test keys (`sk_test_…` + a webhook endpoint pointed at
   `https://snap-staging.webcules.com/api/stripe/webhook` — its `whsec_…` is staging's
@@ -95,7 +95,7 @@ drops into the public docs unchanged. Commit messages are written for the docs p
 - Custom-hostname serving architecture (WEB-233 runbook, verified live on
   prairiepeakgear.com 2026-09-30; moved to the snaphq.app zone in WEB-330): zone fallback origin =
   `domains.snaphq.app` (ORIGINLESS proxied A -> 192.0.2.1 - never a real IP), plus a
-  `domains.snaphq.app/*` workers route -> webcules-snap (declared in wrangler.jsonc - a matching
+  `domains.snaphq.app/*` workers route -> snap (declared in wrangler.jsonc - a matching
   route is REQUIRED or Cloudflare 522s) and one `<hostname>/*` route per active custom hostname,
   re-ensured by scripts/deploy.mjs after every deploy. `CLOUDFLARE_ZONE_ID` is the snaphq.app zone
   and the `CLOUDFLARE_API_TOKEN` secret needs Custom Hostnames edit there. The

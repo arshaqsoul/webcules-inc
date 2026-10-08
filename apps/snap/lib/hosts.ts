@@ -14,7 +14,7 @@
  *   EMAIL_DOMAIN - the domain client email is sent from / received on
  *                  (hello@, hello+{slug}@, thread ids, .ics UIDs). snaphq.app
  *                  is a verified sending domain and Email Routing delivers it
- *                  to webcules-snap-email. The legacy mail domain is NOT
+ *                  to the snap-email worker. The legacy mail domain is NOT
  *                  supported any more (no backward compatibility for email).
  * Request-time origins (links in emails, auth, checkout returns) come from the
  * NEXT_PUBLIC_APP_URL / BETTER_AUTH_URL worker vars via lib/app-origin.ts. */
@@ -27,7 +27,7 @@ export const PUBLIC_ORIGIN = `https://${PUBLIC_HOST}`;
 
 export const EMAIL_DOMAIN: string = NEW_HOST;
 
-/** The isolated staging deploy (webcules-snap-staging). */
+/** The isolated staging deploy (worker snap-staging). */
 export const STAGING_HOSTS = ["snap-staging.webcules.com", "staging.snaphq.app"] as const;
 
 /** Cloudflare for SaaS fallback origin (zone: snaphq.app): studios CNAME their

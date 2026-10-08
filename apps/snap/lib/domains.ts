@@ -146,7 +146,7 @@ export function txtMatches(token: string, records: string[] | null): boolean {
 /** Hosts that are the app itself, never a studio custom hostname. The
  * fallback origin is included: it routes traffic for custom hostnames but
  * its own name is not a client surface. The staging host guards the isolated
- * staging deploy (webcules-snap-staging) — without it, staging auth paths
+ * staging deploy (worker snap-staging) — without it, staging auth paths
  * would 302 to the production origin. */
 export const DEFAULT_APP_HOSTS = new Set<string>(APP_HOSTS);
 
