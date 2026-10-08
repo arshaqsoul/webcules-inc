@@ -166,7 +166,7 @@ export function DomainsPanel({
       if (act === "verify" || act === "retry") {
         setStatus(
           body.status === "active"
-            ? `Active! One last thing (founder ops): the Turnstile widget's allowed-hostnames list needs this hostname added in the Cloudflare dashboard before booking forms pass on it.`
+            ? "Active! Your galleries, booking page and client portal are now live on your own domain."
             : typeof body.cfWarning === "string" && body.cfWarning
               ? body.cfWarning
               : body.status === "verified"

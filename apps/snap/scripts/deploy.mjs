@@ -48,7 +48,7 @@ const noRoutes = args.includes("--no-routes");
  * missing (a renamed Worker starts with none, and secrets cannot be copied).
  * Fails closed when the secret list cannot be read. --no-routes skips it. */
 const REQUIRED_SECRETS = {
-  staging: ["BETTER_AUTH_SECRET", "R2_S3_ACCESS_KEY_ID", "R2_S3_SECRET_ACCESS_KEY", "SNAP_INBOUND_WEBHOOK_SECRET", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"],
+  staging: ["BETTER_AUTH_SECRET", "R2_S3_ACCESS_KEY_ID", "R2_S3_SECRET_ACCESS_KEY", "SNAP_INBOUND_WEBHOOK_SECRET", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET", "TURNSTILE_SECRET_KEY"],
   production: ["BETTER_AUTH_SECRET", "CLOUDFLARE_API_TOKEN", "R2_S3_ACCESS_KEY_ID", "R2_S3_SECRET_ACCESS_KEY", "SNAP_INBOUND_WEBHOOK_SECRET", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET", "TURNSTILE_SECRET_KEY"],
 };
 function assertSecretsPresent(worker, env) {
@@ -109,9 +109,10 @@ function writeStagingConfig() {
   // Presigned S3 uploads (r2s3.ts) must target staging's own bucket — the
   // code default is the production bucket name.
   cfg.vars.R2_S3_BUCKET = STAGING.r2Bucket;
-  // No Turnstile secret on staging → leave the site key out so client
-  // widgets skip rendering (verifyTurnstile passes when secret is unset).
-  delete cfg.vars.TURNSTILE_SITE_KEY;
+  // WEB-333: staging runs the real Turnstile code paths (widget, /ts bridge,
+  // siteverify) with Cloudflare's published always-pass TEST keys - public
+  // by design. The matching test secret is set on the staging worker.
+  cfg.vars.TURNSTILE_SITE_KEY = "1x00000000000000000000AA";
   const out = join(appDir, "dist/server/wrangler.staging.json");
   writeFileSync(out, JSON.stringify(cfg, null, 2));
   console.log(`• staging config written: ${out}`);

@@ -15,8 +15,8 @@
  *      domains.snaphq.app.
  *   3. wrangler secret put CLOUDFLARE_API_TOKEN (Zone → Custom Hostnames →
  *      Edit, scoped to snaphq.app) + CLOUDFLARE_ZONE_ID var.
- *   4. Turnstile widget hostname allowlist gains each activated hostname
- *      (manual dashboard step for v1 — call it out in the activation email).
+ *   4. Turnstile needs NO per-hostname step (WEB-333): custom-domain pages
+ *      embed the main-origin /ts bridge, so the widget hostname is ours.
  */
 import { CF_FALLBACK_ORIGIN } from "@/lib/domains";
 

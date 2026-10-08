@@ -187,7 +187,7 @@ export function isCustomAppHost(host: string): boolean {
 const NON_CLIENT_PREFIXES = [
   "/dashboard", "/login", "/signup", "/onboarding",
   "/api/studio", "/api/admin", "/api/auth",
-  "/embed", "/docs",
+  "/embed", "/docs", "/ts",
 ];
 
 /** WEB-227 guard: a non-default host asking for a non-client-facing path

@@ -5,6 +5,7 @@
  * same document carries the submit script — POSTs JSON to the given
  * endpoint and never trusts a client-side schema. */
 import type { FormField, FormSchema } from "./forms";
+import { APP_HOSTS, PUBLIC_ORIGIN } from "@/lib/hosts";
 
 function esc(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
@@ -125,10 +126,33 @@ export function renderFormHtml(schema: FormSchema, opts: RenderFormOptions): str
   var msg = document.getElementById("form-msg");
   var btn = form.querySelector("button");
   var tsToken = "";
+  // WEB-333: on a studio's custom hostname the widget can't render (hostname not
+  // on the Turnstile widget), so embed the main-origin bridge page instead.
+  var appHosts = ${JSON.stringify(APP_HOSTS)};
+  var bridgeOrigin = ${JSON.stringify(PUBLIC_ORIGIN)};
+  var host = location.hostname.toLowerCase();
+  var onOurHost = appHosts.indexOf(host) >= 0 || /^(localhost|127\\.0\\.0\\.1)$/.test(host) || /\\.workers\\.dev$/.test(host);
+  function bridgeTs() {
+    var holder = document.getElementById("ts");
+    var f = document.createElement("iframe");
+    f.src = bridgeOrigin + "/ts?o=" + encodeURIComponent(host);
+    f.title = "Verification";
+    f.setAttribute("scrolling", "no");
+    f.style.cssText = "border:0;width:100%;max-width:300px;height:70px;display:block";
+    holder.appendChild(f);
+    window.addEventListener("message", function (e) {
+      if (e.origin !== bridgeOrigin || e.source !== f.contentWindow) return;
+      var d = e.data;
+      if (!d || d.type !== "snap:turnstile") return;
+      tsToken = typeof d.token === "string" ? d.token : "";
+    });
+  }
   function initTs() {
-    if (siteKey && window.turnstile && !tsToken) {
+    if (!siteKey) return;
+    if (!onOurHost) { if (!tsToken) bridgeTs(); return; }
+    if (window.turnstile && !tsToken) {
       turnstile.render("#ts", { sitekey: siteKey, callback: function (t) { tsToken = t; } });
-    } else if (siteKey && !window.turnstile) {
+    } else if (!window.turnstile) {
       setTimeout(initTs, 400);
     }
   }

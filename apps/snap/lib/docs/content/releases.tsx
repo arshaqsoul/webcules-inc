@@ -35,6 +35,15 @@ export default function Releases() {
         polish fold into the next entry rather than getting their own.
       </Note>
 
+      <Release version="0.11.3" date="October 8, 2026">
+        <p>
+          <strong>Your own domain works for sign-in codes and forms too.</strong> On a custom
+          domain, the gallery sign-in, contract signing, client portal and questionnaires now
+          show their human check without any extra setup on our side, and there is no limit on
+          how many studios can connect a domain.
+        </p>
+      </Release>
+
       <Release version="0.11.2" date="October 8, 2026">
         <p>
           <strong>Connecting your own domain finishes by itself.</strong> After you add the
