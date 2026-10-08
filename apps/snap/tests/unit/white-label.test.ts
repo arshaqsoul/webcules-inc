@@ -22,6 +22,7 @@ import {
 } from "@/lib/email";
 import { PDFDocument } from "pdf-lib";
 import { renderContractPdf, renderInvoicePdf, pdfFooterLine } from "@/lib/pdf";
+import { LEGACY_HOST, PUBLIC_HOST } from "@/lib/hosts";
 
 const ENT_ON = { whiteLabel: true };
 const ENT_OFF = { whiteLabel: false };
@@ -200,7 +201,8 @@ describe("client email templates (WEB-238)", () => {
     it(`${t.name}: white-labeled → zero Snap mentions, studio wordmark header`, () => {
       const out = t.make(true);
       expect(out.html).not.toContain("Snap");
-      expect(out.html).not.toContain("snap.webcules.com");
+      expect(out.html).not.toContain(LEGACY_HOST);
+      expect(out.html).not.toContain(PUBLIC_HOST);
       expect(out.html).toContain("Willow & Pine"); // wordmark = studio name
       expect(out.text).not.toContain("Snap");
     });
@@ -296,7 +298,7 @@ describe("branded email shell (WEB-240)", () => {
 describe("PDF footers (WEB-238)", () => {
   it("footer line flips with the flag (content streams are Flate-compressed, so the choice is unit-tested at the source)", () => {
     expect(pdfFooterLine("Willow & Pine", true)).toBe("© Willow & Pine");
-    expect(pdfFooterLine("Willow & Pine", false)).toBe("Powered by Snap - snap.webcules.com");
+    expect(pdfFooterLine("Willow & Pine", false)).toBe(`Powered by Snap - ${PUBLIC_HOST}`);
   });
 
   it("renders both variants without throwing", async () => {

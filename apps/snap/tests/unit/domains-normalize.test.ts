@@ -1,6 +1,7 @@
 /* Hostname normalization table (WEB-225) — pure lib/domains.ts behavior:
  * URL forms normalize, junk rejects with distinct reasons, subdomain-only. */
 import { describe, expect, it } from "vitest";
+import { PUBLIC_ORIGIN } from "@/lib/hosts";
 
 import {
   CNAME_TARGET,
@@ -131,12 +132,12 @@ describe("requestHost (SaaS X-Forwarded-Host)", () => {
 
 describe("serving guard (WEB-227)", () => {
   it("custom host + non-client path → 302 target on the main origin", () => {
-    expect(nonClientPathRedirect("gallery.studio.com", "/dashboard")).toBe("https://snap.webcules.com/dashboard");
-    expect(nonClientPathRedirect("gallery.studio.com", "/dashboard/settings/general")).toBe("https://snap.webcules.com/dashboard/settings/general");
-    expect(nonClientPathRedirect("gallery.studio.com", "/login")).toBe("https://snap.webcules.com/login");
-    expect(nonClientPathRedirect("gallery.studio.com", "/embed/loader.js")).toBe("https://snap.webcules.com/embed/loader.js");
-    expect(nonClientPathRedirect("gallery.studio.com", "/api/studio/brand")).toBe("https://snap.webcules.com/api/studio/brand");
-    expect(nonClientPathRedirect("gallery.studio.com", "/docs/embeds")).toBe("https://snap.webcules.com/docs/embeds");
+    expect(nonClientPathRedirect("gallery.studio.com", "/dashboard")).toBe(`${PUBLIC_ORIGIN}/dashboard`);
+    expect(nonClientPathRedirect("gallery.studio.com", "/dashboard/settings/general")).toBe(`${PUBLIC_ORIGIN}/dashboard/settings/general`);
+    expect(nonClientPathRedirect("gallery.studio.com", "/login")).toBe(`${PUBLIC_ORIGIN}/login`);
+    expect(nonClientPathRedirect("gallery.studio.com", "/embed/loader.js")).toBe(`${PUBLIC_ORIGIN}/embed/loader.js`);
+    expect(nonClientPathRedirect("gallery.studio.com", "/api/studio/brand")).toBe(`${PUBLIC_ORIGIN}/api/studio/brand`);
+    expect(nonClientPathRedirect("gallery.studio.com", "/docs/embeds")).toBe(`${PUBLIC_ORIGIN}/docs/embeds`);
   });
 
   it("client-facing paths pass through on ANY host", () => {
