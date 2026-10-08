@@ -23,7 +23,7 @@ async function seedThread(org: string, clientEmail: string, subject: string) {
 }
 
 const PAYLOAD_BASE = {
-  to: "hello@snap.webcules.com",
+  to: "hello@snaphq.app",
   subject: "Wedding inquiry",
   text: "We'd love to book!",
   html: null as string | null,
@@ -39,7 +39,7 @@ const PAYLOAD_BASE = {
 async function orgSlugStudio() {
   const s = await seedStudio();
   // Route via hello+{slug}@ like the live catch-all does.
-  return { s, to: `hello+${s.slug}@snap.webcules.com` };
+  return { s, to: `hello+${s.slug}@snaphq.app` };
 }
 
 describe("threading pipeline ①-⑤", () => {
@@ -50,7 +50,7 @@ describe("threading pipeline ①-⑤", () => {
       organizationId: s.organizationId,
       threadId,
       direction: "out",
-      rfcMessageId: "<out-1@snap.webcules.com>",
+      rfcMessageId: "<out-1@snaphq.app>",
       subject: "Re: Wedding inquiry",
       textPreview: "our reply",
     });
@@ -60,7 +60,7 @@ describe("threading pipeline ①-⑤", () => {
       to,
       from: "Dana <dana@t.test>",
       subject: "Re: Wedding inquiry",
-      inReplyTo: "<out-1@snap.webcules.com>",
+      inReplyTo: "<out-1@snaphq.app>",
       messageId: "<in-1@dana>",
     });
     expect(res.matched).toBe(true);
@@ -77,14 +77,14 @@ describe("threading pipeline ①-⑤", () => {
       organizationId: s.organizationId,
       threadId,
       direction: "out",
-      rfcMessageId: "<chain-a@snap.webcules.com>",
+      rfcMessageId: "<chain-a@snaphq.app>",
       textPreview: "x",
     });
     const res = await ingestInboxEmail({
       ...PAYLOAD_BASE,
       to,
       from: "dana@t.test",
-      references: "<older@x.test> <chain-a@snap.webcules.com>",
+      references: "<older@x.test> <chain-a@snaphq.app>",
       messageId: "<in-2@dana>",
     });
     expect(res.threadId).toBe(threadId);
@@ -167,7 +167,7 @@ describe("threading pipeline ①-⑤", () => {
     await seedStudio();
     const res = await ingestInboxEmail({
       ...PAYLOAD_BASE,
-      to: "someone@snap.webcules.com",
+      to: "someone@snaphq.app",
       from: "stranger@spam.test",
       subject: "buy seo",
     });
@@ -210,7 +210,7 @@ describe("bodies, pixels, bounces, mirror", () => {
       organizationId: s.organizationId,
       threadId,
       direction: "out",
-      rfcMessageId: "<bounced-1@snap.webcules.com>",
+      rfcMessageId: "<bounced-1@snaphq.app>",
       status: "sent",
       textPreview: "our reply that will bounce",
     });
@@ -219,12 +219,12 @@ describe("bodies, pixels, bounces, mirror", () => {
       to,
       from: "MAILER-DAEMON@mx.google.com",
       subject: "Delivery Status Notification (Failure)",
-      text: "The message <bounced-1@snap.webcules.com> could not be delivered",
+      text: "The message <bounced-1@snaphq.app> could not be delivered",
       messageId: "<dsn-1@mx>",
     });
     expect(res.bounced).toBe(true);
     expect(res.threadId).toBe(threadId);
-    const msg = (await getDb().select().from(schema.threadMessages).where(eq(schema.threadMessages.rfcMessageId, "<bounced-1@snap.webcules.com>")))[0];
+    const msg = (await getDb().select().from(schema.threadMessages).where(eq(schema.threadMessages.rfcMessageId, "<bounced-1@snaphq.app>")))[0];
     expect(msg.status).toBe("failed");
     const items = await listInboxItems({ userId: s.userId, organizationId: s.organizationId });
     expect(items.items.some((i) => i.entityType === "email.bounced")).toBe(true);
@@ -275,7 +275,7 @@ describe("bodies, pixels, bounces, mirror", () => {
     if (!created.ok) throw new Error("seed failed");
     const res = await ingestInboxEmail({
       ...PAYLOAD_BASE,
-      to: `hello+${created.leadId}@snap.webcules.com`,
+      to: `hello+${created.leadId}@snaphq.app`,
       from: "Dana <dana@t.test>",
       subject: "Re: Wedding inquiry",
       messageId: "<lead-1@dana>",

@@ -17,7 +17,7 @@ import {
 
 describe("parseMessageIds", () => {
   it("extracts <id> tokens from In-Reply-To and References values", () => {
-    expect(parseMessageIds("<a@snap.webcules.com>")).toEqual(["<a@snap.webcules.com>"]);
+    expect(parseMessageIds("<a@snaphq.app>")).toEqual(["<a@snaphq.app>"]);
     expect(parseMessageIds('  <a@x> "<b@y>" <c@z> ')).toEqual(["<a@x>", "<b@y>", "<c@z>"]);
     expect(parseMessageIds(null)).toEqual([]);
     expect(parseMessageIds("no ids here")).toEqual([]);
@@ -56,22 +56,22 @@ describe("Thread-Index", () => {
 describe("parseInboundAddress", () => {
   const threadId = "0f1e2d3c-4b5a-6978-8a9b-0c1d2e3f4a5b";
   it("routes the per-thread, per-lead and studio-slug local-parts", () => {
-    expect(parseInboundAddress(`t-${threadId}-ab12cd34@snap.webcules.com`)).toEqual({
+    expect(parseInboundAddress(`t-${threadId}-ab12cd34@snaphq.app`)).toEqual({
       kind: "thread",
       threadId,
       token: "ab12cd34",
     });
-    expect(parseInboundAddress(`hello+${threadId}@snap.webcules.com`)).toEqual({
+    expect(parseInboundAddress(`hello+${threadId}@snaphq.app`)).toEqual({
       kind: "lead",
       leadId: threadId,
     });
-    expect(parseInboundAddress("hello+willow-pine@snap.webcules.com")).toEqual({
+    expect(parseInboundAddress("hello+willow-pine@snaphq.app")).toEqual({
       kind: "slug",
       slug: "willow-pine",
     });
   });
   it("tolerates display names, multiple recipients, and foreign mail", () => {
-    expect(parseInboundAddress(`"Dana" <t-${threadId}-ab12cd34@snap.webcules.com>, other@x.test`)).toEqual({
+    expect(parseInboundAddress(`"Dana" <t-${threadId}-ab12cd34@snaphq.app>, other@x.test`)).toEqual({
       kind: "thread",
       threadId,
       token: "ab12cd34",
@@ -92,8 +92,8 @@ describe("DSN detection", () => {
     expect(looksLikeDsn({ from: "client@t.test", autoSubmitted: true, subject: "Undeliverable: your reply" })).toBe(true);
   });
   it("extracts only snap's own message ids from a DSN body", () => {
-    const body = "Failed recipient: dana@t.test\n for message <abc@snap.webcules.com> and <other@elsewhere.test>";
-    expect(extractSnapMessageIds(body)).toEqual(["<abc@snap.webcules.com>"]);
+    const body = "Failed recipient: dana@t.test\n for message <abc@snaphq.app> and <other@elsewhere.test>";
+    expect(extractSnapMessageIds(body)).toEqual(["<abc@snaphq.app>"]);
   });
 });
 

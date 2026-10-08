@@ -421,7 +421,7 @@ describe("live adapters", () => {
     // thread for this client (WEB-307 ingest resolves ④ then ⑤).
     const result = await ingestInboxEmail({
       from: "Dana <dana@t.test>",
-      to: `hello+${created.leadId}@snap.webcules.com`,
+      to: `hello+${created.leadId}@snaphq.app`,
       subject: "Re: Wedding inquiry",
       text: "Great — let's book October 12.",
       html: null,

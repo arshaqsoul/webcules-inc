@@ -91,21 +91,23 @@ describe("trustedAppOrigins", () => {
   });
 });
 
-describe("email domain flip keeps old threads routable", () => {
-  it("inbound routing accepts the legacy AND the new mail domain", () => {
-    for (const d of [LEGACY_HOST, NEW_HOST]) {
-      expect(isSnapMailDomain(d)).toBe(true);
-      expect(parseInboundAddress(`Studio <hello+bright-light@${d}>`)).toEqual({ kind: "slug", slug: "bright-light" });
-      expect(parseInboundAddress(`t-${THREAD}-abc123xyz@${d}`)).toEqual({ kind: "thread", threadId: THREAD, token: "abc123xyz" });
-    }
-    expect(parseInboundAddress("hello+bright-light@evil.example")).toBeNull();
+describe("email domain is snaphq.app only (no legacy mail)", () => {
+  it("inbound routing accepts the Snap mail domain and nothing else", () => {
+    expect(EMAIL_DOMAIN).toBe(NEW_HOST);
+    expect(isSnapMailDomain(NEW_HOST)).toBe(true);
+    expect(isSnapMailDomain(LEGACY_HOST)).toBe(false);
     expect(isSnapMailDomain("gmail.com")).toBe(false);
+    expect(parseInboundAddress(`Studio <hello+bright-light@${NEW_HOST}>`)).toEqual({ kind: "slug", slug: "bright-light" });
+    expect(parseInboundAddress(`t-${THREAD}-abc123xyz@${NEW_HOST}`)).toEqual({ kind: "thread", threadId: THREAD, token: "abc123xyz" });
+    expect(parseInboundAddress(`hello+bright-light@${LEGACY_HOST}`)).toBeNull();
+    expect(parseInboundAddress(`t-${THREAD}-abc123xyz@${LEGACY_HOST}`)).toBeNull();
+    expect(parseInboundAddress("hello+bright-light@evil.example")).toBeNull();
   });
 
-  it("outbound thread addresses use the configured domain; message ids from either domain are recognized", () => {
-    expect(threadAddress(THREAD, "abc123xyz")).toBe(`t-${THREAD}-abc123xyz@${EMAIL_DOMAIN}`);
+  it("outbound thread addresses and message ids use the Snap mail domain only", () => {
+    expect(threadAddress(THREAD, "abc123xyz")).toBe(`t-${THREAD}-abc123xyz@${NEW_HOST}`);
     const body = `In-Reply-To: <a@${LEGACY_HOST}>\nReferences: <b@${NEW_HOST}> <c@other.example>`;
-    expect(extractSnapMessageIds(body).sort()).toEqual([`<a@${LEGACY_HOST}>`, `<b@${NEW_HOST}>`].sort());
+    expect(extractSnapMessageIds(body)).toEqual([`<b@${NEW_HOST}>`]);
   });
 });
 

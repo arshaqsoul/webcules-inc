@@ -10,7 +10,7 @@
   "vars": {
     // Where parsed inbound emails are delivered once the Snap app is live.
     // Leave empty to hold emails in logs + ops forward only.
-    "SNAP_INBOUND_WEBHOOK_URL": "https://snap.webcules.com/api/email/inbound",
+    "SNAP_INBOUND_WEBHOOK_URL": "https://snaphq.app/api/email/inbound",
     "OPS_FORWARD_ADDRESS": "webculesco@gmail.com"
   }
 }

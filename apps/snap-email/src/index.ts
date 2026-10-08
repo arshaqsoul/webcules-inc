@@ -1,7 +1,7 @@
 /**
- * webcules-snap-email — inbound email worker for Snap (snap.webcules.com).
+ * webcules-snap-email — inbound email worker for Snap (snaphq.app).
  *
- * Cloudflare Email Routing delivers mail addressed to @snap.webcules.com
+ * Cloudflare Email Routing delivers mail addressed to @snaphq.app
  * here (catch-all). The handler parses with postal-mime, enforces the
  * 25 MiB inbound cap with a graceful setReject (clients are told to use
  * gallery links), and posts the parsed payload to the Snap webhook. WEB-307
