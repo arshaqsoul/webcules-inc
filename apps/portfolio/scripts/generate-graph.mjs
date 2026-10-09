@@ -36,6 +36,8 @@ const DROP_SECTIONS = [
 // site-favicon images under /imgs/logos/, or a letter monogram for brands
 // without a usable mark. Nodes without an entry keep the classic colored dot.
 const LOGOS = {
+  // Arshaq himself — the hub node wears the portrait (full-bleed)
+  'Arshaq Hisham': { img: '/imgs/logos/arshaq.jpg', full: true },
   // Companies
   'Villvay Systems': { img: '/imgs/logos/villvay.png' },
   KPMG: { mg: 'K' },
@@ -142,7 +144,8 @@ function listMarkdownFiles(dir) {
 }
 
 function cleanBody(title, raw) {
-  let body = raw.replace(/^---\n.*?\n---\n?/s, '');
+  // Normalize CRLF (git autocrlf on Windows) so the frontmatter strip works.
+  let body = raw.replace(/\r\n/g, '\n').replace(/^---\n.*?\n---\n?/s, '');
   for (const [pattern, replacement] of PATCHES[title] || []) {
     body = body.replace(pattern, replacement);
   }
@@ -195,6 +198,7 @@ function buildNotes() {
         : FOLDER_COLORS[folder] || '#8a8a8a',
       ...(logo.si ? { si: logo.si } : {}),
       ...(logo.img ? { img: logo.img } : {}),
+      ...(logo.full ? { imgFull: true } : {}),
       ...(logo.mg ? { mg: logo.mg } : {}),
       text: body.slice(0, 6000),
       linkTitles,

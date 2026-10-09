@@ -580,11 +580,12 @@
       ctx.restore();
     } else if (state === 'img') {
       var im = logoImgs[n.n.title];
+      var fill = n.n.imgFull ? n.r : n.r * 0.72;
       ctx.save();
       ctx.beginPath();
-      ctx.arc(n.x, n.y, n.r * 0.72, 0, Math.PI * 2);
+      ctx.arc(n.x, n.y, fill, 0, Math.PI * 2);
       ctx.clip();
-      var sc = (n.r * 1.44) / Math.min(im.naturalWidth, im.naturalHeight);
+      var sc = (fill * 2) / Math.min(im.naturalWidth, im.naturalHeight);
       var w = im.naturalWidth * sc, h = im.naturalHeight * sc;
       ctx.drawImage(im, n.x - w / 2, n.y - h / 2, w, h);
       ctx.restore();
