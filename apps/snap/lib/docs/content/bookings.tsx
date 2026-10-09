@@ -60,6 +60,19 @@ export default function Bookings() {
         <strong>unpaid</strong>, <strong>deposit</strong>, or <strong>paid</strong>.
       </p>
 
+      <H2>Turning on paid bookings</H2>
+      <p>
+        Payment at booking — a deposit or the full session amount — is switched on under{" "}
+        <a href="/dashboard/calendar?tab=availability">Calendar → Availability → Booking
+        payment</a> or per session type in <a href="/dashboard/templates/session-types">Templates
+        → Session types</a>. Both refuse to switch on until your Stripe account is connected and
+        active, with a link straight to <a href="/dashboard/settings/payouts">Settings →
+        Payouts</a> — client payments are charged directly on your account, so there is nowhere
+        for them to land without one. Charges run in your Stripe account&apos;s currency. If a
+        connection is ever lost after payment was already on, the setting stays as it was, but
+        clients can&apos;t complete a paid booking until you reconnect.
+      </p>
+
       <H2>What a confirmed booking creates</H2>
       <ul>
         <li>

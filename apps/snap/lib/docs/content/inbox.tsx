@@ -123,7 +123,12 @@ export default function Inbox() {
         In-Reply-To/References chain, Snap&rsquo;s own thread header, Outlook&rsquo;s
         Thread-Index, the unique per-conversation reply address your mail now carries, and
         finally a normalized subject match with the same client within 45 days. Anything that
-        survives all five lands under <strong>Needs triage</strong> instead of vanishing.
+        survives all five lands under <strong>Needs triage</strong> instead of vanishing — and
+        from there Snap asks rather than guesses: attach the email to the client, lead or project
+        it belongs to, and if that project has no client yet a <strong>Connect a client</strong>{" "}
+        prompt opens with the sender already filled in. Conversations that were left without a
+        client show the same <strong>Connect a client</strong> button where the reply box would
+        be, so a reply always has somewhere to go.
       </p>
       <p>
         Two safety nets while the inbox is young. <strong>Reply mirroring</strong> (Settings →

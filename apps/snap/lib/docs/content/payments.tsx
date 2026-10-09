@@ -40,6 +40,13 @@ export default function Payments() {
         ]}
       />
       <Note>
+        Everything about an invoice is counted in <strong>your Stripe account&apos;s
+        currency</strong> — the one your connected account settles in, not a Snap default. Line
+        items and the total show it in the composer, the client&apos;s checkout charges it, and
+        merge fields like <code>{"{{invoice_total}}"}</code> and{" "}
+        <code>{"{{deposit}}"}</code> format with it.
+      </Note>
+      <Note>
         After sending, an invoice is <strong>paid</strong> two ways: the client pays the link and
         Stripe&apos;s webhook flips it automatically, or you press{" "}
         <strong>Mark paid</strong> for money that arrived some other way. <strong>Void</strong>{" "}
@@ -63,8 +70,9 @@ export default function Payments() {
       <p>
         The emailed link opens a private invoice page — studio name, status badge, line items,
         tax line, total due, and your terms and notes — with a{" "}
-        <strong>Pay — secure checkout</strong> button while the invoice is unpaid and a PDF
-        download. The link is a 256-bit token unique to that invoice: no login, unguessable, and
+        <strong>Pay — secure checkout</strong> button whenever the invoice carries its online
+        payment link (an invoice sent before a Stripe account was connected goes out without
+        one) and a PDF download. The link is a 256-bit token unique to that invoice: no login, unguessable, and
         you can resend it any time. Voided invoices vanish from their link entirely. The page and
         email follow your brand, dropping Snap&apos;s name entirely when white-labeled.
       </p>

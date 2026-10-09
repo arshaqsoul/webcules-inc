@@ -47,8 +47,9 @@ export default function BookingPage() {
           </>,
           <>
             <strong>Pay, if you ask them to</strong> — when a deposit or full payment is required
-            (on the session type or your booking settings), they finish through Stripe Checkout
-            while the slot is held.
+            (on the session type or your booking settings), the whole page follows Stripe
+            Checkout — hosted by Stripe, and back to your page when it&apos;s done — while the
+            slot is held.
           </>,
           <>
             <strong>Get confirmed</strong> — a branded confirmation email with a calendar invite
@@ -57,6 +58,15 @@ export default function BookingPage() {
           </>,
         ]}
       />
+      <p>
+        Money follows your Stripe account, not a Snap default: prices on the page show in your
+        account&apos;s currency, and paid bookings are charged on it directly (see{" "}
+        <a href="/docs/payouts">Payouts</a>). Paid bookings need that connection to be active —
+        if it isn&apos;t, the calendar doesn&apos;t take bookings it can&apos;t charge for.
+        Clients who try to pay see a plain note that the studio can&apos;t take online payments
+        right now and to get in touch directly, with your contact email in the footer just
+        below.
+      </p>
       <p>
         The page embeds exactly the same calendar as the{" "}
         <a href="/docs/embeds">website embed</a> — identical availability engine, bot protection,
