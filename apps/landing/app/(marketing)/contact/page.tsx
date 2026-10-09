@@ -7,7 +7,7 @@ import { CTAButton } from "@/components/shared/cta-button";
 export const metadata: Metadata = {
   title: "Contact | Webcules",
   description:
-    "Tell us about your project — book a discovery call, email us, or message us on WhatsApp.",
+    "Tell us about your project - book a discovery call, email us, or message us on WhatsApp.",
 };
 
 const channels = [
@@ -67,7 +67,7 @@ export default function ContactPage() {
             Let&apos;s build something together
           </h1>
           <p className="mt-4 text-base text-slate-400 max-w-xl mx-auto">
-            Tell us where you want to go — we will map the fastest route from
+            Tell us where you want to go - we will map the fastest route from
             concept to creation.
           </p>
         </div>
@@ -104,7 +104,7 @@ export default function ContactPage() {
             </div>
             <div className="flex-1">
               <p className="text-sm text-white">
-                Who you&apos;ll be working with — Arshaq Hisham
+                Who you&apos;ll be working with - Arshaq Hisham
               </p>
               <p className="mt-0.5 text-xs leading-relaxed text-slate-400">
                 Product judgment with real engineering depth: platforms, search and
@@ -118,7 +118,7 @@ export default function ContactPage() {
         </div>
 
         <p className="mt-8 text-center text-sm text-slate-500">
-          Based in Saskatoon, Canada — working with clients worldwide.
+          Based in Saskatoon, Canada - working with clients worldwide.
         </p>
       </div>
     </div>

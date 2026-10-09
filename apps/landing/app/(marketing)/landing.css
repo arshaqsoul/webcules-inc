@@ -1,0 +1,341 @@
+/* Marketing site design tokens and primitives.
+   Loaded after the shared UI globals so it can refine them for the dark theme. */
+
+.theme-dark {
+  /* A deeper, calmer ink than the original saturated navy. */
+  --darkest: oklch(0.145 0.04 277);
+  --ink-raised: oklch(0.185 0.05 277);
+  --accent: #8b8dff;
+  --accent-strong: #6366f1;
+  --hairline: rgb(255 255 255 / 0.09);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: "ss01", "cv11";
+}
+
+.font-display {
+  font-family: var(--font-display), ui-serif, Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* Subtle film grain removes gradient banding and adds tactility. */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.07;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+.grid-lines {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.05) 1px, transparent 1px);
+  background-size: 72px 72px;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  animation: marquee-scroll 60s linear infinite;
+}
+
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.float-slow {
+  animation: float-slow 9s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track,
+  .float-slow {
+    animation: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5.5rem;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* ------------------------------------------------------------------
+   Services illustrations
+   Base rules describe the finished, static state so reduced-motion users
+   (and no-JS) see a complete picture; motion is layered on top.
+------------------------------------------------------------------- */
+.deploy-done,
+.deploy-time {
+  opacity: 1;
+}
+.deploy-pending,
+.deploy-bar,
+.pipe-comet {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Product engineering: lines of code type out in a wave. */
+  .code-line {
+    transform-origin: left center;
+    animation: code-line 7s cubic-bezier(0.22, 1, 0.36, 1) infinite both;
+  }
+  .code-caret {
+    animation: caret 1s steps(1) infinite;
+  }
+  @keyframes code-line {
+    0% {
+      transform: scaleX(0);
+      opacity: 1;
+    }
+    14%,
+    80% {
+      transform: scaleX(1);
+      opacity: 1;
+    }
+    94% {
+      transform: scaleX(1);
+      opacity: 0;
+    }
+    100% {
+      transform: scaleX(0);
+      opacity: 0;
+    }
+  }
+  @keyframes caret {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  /* Data engineering: packets stream in, the node processes, a result
+     is emitted and the output chart fills in. One 3.6s cycle. */
+  .pipe-comet {
+    stroke-dasharray: 0.16 2;
+    stroke-dashoffset: 0.16;
+    opacity: 1;
+    filter: drop-shadow(0 0 3px rgb(167 139 250 / 0.9));
+  }
+  .pipe-comet-in {
+    animation: pipe-in 3.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  .pipe-comet-out {
+    animation: pipe-out 3.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  .pipe-node {
+    animation: pipe-node 3.6s ease-in-out infinite;
+  }
+  .pipe-scan {
+    animation: pipe-scan 3.6s ease-in-out infinite;
+  }
+  .pipe-bar {
+    transform-box: fill-box;
+    transform-origin: bottom;
+    animation: pipe-bar 3.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  }
+  @keyframes pipe-in {
+    0% {
+      stroke-dashoffset: 0.16;
+    }
+    52%,
+    100% {
+      stroke-dashoffset: -1;
+    }
+  }
+  @keyframes pipe-out {
+    0%,
+    58% {
+      stroke-dashoffset: 0.16;
+    }
+    82%,
+    100% {
+      stroke-dashoffset: -1;
+    }
+  }
+  @keyframes pipe-node {
+    0%,
+    40%,
+    100% {
+      stroke-opacity: 0.4;
+    }
+    58% {
+      stroke-opacity: 1;
+    }
+    75% {
+      stroke-opacity: 0.55;
+    }
+  }
+  @keyframes pipe-scan {
+    0%,
+    45% {
+      transform: translateY(0);
+      opacity: 0;
+    }
+    50% {
+      opacity: 0.9;
+    }
+    62% {
+      transform: translateY(32px);
+      opacity: 0.9;
+    }
+    68%,
+    100% {
+      transform: translateY(32px);
+      opacity: 0;
+    }
+  }
+  @keyframes pipe-bar {
+    0%,
+    80% {
+      transform: scaleY(0.12);
+    }
+    92%,
+    96% {
+      transform: scaleY(1);
+    }
+    100% {
+      transform: scaleY(0.12);
+    }
+  }
+
+  /* Product design: the card floats while its frame breathes. */
+  .design-card {
+    animation: design-float 6s ease-in-out infinite;
+  }
+  .design-outline {
+    animation: design-outline 6s ease-in-out infinite;
+  }
+  .design-handle {
+    animation: design-handle 3s ease-in-out infinite;
+  }
+  .design-cursor {
+    animation: design-cursor 6s ease-in-out infinite;
+  }
+  @keyframes design-float {
+    0%,
+    100% {
+      transform: translateY(0) rotate(3deg);
+    }
+    50% {
+      transform: translateY(-6px) rotate(1.5deg);
+    }
+  }
+  @keyframes design-outline {
+    0%,
+    100% {
+      transform: rotate(-6deg) scale(1);
+    }
+    50% {
+      transform: rotate(-3.5deg) scale(1.04);
+    }
+  }
+  @keyframes design-handle {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.35);
+      background-color: rgb(165 180 252 / 0.5);
+    }
+  }
+  @keyframes design-cursor {
+    0%,
+    100% {
+      transform: translate(0, 0);
+    }
+    50% {
+      transform: translate(-8px, 12px);
+    }
+  }
+
+  /* Deployment: each stage runs, then turns green; the cycle repeats. */
+  .deploy-bar {
+    transform-origin: left center;
+    animation: deploy-bar 8s linear infinite;
+  }
+  .deploy-pending {
+    animation: deploy-pending 8s linear infinite;
+  }
+  .deploy-done {
+    opacity: 0;
+    animation: deploy-done 8s linear infinite;
+  }
+  .deploy-time {
+    opacity: 0;
+    animation: deploy-done 8s linear infinite;
+  }
+  @keyframes deploy-bar {
+    0% {
+      transform: scaleX(0);
+      opacity: 1;
+    }
+    18% {
+      transform: scaleX(1);
+      opacity: 1;
+    }
+    26%,
+    100% {
+      transform: scaleX(1);
+      opacity: 0;
+    }
+  }
+  @keyframes deploy-pending {
+    0%,
+    18% {
+      opacity: 1;
+    }
+    20%,
+    100% {
+      opacity: 0;
+    }
+  }
+  @keyframes deploy-done {
+    0%,
+    18% {
+      opacity: 0;
+    }
+    22%,
+    92% {
+      opacity: 1;
+    }
+    97%,
+    100% {
+      opacity: 0;
+    }
+  }
+}
+

@@ -1,89 +1,105 @@
-import { MascotSVG } from "@/components/shared/mascot-svg";
-import { ScrollIndicatorButton } from "@/components/shared/scroll-indicator-button";
-import { Boxes } from "@webcules/ui/components/ui/background-boxes";
-import { TypewriterEffectSmooth } from "@webcules/ui/components/ui/typewriter-effect";
 import Image from "next/image";
-import { Righteous, Inter } from "next/font/google";
+import Link from "next/link";
 
-const righteous = Righteous({ weight: ["400"], subsets: ["latin"] });
-const inter = Inter({ subsets: ["latin"] });
+import { CTAButton } from "@/components/shared/cta-button";
+
+import { BrowserFrame } from "./browser-frame";
+import { Reveal } from "./reveal";
 
 export default function Hero() {
-  const words = [
-    {
-      text: "WEB,",
-    },
-    {
-      text: "DESIGN",
-    },
-    {
-      text: "and",
-    },
-    {
-      text: "DATA",
-      className: "text-indigo-500",
-    },
-  ];
   return (
-    <div className="p-2 overflow-x-hidden flex items-center justify-between">
-      <div className="flex items-center justify-center h-[97vh] w-full relative overflow-hidden rounded-3xl">
+    <section className="grain relative isolate overflow-hidden pt-36 sm:pt-44">
+      {/* Atmosphere: brand artwork, a lattice and a vignette. */}
+      <div className="absolute inset-0 -z-10" aria-hidden>
         <Image
-          src={"/imgs/galaxy.webp"}
-          alt="Stylized deep space background"
-          className="-z-10"
+          src="/imgs/art/space-hero.webp"
+          alt=""
           fill
           priority
           sizes="100vw"
-          style={{
-            objectFit: "cover",
-          }}
+          className="object-cover object-bottom opacity-80"
         />
-        <Image
-          src={"/imgs/planets.webp"}
-          alt="Webcules background space galaxy"
-          className="-z-10"
-          fill
-          style={{
-            objectFit: "cover",
-          }}
-        />
-        <div className="absolute bg-gradient-to-r from-indigo-950 via-transparent to-indigo-950 w-full h-full flex flex-col items-center justify-center rounded-lg">
-          <div className="inset-0 w-full h-full [mask-image:radial-gradient(transparent,white)] pointer-events-none" />
-          <Boxes rowCount={30} colCount={30} />
-        </div>
-        <div className="flex flex-col justify-center items-center h-[85vh] px-4 lg:px-44 mt-24 pb-4 gap-4 z-10">
-          <div
-            className={`flex flex-col justify-center items-center text-center text-white text-[8vw] sm:text-[5vw] uppercase leading-none + ${righteous.className}`}
-          >
-            <div>Concept to creation</div>
-            <div className="font-black flex flex-row text-[6vw] sm:text-[4vw] mt-4 sm:mt-0">
-              <ScrollIndicatorButton />
-              for <br className="block sm:hidden" /> anything
-            </div>
-            <TypewriterEffectSmooth words={words} />
-            <div className="sm:hidden [filter:drop-shadow(0_0_45px_rgba(129,140,248,0.55))]">
-              <MascotSVG size="medium" />
-            </div>
-            <div className="hidden sm:block [filter:drop-shadow(0_0_70px_rgba(129,140,248,0.5))]">
-              <MascotSVG size="large" />
-            </div>
-            <hr className="mb-4 text-white" />
-            <div
-              className={`flex flex-col sm:flex-row text-xs items-center justify-start gap-y-3 sm:gap-x-3 + ${inter.className}`}
-            >
-              <div className="rounded-full bg-white text-black p-1 px-4">
-                Data first
-              </div>
-              <div className="uppercase tracking-wider text-gray-400">
-                Tech enthusiasts
-              </div>
-              <div className="text-gray-300">
-                The human touch behind AI-powered web, design and data.
-              </div>
-            </div>
-          </div>
-        </div>
+        <div className="grid-lines absolute inset-0 opacity-60 [mask-image:radial-gradient(60%_50%_at_50%_20%,black,transparent)]" />
+        <div className="absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-darkest to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-darkest to-transparent" />
       </div>
-    </div>
+
+      <div className="mx-auto max-w-6xl px-6 text-center">
+        <Reveal>
+          <Link
+            href="#work"
+            className="group inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] py-1.5 pl-2 pr-4 text-xs text-slate-300 backdrop-blur transition-colors hover:border-white/25"
+          >
+            <span className="rounded-full bg-indigo-500/20 px-2 py-0.5 font-medium text-indigo-200">
+              New
+            </span>
+            <span className="sm:hidden">Snap is now live</span>
+            <span className="hidden sm:inline">
+              Snap, our studio platform for photographers, is live
+            </span>
+            <span
+              aria-hidden
+              className="transition-transform group-hover:translate-x-0.5"
+            >
+              →
+            </span>
+          </Link>
+        </Reveal>
+
+        <Reveal delay={0.08}>
+          <h1 className="text-balance mx-auto mt-8 max-w-5xl text-5xl font-semibold leading-[1.04] tracking-tight text-white sm:text-6xl lg:text-[5rem]">
+            We design, build and run{" "}
+            <span className="font-display whitespace-nowrap italic text-indigo-200">
+              digital products
+            </span>{" "}
+            that scale.
+          </h1>
+        </Reveal>
+
+        <Reveal delay={0.16}>
+          <p className="mx-auto mt-7 max-w-2xl text-lg leading-relaxed text-slate-300/90 sm:text-xl">
+            Webcules is a senior team of engineers and designers. We take web,
+            design, data and AI products from first sketch to production, and
+            keep them running, with no hand-offs in between.
+          </p>
+        </Reveal>
+
+        <Reveal delay={0.24}>
+          <div className="mt-10 mx-auto flex max-w-xs flex-col items-center justify-center gap-3 sm:max-w-none sm:flex-row">
+            <CTAButton size="lg" className="w-full sm:w-auto" />
+            <Link
+              href="#work"
+              className="inline-flex h-13 w-full items-center justify-center rounded-full border border-white/15 bg-white/[0.04] px-8 text-base font-medium text-white transition-colors sm:w-auto hover:border-white/30 hover:bg-white/[0.08]"
+            >
+              See our work
+            </Link>
+          </div>
+        </Reveal>
+      </div>
+
+      {/* Product showcase */}
+      <div
+        data-robot="perch"
+        data-robot-say="Hi, welcome!"
+        className="relative mx-auto mt-20 max-w-6xl px-6 sm:mt-24"
+      >
+        <Reveal y={40} delay={0.2}>
+          <div
+            className="pointer-events-none absolute inset-x-[6%] -top-6 bottom-24 -z-10 rounded-[3rem] bg-gradient-to-b from-indigo-500/30 via-fuchsia-500/10 to-transparent blur-3xl"
+            aria-hidden
+          />
+          <div className="relative [mask-image:linear-gradient(to_bottom,black_72%,transparent)]">
+            <BrowserFrame
+              src="/imgs/work/snap.webp"
+              alt="Snap, a studio platform for photographers"
+              url="snaphq.app"
+              priority
+              className="relative mx-auto w-full lg:w-[92%]"
+              sizes="(min-width: 1024px) 70vw, 100vw"
+            />
+          </div>
+        </Reveal>
+      </div>
+    </section>
   );
 }

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { cn } from "@webcules/ui/lib/utils";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
+import { Instrument_Serif } from "next/font/google";
 import React from "react";
 
 import { AdminBar } from "@webcules/payload/components/AdminBar/index";
@@ -13,7 +14,15 @@ import { mergeOpenGraph } from "@webcules/payload/utilities/mergeOpenGraph";
 import { draftMode } from "next/headers";
 
 import "@webcules/ui/globals.css";
+import "./landing.css";
 import { getServerSideURL } from "@webcules/payload/utilities/getURL";
+
+const display = Instrument_Serif({
+  weight: "400",
+  style: ["normal", "italic"],
+  subsets: ["latin"],
+  variable: "--font-display",
+});
 
 export default async function RootLayout({
   children,
@@ -24,7 +33,7 @@ export default async function RootLayout({
 
   return (
     <html
-      className={cn(GeistSans.variable, GeistMono.variable)}
+      className={cn(GeistSans.variable, GeistMono.variable, display.variable)}
       lang="en"
       suppressHydrationWarning
     >

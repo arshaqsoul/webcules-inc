@@ -1,35 +1,61 @@
 "use client";
 
 import { getCalApi } from "@calcom/embed-react";
+import { cn } from "@webcules/ui/lib/utils";
+import { ArrowRight } from "lucide-react";
+import type { ReactNode } from "react";
 import { useEffect } from "react";
-export const CTAButton = ({ pricing }: { pricing: boolean }) => {
+
+let calReady: Promise<void> | null = null;
+function initCal() {
+  calReady ??= (async () => {
+    const cal = await getCalApi({});
+    cal("ui", {
+      styles: { branding: { brandColor: "#6366f1" } },
+      hideEventTypeDetails: false,
+      layout: "month_view",
+    });
+  })();
+  return calReady;
+}
+
+/** Opens the Cal.com discovery-call booking modal. */
+export const CTAButton = ({
+  variant = "primary",
+  size = "md",
+  className,
+  children = "Book a discovery call",
+}: {
+  /** Kept for existing call sites; the visual no longer depends on it. */
+  pricing?: boolean;
+  variant?: "primary" | "ghost";
+  size?: "sm" | "md" | "lg";
+  className?: string;
+  children?: ReactNode;
+}) => {
   useEffect(() => {
-    (async function () {
-      const cal = await getCalApi({});
-      cal("ui", {
-        styles: { branding: { brandColor: "#000000" } },
-        hideEventTypeDetails: false,
-        layout: "month_view",
-      });
-    })();
+    initCal().catch(() => {});
   }, []);
   return (
     <button
+      type="button"
       data-cal-namespace=""
       data-cal-link="webcules/discovery"
       data-cal-config='{"layout":"month_view"}'
-      className={`p-[3px] relative + ${pricing ? "hover:scale-x-105" : ""}`}
+      className={cn(
+        "group inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full font-medium transition-all duration-200 active:scale-[0.98]",
+        size === "sm" && "h-9 px-4 text-sm",
+        size === "md" && "h-11 px-6 text-sm",
+        size === "lg" && "h-13 px-8 text-base",
+        variant === "primary" &&
+          "bg-white text-slate-950 shadow-[0_0_0_1px_rgba(255,255,255,0.4),0_8px_30px_-8px_rgba(139,141,255,0.6)] hover:bg-indigo-50 hover:shadow-[0_0_0_1px_rgba(255,255,255,0.6),0_12px_40px_-8px_rgba(139,141,255,0.8)]",
+        variant === "ghost" &&
+          "border border-white/15 bg-white/[0.04] text-white hover:border-white/30 hover:bg-white/[0.08]",
+        className,
+      )}
     >
-      <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full" />
-      <div
-        className={`px-4 py-2 text-sm rounded-full relative group transition duration-200 + ${
-          pricing
-            ? "bg-transparent text-white"
-            : "bg-white text-neutral-600 hover:text-white hover:bg-transparent"
-        }`}
-      >
-        Become a client -{">"}
-      </div>
+      {children}
+      <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
     </button>
   );
 };

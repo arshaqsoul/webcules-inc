@@ -31,7 +31,7 @@ function useRegistry(siteUrl: string, name: string) {
       .then((json) => { if (alive) setFiles(json.files as RegistryFile[]); })
       .catch((e) => { if (alive) setError(String(e)); });
     return () => { alive = false; };
-  }, [siteUrl]);
+  }, [siteUrl, name]);
   return { files, error };
 }
 
