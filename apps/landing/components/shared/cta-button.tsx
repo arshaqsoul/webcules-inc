@@ -4,7 +4,9 @@ import { getCalApi } from "@calcom/embed-react";
 import { cn } from "@webcules/ui/lib/utils";
 import { ArrowRight } from "lucide-react";
 import type { ReactNode } from "react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+
+import { captureUtm } from "@/components/analytics/utm";
 
 let calReady: Promise<void> | null = null;
 function initCal() {
@@ -15,8 +17,22 @@ function initCal() {
       hideEventTypeDetails: false,
       layout: "month_view",
     });
+    // Register once for the whole page, not once per button.
+    cal("on", {
+      action: "bookingSuccessful",
+      callback: () => window.fbq?.("track", "Lead"),
+    });
   })();
   return calReady;
+}
+
+/** Cal.com booking config, carrying any captured UTM parameters. */
+export function useCalConfig() {
+  const [config, setConfig] = useState('{"layout":"month_view"}');
+  useEffect(() => {
+    setConfig(JSON.stringify({ layout: "month_view", ...captureUtm() }));
+  }, []);
+  return config;
 }
 
 /** Opens the Cal.com discovery-call booking modal. */
@@ -33,6 +49,7 @@ export const CTAButton = ({
   className?: string;
   children?: ReactNode;
 }) => {
+  const calConfig = useCalConfig();
   useEffect(() => {
     initCal().catch(() => {});
   }, []);
@@ -41,7 +58,7 @@ export const CTAButton = ({
       type="button"
       data-cal-namespace=""
       data-cal-link="webcules/discovery"
-      data-cal-config='{"layout":"month_view"}'
+      data-cal-config={calConfig}
       className={cn(
         "group inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full font-medium transition-all duration-200 active:scale-[0.98]",
         size === "sm" && "h-9 px-4 text-sm",

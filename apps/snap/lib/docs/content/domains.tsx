@@ -33,6 +33,12 @@ export default function Domains() {
         <code>clients.</code> or <code>book.</code> are the popular choices.
       </p>
 
+      <p>
+        Your hostname is first-class from the moment it activates: the gallery sign-in, contract
+        signing, the client portal and questionnaires all work on it — human check included, with
+        no extra setup on our side.
+      </p>
+
       <H2>The three steps</H2>
       <Steps
         items={[
@@ -177,7 +183,8 @@ export default function Domains() {
       </p>
       <p>
         <strong>I run multiple studios — one domain each?</strong> Each studio in your family
-        configures its own domains in its own Settings → Domains.
+        configures its own domains in its own Settings → Domains — and there&rsquo;s no limit on
+        how many studios can connect one.
       </p>
       <p>
         <strong>What does it cost?</strong> On Studio, a custom domain is the +$5/mo add-on for

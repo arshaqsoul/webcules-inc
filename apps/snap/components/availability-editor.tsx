@@ -246,7 +246,7 @@ export function AvailabilityEditor({
           >
             <strong className="font-medium">Connect your Stripe account to take payments.</strong>{" "}
             {payEnabled
-              ? "Payment is on, but clients can't complete a paid booking until Stripe is connected - they will see an error. Connect now, or turn payment off."
+              ? "Payment is on, but clients can't complete a paid booking until Stripe is connected - they'll see a note explaining you can't take online payments yet. Connect now, or turn payment off."
               : "Paid bookings stay off until Stripe is connected. Clients pay you directly, and Stripe's fee comes out of your own Stripe account."}{" "}
             <a href="/dashboard/settings/payouts" className="font-medium text-primary underline underline-offset-2">
               Connect Stripe in Settings → Payouts

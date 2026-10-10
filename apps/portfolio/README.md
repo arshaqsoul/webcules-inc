@@ -22,7 +22,7 @@ cd apps/portfolio && pnpm deploy
 
 ## Updating the knowledge graph
 
-The graph data is generated from the Obsidian vault at `~/Documents/CVs/Arshaq KB`
+The graph data is generated from the Obsidian vault at `~/Documents/CVs/career-hub/kb`
 (override with `--kb <path>` or `ARSHAQ_KB_PATH`). Regenerate after editing notes:
 
 ```bash
@@ -39,6 +39,12 @@ The generator keeps the vault public-safe:
 - applies targeted per-note patches (`PATCHES` in `scripts/generate-graph.mjs`) where
   a line would otherwise be lost to the generic filters — extend that list when new
   notes need bespoke public wording.
+
+Brand, tool and product logos on graph nodes come from the `LOGOS` map in the same
+script: Simple Icons slugs (path data baked into `public/graph/index.html`, sources in
+`scripts/icons/`), site-favicon PNGs in `public/imgs/logos/`, or letter monograms.
+`Roles` notes render as the "Companies" category in the right-hand legend, which
+spotlights a category's nodes on click.
 
 ## Local development
 

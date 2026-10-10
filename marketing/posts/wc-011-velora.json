@@ -1,0 +1,26 @@
+{
+  "id": "wc-011-velora",
+  "brand": "webcules",
+  "kicker": "Case study",
+  "headline": "Built by us: *Velora* Photography.",
+  "sub": "Online booking, a gallery and a clean mobile design.",
+  "cta": "Book a discovery call",
+  "art": {
+    "from": "wc-001-intro",
+    "seed": 11,
+    "prompt": ""
+  },
+  "shots": {
+    "desktop": "shots/velora-desktop.png",
+    "phone": "shots/velora-phone.png"
+  },
+  "caption": "Case study: Velora Photography.\n\nVelora is a Saskatchewan photography studio serving families, newborns, maternity, grads and events. They needed a website that looks as warm as their work and makes it easy for clients to book.\n\nWhat we built:\n- A clean, mobile-first site in the studio's own soft, timeless style\n- Online booking, so clients can pick a session and a date in one place\n- A gallery of recent work and a simple inquiry form\n\nSee it live: https://veloraphotography.ca\n\nWant a site that works this hard for your business? We have 5 founding client spots open at $750 (normally $1,500). Book a discovery call below.",
+  "hashtags": [
+    "#Saskatoon",
+    "#YXE",
+    "#WebDesign",
+    "#PhotographyWebsite",
+    "#SaskBusiness"
+  ],
+  "headlineSize": 88
+}

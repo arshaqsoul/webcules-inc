@@ -19,7 +19,7 @@ const OUT_ROOT = join(SNAP_ROOT, "public", "docs-shots");
 
 const BASE = process.argv.includes("--base-url")
   ? process.argv[process.argv.indexOf("--base-url") + 1]
-  : "https://snap-staging.webcules.com";
+  : "https://staging.snaphq.app"; // canonical staging host (WEB-330); snap-staging.webcules.com still serves
 const EMAIL = process.env.TEST_EMAIL ?? "launch-smoke@webcules.com";
 const PASSWORD = process.env.TEST_PASSWORD ?? "TestPass123!x";
 

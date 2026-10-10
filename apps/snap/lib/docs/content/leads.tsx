@@ -84,7 +84,8 @@ export default function Leads() {
         studio&apos;s own events (bookings, contracts, payments, gallery activity) interleave as
         compact cards with deep links. The thread header links the lead and the project, and an
         email that arrived unmatched can be attached to the right client, lead or project from{" "}
-        <strong>Needs triage</strong> in one click.
+        <strong>Needs triage</strong> in one click — if the project has no client yet, Snap asks
+        you to connect one (the sender comes prefilled) instead of inventing an address.
       </p>
 
       <H2>Replying &amp; the composer</H2>

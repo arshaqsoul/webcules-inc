@@ -7,6 +7,7 @@ import { Instrument_Serif } from "next/font/google";
 import React from "react";
 
 import { AdminBar } from "@webcules/payload/components/AdminBar/index";
+import { MetaPixel } from "@/components/analytics/meta-pixel";
 import { WebculesNav } from "@/components/shared/webcules-nav";
 import { Footer } from "@/components/shared/footer";
 import { Providers } from "@webcules/payload/providers/index";
@@ -42,6 +43,7 @@ export default async function RootLayout({
         <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
       </head>
       <body className="theme-dark bg-darkest text-white antialiased">
+        <MetaPixel />
         <Providers>
           <AdminBar
             adminBarProps={{

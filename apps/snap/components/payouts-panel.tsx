@@ -57,7 +57,7 @@ const STATE_COPY: Record<ConnectStatus["state"], { label: string; tone: string; 
   pending: {
     label: "Setup in progress",
     tone: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-    body: "Your Stripe account is created but onboarding isn't finished. Payments require the remaining steps.",
+    body: "Your Stripe account is created but onboarding isn't finished yet (or Stripe is still reviewing it). Payments unlock the moment it clears.",
   },
   active: {
     label: "Connected",

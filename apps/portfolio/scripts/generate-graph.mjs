@@ -15,12 +15,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import { fileURLToPath } from 'node:url';
 
 const argKb = process.argv.includes('--kb') ? process.argv[process.argv.indexOf('--kb') + 1] : null;
 const VAULT = path.resolve(
-  argKb || process.env.ARSHAQ_KB_PATH || path.join(os.homedir(), 'Documents', 'CVs', 'Arshaq KB')
+  argKb || process.env.ARSHAQ_KB_PATH || path.join(os.homedir(), 'Documents', 'CVs', 'career-hub', 'kb')
 );
-const OUT = new URL('../public/graph-data.json', import.meta.url).pathname;
+const OUT = fileURLToPath(new URL('../public/graph-data.json', import.meta.url));
 
 const PRIVATE_TITLES = [
   'Resume Recipes', 'Metrics Bank', 'Accuracy Guardrails',
@@ -30,6 +31,37 @@ const DROP_SECTIONS = [
   'Do not claim', 'Sources', 'Navigate the graph',
   'Framing decisions to keep consistent', 'Job search system',
 ];
+
+// Node logos: Simple Icons slugs (paths baked into public/graph/index.html),
+// site-favicon images under /imgs/logos/, or a letter monogram for brands
+// without a usable mark. Nodes without an entry keep the classic colored dot.
+const LOGOS = {
+  // Arshaq himself — the hub node wears the portrait (full-bleed)
+  'Arshaq Hisham': { img: '/imgs/logos/arshaq.jpg', full: true },
+  // Companies
+  'Villvay Systems': { img: '/imgs/logos/villvay.png' },
+  KPMG: { mg: 'K' },
+  'Cambio Software Engineering': { mg: 'C' },
+  // Tools & languages (Tech folder)
+  'Next.js': { si: 'nextdotjs' },
+  React: { si: 'react' },
+  Python: { si: 'python' },
+  Docker: { si: 'docker' },
+  Elasticsearch: { si: 'elastic' },
+  'Apache Airflow': { si: 'apacheairflow' },
+  'Cloudflare Platform': { si: 'cloudflare' },
+  Databases: { si: 'postgresql' },
+  tRPC: { si: 'trpc' },
+  'Payload CMS': { si: 'payloadcms' },
+  'Vercel AI SDK': { si: 'vercel' },
+  Stripe: { si: 'stripe' },
+  // Products (Projects folder)
+  Snap: { img: '/imgs/logos/snap.png' },
+  tru: { img: '/imgs/logos/tru.png' },
+  'ELUX Travels': { img: '/imgs/logos/elux.png' },
+  Webcules: { img: '/imgs/webcules-logo.png' },
+  Backgrounds: { img: '/imgs/logos/backgrounds.png' },
+};
 
 const FOLDER_COLORS = {
   Roles: '#6366f1', // indigo-500
@@ -80,6 +112,26 @@ const PATCHES = {
       'AI-assisted breast cancer early-detection and diagnostics module designed for the COSMIC EHR in the Sri Lankan context, done in the Cambio context.',
     ],
   ],
+  tru: [
+    [
+      /^- Deliberate-decision stories feed.*$/m,
+      '- Deliberate-decision stories double as interview material; sibling production SaaS: [[Snap]]; adjacent webcules projects: [[webcules-init]], [[AI App Generator]].',
+    ],
+    [/ - see \[\[Accuracy Guardrails\]\]\.?/g, '.'],
+    [/^- Claims discipline: \[\[Accuracy Guardrails\]\]\.?$/m, ''],
+  ],
+  Snap: [
+    [/\(codebase-verified, see \[\[Metrics Bank\]\]\)/, '(codebase-verified)'],
+    [/ ?See \[\[Accuracy Guardrails\]\]\.?/g, ''],
+    [/^- Claims discipline: \[\[Accuracy Guardrails\]\]\.?$/m, ''],
+  ],
+  Webcules: [[/- Client redesigns ship under the same roof.*$/m, '']],
+  'ELUX Travels': [
+    [
+      /^- The 0-to-production solo proof used in founding-engineer and product stories.*$/m,
+      '- The 0-to-production solo proof behind the founding-engineer and product stories.',
+    ],
+  ],
 };
 
 function listMarkdownFiles(dir) {
@@ -92,7 +144,8 @@ function listMarkdownFiles(dir) {
 }
 
 function cleanBody(title, raw) {
-  let body = raw.replace(/^---\n.*?\n---\n?/s, '');
+  // Normalize CRLF (git autocrlf on Windows) so the frontmatter strip works.
+  let body = raw.replace(/\r\n/g, '\n').replace(/^---\n.*?\n---\n?/s, '');
   for (const [pattern, replacement] of PATCHES[title] || []) {
     body = body.replace(pattern, replacement);
   }
@@ -134,6 +187,7 @@ function buildNotes() {
     const raw = fs.readFileSync(file, 'utf8');
     const body = cleanBody(title, raw);
     const linkTitles = [...new Set([...body.matchAll(/\[\[([^\]|#]+)/g)].map((m) => m[1].trim()))];
+    const logo = LOGOS[title] || {};
     notes.push({
       id: rel.replace(/\.md$/, ''),
       title,
@@ -142,6 +196,10 @@ function buildNotes() {
         title === 'Arshaq Hisham' ? HUB_COLOR
         : title === 'Career Arc' ? NARRATIVE_COLOR
         : FOLDER_COLORS[folder] || '#8a8a8a',
+      ...(logo.si ? { si: logo.si } : {}),
+      ...(logo.img ? { img: logo.img } : {}),
+      ...(logo.full ? { imgFull: true } : {}),
+      ...(logo.mg ? { mg: logo.mg } : {}),
       text: body.slice(0, 6000),
       linkTitles,
     });

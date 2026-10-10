@@ -11,7 +11,7 @@ import { DocsCode } from "@/components/docs-code";
 import { DocsLiveDemo } from "@/components/docs-live-demo";
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
-import { PUBLIC_ORIGIN } from "@/lib/hosts";
+import { PUBLIC_ORIGIN, emailAddress } from "@/lib/hosts";
 
 const LOADER = `${PUBLIC_ORIGIN}/embed/loader.js`;
 
@@ -38,6 +38,10 @@ export default function Embeds() {
         <a href="/dashboard/settings/embeds">Settings → Embeds</a>, or paste the examples below.
         Want the pages themselves on your own domain? See{" "}
         <a href="/docs/domains">custom domains</a>.
+      </p>
+      <p>
+        Embedded Snap before our move to snaphq.app? Snippets pointing at the older{" "}
+        <code>snap.webcules.com</code> loader keep working — no need to repaste anything.
       </p>
 
       <Callout tone="warn" title="Before you embed">
@@ -200,7 +204,7 @@ function App() {
       <p>
         Snippets are generated per studio with your key and theme at{" "}
         <a href="/dashboard/settings/embeds">Settings → Embeds</a>. Questions —{" "}
-        <a href="mailto:hello@webcules.com">hello@webcules.com</a>.
+        <a href={`mailto:${emailAddress("hello")}`}>{emailAddress("hello")}</a>.
       </p>
 
       <Related slugs={["booking-page", "domains", "brand"]} />

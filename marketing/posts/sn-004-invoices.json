@@ -1,0 +1,20 @@
+{
+  "id": "sn-004-invoices",
+  "brand": "snap",
+  "kicker": "Get paid",
+  "headline": "Stop chasing *invoices*.",
+  "sub": "Send a numbered invoice with a secure payment link, and see when it's paid.",
+  "cta": "Start free at snaphq.app",
+  "art": {
+    "seed": 124,
+    "prompt": "Abstract soft glowing checkmark-like gentle curve of light over pastel lavender gradient, airy, calm"
+  },
+  "caption": "Chasing payments is the worst part of the job. With Snap you send a numbered invoice with a secure link, and it shows paid when your client pays.\\n\\nStart free.",
+  "hashtags": [
+    "#PhotographerLife",
+    "#PhotographyBusiness",
+    "#Invoicing",
+    "#Snap",
+    "#FreelancePhotographer"
+  ]
+}
