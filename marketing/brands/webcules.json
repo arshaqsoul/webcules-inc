@@ -1,0 +1,36 @@
+{
+  "name": "Webcules",
+  "logo": "brands/webcules-logo.png",
+  "domain": "webcules.com",
+  "phone": "+1 639 998 6044",
+  "booking": "cal.com/webcules/discovery",
+  "location": "Saskatoon, SK",
+  "tagline": "Concept to creation for anything tech",
+  "theme": {
+    "bg": "#0e0e26",
+    "ink": "#ffffff",
+    "muted": "#c9cdf0",
+    "accent": "#c4c9fb",
+    "accent2": "#8f7bf5",
+    "button": "#ffffff",
+    "buttonInk": "#0e0e26",
+    "sans": "Geist",
+    "serif": "Instrument Serif"
+  },
+  "artStyle": "deep midnight indigo background, soft violet and lavender glowing light, premium, minimalist, cinematic, large calm empty area in the upper half",
+  "contactLines": [
+    "cal.com/webcules/discovery",
+    "+1 639 998 6044"
+  ],
+  "require": [
+    "cal.com/webcules/discovery",
+    "+1 639 998 6044",
+    "webcules.com"
+  ],
+  "cover": {
+    "headline": "We design, build and run<br>*digital products* that scale.",
+    "sub": "Websites  ·  Apps  ·  AI integrations  ·  Saskatoon, SK",
+    "pill": "Book a discovery call",
+    "logoRadius": "50%"
+  }
+}

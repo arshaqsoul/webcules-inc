@@ -1,0 +1,20 @@
+{
+  "id": "sn-002-commission",
+  "brand": "snap",
+  "kicker": "0% commission",
+  "headline": "Keep what you *earn*.",
+  "sub": "Clients pay straight into your own Stripe account.",
+  "cta": "Start free at snaphq.app",
+  "art": {
+    "seed": 102,
+    "prompt": "Abstract soft glowing coins-free minimal gradient orb of lavender light, airy and calm"
+  },
+  "caption": "No commission on your bookings. Payments go straight into your own Stripe account, so what you earn is yours.\\n\\nSnap is built for working photographers. Start free.",
+  "hashtags": [
+    "#PhotographerLife",
+    "#PhotographyBusiness",
+    "#SmallBusiness",
+    "#Snap",
+    "#FreelancePhotographer"
+  ]
+}

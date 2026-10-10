@@ -1,0 +1,11 @@
+{
+  "id": "wc-003-travel",
+  "brand": "webcules",
+  "kicker": "For travel agencies",
+  "headline": "Less admin. More *time* to sell trips.",
+  "sub": "We build the software that lightens a travel agency's workload.",
+  "cta": "Book a discovery call",
+  "art": { "seed": 5, "prompt": "Abstract dreamy travel concept, a glowing winding path of light over soft mountains and clouds at dusk, tiny paper-plane silhouette, no text" },
+  "caption": "Travel agents spend too much of their day on admin instead of selling trips.\n\nWe build the tools that take that load off, so your team can focus on clients. If you run or work in a travel agency, we would love to hear what slows you down.\n\nBook a discovery call and let's talk.",
+  "hashtags": ["#TravelAgent", "#TravelAgency", "#TravelTech", "#Saskatoon", "#SmallBusiness"]
+}

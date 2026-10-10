@@ -1,0 +1,20 @@
+{
+  "id": "wc-004-founder",
+  "brand": "webcules",
+  "kicker": "Meet your developer",
+  "headline": "Hi, I'm *Arshaq*. I build digital products for Saskatoon.",
+  "sub": "Websites, apps and AI tools, made by someone who lives here.",
+  "cta": "Book a discovery call",
+  "art": {
+    "seed": 31,
+    "prompt": "Abstract calm horizon of glowing lavender light over dark indigo hills, a single bright star, minimal"
+  },
+  "caption": "Hi, I'm Arshaq, a developer based in Saskatoon. I started Webcules to help local businesses get websites, apps and AI tools that actually work for them.\\n\\nIf you have an idea or a problem you want solved, I'd love to hear it. Book a discovery call below.",
+  "hashtags": [
+    "#Saskatoon",
+    "#YXE",
+    "#LocalBusiness",
+    "#WebDeveloper",
+    "#SaskBusiness"
+  ]
+}

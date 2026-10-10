@@ -1,0 +1,20 @@
+{
+  "id": "sn-001-one-place",
+  "brand": "snap",
+  "kicker": "For photographers",
+  "headline": "Run your photography business in *one* place.",
+  "sub": "Booking, client galleries, contracts, invoices and payments.",
+  "cta": "Start free at snaphq.app",
+  "art": {
+    "seed": 91,
+    "prompt": "Abstract soft floating translucent rounded cards and gentle light bokeh, airy, photography studio feel"
+  },
+  "caption": "Stop juggling five apps. Snap gives photographers booking, client galleries, contracts, invoices and payments in one place.\\n\\nIt is free to start.",
+  "hashtags": [
+    "#PhotographerLife",
+    "#WeddingPhotographer",
+    "#PhotographyBusiness",
+    "#StudioManagement",
+    "#Snap"
+  ]
+}

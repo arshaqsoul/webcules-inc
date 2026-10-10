@@ -1,0 +1,20 @@
+{
+  "id": "wc-008-snap",
+  "brand": "webcules",
+  "kicker": "Our product",
+  "headline": "We also built *Snap*, a studio platform for photographers.",
+  "sub": "Booking, galleries, contracts and payments in one place.",
+  "cta": "Book a discovery call",
+  "art": {
+    "seed": 75,
+    "prompt": "Abstract glowing camera aperture ring of light, violet and lavender, dark indigo background, minimal"
+  },
+  "caption": "We build our own products too. Snap is a studio platform for photographers: booking, client galleries, contracts, invoices and payments in one place, and it is free to start.\\n\\nPhotographer? Try it at snaphq.app. Want something built for your business? Book a call.",
+  "hashtags": [
+    "#Photography",
+    "#PhotographerLife",
+    "#Saskatoon",
+    "#SaaS",
+    "#YXE"
+  ]
+}
