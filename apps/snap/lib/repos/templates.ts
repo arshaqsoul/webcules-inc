@@ -9,13 +9,14 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import { getDb } from "../db";
 import * as schema from "../db-schema";
 import { sanitizeRichText } from "../sanitize";
+import { normalizeEditSet } from "../edits";
 import { DEFAULT_CONTACT_FORM_BODY } from "../forms";
 import { GALLERY_DESIGN_MAX_BYTES, GALLERY_DESIGN_V2_MAX_BYTES, designHasV2Fields, parseGalleryDesign, parseGalleryDesignJson, serializeGalleryDesign } from "../gallery-design";
 
 export type TemplateRow = typeof schema.templates.$inferSelect;
 export type TemplateInsert = typeof schema.templates.$inferInsert;
 
-export const TEMPLATE_KINDS = ["contract", "contract_clause", "form", "email_snippet", "invoice_preset", "questionnaire", "gallery_preset"] as const;
+export const TEMPLATE_KINDS = ["contract", "contract_clause", "form", "email_snippet", "invoice_preset", "questionnaire", "gallery_preset", "edit_preset"] as const;
 export type TemplateKind = (typeof TEMPLATE_KINDS)[number];
 
 /** Body byte caps — D1-row friendly (epic contract: ≤256 KB documents,
@@ -30,6 +31,8 @@ const BODY_CAPS: Record<TemplateKind, number> = {
   // WEB-318: sectioned v2 designs get the 32 KB envelope (same as the
   // project column) — a gallery_preset body above 16 KB must carry v2 fields.
   gallery_preset: GALLERY_DESIGN_V2_MAX_BYTES,
+  // WEB-402: a sparse edit set (8 sliders) — tiny by construction.
+  edit_preset: 4 * 1024,
 };
 
 const NAME_CAP = 120;
@@ -63,6 +66,17 @@ export function normalizeTemplateBody(kind: TemplateKind, body: string): string 
       return null;
     }
     return trimmed;
+  }
+  // WEB-402: edit presets hold a sparse EditSet — validated + canonically
+  // re-serialized through the same normalizer the asset PATCH uses.
+  if (kind === "edit_preset") {
+    try {
+      const edits = normalizeEditSet(JSON.parse(trimmed));
+      if (edits === null || Object.keys(edits).length === 0) return null;
+      return JSON.stringify(edits);
+    } catch {
+      return null;
+    }
   }
   if (kind === "email_snippet") return sanitizeRichText(trimmed);
   // Contracts are plain text by default (whitespace-pre-wrap / PDF text);

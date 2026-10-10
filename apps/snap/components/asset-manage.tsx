@@ -15,6 +15,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, ChevronUp, Heart, Star, X } from "lucide-react";
 
 import type { AssetItem } from "@/components/project-files";
+import { EditPanel } from "@/components/edit-panel";
+import { qualityFlags } from "@/lib/image-analysis";
+import { isEmptyEdits, type PartialEdits } from "@/lib/edits";
 import { FileTypeIcon } from "@/components/file-type-icon";
 
 type Exif = { make?: string; model?: string; taken?: string } | null;
@@ -111,6 +114,11 @@ export function AssetManage({
   onTag,
   folders,
   onMove,
+  onSaveEdits,
+  editClipboard,
+  onCopyEdits,
+  editSaving,
+  groupSizes,
 }: {
   items: AssetItem[];
   index: number;
@@ -125,6 +133,13 @@ export function AssetManage({
   /** WEB-216: file this asset into a folder (null = unfiled). */
   folders?: { id: string; name: string }[];
   onMove?: (id: string, folderId: string | null) => void;
+  /** WEB-402: persist + render the edit set (parent owns PATCH + edit.jpg). */
+  onSaveEdits?: (id: string, edits: PartialEdits | null) => Promise<boolean>;
+  editClipboard?: PartialEdits | null;
+  onCopyEdits?: (edits: PartialEdits) => void;
+  editSaving?: boolean;
+  /** WEB-401: near-duplicate cluster sizes (cover id → member count). */
+  groupSizes?: Record<string, number>;
 }) {
   const [exif, setExif] = useState<Exif>(null);
   const [dims, setDims] = useState<{ w: number; h: number } | null>(null);
@@ -149,6 +164,19 @@ export function AssetManage({
   const scrubRaf = useRef(0);
   const barTouchY = useRef(0);
   const sheetTouchY = useRef(0);
+  // WEB-402: live edited preview (object URL from the develop panel's canvas
+  // render) — swapped in place of the stored preview while grading; revoked
+  // on swap-out so blobs never leak.
+  const [livePreview, setLivePreview] = useState<string | null>(null);
+  const livePreviewRef = useRef<string | null>(null);
+  const setLive = useCallback((url: string | null) => {
+    if (livePreviewRef.current && livePreviewRef.current !== url) URL.revokeObjectURL(livePreviewRef.current);
+    livePreviewRef.current = url;
+    setLivePreview(url);
+  }, []);
+  useEffect(() => () => {
+    if (livePreviewRef.current) URL.revokeObjectURL(livePreviewRef.current);
+  }, []);
 
   const onTouchStart = (e: React.TouchEvent) => {
     const t = e.touches[0];
@@ -341,7 +369,7 @@ export function AssetManage({
 
   if (!item) return null;
 
-  const previewSrc = `/api/assets/${item.id}?variant=preview${derivVersion ? `&v=${derivVersion}` : ""}`;
+  const previewSrc = livePreview ?? `/api/assets/${item.id}?variant=preview${derivVersion ? `&v=${derivVersion}` : ""}`;
   const shownDims = item.width && item.height ? `${item.width} × ${item.height}` : dims ? `${dims.w} × ${dims.h}` : null;
 
   const thumb = (i: number) => {
@@ -457,6 +485,19 @@ export function AssetManage({
         </div>
       </section>
 
+      {/* WEB-402: develop panel (images only) */}
+      {item.kind === "image" && onSaveEdits && (
+        <EditPanel
+          key={item.id}
+          item={item}
+          clipboard={editClipboard ?? null}
+          onCopy={(e) => onCopyEdits?.(e)}
+          onSave={onSaveEdits}
+          onLivePreview={setLive}
+          saving={editSaving ?? false}
+        />
+      )}
+
       {/* Tags */}
       <section aria-label="Tags">
         <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-tertiary">Tags</h3>
@@ -512,6 +553,31 @@ export function AssetManage({
       {/* Metadata */}
       <section aria-label="Metadata">
         <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-tertiary">Details</h3>
+        {(item.analysis || (item.groupCover && groupSizes?.[item.groupCover]) || item.edits) && (
+          <div className="mb-2 flex flex-wrap gap-1.5">
+            {item.analysis && (
+              <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[10px] font-medium text-ink-muted" title={`Upload analysis — sharpness ${Math.round(item.analysis.sharp)}/100, exposure ${Math.round(item.analysis.lum)}/100`}>
+                Focus {Math.round(item.analysis.sharp)}/100
+              </span>
+            )}
+            {item.analysis &&
+              Object.entries(qualityFlags(item.analysis))
+                .filter(([, on]) => on)
+                .map(([flag]) => (
+                  <span key={flag} className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-600 dark:text-amber-400">
+                    {flag === "blurry" ? "Soft focus" : flag === "under" ? "Too dark" : "Too bright"}
+                  </span>
+                ))}
+            {item.groupCover && groupSizes?.[item.groupCover] && (
+              <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[10px] font-medium text-ink-muted">
+                ⧉ {groupSizes[item.groupCover]} similar
+              </span>
+            )}
+            {item.edits && !isEmptyEdits(item.edits) && (
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">Edited</span>
+            )}
+          </div>
+        )}
         <dl className="flex flex-col gap-2 text-xs">
           <Meta label="File">{item.filename}</Meta>
           <Meta label="Type">{item.mimeType}</Meta>

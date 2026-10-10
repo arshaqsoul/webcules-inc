@@ -4,7 +4,8 @@
  * Streams from R2 with Range support (video scrubbing) and
  * inline/attachment modes; gallery downloads respect the grant's policy. */
 import { getObject } from "@/lib/storage/service";
-import { deleteAsset, getAsset, setAssetRating, setAssetStatus } from "@/lib/repos/assets";
+import { deleteAsset, getAsset, setAssetEdits, setAssetRating, setAssetStatus } from "@/lib/repos/assets";
+import { normalizeEditSet } from "@/lib/edits";
 import { stripJpegExif } from "@/lib/exif";
 import { getOrgContext } from "@/lib/session";
 import { clientIp, logShareAccess, resolveGalleryAccess } from "@/lib/shares/gallery-auth";
@@ -23,20 +24,24 @@ type ServableAsset = {
   mimeType: string;
 };
 
-/** WEB-116/242: ?variant=thumb|preview|preview_wm swaps in the stored
+/** WEB-116/242: ?variant=thumb|preview|preview_wm|edited swaps in the stored
  * derivative key, falling back sensibly when none exists (pre-derivative
  * assets, RAW/HEIC that the browser can't decode, wm variant not yet
- * regenerated → clean preview — transitional, never a broken image). */
+ * regenerated → clean preview — transitional, never a broken image).
+ * WEB-402: when the asset has an edited look (edit.jpg), thumb/preview serve
+ * it — the grade is the deliverable; originals stay untouched (staff "Open
+ * original" and full-res delivery still stream the original bytes). */
 function variantKey(
-  asset: { thumbKey: string | null; previewKey: string | null; previewWmKey: string | null },
+  asset: { thumbKey: string | null; previewKey: string | null; previewWmKey: string | null; editKey: string | null },
   variant: string | null,
 ): string | null {
-  if (variant === "thumb" && asset.thumbKey) return asset.thumbKey;
-  if (variant === "preview" && asset.previewKey) return asset.previewKey;
+  if (variant === "edited") return asset.editKey;
   // (audit fix): never fall back to the clean full preview for preview_wm —
   // a watermarking gallery would serve the unwatermarked image wherever the
   // wm derivative hasn't been generated yet. Thumb is the safe fallback.
   if (variant === "preview_wm") return asset.previewWmKey ?? asset.thumbKey;
+  if (variant === "thumb") return asset.editKey ?? asset.thumbKey;
+  if (variant === "preview") return asset.editKey ?? asset.previewKey;
   return null;
 }
 
@@ -147,19 +152,22 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
     // WEB-261: web-size download = the ~2048px preview derivative with
     // download headers (zero server processing; derivative is clean by
-    // construction, so the EXIF strip below never applies).
-    if (wantsDownload && grant.allowDownload && url.searchParams.get("size") === "web" && asset.previewKey) {
+    // construction, so the EXIF strip below never applies). WEB-402: an
+    // edited look replaces the preview — the grade is the deliverable.
+    if (wantsDownload && grant.allowDownload && url.searchParams.get("size") === "web" && (asset.editKey ?? asset.previewKey)) {
       return serveAsset(
         req,
-        { ...asset, storageKey: asset.previewKey, mimeType: "image/jpeg" },
+        { ...asset, storageKey: (asset.editKey ?? asset.previewKey) as string, mimeType: "image/jpeg" },
         true,
       );
     }
 
     // WEB-242 proofing mode: downloads deliver the watermarked preview
     // (pre-sale delivery) — original bytes never leave in proofing grants.
+    // WEB-402: edit.jpg carries the watermark when the studio's watermark
+    // is configured (edit-canvas composites it), so an edited look wins.
     if (wantsDownload && grant.allowDownload && grant.proofing) {
-      const wmKey = asset.previewWmKey ?? asset.previewKey;
+      const wmKey = asset.editKey ?? asset.previewWmKey ?? asset.previewKey;
       if (wmKey) {
         return serveAsset(
           req,
@@ -171,7 +179,16 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
     // WEB-172: original JPEG downloads from a client gallery are delivered
     // EXIF/GPS-free. Derivatives are metadata-free by construction; staff
-    // downloads keep the photographer's originals untouched.
+    // downloads keep the photographer's originals untouched. WEB-402: with
+    // an edited look, the edit.jpg IS the client deliverable (full-res,
+    // EXIF-free) — the untouched original never needs stripping for it.
+    if (wantsDownload && grant.allowDownload && !dk && asset.editKey) {
+      return serveAsset(
+        req,
+        { ...asset, storageKey: asset.editKey, mimeType: "image/jpeg", filename: asset.filename },
+        true,
+      );
+    }
     if (wantsDownload && grant.allowDownload && !dk && asset.mimeType === "image/jpeg") {
       const object = await getObject(asset.organizationId, asset.storageKey);
       if (object) {
@@ -196,9 +213,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     // (audit fix): in a proofing (pre-sale) grant the original bytes never
     // stream inline — a bare GET used to reach serveAsset with the clean
     // storageKey. Force the watermarked derivative for every non-variant
-    // serve; thumb when wm hasn't been generated.
+    // serve; thumb when wm hasn't been generated. (WEB-402: an edited look
+    // carries the watermark too, so it qualifies as the proof-grade serve.)
     if (grant.proofing && !dk) {
-      const wmKey = asset.previewWmKey ?? asset.thumbKey;
+      const wmKey = asset.editKey ?? asset.previewWmKey ?? asset.thumbKey;
       if (wmKey) return serveAsset(req, { ...asset, storageKey: wmKey, mimeType: "image/jpeg" }, grant.allowDownload);
     }
     return serveAsset(req, dk ? { ...asset, storageKey: dk, mimeType: "image/jpeg" } : asset, grant.allowDownload);
@@ -207,15 +225,15 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   return Response.json({ error: "unauthorized" }, { status: 401 });
 }
 
-/** Approve / reject / reset an asset's status. */
+/** Approve / reject / reset an asset's status; set/clear its edit set. */
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
   const { id } = await params;
 
-  let body: { action?: string; value?: number };
+  let body: { action?: string; value?: number; edits?: unknown };
   try {
-    body = (await req.json()) as { action?: string; value?: number };
+    body = (await req.json()) as { action?: string; value?: number; edits?: unknown };
   } catch {
     return Response.json({ error: "invalid_json" }, { status: 400 });
   }
@@ -225,6 +243,20 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const r = await setAssetRating(ctx.organizationId, id, { [body.action]: body.value });
     if (!r.ok) return Response.json({ error: r.error }, { status: 404 });
     return Response.json({ ok: true, [body.action]: body.value });
+  }
+  // WEB-402: non-destructive edits — { action:"edits", edits:{…}|null }. The
+  // client re-renders + re-uploads the edit.jpg derivative after this lands.
+  if (body.action === "edits") {
+    if (body.edits === null) {
+      const r = await setAssetEdits(ctx.organizationId, id, null);
+      if (!r.ok) return Response.json({ error: r.error }, { status: 404 });
+      return Response.json({ ok: true, edits: null });
+    }
+    const normalized = normalizeEditSet(body.edits);
+    if (normalized === null) return Response.json({ error: "invalid_edits" }, { status: 400 });
+    const r = await setAssetEdits(ctx.organizationId, id, normalized);
+    if (!r.ok) return Response.json({ error: r.error }, { status: 404 });
+    return Response.json({ ok: true, edits: normalized });
   }
   if (body.action !== "approve" && body.action !== "reject" && body.action !== "reset") {
     return Response.json({ error: "invalid_action" }, { status: 400 });

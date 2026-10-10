@@ -144,6 +144,13 @@ export const DOC_CATEGORIES: DocCategory[] = [
         icon: "folder-open",
       },
       {
+        slug: "cull-and-edit",
+        title: "Cull assist & editing",
+        description:
+          "Every upload is scored for focus and exposure, near-identical frames stack under their sharpest pick, and a built-in develop panel puts Lightroom-style sliders, auto-enhance, presets, and copy/paste right in the project — without ever touching your originals.",
+        icon: "wand",
+      },
+      {
         slug: "contracts",
         title: "Contracts & e-signing",
         description:

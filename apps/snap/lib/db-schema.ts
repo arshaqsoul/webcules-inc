@@ -628,12 +628,25 @@ export const assets = sqliteTable(
     /** WEB-216: the one folder this asset lives in (null = unfiled). Moving
      * rewrites this pointer only — storage keys and R2 bytes never move. */
     folderId: text("folder_id").references(() => folders.id, { onDelete: "set null" }),
+    /* Cull assist + editing (WEB-401/402) — see migrations/0066. */
+    /** 64-bit dHash (16 hex) from the upload decode — near-dup clustering. */
+    phash: text("phash"),
+    /** Quality scores JSON (lib/image-analysis.ts ImageAnalysis). */
+    analysis: text("analysis"),
+    /** Sparse adjustment set JSON (lib/edits.ts PartialEdits); null = none. */
+    edits: text("edits"),
+    /** R2 key of the browser-rendered edited derivative (edit.jpg). */
+    editKey: text("edit_key"),
+    /** Cover asset id of this asset's near-duplicate cluster; null = singleton. */
+    groupCover: text("group_cover"),
   },
   (t) => [
     index("asset_org_project_idx").on(t.organizationId, t.projectId, t.createdAt),
     index("asset_raw_scan_idx").on(t.kind, t.createdAt),
     index("asset_raw_archive_idx").on(t.rawArchivedAt),
     index("asset_fp_idx").on(t.projectId, t.fingerprint),
+    index("asset_phash_idx").on(t.projectId, t.phash),
+    index("asset_group_cover_idx").on(t.projectId, t.groupCover),
   ],
 );
 

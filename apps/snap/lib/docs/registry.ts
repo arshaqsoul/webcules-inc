@@ -16,6 +16,7 @@ import Calendar from "./content/calendar";
 import Bookings from "./content/bookings";
 import Projects from "./content/projects";
 import ProjectHub from "./content/project-hub";
+import CullAndEdit from "./content/cull-and-edit";
 import Contracts from "./content/contracts";
 import GalleryDelivery from "./content/gallery-delivery";
 import GalleryDesign from "./content/gallery-design";
@@ -48,6 +49,7 @@ export const DOC_CONTENT: Record<string, ComponentType> = {
   bookings: Bookings,
   projects: Projects,
   "project-hub": ProjectHub,
+  "cull-and-edit": CullAndEdit,
   contracts: Contracts,
   "gallery-delivery": GalleryDelivery,
   "gallery-design": GalleryDesign,

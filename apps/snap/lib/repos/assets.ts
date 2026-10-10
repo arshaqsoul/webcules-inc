@@ -3,7 +3,9 @@
  * org + project ownership. Status: uploaded → approved/rejected → shared. */
 import { isValidColorKey } from "../color-sort";
 import { forEachChunk, selectInChunks } from "../db-chunk";
-import { and, desc, eq, gt, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
+import { clusterSimilar, isValidPhash, type ImageAnalysis } from "../image-analysis";
+import { autoEdits, isEmptyEdits, normalizeEditSet, type PartialEdits } from "../edits";
+import { and, desc, eq, gt, gte, inArray, isNotNull, isNull, lte, or, sql } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
@@ -125,6 +127,12 @@ export type AssetFilter = {
   /** WEB-216 folders: "none" = unfiled bucket, anything else = folder id,
    * undefined/null = no folder filtering. */
   folder?: string | null;
+  /** WEB-401 cull assist: "blurry" | "under" | "over" (analysis-derived flags). */
+  quality?: string | null;
+  /** WEB-402: "yes" = has edits, "none" = unedited. */
+  edited?: string | null;
+  /** WEB-401: "dupes" = member of a near-duplicate cluster. */
+  group?: string | null;
 };
 
 export type AssetRow = typeof schema.assets.$inferSelect & { tags: string[] };
@@ -150,6 +158,23 @@ export async function listAssetsPaged(
   else if (filter.color && /^[1-5]$/.test(filter.color)) conditions.push(eq(schema.assets.color, Number(filter.color)));
   if (filter.folder === "none") conditions.push(isNull(schema.assets.folderId));
   else if (filter.folder) conditions.push(eq(schema.assets.folderId, filter.folder));
+  // WEB-401 quality flags — json_extract returns NULL for un-analyzed rows,
+  // which compares false, so legacy assets simply never match a flag filter.
+  if (filter.quality === "blurry")
+    conditions.push(sql`json_extract(${schema.assets.analysis}, '$.sharp') < 16`);
+  else if (filter.quality === "under")
+    conditions.push(
+      sql`(json_extract(${schema.assets.analysis}, '$.lum') < 20 OR json_extract(${schema.assets.analysis}, '$.clipDark') > 6)`,
+    );
+  else if (filter.quality === "over")
+    conditions.push(
+      sql`(json_extract(${schema.assets.analysis}, '$.lum') > 80 OR json_extract(${schema.assets.analysis}, '$.clipBright') > 6)`,
+    );
+  // WEB-402 edited filter — "has a look applied" (sparse edits stored).
+  if (filter.edited === "yes") conditions.push(isNotNull(schema.assets.edits));
+  else if (filter.edited === "none") conditions.push(isNull(schema.assets.edits));
+  // WEB-401 near-duplicate cluster membership.
+  if (filter.group === "dupes") conditions.push(isNotNull(schema.assets.groupCover));
 
   // Keyset only on the default date sort; others page by offset via cursor-as-number.
   const offset = filter.sort && filter.sort !== "date" ? Number(filter.cursor ?? 0) || 0 : 0;
@@ -546,7 +571,7 @@ export async function getAsset(organizationId: string, assetId: string) {
 export async function attachDerivative(params: {
   organizationId: string;
   assetId: string;
-  kind: "thumb" | "preview" | "preview_wm";
+  kind: "thumb" | "preview" | "preview_wm" | "edited";
   bytes: ArrayBuffer;
   contentType: string;
   /** WEB-117: enforce the studio's EXIF-strip policy — reject a derivative
@@ -555,7 +580,8 @@ export async function attachDerivative(params: {
   verifyNoExif?: boolean;
   /** WEB-242: regeneration replaces an existing preview_wm (settings
    * changes re-run the bulk path); the first write per upload stays
-   * unique-guarded like thumb/preview. */
+   * unique-guarded like thumb/preview. WEB-402: "edited" always replaces —
+   * every save re-renders the look. */
   replace?: boolean;
   /** WEB-260: intrinsic size + video duration, reported by the uploader's
    * decoder — stored set-if-null (never overwrites, never rewritten). */
@@ -564,6 +590,10 @@ export async function attachDerivative(params: {
   durationMs?: number;
   /** Rainbow-sort key computed by the browser (lib/color-sort.ts). */
   colorKey?: number;
+  /** WEB-401: 64-bit dHash (16 hex) — near-duplicate clustering input. */
+  phash?: string;
+  /** WEB-401: quality-scores JSON (validated by parseAnalysis). */
+  analysis?: ImageAnalysis;
 }): Promise<
   | { ok: true }
   | { ok: false; error: "not_found" | "unsupported_type" | "metadata_present" | "already_present" }
@@ -594,12 +624,16 @@ export async function attachDerivative(params: {
         ? { thumbKey: key }
         : params.kind === "preview"
           ? { previewKey: key }
-          : { previewWmKey: key }),
+          : params.kind === "edited"
+            ? { editKey: key }
+            : { previewWmKey: key }),
       ...(params.verifyNoExif ? { exifStripped: true } : {}),
       ...(params.width && !asset.width ? { width: Math.round(params.width) } : {}),
       ...(params.height && !asset.height ? { height: Math.round(params.height) } : {}),
       ...(params.durationMs && !asset.durationMs ? { durationMs: Math.round(params.durationMs) } : {}),
       ...(params.colorKey !== undefined && isValidColorKey(params.colorKey) ? { colorKey: params.colorKey } : {}),
+      ...(params.phash && isValidPhash(params.phash) && !asset.phash ? { phash: params.phash } : {}),
+      ...(params.analysis && !asset.analysis ? { analysis: JSON.stringify(params.analysis) } : {}),
     })
     .where(and(eq(schema.assets.id, asset.id), eq(schema.assets.organizationId, params.organizationId)));
   return { ok: true };
@@ -864,8 +898,249 @@ export async function deleteAsset(organizationId: string, assetId: string): Prom
   }
   await db.delete(schema.assets).where(eq(schema.assets.id, assetId));
   await deleteObject(organizationId, asset.storageKey);
-  // WEB-116: derivative objects live beside the original — remove them too.
+  // WEB-116: derivative objects live beside the original — remove them too
+  // (WEB-402: including the edited look).
   if (asset.thumbKey) await deleteObject(organizationId, asset.thumbKey).catch(() => undefined);
   if (asset.previewKey) await deleteObject(organizationId, asset.previewKey).catch(() => undefined);
+  if (asset.editKey) await deleteObject(organizationId, asset.editKey).catch(() => undefined);
   return { ok: true };
+}
+
+/* ---------------- Cull assist + editing (WEB-401/402) ---------------- */
+
+/** Set (or replace) the sparse edit set on one asset. Like ratings, edits
+ * are high-frequency low-risk state — no audit row. The edited derivative is
+ * re-rendered by the client after this lands; clearing (null) also drops any
+ * stored edit.jpg so every surface falls back to the clean preview. */
+export async function setAssetEdits(
+  organizationId: string,
+  assetId: string,
+  edits: PartialEdits | null,
+): Promise<{ ok: true } | { ok: false; error: "not_found" }> {
+  const db = getDb();
+  const asset = await getAsset(organizationId, assetId);
+  if (!asset) return { ok: false, error: "not_found" };
+  const value = edits && !isEmptyEdits(edits) ? JSON.stringify(edits) : null;
+  await db
+    .update(schema.assets)
+    .set({ edits: value, ...(value === null ? { editKey: null } : {}) })
+    .where(and(eq(schema.assets.id, assetId), eq(schema.assets.organizationId, organizationId)));
+  if (value === null && asset.editKey) await deleteObject(organizationId, asset.editKey).catch(() => undefined);
+  return { ok: true };
+}
+
+/** Bulk paste/clear of one edit set over an id list — one uniform UPDATE per
+ * chunk (same shape as bulkSetRating). Clearing also deletes the stored
+ * edited derivatives (best-effort, after the row wipe). */
+export async function bulkSetEdits(
+  organizationId: string,
+  assetIds: string[],
+  edits: PartialEdits | null,
+): Promise<number> {
+  const db = getDb();
+  const ids = assetIds.slice(0, 500);
+  if (!ids.length) return 0;
+  const value = edits && !isEmptyEdits(edits) ? JSON.stringify(edits) : null;
+
+  // Clearing needs the old edit keys for R2 cleanup — read them first.
+  let oldKeys: { id: string; key: string }[] = [];
+  if (value === null) {
+    const rows = await selectInChunks(ids, (chunk) =>
+      db
+        .select({ id: schema.assets.id, key: schema.assets.editKey })
+        .from(schema.assets)
+        .where(and(eq(schema.assets.organizationId, organizationId), inArray(schema.assets.id, chunk), isNotNull(schema.assets.editKey))),
+    );
+    oldKeys = rows.filter((r): r is { id: string; key: string } => Boolean(r.key));
+  }
+
+  let done = 0;
+  await forEachChunk(ids, async (chunk) => {
+    const res = await db
+      .update(schema.assets)
+      .set({ edits: value, ...(value === null ? { editKey: null } : {}) })
+      .where(and(eq(schema.assets.organizationId, organizationId), inArray(schema.assets.id, chunk)))
+      .returning({ id: schema.assets.id });
+    done += res.length;
+  });
+
+  // Images only: pasting edits onto videos/RAWs is a no-op row-wise (they
+  // can't re-render), so strip those to keep "edited" honest.
+  if (value !== null) {
+    await forEachChunk(ids, async (chunk) => {
+      await db
+        .update(schema.assets)
+        .set({ edits: null })
+        .where(
+          and(
+            eq(schema.assets.organizationId, organizationId),
+            inArray(schema.assets.id, chunk),
+            sql`${schema.assets.kind} != 'image'`,
+          ),
+        );
+    });
+  }
+
+  await Promise.allSettled(oldKeys.map((r) => deleteObject(organizationId, r.key)));
+  return done;
+}
+
+/** Auto-enhance a selection: per-asset deterministic edits derived from the
+ * stored upload analysis (lib/edits.ts autoEdits). Assets without analysis
+ * keep their existing edits. Per-row updates in ONE D1 batch — each asset's
+ * correction is different by construction. Returns { done, skipped } where
+ * skipped = no analysis available. The client then re-renders derivatives. */
+export async function bulkAutoEnhance(
+  organizationId: string,
+  assetIds: string[],
+): Promise<{ done: number; skipped: number }> {
+  const db = getDb();
+  const ids = assetIds.slice(0, 500);
+  if (!ids.length) return { done: 0, skipped: 0 };
+
+  const rows = await selectInChunks(ids, (chunk) =>
+    db
+      .select({ id: schema.assets.id, analysis: schema.assets.analysis, kind: schema.assets.kind })
+      .from(schema.assets)
+      .where(and(eq(schema.assets.organizationId, organizationId), inArray(schema.assets.id, chunk))),
+  );
+
+  const updates: { id: string; edits: string | null }[] = [];
+  let skipped = 0;
+  for (const row of rows) {
+    if (row.kind !== "image" || !row.analysis) {
+      skipped++;
+      continue;
+    }
+    let analysis: ImageAnalysis;
+    try {
+      analysis = JSON.parse(row.analysis) as ImageAnalysis;
+    } catch {
+      skipped++;
+      continue;
+    }
+    const edits = autoEdits(analysis);
+    updates.push({ id: row.id, edits: isEmptyEdits(edits) ? null : JSON.stringify(edits) });
+  }
+  // Ids that didn't resolve to rows count as skipped for the UI total.
+  skipped += ids.length - rows.length;
+
+  // One CASE-based UPDATE per ~30 assets (2 vars per row + the IN list,
+  // comfortably under D1's 100-variable cap) — no per-row round trips.
+  let done = 0;
+  for (let i = 0; i < updates.length; i += 30) {
+    const chunk = updates.slice(i, i + 30);
+    await db.run(
+      sql`UPDATE asset SET edits = CASE id ${sql.join(
+        chunk.map((u) => sql`WHEN ${u.id} THEN ${u.edits}`),
+        sql` `,
+      )} ELSE edits END WHERE organization_id = ${organizationId} AND id IN (${sql.join(
+        chunk.map((u) => sql`${u.id}`),
+        sql`, `,
+      )})`,
+    );
+    done += chunk.length;
+  }
+  return { done, skipped };
+}
+
+/** Regroup near-duplicates for a project: cluster every hashed image by
+ * dHash Hamming distance, wipe + rewrite group_cover (cover = sharpest
+ * frame of each cluster). Called after uploads settle and from the Files
+ * "Group similar" action; safe to re-run (idempotent full rewrite). */
+export async function clusterProjectAssets(
+  organizationId: string,
+  projectId: string,
+): Promise<{ groups: number; clustered: number }> {
+  const db = getDb();
+  const where = and(
+    eq(schema.assets.organizationId, organizationId),
+    eq(schema.assets.projectId, projectId),
+    eq(schema.assets.kind, "image"),
+    isNotNull(schema.assets.phash),
+  );
+  const rows = await db
+    .select({ id: schema.assets.id, phash: schema.assets.phash, analysis: schema.assets.analysis })
+    .from(schema.assets)
+    .where(where);
+
+  // Reset first: clusters from a previous run must not survive a re-cluster.
+  await db
+    .update(schema.assets)
+    .set({ groupCover: null })
+    .where(and(eq(schema.assets.organizationId, organizationId), eq(schema.assets.projectId, projectId), isNotNull(schema.assets.groupCover)));
+
+  if (rows.length < 2) return { groups: 0, clustered: 0 };
+  const items = rows
+    .filter((r): r is { id: string; phash: string; analysis: string | null } => isValidPhash(r.phash))
+    .map((r) => {
+      let sharp = 50;
+      try {
+        sharp = r.analysis ? (JSON.parse(r.analysis) as ImageAnalysis).sharp : 50;
+      } catch { /* un-analyzed rows tie at the default */ }
+      return { id: r.id, phash: r.phash, sharp };
+    });
+
+  const { covers, groups, clustered } = clusterSimilar(items);
+  if (!covers.size) return { groups: 0, clustered: 0 };
+
+  // group members by cover → one UPDATE per cover (2 bound vars per member,
+  // chunked under D1's variable cap by forEachChunk)
+  const membersByCover = new Map<string, string[]>();
+  for (const [assetId, cover] of covers) {
+    const list = membersByCover.get(cover) ?? [];
+    list.push(assetId);
+    membersByCover.set(cover, list);
+  }
+  for (const [cover, members] of membersByCover) {
+    await forEachChunk(members, async (chunk) => {
+      await db
+        .update(schema.assets)
+        .set({ groupCover: cover })
+        .where(and(eq(schema.assets.organizationId, organizationId), inArray(schema.assets.id, chunk)));
+    });
+  }
+  return { groups, clustered };
+}
+
+/** Filter-menu counts for the cull-assist flags (one query, three sums) —
+ * mirrors the marginal-count pattern of ratingCounts. */
+export async function qualityCounts(
+  organizationId: string,
+  projectId: string,
+): Promise<{ blurry: number; under: number; over: number; edited: number; dupes: number }> {
+  const db = getDb();
+  const row = (
+    await db
+      .select({
+        blurry: sql<number>`coalesce(sum(CASE WHEN json_extract(${schema.assets.analysis}, '$.sharp') < 16 THEN 1 ELSE 0 END), 0)`,
+        under: sql<number>`coalesce(sum(CASE WHEN json_extract(${schema.assets.analysis}, '$.lum') < 20 OR json_extract(${schema.assets.analysis}, '$.clipDark') > 6 THEN 1 ELSE 0 END), 0)`,
+        over: sql<number>`coalesce(sum(CASE WHEN json_extract(${schema.assets.analysis}, '$.lum') > 80 OR json_extract(${schema.assets.analysis}, '$.clipBright') > 6 THEN 1 ELSE 0 END), 0)`,
+        edited: sql<number>`coalesce(sum(CASE WHEN ${schema.assets.edits} IS NOT NULL THEN 1 ELSE 0 END), 0)`,
+        dupes: sql<number>`coalesce(sum(CASE WHEN ${schema.assets.groupCover} IS NOT NULL THEN 1 ELSE 0 END), 0)`,
+      })
+      .from(schema.assets)
+      .where(and(eq(schema.assets.organizationId, organizationId), eq(schema.assets.projectId, projectId)))
+  )[0];
+  return {
+    blurry: Number(row?.blurry ?? 0),
+    under: Number(row?.under ?? 0),
+    over: Number(row?.over ?? 0),
+    edited: Number(row?.edited ?? 0),
+    dupes: Number(row?.dupes ?? 0),
+  };
+}
+
+/** Near-duplicate cluster sizes for a project — coverId → member count
+ * (cover included). Feeds the "×N similar" stack badges in Files. */
+export async function groupSizes(organizationId: string, projectId: string): Promise<Record<string, number>> {
+  const db = getDb();
+  const rows = await db
+    .select({ cover: schema.assets.groupCover, n: sql<number>`count(*)` })
+    .from(schema.assets)
+    .where(and(eq(schema.assets.organizationId, organizationId), eq(schema.assets.projectId, projectId), isNotNull(schema.assets.groupCover)))
+    .groupBy(schema.assets.groupCover);
+  const out: Record<string, number> = {};
+  for (const r of rows) if (r.cover) out[r.cover] = Number(r.n);
+  return out;
 }

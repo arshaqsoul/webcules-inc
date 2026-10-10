@@ -20,7 +20,10 @@ import {
 } from "@webcules/ui/components/dialog";
 import { AssetManage } from "@/components/asset-manage";
 import { drawWatermark, loadWatermarkLogo } from "@/components/watermark-canvas";
+import { analyzeBitmap, renderEditedBlob, uploadEditedDerivative, watermarkContext, type WmContext } from "@/components/edit-canvas";
 import { colorKeyFromRgba } from "@/lib/color-sort";
+import { qualityFlags, type ImageAnalysis } from "@/lib/image-analysis";
+import { autoEdits, type PartialEdits } from "@/lib/edits";
 import { FileTypeIcon } from "@/components/file-type-icon";
 import { useConfirm } from "@/components/confirm-provider";
 import { SharePanel } from "@/components/share-panel";
@@ -45,6 +48,14 @@ export type AssetItem = {
   /** WEB-216: the folder this asset lives in (null = unfiled). */
   folderId: string | null;
   createdAt: string;
+  /** WEB-401: upload-analysis scores (null = pre-feature or undecodable). */
+  analysis: ImageAnalysis | null;
+  /** WEB-402: sparse edit set (null = unedited). */
+  edits: PartialEdits | null;
+  /** WEB-402: edit.jpg derivative exists (look rendered + stored). */
+  editedRendered: boolean;
+  /** WEB-401: cover asset id of this asset's near-duplicate cluster. */
+  groupCover: string | null;
 };
 
 export type FolderItem = { id: string; name: string; count: number };
@@ -57,6 +68,9 @@ type Feed = {
   ratings?: { stars: Record<string, number>; colors: Record<string, number> };
   folders?: FolderItem[];
   unfiledCount?: number;
+  /** WEB-401/402: cull-assist filter counts + cluster sizes (cover → n). */
+  quality?: { blurry: number; under: number; over: number; edited: number; dupes: number };
+  groupSizes?: Record<string, number>;
 };
 
 /** color 0 = none, 1 red, 2 yellow, 3 green, 4 blue, 5 purple. */
@@ -96,31 +110,15 @@ async function fingerprintFile(file: File): Promise<string | null> {
   }
 }
 
-/* ---------------- Watermark context (WEB-242) ----------------
- * Fetched once per dashboard mount: when the studio's watermark is on, new
- * uploads also generate a preview_wm derivative (browser canvas — the only
- * place watermark pixels are drawn). */
-
-type WmContext = {
-  config: { mode: "corner" | "tiled" | "text"; opacity: number; scale: number; margin: number; text?: string } | null;
-  studioName: string;
-  logoUrl: string | null;
-};
-
-let wmContextPromise: Promise<WmContext> | null = null;
-function watermarkContext(): Promise<WmContext> {
-  wmContextPromise ??= fetch("/api/studio/watermark")
-    .then((r) => (r.ok ? (r.json() as Promise<WmContext>) : { config: null, studioName: "", logoUrl: null }))
-    .catch(() => ({ config: null, studioName: "", logoUrl: null }));
-  return wmContextPromise;
-}
-
 /* ---------------- Derivatives (WEB-116) ----------------
  * Generated in-browser with canvas right after an upload lands: thumb (320px)
  * + preview (1600px) JPEGs for images, poster frame for videos. Re-encoding
  * drops EXIF (orientation is baked in) so derivatives satisfy any strip
  * policy while originals stay untouched; RAW/HEIC (no browser decoder) and
- * failures simply serve the original. */
+ * failures simply serve the original.
+ * WEB-401: the image pass also computes cull-assist analysis (quality
+ * scores + dHash) from the same decode — it rides the preview derivative
+ * upload, so analysis adds zero extra requests. */
 
 const DERIV_IMAGE_EXTS = new Set(["jpg", "jpeg", "png", "webp", "avif", "gif", "bmp"]);
 const DERIV_VIDEO_EXTS = new Set(["mp4", "webm", "mov"]);
@@ -188,7 +186,7 @@ async function uploadDerivative(
   kind: "thumb" | "preview" | "preview_wm",
   blob: Blob,
   replace = false,
-  meta?: { width?: number; height?: number; durationMs?: number; colorKey?: number },
+  meta?: { width?: number; height?: number; durationMs?: number; colorKey?: number; phash?: string; analysis?: ImageAnalysis },
 ): Promise<boolean> {
   const form = new FormData();
   form.set("kind", kind);
@@ -200,6 +198,9 @@ async function uploadDerivative(
   if (meta?.height) form.set("height", String(Math.round(meta.height)));
   if (meta?.durationMs) form.set("durationMs", String(Math.round(meta.durationMs)));
   if (meta?.colorKey !== undefined) form.set("colorKey", String(meta.colorKey));
+  // WEB-401: cull-assist payload rides the preview upload (one per image).
+  if (meta?.phash) form.set("phash", meta.phash);
+  if (meta?.analysis) form.set("analysis", JSON.stringify(meta.analysis));
   try {
     const res = await fetch(`/api/assets/${assetId}/derivative`, { method: "POST", body: form });
     return res.ok;
@@ -255,7 +256,14 @@ async function generateDerivatives(assetId: string, file: File): Promise<boolean
         canvasToBlob(bitmap, 320, 0.82),
         canvasToBlob(bitmap, 1600, 0.85),
       ]);
-      const dims = { width: bitmap.width, height: bitmap.height, colorKey: colorKeyOfBitmap(bitmap) };
+      // WEB-401: same decode, same pass — quality scores + dHash.
+      const cull = analyzeBitmap(bitmap);
+      const dims = {
+        width: bitmap.width,
+        height: bitmap.height,
+        colorKey: colorKeyOfBitmap(bitmap),
+        ...(cull ? { phash: cull.phash, analysis: cull.analysis } : {}),
+      };
       bitmap.close();
       let any = false;
       if (thumb) any = (await uploadDerivative(assetId, "thumb", thumb, false, dims)) || any;
@@ -366,18 +374,20 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
   // Asset id whose video tile is hovered (plays inline).
   const [videoHover, setVideoHover] = useState<string | null>(null);
   const actionsRef = useRef<HTMLDivElement>(null);
-  // Culling filters: rating ("unrated" | "1".."5" = ≥N), color ("none" | "1".."5").
+  // Culling filters: rating ("unrated" | "1".."5" = ≥N), color ("none" | "1".."5"),
+  // quality/cull assist (WEB-401: "blurry" | "under" | "over" | "edited" | "dupes").
   const [rating, setRating] = useState("");
   const [colorSel, setColorSel] = useState("");
+  const [cull, setCull] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
   // Bumped when upload derivatives land so grid <img> cache-bust to the
   // light ?variant=thumb rendering (WEB-116).
   const [derivVersion, setDerivVersion] = useState(0);
   // Which group's values are shown ("" = root group list) — Linear-style
   // drill-down instead of one long list of every option.
-  const [filterGroup, setFilterGroup] = useState<"" | "status" | "kind" | "tag" | "sort" | "stars" | "color">("");
+  const [filterGroup, setFilterGroup] = useState<"" | "status" | "kind" | "tag" | "sort" | "stars" | "color" | "cull">("");
   const filterRef = useRef<HTMLDivElement>(null);
-  const filterCount = [status, kind, tag, rating, colorSel].filter(Boolean).length;
+  const filterCount = [status, kind, tag, rating, colorSel, cull].filter(Boolean).length;
 
   // Close the filter popover on outside click / Escape; reset the drill-down.
   useEffect(() => {
@@ -472,11 +482,14 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
       if (sort) p.set("sort", sort);
       if (rating) p.set("rating", rating);
       if (colorSel) p.set("color", colorSel);
+      if (cull === "blurry" || cull === "under" || cull === "over") p.set("quality", cull);
+      else if (cull === "edited") p.set("edited", "yes");
+      else if (cull === "dupes") p.set("group", "dupes");
       if (folder) p.set("folder", folder);
       if (cursor) p.set("cursor", cursor);
       return `/api/projects/${projectId}/assets?${p}`;
     },
-    [projectId, status, kind, tag, sort, rating, colorSel, folder],
+    [projectId, status, kind, tag, sort, rating, colorSel, cull, folder],
   );
 
   const load = useCallback(
@@ -502,6 +515,7 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
           if (kind) url.searchParams.set("fk", kind); else url.searchParams.delete("fk");
           if (rating) url.searchParams.set("fr", rating); else url.searchParams.delete("fr");
           if (colorSel) url.searchParams.set("fc", colorSel); else url.searchParams.delete("fc");
+          if (cull) url.searchParams.set("fq", cull); else url.searchParams.delete("fq");
           if (folder) url.searchParams.set("ff", folder); else url.searchParams.delete("ff");
           window.history.replaceState(null, "", url);
         }
@@ -524,10 +538,12 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
       if (v === "list" || v === "grid") setView(v);
       const f = u.searchParams.get("ff");
       if (f) setFolder(f);
+      const q = u.searchParams.get("fq");
+      if (q && ["blurry", "under", "over", "edited", "dupes"].includes(q)) setCull(q);
     }
     void load(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reload on filter change
-  }, [status, kind, tag, sort, rating, colorSel, folder]);
+  }, [status, kind, tag, sort, rating, colorSel, cull, folder]);
 
   const refresh = useCallback(() => void load(true), [load]);
 
@@ -779,6 +795,136 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
     } catch {
       patchLocal(id, { tags: a.tags });
     }
+  }
+
+  /* ---------------- Editing (WEB-402) ----------------
+   * Save = PATCH the sparse set, then render + upload edit.jpg in the
+   * browser (the only encoder Snap has). Clearing skips the render — the
+   * server drops the stored derivative and every surface falls back to the
+   * clean preview. The same render path serves bulk paste/auto-enhance via
+   * renderEditedQueue. */
+  const [editSaving, setEditSaving] = useState(false);
+  const [editClipboard, setEditClipboard] = useState<PartialEdits | null>(null);
+  const [renderQueueN, setRenderQueueN] = useState(0);
+
+  async function saveEdits(id: string, edits: PartialEdits | null): Promise<boolean> {
+    setEditSaving(true);
+    try {
+      const res = await fetch(`/api/assets/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "edits", edits }),
+      });
+      if (!res.ok) return false;
+      if (edits && Object.keys(edits).length) {
+        const blob = await renderEditedBlob(id, edits, { maxDim: 2560, watermark: true });
+        if (blob && (await uploadEditedDerivative(id, blob))) {
+          patchLocal(id, { edits, editedRendered: true });
+          setDerivVersion((v) => v + 1);
+          return true;
+        }
+        // Rows saved but the render failed — keep edits, mark unrendered; the
+        // gallery falls back to the clean preview until a re-save lands.
+        patchLocal(id, { edits, editedRendered: false });
+        return true;
+      }
+      patchLocal(id, { edits: null, editedRendered: false });
+      setDerivVersion((v) => v + 1);
+      return true;
+    } catch {
+      return false;
+    } finally {
+      setEditSaving(false);
+    }
+  }
+
+  /** Background derivative renderer for bulk edit operations — the honest
+   * half of "enhance 200 photos": rows land in one call, but each edited
+   * look still needs a browser canvas render. Bounded parallelism 2,
+   * progress in the notice line, grid cache-busts when the batch ends. */
+  async function renderEditedQueue(entries: { id: string; edits: PartialEdits }[]) {
+    if (!entries.length) return;
+    setRenderQueueN(entries.length);
+    let done = 0;
+    const workers = Array.from({ length: Math.min(2, entries.length) }, async () => {
+      for (;;) {
+        const next = entries.shift();
+        if (!next) return;
+        const blob = await renderEditedBlob(next.id, next.edits, { maxDim: 2560, watermark: true });
+        if (blob) await uploadEditedDerivative(next.id, blob);
+        patchLocal(next.id, { editedRendered: Boolean(blob) });
+        done++;
+        setNotice(`Rendering edited looks — ${done}/${entries.length + done}…`);
+      }
+    });
+    await Promise.allSettled(workers);
+    setRenderQueueN(0);
+    setDerivVersion((v) => v + 1);
+  }
+
+  /** Bulk edit bar actions — rows land in one call, looks render after. */
+  async function bulkEdit(action: "auto_enhance" | "set_edits" | "clear_edits") {
+    const ids = Array.from(selected);
+    if (!ids.length || (action === "set_edits" && !editClipboard)) return;
+    setNotice("");
+    try {
+      const res = await fetch("/api/assets/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action,
+          assetIds: ids,
+          ...(action === "set_edits" ? { edits: editClipboard } : {}),
+        }),
+      });
+      const body = (await res.json().catch(() => ({}))) as { done?: number; skipped?: number; error?: string };
+      if (!res.ok) {
+        setNotice(body.error === "invalid_edits" ? "Nothing to paste — copy a look first." : "Couldn't apply — try again.");
+        return;
+      }
+      if (action === "clear_edits") {
+        setNotice(`Cleared edits on ${body.done ?? 0} photo${(body.done ?? 0) === 1 ? "" : "s"}.`);
+        refresh();
+        return;
+      }
+      // auto/paste: render the looks (auto derives per-photo from the stored
+      // analysis — same pure math the server ran).
+      const byId = new Map(feed.items.map((a) => [a.id, a]));
+      const entries = ids
+        .map((id) => ({ id, edits: action === "set_edits" ? editClipboard! : autoEdits(byId.get(id)?.analysis ?? { sharp: 50, lum: 50, clipDark: 0, clipBright: 0, p05: 0, p95: 255 }) }))
+        .filter((e) => e.edits && Object.keys(e.edits).length > 0);
+      setNotice(`${body.done ?? 0} photo${(body.done ?? 0) === 1 ? "" : "s"} enhanced${body.skipped ? ` · ${body.skipped} skipped (no analysis)` : ""}.`);
+      setSelected(new Set());
+      void renderEditedQueue(entries);
+      refresh();
+    } catch {
+      setNotice("Network error — try again.");
+    }
+  }
+
+  /* WEB-401: near-duplicate regroup ("Group similar"). */
+  const [grouping, setGrouping] = useState(false);
+  async function regroup() {
+    if (grouping) return;
+    setGrouping(true);
+    setNotice("Grouping similar frames…");
+    try {
+      const res = await fetch(`/api/projects/${projectId}/assets/regroup`, { method: "POST" });
+      const body = (await res.json().catch(() => ({}))) as { groups?: number; clustered?: number };
+      if (!res.ok) {
+        setNotice("Couldn't group — try again.");
+      } else {
+        setNotice(
+          body.groups
+            ? `${body.clustered} photos form ${body.groups} similar stacks — each stack's sharpest frame is the pick.`
+            : "No similar groups — every frame is distinct.",
+        );
+        refresh();
+      }
+    } catch {
+      setNotice("Network error — try again.");
+    }
+    setGrouping(false);
   }
 
   /* Spatial arrow navigation. The masonry grids are CSS multi-columns, which
@@ -1385,6 +1531,17 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
       const failed = queue.filter((q) => q.state === "failed").length;
       setNotice(failed ? `Upload finished — ${failed} failed. Retry the failures below.` : "All uploads finished.");
       refresh();
+      // WEB-401: derivatives (carrying the phashes) trail the originals by a
+      // few seconds — recluster near-duplicates once they've landed, then
+      // quietly refresh so the "×N similar" badges appear without a reload.
+      const hadImages = queue.some((q) => q.state === "done" && /\.(jpe?g|png|webp|avif|gif|bmp)$/i.test(q.name));
+      if (hadImages) {
+        setTimeout(() => {
+          void fetch(`/api/projects/${projectId}/assets/regroup`, { method: "POST" })
+            .then(() => load(true))
+            .catch(() => undefined);
+        }, 10_000);
+      }
       setTimeout(() => setQueue([]), 5000);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- completion watcher
@@ -1392,7 +1549,7 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
 
   const inputRef = useRef<HTMLInputElement>(null);
   const counts = feed.counts;
-  const activeFilters = Boolean(status || kind || tag || rating || colorSel);
+  const activeFilters = Boolean(status || kind || tag || rating || colorSel || cull);
   /* Day groups (Midjourney organize-style): date-sorted contiguous items
    * share one bordered mosaic block with a date header, so the outline
    * hugs the first/last images of each group. Non-date sorts render as a
@@ -1422,12 +1579,14 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
   }, [queue]);
 
   /* Filter menu (hierarchical): root rows + flyout submenus. */
+  const CULL_LABELS: Record<string, string> = { blurry: "Soft focus", under: "Too dark", over: "Too bright", edited: "Edited", dupes: "Similar groups" };
   const FILTER_ROOT = [
     { key: "status" as const, label: "Status", current: status || "All", has: Boolean(status), clear: () => setStatus("") },
     { key: "kind" as const, label: "Type", current: kind || "All", has: Boolean(kind), clear: () => setKind("") },
     { key: "tag" as const, label: "Tags", current: tag || "All", has: Boolean(tag), clear: () => setTag("") },
     { key: "stars" as const, label: "Stars", current: rating ? (rating === "unrated" ? "Unrated" : `${rating}+`) : "Any", has: Boolean(rating), clear: () => setRating("") },
     { key: "color" as const, label: "Color", current: colorSel ? (colorSel === "none" ? "None" : COLOR_NAMES[Number(colorSel)]) : "Any", has: Boolean(colorSel), clear: () => setColorSel("") },
+    { key: "cull" as const, label: "Quality", current: cull ? CULL_LABELS[cull] : "Any", has: Boolean(cull), clear: () => setCull("") },
     {
       key: "sort" as const,
       label: "Sort by",
@@ -1437,7 +1596,7 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
     },
   ];
 
-  function filterGroupDef(key: "status" | "kind" | "tag" | "stars" | "color" | "sort") {
+  function filterGroupDef(key: "status" | "kind" | "tag" | "stars" | "color" | "cull" | "sort") {
     if (key === "status")
       return {
         allLabel: "All statuses",
@@ -1486,6 +1645,20 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
         options: [
           { value: "none", label: "No label", count: Number(feed.ratings?.colors["0"] ?? 0) },
           ...[1, 2, 3, 4, 5].map((n) => ({ value: String(n), label: COLOR_NAMES[n], count: Number(feed.ratings?.colors[String(n)] ?? 0) })),
+        ],
+      };
+    if (key === "cull")
+      return {
+        allLabel: "Any quality",
+        allValue: "",
+        current: cull,
+        apply: (v: string) => setCull(v),
+        options: [
+          { value: "blurry", label: "Soft focus", count: feed.quality?.blurry },
+          { value: "under", label: "Too dark", count: feed.quality?.under },
+          { value: "over", label: "Too bright", count: feed.quality?.over },
+          { value: "edited", label: "Edited", count: feed.quality?.edited },
+          { value: "dupes", label: "Similar groups", count: feed.quality?.dupes },
         ],
       };
     return {
@@ -1554,6 +1727,11 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
         onTag={(id, tag, add) => void tagAsset(id, tag, add)}
         folders={folders}
         onMove={(id, folderId) => void moveIdsTo([id], folderId)}
+        onSaveEdits={saveEdits}
+        editClipboard={editClipboard}
+        onCopyEdits={setEditClipboard}
+        editSaving={editSaving}
+        groupSizes={feed.groupSizes}
       />
     );
   }
@@ -1793,6 +1971,7 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
                     setTag("");
                     setRating("");
                     setColorSel("");
+                    setCull("");
                   }}
                   className="mt-1 w-full rounded-md border-t border-hairline px-2 py-1.5 text-left text-[13px] text-ink-subtle transition-colors hover:bg-surface-2"
                 >
@@ -1852,6 +2031,15 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
             </Button>
             <Button size="sm" variant="outline" disabled={!feed.items.length} onClick={() => setTriageOpen(true)}>
               Triage
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={!feed.items.length || grouping}
+              onClick={() => void regroup()}
+              title="Find near-identical frames (bursts, repeated poses) and stack them under their sharpest pick"
+            >
+              {grouping ? "Grouping…" : "Group similar"}
             </Button>
             <Button size="sm" variant={heatOn ? "default" : "outline"} disabled={!feed.items.length} onClick={() => setHeatOn((v) => !v)} title="Heat: which photos your client looked at most (Studio)">
               {heatOn ? "Heat on" : "Heat"}
@@ -2030,6 +2218,29 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
           <Button size="sm" variant="outline" disabled={!selected.size} onClick={() => void bulk("approve")}>Approve</Button>
           <Button size="sm" variant="outline" disabled={!selected.size} onClick={() => void bulk("reject")}>Reject</Button>
           <Button size="sm" variant="outline" disabled={!selected.size} onClick={() => void bulk("tag", "favorite")}>Favorite</Button>
+          {/* WEB-402: edit look actions — enhance/paste fix measured problems
+           * in one call, then looks render in the background (progress above). */}
+          <Button size="sm" variant="outline" disabled={!selected.size || renderQueueN > 0} onClick={() => void bulkEdit("auto_enhance")} title="Auto-correct exposure, clipping and flat range on every selected photo">
+            Auto-enhance
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!selected.size}
+            onClick={() => {
+              const first = feed.items.find((a) => selected.has(a.id) && a.edits);
+              if (first?.edits) setEditClipboard(first.edits);
+            }}
+            title="Copy the edited look of the first selected photo"
+          >
+            Copy look
+          </Button>
+          <Button size="sm" variant="outline" disabled={!selected.size || !editClipboard || renderQueueN > 0} onClick={() => void bulkEdit("set_edits")} title={editClipboard ? "Paste the copied look onto every selected photo" : "Copy a look first (from the editor or the bulk bar)"}>
+            Paste look
+          </Button>
+          <Button size="sm" variant="ghost" disabled={!selected.size} onClick={() => void bulkEdit("clear_edits")} title="Remove edits from the selection — originals were never touched">
+            Clear edits
+          </Button>
           <Button size="sm" variant="outline" disabled={!selected.size} onClick={() => void bulk("peek-on")} title="A first look on the client home before the gallery opens (Studio)">Sneak peek</Button>
           <Button size="sm" variant="ghost" disabled={!selected.size} onClick={() => void bulk("peek-off")} title="Remove the sneak-peek flag">Un-peek</Button>
           <TagInput disabled={!selected.size} onTag={(t) => void bulk("tag", t)} />
@@ -2257,6 +2468,33 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
                       {a.tags.includes("favorite") && (
                         <span className={`absolute left-1 top-1 z-[6] text-[10px] leading-none text-amber-400 drop-shadow `} aria-hidden>
                           ♥
+                        </span>
+                      )}
+                      {/* WEB-401: near-duplicate stack badge — on the cluster
+                       * cover only (members badge in the manage pane). */}
+                      {a.groupCover === a.id && (feed.groupSizes?.[a.id] ?? 0) > 1 && (
+                        <span
+                          className="absolute left-1 bottom-1 z-[6] rounded-full bg-black/55 px-1.5 py-0.5 text-[9px] font-medium leading-none text-white"
+                          title={`${feed.groupSizes?.[a.id]} near-identical frames — this is the sharpest of the stack (filter: Quality → Similar groups)`}
+                        >
+                          ⧉ {feed.groupSizes?.[a.id]}
+                        </span>
+                      )}
+                      {/* WEB-401: cull-assist flags (uploads analyzed at upload). */}
+                      {a.analysis && qualityFlags(a.analysis).blurry && (
+                        <span className="absolute bottom-1 right-1 z-[6] rounded-full bg-black/55 px-1.5 py-0.5 text-[9px] font-medium leading-none text-sky-300" title="Soft focus — check sharpness before delivering">
+                          ◐ soft
+                        </span>
+                      )}
+                      {a.analysis && !qualityFlags(a.analysis).blurry && (qualityFlags(a.analysis).under || qualityFlags(a.analysis).over) && (
+                        <span className="absolute bottom-1 right-1 z-[6] rounded-full bg-black/55 px-1.5 py-0.5 text-[9px] font-medium leading-none text-amber-300" title={qualityFlags(a.analysis).under ? "Underexposed — auto-enhance lifts it" : "Overexposed — auto-enhance recovers highlights"}>
+                          {qualityFlags(a.analysis).under ? "▾ dark" : "▴ bright"}
+                        </span>
+                      )}
+                      {/* WEB-402: edited marker. */}
+                      {a.edits && (
+                        <span className="absolute right-1 top-7 z-[6] rounded-full bg-primary/80 px-1.5 py-0.5 text-[9px] font-medium leading-none text-white" title="Edited look — clients see this grade">
+                          ✎
                         </span>
                       )}
                       {compact && (

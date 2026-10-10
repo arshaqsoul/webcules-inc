@@ -1,17 +1,21 @@
 /* Curation data feed (WEB-120/121) — paged asset list + counts + tag cloud
  * for the project Files experience. Query: status, kind, tag, sort, cursor,
- * folder ("none" = unfiled, else folder id — WEB-216). */
+ * folder ("none" = unfiled, else folder id — WEB-216), quality
+ * ("blurry"/"under"/"over"), edited ("yes"/"none"), group ("dupes")
+ * — WEB-401/402 cull assist. */
 import { and, eq } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
-import { listAssetsPaged, listProjectTags, ratingCounts, statusCounts, type AssetFilter } from "@/lib/repos/assets";
+import { groupSizes, listAssetsPaged, listProjectTags, qualityCounts, ratingCounts, statusCounts, type AssetFilter } from "@/lib/repos/assets";
 import { listFolders } from "@/lib/repos/folders";
 import { getOrgContext } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
 const SORTS = new Set(["date", "name", "size", "status"]);
+const QUALITY = new Set(["blurry", "under", "over"]);
+const EDITED = new Set(["yes", "none"]);
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const ctx = await getOrgContext();
@@ -42,14 +46,19 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     rating: RATING.has(q.get("rating") ?? "") ? q.get("rating") : undefined,
     color: COLOR.has(q.get("color") ?? "") ? q.get("color") : undefined,
     folder: folder || undefined,
+    quality: QUALITY.has(q.get("quality") ?? "") ? q.get("quality") : undefined,
+    edited: EDITED.has(q.get("edited") ?? "") ? q.get("edited") : undefined,
+    group: q.get("group") === "dupes" ? "dupes" : undefined,
   };
 
-  const [page, counts, tags, ratings, folderInfo] = await Promise.all([
+  const [page, counts, tags, ratings, folderInfo, quality, groups] = await Promise.all([
     listAssetsPaged(ctx.organizationId, id, filter),
     statusCounts(ctx.organizationId, id),
     listProjectTags(ctx.organizationId, id),
     ratingCounts(ctx.organizationId, id),
     listFolders(ctx.organizationId, id),
+    qualityCounts(ctx.organizationId, id),
+    groupSizes(ctx.organizationId, id),
   ]);
 
   return Response.json({
@@ -71,6 +80,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       createdAt: a.createdAt.toISOString(),
       capturedAt: a.capturedAt && a.capturedAt > 0 ? a.capturedAt : null,
       colorKey: a.colorKey,
+      // WEB-401/402: cull-assist fields (null when never analyzed/uploaded
+      // before this feature — UI hides flags for those).
+      analysis: a.analysis ? JSON.parse(a.analysis) : null,
+      edits: a.edits ? JSON.parse(a.edits) : null,
+      editedRendered: Boolean(a.editKey),
+      groupCover: a.groupCover,
     })),
     nextCursor: page.nextCursor,
     counts,
@@ -78,5 +93,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     ratings,
     folders: folderInfo.folders,
     unfiledCount: folderInfo.unfiledCount,
+    quality,
+    groupSizes: groups,
   });
 }

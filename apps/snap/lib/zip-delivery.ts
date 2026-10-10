@@ -49,6 +49,7 @@ type ZipRow = {
   thumbKey: string | null;
   previewKey: string | null;
   previewWmKey: string | null;
+  editKey: string | null;
   folderName: string | null;
 };
 
@@ -88,6 +89,7 @@ async function resolveRows(grantId: string, sel: ZipSelection): Promise<ZipRow[]
       thumbKey: schema.assets.thumbKey,
       previewKey: schema.assets.previewKey,
       previewWmKey: schema.assets.previewWmKey,
+      editKey: schema.assets.editKey,
       folderName: schema.shareGrantAssets.folderName,
     })
     .from(schema.shareGrantAssets)
@@ -112,16 +114,23 @@ async function resolveRows(grantId: string, sel: ZipSelection): Promise<ZipRow[]
   return picked.sort((a, b) => cmp(a.folderName ?? "", b.folderName ?? "") || cmp(a.filename, b.filename) || cmp(a.id, b.id));
 }
 
-/** Which R2 object ships for a row - mirrors /api/assets/{id}?download=1. */
+/** Which R2 object ships for a row - mirrors /api/assets/{id}?download=1.
+ * WEB-402: an edited look (edit.jpg) replaces the preview and the original
+ * in every deliverable path — the grade is the deliverable; edit.jpg is
+ * EXIF-free by construction (canvas), so strip never applies to it. */
 function sourceKey(row: ZipRow, size: SizePref, proofing: boolean): { key: string; strip: boolean; derivative: boolean } | null {
   if (row.kind === "video") {
     return proofing ? null : { key: row.storageKey, strip: false, derivative: false };
   }
   if (proofing) {
-    const key = row.previewWmKey ?? row.previewKey ?? row.thumbKey;
+    const key = row.editKey ?? row.previewWmKey ?? row.previewKey ?? row.thumbKey;
     return key ? { key, strip: false, derivative: true } : null; // originals never leave a proofing grant
   }
-  if (size === "web" && row.previewKey) return { key: row.previewKey, strip: false, derivative: true };
+  if (size === "web") {
+    const key = row.editKey ?? row.previewKey;
+    return key ? { key, strip: false, derivative: true } : null;
+  }
+  if (row.editKey) return { key: row.editKey, strip: false, derivative: true };
   return { key: row.storageKey, strip: row.mimeType === "image/jpeg", derivative: false };
 }
 

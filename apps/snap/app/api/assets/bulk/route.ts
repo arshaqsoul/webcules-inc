@@ -3,20 +3,26 @@
  * reporting (blocked items come back with reasons). "rename" runs the
  * pattern renamer (base + running index, extensions preserved). "move"
  * (WEB-216) files the ids into a folder (folderId) or back to Unfiled
- * (folderId null) — pointer moves, no bytes touched. */
+ * (folderId null) — pointer moves only, no bytes touched.
+ * WEB-402: "set_edits"/"clear_edits" paste one edit set over the selection;
+ * "auto_enhance" derives per-photo corrections from the upload analysis. */
 import { getOrgContext } from "@/lib/session";
-import { bulkAssetAction, bulkRenameAssets, bulkSetRating } from "@/lib/repos/assets";
+import { bulkAssetAction, bulkAutoEnhance, bulkRenameAssets, bulkSetEdits, bulkSetRating } from "@/lib/repos/assets";
 import { moveAssets } from "@/lib/repos/folders";
+import { normalizeEditSet } from "@/lib/edits";
 
 export const dynamic = "force-dynamic";
 
-const ACTIONS = new Set(["approve", "reject", "reset", "delete", "tag", "untag", "rename", "stars", "color", "move"]);
+const ACTIONS = new Set([
+  "approve", "reject", "reset", "delete", "tag", "untag", "rename", "stars", "color", "move",
+  "set_edits", "clear_edits", "auto_enhance",
+]);
 
 export async function POST(req: Request) {
   const ctx = await getOrgContext();
   if (!ctx) return Response.json({ error: "unauthorized" }, { status: 401 });
 
-  let body: { action?: string; assetIds?: string[]; tag?: string; base?: string; start?: number; pad?: number; value?: number; folderId?: string | null };
+  let body: { action?: string; assetIds?: string[]; tag?: string; base?: string; start?: number; pad?: number; value?: number; folderId?: string | null; edits?: unknown };
   try {
     body = (await req.json()) as typeof body;
   } catch {
@@ -49,6 +55,25 @@ export async function POST(req: Request) {
     }
     const done = await bulkSetRating(ctx.organizationId, ids, { [body.action]: body.value });
     return Response.json({ done });
+  }
+
+  // WEB-402: paste/clear/auto — one edit set over the selection. The client
+  // re-renders edited derivatives in the background after the rows land.
+  if (body.action === "set_edits") {
+    const normalized = normalizeEditSet(body.edits);
+    if (normalized === null || Object.keys(normalized).length === 0) {
+      return Response.json({ error: "invalid_edits" }, { status: 400 });
+    }
+    const done = await bulkSetEdits(ctx.organizationId, ids, normalized);
+    return Response.json({ done });
+  }
+  if (body.action === "clear_edits") {
+    const done = await bulkSetEdits(ctx.organizationId, ids, null);
+    return Response.json({ done });
+  }
+  if (body.action === "auto_enhance") {
+    const result = await bulkAutoEnhance(ctx.organizationId, ids);
+    return Response.json(result);
   }
 
   if (body.action === "rename") {

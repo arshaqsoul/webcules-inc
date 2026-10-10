@@ -7,6 +7,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { AssetItem } from "@/components/project-files";
+import { qualityFlags } from "@/lib/image-analysis";
 
 type UndoEntry = { id: string; from: string; to: string };
 
@@ -216,11 +217,18 @@ const rate = useCallback(
           >
             {flash && <span className="rounded-full px-4 py-1.5 text-sm font-semibold text-white" style={{ background: flash === "approved" ? "#1e8e3e" : "#cc3d3d" }}>{flash}</span>}
           </div>
-          <span className="absolute bottom-2 left-3 flex items-center gap-2 rounded-full bg-black/45 px-2.5 py-1 text-xs text-white">
-            {current.filename}
+          <span className="absolute bottom-2 left-3 flex max-w-[calc(100%-1.5rem)] items-center gap-2 rounded-full bg-black/45 px-2.5 py-1 text-xs text-white">
+            <span className="truncate">{current.filename}</span>
             {(rated[current.id]?.stars ?? current.stars) > 0 && <span className="text-amber-400">{"★".repeat(rated[current.id]?.stars ?? current.stars)}</span>}
             {(rated[current.id]?.color ?? current.color) > 0 && (
               <span aria-hidden className="h-2 w-2 rounded-full" style={{ background: ["#8a8f98", "#e5484d", "#f5d90a", "#46a758", "#3e63dd", "#8e4ec6"][rated[current.id]?.color ?? current.color] }} />
+            )}
+            {/* WEB-401: cull-assist badges — quality flags + similar stack. */}
+            {current.analysis && qualityFlags(current.analysis).blurry && <span className="text-sky-300" title="Soft focus">◐</span>}
+            {current.analysis && qualityFlags(current.analysis).under && <span className="text-amber-300" title="Underexposed">▾</span>}
+            {current.analysis && qualityFlags(current.analysis).over && <span className="text-amber-300" title="Overexposed">▴</span>}
+            {current.groupCover && current.groupCover === current.id && items.filter((i) => i.groupCover === current.groupCover).length > 1 && (
+              <span title="Near-identical frames in this stack">⧉ {items.filter((i) => i.groupCover === current.groupCover).length}</span>
             )}
           </span>
         </div>
