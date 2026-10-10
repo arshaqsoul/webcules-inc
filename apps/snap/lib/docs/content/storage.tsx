@@ -20,6 +20,9 @@ export default function Storage() {
         RAW quota (see <a href="/docs/raw-vault">RAW Vault</a> for how RAWs age into cold storage,
         which doesn't change what they count). The <em>derivatives</em> Snap makes for you —
         preview images, watermarked copies, thumbnails — don't count; only your original files do.
+        Edited looks don't count either (<a href="/docs/cull-and-edit">Culling &amp; editing</a>):
+        an edit is a few stored settings plus a rendered copy in the same derivative tier, so
+        grading an entire wedding doesn't move your usage bar.
         Deleting a file releases its space immediately.
       </p>
       <Note>

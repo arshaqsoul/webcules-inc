@@ -53,7 +53,8 @@ export default function Concepts() {
       <H3>The project hub</H3>
       <p>
         Open any project and it&apos;s all there in tabs: <strong>Overview</strong> (form responses
-        and questionnaires), <strong>Files</strong> (the images, with folders and deduplication),{" "}
+        and questionnaires), <strong>Files</strong> (the images, with folders, cull assist, and
+        in-Snap editing),{" "}
         <strong>Client gallery</strong> (design and send the gallery), <strong>Payments &amp;
         invoices</strong>, <strong>Contracts</strong>, and <strong>Activity</strong> (the full
         audit trail). See <a href="/docs/project-hub">The project hub</a>.

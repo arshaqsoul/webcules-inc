@@ -16,6 +16,7 @@ const PAGES: Array<[string, RegExp]> = [
   ["bookings", /Managing bookings/],
   ["projects", /Projects/],
   ["project-hub", /project hub/i],
+  ["cull-and-edit", /Cull assist/],
   ["contracts", /Contracts/],
   ["gallery-delivery", /Delivering galleries/],
   ["gallery-design", /Gallery design/],

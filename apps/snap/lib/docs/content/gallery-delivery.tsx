@@ -1,7 +1,8 @@
 /* Delivering galleries — docs-shell restructure of app/docs/gallery-delivery/page.tsx
  * (copy preserved) with the delivery machinery verified against code:
  * lib/shares/grants.ts, lib/shares/gallery-auth.ts, lib/gallery-downloads.ts,
- * lib/plans-data.ts, app/dashboard/galleries/page.tsx. */
+ * lib/zip-delivery.ts, app/api/assets/[id]/route.ts, lib/plans-data.ts,
+ * app/dashboard/galleries/page.tsx. */
 import { H2, Note, Callout, Shot, Tier, Related } from "@/lib/docs/primitives";
 
 export default function GalleryDelivery() {
@@ -92,6 +93,13 @@ export default function GalleryDelivery() {
         (&ldquo;Part 1 of 6&rdquo;) &mdash; every part opens on any computer or phone, and a dropped
         connection only costs one part. Photos and films are both included; a single file over
         4&nbsp;GB is downloaded on its own from the full-screen view.
+      </p>
+      <p>
+        Deliveries follow your edits: photos graded in Snap&apos;s built-in{" "}
+        <a href="/docs/cull-and-edit">editor</a> go out with the look applied — gallery views,
+        single downloads, and every ZIP part — while the originals on the server stay
+        byte-for-byte untouched (the delivered grade is a rendered JPEG up to 2560&nbsp;px).
+        Clear an edit and the clean photo is what ships again.
       </p>
       <p>
         Per gallery you can also allow downloads (or not), set a 4&ndash;8 digit PIN{" "}

@@ -1,7 +1,8 @@
 /* The project hub — one doc page per tab, written from code:
  * app/dashboard/projects/[id]/page.tsx (exact tab order), project-files.tsx
- * (folders, dedup, culling), project-payments/invoices/contracts.tsx, and
- * the ActivityTab feed (status events + share activity + audit log). */
+ * (folders, dedup, cull assist, editing), edit-panel.tsx,
+ * project-payments/invoices/contracts.tsx, and the ActivityTab feed
+ * (status events + share activity + audit log). */
 import { H2, H3, Note, Callout, Shot, Related } from "@/lib/docs/primitives";
 
 export default function ProjectHub() {
@@ -49,11 +50,25 @@ export default function ProjectHub() {
       <p>
         The workspace. Drop files anywhere to upload — a queue tracks progress, retries failures,
         and pauses on demand, and a duplicate check offers to skip identical files before they
-        upload twice. Filter by status, type, tags, star ratings, or color labels; sort; work in
-        grid or list. File shots into <strong>folders</strong> (up to 100 per project) by dragging;
-        deleted folders return files to Unfiled. Triage mode is fast culling — approve, reject, and
-        star with the keyboard. Files in an active client gallery are locked, and the share panel
-        delivers approved files or whole folders without leaving the tab.
+        upload twice. Every photo is also graded the moment it lands: soft, too-dark, and
+        too-bright frames carry badges in the grid, the Filter menu&apos;s{" "}
+        <strong>Quality</strong> group turns them into one-click selections with live counts, and{" "}
+        <strong>Group similar</strong> stacks near-identical frames (bursts, repeat poses) under
+        their sharpest pick. Filter by status, type, quality, tags, star ratings, or color labels;
+        sort; work in grid or list. File shots into <strong>folders</strong> (up to 100 per
+        project) by dragging; deleted folders return files to Unfiled. Triage mode is fast culling
+        — approve, reject, and star with the keyboard, badges and all.
+      </p>
+      <p>
+        Opening a photo opens it in the file viewer, where the side panel now has an{" "}
+        <strong>Edit</strong> section: eight Lightroom-style sliders (exposure through
+        saturation), a deterministic <strong>Auto</strong> that corrects only what&apos;s
+        measurably off, six starter presets plus your own saved looks, and Copy look, Paste look,
+        or bulk Auto-enhance across a whole selection — all non-destructive. Your original file is
+        never modified, and clearing edits restores the clean photo. Files in an active client
+        gallery are locked, and the share panel delivers approved files or whole folders without
+        leaving the tab. Cull assist and editing have their own page:{" "}
+        <a href="/docs/cull-and-edit">Culling &amp; editing</a>.
       </p>
 
       <H3>Client gallery</H3>
@@ -103,7 +118,7 @@ export default function ProjectHub() {
         <a href="/docs/client-portal">the client portal</a>, galleries, and signing links.
       </Note>
 
-      <Related slugs={["projects", "gallery-delivery", "payments", "contracts"]} />
+      <Related slugs={["cull-and-edit", "projects", "gallery-delivery", "payments", "contracts"]} />
     </>
   );
 }
