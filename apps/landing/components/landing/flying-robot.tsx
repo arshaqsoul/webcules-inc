@@ -10,6 +10,8 @@ import {
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
+import { useCalConfig } from "@/components/shared/cta-button";
+
 const W = 112;
 const H = Math.round((W * 570) / 420);
 const MIN_VIEWPORT = 1024;
@@ -31,6 +33,7 @@ const MIN_VISIBLE = 40;
  *  the robot is beside its title. */
 export function FlyingRobot() {
   const reduce = useReducedMotion();
+  const calConfig = useCalConfig();
   const x = useMotionValue(-400);
   const y = useMotionValue(-400);
   const sx = useSpring(x, { stiffness: 80, damping: 18, mass: 0.8 });
@@ -154,7 +157,7 @@ export function FlyingRobot() {
           aria-label="Book a discovery call"
           data-cal-namespace=""
           data-cal-link="webcules/discovery"
-          data-cal-config='{"layout":"month_view"}'
+          data-cal-config={calConfig}
           className="group relative block w-full cursor-pointer"
         >
           <div className="float-slow relative transition-transform duration-300 group-hover:scale-110">
