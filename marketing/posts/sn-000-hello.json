@@ -1,0 +1,11 @@
+{
+  "id": "sn-000-hello",
+  "brand": "snap",
+  "kicker": "Now live",
+  "headline": "Hello, photographers. *Snap* is here.",
+  "sub": "One place for bookings, client galleries, contracts, invoices and payments.",
+  "cta": "Start free at snaphq.app",
+  "art": { "seed": 7, "prompt": "Abstract soft glowing camera aperture ring of pale light floating in a pastel lavender space, airy, minimal" },
+  "caption": "Hello, photographers! Snap is here.\n\nWe built Snap to take the admin off your plate: bookings, client galleries, contracts, invoices and payments, all in one place.\n\nIt is free to start: 20 GB of storage, unlimited bookings, 5 active galleries, a full CRM and a unified inbox. Clients pay straight into your own Stripe account.\n\nBuilt in Saskatoon. We are just getting started, so tell us in the comments: what is the most annoying part of running your photography business?",
+  "hashtags": ["#PhotographerLife", "#PhotographyBusiness", "#WeddingPhotographer", "#Snap", "#StudioManagement"]
+}

@@ -1,0 +1,34 @@
+{
+  "name": "Snap",
+  "logo": "brands/snap-logo.png",
+  "domain": "snaphq.app",
+  "phone": null,
+  "booking": "cal.com/webcules/snap",
+  "location": "Built in Saskatoon",
+  "tagline": "Booking, galleries, contracts and payments for photographers",
+  "theme": {
+    "bg": "#f1f1fb",
+    "ink": "#0f1011",
+    "muted": "#4a4d63",
+    "accent": "#5e6ad2",
+    "accent2": "#8b95e8",
+    "button": "#232326",
+    "buttonInk": "#ffffff",
+    "sans": "Inter",
+    "serif": "Inter"
+  },
+  "artStyle": "soft pastel lavender and white gradient, airy, minimal, gentle light, large calm empty area in the upper half",
+  "contactLines": [
+    "Talk to us",
+    "cal.com/webcules/snap"
+  ],
+  "require": [
+    "snaphq.app",
+    "cal.com/webcules/snap"
+  ],
+  "cover": {
+    "headline": "Booking, galleries, contracts and payments.<br>All in *one* place, for photographers.",
+    "pill": "Free to start at snaphq.app",
+    "logoRadius": "24px"
+  }
+}

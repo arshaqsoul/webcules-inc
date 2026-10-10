@@ -1,0 +1,20 @@
+{
+  "id": "sn-003-free",
+  "brand": "snap",
+  "kicker": "Free to start",
+  "headline": "Free: *20 GB*, unlimited bookings, 5 galleries.",
+  "sub": "The full client experience, with no card needed to try it.",
+  "cta": "Start free at snaphq.app",
+  "art": {
+    "seed": 113,
+    "prompt": "Abstract soft stack of light photo-like frames floating in a pastel lavender space, airy, minimal"
+  },
+  "caption": "Try Snap free: 20 GB of storage, unlimited bookings, 5 active galleries, a full CRM and a unified inbox.\\n\\nSee if it fits your studio.",
+  "hashtags": [
+    "#PhotographerLife",
+    "#PhotographyTools",
+    "#WeddingPhotographer",
+    "#Snap",
+    "#ClientGalleries"
+  ]
+}

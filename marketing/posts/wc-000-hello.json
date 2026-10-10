@@ -1,0 +1,11 @@
+{
+  "id": "wc-000-hello",
+  "brand": "webcules",
+  "kicker": "Now on Facebook",
+  "headline": "Hello, Saskatoon. We're *Webcules*.",
+  "sub": "Websites, apps and AI integrations, built by a local developer.",
+  "cta": "Book a discovery call",
+  "art": { "seed": 101, "prompt": "Abstract wide glowing horizon of layered violet and lavender light waves over a dark indigo night sky with a few stars, minimal, elegant" },
+  "caption": "Hello, Saskatoon! We are Webcules, and we are new here.\n\nWe design, build and run digital products for local businesses:\n- Websites that bring in customers\n- Custom apps and internal tools\n- AI integrations that take repetitive work off your plate\n- Software for travel agencies\n\nWe also build our own products, like Snap for photographers.\n\nGot an idea, or a task that eats your week? Book a short discovery call and let's talk it through. We would love to meet you.",
+  "hashtags": ["#Saskatoon", "#YXE", "#SaskBusiness", "#WebDesign", "#AIforBusiness"]
+}
