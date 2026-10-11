@@ -1,0 +1,20 @@
+{
+  "id": "sn-010-question",
+  "brand": "snap",
+  "kicker": "Photographers",
+  "headline": "What's your most *annoying* admin task?",
+  "sub": "We're building Snap around the answers.",
+  "cta": "Start free at snaphq.app",
+  "art": {
+    "seed": 256,
+    "prompt": "Abstract glowing question mark of soft light on pastel lavender gradient, airy, friendly, minimal"
+  },
+  "caption": "Photographers: what is the most annoying part of running your business that isn't actually taking photos?\n\nInvoices? Contracts? Chasing replies? Tell us in the comments. We're building Snap around the answers, and we read every one.",
+  "hashtags": [
+    "#PhotographerLife",
+    "#PhotographyBusiness",
+    "#Snap",
+    "#WeddingPhotographer",
+    "#FreelancePhotographer"
+  ]
+}

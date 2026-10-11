@@ -1,0 +1,20 @@
+{
+  "id": "sn-008-booking",
+  "brand": "snap",
+  "kicker": "Bookings",
+  "headline": "Let clients book *themselves*.",
+  "sub": "Unlimited bookings, on every plan.",
+  "cta": "Start free at snaphq.app",
+  "art": {
+    "seed": 234,
+    "prompt": "Abstract soft pastel calendar-like grid of glowing dots fading into lavender mist, airy, minimal"
+  },
+  "caption": "Stop the back-and-forth of finding a date. Clients book themselves, and Snap puts it straight on your calendar and pipeline.\n\nUnlimited bookings on every plan, including free.",
+  "hashtags": [
+    "#PhotographerLife",
+    "#PhotographyBooking",
+    "#WeddingPhotographer",
+    "#Snap",
+    "#StudioManagement"
+  ]
+}
