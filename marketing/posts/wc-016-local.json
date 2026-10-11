@@ -1,0 +1,20 @@
+{
+  "id": "wc-016-local",
+  "brand": "webcules",
+  "kicker": "Local developer",
+  "headline": "A local developer. *Real* conversations.",
+  "sub": "Call, message or meet in person. No ticket queues.",
+  "cta": "Book a discovery call",
+  "art": {
+    "seed": 185,
+    "prompt": "Abstract two soft glowing speech-bubble shapes of lavender light in dark indigo space, warm and friendly, minimal"
+  },
+  "caption": "Working with a local developer means you can pick up the phone, send a message, or meet over coffee.\n\nNo ticket queues, no offshore hand-offs. Just someone who knows your business and lives down the road.\n\nBook a discovery call.",
+  "hashtags": [
+    "#Saskatoon",
+    "#YXE",
+    "#SupportLocal",
+    "#WebDesign",
+    "#SaskBusiness"
+  ]
+}

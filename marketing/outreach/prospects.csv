@@ -1,0 +1,2 @@
+business,contact_name,role,email,phone,website,facebook_page,industry,what_i_noticed,channel,date_first_contact,followup_1_due,followup_2_due,status,notes
+EXAMPLE - delete this row,Jane,Owner,jane@example.com,,example.com,,Hair salon,"Site is not readable on a phone and has no online booking",email,2026-10-12,2026-10-15,2026-10-19,contacted,
