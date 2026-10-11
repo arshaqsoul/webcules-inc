@@ -145,7 +145,10 @@ function listMarkdownFiles(dir) {
 
 function cleanBody(title, raw) {
   // Normalize CRLF (git autocrlf on Windows) so the frontmatter strip works.
-  let body = raw.replace(/\r\n/g, '\n').replace(/^---\n.*?\n---\n?/s, '');
+  let body = raw.replace(/\r\n/g, '\n');
+  // Internal confirmation markers never belong in public text.
+  body = body.replace(/ ?\(confirmed (by Arshaq )?\d{4}-\d{2}-\d{2}\)/gi, '');
+  body = body.replace(/^---\n.*?\n---\n?/s, '');
   for (const [pattern, replacement] of PATCHES[title] || []) {
     body = body.replace(pattern, replacement);
   }
