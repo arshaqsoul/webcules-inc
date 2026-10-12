@@ -25,5 +25,15 @@
   "packageManager": "pnpm@10.4.1",
   "engines": {
     "node": ">=20"
+  },
+  "pnpm": {
+    "overrides": {
+      "immutable": "^4.3.9",
+      "yaml": "^2.8.3",
+      "fflate": "^0.7.5",
+      "undici@<7.29.1": "^7.29.1",
+      "sharp@<0.35.5": "^0.35.5",
+      "picomatch@2": "2.3.2"
+    }
   }
 }
