@@ -2,6 +2,8 @@
  * (landing, onboarding, settings). Marketing must not drift from lib/plans. */
 import { describe, expect, it } from "vitest";
 
+import pricingSectionSrc from "../../components/landing/pricing-section.tsx?raw";
+import planPanelSrc from "../../components/plan-panel.tsx?raw";
 import { PLANS } from "@/lib/plans";
 import { PRO_CARD, TALK_TO_US_HREF, TEAMS_CTA, TIER_CARDS } from "@/lib/tier-cards";
 
@@ -85,5 +87,59 @@ describe("TIER_CARDS", () => {
         seen.add(f);
       }
     }
+  });
+
+  /* WEB-256: commerce W1 pricing copy — Board-approved block (confirmation
+   * 2611c0c9). The wording is fixed; the numbers inside it must be derived
+   * from lib/plans so the cards can't drift from the enforced caps. */
+  it("WEB-256: commerce ladder on the cards matches the Board-approved copy and lib/plans numbers", () => {
+    const lite = TIER_CARDS.find((t) => t.id === "lite")!;
+    const studio = TIER_CARDS.find((t) => t.id === "studio")!;
+    const free = TIER_CARDS.find((t) => t.id === "free")!;
+    // Exact Board-approved lines, with the caps interpolated from plans-data
+    // (lite 1 list, studio 5 lists per PR #21) so a cap change breaks here,
+    // not silently in marketing copy.
+    expect(lite.features).toContain(
+      `Online store - sell photos from your galleries, 0% commission · ${PLANS.lite.maxPriceLists} price list`,
+    );
+    expect(PLANS.lite.storeEnabled).toBe(true);
+    expect(PLANS.lite.maxPriceLists).toBe(1);
+    expect(studio.features).toContain(
+      `Store power - ${PLANS.studio.maxPriceLists} price lists, packages & custom products`,
+    );
+    expect(PLANS.studio.maxPriceLists).toBe(5);
+    expect(PLANS.studio.packagesAllowed).toBe(true);
+    expect(PLANS.studio.customProductsAllowed).toBe(true);
+    // Free delivers galleries only — no store line, no commission claim.
+    expect(free.features.join(" ")).not.toMatch(/store|price list|commission/i);
+    // Pro gets no public card at all (WEB-329); its "Unlimited" price lists
+    // may only appear in the Settings → Plan dense grid.
+    expect(PRO_CARD.features.join(" ")).not.toMatch(/store|price list|commission/i);
+  });
+
+  /* WEB-256 surfaces: JSX can't be imported into tests (AGENTS.md), so the
+   * two React surfaces are pinned by source (?raw) — exact Board-approved
+   * strings only, numbers stay owned by plans-data. */
+  it("WEB-256: landing footnote carries the Board-approved store sentence", () => {
+    expect(pricingSectionSrc).toContain(
+      "Gallery stores start on Lite - 0% commission on every sale; the only fee is Stripe's standard rate.",
+    );
+  });
+
+  it("WEB-256: Settings → Plan dense grid has the five Store rows, values from planDef — never hardcoded", () => {
+    expect(planPanelSrc).toContain("Online store - sell photos from your galleries");
+    expect(planPanelSrc).toContain("Price lists");
+    expect(planPanelSrc).toContain("Packages - bundled products");
+    expect(planPanelSrc).toContain("Custom products");
+    expect(planPanelSrc).toContain("Commission on store sales");
+    // Values must come from lib/plans-data via planDef (the caps table above
+    // pins the actual numbers) — the grid must not hardcode 1/5/Unlimited.
+    expect(planPanelSrc).toContain("planDef(p.id)");
+    expect(planPanelSrc).not.toMatch(/maxPriceLists === 5|maxPriceLists === 1/);
+    // WEB-248 glyph semantics: dash is aria-labeled; no lock glyphs or
+    // badges in the pricing rows (unlike quota chips elsewhere in the panel).
+    expect(planPanelSrc).toContain('aria-label="Not on this tier"');
+    expect(planPanelSrc).not.toContain("🔒");
+    expect(planPanelSrc).not.toMatch(/LockIcon|LockKeyhole/);
   });
 });

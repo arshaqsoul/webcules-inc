@@ -4,7 +4,7 @@
  * the overage zone, upgrade/downgrade via Stripe checkout (in-place swap when
  * already subscribed), portal for card/invoice self-service, and locked
  * feature affordances. */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 
 import { Button } from "@webcules/ui/components/button";
 import {
@@ -17,7 +17,7 @@ import {
 import { useConfirm } from "@/components/confirm-provider";
 import { DocHint } from "@/components/doc-hint";
 import { PRO_CARD, TEAMS_CTA, TIER_CARDS } from "@/lib/tier-cards";
-import { planDef } from "@/lib/plans-data";
+import { planDef, type PlanDef } from "@/lib/plans-data";
 
 type PlanStatus = {
   plan: "free" | "lite" | "studio" | "pro";
@@ -62,6 +62,14 @@ type PlanStatus = {
 
 const GB = 1024 ** 3;
 const TB = 1024 ** 4;
+
+/** WEB-248 glyph: em dash = "not on this tier" — tertiary ink, and announced
+ * as words to screen readers instead of a bare dash. */
+function No() {
+  return (
+    <span aria-label="Not on this tier" className="text-ink-tertiary">—</span>
+  );
+}
 
 function fmtBytes(b: number): string {
   if (b >= TB) return `${(b / TB).toFixed(b / TB >= 10 ? 0 : 1)}TB`;
@@ -376,6 +384,46 @@ export function PlanPanel({ returnHint }: { returnHint?: string }) {
               ? "Domain add-on active"
               : "Custom domain"}
         </span>
+      </div>
+
+      {/* WEB-256: commerce rows — Board-approved copy (confirmation 2611c0c9);
+       * numbers come straight from lib/plans-data.ts via planDef, never
+       * hardcoded. Glyph semantics per WEB-248 (Strange, accepted): ✓ =
+       * included (success); plain numeral / "Unlimited" = cap (muted);
+       * em dash = not on this tier (tertiary, aria-label). No badges, no
+       * lock icons, and unshipped features never get a row here. */}
+      <div className="mt-5">
+        <p className="text-[11px] font-medium uppercase tracking-wide text-ink-subtle">Store</p>
+        <table className="mt-2 w-full text-xs">
+          <thead>
+            <tr className="border-b border-hairline text-ink-tertiary">
+              <th scope="col" className="py-1.5 pr-2 text-left font-normal">Feature</th>
+              {ALL_PLANS.map((p) => (
+                <th key={p.id} scope="col" className="px-2 py-1.5 text-right font-normal">{p.name}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="text-ink-muted">
+            {([
+              ["Online store - sell photos from your galleries", (d: PlanDef) =>
+                d.storeEnabled ? <span className="text-success-text">✓</span> : <No/>],
+              ["Price lists", (d: PlanDef) =>
+                !d.storeEnabled ? <No/> :
+                  <span className="text-ink-muted">{d.maxPriceLists === null ? "Unlimited" : d.maxPriceLists}</span>],
+              ["Packages - bundled products", (d: PlanDef) => d.packagesAllowed ? <span className="text-success-text">✓</span> : <No/>],
+              ["Custom products", (d: PlanDef) => d.customProductsAllowed ? <span className="text-success-text">✓</span> : <No/>],
+              ["Commission on store sales", (d: PlanDef) =>
+                d.storeEnabled ? <span className="text-ink-muted">0%</span> : <No/>],
+            ] as [string, (d: PlanDef) => ReactNode][]).map(([label, cell]) => (
+              <tr key={label} className="border-b border-hairline last:border-0">
+                <th scope="row" className="py-1.5 pr-2 text-left font-normal">{label}</th>
+                {ALL_PLANS.map((p) => (
+                  <td key={p.id} className="px-2 py-1.5 text-right">{cell(planDef(p.id))}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       {/* WEB-231: Studio add-on — second item on the existing subscription. */}

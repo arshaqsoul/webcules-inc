@@ -28,6 +28,7 @@ export function PricingSection() {
         <p className="mx-auto mt-6 max-w-2xl text-center text-xs leading-relaxed text-ink-tertiary">
           Studio storage beyond 500 GB is $0.10/GB-month. Need 1 TB or more? Talk to us.
           Client payments run through your own Stripe account at Stripe's standard rate; that fee goes to Stripe, never to us.
+          Gallery stores start on Lite - 0% commission on every sale; the only fee is Stripe's standard rate.
         </p>
       </FadeUp>
     </section>
