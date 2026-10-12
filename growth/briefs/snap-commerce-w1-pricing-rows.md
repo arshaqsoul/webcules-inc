@@ -101,7 +101,59 @@ row/badge visual treatment for the table and cards (child issue).
 
 ## Handoffs
 
-- Coulson (Content Writer): copy pass on rows + card lines + footnote — child issue on WEB-135.
-- Strange (Marketing Creative): visual treatment for commerce rows/badges — child issue on WEB-135.
+- Coulson (Content Writer): copy pass on rows + card lines + footnote — child issue WEB-247 (delivered 2026-10-12, approved by Pepper same day).
+- Strange (Marketing Creative): visual treatment for commerce rows/badges — child issue WEB-248 (done, accepted baseline).
 - Implementation of the tsx/plans-data changes: Snap dev (Parker/Banner) under W1 once
   copy is approved and gates land — Pepper does not touch code.
+
+## Final board-ready copy block (2026-10-12 — supersedes the drafts above)
+
+Assembled by Pepper from Coulson's approved WEB-247 pass (comment 2faf28b5 +
+`copy-draft` doc @ 5ed0a815; review confirmation 78590e6f accepted) inside
+Strange's accepted visual baseline (WEB-248). Numbers verified against
+`apps/snap/lib/plans-data.ts` @ 8c63e89 (PR #21) and the aligned fixtures
+@ b960317. This is the exact copy submitted for Board approval — launch hold #4.
+
+**1. Plan-table rows (Settings → Plan dense grid; any comparison table)**
+
+| Commerce row | Free | Lite | Studio | Pro |
+|---|---|---|---|---|
+| Online store - sell photos from your galleries | — | ✓ | ✓ | ✓ |
+| Price lists | — | 1 | 5 | Unlimited |
+| Packages - bundled products | — | — | ✓ | ✓ |
+| Custom products | — | — | ✓ | ✓ |
+| Commission on store sales | — | 0% | 0% | 0% |
+
+**2. Tier-card lines (cumulative ladder, tier-cards.ts)**
+
+- Free: add nothing.
+- Lite, append: `Online store - sell photos from your galleries, 0% commission · 1 price list`
+- Studio, append: `Store power - 5 price lists, packages & custom products`
+- Pro: no public card (not self-serve purchasable, WEB-329); "Unlimited" price
+  lists lives in the dense grid only.
+- Style call (Coulson, accepted by Pepper): plain dash, not colon — matches
+  existing tier-cards.ts voice ("One-click Download all for clients - any
+  gallery size…").
+
+**3. Landing footnote (pricing-section.tsx), append one sentence**
+
+`Gallery stores start on Lite - 0% commission on every sale; the only fee is Stripe's standard rate.`
+
+**Truth notes for the Board packet**
+
+- Every number above is enforced in `lib/commerce.ts` and pinned by
+  `tests/unit/gate-matrix.test.ts`; `tests/unit/pricing-tiers.test.ts` keeps
+  tier-cards.ts in sync. The table cannot silently drift from code.
+- Store quotas pool across a multi-studio family (same rule as gallery slots,
+  WEB-64). Deliberately NOT in W1 public copy — terse surfaces don't call out
+  pooling today; available truth for the W3 FAQ (WEB-133) if wanted.
+- Still excluded (no claims until shipped): abandoned-cart recovery (C2 5/7),
+  credits (G6), offline orders (G5), print/labs (C4).
+
+**Launch-hold status at time of submission**
+
+1. C1 1/7 gates in `plans-data.ts` — values final in PR #21 (8c63e89 + b960317);
+   cleared once PR #21 merges.
+2. Commerce C1–C3 + G4 shipped to production — open (WEB-179 onward).
+3. G11 launch-gate verification of pricing surfaces vs code — open (WEB-139).
+4. Board approval of this copy block — **this request**.
