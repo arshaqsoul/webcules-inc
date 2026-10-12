@@ -12,12 +12,17 @@ No exceptions. These rules were paid for on 2026-09-30 — see the incident note
 ```bash
 cd apps/snap
 node scripts/deploy.mjs staging                      # build → deploy → smoke-check
-# …BROWSER-VERIFY at https://snap-staging.webcules.com (rules below)…
+# …BROWSER-VERIFY at https://staging.snaphq.app (rules below)…
 node scripts/deploy.mjs production --staging-verified  # ONLY after browser verification
 ```
 
 - The production command **refuses to run** without `--staging-verified` — that flag is your
   assertion the same code was deployed to staging and manually exercised.
+- `scripts/deploy.mjs` runs a **preflight before the build for both targets** and refuses with
+  `⛔ REFUSED` + exit code 1 on the first failure: production without `--staging-verified`, a dirty
+  tree (any tracked change anywhere in the repo, or untracked files under `apps/snap/` or
+  `packages/`), or a failing `pnpm typecheck`. **No override flags** — clean up the tree or fix the
+  types, then deploy.
 - **Browser verification means logged-in and rendered.** Open the affected pages in a browser
   (staging smoke account: `launch-smoke@webcules.com` / `TestPass123!x`) and see the actual UI —
   authenticated pages returning `307 → /login` to curl prove nothing. Dashboard/auth-gated pages
@@ -39,14 +44,39 @@ node scripts/deploy.mjs production --staging-verified  # ONLY after browser veri
 - Never deploy from an uncommitted state you can't name; commit first so the deploy is traceable
   to a commit.
 
+## Release handoff — devs merge, Thor ships (Stark, CTO)
+
+- **Branch and PR flow.** Branch from master as `snap/WEB-###-short-slug` and open a PR to master.
+  When the change is user-visible, the PR includes the release commit pieces per the Commits
+  section below: the `package.json` version bump and the `lib/docs/content/releases.tsx` entry.
+  **Stark** reviews and approves; merge to master. Nobody deploys from a feature branch.
+- **Staging.** **Thor** runs `node scripts/deploy.mjs staging` from a clean checkout of the merged
+  master commit and posts the deployed SHA on the issue.
+- **QA evidence — required before production**, posted on the issue by QA (Hawkeye), or by the dev
+  when no QA agent is available:
+  - the staging SHA, which must match the commit Thor will ship;
+  - logged-in browser screenshots of every affected page on the canonical staging URL
+    (`https://staging.snaphq.app`);
+  - the result of the relevant e2e spec(s), if one exists;
+  - a confirmation that `pnpm typecheck` was green for that SHA — the deploy script enforces it,
+    but record it anyway.
+- **`--staging-verified` is Thor's assertion.** Only **Thor** passes it, and only after the QA
+  evidence above is on the issue for that same SHA. Devs and Stark never pass it.
+- **Thor tags.** **Thor** creates the annotated `vX.Y.Z` tag on the commit he deployed to
+  production, then runs `git push origin master --tags`. Tags are never moved or deleted (already
+  policy, above).
+- **Rollback stays "roll back first"** — Thor owns rollback.
+
 ## Commits, releases & version tags — every ship is a tagged release
 
 **Every behavior-changing push is committed, pushed, and tagged as a versioned release whose note
 drops into the public docs unchanged. Commit messages are written for the docs page, not for git.**
 
 - **Commit format = release-note format.**
-  - Subject: `type(snap): WEB-### — <what changed, in photographer-readable words>` (the Linear
-    issue id when one exists; `feat` / `fix` / `docs` types as usual).
+  - Subject: `type(snap): WEB-### — <what changed, in photographer-readable words>`. `WEB-###` is
+    the **Paperclip** issue id; commits from before the Paperclip migration cite the old **Linear**
+    WEB ids, and the numbers overlap (Linear WEB-408 is Paperclip WEB-9 — a migrated issue's
+    description links its Linear origin). `feat` / `fix` / `docs` types as usual.
   - Body: the FIRST paragraph(s) must be the public release note — what users get, in plain
     language, pasteable verbatim into `lib/docs/content/releases.tsx`. Technical detail (files,
     migrations, test counts, incident notes) goes in trailing paragraphs below a `---` line —
@@ -91,7 +121,7 @@ drops into the public docs unchanged. Commit messages are written for the docs p
   inboxes you control.
 - Staging smoke account: `launch-smoke@webcules.com` / `TestPass123!x` (org
   `37d24772-98e5-4371-bcd1-2e0424361b0d`, plan free). Recreate freely; staging data is disposable.
-- Manual staging cron: `curl -X POST -H "Authorization: Bearer $STAGING_SNAP_INBOUND_WEBHOOK_SECRET" https://snap-staging.webcules.com/api/cron/daily-status`
+- Manual staging cron: `curl -X POST -H "Authorization: Bearer $STAGING_SNAP_INBOUND_WEBHOOK_SECRET" https://staging.snaphq.app/api/cron/daily-status`
 - Custom-hostname serving architecture (WEB-233 runbook, verified live on
   prairiepeakgear.com 2026-09-30; moved to the snaphq.app zone in WEB-330): zone fallback origin =
   `domains.snaphq.app` (ORIGINLESS proxied A -> 192.0.2.1 - never a real IP), plus a
