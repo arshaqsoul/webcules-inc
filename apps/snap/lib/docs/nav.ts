@@ -73,6 +73,13 @@ export const DOC_CATEGORIES: DocCategory[] = [
           "Choose which Snap alerts reach you — new inquiries, bookings, signed contracts, storage warnings — and understand the one email stream that can never be turned off: your clients' transactional email.",
         icon: "bell",
       },
+      {
+        slug: "integrations",
+        title: "Integrations & API tokens",
+        description:
+          "Connect outside tools to your Snap studio — starting with the Lightroom Classic publish plugin — using secure, scoped tokens you create in Settings → Integrations. Each token carries only the permissions you pick, is shown exactly once, and can be revoked the moment you're done with it.",
+        icon: "plug-zap",
+      },
     ],
   },
   {

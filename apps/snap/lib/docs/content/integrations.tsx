@@ -1,0 +1,119 @@
+/* Integrations & API tokens — how outside tools (starting with the
+ * Lightroom Classic publish plugin) authenticate against your Snap studio.
+ * Facts from components/integrations-panel.tsx, lib/integrations/tokens.ts,
+ * lib/integrations/auth.ts and app/dashboard/settings/integrations/page.tsx
+ * (WEB-186, Integrations 1/6). */
+import { H2, H3, Note, Callout, Steps, Related } from "@/lib/docs/primitives";
+
+export default function Integrations() {
+  return (
+    <>
+      <p>
+        An integration connects a tool outside Snap — the Lightroom Classic
+        publish plugin is the first — to your studio, so it can do things like
+        publish finished photos straight into a client gallery. Instead of your
+        Snap password, the tool authenticates with an <strong>integration
+        token</strong>: a long, single-purpose key you create, scope down to
+        exactly what the tool needs, and can cut off at any time.
+      </p>
+
+      <H2>What a token is — and isn&rsquo;t</H2>
+      <p>
+        A token looks like <code>snapit_</code> followed by a long random
+        string. Three things make tokens safer than sharing a login:
+      </p>
+      <ul>
+        <li>
+          <strong>It only does what you picked.</strong> Each token carries only
+          the permissions (scopes) you selected when you created it — a token
+          that can view galleries cannot upload anything, and no token can touch
+          your studio&rsquo;s settings, billing, or team.
+        </li>
+        <li>
+          <strong>Snap never stores the token itself.</strong> Only an
+          irreversible cryptographic hash of it is kept — which is why the full
+          token is shown to you <em>exactly once</em>, at creation. If you lose
+          it, nobody can show it to you again; revoke it and make a new one.
+        </li>
+        <li>
+          <strong>It can be revoked instantly.</strong> Revoking stops the tool
+          from working immediately, without touching any other token or your
+          own sign-in.
+        </li>
+      </ul>
+
+      <H2>Create a token</H2>
+      <p>
+        Tokens live in <a href="/dashboard/settings/integrations">Settings →
+        Integrations</a>, which only studio admins can open — the same bar as
+        the other settings sections.
+      </p>
+      <Steps
+        items={[
+          <>
+            Open <strong>Settings → Integrations</strong> and enter a{" "}
+            <strong>name</strong> that says what the token is for — say,
+            &ldquo;Lightroom on the studio iMac&rdquo;.
+          </>,
+          <>
+            <strong>Pick the permissions</strong> the tool needs (below) —
+            at least one. When in doubt, start with the narrowest.
+          </>,
+          <>
+            Click <strong>Create token</strong>. Snap shows the full{" "}
+            <code>snapit_…</code> key once, with a copy button —{" "}
+            <strong>copy it into the tool now</strong> and click done.
+          </>,
+        ]}
+      />
+      <Callout tone="warn" title="Shown once, stored nowhere">
+        Close the reveal without copying and the token is unrecoverable — Snap
+        holds only a hash. That&rsquo;s deliberate: a hash can&rsquo;t leak.
+        Just revoke the token and create a fresh one.
+      </Callout>
+
+      <H2>The permissions</H2>
+      <p>
+        Every token&rsquo;s scopes are listed next to it in Settings, so you can
+        always see what a tool may do:
+      </p>
+      <H3>View galleries and collections</H3>
+      <p>
+        <code>galleries:read</code> — see the studio&rsquo;s galleries and what&rsquo;s
+        in them. Read-only.
+      </p>
+      <H3>View photos and metadata</H3>
+      <p>
+        <code>assets:read</code> — see photo files and their metadata. Read-only.
+      </p>
+      <H3>Upload and publish photos</H3>
+      <p>
+        <code>assets:write</code> — add photos to galleries and publish them.
+        This is the one the Lightroom publish plugin needs, usually together
+        with the two read scopes.
+      </p>
+      <Note>
+        New integrations may introduce new scopes over time; existing tokens
+        keep working unchanged, because permissions are matched by name.
+      </Note>
+
+      <H2>Manage and revoke</H2>
+      <p>
+        The Integrations page lists every token with its name, a short prefix of
+        the key (so you can match a token you find in a tool to its row), its
+        scopes, when it was created, and — after the tool first uses it — when
+        it was <strong>last used</strong>. A token that says &ldquo;Never&rdquo;
+        months after you made it is a token nothing is using.
+      </p>
+      <p>
+        <strong>Revoke</strong> asks for confirmation, then kills the token
+        immediately: anything still authenticating with it stops working the
+        same moment. Revoked tokens stay in the list as history. To rotate a
+        token into a fresh one, create the new token first, move the tool over,
+        then revoke the old — no downtime.
+      </p>
+
+      <Related slugs={["security", "gallery-delivery"]} />
+    </>
+  );
+}

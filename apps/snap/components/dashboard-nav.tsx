@@ -8,7 +8,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Banknote, CalendarDays, ChevronDown, Clock, Code2, CreditCard, FileText, Globe, Images, LayoutGrid, LayoutTemplate, Link2, ListChecks, Lock, Mail, PackageCheck, Receipt, Settings, ShoppingBag, SlidersHorizontal, Bell, ShieldCheck, Snowflake, UserPlus, Users, BookOpen, Palette, Frame } from "lucide-react";
+import { Banknote, CalendarDays, ChevronDown, Clock, Code2, CreditCard, FileText, Globe, Images, LayoutGrid, LayoutTemplate, Link2, ListChecks, Lock, Mail, PackageCheck, PlugZap, Receipt, Settings, ShoppingBag, SlidersHorizontal, Bell, ShieldCheck, Snowflake, UserPlus, Users, BookOpen, Palette, Frame } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { PlanId } from "@/lib/plans-data";
 import { InboxNavBadge } from "@/components/inbox/nav-badge";
@@ -47,6 +47,7 @@ export const SETTINGS_ITEMS: { href: string; label: string; icon: LucideIcon; ow
   { href: "/dashboard/settings/brand", label: "Brand", icon: Palette },
   { href: "/dashboard/settings/domains", label: "Domains", icon: Globe },
   { href: "/dashboard/settings/embeds", label: "Embeds", icon: Code2 },
+  { href: "/dashboard/settings/integrations", label: "Integrations", icon: PlugZap },
   { href: "/dashboard/settings/delivery", label: "Delivery", icon: PackageCheck },
   { href: "/dashboard/settings/notifications", label: "Notifications", icon: Bell },
   { href: "/dashboard/settings/billing", label: "Billing", icon: CreditCard, ownerOnly: true },

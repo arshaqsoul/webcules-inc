@@ -35,6 +35,26 @@ export default function Releases() {
         polish fold into the next entry rather than getting their own.
       </Note>
 
+      <Release version="0.15.0" date="October 12, 2026">
+        <p>
+          <strong>Connect Snap to the tools you use.</strong> There&rsquo;s a new{" "}
+          <strong>Integrations</strong> section in Settings (admins only) where
+          you create secure access tokens for outside tools — the Lightroom
+          Classic publish plugin that plugs into them arrives in an upcoming
+          release; this is the groundwork. Name each token for where it&rsquo;s
+          used, and give it only the permissions it needs: view galleries, view
+          photos, or upload and publish.
+        </p>
+        <p>
+          <strong>Yours to see, yours to switch off.</strong> A token is shown
+          to you exactly once when you create it — copy it into the tool, and
+          Snap keeps only an unrecoverable hash, so it can never be read back
+          or leaked. The list shows each token&rsquo;s permissions, when it was
+          last used, and a revoke button that stops the token working the
+          instant you click it.
+        </p>
+      </Release>
+
       <Release version="0.14.0" date="October 12, 2026">
         <p>
           <strong>Your store has a home — and an open sign.</strong> The dashboard&rsquo;s
