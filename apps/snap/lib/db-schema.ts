@@ -889,6 +889,40 @@ export const cartItems = sqliteTable(
   (t) => [uniqueIndex("cart_item_unique").on(t.cartId, t.variantId), index("cart_item_cart_idx").on(t.cartId)],
 );
 
+/* ---------------- Checkout sessions (WEB-168 / C2 3/7) ---------------- */
+
+/** Stripe Checkout Sessions minted per cart ON THE STUDIO'S CONNECTED ACCOUNT
+ * (direct charge — no application fee, no platform fallback; lib/repos/checkout.ts).
+ * idempotency_key is derived from the LIVE-repriced cart contents so an
+ * unchanged cart replays to the same pending session. DDL:
+ * migrations/0070_checkout_sessions.sql. */
+export const checkoutSessions = sqliteTable(
+  "checkout_session",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    cartId: text("cart_id")
+      .notNull()
+      .references(() => carts.id, { onDelete: "cascade" }),
+    /** Stripe Checkout Session id (cs_...) on the studio's account. */
+    stripeSessionId: text("stripe_session_id").notNull(),
+    /** Connected account (acct_...) the session lives on — refunds run there. */
+    stripeAccountId: text("stripe_account_id").notNull(),
+    /** Hosted checkout URL for the buyer's browser. */
+    url: text("url").notNull(),
+    currency: text("currency").notNull(),
+    subtotalCents: integer("subtotal_cents").notNull(),
+    /** Deterministic over repriced contents; UNIQUE — replay returns the row. */
+    idempotencyKey: text("idempotency_key").notNull(),
+    /** pending | completed | expired (webhook C2 4/7 flips terminals). */
+    status: text("status").notNull().default("pending"),
+    createdAt: ts("created_at"),
+  },
+  (t) => [index("checkout_session_cart_idx").on(t.cartId, t.status), index("checkout_session_stripe_idx").on(t.stripeSessionId)],
+);
+
 /** WEB-265: per-photo interest counters (heat overlay) — upsert pattern
  * twin of gallery_view_monthly, keyed by asset+month. */
 export const assetViewMonthly = sqliteTable(
@@ -1662,4 +1696,29 @@ export const portalOtpLog = sqliteTable(
     index("portal_otp_log_email_idx").on(t.email, t.createdAt),
     index("portal_otp_log_ip_idx").on(t.ip, t.createdAt),
   ],
+);
+
+/* ---------------- Integration tokens (WEB-186 / Integrations 1/6) ---------------- */
+
+/** Scoped API tokens for integrations (Lightroom publish plugin, future API
+ * clients). Raw tokens are NEVER stored — only tokenHash (SHA-256, unique,
+ * the lookup key) plus a short display prefix; scopes is a JSON array of
+ * catalog ids (lib/integrations/tokens.ts). Revocation is soft (revokedAt).
+ * DDL: migrations/0071_integration_tokens.sql. */
+export const integrationTokens = sqliteTable(
+  "integration_token",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    tokenHash: text("token_hash").notNull().unique(),
+    prefix: text("prefix").notNull(),
+    scopes: text("scopes").notNull().default("[]"),
+    lastUsedAt: integer("last_used_at", { mode: "timestamp" }),
+    revokedAt: integer("revoked_at", { mode: "timestamp" }),
+    createdAt: ts("created_at"),
+  },
+  (t) => [index("integration_token_org_idx").on(t.organizationId, t.createdAt)],
 );

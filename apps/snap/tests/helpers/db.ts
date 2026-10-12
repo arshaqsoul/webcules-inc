@@ -75,6 +75,8 @@ import m67 from "../../migrations/0067_commerce_catalog.sql?raw";
 import m68 from "../../migrations/0068_gallery_design_undo.sql?raw";
 // Carts (WEB-170) renumbered 0068 → 0069 after WEB-249 took 0068 on master.
 import m69 from "../../migrations/0069_carts.sql?raw";
+import m70 from "../../migrations/0070_checkout_sessions.sql?raw";
+import m71 from "../../migrations/0071_integration_tokens.sql?raw";
 
 const MIGRATIONS = [
   m01, m02, m03, m04, m05, m06, m07, m08, m09, m10, m11, m12, m13, m14, m15,
@@ -86,10 +88,14 @@ m66,
 m67,
 m68,
 m69,
+m70,
+m71,
 ];
 
 /** Every table, in an order that satisfies FK constraints when deleting. */
 const TABLES = [
+  "integration_token",
+  "checkout_session",
   "cart_item", "cart", "price_list_gallery", "product_variant", "product", "price_list",
   "inbox_item", "thread_message", "thread",
   "two_factor", "import_batch",
