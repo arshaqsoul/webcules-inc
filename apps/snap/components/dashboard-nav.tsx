@@ -8,7 +8,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Banknote, CalendarDays, ChevronDown, Clock, Code2, CreditCard, FileText, Globe, Images, LayoutGrid, LayoutTemplate, Link2, ListChecks, Lock, Mail, PackageCheck, Receipt, Settings, SlidersHorizontal, Bell, ShieldCheck, Snowflake, UserPlus, Users, BookOpen, Palette, Frame } from "lucide-react";
+import { Banknote, CalendarDays, ChevronDown, Clock, Code2, CreditCard, FileText, Globe, Images, LayoutGrid, LayoutTemplate, Link2, ListChecks, Lock, Mail, PackageCheck, Receipt, Settings, ShoppingBag, SlidersHorizontal, Bell, ShieldCheck, Snowflake, UserPlus, Users, BookOpen, Palette, Frame } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { PlanId } from "@/lib/plans-data";
 import { InboxNavBadge } from "@/components/inbox/nav-badge";
@@ -28,6 +28,9 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/dashboard/leads", label: "Leads", icon: Users },
   { href: "/dashboard/galleries", label: "Galleries", icon: Link2 },
+  // WEB-179: the store (price lists) — Lite+; free sees the locked row that
+  // links to billing, and the page itself carries an upgrade card.
+  { href: "/dashboard/store", label: "Store", icon: ShoppingBag, requires: "lite" },
   { href: "/dashboard/raw-vault", label: "RAW Vault", icon: Snowflake },
   { href: "/dashboard/transactions", label: "Transactions", icon: CreditCard },
   { href: "/docs", label: "Docs", icon: BookOpen },
