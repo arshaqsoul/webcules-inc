@@ -6,14 +6,9 @@ import { execSync } from "node:child_process";
 const root = process.cwd();
 
 export default async function globalSetup() {
-  // Windows: orphaned workerd processes from earlier runs hold locks on dist/.
-  if (process.platform === "win32" && !process.env.CI) {
-    try {
-      execSync("taskkill /F /IM workerd.exe", { stdio: "ignore", shell: true });
-    } catch {
-      // none running — fine
-    }
-  }
+  // No `taskkill workerd` here: Playwright boots the webServer BEFORE
+  // globalSetup, so killing workerd now shot the live preview (requests hung).
+  // Orphan cleanup lives at the top of tests/e2e/server.mjs.
   if (process.env.E2E_BUILD === "1") {
     console.log("[e2e-setup] building worker…");
     execSync("pnpm exec vinext build", { stdio: "inherit", cwd: root, shell: true });

@@ -1,0 +1,51 @@
+name: snap-e2e
+
+# Playwright E2E for apps/snap against a local workerd preview with an
+# isolated D1 (tests/e2e/server.mjs). No secrets: Turnstile is absent locally
+# and the Cloudflare/DoH APIs are mocked on :3117.
+on:
+  pull_request:
+    paths:
+      - "apps/snap/**"
+      - "packages/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/snap-e2e.yml"
+
+concurrency:
+  group: snap-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4 # version comes from package.json "packageManager"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        working-directory: apps/snap
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E (signup-onboarding)
+        run: pnpm --filter snap test:e2e -- signup-onboarding
+
+      - name: Upload E2E artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: snap-e2e-artifacts
+          path: apps/snap/tests/e2e/.artifacts
+          if-no-files-found: ignore
+          retention-days: 7
