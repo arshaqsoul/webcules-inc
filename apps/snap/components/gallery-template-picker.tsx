@@ -7,8 +7,10 @@
  * own sections; they preview for everyone but apply from Lite (collage:
  * Studio). Real photographic thumbs (R2-served, lazy) where we have them, a
  * themed swatch otherwise; live preview against the studio's own photos
- * (?template= on the preview page); one-click apply with undo (the previous
- * design is retained client-side). */
+ * preview against the studio's own photos
+ * (?template= on the preview page); one-click apply with undo (WEB-249: the
+ * previous design is PERSISTED on the project and hydrated here, so Undo
+ * survives a reload; one level — any later design save ends the window). */
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
@@ -35,6 +37,7 @@ export function GalleryTemplatePicker({
   projectId,
   activeTemplateKey,
   hasCustomDesign,
+  initialUndo,
   canBuild,
   plan,
   onApplied,
@@ -44,6 +47,10 @@ export function GalleryTemplatePicker({
   activeTemplateKey?: string;
   /** A custom or sectioned design exists - applying replaces it (confirm first). */
   hasCustomDesign: boolean;
+  /** WEB-249: the persisted undo snapshot (the design the last template
+   * apply replaced). Non-null → the Undo button renders on mount, so undo
+   * survives reloads. */
+  initialUndo?: GalleryDesign | null;
   /** Lite+ may open the page builder; Free gets the upsell link. */
   canBuild: boolean;
   /** The org's plan id - decides which templates apply vs. upsell. */
@@ -58,7 +65,7 @@ export function GalleryTemplatePicker({
   const [confirming, setConfirming] = useState<string | null>(null);
   const [note, setNote] = useState("");
   const [errMsg, setErrMsg] = useState("");
-  const [undo, setUndo] = useState<GalleryDesign | null>(null);
+  const [undo, setUndo] = useState<GalleryDesign | null>(initialUndo ?? null);
   const rootRef = useRef<HTMLDivElement>(null);
   // Label ink for every accent-filled control, from the live --accent value.
   const [ink, setInk] = useState("#ffffff");
@@ -276,14 +283,21 @@ export function GalleryTemplatePicker({
       />
       {free.length === 0 && paid.length === 0 && <p className="mt-4 text-xs text-ink-subtle">No templates in this category yet.</p>}
 
-      {(note || errMsg) && (
-        <p className={`mt-3 text-xs ${errMsg ? "text-destructive" : "text-ink-subtle"}`}>
-          {errMsg || note}
-          {!errMsg && undo && (
-            <button type="button" onClick={() => void undoApply()} disabled={busy !== null} className="ml-2 font-semibold underline underline-offset-2 disabled:opacity-60">
-              {busy === "undo" ? "Restoring…" : "Undo"}
-            </button>
-          )}
+      {(note || errMsg) && <p className={`mt-3 text-xs ${errMsg ? "text-destructive" : "text-ink-subtle"}`}>{errMsg || note}</p>}
+      {/* WEB-249: the undo affordance is persistent, not tied to the transient
+       * apply flash — it renders whenever a snapshot exists, including after
+       * a reload (hydrated from the project row). */}
+      {undo && (
+        <p className="mt-3 text-xs text-ink-subtle">
+          A template replaced a previous design of yours.
+          <button
+            type="button"
+            onClick={() => void undoApply()}
+            disabled={busy !== null}
+            className="ml-2 font-semibold underline underline-offset-2 disabled:opacity-60"
+          >
+            {busy === "undo" ? "Restoring…" : "Undo"}
+          </button>
         </p>
       )}
     </div>

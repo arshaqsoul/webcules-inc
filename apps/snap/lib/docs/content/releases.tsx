@@ -35,7 +35,7 @@ export default function Releases() {
         polish fold into the next entry rather than getting their own.
       </Note>
 
-      <Release version="0.11.6" date="October 12, 2026">
+      <Release version="0.12.2" date="October 12, 2026">
         <p>
           <strong>A quieter, harder kind of polish:</strong> every Snap page now
           sends modern browser security headers — protection against
@@ -44,6 +44,26 @@ export default function Releases() {
           still restricted to your own studio's site. Behind the scenes we also
           swept the dependency tree and updated everything with a known
           vulnerability.
+        </p>
+      </Release>
+
+      <Release version="0.12.1" date="October 12, 2026">
+        <p>
+          <strong>The Inbox page has its title back.</strong> A redesign in October accidentally
+          removed the page&rsquo;s heading, which also made the inbox hard to orient in with a
+          screen reader. The title is restored, and the page is reachable by heading navigation
+          again.
+        </p>
+      </Release>
+
+      <Release version="0.12.0" date="October 12, 2026">
+        <p>
+          <strong>Template undo now sticks around.</strong> Applied a gallery template and want
+          your old design back? The <strong>Undo</strong> button used to vanish the moment you
+          reloaded the page — now the design you had before the template is kept with the
+          project, so Undo is still there when you come back, even days later. It&rsquo;s one
+          level deep: undo restores the design exactly as it was, and saving any design change
+          closes the window.
         </p>
       </Release>
 
