@@ -1697,28 +1697,3 @@ export const portalOtpLog = sqliteTable(
     index("portal_otp_log_ip_idx").on(t.ip, t.createdAt),
   ],
 );
-
-/* ---------------- Integration tokens (WEB-186 / Integrations 1/6) ---------------- */
-
-/** Scoped API tokens for integrations (Lightroom publish plugin, future API
- * clients). Raw tokens are NEVER stored — only tokenHash (SHA-256, unique,
- * the lookup key) plus a short display prefix; scopes is a JSON array of
- * catalog ids (lib/integrations/tokens.ts). Revocation is soft (revokedAt).
- * DDL: migrations/0071_integration_tokens.sql. */
-export const integrationTokens = sqliteTable(
-  "integration_token",
-  {
-    id: text("id").primaryKey(),
-    organizationId: text("organization_id")
-      .notNull()
-      .references(() => organization.id, { onDelete: "cascade" }),
-    name: text("name").notNull(),
-    tokenHash: text("token_hash").notNull().unique(),
-    prefix: text("prefix").notNull(),
-    scopes: text("scopes").notNull().default("[]"),
-    lastUsedAt: integer("last_used_at", { mode: "timestamp" }),
-    revokedAt: integer("revoked_at", { mode: "timestamp" }),
-    createdAt: ts("created_at"),
-  },
-  (t) => [index("integration_token_org_idx").on(t.organizationId, t.createdAt)],
-);
