@@ -35,6 +35,32 @@ export default function Releases() {
         polish fold into the next entry rather than getting their own.
       </Note>
 
+      <Release version="0.16.0" date="October 12, 2026">
+        <p>
+          <strong>Publish straight from Lightroom Classic.</strong> The new{" "}
+          <strong>Snap Publish</strong> plugin adds a Snap entry to
+          Lightroom&rsquo;s Publish Services panel: create a publish collection
+          named after a gallery, drag the finished photos in, press{" "}
+          <em>Publish</em>, and they land in Snap — watermarking, sharing and
+          downloads stay under your control in the studio. Edit a photo after
+          publishing and Lightroom flags it <em>Modified</em>; publishing again
+          replaces the old version instead of adding a duplicate. Removing a
+          photo from the collection takes it out of the gallery, and Snap
+          never lets the plugin delete a photo that&rsquo;s already live in a
+          client link without you saying so.
+        </p>
+        <p>
+          <strong>Setting it up takes a minute.</strong> Create an integration
+          token in Settings → Integrations (the{" "}
+          <em>Publishing from Lightroom Classic</em> guide walks you through
+          it), paste it into the plugin in Lightroom&rsquo;s Plug-in Manager,
+          and test the connection right there. Tokens now also come with a{" "}
+          <em>Create galleries</em> permission, used when a new publish
+          collection makes its own gallery — keep it off and galleries stay
+          strictly hand-made.
+        </p>
+      </Release>
+
       <Release version="0.15.0" date="October 12, 2026">
         <p>
           <strong>Connect Snap to the tools you use.</strong> There&rsquo;s a new{" "}
