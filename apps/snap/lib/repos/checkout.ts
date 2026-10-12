@@ -50,7 +50,8 @@ export type CheckoutError =
   | "items_unavailable" // + per-line report for the drawer
   | "currency_mismatch" // cart vs price list, or vs the studio's charge currency
   | "studio_not_payable" // no ACTIVE connected account — never a platform fallback
-  | "stripe_failed"; // no key configured, or Stripe refused the create
+  | "stripe_failed" // no key configured, or Stripe refused the create
+  | "preview_refused"; // WEB-277: a store preview can never mint an order path
 
 /** Why a cart line can no longer be sold, for the drawer's strikethrough row. */
 export type UnavailableLine = {
@@ -193,7 +194,10 @@ export async function createCheckoutSession(params: {
   cartId: string;
   galleryUrl: string;
   stripe?: CheckoutStripe;
+  /** WEB-277: preview sessions never reach Stripe — refused before repricing. */
+  preview?: boolean;
 }): Promise<CheckoutSessionResult> {
+  if (params.preview) return { ok: false, error: "preview_refused" };
   const repriced = await repriceCart(params.organizationId, params.cartId);
   if (!repriced.ok) return repriced;
 

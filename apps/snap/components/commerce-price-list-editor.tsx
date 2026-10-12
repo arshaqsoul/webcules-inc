@@ -13,7 +13,7 @@ import type { MarkupRounding } from "@webcules/commerce";
 
 import { Button } from "@webcules/ui/components/button";
 import { Input } from "@webcules/ui/components/input";
-import type { Gates, PriceListRow } from "@/components/commerce-price-lists";
+import type { Gates, PriceListRow } from "@/components/store-home";
 
 type VariantRow = {
   id: string;

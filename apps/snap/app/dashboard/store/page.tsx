@@ -1,12 +1,16 @@
-/* /dashboard/store (WEB-179, Commerce C1 2/7) — price lists home. Free plan
- * sees the upgrade card (the store is Lite+); everyone else gets the lists
- * panel with the wizard. */
+/* /dashboard/store (WEB-277, Commerce C1 6/7) — the store home per the
+ * approved WEB-175 handoff: store status (open/closed), Price lists /
+ * Products tabs, first-run template picker, and "Preview the store as a
+ * client". Free plan still sees the upgrade card (the store is Lite+).
+ * Route states: loading.tsx (skeleton, aria-busy) and error.tsx
+ * (role=alert card) carry the handoff copy. */
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { CommercePriceLists } from "@/components/commerce-price-lists";
-import { commerceGatesForPlan, listPriceLists } from "@/lib/commerce";
+import { StoreHome } from "@/components/store-home";
+import { commerceGatesForPlan, getStoreOpen, listAllProducts, listPriceLists } from "@/lib/commerce";
 import { getPlanEntitlements } from "@/lib/plans";
+import { getStudioProfile } from "@/lib/repos/studios";
 import { getOrgContext } from "@/lib/session";
 
 export const metadata = { title: "Store" };
@@ -35,6 +39,20 @@ export default async function StorePage() {
     );
   }
 
-  const lists = await listPriceLists(ctx.organizationId);
-  return <CommercePriceLists initialLists={lists} gates={commerceGatesForPlan(ent)} />;
+  const [lists, products, storeOpen, profile] = await Promise.all([
+    listPriceLists(ctx.organizationId),
+    listAllProducts(ctx.organizationId),
+    getStoreOpen(ctx.organizationId),
+    getStudioProfile(ctx.organizationId),
+  ]);
+
+  return (
+    <StoreHome
+      initialLists={lists}
+      products={products}
+      initialStoreOpen={storeOpen}
+      payoutsConnected={Boolean(profile?.stripeAccountId)}
+      gates={commerceGatesForPlan(ent)}
+    />
+  );
 }

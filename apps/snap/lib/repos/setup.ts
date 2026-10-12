@@ -1,5 +1,6 @@
-/* Setup Guide engine (WEB-269) — derives the eleven-item first-time
- * configuration checklist from EXISTING signals only (no new writes where a
+/* Setup Guide engine (WEB-269) — derives the first-time configuration
+ * checklist (WEB-277 made it twelve items) from EXISTING signals only (no
+ * new writes where a
  * signal exists). Item state is always derived — nothing can drift; the only
  * persisted setup state is dismiss/reopen on the studio profile. Also owns
  * the demo-gallery action (sample images → real project → real grant → the
@@ -18,6 +19,7 @@ export type SetupStepId =
   | "brand"
   | "gallery_template"
   | "payouts"
+  | "store"
   | "availability"
   | "session_type"
   | "contact_form"
@@ -49,6 +51,9 @@ export const SETUP_STEPS: Array<Omit<SetupStep, "done">> = [
   // WEB-317/320: the template step — the natural 2.5, free and instant.
   { id: "gallery_template", title: "Pick a gallery template", why: "Ten designer looks for your client galleries — one click, free.", href: "/dashboard/projects" },
   { id: "payouts", title: "Connect payouts", why: "Deposits and invoices land in your bank.", href: "/dashboard/settings/payouts" },
+  // WEB-277: the store step joins after payouts — derived, never manual:
+  // done only when payouts are connected AND ≥1 price list exists.
+  { id: "store", title: "Set up your store", why: "Price lists and payouts — sell right from your galleries.", href: "/dashboard/store" },
   { id: "availability", title: "Set your availability", why: "Clients book while you sleep.", href: "/dashboard/calendar?tab=availability" },
   { id: "session_type", title: "Define a session type", why: "What clients can book — length, price, deposit.", href: "/dashboard/templates/session-types" },
   { id: "contact_form", title: "Design your contact form", why: "The questions you ask before you say yes.", href: "/dashboard/templates/forms" },
@@ -88,6 +93,7 @@ export async function getSetupState(organizationId: string): Promise<SetupState>
     domainsCount,
     templateApplied,
     demo,
+    priceListsCount,
   ] = await Promise.all([
     db
       .select({ n: sql<number>`count(*)` })
@@ -138,6 +144,11 @@ export async function getSetupState(organizationId: string): Promise<SetupState>
           eq(schema.shareAccessLogs.event, "view"),
         ),
       ),
+    // WEB-277: the store step's second signal — ≥1 price list exists.
+    db
+      .select({ n: sql<number>`count(*)` })
+      .from(schema.priceLists)
+      .where(eq(schema.priceLists.organizationId, organizationId)),
   ]);
 
   let embedOrigins: string[] = [];
@@ -159,6 +170,10 @@ export async function getSetupState(organizationId: string): Promise<SetupState>
     brand: Boolean(profileRow.logoKey),
     gallery_template: Number(templateApplied[0]?.n ?? 0) > 0,
     payouts: Boolean(profileRow.stripeAccountId),
+    // WEB-277: BOTH signals required — payouts connected AND a price list.
+    // The step flips automatically when the second signal arrives; there is
+    // no manual "mark done" anywhere.
+    store: Boolean(profileRow.stripeAccountId) && Number(priceListsCount[0]?.n ?? 0) >= 1,
     availability: Number(rules[0]?.n ?? 0) > 0,
     session_type: types > 0,
     contact_form: templateTouched(forms, profileRow.createdAt),
@@ -426,6 +441,8 @@ export async function setupCompletionRollup(): Promise<{ orgs: number; atLeastSe
       (sp.studio_name != '') +
       (sp.logo_key IS NOT NULL) +
       (sp.stripe_account_id IS NOT NULL) +
+      (sp.stripe_account_id IS NOT NULL AND
+       EXISTS(SELECT 1 FROM price_list pl WHERE pl.organization_id = sp.organization_id)) +
       EXISTS(SELECT 1 FROM availability_rule r WHERE r.organization_id = sp.organization_id AND r.active = 1) +
       EXISTS(SELECT 1 FROM session_type st WHERE st.organization_id = sp.organization_id AND st.active = 1) +
       EXISTS(SELECT 1 FROM template t WHERE t.organization_id = sp.organization_id AND t.kind = 'form' AND t.archived_at IS NULL
