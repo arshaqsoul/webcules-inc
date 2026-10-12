@@ -438,6 +438,11 @@ export const projects = sqliteTable(
     /** WEB-258: gallery design JSON (cover/layout/theme), <= 16 KB, app-validated.
      * NULL = classic gallery (or the org's default gallery_preset template). */
     galleryDesign: text("gallery_design"),
+    /** WEB-249: the design the last template apply replaced (one level) —
+     * the Undo snapshot, persisted so it survives reloads and remounts.
+     * Cleared by any design save (including the undo restore itself).
+     * NULL = nothing to undo. */
+    galleryDesignUndo: text("gallery_design_undo"),
     /** WEB-259: slideshow config JSON (enabled/pace/transition/music + start
      * offset), <= 2 KB. Kept out of gallery_design so the basic slideshow
      * stays free while the design layer is Lite+. NULL = no button. */
