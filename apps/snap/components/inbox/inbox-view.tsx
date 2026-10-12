@@ -683,6 +683,12 @@ export function InboxView({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
+      {/* WEB-251: restore the page heading fcd6ae8 (WEB-306) dropped when it
+          replaced the header block with the tab bar. Every other dashboard
+          page carries this h1; without it /dashboard/inbox had zero
+          accessible headings (screen readers, inbox-reply e2e). */}
+      <h1 className="text-2xl font-semibold tracking-[-0.6px] text-ink">Inbox</h1>
+
       {/* Header: tabs + search + bulk */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-1.5">

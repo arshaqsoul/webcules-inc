@@ -35,6 +35,15 @@ export default function Releases() {
         polish fold into the next entry rather than getting their own.
       </Note>
 
+      <Release version="0.11.6" date="October 12, 2026">
+        <p>
+          <strong>The Inbox page has its title back.</strong> A redesign in October accidentally
+          removed the page&rsquo;s heading, which also made the inbox hard to orient in with a
+          screen reader. The title is restored, and the page is reachable by heading navigation
+          again.
+        </p>
+      </Release>
+
       <Release version="0.11.5" date="October 8, 2026">
         <p>
           <strong>Snap asks you to connect a client instead of guessing.</strong> When you attach
