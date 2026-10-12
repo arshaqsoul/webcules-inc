@@ -121,7 +121,9 @@ test("page builder loads for the pro org", async ({ page }) => {
   test.setTimeout(180_000);
   await login(page);
   await gotoWithRetry(page, `/dashboard/projects/${seed.previewProjectId}/builder`);
-  await expect(page.getByText("Page builder")).toBeVisible({ timeout: 20_000 });
+  // exact: the substring also hits the mobile notice <p> ("The page builder is a
+  // desktop tool…", gallery-builder.tsx) → strict mode violation on desktop runs.
+  await expect(page.getByText("Page builder", { exact: true })).toBeVisible({ timeout: 20_000 });
   await expect(page.getByText("Sections").first()).toBeVisible();
   await expect(page.getByText("+ Add section")).toBeVisible();
   // Theme tab carries the font selector from the self-hosted pack.
