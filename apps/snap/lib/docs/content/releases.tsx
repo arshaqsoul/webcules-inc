@@ -35,6 +35,27 @@ export default function Releases() {
         polish fold into the next entry rather than getting their own.
       </Note>
 
+      <Release version="0.13.0" date="October 12, 2026">
+        <p>
+          <strong>Build your store&rsquo;s price lists.</strong> There&rsquo;s a new
+          <strong> Store</strong> section in your dashboard (Lite plans and up) where you set up
+          studio-wide price lists with a step-by-step wizard: name the list, add products with
+          their sizes or finishes, and you&rsquo;re off. Every product keeps what you pay your lab
+          (the cost) next to what clients pay (the price), and Snap shows your markup percentage
+          live while you type — it&rsquo;s always calculated from cost and price, so it can never
+          drift out of date. Rename, archive, and reorder products and variants as your catalog
+          grows.
+        </p>
+        <p>
+          <strong>Set prices in bulk with tidy endings.</strong> Select any number of variants,
+          choose your markup percentage, and pick a rounding style — exact, nearest whole unit,
+          or charm prices ending in .99 or .95. A preview shows every price before you commit,
+          and rounding never drops a price below your cost. Digital items without a lab cost are
+          skipped automatically. (The client-facing store itself arrives in an upcoming release —
+          this is the catalog groundwork.)
+        </p>
+      </Release>
+
       <Release version="0.12.2" date="October 12, 2026">
         <p>
           <strong>A quieter, harder kind of polish:</strong> every Snap page now

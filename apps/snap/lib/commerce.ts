@@ -18,8 +18,8 @@
  * on, plus the validation seams. */
 import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
 
-import { canCreatePriceList, markupPct, productKindAllowed, validateCurrency, validateName, validateVariantPrices } from "@webcules/commerce";
-import type { CatalogError, PlanCommerceGates, ProductKind } from "@webcules/commerce";
+import { canCreatePriceList, markupPct, priceFromMarkupRounded, productKindAllowed, validateCurrency, validateName, validateVariantPrices } from "@webcules/commerce";
+import type { CatalogError, MarkupRounding, PlanCommerceGates, ProductKind } from "@webcules/commerce";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
@@ -355,4 +355,204 @@ export async function activePriceListForGrant(grantId: string): Promise<PriceLis
       .filter((p) => p.active)
       .map((p) => ({ ...p, variants: p.variants.filter((v) => v.active) })),
   };
+}
+
+/* ── WEB-179 (Commerce C1 2/7): product/variant edit, archive, reorder and
+ * the bulk markup tool. Same rules as the foundation above: org-scoped
+ * writes (cross-org ids read as not_found), integer minor units, markup
+ * derived on read. */
+
+/** Rename a product (org-scoped). */
+export async function renameProduct(organizationId: string, productId: string, nameInput: string): Promise<CommerceResult<true>> {
+  const name = validateName(nameInput);
+  if (!name.ok) return name;
+  const db = getDb();
+  const res = await db
+    .update(schema.products)
+    .set({ name: name.value, updatedAt: new Date() })
+    .where(and(eq(schema.products.id, productId), eq(schema.products.organizationId, organizationId)))
+    .returning({ id: schema.products.id });
+  return res.length > 0 ? { ok: true, value: true } : { ok: false, error: "not_found" };
+}
+
+/** Archive or restore a product. Archived products stay in the list for
+ * audit but drop out of the client store view (activePriceListForGrant). */
+export async function setProductActive(organizationId: string, productId: string, active: boolean): Promise<CommerceResult<true>> {
+  const db = getDb();
+  const res = await db
+    .update(schema.products)
+    .set({ active, updatedAt: new Date() })
+    .where(and(eq(schema.products.id, productId), eq(schema.products.organizationId, organizationId)))
+    .returning({ id: schema.products.id });
+  return res.length > 0 ? { ok: true, value: true } : { ok: false, error: "not_found" };
+}
+
+/** Reorder a price list's products. `productIds` must be exactly the list's
+ * current product ids (a permutation, not a subset) — a partial set would
+ * shuffle silently and hide a lost row; anything else is not_found. */
+export async function reorderProducts(organizationId: string, priceListId: string, productIds: string[]): Promise<CommerceResult<true>> {
+  const db = getDb();
+  const rows = await db
+    .select({ id: schema.products.id })
+    .from(schema.products)
+    .innerJoin(schema.priceLists, eq(schema.products.priceListId, schema.priceLists.id))
+    .where(and(eq(schema.products.priceListId, priceListId), eq(schema.priceLists.organizationId, organizationId)));
+  const existing = new Set(rows.map((r) => r.id));
+  if (existing.size !== productIds.length || productIds.some((id) => !existing.has(id))) {
+    return { ok: false, error: "not_found" };
+  }
+  const stmts = productIds.map((id, position) =>
+    db
+      .update(schema.products)
+      .set({ position, updatedAt: new Date() })
+      .where(and(eq(schema.products.id, id), eq(schema.products.organizationId, organizationId))),
+  );
+  await db.batch(stmts as [(typeof stmts)[number], ...(typeof stmts)[number][]]);
+  return { ok: true, value: true };
+}
+
+/** Edit a variant. Fields are optional; omitted ones keep their stored
+ * value, and the merged (cost, price) pair runs the core validators so a
+ * partial edit can't smuggle in an invalid combination. */
+export async function updateProductVariant(
+  organizationId: string,
+  input: { variantId: string; name?: string; costCents?: number; priceCents?: number },
+): Promise<CommerceResult<{ markupPct: number | null }>> {
+  const db = getDb();
+  const current = (await db
+    .select()
+    .from(schema.productVariants)
+    .where(and(eq(schema.productVariants.id, input.variantId), eq(schema.productVariants.organizationId, organizationId)))
+    .limit(1))[0];
+  if (!current) return { ok: false, error: "not_found" };
+
+  const nameInput = input.name ?? current.name;
+  const name = validateName(nameInput);
+  if (!name.ok) return name;
+  const prices = validateVariantPrices(
+    input.costCents ?? current.costCents,
+    input.priceCents ?? current.priceCents,
+  );
+  if (!prices.ok) return prices;
+
+  await db
+    .update(schema.productVariants)
+    .set({
+      name: name.value,
+      costCents: prices.value.costCents,
+      priceCents: prices.value.priceCents,
+      updatedAt: new Date(),
+    })
+    .where(and(eq(schema.productVariants.id, input.variantId), eq(schema.productVariants.organizationId, organizationId)));
+  return { ok: true, value: { markupPct: markupPct(prices.value.costCents, prices.value.priceCents) } };
+}
+
+/** Archive or restore a variant (archived variants drop out of the store view). */
+export async function setVariantActive(organizationId: string, variantId: string, active: boolean): Promise<CommerceResult<true>> {
+  const db = getDb();
+  const res = await db
+    .update(schema.productVariants)
+    .set({ active, updatedAt: new Date() })
+    .where(and(eq(schema.productVariants.id, variantId), eq(schema.productVariants.organizationId, organizationId)))
+    .returning({ id: schema.productVariants.id });
+  return res.length > 0 ? { ok: true, value: true } : { ok: false, error: "not_found" };
+}
+
+/** Reorder a product's variants — same permutation rule as reorderProducts. */
+export async function reorderVariants(organizationId: string, productId: string, variantIds: string[]): Promise<CommerceResult<true>> {
+  const db = getDb();
+  const rows = await db
+    .select({ id: schema.productVariants.id })
+    .from(schema.productVariants)
+    .innerJoin(schema.products, eq(schema.productVariants.productId, schema.products.id))
+    .where(and(eq(schema.productVariants.productId, productId), eq(schema.products.organizationId, organizationId)));
+  const existing = new Set(rows.map((r) => r.id));
+  if (existing.size !== variantIds.length || variantIds.some((id) => !existing.has(id))) {
+    return { ok: false, error: "not_found" };
+  }
+  const stmts = variantIds.map((id, position) =>
+    db
+      .update(schema.productVariants)
+      .set({ position, updatedAt: new Date() })
+      .where(and(eq(schema.productVariants.id, id), eq(schema.productVariants.organizationId, organizationId))),
+  );
+  await db.batch(stmts as [(typeof stmts)[number], ...(typeof stmts)[number][]]);
+  return { ok: true, value: true };
+}
+
+/** The bulk markup tool: apply a markup percentage to the selected variants,
+ * rounding the resulting shelf price to a preset (@webcules/commerce
+ * roundPricePreset never rounds below cost). Variants with a zero cost
+ * (digital goods — markup is undefined without a cost base) are skipped and
+ * reported, not failed. */
+export async function applyBulkMarkup(
+  organizationId: string,
+  input: { variantIds: string[]; markupPct: number; rounding: MarkupRounding },
+): Promise<CommerceResult<{ updated: number; skipped: number }>> {
+  if (input.variantIds.length === 0) return { ok: false, error: "not_found" };
+  const db = getDb();
+  const rows = await db
+    .select({ id: schema.productVariants.id, costCents: schema.productVariants.costCents })
+    .from(schema.productVariants)
+    .where(and(inArray(schema.productVariants.id, input.variantIds), eq(schema.productVariants.organizationId, organizationId)));
+  if (rows.length === 0) return { ok: false, error: "not_found" };
+
+  const updates = rows
+    .filter((r) => r.costCents > 0)
+    .map((r) => ({
+      id: r.id,
+      priceCents: priceFromMarkupRounded(r.costCents, input.markupPct, input.rounding),
+    }));
+  const stmts = updates.map((u) =>
+    db
+      .update(schema.productVariants)
+      .set({ priceCents: u.priceCents, updatedAt: new Date() })
+      .where(and(eq(schema.productVariants.id, u.id), eq(schema.productVariants.organizationId, organizationId))),
+  );
+  if (stmts.length > 0) await db.batch(stmts as [(typeof stmts)[number], ...(typeof stmts)[number][]]);
+  return { ok: true, value: { updated: updates.length, skipped: rows.length - updates.length } };
+}
+
+/** Preview for the bulk markup tool: what each selected variant's price
+ * would become (and its live markup %) — the UI shows this before applying.
+ * Zero-cost variants come back with null previews (they'd be skipped). */
+export async function previewBulkMarkup(
+  organizationId: string,
+  input: { variantIds: string[]; markupPct: number; rounding: MarkupRounding },
+): Promise<CommerceResult<Array<{ id: string; name: string; costCents: number; priceCents: number; newPriceCents: number | null; markupPct: number | null }>>> {
+  if (input.variantIds.length === 0) return { ok: false, error: "not_found" };
+  const db = getDb();
+  const rows = await db
+    .select({
+      id: schema.productVariants.id,
+      name: schema.productVariants.name,
+      costCents: schema.productVariants.costCents,
+      priceCents: schema.productVariants.priceCents,
+    })
+    .from(schema.productVariants)
+    .where(and(inArray(schema.productVariants.id, input.variantIds), eq(schema.productVariants.organizationId, organizationId)));
+  if (rows.length === 0) return { ok: false, error: "not_found" };
+  return {
+    ok: true,
+    value: rows.map((r) => ({
+      ...r,
+      newPriceCents: r.costCents > 0 ? priceFromMarkupRounded(r.costCents, input.markupPct, input.rounding) : null,
+      markupPct: r.costCents > 0 ? markupPct(r.costCents, priceFromMarkupRounded(r.costCents, input.markupPct, input.rounding)) : null,
+    })),
+  };
+}
+
+/** Map a CommerceError to an HTTP status for the dashboard API routes
+ * (400 validation · 403 plan gate · 404 missing/foreign id). */
+export function commerceErrorStatus(error: CommerceError): number {
+  switch (error) {
+    case "not_found":
+      return 404;
+    case "store_disabled":
+    case "kind_not_allowed":
+    case "list_limit_reached":
+      return 403;
+    default:
+      return 400;
+  }
 }

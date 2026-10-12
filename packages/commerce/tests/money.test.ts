@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { MoneyError, markupPct, normalizeCurrency, priceFromMarkup } from "../src/money";
+import { MoneyError, isMarkupRounding, markupPct, normalizeCurrency, priceFromMarkup, priceFromMarkupRounded, roundPricePreset } from "../src/money";
 
 describe("money", () => {
   it("applies markup and rounds half up", () => {
@@ -26,5 +26,38 @@ describe("money", () => {
   it("normalizes currency codes", () => {
     expect(normalizeCurrency(" cad ")).toBe("CAD");
     expect(() => normalizeCurrency("dollars")).toThrow(MoneyError);
+  });
+});
+
+/* WEB-179 (Commerce C1 2/7) — bulk-markup rounding presets. */
+describe("markup rounding presets", () => {
+  it("none keeps the exact computed price", () => {
+    expect(priceFromMarkupRounded(1000, 48.7, "none")).toBe(1487);
+    expect(roundPricePreset(1487, "none")).toBe(1487);
+  });
+
+  it("dollar rounds to the nearest whole unit", () => {
+    expect(priceFromMarkupRounded(1000, 48.7, "dollar")).toBe(1500); // 1487 → 1500
+    expect(priceFromMarkupRounded(1000, 42, "dollar")).toBe(1400); // 1420 → 1400
+  });
+
+  it("charm presets land on .99 / .95 just under the nearest unit", () => {
+    expect(priceFromMarkupRounded(1000, 48.7, "charm99")).toBe(1499); // 1487 → 14.99
+    expect(priceFromMarkupRounded(1000, 48.7, "charm95")).toBe(1495); // 1487 → 14.95
+    expect(priceFromMarkupRounded(200, 40, "charm99")).toBe(299); // 280 → 2.99
+  });
+
+  it("never rounds below cost — steps up to the next shaped value", () => {
+    // cost 2550, exact 2550 → 24.99 is a loss: steps to 25.99
+    expect(priceFromMarkupRounded(2550, 0, "charm99")).toBe(2599);
+    // cost 2500, exact 2500 → dollar rounds to 2500 (equal, kept)
+    expect(priceFromMarkupRounded(2500, 0, "dollar")).toBe(2500);
+    // sub-unit price keeps the bare ending
+    expect(priceFromMarkupRounded(80, 0, "charm95")).toBe(95);
+  });
+
+  it("validates the preset name", () => {
+    expect(isMarkupRounding("charm99")).toBe(true);
+    expect(isMarkupRounding("nearest")).toBe(false);
   });
 });
