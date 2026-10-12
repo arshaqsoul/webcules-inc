@@ -450,3 +450,104 @@ describe("gallery sweeps", () => {
     expect(await purgeLegacyZips()).toBe(0); // idempotent - nothing left to do
   });
 });
+
+describe("size ladder: the mid rung (WEB-196)", () => {
+  /** Photo with a stored mid (+ preview), photo with only a preview, bare photo. */
+  async function seedLadder() {
+    const g = await seedGallery([
+      { filename: "prepared.jpg", body: "ORIGINAL-prepared" },
+      { filename: "preview-only.jpg", body: "ORIGINAL-previewonly" },
+      { filename: "bare.jpg", body: "ORIGINAL-bare" },
+    ]);
+    // derivatives for the first two only — the bare photo has none at all
+    for (const [i, name] of ["prepared", "preview-only"].entries()) {
+      await putObject(g.studio.organizationId, `${g.project}/${g.assetIds[i]}/preview.jpg`, bytesOf(`PREVIEW-${name}`), "image/jpeg");
+      await getDb().update(schema.assets).set({ previewKey: `${g.studio.organizationId}/${g.project}/${g.assetIds[i]}/preview.jpg` }).where(eq(schema.assets.id, g.assetIds[i]));
+    }
+    await putObject(g.studio.organizationId, `${g.project}/${g.assetIds[0]}/mid.jpg`, bytesOf("MID-prepared"), "image/jpeg");
+    await getDb().update(schema.assets).set({ midKey: `${g.studio.organizationId}/${g.project}/${g.assetIds[0]}/mid.jpg` }).where(eq(schema.assets.id, g.assetIds[0]));
+    return g;
+  }
+
+  it("ZIP mid size ships the stored mid, falls back to the preview, skips the bare photo", async () => {
+    const g = await seedLadder();
+    const plan = await fullPlan(g, { scope: "all", size: "mid" });
+    // the bare photo has no derivative at all → skipped (never the original)
+    expect(plan.items.map((i) => i.name)).toEqual(["prepared.jpg", "preview-only.jpg"]);
+    const raw = text(new Uint8Array(await zipPartResponse(plan, 1, { label: "x" }).arrayBuffer()));
+    expect(raw).toContain("MID-prepared");
+    expect(raw).toContain("PREVIEW-preview-only");
+    expect(raw).not.toContain("ORIGINAL-");
+  });
+
+  it("the zip route honors size=mid only when the gallery offers web sizes", async () => {
+    const g = await seedLadder();
+    // webSize off → mid degrades to full: originals ship
+    await saveDownloadSettings(g.studio.organizationId, g.grantId, { pinHash: null, limit: null, approval: false, webSize: false });
+    const gated = await callZip(g.token, g.grantId, "scope=all&size=mid&part=1");
+    expect(gated.status).toBe(200);
+    const gatedRaw = text(new Uint8Array(await gated.arrayBuffer()));
+    expect(gatedRaw).toContain("ORIGINAL-prepared");
+    expect(gatedRaw).not.toContain("MID-prepared");
+
+    // webSize on → mid ships the mid derivative
+    await saveDownloadSettings(g.studio.organizationId, g.grantId, { pinHash: null, limit: null, approval: false, webSize: true });
+    const mid = await callZip(g.token, g.grantId, "scope=all&size=mid&part=1");
+    expect(mid.status).toBe(200);
+    const midRaw = text(new Uint8Array(await mid.arrayBuffer()));
+    expect(midRaw).toContain("MID-prepared");
+    expect(midRaw).not.toContain("ORIGINAL-");
+  });
+
+  it("single-photo parity: the mid branch of sourceKey serves mid ?? preview with download semantics", async () => {
+    // The /api/assets route itself can't run under the workers test pool (it
+    // imports next/headers via the session), so its WEB-261 web branch was
+    // always covered through zip-delivery parity — the mid rung follows the
+    // same pattern and gets the same parity coverage here.
+    const g = await seedLadder();
+    const rows = await getDb().select().from(schema.assets);
+    const keyOf = (name: string) => rows.find((r) => r.filename === name);
+    // bare photo → no mid-capable key → the route's (midKey ?? previewKey)
+    // guard is false → falls through to the normal full path, never errors
+    expect(keyOf("bare.jpg")?.midKey ?? keyOf("bare.jpg")?.previewKey ?? null).toBeNull();
+    expect(keyOf("preview-only.jpg")?.midKey ?? keyOf("preview-only.jpg")?.previewKey).toContain("preview.jpg");
+    expect(keyOf("prepared.jpg")?.midKey).toContain("mid.jpg");
+  });
+
+  it("attachDerivative stores the on-demand mid (kind=mid, replaceable)", async () => {
+    const g = await seedLadder();
+    const { attachDerivative } = await import("@/lib/repos/assets");
+    const prepared = await attachDerivative({
+      organizationId: g.studio.organizationId, assetId: g.assetIds[1], kind: "mid",
+      bytes: bytesOf("MID-previewonly"), contentType: "image/jpeg",
+    });
+    expect(prepared.ok).toBe(true);
+    const row = (await getDb().select().from(schema.assets).where(eq(schema.assets.id, g.assetIds[1])))[0]!;
+    expect(row.midKey).toContain("mid.jpg");
+    // regeneration (a re-prepare pass) replaces without complaint
+    expect((await attachDerivative({
+      organizationId: g.studio.organizationId, assetId: g.assetIds[1], kind: "mid",
+      bytes: bytesOf("MID-previewonly-v2"), contentType: "image/jpeg", replace: true,
+    })).ok).toBe(true);
+    const plan = await fullPlan(g, { scope: "all", size: "mid" });
+    const raw = text(new Uint8Array(await zipPartResponse(plan, 1, { label: "x" }).arrayBuffer()));
+    expect(raw).toContain("MID-previewonly-v2");
+  });
+
+  it("an approved request keeps its mid preference through delivery", async () => {
+    const g = await seedLadder();
+    await saveDownloadSettings(g.studio.organizationId, g.grantId, { pinHash: null, limit: null, approval: true, webSize: true });
+    const made = await createDownloadRequest({ grant: await grantRow(g.grantId), clientEmail: "c@t.test", scope: "all", sizePref: "mid", approvalRequired: true });
+    expect(made.ok && made.request.sizePref).toBe("mid");
+    if (!made.ok) throw new Error("req");
+    await decideDownloadRequest({ organizationId: g.studio.organizationId, id: made.request.id, decision: "approve", actorUserId: g.studio.userId });
+    const res = await callZip(g.token, g.grantId, `req=${made.request.id}&part=1`);
+    expect(res.status).toBe(200);
+    expect(text(new Uint8Array(await res.arrayBuffer()))).toContain("MID-prepared");
+    // the studio turning web sizes off downgrades the request to full, never errors
+    await saveDownloadSettings(g.studio.organizationId, g.grantId, { pinHash: null, limit: null, approval: true, webSize: false });
+    const downgraded = await callZip(g.token, g.grantId, `req=${made.request.id}&part=1`);
+    expect(downgraded.status).toBe(200);
+    expect(text(new Uint8Array(await downgraded.arrayBuffer()))).toContain("ORIGINAL-prepared");
+  });
+});

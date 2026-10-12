@@ -154,10 +154,21 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     // download headers (zero server processing; derivative is clean by
     // construction, so the EXIF strip below never applies). WEB-402: an
     // edited look replaces the preview — the grade is the deliverable.
-    if (wantsDownload && grant.allowDownload && url.searchParams.get("size") === "web" && (asset.editKey ?? asset.previewKey)) {
+    // WEB-196: the mid rung (~1280px) serves the stored mid derivative,
+    // falling back to the preview until the studio's on-demand prepare
+    // pass (or a re-render) has landed one — closest smaller bytes.
+    const sizeParam = url.searchParams.get("size");
+    if (wantsDownload && grant.allowDownload && sizeParam === "web" && (asset.editKey ?? asset.previewKey)) {
       return serveAsset(
         req,
         { ...asset, storageKey: (asset.editKey ?? asset.previewKey) as string, mimeType: "image/jpeg" },
+        true,
+      );
+    }
+    if (wantsDownload && grant.allowDownload && sizeParam === "mid" && (asset.midKey ?? asset.previewKey)) {
+      return serveAsset(
+        req,
+        { ...asset, storageKey: (asset.midKey ?? asset.previewKey) as string, mimeType: "image/jpeg" },
         true,
       );
     }

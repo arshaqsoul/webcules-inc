@@ -11,7 +11,7 @@ import {
   listGrantDownloadRequests,
   photoDownloadCount,
 } from "@/lib/repos/downloads";
-import { DOWNLOAD_SCOPES, REQUEST_MAX_ASSET_IDS, type DownloadScope } from "@/lib/gallery-downloads";
+import { DOWNLOAD_SCOPES, REQUEST_MAX_ASSET_IDS, parseSizePref, type DownloadScope } from "@/lib/gallery-downloads";
 import { resolveGrantByToken } from "@/lib/shares/grants";
 
 export const dynamic = "force-dynamic";
@@ -89,7 +89,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
     scope,
     folderName: scope === "folder" ? body.folderName ?? null : null,
     assetIds: scope === "photos" ? body.assetIds : undefined,
-    sizePref: settings.webSize && body.sizePref === "web" ? "web" : "full",
+    sizePref: parseSizePref(body.sizePref, settings.webSize),
     note: body.note ?? null,
     approvalRequired: settings.approval,
   });

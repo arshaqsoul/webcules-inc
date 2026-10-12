@@ -625,6 +625,9 @@ export const assets = sqliteTable(
     previewKey: text("preview_key"),
     /** WEB-242: watermarked preview derivative (browser-composited). */
     previewWmKey: text("preview_wm_key"),
+    /** WEB-196: ~1280px mid derivative (browser canvas, on demand) — the
+     * smallest rung of the download size ladder. */
+    midKey: text("mid_key"),
     exifStripped: integer("exif_stripped", { mode: "boolean" }).notNull().default(false),
     uploadedBy: text("uploaded_by").references(() => user.id, { onDelete: "set null" }),
     createdAt: ts("created_at"),

@@ -4,12 +4,15 @@ import { describe, expect, it } from "vitest";
 
 import {
   DOWNLOAD_STATES,
+  SIZE_LONG_EDGE,
   canTransition,
   isDownloadState,
   downloadScopeLabel,
   isValidPin,
   normalizeDownloadSettingsInput,
   parseDownloadSettings,
+  parseSizePref,
+  sizeOffered,
   type DownloadSettings,
 } from "@/lib/gallery-downloads";
 
@@ -80,5 +83,41 @@ describe("labels (WEB-261)", () => {
     expect(downloadScopeLabel("all", null)).toBe("the whole gallery");
     expect(downloadScopeLabel("favorites", null)).toBe("your favorites");
     expect(downloadScopeLabel("folder", "Ceremony")).toBe("“Ceremony”");
+  });
+});
+
+describe("size ladder (WEB-196)", () => {
+  it("the ladder is Original / 2048 / 1280", () => {
+    expect(SIZE_LONG_EDGE).toEqual({ web: 2048, mid: 1280 });
+  });
+
+  it("source-aware hiding: a rung shows only when the source is at least that big", () => {
+    // big source: everything offered
+    expect(sizeOffered("web", 4000)).toBe(true);
+    expect(sizeOffered("mid", 4000)).toBe(true);
+    // a 2048-wide source: web yes (exact), mid yes
+    expect(sizeOffered("web", 2048)).toBe(true);
+    expect(sizeOffered("mid", 2048)).toBe(true);
+    // a 1500px source: web hidden (would upscale), mid offered
+    expect(sizeOffered("web", 1500)).toBe(false);
+    expect(sizeOffered("mid", 1500)).toBe(true);
+    // a small source: only the original ships
+    expect(sizeOffered("web", 1024)).toBe(false);
+    expect(sizeOffered("mid", 1024)).toBe(false);
+    expect(sizeOffered("mid", 1280)).toBe(true); // exact fit still offered
+  });
+
+  it("unknown intrinsic size → best effort (offered, delivery degrades)", () => {
+    expect(sizeOffered("web", null)).toBe(true);
+    expect(sizeOffered("mid", undefined)).toBe(true);
+  });
+
+  it("parseSizePref: web+mid ride the webSize toggle; everything else is full", () => {
+    expect(parseSizePref("web", true)).toBe("web");
+    expect(parseSizePref("mid", true)).toBe("mid");
+    expect(parseSizePref("mid", false)).toBe("full"); // gallery doesn't offer sizes
+    expect(parseSizePref("web", false)).toBe("full");
+    expect(parseSizePref("huge", true)).toBe("full");
+    expect(parseSizePref(null, true)).toBe("full");
   });
 });
