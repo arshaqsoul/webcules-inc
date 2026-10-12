@@ -503,7 +503,7 @@ importers:
         version: 3.31.3
       '@vinext/cloudflare':
         specifier: latest
-        version: 1.1.0(7a471067a6c78c952b971de804875b0a)
+        version: 1.1.0(cddf07ee33fca9f4af672a6d317938dc)
       '@webcules/commerce':
         specifier: workspace:*
         version: link:../../packages/commerce
@@ -518,7 +518,7 @@ importers:
         version: 1.0.20
       better-auth:
         specifier: ^1.7.6
-        version: 1.7.6(drizzle-kit@0.31.10)(drizzle-orm@0.45.3(@libsql/client@0.15.15)(@types/pg@8.10.2)(kysely@0.29.6)(pg@8.16.3))(next@16.4.0(@playwright/test@1.64.0)(@types/node@26.6.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.77.4))(pg@8.16.3)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(vitest@4.1.11(@types/node@26.6.5)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.77.4)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1)))
+        version: 1.7.6(drizzle-kit@0.31.10)(drizzle-orm@0.45.3(@libsql/client@0.15.15)(@types/pg@8.10.2)(kysely@0.29.6)(pg@8.16.3))(next@16.4.0(@playwright/test@1.54.1)(@types/node@26.6.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.77.4))(pg@8.16.3)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(vitest@4.1.11(@types/node@26.6.5)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.77.4)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1)))
       drizzle-orm:
         specifier: ^0.45.3
         version: 0.45.3(@cloudflare/workers-types@4.20260702.1)(@libsql/client@0.15.15)(@types/pg@8.10.2)(kysely@0.29.6)(pg@8.16.3)
@@ -531,9 +531,6 @@ importers:
       lucide-react:
         specifier: ^0.544.0
         version: 0.544.0(react@19.3.0)
-      next:
-        specifier: ^16.3.8
-        version: 16.4.0(@playwright/test@1.64.0)(@types/node@26.6.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.77.4)
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -557,7 +554,7 @@ importers:
         version: 22.6.2(@types/node@26.6.5)
       vinext:
         specifier: latest
-        version: 1.1.0(@types/node@26.6.5)(@vitejs/plugin-react@6.1.2(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.77.4)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1)))(@vitejs/plugin-rsc@0.5.36(react-dom@19.3.0(react@19.3.0))(react-server-dom-webpack@19.3.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(webpack@5.111.1(esbuild@0.28.2)))(react@19.3.0)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.77.4)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1)))(next@16.4.0(@playwright/test@1.64.0)(@types/node@26.6.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.77.4))(react-dom@19.3.0(react@19.3.0))(react-server-dom-webpack@19.3.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(webpack@5.111.1(esbuild@0.28.2)))(react@19.3.0)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.77.4)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1))
+        version: 1.1.0(@types/node@26.6.5)(@vitejs/plugin-react@6.1.2(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.77.4)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1)))(@vitejs/plugin-rsc@0.5.36(react-dom@19.3.0(react@19.3.0))(react-server-dom-webpack@19.3.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(webpack@5.111.1(esbuild@0.28.2)))(react@19.3.0)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.77.4)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1)))(next@16.4.0(@playwright/test@1.54.1)(@types/node@26.6.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.77.4))(react-dom@19.3.0(react@19.3.0))(react-server-dom-webpack@19.3.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(webpack@5.111.1(esbuild@0.28.2)))(react@19.3.0)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.77.4)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1))
       zod:
         specifier: ^4.6.5
         version: 4.6.5
@@ -569,8 +566,8 @@ importers:
         specifier: ^1.3.0
         version: 1.3.0(@types/node@26.6.5)(@vitest/runner@4.1.11)(@vitest/snapshot@4.1.11)(vitest@4.1.11(@types/node@26.6.5)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.77.4)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1)))
       '@playwright/test':
-        specifier: 1.64.0
-        version: 1.64.0
+        specifier: 1.54.1
+        version: 1.54.1
       '@tailwindcss/postcss':
         specifier: latest
         version: 4.3.3
@@ -13408,7 +13405,8 @@ snapshots:
 
   '@next/env@16.3.0': {}
 
-  '@next/env@16.4.0': {}
+  '@next/env@16.4.0':
+    optional: true
 
   '@next/eslint-plugin-next@15.5.25':
     dependencies:
@@ -14226,6 +14224,7 @@ snapshots:
   '@playwright/test@1.64.0':
     dependencies:
       playwright: 1.64.0
+    optional: true
 
   '@poppinss/colors@4.1.6':
     dependencies:
@@ -15224,6 +15223,7 @@ snapshots:
   '@swc/helpers@0.5.23':
     dependencies:
       tslib: 2.8.1
+    optional: true
 
   '@tabler/icons-react@3.35.0(react@19.3.0)':
     dependencies:
@@ -16152,13 +16152,13 @@ snapshots:
     dependencies:
       unpic: 4.2.2
 
-  '@unpic/react@1.0.2(next@16.4.0(@playwright/test@1.64.0)(@types/node@26.6.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.77.4))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
+  '@unpic/react@1.0.2(next@16.4.0(@playwright/test@1.54.1)(@types/node@26.6.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.77.4))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
     dependencies:
       '@unpic/core': 1.0.3
       react: 19.3.0
       react-dom: 19.3.0(react@19.3.0)
     optionalDependencies:
-      next: 16.4.0(@playwright/test@1.64.0)(@types/node@26.6.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.77.4)
+      next: 16.4.0(@playwright/test@1.54.1)(@types/node@26.6.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.77.4)
 
   '@unrs/resolver-binding-android-arm-eabi@1.11.1':
     optional: true
@@ -16228,10 +16228,10 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
-  '@vinext/cloudflare@1.1.0(7a471067a6c78c952b971de804875b0a)':
+  '@vinext/cloudflare@1.1.0(cddf07ee33fca9f4af672a6d317938dc)':
     dependencies:
       '@cloudflare/workers-response-store': 1.1.0
-      vinext: 1.1.0(@types/node@26.6.5)(@vitejs/plugin-react@6.1.2(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.77.4)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1)))(@vitejs/plugin-rsc@0.5.36(react-dom@19.3.0(react@19.3.0))(react-server-dom-webpack@19.3.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(webpack@5.111.1(esbuild@0.28.2)))(react@19.3.0)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.77.4)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1)))(next@16.4.0(@playwright/test@1.64.0)(@types/node@26.6.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.77.4))(react-dom@19.3.0(react@19.3.0))(react-server-dom-webpack@19.3.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(webpack@5.111.1(esbuild@0.28.2)))(react@19.3.0)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.77.4)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1))
+      vinext: 1.1.0(@types/node@26.6.5)(@vitejs/plugin-react@6.1.2(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.77.4)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1)))(@vitejs/plugin-rsc@0.5.36(react-dom@19.3.0(react@19.3.0))(react-server-dom-webpack@19.3.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(webpack@5.111.1(esbuild@0.28.2)))(react@19.3.0)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.77.4)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1)))(next@16.4.0(@playwright/test@1.54.1)(@types/node@26.6.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.77.4))(react-dom@19.3.0(react@19.3.0))(react-server-dom-webpack@19.3.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(webpack@5.111.1(esbuild@0.28.2)))(react@19.3.0)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.77.4)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1))
     optionalDependencies:
       '@cloudflare/vite-plugin': 1.63.1(@types/node@26.6.5)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.77.4)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1))(wrangler@4.149.0(@types/node@26.6.5))
 
@@ -16831,7 +16831,7 @@ snapshots:
     transitivePeerDependencies:
       - '@opentelemetry/api'
 
-  better-auth@1.7.6(drizzle-kit@0.31.10)(drizzle-orm@0.45.3(@libsql/client@0.15.15)(@types/pg@8.10.2)(kysely@0.29.6)(pg@8.16.3))(next@16.4.0(@playwright/test@1.64.0)(@types/node@26.6.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.77.4))(pg@8.16.3)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(vitest@4.1.11(@types/node@26.6.5)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.77.4)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1))):
+  better-auth@1.7.6(drizzle-kit@0.31.10)(drizzle-orm@0.45.3(@libsql/client@0.15.15)(@types/pg@8.10.2)(kysely@0.29.6)(pg@8.16.3))(next@16.4.0(@playwright/test@1.54.1)(@types/node@26.6.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.77.4))(pg@8.16.3)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(vitest@4.1.11(@types/node@26.6.5)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.77.4)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1))):
     dependencies:
       '@better-auth/core': 1.7.6(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.2)(better-call@1.4.0(zod@4.6.5))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.3)
       '@better-auth/drizzle-adapter': 1.7.6(@better-auth/core@1.7.6(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.2)(better-call@1.4.0(zod@4.6.5))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.3))(@better-auth/utils@0.4.2)(drizzle-orm@0.45.3(@libsql/client@0.15.15)(@types/pg@8.10.2)(kysely@0.29.6)(pg@8.16.3))
@@ -16853,7 +16853,7 @@ snapshots:
     optionalDependencies:
       drizzle-kit: 0.31.10
       drizzle-orm: 0.45.3(@cloudflare/workers-types@4.20260702.1)(@libsql/client@0.15.15)(@types/pg@8.10.2)(kysely@0.29.6)(pg@8.16.3)
-      next: 16.4.0(@playwright/test@1.64.0)(@types/node@26.6.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.77.4)
+      next: 16.4.0(@playwright/test@1.54.1)(@types/node@26.6.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.77.4)
       pg: 8.16.3
       react: 19.3.0
       react-dom: 19.3.0(react@19.3.0)
@@ -20178,7 +20178,7 @@ snapshots:
       - '@types/node'
       - babel-plugin-macros
 
-  next@16.4.0(@playwright/test@1.64.0)(@types/node@26.6.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.77.4):
+  next@16.4.0(@playwright/test@1.54.1)(@types/node@26.6.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.77.4):
     dependencies:
       '@next/env': 16.4.0
       '@swc/helpers': 0.5.23
@@ -20197,13 +20197,14 @@ snapshots:
       '@next/swc-linux-x64-musl': 16.4.0
       '@next/swc-win32-arm64-msvc': 16.4.0
       '@next/swc-win32-x64-msvc': 16.4.0
-      '@playwright/test': 1.64.0
+      '@playwright/test': 1.54.1
       sass: 1.77.4
       sharp: 0.35.5(@types/node@26.6.5)
     transitivePeerDependencies:
       - '@babel/core'
       - '@types/node'
       - babel-plugin-macros
+    optional: true
 
   nlcst-to-string@4.0.0:
     dependencies:
@@ -22714,9 +22715,9 @@ snapshots:
       '@types/unist': 3.0.3
       vfile-message: 4.0.3
 
-  vinext@1.1.0(@types/node@26.6.5)(@vitejs/plugin-react@6.1.2(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.77.4)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1)))(@vitejs/plugin-rsc@0.5.36(react-dom@19.3.0(react@19.3.0))(react-server-dom-webpack@19.3.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(webpack@5.111.1(esbuild@0.28.2)))(react@19.3.0)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.77.4)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1)))(next@16.4.0(@playwright/test@1.64.0)(@types/node@26.6.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.77.4))(react-dom@19.3.0(react@19.3.0))(react-server-dom-webpack@19.3.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(webpack@5.111.1(esbuild@0.28.2)))(react@19.3.0)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.77.4)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1)):
+  vinext@1.1.0(@types/node@26.6.5)(@vitejs/plugin-react@6.1.2(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.77.4)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1)))(@vitejs/plugin-rsc@0.5.36(react-dom@19.3.0(react@19.3.0))(react-server-dom-webpack@19.3.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(webpack@5.111.1(esbuild@0.28.2)))(react@19.3.0)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.77.4)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1)))(next@16.4.0(@playwright/test@1.54.1)(@types/node@26.6.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.77.4))(react-dom@19.3.0(react@19.3.0))(react-server-dom-webpack@19.3.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(webpack@5.111.1(esbuild@0.28.2)))(react@19.3.0)(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.77.4)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1)):
     dependencies:
-      '@unpic/react': 1.0.2(next@16.4.0(@playwright/test@1.64.0)(@types/node@26.6.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.77.4))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@unpic/react': 1.0.2(next@16.4.0(@playwright/test@1.54.1)(@types/node@26.6.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.77.4))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@vercel/og': 1.0.3(@types/node@26.6.5)
       '@vinext/types': 1.0.1
       '@vitejs/plugin-react': 6.1.2(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(sass@1.77.4)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1))
