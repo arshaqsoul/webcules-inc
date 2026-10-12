@@ -1726,3 +1726,48 @@ export const integrationTokens = sqliteTable(
   },
   (t) => [index("integration_token_org_idx").on(t.organizationId, t.createdAt)],
 );
+
+/* ---------------- Integration publish ledger (WEB-185 / Integrations 2/6) ---------------- */
+
+/** Publish state for external integration sources (Lightroom Classic publish
+ * plugin). One row per (project, source, externalPhotoId): the asset the
+ * plugin published, plus the content signature it carried — the plugin diffs
+ * its local edit signatures against these rows to decide what needs
+ * re-publishing, so sync state survives catalog/cache loss. Deleting the
+ * asset removes the row (cascade), never the reverse.
+ * DDL: migrations/0073_integration_publish.sql. */
+export const integrationPublish = sqliteTable(
+  "integration_publish",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    assetId: text("asset_id")
+      .notNull()
+      .references(() => assets.id, { onDelete: "cascade" }),
+    /** Identifies the publishing tool ('lightroom'); the upsert key part. */
+    source: text("source").notNull(),
+    /** The tool's own stable photo id (Lightroom local catalog id). */
+    externalPhotoId: text("external_photo_id").notNull(),
+    /** Opaque edit-state hash supplied by the source at publish time. */
+    signature: text("signature").notNull(),
+    /** Which token made the row — audit trail, nullable on token delete. */
+    tokenId: text("token_id").references(() => integrationTokens.id, {
+      onDelete: "set null",
+    }),
+    createdAt: ts("created_at"),
+    updatedAt: ts("updated_at"),
+  },
+  (t) => [
+    uniqueIndex("integration_publish_unique_idx").on(
+      t.projectId,
+      t.source,
+      t.externalPhotoId,
+    ),
+    index("integration_publish_org_idx").on(t.organizationId, t.source, t.updatedAt),
+  ],
+);
