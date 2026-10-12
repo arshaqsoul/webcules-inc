@@ -1,12 +1,10 @@
 /* Full signup → onboarding → dashboard journey, then logout/login round-trip
  * and the Settings → Plan surface (free-tier rework copy).
  *
- * FIXME (tracked in Linear): under `vinext dev` on Windows the SIGNUP page's
- * client component never hydrates — button clicks (even requestSubmit) are
- * no-ops with zero console errors and all 110 JS chunks 200; the LOGIN page
- * hydrates fine, and the same flow works on prod. These specs are fixme until
- * that dev-hydration issue (or the wrangler-preview workerd crash-loop that
- * blocks preview-mode E2E) is resolved. */
+ * (WEB-62) The old "signup never hydrates" symptom was NOT hydration: the
+ * required "Your name" field was never filled (silent native-validation
+ * block), then wrangler's route-based Host rewrite tripped better-auth's
+ * origin check — see tests/e2e/README.md. */
 import { expect, test, type Page } from "@playwright/test";
 
 const creds = () => ({
@@ -35,6 +33,7 @@ async function signUp(page: Page) {
   const c = creds();
   await page.goto("/signup");
   await page.waitForLoadState("networkidle");
+  await page.getByLabel("Your name").fill("E2E Owner"); // required — blank blocks submit silently
   await page.getByLabel("Studio name").fill(c.studio);
   await page.getByLabel("Email").fill(c.email);
   await page.getByLabel("Password").fill(c.password);
@@ -42,20 +41,20 @@ async function signUp(page: Page) {
   return c;
 }
 
-test.fixme("signup lands in onboarding, Free goes straight to the dashboard", async ({ page }) => {
+test("signup lands in onboarding, Free goes straight to the dashboard", async ({ page }) => {
   await signUp(page);
 
   await expect(page.getByRole("heading", { name: /choose your plan/i })).toBeVisible();
   // Shared pricing surface renders the free-tier truth.
-  await expect(page.getByText("20 GB (incl. 3 GB RAW trial)")).toBeVisible();
+  await expect(page.getByText("20 GB storage (incl. 3 GB RAW trial)")).toBeVisible();
   await expect(page.getByText("Unlimited bookings").first()).toBeVisible();
 
-  await clickAndNavigate(page, "Start on Free", /\/dashboard/);
+  await clickAndNavigate(page, "Current plan — continue", /\/dashboard/);
 });
 
-test.fixme("logout → login round-trip with the same account", async ({ page }) => {
+test("logout → login round-trip with the same account", async ({ page }) => {
   const c = await signUp(page);
-  await clickAndNavigate(page, "Start on Free", /\/dashboard/);
+  await clickAndNavigate(page, "Current plan — continue", /\/dashboard/);
 
   await clickAndNavigate(page, "Sign out", /\/login/);
 
@@ -64,11 +63,11 @@ test.fixme("logout → login round-trip with the same account", async ({ page })
   await clickAndNavigate(page, "Sign in", /\/dashboard/);
 });
 
-test.fixme("Settings → Plan shows the free-tier entitlements honestly", async ({ page }) => {
+test("Settings → Plan shows the free-tier entitlements honestly", async ({ page }) => {
   await signUp(page);
-  await clickAndNavigate(page, "Start on Free", /\/dashboard/);
+  await clickAndNavigate(page, "Current plan — continue", /\/dashboard/);
 
-  await page.goto("/dashboard/settings");
+  await page.goto("/dashboard/settings/billing"); // plan panel moved off the settings root
   await expect(page.getByText("Unlimited bookings")).toBeVisible();
   await expect(page.getByText(/RAW · .+ \/ 3\.0GB trial/)).toBeVisible();
   await expect(page.getByText("20GB · RAW trial · 5 galleries")).toBeVisible();

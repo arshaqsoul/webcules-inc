@@ -16,6 +16,17 @@ const port = process.env.E2E_PORT ?? "3000";
 const base = `http://localhost:${port}`;
 const mockPort = 3117;
 
+// Windows: orphaned workerd processes from earlier runs hold locks on dist/
+// and serve stale builds. Must happen HERE, before our own workerd exists
+// (globalSetup runs after the webServer is already up).
+if (process.platform === "win32" && !process.env.CI) {
+  try {
+    execSync("taskkill /F /IM workerd.exe", { stdio: "ignore", shell: true });
+  } catch {
+    /* none running — fine */
+  }
+}
+
 function run(cmd) {
   execSync(cmd, { stdio: "inherit", cwd: root, shell: true });
 }
@@ -140,6 +151,17 @@ mock.listen(mockPort, "127.0.0.1", () => console.log(`[e2e-server] CF/DoH mock o
 console.log("[e2e-server] building production bundle (vinext build)…");
 run("pnpm exec vinext build");
 console.log("[e2e-server] build complete");
+
+// wrangler dev rewrites the request Host/Origin to the FIRST `routes` entry
+// (snaphq.app), so better-auth rejects every browser POST with "Invalid
+// origin: http://snaphq.app" (signup looked like a hydration failure). The
+// E2E runs on localhost — drop the production routes from the built config.
+{
+  const cfgPath = join(root, "dist", "server", "wrangler.json");
+  const cfg = JSON.parse(readFileSync(cfgPath, "utf8"));
+  delete cfg.routes;
+  writeFileSync(cfgPath, JSON.stringify(cfg, null, 2), "utf8");
+}
 
 console.log("[e2e-server] preparing isolated D1…");
 rmTree(stateDir);
