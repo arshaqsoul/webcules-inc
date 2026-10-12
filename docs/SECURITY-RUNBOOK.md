@@ -31,14 +31,16 @@ apps that belong to other products and are tracked separately.
   `scripts/deploy.mjs` `REQUIRED_SECRETS` (the deploy preflight refuses a
   worker missing any of them).
 - [x] **Pen-test-style self-assessment.** Section below.
-- [ ] **Prod header verification incl. embed surfaces (post-deploy).**
+- [x] **Prod header verification incl. embed surfaces (post-deploy).**
   Pre-deploy baseline (2026-10-12): `https://snap.webcules.com/` serves none
   of CSP/HSTS/XFO/Referrer-Policy/Permissions-Policy — the fix in this branch
   closes that. After Thor deploys, re-run:
   `curl -sID - https://snap.webcules.com/ | grep -iE 'security|frame|transport|referrer|permissions'`
   plus one live `/embed/*` studio URL and `/ts`, and confirm the per-studio
   `frame-ancestors` survives with the baseline headers alongside. Then check
-  this box and record the SHA.
+  this box and record the SHA. Shipped as **v0.12.2 @ 998e376**
+  (worker version `01e7ef02-7d89-48fd-802d-9d8103d90289`); evidence on WEB-202
+  (comment 68120e54) and WEB-246 (comment b5110dd6).
 
 ## Dependency audit + lockfile hygiene
 
