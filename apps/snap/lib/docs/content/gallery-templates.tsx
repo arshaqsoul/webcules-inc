@@ -1,7 +1,8 @@
 /* Gallery templates & page builder — authored from components/
  * gallery-template-picker.tsx (two tier groups — Free looks, Lite/Studio page
  * layouts — category chips, R2 thumbs + mobile crop badge, plan badges +
- * upgrade buttons on locked cards, apply confirm + client-side undo),
+ * upgrade buttons on locked cards, apply confirm + undo persisted on the
+ * project so it survives reloads, WEB-249),
  * lib/seed-templates.ts (the fifteen seeds: 5 cover-only free looks, 7 Lite
  * page layouts, 3 Studio collage layouts; adaptSeedToProject positional remap
  * incl. wrap-around, below-Studio trimming), lib/seed-gating.ts
@@ -57,8 +58,10 @@ export default function GalleryTemplates() {
         template&apos;s picks reuses its photos rather than showing gaps. Rating filters inside a
         template keep working on any gallery. The free looks carry no copy of their own, so your
         title, subtitle, and cover photo stay exactly as you set them. Changed your mind?{" "}
-        <strong>Undo</strong> sits beside the confirmation and restores your previous design
-        exactly.
+        <strong>Undo</strong> restores your previous design exactly — and it&rsquo;s kept with the
+        project, so it&rsquo;s still there after you leave the page or reload: come back tomorrow,
+        click <strong>Undo</strong>, and the design you had before the template returns. Undo is
+        one level deep; saving any design change — including that restore — closes it.
       </p>
       <p>
         Which templates apply is enforced on the server, not just hidden in the interface: a plan

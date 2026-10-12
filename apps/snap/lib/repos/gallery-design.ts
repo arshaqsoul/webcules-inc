@@ -33,6 +33,44 @@ export async function getProjectGalleryDesign(organizationId: string, projectId:
   return parseGalleryDesignJson(rows[0]?.galleryDesign ?? null);
 }
 
+/** WEB-249: the persisted Undo snapshot — the design the last template apply
+ * replaced. Survives reloads (the picker hydrates from it on mount); cleared
+ * by passing null (any design save ends the undo window). */
+export async function getProjectGalleryUndo(organizationId: string, projectId: string): Promise<GalleryDesign | null> {
+  const rows = await getDb()
+    .select({ galleryDesignUndo: schema.projects.galleryDesignUndo })
+    .from(schema.projects)
+    .where(and(eq(schema.projects.id, projectId), eq(schema.projects.organizationId, organizationId)))
+    .limit(1);
+  return parseGalleryDesignJson(rows[0]?.galleryDesignUndo ?? null);
+}
+
+/** Persist (or clear) the Undo snapshot. Canonicalized with the same parse +
+ * size caps as the design itself — the snapshot must always be restorable
+ * through the gallery-design PUT path. */
+export async function saveProjectGalleryUndo(params: {
+  organizationId: string;
+  projectId: string;
+  design: GalleryDesign | null;
+}): Promise<{ ok: true } | { ok: false; error: "invalid_design" | "too_large" }> {
+  let stored: string | null = null;
+  if (params.design) {
+    const canonical = parseGalleryDesign(params.design);
+    if (!canonical) return { ok: false, error: "invalid_design" };
+    const serialized = serializeGalleryDesign(canonical);
+    const cap = designHasV2Fields(canonical) ? GALLERY_DESIGN_V2_MAX_BYTES : GALLERY_DESIGN_MAX_BYTES;
+    if (serialized.length > cap) return { ok: false, error: "too_large" };
+    stored = serialized;
+  }
+  const updated = await getDb()
+    .update(schema.projects)
+    .set({ galleryDesignUndo: stored, updatedAt: new Date() })
+    .where(and(eq(schema.projects.id, params.projectId), eq(schema.projects.organizationId, params.organizationId)))
+    .returning({ id: schema.projects.id });
+  if (!updated.length) return { ok: false, error: "invalid_design" };
+  return { ok: true };
+}
+
 /** Strict write path (API): canonicalize + cap; every referenced asset —
  * cover surfaces (WEB-301) AND v2 section references (hero images, binding
  * picks, collage items) — must belong to the project when present. */

@@ -8,7 +8,7 @@ import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { getOrgContext } from "@/lib/session";
 import { getPlanEntitlements } from "@/lib/plans";
-import { effectiveGalleryDesign, saveProjectGalleryDesign } from "@/lib/repos/gallery-design";
+import { effectiveGalleryDesign, saveProjectGalleryDesign, saveProjectGalleryUndo } from "@/lib/repos/gallery-design";
 import { and, asc, eq, inArray } from "drizzle-orm";
 
 import { designMinTier, isCoverOnlyDesign, isSeedDesign, parseGalleryDesign, serializeGalleryDesign } from "@/lib/gallery-design";
@@ -126,6 +126,11 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   if (!result.ok) {
     return Response.json({ error: result.error }, { status: 400 });
   }
+
+  // WEB-249: any successful design save ends the undo window — restoring
+  // through Undo itself goes through this PUT, and a later manual edit makes
+  // the snapshot stale. One level of undo, then it's gone.
+  await saveProjectGalleryUndo({ organizationId: ctx.organizationId, projectId: id, design: null });
 
   await getDb().insert(schema.auditLog).values({
     id: crypto.randomUUID(),

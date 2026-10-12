@@ -4,7 +4,9 @@
  * settings are never touched, design only. Free templates (cover-only: a
  * look plus the studio's own title/subtitle/cover, which survive the
  * switch) apply on every tier; sectioned templates need Lite, collage ones
- * Studio. The previous design is returned for client-side undo.
+ * Studio. The previous design is returned for the picker's undo AND
+ * persisted on the project (WEB-249) so Undo survives a reload; any later
+ * design save clears the snapshot (one level of undo).
  * Customization beyond a pristine seed is the builder (Lite+, WEB-321). */
 import { and, asc, eq, inArray } from "drizzle-orm";
 
@@ -13,7 +15,7 @@ import * as schema from "@/lib/db-schema";
 import { getOrgContext } from "@/lib/session";
 import { getPlanEntitlements } from "@/lib/plans";
 import { hasStudioControls, seedGateError } from "@/lib/seed-gating";
-import { getProjectGalleryDesign, saveProjectGalleryDesign } from "@/lib/repos/gallery-design";
+import { getProjectGalleryDesign, saveProjectGalleryDesign, saveProjectGalleryUndo } from "@/lib/repos/gallery-design";
 import { adaptSeedToProject, seedTemplateOf } from "@/lib/seed-templates";
 import { parseGalleryDesign } from "@/lib/gallery-design";
 
@@ -64,6 +66,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const result = await saveProjectGalleryDesign({ organizationId: ctx.organizationId, projectId: id, design });
   if (!result.ok) return Response.json({ error: result.error }, { status: 400 });
 
+  // WEB-249: persist the replaced design so Undo survives a reload. A failed
+  // snapshot (oversized) must not fail the apply — undo stays session-only.
+  const previousDesign = parseGalleryDesign(previous ?? null);
+  await saveProjectGalleryUndo({ organizationId: ctx.organizationId, projectId: id, design: previousDesign });
+
   await getDb().insert(schema.auditLog).values({
     id: crypto.randomUUID(),
     organizationId: ctx.organizationId,
@@ -74,5 +81,5 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     targetId: id,
     meta: JSON.stringify({ key: seed.key, replacedCustom: Boolean(previous) }),
   });
-  return Response.json({ ok: true, previous: parseGalleryDesign(previous ?? null) });
+  return Response.json({ ok: true, previous: previousDesign });
 }
