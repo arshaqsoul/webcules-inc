@@ -9,6 +9,12 @@
  *       --staging-verified, which is your assertion that the SAME commit was
  *       deployed to staging and manually verified (surfaced, DB, key flows).
  *
+ * Both targets run a preflight BEFORE the build (WEB-232) and refuse with
+ * REFUSED + exit 1 on the first failure: production without --staging-verified,
+ * a dirty tree (any tracked change anywhere in the repo, or untracked files
+ * under apps/snap/ or packages/), or a failing `pnpm typecheck`. There are NO
+ * override flags for the clean-tree or typecheck gates.
+ *
  * Staging resources (isolated from prod by design):
  *   worker  snap-staging            https://staging.snaphq.app
  *   D1      webcules-snap-staging   9b850d02-67d3-4c1b-a7ed-482cc587b2d5
@@ -22,6 +28,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const appDir = join(dirname(fileURLToPath(import.meta.url)), "..");
+const REPO_ROOT = join(appDir, "..", ".."); // git preflight runs from the repo root
 const STAGING = {
   worker: "snap-staging",
   // WEB-330: staging rehearses the production cutover - staging.snaphq.app is
@@ -79,6 +86,79 @@ function cleanBuildCaches() {
     const abs = join(appDir, p);
     if (existsSync(abs)) rmSync(abs, { recursive: true, force: true });
   }
+}
+
+/* WEB-232 preflight gates - before build() for BOTH targets; the first
+ * failure aborts with REFUSED and exit code 1. No override flags: vinext
+ * builds without typechecking, so a red tsc today is a broken worker tonight,
+ * and a shared dirty tree ships everyone's half-finished code (that
+ * combination caused the 2026-09-30 production outage). */
+function refuse(msg) {
+  console.error(`⛔ REFUSED: ${msg}`);
+  process.exit(1);
+}
+
+/* Default platform shell (cmd.exe on Windows, /bin/sh elsewhere): git.exe and
+ * pnpm.cmd resolve natively, so the gates behave the same whether the script
+ * is launched from PowerShell, cmd or Git Bash. run() keeps bash below. */
+function gitOut(cmd) {
+  // no trim() here: the first porcelain line is " M <path>" and trimming the
+  // whole output would eat its leading status column.
+  return execSync(cmd, { cwd: REPO_ROOT }).toString();
+}
+
+/* Tracked changes (modified/staged/deleted/renamed/copied) block anywhere in
+ * the repo; untracked files block only under apps/snap/ and packages/ (Snap
+ * bundles @webcules/commerce, snap-react, ui and typescript-config from
+ * there). Untracked files elsewhere - marketing/ drafts, root scratch JSON -
+ * do not block. */
+function assertCleanTree() {
+  const offenders = [];
+  for (const line of gitOut("git status --porcelain").split(/\r?\n/)) {
+    if (!line) continue;
+    const path = line.slice(3).trim().replace(/^"|"$/g, "").replace(/\\/g, "/");
+    if (line.startsWith("??")) {
+      if (path.startsWith("apps/snap/") || path.startsWith("packages/")) offenders.push(path);
+    } else {
+      offenders.push(path); // tracked change anywhere in the repo
+    }
+  }
+  if (!offenders.length) return;
+  const shown = offenders.slice(0, 20).map((p) => `   ${p}`);
+  if (offenders.length > 20) shown.push(`   … and ${offenders.length - 20} more`);
+  refuse(
+    `dirty working tree - the build would ship files you may not fully own.\n` +
+      shown.join("\n") +
+      `\n   commit or stash your own work; if a file is not yours, stop and coordinate (AGENTS.md, Deploy policy)`,
+  );
+}
+
+function assertTypecheckGreen() {
+  console.log("• pnpm typecheck (gate - vinext builds without typechecking)");
+  try {
+    execSync("pnpm typecheck", { cwd: appDir, stdio: "inherit" });
+  } catch {
+    refuse("pnpm typecheck failed, fix type errors before deploying (vinext builds without typechecking)");
+  }
+}
+
+function preflight(target) {
+  if (target === "production" && !stagingVerified) {
+    console.error(
+      "⛔ REFUSED: production deploys require the same commit to be deployed AND verified on staging first.\n" +
+        "   1. node scripts/deploy.mjs staging\n" +
+        "   2. verify your change at " +
+        STAGING.url +
+        " (surface it, exercise the flow, check D1 if relevant)\n" +
+        "   3. node scripts/deploy.mjs production --staging-verified",
+    );
+    process.exit(1);
+  }
+  assertCleanTree();
+  assertTypecheckGreen();
+  const sha = gitOut("git rev-parse --short HEAD").trim();
+  const subject = gitOut("git log -1 --pretty=%s").trim();
+  console.log(`• deploying commit ${sha} (${subject})`);
 }
 
 function build() {
@@ -173,6 +253,7 @@ async function ensureActiveDomainRoutes() {
 
 if (target === "staging") {
   console.log("== SNAP STAGING DEPLOY ==");
+  preflight("staging");
   build();
   const cfg = writeStagingConfig();
   assertSecretsPresent(STAGING.worker, "staging");
@@ -189,17 +270,7 @@ if (target === "staging") {
   console.log(ok ? "✅ staging live — verify your change at " + STAGING.url : "⚠️  smoke check failed — inspect before proceeding");
   console.log("   deploy prod from here ONLY after verifying: node scripts/deploy.mjs production --staging-verified");
 } else if (target === "production") {
-  if (!stagingVerified) {
-    console.error(
-      "⛔ REFUSED: production deploys require the same commit to be deployed AND verified on staging first.\n" +
-        "   1. node scripts/deploy.mjs staging\n" +
-        "   2. verify your change at " +
-        STAGING.url +
-        " (surface it, exercise the flow, check D1 if relevant)\n" +
-        "   3. node scripts/deploy.mjs production --staging-verified",
-    );
-    process.exit(1);
-  }
+  preflight("production"); // refuses without --staging-verified (same message as before)
   console.log("== SNAP PRODUCTION DEPLOY (staging-verified) ==");
   build();
   assertSecretsPresent(JSON.parse(readFileSync(join(appDir, "dist/server/wrangler.json"), "utf8")).name, "production");
@@ -223,6 +294,7 @@ if (target === "staging") {
   console.log("   D1 reminder: apply any new migrations to BOTH databases (staging first, then prod).");
   await ensureActiveDomainRoutes();
 } else {
-  console.error("usage: node scripts/deploy.mjs <staging|production> [--staging-verified] [--no-routes]");
+  console.error("usage: node scripts/deploy.mjs <staging|production> [--staging-verified] [--no-routes] [--skip-secret-check]");
+  console.error("       preflight gates (production flag, clean tree, green typecheck) always run first - no overrides.");
   process.exit(1);
 }
