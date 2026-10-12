@@ -2,9 +2,11 @@
  * lands via the public embed API (mints the inbox item + thread), the
  * studio opens /dashboard/inbox, reads the conversation (quote-collapse +
  * event card present), replies from the composer, and the outbound message
- * appears in-thread. Local workerd has no EMAIL binding, so delivery
- * reports failed — the banner offers retry; the message is still recorded.
- * That is exactly the acceptance path: reply → in-thread + failure surfaced. */
+ * appears in-thread. The local e2e boots the real built config, so the
+ * send_email binding exists and the reply records as sent (workerd's local
+ * delivery is a no-op). WEB-251 re-pinned the locators after WEB-308's
+ * markup drift: the page h1, div[role=listitem] rows, thread-pane scoping,
+ * and the sent (not failed) delivery state. */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test } from "@playwright/test";
@@ -80,18 +82,26 @@ test("inquiry → inbox → reply lands on the thread", async ({ page, request }
   // 2. The studio sees it in the inbox stream.
   await gotoWithRetry(page, "/dashboard/inbox");
   await expect(page.getByRole("heading", { name: "Inbox" })).toBeVisible();
-  const row = page.locator("button[role=listitem]", { hasText: "New inquiry — Ema Envelope" });
+  // WEB-251: inbox rows are div[role=listitem] since the WEB-308 redesign,
+  // not button[role=listitem] — the spec locator lagged that change.
+  const row = page.locator("[role=listitem]", { hasText: "New inquiry — Ema Envelope" });
   await expect(row).toBeVisible({ timeout: 15_000 });
 
   // 3. Opening the conversation reads it (unread dot disappears).
   await row.first().click();
   await expect(page.getByRole("heading", { name: "Ema Envelope" })).toBeVisible({ timeout: 15_000 });
-  await expect(page.getByText("Do you have October open?")).toBeVisible();
+  // WEB-251: scoped to the thread pane — the list row's preview snippet now
+  // quotes the last message too, so a page-wide getByText matches 2 elements.
+  const threadPane = page.getByRole("region", { name: "Conversation" });
+  await expect(threadPane.getByText("Do you have October open?")).toBeVisible();
 
-  // 4. Reply from the composer; no EMAIL binding locally → recorded with
-  //    delivery surfaced as failed (retry affordance visible).
+  // 4. Reply from the composer. The local e2e boots the real built config,
+  //    whose send_email binding accepts sends (workerd local delivery is a
+  //    no-op) — so the reply records as sent: in-thread, no failure banner,
+  //    no "delivery failed" marker on the bubble.
   await page.locator("textarea").last().fill("October 14th is open — want me to hold it?");
   await page.getByRole("button", { name: /Send reply/ }).click();
-  await expect(page.getByText("October 14th is open — want me to hold it?").last()).toBeVisible({ timeout: 15_000 });
-  await expect(page.getByText(/delivery didn’t go out|delivery didn't go out/)).toBeVisible({ timeout: 15_000 });
+  await expect(threadPane.getByText("October 14th is open — want me to hold it?").last()).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText(/delivery didn’t go out|delivery didn't go out/)).toHaveCount(0);
+  await expect(page.getByText("delivery failed")).toHaveCount(0);
 });
