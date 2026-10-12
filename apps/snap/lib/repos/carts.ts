@@ -38,7 +38,11 @@ export type CartError =
   | "invalid_variant"
   | "invalid_quantity"
   | "invalid_transition"
-  | "cart_not_open";
+  | "cart_not_open"
+  /** WEB-277: store-preview sessions can never create or grow a cart —
+   * the preview flag is minted server-side (lib/store-preview.ts) and the
+   * API layer passes it through; the refusal happens before any write. */
+  | "preview_refused";
 
 export type CartResult<T> = { ok: true; value: T } | { ok: false; error: CartError };
 
@@ -158,13 +162,17 @@ async function resolveScopeCart(
 
 /** Fetch or create the visitor's OPEN cart for a gallery, merging older open
  * carts found under the same scope or under ancestor (regenerated) grants.
- * `currency` (ISO 4217) locks the cart on creation; later adds must match. */
+ * `currency` (ISO 4217) locks the cart on creation; later adds must match.
+ * `preview: true` (WEB-277 store preview) refuses — a preview session can
+ * never own a cart, so nothing downstream (items, checkout) can exist. */
 export async function getOrCreateCart(params: {
   organizationId: string;
   grantId: string;
   visitorId: string;
   currency: string;
+  preview?: boolean;
 }): Promise<CartResult<CartRow>> {
+  if (params.preview) return { ok: false, error: "preview_refused" };
   const currency = normalizeCurrency(params.currency);
   if (!currency) return { ok: false, error: "invalid_currency" };
   const visitorId = params.visitorId.trim();
@@ -246,7 +254,7 @@ export async function getCartById(
 
 /** Add a line (catalog snapshot supplied by the caller — the price-list repo,
  * C1 1/7, resolves variant → current name/price/currency). Same variant in
- * the same cart merges quantities. */
+ * the same cart merges quantities. Preview sessions (WEB-277) are refused. */
 export async function addCartItem(params: {
   organizationId: string;
   grantId: string;
@@ -256,7 +264,9 @@ export async function addCartItem(params: {
   unitPriceCents: number;
   quantity: number;
   currency: string;
+  preview?: boolean;
 }): Promise<CartResult<CartRow>> {
+  if (params.preview) return { ok: false, error: "preview_refused" };
   const variantId = params.variantId.trim();
   if (!variantId || variantId.length > 128) return { ok: false, error: "invalid_variant" };
   const name = params.name.trim().slice(0, 200);

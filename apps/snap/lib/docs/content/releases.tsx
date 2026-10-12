@@ -35,6 +35,33 @@ export default function Releases() {
         polish fold into the next entry rather than getting their own.
       </Note>
 
+      <Release version="0.14.0" date="October 12, 2026">
+        <p>
+          <strong>Your store has a home — and an open sign.</strong> The dashboard&rsquo;s
+          <strong> Store</strong> section is now a full store designer: see every price list and
+          product in one place, and flip your store <strong>Open</strong> or <strong>Closed</strong>{" "}
+          with one switch. Closed means clients can still browse galleries but Buy buttons stay
+          hidden — nothing is deleted, and reopening is instant.
+        </p>
+        <p>
+          <strong>Start from a template.</strong> A fresh store greets you with three starter price
+          lists — Portrait, Wedding, and Event &amp; corporate — pre-filled with typical digitals,
+          prints, packages, and custom items. One click creates the whole list; rename prices and
+          make it yours from there. Prefer a blank page? <em>Start from scratch</em> still is.
+        </p>
+        <p>
+          <strong>See your store as a client will.</strong> <em>Preview as client</em> opens your
+          store exactly the way buyers will see it — in your own colors — with ordering switched
+          off. A preview can never create a real order.
+        </p>
+        <p>
+          <strong>The Setup Guide now includes &ldquo;Set up your store.&rdquo;</strong> It ticks
+          itself off automatically once your payouts are connected and you&rsquo;ve created at
+          least one price list — nothing to mark done by hand. (Buying from galleries arrives with
+          the client-facing store in an upcoming release.)
+        </p>
+      </Release>
+
       <Release version="0.13.0" date="October 12, 2026">
         <p>
           <strong>Build your store&rsquo;s price lists.</strong> There&rsquo;s a new

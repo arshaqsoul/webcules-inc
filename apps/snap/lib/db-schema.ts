@@ -260,6 +260,10 @@ export const studioProfiles = sqliteTable("studio_profile", {
    * Nullable by design (null = not dismissed — reopenedSetup clears it). */
   setupDismissedAt: integer("setup_dismissed_at", { mode: "timestamp" }),
   setupReopenedAt: integer("setup_reopened_at", { mode: "timestamp" }),
+  /** WEB-277: studio-wide store open/closed switch. Open = Buy buttons live
+   * on every gallery with an active price list; closed hides Buy surfaces at
+   * render — it never deletes lists or unassigns galleries. */
+  storeOpen: integer("store_open", { mode: "boolean" }).notNull().default(false),
   createdAt: ts("created_at"),
   updatedAt: ts("updated_at"),
 });

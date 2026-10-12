@@ -17,6 +17,7 @@
  * WEB-179 (C1 2/7) — this file ships the create/read foundation they build
  * on, plus the validation seams. */
 import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
+import type { BatchItem } from "drizzle-orm/batch";
 
 import { canCreatePriceList, markupPct, priceFromMarkupRounded, productKindAllowed, validateCurrency, validateName, validateVariantPrices } from "@webcules/commerce";
 import type { CatalogError, MarkupRounding, PlanCommerceGates, ProductKind } from "@webcules/commerce";
@@ -555,4 +556,307 @@ export function commerceErrorStatus(error: CommerceError): number {
     default:
       return 400;
   }
+}
+
+/* ── WEB-277 (Commerce C1 6/7): the store designer surface — studio-wide
+ * open/closed status, first-run template lists, and the products overview.
+ * State copy lives in components/store-home.tsx (approved WEB-175 handoff). */
+
+/** Store status is a studio-wide boolean on the profile. Closed hides Buy
+ * surfaces at render (the client store consults this in WEB-177); it never
+ * deletes lists or unassigns galleries. */
+export async function getStoreOpen(organizationId: string): Promise<boolean> {
+  const row = (
+    await getDb()
+      .select({ storeOpen: schema.studioProfiles.storeOpen })
+      .from(schema.studioProfiles)
+      .where(eq(schema.studioProfiles.organizationId, organizationId))
+      .limit(1)
+  )[0];
+  return row?.storeOpen === true;
+}
+
+export async function setStoreOpen(organizationId: string, userId: string, open: boolean): Promise<boolean> {
+  const db = getDb();
+  const res = await db
+    .update(schema.studioProfiles)
+    .set({ storeOpen: open, updatedAt: new Date() })
+    .where(eq(schema.studioProfiles.organizationId, organizationId))
+    .returning({ organizationId: schema.studioProfiles.organizationId });
+  if (res.length === 0) return false; // no profile — nothing was changed
+  await db.insert(schema.auditLog).values({
+    id: crypto.randomUUID(),
+    organizationId,
+    actorType: "user",
+    actorId: userId,
+    action: "store.status_changed",
+    targetType: "studio_profile",
+    targetId: organizationId,
+    meta: JSON.stringify({ open }),
+  });
+  return true;
+}
+
+/** Org-scoped list count — the Setup Guide "store" step signal (WEB-277). */
+export async function countPriceLists(organizationId: string): Promise<number> {
+  const [{ n }] = await getDb()
+    .select({ n: sql<number>`count(*)` })
+    .from(schema.priceLists)
+    .where(eq(schema.priceLists.organizationId, organizationId));
+  return Number(n);
+}
+
+/** Products overview row (the Store home's Products tab): one line per
+ * product with its list, variant count, and active price range. */
+export type ProductOverviewRow = {
+  id: string;
+  name: string;
+  kind: string;
+  active: boolean;
+  priceListId: string;
+  priceListName: string;
+  priceListCurrency: string;
+  variantCount: number;
+  minPriceCents: number | null;
+  maxPriceCents: number | null;
+};
+
+export async function listAllProducts(organizationId: string): Promise<ProductOverviewRow[]> {
+  const rows = await getDb()
+    .select({
+      id: schema.products.id,
+      name: schema.products.name,
+      kind: schema.products.kind,
+      active: schema.products.active,
+      priceListId: schema.priceLists.id,
+      priceListName: schema.priceLists.name,
+      priceListCurrency: schema.priceLists.currency,
+      variantCount: sql<number>`(select count(*) from ${schema.productVariants} where ${schema.productVariants.productId} = ${schema.products.id} and ${schema.productVariants.active} = 1)`,
+      minPriceCents: sql<number | null>`(select min(${schema.productVariants.priceCents}) from ${schema.productVariants} where ${schema.productVariants.productId} = ${schema.products.id} and ${schema.productVariants.active} = 1)`,
+      maxPriceCents: sql<number | null>`(select max(${schema.productVariants.priceCents}) from ${schema.productVariants} where ${schema.productVariants.productId} = ${schema.products.id} and ${schema.productVariants.active} = 1)`,
+    })
+    .from(schema.products)
+    .innerJoin(schema.priceLists, eq(schema.products.priceListId, schema.priceLists.id))
+    .where(and(eq(schema.products.organizationId, organizationId)))
+    .orderBy(asc(schema.priceLists.createdAt), asc(schema.products.position));
+  return rows.map((r) => ({
+    ...r,
+    variantCount: Number(r.variantCount),
+    minPriceCents: r.minPriceCents === null ? null : Number(r.minPriceCents),
+    maxPriceCents: r.maxPriceCents === null ? null : Number(r.maxPriceCents),
+  }));
+}
+
+/* First-run template price lists (WEB-277). Copy for the template cards is
+ * the approved WEB-175 handoff copy — keep the blurbs in sync there. */
+
+export type StoreTemplateId = "portrait" | "wedding" | "event";
+
+export type StoreTemplate = {
+  id: StoreTemplateId;
+  name: string;
+  /** Card blurb, exactly as in the handoff state matrix. */
+  blurb: string;
+  currency: string;
+  products: Array<{ kind: ProductKind; name: string; variants: Array<{ name: string; costCents: number; priceCents: number }> }>;
+};
+
+export const STORE_TEMPLATES: Record<StoreTemplateId, StoreTemplate> = {
+  portrait: {
+    id: "portrait",
+    name: "Portrait session",
+    blurb: "Digitals, prints, wall art · USD",
+    currency: "USD",
+    products: [
+      {
+        kind: "digital",
+        name: "Digital collection",
+        variants: [
+          { name: "Single image", costCents: 0, priceCents: 1200 },
+          { name: "10 favorites", costCents: 0, priceCents: 6500 },
+        ],
+      },
+      {
+        kind: "print",
+        name: "Prints",
+        variants: [
+          { name: "5×7", costCents: 180, priceCents: 1400 },
+          { name: "8×10", costCents: 250, priceCents: 1800 },
+        ],
+      },
+      {
+        kind: "print",
+        name: "Wall art",
+        variants: [
+          { name: "16×24", costCents: 2200, priceCents: 9500 },
+          { name: "24×36", costCents: 3800, priceCents: 18500 },
+        ],
+      },
+    ],
+  },
+  wedding: {
+    id: "wedding",
+    name: "Wedding",
+    blurb: "Packages, albums, digitals · USD",
+    currency: "USD",
+    products: [
+      {
+        kind: "package",
+        name: "Wedding collections",
+        variants: [
+          { name: "The Essential", costCents: 0, priceCents: 120000 },
+          { name: "The Signature", costCents: 0, priceCents: 240000 },
+        ],
+      },
+      {
+        kind: "print",
+        name: "Albums",
+        variants: [
+          { name: "10×10 album (30 pages)", costCents: 18000, priceCents: 65000 },
+          { name: "12×12 album (40 pages)", costCents: 21000, priceCents: 78000 },
+        ],
+      },
+      {
+        kind: "digital",
+        name: "Digital negatives",
+        variants: [{ name: "Full gallery", costCents: 0, priceCents: 45000 }],
+      },
+    ],
+  },
+  event: {
+    id: "event",
+    name: "Event & corporate",
+    blurb: "Digitals, packages, custom · USD",
+    currency: "USD",
+    products: [
+      {
+        kind: "digital",
+        name: "Event digitals",
+        variants: [
+          { name: "Per image", costCents: 0, priceCents: 800 },
+          { name: "Full event (100+ images)", costCents: 0, priceCents: 32000 },
+        ],
+      },
+      {
+        kind: "package",
+        name: "Coverage packages",
+        variants: [
+          { name: "Half day", costCents: 0, priceCents: 90000 },
+          { name: "Full day", costCents: 0, priceCents: 160000 },
+        ],
+      },
+      {
+        kind: "custom",
+        name: "Custom items",
+        variants: [{ name: "Quoted per request", costCents: 0, priceCents: 5000 }],
+      },
+    ],
+  },
+};
+
+/** One click = one starter list (WEB-277 first run). A single atomic D1
+ * batch: list + products + variants all land together or not at all, so a
+ * failure leaves the empty state untouched. Plan gates apply: products
+ * whose kind the studio's plan doesn't allow (packages/custom) are skipped,
+ * and the family-wide list quota is checked exactly like the wizard. */
+export async function createPriceListFromTemplate(
+  organizationId: string,
+  templateId: string,
+  userId: string,
+): Promise<CommerceResult<{ id: string; skippedKinds: ProductKind[] }>> {
+  const template = STORE_TEMPLATES[templateId as StoreTemplateId];
+  if (!template) return { ok: false, error: "not_found" };
+
+  const db = getDb();
+  const ent = await getPlanEntitlements(organizationId);
+  if (!ent) return { ok: false, error: "store_disabled" };
+  const gates = commerceGatesForPlan(ent);
+
+  const [{ n }] = await db
+    .select({ n: sql<number>`count(*)` })
+    .from(schema.priceLists)
+    .where(inArray(schema.priceLists.organizationId, ent.familyOrgIds));
+  const gate = canCreatePriceList(gates, Number(n));
+  if (!gate.ok) return gate;
+
+  const [{ own }] = await db
+    .select({ own: sql<number>`count(*)` })
+    .from(schema.priceLists)
+    .where(eq(schema.priceLists.organizationId, organizationId));
+
+  // Validate every variant BEFORE any insert; drop products whose kind the
+  // plan doesn't allow (lite: digital/print only — the template adapts).
+  const skipped = new Set<ProductKind>();
+  const allowed: StoreTemplate["products"] = [];
+  for (const p of template.products) {
+    const kind = productKindAllowed(gates, p.kind);
+    if (!kind.ok) {
+      skipped.add(p.kind);
+      continue;
+    }
+    for (const v of p.variants) {
+      const prices = validateVariantPrices(v.costCents, v.priceCents);
+      if (!prices.ok) return prices; // template data bug — refuse atomically
+    }
+    allowed.push(p);
+  }
+
+  const listId = crypto.randomUUID();
+  const now = new Date();
+  // Mixed-table batch (list + audit + products + variants) — typed as
+  // BatchItem so drizzle accepts the heterogeneous inserts as one atomic D1
+  // transaction: all rows land together, or the empty state stays untouched.
+  const stmts: BatchItem<"sqlite">[] = [
+    db.insert(schema.priceLists).values({
+      id: listId,
+      organizationId,
+      name: template.name,
+      currency: template.currency,
+      isDefault: Number(own) === 0,
+      createdAt: now,
+      updatedAt: now,
+    }),
+    db.insert(schema.auditLog).values({
+      id: crypto.randomUUID(),
+      organizationId,
+      actorType: "user",
+      actorId: userId,
+      action: "store.template_list_created",
+      targetType: "price_list",
+      targetId: listId,
+      meta: JSON.stringify({ template: templateId }),
+    }),
+  ];
+  for (const p of allowed) {
+    const productId = crypto.randomUUID();
+    stmts.push(
+      db.insert(schema.products).values({
+        id: productId,
+        organizationId,
+        priceListId: listId,
+        kind: p.kind,
+        name: p.name,
+        position: allowed.indexOf(p),
+        createdAt: now,
+        updatedAt: now,
+      }),
+    );
+    p.variants.forEach((v, vi) => {
+      stmts.push(
+        db.insert(schema.productVariants).values({
+          id: crypto.randomUUID(),
+          organizationId,
+          productId,
+          name: v.name,
+          costCents: v.costCents,
+          priceCents: v.priceCents,
+          position: vi,
+          createdAt: now,
+          updatedAt: now,
+        }),
+      );
+    });
+  }
+  await db.batch(stmts as [BatchItem<"sqlite">, ...BatchItem<"sqlite">[]]);
+  return { ok: true, value: { id: listId, skippedKinds: [...skipped] } };
 }

@@ -348,3 +348,21 @@ body {
     animation-duration: 1ms;
   }
 }
+
+/* WEB-277 store designer (WEB-175 handoff review fixes):
+   1. `[hidden]` must always win over display utilities — toggled-visibility
+      elements never carry their own display class without honoring hidden.
+   2. Skeleton shimmer and the store-status switch thumb stay still for
+      users who prefer reduced motion. */
+[hidden] {
+  display: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse,
+  .animate-spin {
+    animation: none !important;
+  }
+  .store-status-switch-thumb {
+    transition: none !important;
+  }
+}
