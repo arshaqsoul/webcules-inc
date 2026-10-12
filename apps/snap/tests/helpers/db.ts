@@ -69,9 +69,9 @@ import m63 from "../../migrations/0063_welcome_banner.sql?raw";
 import m64 from "../../migrations/0064_payment_stripe_account.sql?raw";
 import m65 from "../../migrations/0065_studio_payment_currency.sql?raw";
 import m66 from "../../migrations/0066_cull_edit.sql?raw";
-import m67 from "../../migrations/0067_commerce_catalog.sql?raw";
 // 0067 is reserved for the in-flight WEB-180 commerce-catalog migration —
 // numbered ahead so both PRs land without a filename clash.
+import m67 from "../../migrations/0067_commerce_catalog.sql?raw";
 import m68 from "../../migrations/0068_gallery_design_undo.sql?raw";
 // Carts (WEB-170) renumbered 0068 → 0069 after WEB-249 took 0068 on master.
 import m69 from "../../migrations/0069_carts.sql?raw";
@@ -90,8 +90,7 @@ m69,
 
 /** Every table, in an order that satisfies FK constraints when deleting. */
 const TABLES = [
-  "price_list_gallery", "product_variant", "product", "price_list",
-  "cart_item", "cart",
+  "cart_item", "cart", "price_list_gallery", "product_variant", "product", "price_list",
   "inbox_item", "thread_message", "thread",
   "two_factor", "import_batch",
   "gallery_selection", "gallery_favorite", "share_otp_log", "share_otp", "share_access_log",
