@@ -32,6 +32,12 @@ plan caps come from `lib/plans-data.ts`; `lib/tier-cards.ts`, the landing grid a
   - Free:  `{ storeEnabled: false, maxPriceLists: 0, packagesAllowed: false, customProductsAllowed: false }`
   - Lite:  `{ storeEnabled: true,  maxPriceLists: 1, packagesAllowed: false, customProductsAllowed: false }`
   - Studio:`{ storeEnabled: true,  maxPriceLists: 10, packagesAllowed: true,  customProductsAllowed: true }`
+  - (fixture Studio cap 10 was superseded — see "Number reconciliation" below)
+- `apps/snap/lib/plans-data.ts` (snap/WEB-180-commerce-catalog-foundation branch, in
+  flight, checked 2026-10-12): Free `maxPriceLists: 0` · Lite `1` · Studio `5` ·
+  Pro `null` (= unlimited; `lib/commerce.ts` maps null → -1 = no cap, and
+  `tests/unit/gate-matrix.test.ts` renders Pro as ∞). This is the cap source of
+  truth per launch hold #1 — the table below follows it.
 - Story catalog (SNAP-COMMERCE-ANALYSIS §6): C2 5/7 abandoned-cart recovery is Studio+.
 - Existing live claim we extend, not contradict (pricing-section.tsx): "Client payments
   run through your own Stripe account at Stripe's standard rate; that fee goes to Stripe,
@@ -43,15 +49,25 @@ plan caps come from `lib/plans-data.ts`; `lib/tier-cards.ts`, the landing grid a
 | Commerce row | Free | Lite | Studio | Pro (Teams) |
 |---|---|---|---|---|
 | Online store — sell photos & digital products from your galleries | — | ✓ | ✓ | ✓ |
-| Price lists | — | 1 | 10 | TBD¹ |
+| Price lists | — | 1 | 5 | Unlimited¹ |
 | Packages (bundled products) | — | — | ✓ | ✓ |
 | Custom products | — | — | ✓ | ✓ |
 | Commission on store sales | — | 0% | 0% | 0% |
 
-¹ Pro has no gate fixture yet; every existing `studio || pro` gate inherits Studio, so
-the draft assumes Studio parity (10 lists). Owner to confirm: Stark, in C1 1/7
-("plan gates (foundation)", in progress) — G11 requires "tier gates for all four tiers".
+¹ Number reconciliation (2026-10-12, Pepper): Strange flagged that the in-flight
+`plans-data.ts` on `snap/WEB-180-commerce-catalog-foundation` sets Studio
+`maxPriceLists: 5` and Pro `null` (unlimited), diverging from the G3 test fixture's
+Studio = 10. Verified in code; per launch hold #1 (code wins) the table now reads
+Studio 5 / Pro Unlimited and the tier-card lines below are updated to match.
+If Stark's C1 1/7 merge lands different numbers, the table follows the code again.
 Pro is not self-serve purchasable (WEB-329) and won't get a public card either way.
+
+Visual treatment of record: Strange's spec (WEB-248 comment f3c08a14, 2026-10-12) —
+existing design system only; ✓ / numeral / "—" glyph semantics; "—" reserved
+exclusively for "not on this tier"; unshipped rows never rendered in pricing
+surfaces; no badges/locks/new pills; max one store line per card. Accepted by
+Pepper as the visual baseline for W1. Final copy inside that treatment is
+Coulson's pass (child issue WEB-247).
 
 Explicitly NOT in the table (do not claim until the story ships):
 - Abandoned-cart recovery emails — Studio+ per C2 5/7, still backlog. Add the row only
@@ -66,7 +82,7 @@ Explicitly NOT in the table (do not claim until the story ships):
 - Free card: add nothing (free tier delivers galleries only — SNAP-FREE-TIER.md).
   No store upsell line inside the card; the upgrade CTA pattern handles it.
 - Lite card, append: `Online store — sell photos from your galleries, 0% commission · 1 price list`
-- Studio card, append: `Store power: 10 price lists · packages & custom products`
+- Studio card, append: `Store power: 5 price lists · packages & custom products`
 - Landing pricing-section footnote, append one sentence:
   `Store sales too: 0% commission, always — they run through your own Stripe account at Stripe's standard rate.`
 
