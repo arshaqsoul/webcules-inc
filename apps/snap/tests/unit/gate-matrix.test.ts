@@ -29,6 +29,10 @@ const MATRIX: Row[] = [
   { gate: "maxContractTemplates", free: "2", lite: "2", studio: "∞", pro: "∞" },
   { gate: "maxEmailSnippets", free: "5", lite: "5", studio: "∞", pro: "∞" },
   { gate: "maxQuestionnaires", free: "1", lite: "3", studio: "∞", pro: "∞" },
+  { gate: "storeEnabled (WEB-180)", free: "✖", lite: "✔", studio: "✔", pro: "✔" },
+  { gate: "maxPriceLists (WEB-180)", free: "0", lite: "1", studio: "5", pro: "∞" },
+  { gate: "packagesAllowed (WEB-180)", free: "✖", lite: "✖", studio: "✔", pro: "✔" },
+  { gate: "customProductsAllowed (WEB-180)", free: "✖", lite: "✖", studio: "✔", pro: "✔" },
 ];
 
 function actual(row: Row, plan: "free" | "lite" | "studio" | "pro"): string {
@@ -38,6 +42,14 @@ function actual(row: Row, plan: "free" | "lite" | "studio" | "pro"): string {
       return def.id === "studio" || def.id === "pro" ? "∞" : String(FREE_CUSTOM_FIELD_CAP);
     case "form file-upload fields":
       return def.id === "studio" || def.id === "pro" ? "✔" : "✖";
+    case "storeEnabled (WEB-180)":
+      return def.storeEnabled ? "✔" : "✖";
+    case "packagesAllowed (WEB-180)":
+      return def.packagesAllowed ? "✔" : "✖";
+    case "customProductsAllowed (WEB-180)":
+      return def.customProductsAllowed ? "✔" : "✖";
+    case "maxPriceLists (WEB-180)":
+      return def.maxPriceLists === null ? "∞" : String(def.maxPriceLists);
     default: {
       const value = (def as unknown as Record<string, number | null>)[row.gate];
       return value === null ? "∞" : String(value);
