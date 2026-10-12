@@ -1150,6 +1150,101 @@ export const formResponses = sqliteTable(
   (t) => [index("form_response_org_project_idx").on(t.organizationId, t.projectId)],
 );
 
+/* ---------------- Commerce catalog (WEB-180, C1 1/7) ----------------
+ * Studio-wide price lists → products → variants, plus the gallery assignment
+ * table. Money is integer minor units; markup_pct is NEVER stored — it is
+ * derived from (cost_cents, price_cents) by @webcules/commerce markupPct().
+ * The "one active list per gallery" invariant lives in the DDL as a PARTIAL
+ * unique index (migrations/0067) — not expressible here, so attach/detach
+ * batching in lib/commerce.ts is what keeps it true. */
+
+export const priceLists = sqliteTable(
+  "price_list",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    /** ISO 4217, locked at creation (one currency per list). */
+    currency: text("currency").notNull(),
+    isDefault: integer("is_default", { mode: "boolean" }).notNull().default(false),
+    createdAt: ts("created_at"),
+    updatedAt: ts("updated_at"),
+  },
+  (t) => [index("price_list_org_idx").on(t.organizationId, t.createdAt)],
+);
+
+export const products = sqliteTable(
+  "product",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    priceListId: text("price_list_id")
+      .notNull()
+      .references(() => priceLists.id, { onDelete: "cascade" }),
+    /** digital | print | package | custom (packages/custom tier-gated). */
+    kind: text("kind").notNull(),
+    name: text("name").notNull(),
+    active: integer("active", { mode: "boolean" }).notNull().default(true),
+    position: integer("position").notNull().default(0),
+    createdAt: ts("created_at"),
+    updatedAt: ts("updated_at"),
+  },
+  (t) => [
+    index("product_list_idx").on(t.priceListId, t.position),
+    index("product_org_idx").on(t.organizationId),
+  ],
+);
+
+export const productVariants = sqliteTable(
+  "product_variant",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    productId: text("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    /** What the photographer pays a lab; 0 for digital goods. */
+    costCents: integer("cost_cents").notNull().default(0),
+    priceCents: integer("price_cents").notNull(),
+    active: integer("active", { mode: "boolean" }).notNull().default(true),
+    position: integer("position").notNull().default(0),
+    createdAt: ts("created_at"),
+    updatedAt: ts("updated_at"),
+  },
+  (t) => [
+    index("product_variant_product_idx").on(t.productId, t.position),
+    index("product_variant_org_idx").on(t.organizationId),
+  ],
+);
+
+/** Gallery assignment: at most one row per grant with detached_at NULL. */
+export const priceListGallery = sqliteTable(
+  "price_list_gallery",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    priceListId: text("price_list_id")
+      .notNull()
+      .references(() => priceLists.id, { onDelete: "cascade" }),
+    grantId: text("grant_id")
+      .notNull()
+      .references(() => shareGrants.id, { onDelete: "cascade" }),
+    attachedAt: ts("attached_at"),
+    /** NULL = this is the active assignment (partial unique in DDL). */
+    detachedAt: integer("detached_at", { mode: "timestamp" }),
+  },
+  (t) => [index("price_list_gallery_list_idx").on(t.priceListId)],
+);
+
 /** Per-org sequential counters (invoice numbering). */
 export const orgCounters = sqliteTable("org_counter", {
   organizationId: text("organization_id").primaryKey(),

@@ -50,6 +50,17 @@ export type PlanDef = {
   /** WEB-309 inbox: snooze (Lite+ — the inbox itself is free-for-all by
    * design; it's the retention surface). */
   inboxSnooze: boolean;
+  /** WEB-180 commerce C1: the gallery store (price lists + products sold
+   * from a gallery). Free never sees it — upgrade CTA instead. Enforced in
+   * lib/commerce.ts via @webcules/commerce catalog gates. */
+  storeEnabled: boolean;
+  /** Active price lists the studio may keep (null = unlimited; Free 0). */
+  maxPriceLists: number | null;
+  /** Packages (bundled collections, e.g. "10 photos of your choice") —
+   * Studio+. Digital singles + full gallery are the Lite store. */
+  packagesAllowed: boolean;
+  /** Custom/lab-fulfilled products — Studio+ (prints land post-MVP). */
+  customProductsAllowed: boolean;
 };
 
 const GB = 1024 ** 3;
@@ -63,6 +74,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     jpgOnly: true, rawAllowed: false, rawTrialBytes: 3 * GB, whiteLabel: false,
     maxActiveBookings: null, maxActiveGalleries: 5, maxLinkedStudios: 1, otpCapPerUser: 30, maxSessionTypes: 1, maxContractTemplates: 2, maxEmailSnippets: 5, maxContactForms: 1, maxQuestionnaires: 1,
     maxCustomDomains: 0, maxTeamSeats: 1, inboxSnooze: false,
+    storeEnabled: false, maxPriceLists: 0, packagesAllowed: false, customProductsAllowed: false,
   },
   lite: {
     id: "lite", name: "Lite", priceMonthlyUsd: 15,
@@ -71,6 +83,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     jpgOnly: false, rawAllowed: true, rawTrialBytes: null, whiteLabel: false,
     maxActiveBookings: null, maxActiveGalleries: 15, maxLinkedStudios: 3, otpCapPerUser: 30, maxSessionTypes: 3, maxContractTemplates: 2, maxEmailSnippets: 5, maxContactForms: 1, maxQuestionnaires: 3,
     maxCustomDomains: 0, maxTeamSeats: 1, inboxSnooze: true,
+    storeEnabled: true, maxPriceLists: 1, packagesAllowed: false, customProductsAllowed: false,
   },
   studio: {
     id: "studio", name: "Studio", priceMonthlyUsd: 29,
@@ -79,6 +92,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     jpgOnly: false, rawAllowed: true, rawTrialBytes: null, whiteLabel: true,
     maxActiveBookings: null, maxActiveGalleries: null, maxLinkedStudios: null, otpCapPerUser: 30, maxSessionTypes: null, maxContractTemplates: null, maxEmailSnippets: null, maxContactForms: null, maxQuestionnaires: null,
     maxCustomDomains: 0, maxTeamSeats: 3, inboxSnooze: true,
+    storeEnabled: true, maxPriceLists: 5, packagesAllowed: true, customProductsAllowed: true,
   },
   pro: {
     id: "pro", name: "Pro", priceMonthlyUsd: 59,
@@ -87,6 +101,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     jpgOnly: false, rawAllowed: true, rawTrialBytes: null, whiteLabel: true,
     maxActiveBookings: null, maxActiveGalleries: null, maxLinkedStudios: null, otpCapPerUser: 30, maxSessionTypes: null, maxContractTemplates: null, maxEmailSnippets: null, maxContactForms: null, maxQuestionnaires: null,
     maxCustomDomains: 2, maxTeamSeats: 10, inboxSnooze: true,
+    storeEnabled: true, maxPriceLists: null, packagesAllowed: true, customProductsAllowed: true,
   },
 };
 
