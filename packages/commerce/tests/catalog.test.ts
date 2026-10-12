@@ -2,9 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import { canCreatePriceList, productKindAllowed, validateCurrency, validateName, validateVariantPrices, type PlanCommerceGates } from "../src/catalog";
 
+/* Mirrors the shipped apps/snap ladder (lib/plans-data.ts, WEB-180):
+ * Free off · Lite 1 list, digital only · Studio 5 lists + packages + custom ·
+ * Pro unlimited (-1) — kept in sync so quoted pricing never drifts. */
 const free: PlanCommerceGates = { storeEnabled: false, maxPriceLists: 0, packagesAllowed: false, customProductsAllowed: false };
 const lite: PlanCommerceGates = { storeEnabled: true, maxPriceLists: 1, packagesAllowed: false, customProductsAllowed: false };
-const studio: PlanCommerceGates = { storeEnabled: true, maxPriceLists: 10, packagesAllowed: true, customProductsAllowed: true };
+const studio: PlanCommerceGates = { storeEnabled: true, maxPriceLists: 5, packagesAllowed: true, customProductsAllowed: true };
+const pro: PlanCommerceGates = { storeEnabled: true, maxPriceLists: -1, packagesAllowed: true, customProductsAllowed: true };
 
 describe("catalog validation", () => {
   it("trims and caps names", () => {
@@ -46,10 +50,17 @@ describe("plan gates", () => {
     expect(productKindAllowed(studio, "nope" as never)).toEqual({ ok: false, error: "invalid_kind" });
   });
 
+  it("gives Pro everything (same kinds as Studio)", () => {
+    for (const kind of ["digital", "print", "package", "custom"] as const) {
+      expect(productKindAllowed(pro, kind).ok).toBe(true);
+    }
+  });
+
   it("enforces the price list limit, with -1 as unlimited", () => {
     expect(canCreatePriceList(free, 0)).toEqual({ ok: false, error: "store_disabled" });
     expect(canCreatePriceList(lite, 0).ok).toBe(true);
     expect(canCreatePriceList(lite, 1)).toEqual({ ok: false, error: "list_limit_reached" });
-    expect(canCreatePriceList({ ...studio, maxPriceLists: -1 }, 500).ok).toBe(true);
+    expect(canCreatePriceList(studio, 5)).toEqual({ ok: false, error: "list_limit_reached" });
+    expect(canCreatePriceList(pro, 500).ok).toBe(true);
   });
 });
