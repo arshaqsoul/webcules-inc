@@ -21,6 +21,7 @@ import {
 import { Button } from "@webcules/ui/components/button";
 import { Input } from "@webcules/ui/components/input";
 import { useConfirm } from "@/components/confirm-provider";
+import { DocHint } from "@/components/doc-hint";
 
 export type TokenRow = {
   id: string;
@@ -156,6 +157,7 @@ export function IntegrationsPanel({
           <h2 className="text-[15px] font-medium text-ink">
             Integration tokens
           </h2>
+          <DocHint slug="integrations" />
         </div>
         <p className="mt-1 text-sm text-ink-subtle">
           Scoped API tokens authenticate integrations like the Lightroom Classic
