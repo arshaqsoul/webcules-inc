@@ -69,6 +69,7 @@ import m63 from "../../migrations/0063_welcome_banner.sql?raw";
 import m64 from "../../migrations/0064_payment_stripe_account.sql?raw";
 import m65 from "../../migrations/0065_studio_payment_currency.sql?raw";
 import m66 from "../../migrations/0066_cull_edit.sql?raw";
+import m68 from "../../migrations/0068_carts.sql?raw";
 
 const MIGRATIONS = [
   m01, m02, m03, m04, m05, m06, m07, m08, m09, m10, m11, m12, m13, m14, m15,
@@ -77,10 +78,12 @@ m63,
 m64,
 m65,
 m66,
+m68,
 ];
 
 /** Every table, in an order that satisfies FK constraints when deleting. */
 const TABLES = [
+  "cart_item", "cart",
   "inbox_item", "thread_message", "thread",
   "two_factor", "import_batch",
   "gallery_selection", "gallery_favorite", "share_otp_log", "share_otp", "share_access_log",
