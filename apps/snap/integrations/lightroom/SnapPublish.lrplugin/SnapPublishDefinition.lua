@@ -20,6 +20,7 @@
 --     lookup.
 local LrDialogs = import "LrDialogs"
 local LrErrors = import "LrErrors"
+local LrPathUtils = import "LrPathUtils"
 local LrProgressScope = import "LrProgressScope"
 local LrPrefs = import "LrPrefs"
 local LrView = import "LrView"
@@ -173,10 +174,21 @@ SnapPublish.processRenderedPhotos = function(exportSettings, exportContext)
             local externalId = tostring(photo.localIdentifier)
             local signature = renderSignature(photo, exportSettings)
 
+            -- The uploaded filename/mime must describe the RENDERED file, not
+            -- the catalog original: in a RAW-first workflow the original is
+            -- "DSC_01234.NEF" while the rendition is a JPEG, and the server
+            -- classifies asset kind by filename extension — so the original
+            -- catalog name would land every photo in the RAW vault. The
+            -- rendition's destination path already carries the export
+            -- format's extension; the mime follows imageFormat.
+            local renderedName = LrPathUtils.leafName(tostring(rendition.destinationPath))
+            local mimeByFormat = { JPEG = "image/jpeg", PNG = "image/png", TIFF = "image/tiff" }
+            local mimeType = (exportSettings and mimeByFormat[exportSettings.imageFormat]) or "image/jpeg"
+
             local result = ApiClient.publishPhoto(prefs, galleryId, {
                 filePath = rendition.destinationPath,
-                fileName = photo:getFormattedMetadata("fileName") or ("photo-" .. externalId .. ".jpg"),
-                mimeType = "image/jpeg",
+                fileName = (renderedName ~= "" and renderedName) or ("photo-" .. externalId .. ".jpg"),
+                mimeType = mimeType,
                 externalId = externalId,
                 signature = signature,
             })
