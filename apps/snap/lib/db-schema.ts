@@ -831,6 +831,64 @@ export const galleryGuests = sqliteTable(
   (t) => [uniqueIndex("gallery_guest_unique").on(t.grantId, t.email), index("gallery_guest_org_idx").on(t.organizationId, t.createdAt)],
 );
 
+/* ---------------- Commerce carts (WEB-170 / C2 1/7) ---------------- */
+
+/** Server-side store carts. Guest carts are keyed to the GALLERY share grant
+ * (per-photo share children resolve to their parent first) plus an anonymous
+ * visitor cookie — one OPEN cart per (grant, visitor), enforced in SQL by the
+ * partial unique index cart_open_unique. States are monotonic: open →
+ * merged | cancelled | expired | converted, terminals never re-transition
+ * (lib/repos/carts.ts). DDL: migrations/0069_carts.sql. */
+export const carts = sqliteTable(
+  "cart",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    grantId: text("grant_id")
+      .notNull()
+      .references(() => shareGrants.id, { onDelete: "cascade" }),
+    /** Opaque anonymous-cookie id from the gallery route — never an account. */
+    visitorId: text("visitor_id").notNull(),
+    /** ISO 4217, locked from the price list on first add. */
+    currency: text("currency").notNull(),
+    /** open | merged | cancelled | expired | converted. */
+    status: text("status").notNull().default("open"),
+    /** Drawer coupon field (C2 2/7); validated at checkout (C2 3/7). */
+    couponCode: text("coupon_code"),
+    createdAt: ts("created_at"),
+    updatedAt: ts("updated_at"),
+  },
+  (t) => [
+    index("cart_org_updated_idx").on(t.organizationId, t.status, t.updatedAt),
+    index("cart_grant_updated_idx").on(t.grantId, t.status, t.updatedAt),
+  ],
+);
+
+/** Cart lines carry an add-time snapshot (name, unit price) so the drawer can
+ * still render a struck-through "no longer available" item after catalog edits
+ * — variant_id is a deliberate SOFT reference to product_variant (C1 1/7) so
+ * cart rows outlive catalog changes and the two migrations stay
+ * order-independent. Checkout (C2 3/7) re-prices live before Stripe. */
+export const cartItems = sqliteTable(
+  "cart_item",
+  {
+    id: text("id").primaryKey(),
+    cartId: text("cart_id")
+      .notNull()
+      .references(() => carts.id, { onDelete: "cascade" }),
+    /** product_variant.id — soft reference, see above. */
+    variantId: text("variant_id").notNull(),
+    name: text("name").notNull(),
+    unitPriceCents: integer("unit_price_cents").notNull(),
+    quantity: integer("quantity").notNull(),
+    createdAt: ts("created_at"),
+    updatedAt: ts("updated_at"),
+  },
+  (t) => [uniqueIndex("cart_item_unique").on(t.cartId, t.variantId), index("cart_item_cart_idx").on(t.cartId)],
+);
+
 /** WEB-265: per-photo interest counters (heat overlay) — upsert pattern
  * twin of gallery_view_monthly, keyed by asset+month. */
 export const assetViewMonthly = sqliteTable(
