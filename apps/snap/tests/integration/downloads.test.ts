@@ -27,6 +27,7 @@ import { buildZipPlan, grantGuard, manifestOf, zipPartResponse } from "@/lib/zip
 import { hashDownloadPin } from "@/lib/gallery-downloads";
 import { PART_BYTES } from "@/lib/zip-stream";
 import { downloadCookieOk } from "@/app/api/g/[token]/download-request/verify/route";
+import { GET as downloadRequestGet, POST as downloadRequestPost } from "@/app/api/g/[token]/download-request/route";
 import { GET as zipRoute } from "@/app/api/g/[token]/zip/route";
 import { resetDb } from "../helpers/db";
 import { seedAsset, seedProject, seedStudio } from "../helpers/seed";
@@ -549,5 +550,46 @@ describe("size ladder: the mid rung (WEB-196)", () => {
     const downgraded = await callZip(g.token, g.grantId, `req=${made.request.id}&part=1`);
     expect(downgraded.status).toBe(200);
     expect(text(new Uint8Array(await downgraded.arrayBuffer()))).toContain("ORIGINAL-prepared");
+  });
+
+  it("proofing grants never offer the ladder: controls hide webSize and POST records full (WEB-196 review fix)", async () => {
+    const g = await seedGallery(1, { plan: "studio", proofing: true });
+    // proofing delivery needs a derivative to ship (originals never leave a
+    // proofing grant — buildZipPlan would otherwise report empty_scope)
+    await putObject(g.studio.organizationId, `${g.project}/${g.assetIds[0]}/preview_wm.jpg`, bytesOf("WM-derivative"), "image/jpeg");
+    await getDb().update(schema.assets).set({ previewWmKey: `${g.studio.organizationId}/${g.project}/${g.assetIds[0]}/preview_wm.jpg` }).where(eq(schema.assets.id, g.assetIds[0]));
+    await saveDownloadSettings(g.studio.organizationId, g.grantId, { pinHash: null, limit: null, approval: true, webSize: true });
+    const cookie = await cookieFor(g.grantId);
+
+    // GET controls: webSize suppressed for the proofing grant (lightbox hides the rungs)
+    const getRes = await downloadRequestGet(
+      new Request(`https://snap.test/api/g/${g.token}/download-request`, { headers: { cookie } }),
+      { params: Promise.resolve({ token: g.token }) },
+    );
+    expect(getRes.status).toBe(200);
+    const body = (await getRes.json()) as { controls: { webSize: boolean } };
+    expect(body.controls.webSize).toBe(false);
+
+    // POST: a proofing client forcing sizePref "web" gets it recorded as "full"
+    const postRes = await downloadRequestPost(
+      new Request(`https://snap.test/api/g/${g.token}/download-request`, {
+        method: "POST",
+        headers: { cookie, "content-type": "application/json" },
+        body: JSON.stringify({ scope: "all", sizePref: "web" }),
+      }),
+      { params: Promise.resolve({ token: g.token }) },
+    );
+    expect(postRes.status).toBe(200);
+    const requests = await listGrantDownloadRequests(g.grantId);
+    expect(requests.at(-1)?.sizePref).toBe("full");
+
+    // contrast: same settings with proofing OFF do offer the ladder
+    await getDb().update(schema.shareGrants).set({ proofing: false }).where(eq(schema.shareGrants.id, g.grantId));
+    const contrastRes = await downloadRequestGet(
+      new Request(`https://snap.test/api/g/${g.token}/download-request`, { headers: { cookie } }),
+      { params: Promise.resolve({ token: g.token }) },
+    );
+    const contrast = (await contrastRes.json()) as { controls: { webSize: boolean } };
+    expect(contrast.controls.webSize).toBe(true);
   });
 });

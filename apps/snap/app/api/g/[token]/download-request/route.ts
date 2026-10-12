@@ -26,6 +26,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
 
   const [requests, used] = await Promise.all([listGrantDownloadRequests(grant.id, 10), photoDownloadCount(grant.id)]);
   const settings = downloadSettingsOf(grant);
+  // (WEB-196 review fix): proofing grants never offer the web/mid rungs —
+  // the buttons only download clean unwatermarked derivatives, which the
+  // WEB-242 asset route refuses anyway. Hide the ladder in the lightbox.
+  const webSize = settings.webSize && !grant.proofing;
   return Response.json({
     requests: requests.map((r) => ({
       id: r.id,
@@ -43,7 +47,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
       allowDownload: grant.allowDownload,
       zip: grant.allowDownload,
       approval: settings.approval,
-      webSize: settings.webSize,
+      webSize,
       limit: settings.limit,
       limitUsed: used,
       pin: Boolean(settings.pinHash),
@@ -89,7 +93,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
     scope,
     folderName: scope === "folder" ? body.folderName ?? null : null,
     assetIds: scope === "photos" ? body.assetIds : undefined,
-    sizePref: parseSizePref(body.sizePref, settings.webSize),
+    // (WEB-196 review fix): same proofing suppression as the GET controls —
+    // a proofing gallery's approval rows record sizePref "full".
+    sizePref: parseSizePref(body.sizePref, settings.webSize && !grant.proofing),
     note: body.note ?? null,
     approvalRequired: settings.approval,
   });

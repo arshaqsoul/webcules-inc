@@ -150,6 +150,25 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     }
     const dk = variantKey(asset, url.searchParams.get("variant"));
 
+    // WEB-242 proofing mode: downloads deliver the watermarked preview
+    // (pre-sale delivery) — original bytes never leave in proofing grants.
+    // WEB-402: edit.jpg carries the watermark when the studio's watermark
+    // is configured (edit-canvas composites it), so an edited look wins.
+    // (WEB-196 review fix / WEB-261): this block MUST sit above the web/mid
+    // size rungs below — a proofing grant with downloads + webSize on used
+    // to reach the rungs first and download the clean unwatermarked
+    // derivatives. Proofing swallows every size param.
+    if (wantsDownload && grant.allowDownload && grant.proofing) {
+      const wmKey = asset.editKey ?? asset.previewWmKey ?? asset.previewKey;
+      if (wmKey) {
+        return serveAsset(
+          req,
+          { ...asset, storageKey: wmKey, mimeType: "image/jpeg", filename: asset.filename },
+          true,
+        );
+      }
+    }
+
     // WEB-261: web-size download = the ~2048px preview derivative with
     // download headers (zero server processing; derivative is clean by
     // construction, so the EXIF strip below never applies). WEB-402: an
@@ -157,6 +176,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     // WEB-196: the mid rung (~1280px) serves the stored mid derivative,
     // falling back to the preview until the studio's on-demand prepare
     // pass (or a re-render) has landed one — closest smaller bytes.
+    // (Proofing grants never reach here — the WEB-242 block above wins.)
     const sizeParam = url.searchParams.get("size");
     if (wantsDownload && grant.allowDownload && sizeParam === "web" && (asset.editKey ?? asset.previewKey)) {
       return serveAsset(
@@ -171,21 +191,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         { ...asset, storageKey: (asset.midKey ?? asset.previewKey) as string, mimeType: "image/jpeg" },
         true,
       );
-    }
-
-    // WEB-242 proofing mode: downloads deliver the watermarked preview
-    // (pre-sale delivery) — original bytes never leave in proofing grants.
-    // WEB-402: edit.jpg carries the watermark when the studio's watermark
-    // is configured (edit-canvas composites it), so an edited look wins.
-    if (wantsDownload && grant.allowDownload && grant.proofing) {
-      const wmKey = asset.editKey ?? asset.previewWmKey ?? asset.previewKey;
-      if (wmKey) {
-        return serveAsset(
-          req,
-          { ...asset, storageKey: wmKey, mimeType: "image/jpeg", filename: asset.filename },
-          true,
-        );
-      }
     }
 
     // WEB-172: original JPEG downloads from a client gallery are delivered
