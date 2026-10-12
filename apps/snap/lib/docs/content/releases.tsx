@@ -56,6 +56,18 @@ export default function Releases() {
         </p>
       </Release>
 
+      <Release version="0.12.2" date="October 12, 2026">
+        <p>
+          <strong>A quieter, harder kind of polish:</strong> every Snap page now
+          sends modern browser security headers — protection against
+          clickjacking, MIME-sniffing and over-sharing referrers — and the
+          embedded calendar and contact widgets keep working exactly as before,
+          still restricted to your own studio's site. Behind the scenes we also
+          swept the dependency tree and updated everything with a known
+          vulnerability.
+        </p>
+      </Release>
+
       <Release version="0.12.1" date="October 12, 2026">
         <p>
           <strong>The Inbox page has its title back.</strong> A redesign in October accidentally
