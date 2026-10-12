@@ -30,7 +30,7 @@ import { GalleryDesigner } from "@/components/gallery-designer";
 import { GalleryTemplatePicker } from "@/components/gallery-template-picker";
 import { GalleryActivity } from "@/components/gallery-activity";
 import { getGalleryAnalytics } from "@/lib/repos/gallery-analytics";
-import { getProjectGalleryDesign } from "@/lib/repos/gallery-design";
+import { getProjectGalleryDesign, getProjectGalleryUndo } from "@/lib/repos/gallery-design";
 import { getProjectSlideshow } from "@/lib/repos/slideshow";
 import { getDefaultTemplate } from "@/lib/repos/templates";
 import { parseGalleryDesignJson } from "@/lib/gallery-design";
@@ -103,7 +103,7 @@ export default async function ProjectDetailPage({
 
   // Load only what the active tab renders — the Files workspace fetches its
   // own asset grid client-side.
-  const [events, shareActivity, auditEvents, assets, grants, deliverFolders, payments, paymentSummary, invoices, contractsRows, formResponses, questionnaireTemplates, contractTemplates, invoicePresets, design, slideshowCfg, inheritedDesign, ent] =
+  const [events, shareActivity, auditEvents, assets, grants, deliverFolders, payments, paymentSummary, invoices, contractsRows, formResponses, questionnaireTemplates, contractTemplates, invoicePresets, design, galleryUndo, slideshowCfg, inheritedDesign, ent] =
     await Promise.all([
       tab === "overview" || tab === "activity"
         ? db
@@ -130,6 +130,9 @@ export default async function ProjectDetailPage({
       // WEB-258: gallery design — the project's own + the org default preset
       // (inherited), plus entitlements for the Lite+ design gate.
       tab === "gallery" ? getProjectGalleryDesign(ctx.organizationId, id) : Promise.resolve(null),
+      // WEB-249: the persisted undo snapshot (design the last template apply
+      // replaced) — hydrates the picker's Undo so it survives a reload.
+      tab === "gallery" ? getProjectGalleryUndo(ctx.organizationId, id) : Promise.resolve(null),
       // WEB-259: slideshow config (music picker gates on the Lite+ flag).
       tab === "gallery" ? getProjectSlideshow(ctx.organizationId, id) : Promise.resolve(null),
       tab === "gallery"
@@ -297,6 +300,7 @@ export default async function ProjectDetailPage({
           projectId={id}
           activeTemplateKey={design ? (design.template ?? "") : inheritedDesign ? "" : "classic"}
           hasCustomDesign={Boolean(design && (!design.template || design.template === "custom" || design.sections?.length))}
+          initialUndo={galleryUndo}
           canBuild={(ent?.id ?? "free") !== "free"}
           plan={ent?.id ?? "free"}
         />
