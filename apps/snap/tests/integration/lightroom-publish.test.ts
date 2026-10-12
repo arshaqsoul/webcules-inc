@@ -178,6 +178,49 @@ describe("publish upsert + re-publish sync", () => {
     expect(old).toHaveLength(0);
   });
 
+  it("re-publish over a share-protected asset: 409, old asset kept, ledger repointed", async () => {
+    const { organizationId, token, galleryId: gid } = await setup();
+    const first = (await (
+      await publishRoute(publishRequest(gid, token, publishForm({})), {
+        params: Promise.resolve({ id: gid }),
+      })
+    ).json()) as { assetId: string };
+
+    // Seed an active client share (a delivered gallery) holding the published
+    // asset — the studio-side state that must block a silent replacement.
+    const db = getDb();
+    const grantId = crypto.randomUUID();
+    await db.insert(schema.shareGrants).values({
+      id: grantId,
+      organizationId,
+      projectId: gid,
+      clientEmail: "client@example.test",
+      tokenHash: `test-hash-${grantId}`,
+    });
+    await db.insert(schema.shareGrantAssets).values({ grantId, assetId: first.assetId });
+
+    const second = await publishRoute(
+      publishRequest(gid, token, publishForm({ signature: "sig-v2", bytes: new Uint8Array([0xff, 0xd8, 0xff, 0xe1, 9, 9]) })),
+      { params: Promise.resolve({ id: gid }) },
+    );
+    expect(second.status).toBe(409);
+    expect(await second.json()).toEqual({ error: "shared_protected" });
+
+    // The client-visible old version is still there.
+    const old = await getDb()
+      .select({ id: schema.assets.id })
+      .from(schema.assets)
+      .where(eq(schema.assets.id, first.assetId));
+    expect(old).toHaveLength(1);
+
+    // The ledger already points at the superseding upload, so the plugin's
+    // next sync (and an unpublish) targets the new asset, not the shared one.
+    const rows = await getDb().select().from(schema.integrationPublish);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].signature).toBe("sig-v2");
+    expect(rows[0].assetId).not.toBe(first.assetId);
+  });
+
   it("sync feed lists signatures for the plugin's diff", async () => {
     const { token, galleryId: gid } = await setup();
     await publishRoute(publishRequest(gid, token, publishForm({ externalId: "a", signature: "s1" })), {
