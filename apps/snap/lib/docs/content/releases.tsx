@@ -38,6 +38,20 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.21.1" date="October 13, 2026">
+        <p>
+          <strong>The consolidation ship.</strong> One release carrying the
+          whole recent train to every studio at once: importing photos
+          straight from Google Drive (v0.20.0 below), saving gallery
+          downloads to Google Drive and Dropbox (v0.21.0), and the
+          reliability fixes that make both dependable — Drive import now
+          works with Google&rsquo;s real client ids, and{" "}
+          <strong>Save to Dropbox</strong> loads its official picker
+          correctly again instead of failing with &ldquo;App is
+          misconfigured.&rdquo;
+        </p>
+      </Release>
+
       <Release version="0.21.0" date="October 13, 2026">
         <p>
           <strong>Save gallery downloads straight to the cloud.</strong> In a
