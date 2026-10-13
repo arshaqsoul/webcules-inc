@@ -7,7 +7,22 @@
  * (WEB-113). Fast triage lives in <TriageMode> (WEB-122). */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { Check, ChevronDown, ChevronRight, ChevronUp, Folder, FolderPlus, Grid2x2, Grid3x3, ListFilter, Share2, Square, Upload, X, Zap } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  ChevronRight,
+  ChevronUp,
+  Folder,
+  FolderPlus,
+  Grid2x2,
+  Grid3x3,
+  ListFilter,
+  Share2,
+  Square,
+  Upload,
+  X,
+  Zap,
+} from "lucide-react";
 
 import { Button } from "@webcules/ui/components/button";
 import {
@@ -19,11 +34,21 @@ import {
   DialogTitle,
 } from "@webcules/ui/components/dialog";
 import { AssetManage } from "@/components/asset-manage";
-import { drawWatermark, loadWatermarkLogo } from "@/components/watermark-canvas";
-import { analyzeBitmap, renderEditedBlob, uploadEditedDerivative, watermarkContext, type WmContext } from "@/components/edit-canvas";
+import {
+  drawWatermark,
+  loadWatermarkLogo,
+} from "@/components/watermark-canvas";
+import {
+  analyzeBitmap,
+  renderEditedBlob,
+  uploadEditedDerivative,
+  watermarkContext,
+  type WmContext,
+} from "@/components/edit-canvas";
 import { colorKeyFromRgba } from "@/lib/color-sort";
 import { qualityFlags, type ImageAnalysis } from "@/lib/image-analysis";
 import { autoEdits, type PartialEdits } from "@/lib/edits";
+import { extractZipFile } from "@/lib/zip-import";
 import { FileTypeIcon } from "@/components/file-type-icon";
 import { useConfirm } from "@/components/confirm-provider";
 import { SharePanel } from "@/components/share-panel";
@@ -69,15 +94,36 @@ type Feed = {
   folders?: FolderItem[];
   unfiledCount?: number;
   /** WEB-401/402: cull-assist filter counts + cluster sizes (cover → n). */
-  quality?: { blurry: number; under: number; over: number; edited: number; dupes: number };
+  quality?: {
+    blurry: number;
+    under: number;
+    over: number;
+    edited: number;
+    dupes: number;
+  };
   groupSizes?: Record<string, number>;
 };
 
 /** color 0 = none, 1 red, 2 yellow, 3 green, 4 blue, 5 purple. */
-const COLOR_HEX = ["#8a8f98", "#e5484d", "#f5d90a", "#46a758", "#3e63dd", "#8e4ec6"];
+const COLOR_HEX = [
+  "#8a8f98",
+  "#e5484d",
+  "#f5d90a",
+  "#46a758",
+  "#3e63dd",
+  "#8e4ec6",
+];
 const COLOR_NAMES = ["None", "Red", "Yellow", "Green", "Blue", "Purple"];
 type QueueState = "pending" | "uploading" | "done" | "failed" | "canceled";
-type QueueItem = { id: string; name: string; size: number; progress: number; state: QueueState; attempts: number; error?: string };
+type QueueItem = {
+  id: string;
+  name: string;
+  size: number;
+  progress: number;
+  state: QueueState;
+  attempts: number;
+  error?: string;
+};
 
 const STATUS_BADGE: Record<string, string> = {
   uploaded: "bg-surface-2 text-ink-subtle",
@@ -89,8 +135,23 @@ const KINDS = ["image", "video", "raw"];
 const STATUSES = ["uploaded", "approved", "rejected", "shared"];
 const UPLOAD_PARALLELISM = 4;
 
+/* WEB-184 ZIP import — friendly text for extraction guard failures. */
+const ZIP_IMPORT_ERRORS: Record<string, string> = {
+  zip_corrupt: "couldn't be read (corrupt archive, or ZIP64 — re-zip it)",
+  zip_too_many_entries: "has too many entries (5,000 max)",
+  zip_entry_too_large: "contains a file that expands past 2 GB",
+  zip_total_too_large: "expands past the 8 GB import budget",
+  zip_bomb: "was rejected — its expansion ratio looks like a zip bomb",
+  zip_no_files: "has no files Snap accepts",
+};
+function zipImportError(name: string, error: string) {
+  return `${name} ${ZIP_IMPORT_ERRORS[error] ?? "couldn't be imported"} — nothing from it was uploaded.`;
+}
+
 function mb(bytes: number): string {
-  return bytes > 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  return bytes > 1024 * 1024
+    ? `${(bytes / 1024 / 1024).toFixed(1)} MB`
+    : `${Math.max(1, Math.round(bytes / 1024))} KB`;
 }
 
 /* Content fingerprint for duplicate detection — sha256 of the size plus the
@@ -104,7 +165,12 @@ async function fingerprintFile(file: File): Promise<string | null> {
     combined.set(size, 0);
     combined.set(head, size.length);
     const digest = await crypto.subtle.digest("SHA-256", combined);
-    return "fp1:" + Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
+    return (
+      "fp1:" +
+      Array.from(new Uint8Array(digest), (b) =>
+        b.toString(16).padStart(2, "0"),
+      ).join("")
+    );
   } catch {
     return null;
   }
@@ -120,12 +186,26 @@ async function fingerprintFile(file: File): Promise<string | null> {
  * scores + dHash) from the same decode — it rides the preview derivative
  * upload, so analysis adds zero extra requests. */
 
-const DERIV_IMAGE_EXTS = new Set(["jpg", "jpeg", "png", "webp", "avif", "gif", "bmp"]);
+const DERIV_IMAGE_EXTS = new Set([
+  "jpg",
+  "jpeg",
+  "png",
+  "webp",
+  "avif",
+  "gif",
+  "bmp",
+]);
 const DERIV_VIDEO_EXTS = new Set(["mp4", "webm", "mov"]);
 
-function canvasToBlob(bitmap: ImageBitmap | HTMLVideoElement, maxDim: number, quality: number): Promise<Blob | null> {
-  const bw = bitmap instanceof HTMLVideoElement ? bitmap.videoWidth : bitmap.width;
-  const bh = bitmap instanceof HTMLVideoElement ? bitmap.videoHeight : bitmap.height;
+function canvasToBlob(
+  bitmap: ImageBitmap | HTMLVideoElement,
+  maxDim: number,
+  quality: number,
+): Promise<Blob | null> {
+  const bw =
+    bitmap instanceof HTMLVideoElement ? bitmap.videoWidth : bitmap.width;
+  const bh =
+    bitmap instanceof HTMLVideoElement ? bitmap.videoHeight : bitmap.height;
   if (!bw || !bh) return Promise.resolve(null);
   const scale = Math.min(1, maxDim / Math.max(bw, bh));
   const w = Math.max(1, Math.round(bw * scale));
@@ -136,7 +216,9 @@ function canvasToBlob(bitmap: ImageBitmap | HTMLVideoElement, maxDim: number, qu
   const ctx = canvas.getContext("2d");
   if (!ctx) return Promise.resolve(null);
   ctx.drawImage(bitmap, 0, 0, w, h);
-  return new Promise((resolve) => canvas.toBlob((b) => resolve(b), "image/jpeg", quality));
+  return new Promise((resolve) =>
+    canvas.toBlob((b) => resolve(b), "image/jpeg", quality),
+  );
 }
 
 /** Rainbow-sort key from a 24x24 downsample (lib/color-sort.ts). */
@@ -159,7 +241,11 @@ async function canvasToBlobWatermarked(
   file: File,
   maxDim: number,
   quality: number,
-  wm: { config: WmContext["config"]; logo: HTMLImageElement | null; studioName: string },
+  wm: {
+    config: WmContext["config"];
+    logo: HTMLImageElement | null;
+    studioName: string;
+  },
 ): Promise<Blob | null> {
   if (!wm.config) return null;
   try {
@@ -174,8 +260,14 @@ async function canvasToBlobWatermarked(
     if (!ctx) return null;
     ctx.drawImage(bitmap, 0, 0, w, h);
     bitmap.close();
-    drawWatermark(ctx, { config: wm.config, logo: wm.logo, studioName: wm.studioName });
-    return new Promise((resolve) => canvas.toBlob((b) => resolve(b), "image/jpeg", quality));
+    drawWatermark(ctx, {
+      config: wm.config,
+      logo: wm.logo,
+      studioName: wm.studioName,
+    });
+    return new Promise((resolve) =>
+      canvas.toBlob((b) => resolve(b), "image/jpeg", quality),
+    );
   } catch {
     return null;
   }
@@ -186,7 +278,14 @@ async function uploadDerivative(
   kind: "thumb" | "preview" | "preview_wm",
   blob: Blob,
   replace = false,
-  meta?: { width?: number; height?: number; durationMs?: number; colorKey?: number; phash?: string; analysis?: ImageAnalysis },
+  meta?: {
+    width?: number;
+    height?: number;
+    durationMs?: number;
+    colorKey?: number;
+    phash?: string;
+    analysis?: ImageAnalysis;
+  },
 ): Promise<boolean> {
   const form = new FormData();
   form.set("kind", kind);
@@ -196,13 +295,17 @@ async function uploadDerivative(
   // server stores them set-if-null (cascade layouts, reels detection, labels).
   if (meta?.width) form.set("width", String(Math.round(meta.width)));
   if (meta?.height) form.set("height", String(Math.round(meta.height)));
-  if (meta?.durationMs) form.set("durationMs", String(Math.round(meta.durationMs)));
+  if (meta?.durationMs)
+    form.set("durationMs", String(Math.round(meta.durationMs)));
   if (meta?.colorKey !== undefined) form.set("colorKey", String(meta.colorKey));
   // WEB-401: cull-assist payload rides the preview upload (one per image).
   if (meta?.phash) form.set("phash", meta.phash);
   if (meta?.analysis) form.set("analysis", JSON.stringify(meta.analysis));
   try {
-    const res = await fetch(`/api/assets/${assetId}/derivative`, { method: "POST", body: form });
+    const res = await fetch(`/api/assets/${assetId}/derivative`, {
+      method: "POST",
+      body: form,
+    });
     return res.ok;
   } catch {
     return false;
@@ -210,7 +313,12 @@ async function uploadDerivative(
 }
 
 /** Grab a decodable video frame (~25% in, capped at 1s) as a bitmap. */
-type VideoMeta = { bitmap: ImageBitmap; width: number; height: number; durationMs: number | null };
+type VideoMeta = {
+  bitmap: ImageBitmap;
+  width: number;
+  height: number;
+  durationMs: number | null;
+};
 function videoFrame(file: File): Promise<VideoMeta | null> {
   return new Promise((resolve) => {
     const video = document.createElement("video");
@@ -226,7 +334,15 @@ function videoFrame(file: File): Promise<VideoMeta | null> {
       // WEB-260: carry the decoder's dimensions + duration up to the caller.
       resolve(
         bitmap
-          ? { bitmap, width: video.videoWidth, height: video.videoHeight, durationMs: Number.isFinite(video.duration) && video.duration > 0 ? video.duration * 1000 : null }
+          ? {
+              bitmap,
+              width: video.videoWidth,
+              height: video.videoHeight,
+              durationMs:
+                Number.isFinite(video.duration) && video.duration > 0
+                  ? video.duration * 1000
+                  : null,
+            }
           : null,
       );
     };
@@ -234,8 +350,7 @@ function videoFrame(file: File): Promise<VideoMeta | null> {
       try {
         video.currentTime = Math.min(1, (video.duration || 2) * 0.25);
       } catch {
-        void createImageBitmap(video)
-          .then(done, () => done(null));
+        void createImageBitmap(video).then(done, () => done(null));
       }
     };
     video.onseeked = () =>
@@ -247,7 +362,10 @@ function videoFrame(file: File): Promise<VideoMeta | null> {
 }
 
 /** Best-effort derivatives for a finished upload; true when any landed. */
-async function generateDerivatives(assetId: string, file: File): Promise<boolean> {
+async function generateDerivatives(
+  assetId: string,
+  file: File,
+): Promise<boolean> {
   const ext = (file.name.split(".").pop() ?? "").toLowerCase();
   try {
     if (DERIV_IMAGE_EXTS.has(ext)) {
@@ -266,8 +384,13 @@ async function generateDerivatives(assetId: string, file: File): Promise<boolean
       };
       bitmap.close();
       let any = false;
-      if (thumb) any = (await uploadDerivative(assetId, "thumb", thumb, false, dims)) || any;
-      if (preview) any = (await uploadDerivative(assetId, "preview", preview, false, dims)) || any;
+      if (thumb)
+        any =
+          (await uploadDerivative(assetId, "thumb", thumb, false, dims)) || any;
+      if (preview)
+        any =
+          (await uploadDerivative(assetId, "preview", preview, false, dims)) ||
+          any;
       // WEB-242: watermarked preview for client galleries (best-effort —
       // the bulk regenerate action in Settings backfills any misses).
       const wm = await watermarkContext();
@@ -278,7 +401,8 @@ async function generateDerivatives(assetId: string, file: File): Promise<boolean
           logo,
           studioName: wm.studioName,
         });
-        if (blob) any = (await uploadDerivative(assetId, "preview_wm", blob)) || any;
+        if (blob)
+          any = (await uploadDerivative(assetId, "preview_wm", blob)) || any;
       }
       return any;
     }
@@ -318,7 +442,9 @@ function VideoTile({ id, hover }: { id: string; hover: boolean }) {
       v.pause();
       try {
         v.currentTime = 0.5;
-      } catch { /* not seekable yet — fine */ }
+      } catch {
+        /* not seekable yet — fine */
+      }
     }
   }, [hover]);
   return (
@@ -335,20 +461,55 @@ function VideoTile({ id, hover }: { id: string; hover: boolean }) {
         />
       ) : (
         // eslint-disable-next-line jsx-a11y/media-has-caption -- muted hover preview
-        <video ref={vref} src={`/api/assets/${id}#t=0.5`} preload="metadata" muted playsInline className="h-full w-full object-cover" />
+        <video
+          ref={vref}
+          src={`/api/assets/${id}#t=0.5`}
+          preload="metadata"
+          muted
+          playsInline
+          className="h-full w-full object-cover"
+        />
       )}
-      <span aria-hidden className={`absolute inset-0 flex items-center justify-center transition-opacity ${hover ? "opacity-0" : "opacity-100"}`}>
+      <span
+        aria-hidden
+        className={`absolute inset-0 flex items-center justify-center transition-opacity ${hover ? "opacity-0" : "opacity-100"}`}
+      >
         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-sm">
-          <svg width="12" height="14" viewBox="0 0 14 16" fill="currentColor" aria-hidden><path d="M0 0l14 8-14 8z" /></svg>
+          <svg
+            width="12"
+            height="14"
+            viewBox="0 0 14 16"
+            fill="currentColor"
+            aria-hidden
+          >
+            <path d="M0 0l14 8-14 8z" />
+          </svg>
         </span>
       </span>
     </span>
   );
 }
 
-export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDays, defaultAllowDownload }: { projectId: string; clientEmail?: string; initial?: AssetItem[]; defaultExpiryDays?: number; defaultAllowDownload?: boolean }) {
+export function ProjectFiles({
+  projectId,
+  clientEmail,
+  initial,
+  defaultExpiryDays,
+  defaultAllowDownload,
+}: {
+  projectId: string;
+  clientEmail?: string;
+  initial?: AssetItem[];
+  defaultExpiryDays?: number;
+  defaultAllowDownload?: boolean;
+}) {
   const confirm = useConfirm();
-  const [feed, setFeed] = useState<Feed>({ items: initial ?? [], nextCursor: null, counts: {}, tags: [] });
+  const [feed, setFeed] = useState<Feed>({
+    items: initial ?? [],
+    nextCursor: null,
+    counts: {},
+    tags: [],
+  });
   const [status, setStatus] = useState("");
   const [kind, setKind] = useState("");
   const [tag, setTag] = useState("");
@@ -385,9 +546,13 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
   const [derivVersion, setDerivVersion] = useState(0);
   // Which group's values are shown ("" = root group list) — Linear-style
   // drill-down instead of one long list of every option.
-  const [filterGroup, setFilterGroup] = useState<"" | "status" | "kind" | "tag" | "sort" | "stars" | "color" | "cull">("");
+  const [filterGroup, setFilterGroup] = useState<
+    "" | "status" | "kind" | "tag" | "sort" | "stars" | "color" | "cull"
+  >("");
   const filterRef = useRef<HTMLDivElement>(null);
-  const filterCount = [status, kind, tag, rating, colorSel, cull].filter(Boolean).length;
+  const filterCount = [status, kind, tag, rating, colorSel, cull].filter(
+    Boolean,
+  ).length;
 
   // Close the filter popover on outside click / Escape; reset the drill-down.
   useEffect(() => {
@@ -397,7 +562,8 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
       setFilterGroup("");
     }
     function onDown(e: MouseEvent) {
-      if (filterRef.current && !filterRef.current.contains(e.target as Node)) close();
+      if (filterRef.current && !filterRef.current.contains(e.target as Node))
+        close();
     }
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") close();
@@ -453,7 +619,13 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
   useEffect(() => {
     if (!heatOn || heat) return;
     fetch(`/api/projects/${projectId}/asset-views`)
-      .then((r) => (r.ok ? (r.json() as Promise<{ views?: { assetId: string; views: number }[] }>) : Promise.resolve({})))
+      .then((r) =>
+        r.ok
+          ? (r.json() as Promise<{
+              views?: { assetId: string; views: number }[];
+            }>)
+          : Promise.resolve({}),
+      )
       .then((b: { views?: { assetId: string; views: number }[] }) => {
         const map: Record<string, number> = {};
         for (const v of b.views ?? []) map[v.assetId] = v.views;
@@ -482,7 +654,8 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
       if (sort) p.set("sort", sort);
       if (rating) p.set("rating", rating);
       if (colorSel) p.set("color", colorSel);
-      if (cull === "blurry" || cull === "under" || cull === "over") p.set("quality", cull);
+      if (cull === "blurry" || cull === "under" || cull === "over")
+        p.set("quality", cull);
       else if (cull === "edited") p.set("edited", "yes");
       else if (cull === "dupes") p.set("group", "dupes");
       if (folder) p.set("folder", folder);
@@ -511,15 +684,23 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
           // reflect view/filter in the URL (WEB-120)
           const url = new URL(window.location.href);
           url.searchParams.set("fv", view);
-          if (status) url.searchParams.set("fs", status); else url.searchParams.delete("fs");
-          if (kind) url.searchParams.set("fk", kind); else url.searchParams.delete("fk");
-          if (rating) url.searchParams.set("fr", rating); else url.searchParams.delete("fr");
-          if (colorSel) url.searchParams.set("fc", colorSel); else url.searchParams.delete("fc");
-          if (cull) url.searchParams.set("fq", cull); else url.searchParams.delete("fq");
-          if (folder) url.searchParams.set("ff", folder); else url.searchParams.delete("ff");
+          if (status) url.searchParams.set("fs", status);
+          else url.searchParams.delete("fs");
+          if (kind) url.searchParams.set("fk", kind);
+          else url.searchParams.delete("fk");
+          if (rating) url.searchParams.set("fr", rating);
+          else url.searchParams.delete("fr");
+          if (colorSel) url.searchParams.set("fc", colorSel);
+          else url.searchParams.delete("fc");
+          if (cull) url.searchParams.set("fq", cull);
+          else url.searchParams.delete("fq");
+          if (folder) url.searchParams.set("ff", folder);
+          else url.searchParams.delete("ff");
           window.history.replaceState(null, "", url);
         }
-      } catch { /* keep previous page */ }
+      } catch {
+        /* keep previous page */
+      }
       setLoading(false);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps -- feed.nextCursor read on purpose
@@ -539,7 +720,8 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
       const f = u.searchParams.get("ff");
       if (f) setFolder(f);
       const q = u.searchParams.get("fq");
-      if (q && ["blurry", "under", "over", "edited", "dupes"].includes(q)) setCull(q);
+      if (q && ["blurry", "under", "over", "edited", "dupes"].includes(q))
+        setCull(q);
     }
     void load(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reload on filter change
@@ -550,7 +732,11 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
   /* ---------------- Folders (WEB-216) ---------------- */
 
   const folders = feed.folders ?? [];
-  const folderName = useCallback((id: string | null) => (id ? folders.find((f) => f.id === id)?.name ?? null : null), [folders]);
+  const folderName = useCallback(
+    (id: string | null) =>
+      id ? (folders.find((f) => f.id === id)?.name ?? null) : null,
+    [folders],
+  );
 
   /** Submit the rail's inline create/rename input. */
   async function submitFolderEdit() {
@@ -574,7 +760,13 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
             });
       const body = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {
-        setNotice(body.error === "name_taken" ? `“${name}” already exists in this project.` : body.error === "too_many" ? "Folder limit reached (100 per project)." : "Couldn't save the folder — try again.");
+        setNotice(
+          body.error === "name_taken"
+            ? `“${name}” already exists in this project.`
+            : body.error === "too_many"
+              ? "Folder limit reached (100 per project)."
+              : "Couldn't save the folder — try again.",
+        );
       } else {
         refresh();
       }
@@ -584,9 +776,19 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
   }
 
   async function deleteFolderClick(f: FolderItem) {
-    if (!(await confirm({ title: `Delete “${f.name}”?`, body: `${f.count} file${f.count === 1 ? "" : "s"} fall back to Unfiled — nothing is deleted. Delivered galleries keep their folders.`, destructive: true, confirmLabel: "Delete folder" }))) return;
+    if (
+      !(await confirm({
+        title: `Delete “${f.name}”?`,
+        body: `${f.count} file${f.count === 1 ? "" : "s"} fall back to Unfiled — nothing is deleted. Delivered galleries keep their folders.`,
+        destructive: true,
+        confirmLabel: "Delete folder",
+      }))
+    )
+      return;
     try {
-      const res = await fetch(`/api/projects/${projectId}/folders/${f.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/projects/${projectId}/folders/${f.id}`, {
+        method: "DELETE",
+      });
       if (!res.ok) {
         setNotice("Couldn't delete the folder — try again.");
         return;
@@ -606,11 +808,17 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
       const res = await fetch("/api/assets/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "move", assetIds: ids, folderId: target }),
+        body: JSON.stringify({
+          action: "move",
+          assetIds: ids,
+          folderId: target,
+        }),
       });
       const body = (await res.json().catch(() => ({}))) as { done?: number };
-      const label = target ? folderName(target) ?? "folder" : "Unfiled";
-      setNotice(`Moved ${body.done ?? 0} file${(body.done ?? 0) === 1 ? "" : "s"} to ${label}.`);
+      const label = target ? (folderName(target) ?? "folder") : "Unfiled";
+      setNotice(
+        `Moved ${body.done ?? 0} file${(body.done ?? 0) === 1 ? "" : "s"} to ${label}.`,
+      );
       refresh();
     } catch {
       setNotice("Couldn't move — try again.");
@@ -626,9 +834,13 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
     if (!raw) return;
     try {
       const parsed: unknown = JSON.parse(raw);
-      const ids = Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === "string") : [];
+      const ids = Array.isArray(parsed)
+        ? parsed.filter((x): x is string => typeof x === "string")
+        : [];
       void moveIdsTo(ids, target);
-    } catch { /* not our payload */ }
+    } catch {
+      /* not our payload */
+    }
   }
 
   /** Bulk-bar flow: create the folder, then file the selection into it. */
@@ -644,9 +856,16 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name }),
       });
-      const body = (await res.json().catch(() => ({}))) as { id?: string; error?: string };
+      const body = (await res.json().catch(() => ({}))) as {
+        id?: string;
+        error?: string;
+      };
       if (!res.ok || !body.id) {
-        setNotice(body.error === "name_taken" ? `“${name}” already exists in this project.` : "Couldn't create the folder — try again.");
+        setNotice(
+          body.error === "name_taken"
+            ? `“${name}” already exists in this project.`
+            : "Couldn't create the folder — try again.",
+        );
         return;
       }
       setSelected(new Set());
@@ -661,8 +880,23 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
   async function bulk(action: string, tagValue?: string) {
     const ids = Array.from(selected);
     if (!ids.length) return;
-    if (action === "delete" && !(await confirm({ title: "Delete files?", body: `Delete ${ids.length} file${ids.length === 1 ? "" : "s"} permanently?`, destructive: true }))) return;
-    if (action === "reject" && !(await confirm({ title: "Reject files?", body: `Reject ${ids.length} file${ids.length === 1 ? "" : "s"}?` }))) return;
+    if (
+      action === "delete" &&
+      !(await confirm({
+        title: "Delete files?",
+        body: `Delete ${ids.length} file${ids.length === 1 ? "" : "s"} permanently?`,
+        destructive: true,
+      }))
+    )
+      return;
+    if (
+      action === "reject" &&
+      !(await confirm({
+        title: "Reject files?",
+        body: `Reject ${ids.length} file${ids.length === 1 ? "" : "s"}?`,
+      }))
+    )
+      return;
     // Deletion can take a moment on large selections — mark the affected
     // cards immediately so the action visibly registers.
     const isDelete = action === "delete";
@@ -678,7 +912,10 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ assetIds: ids, on: action === "peek-on" }),
         });
-        const body = (await res.json().catch(() => ({}))) as { updated?: number; error?: string };
+        const body = (await res.json().catch(() => ({}))) as {
+          updated?: number;
+          error?: string;
+        };
         setNotice(
           res.ok
             ? `${body.updated ?? 0} photo${(body.updated ?? 0) === 1 ? "" : "s"} ${action === "peek-on" ? "flagged as a first look" : "back to normal"}`
@@ -695,7 +932,10 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action, assetIds: ids, tag: tagValue }),
       });
-      const body = (await res.json().catch(() => ({}))) as { done?: number; blocked?: { assetId: string }[] };
+      const body = (await res.json().catch(() => ({}))) as {
+        done?: number;
+        blocked?: { assetId: string }[];
+      };
       const blocked = body.blocked?.length ?? 0;
       if (isDelete) {
         setNotice(
@@ -726,10 +966,16 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
   const [autoAdvance, setAutoAdvance] = useState(false);
 
   function patchLocal(id: string, patch: Partial<AssetItem>) {
-    setFeed((f) => ({ ...f, items: f.items.map((a) => (a.id === id ? { ...a, ...patch } : a)) }));
+    setFeed((f) => ({
+      ...f,
+      items: f.items.map((a) => (a.id === id ? { ...a, ...patch } : a)),
+    }));
   }
 
-  async function rateAsset(id: string, patch: { stars?: number; color?: number }) {
+  async function rateAsset(
+    id: string,
+    patch: { stars?: number; color?: number },
+  ) {
     const before = feed.items.find((a) => a.id === id);
     patchLocal(id, patch);
     try {
@@ -750,7 +996,12 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
 
   async function flagAsset(id: string, action: "approve" | "reject" | "reset") {
     const before = feed.items.find((a) => a.id === id);
-    const to = action === "approve" ? "approved" : action === "reject" ? "rejected" : "uploaded";
+    const to =
+      action === "approve"
+        ? "approved"
+        : action === "reject"
+          ? "rejected"
+          : "uploaded";
     patchLocal(id, { status: to });
     try {
       const res = await fetch(`/api/assets/${id}`, {
@@ -769,12 +1020,20 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
     const a = feed.items.find((x) => x.id === id);
     if (!a) return;
     const has = a.tags.includes("favorite");
-    patchLocal(id, { tags: has ? a.tags.filter((t) => t !== "favorite") : [...a.tags, "favorite"] });
+    patchLocal(id, {
+      tags: has
+        ? a.tags.filter((t) => t !== "favorite")
+        : [...a.tags, "favorite"],
+    });
     try {
       await fetch("/api/assets/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: has ? "untag" : "tag", assetIds: [id], tag: "favorite" }),
+        body: JSON.stringify({
+          action: has ? "untag" : "tag",
+          assetIds: [id],
+          tag: "favorite",
+        }),
       });
     } catch {
       patchLocal(id, { tags: a.tags });
@@ -785,12 +1044,22 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
   async function tagAsset(id: string, tag: string, add: boolean) {
     const a = feed.items.find((x) => x.id === id);
     if (!a || (!add && !a.tags.includes(tag))) return;
-    patchLocal(id, { tags: add ? (a.tags.includes(tag) ? a.tags : [...a.tags, tag]) : a.tags.filter((t) => t !== tag) });
+    patchLocal(id, {
+      tags: add
+        ? a.tags.includes(tag)
+          ? a.tags
+          : [...a.tags, tag]
+        : a.tags.filter((t) => t !== tag),
+    });
     try {
       await fetch("/api/assets/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: add ? "tag" : "untag", assetIds: [id], tag }),
+        body: JSON.stringify({
+          action: add ? "tag" : "untag",
+          assetIds: [id],
+          tag,
+        }),
       });
     } catch {
       patchLocal(id, { tags: a.tags });
@@ -807,7 +1076,10 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
   const [editClipboard, setEditClipboard] = useState<PartialEdits | null>(null);
   const [renderQueueN, setRenderQueueN] = useState(0);
 
-  async function saveEdits(id: string, edits: PartialEdits | null): Promise<boolean> {
+  async function saveEdits(
+    id: string,
+    edits: PartialEdits | null,
+  ): Promise<boolean> {
     setEditSaving(true);
     try {
       const res = await fetch(`/api/assets/${id}`, {
@@ -817,7 +1089,10 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
       });
       if (!res.ok) return false;
       if (edits && Object.keys(edits).length) {
-        const blob = await renderEditedBlob(id, edits, { maxDim: 2560, watermark: true });
+        const blob = await renderEditedBlob(id, edits, {
+          maxDim: 2560,
+          watermark: true,
+        });
         if (blob && (await uploadEditedDerivative(id, blob))) {
           patchLocal(id, { edits, editedRendered: true });
           setDerivVersion((v) => v + 1);
@@ -842,28 +1117,40 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
    * half of "enhance 200 photos": rows land in one call, but each edited
    * look still needs a browser canvas render. Bounded parallelism 2,
    * progress in the notice line, grid cache-busts when the batch ends. */
-  async function renderEditedQueue(entries: { id: string; edits: PartialEdits }[]) {
+  async function renderEditedQueue(
+    entries: { id: string; edits: PartialEdits }[],
+  ) {
     if (!entries.length) return;
     setRenderQueueN(entries.length);
     let done = 0;
-    const workers = Array.from({ length: Math.min(2, entries.length) }, async () => {
-      for (;;) {
-        const next = entries.shift();
-        if (!next) return;
-        const blob = await renderEditedBlob(next.id, next.edits, { maxDim: 2560, watermark: true });
-        if (blob) await uploadEditedDerivative(next.id, blob);
-        patchLocal(next.id, { editedRendered: Boolean(blob) });
-        done++;
-        setNotice(`Rendering edited looks — ${done}/${entries.length + done}…`);
-      }
-    });
+    const workers = Array.from(
+      { length: Math.min(2, entries.length) },
+      async () => {
+        for (;;) {
+          const next = entries.shift();
+          if (!next) return;
+          const blob = await renderEditedBlob(next.id, next.edits, {
+            maxDim: 2560,
+            watermark: true,
+          });
+          if (blob) await uploadEditedDerivative(next.id, blob);
+          patchLocal(next.id, { editedRendered: Boolean(blob) });
+          done++;
+          setNotice(
+            `Rendering edited looks — ${done}/${entries.length + done}…`,
+          );
+        }
+      },
+    );
     await Promise.allSettled(workers);
     setRenderQueueN(0);
     setDerivVersion((v) => v + 1);
   }
 
   /** Bulk edit bar actions — rows land in one call, looks render after. */
-  async function bulkEdit(action: "auto_enhance" | "set_edits" | "clear_edits") {
+  async function bulkEdit(
+    action: "auto_enhance" | "set_edits" | "clear_edits",
+  ) {
     const ids = Array.from(selected);
     if (!ids.length || (action === "set_edits" && !editClipboard)) return;
     setNotice("");
@@ -877,13 +1164,23 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
           ...(action === "set_edits" ? { edits: editClipboard } : {}),
         }),
       });
-      const body = (await res.json().catch(() => ({}))) as { done?: number; skipped?: number; error?: string };
+      const body = (await res.json().catch(() => ({}))) as {
+        done?: number;
+        skipped?: number;
+        error?: string;
+      };
       if (!res.ok) {
-        setNotice(body.error === "invalid_edits" ? "Nothing to paste — copy a look first." : "Couldn't apply — try again.");
+        setNotice(
+          body.error === "invalid_edits"
+            ? "Nothing to paste — copy a look first."
+            : "Couldn't apply — try again.",
+        );
         return;
       }
       if (action === "clear_edits") {
-        setNotice(`Cleared edits on ${body.done ?? 0} photo${(body.done ?? 0) === 1 ? "" : "s"}.`);
+        setNotice(
+          `Cleared edits on ${body.done ?? 0} photo${(body.done ?? 0) === 1 ? "" : "s"}.`,
+        );
         refresh();
         return;
       }
@@ -891,9 +1188,26 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
       // analysis — same pure math the server ran).
       const byId = new Map(feed.items.map((a) => [a.id, a]));
       const entries = ids
-        .map((id) => ({ id, edits: action === "set_edits" ? editClipboard! : autoEdits(byId.get(id)?.analysis ?? { sharp: 50, lum: 50, clipDark: 0, clipBright: 0, p05: 0, p95: 255 }) }))
+        .map((id) => ({
+          id,
+          edits:
+            action === "set_edits"
+              ? editClipboard!
+              : autoEdits(
+                  byId.get(id)?.analysis ?? {
+                    sharp: 50,
+                    lum: 50,
+                    clipDark: 0,
+                    clipBright: 0,
+                    p05: 0,
+                    p95: 255,
+                  },
+                ),
+        }))
         .filter((e) => e.edits && Object.keys(e.edits).length > 0);
-      setNotice(`${body.done ?? 0} photo${(body.done ?? 0) === 1 ? "" : "s"} enhanced${body.skipped ? ` · ${body.skipped} skipped (no analysis)` : ""}.`);
+      setNotice(
+        `${body.done ?? 0} photo${(body.done ?? 0) === 1 ? "" : "s"} enhanced${body.skipped ? ` · ${body.skipped} skipped (no analysis)` : ""}.`,
+      );
       setSelected(new Set());
       void renderEditedQueue(entries);
       refresh();
@@ -909,8 +1223,13 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
     setGrouping(true);
     setNotice("Grouping similar frames…");
     try {
-      const res = await fetch(`/api/projects/${projectId}/assets/regroup`, { method: "POST" });
-      const body = (await res.json().catch(() => ({}))) as { groups?: number; clustered?: number };
+      const res = await fetch(`/api/projects/${projectId}/assets/regroup`, {
+        method: "POST",
+      });
+      const body = (await res.json().catch(() => ({}))) as {
+        groups?: number;
+        clustered?: number;
+      };
       if (!res.ok) {
         setNotice("Couldn't group — try again.");
       } else {
@@ -934,17 +1253,29 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
    * left/right move to the nearest card in the adjacent column and up/down
    * move within the current column. Works for every density, no layout
    * change. */
-  function spatialCells(): { i: number; top: number; left: number; h: number }[] {
+  function spatialCells(): {
+    i: number;
+    top: number;
+    left: number;
+    h: number;
+  }[] {
     return [...document.querySelectorAll<HTMLElement>("[data-asset-idx]")]
       .map((el) => {
         const r = el.getBoundingClientRect();
-        return { i: Number(el.getAttribute("data-asset-idx")), left: r.left, top: r.top, h: r.height };
+        return {
+          i: Number(el.getAttribute("data-asset-idx")),
+          left: r.left,
+          top: r.top,
+          h: r.height,
+        };
       })
       .filter((c) => Number.isFinite(c.i))
       .sort((a, b) => a.top - b.top || a.left - b.left);
   }
 
-  function groupColumns(cells: { i: number; top: number; left: number }[]): { i: number; top: number }[][] {
+  function groupColumns(
+    cells: { i: number; top: number; left: number }[],
+  ): { i: number; top: number }[][] {
     const cols: { i: number; top: number }[][] = [];
     let col: { i: number; top: number }[] = [];
     let colLeft = -Infinity;
@@ -960,7 +1291,10 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
     return cols;
   }
 
-  function nearestToTop(col: { i: number; top: number }[], top: number): number {
+  function nearestToTop(
+    col: { i: number; top: number }[],
+    top: number,
+  ): number {
     let best = col[0].i;
     let bestD = Infinity;
     for (const c of col) {
@@ -980,7 +1314,8 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
       const cols = groupColumns(cells);
       const maxH = cells.reduce((m, c) => Math.max(m, c.h), 0);
       const tol = Math.max(20, maxH * 0.5); // row-band tolerance (masonry offsets)
-      if (cur === null) return delta > 0 ? cells[0].i : cells[cells.length - 1].i;
+      if (cur === null)
+        return delta > 0 ? cells[0].i : cells[cells.length - 1].i;
 
       let ci = 0;
       let ri = -1;
@@ -1025,7 +1360,9 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
   // keep the focused card in view
   useEffect(() => {
     if (focusIndex === null) return;
-    document.querySelector(`[data-asset-idx="${focusIndex}"]`)?.scrollIntoView({ block: "nearest" });
+    document
+      .querySelector(`[data-asset-idx="${focusIndex}"]`)
+      ?.scrollIntoView({ block: "nearest" });
   }, [focusIndex]);
 
   // keyboard culling — active in the grid when no overlay/dialog owns the keys
@@ -1033,8 +1370,13 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       const t = e.target;
-      if (t instanceof Element && t.closest("input, textarea, select, [contenteditable]")) return;
-      if (renameOpen || triageOpen || manageIndex !== null || dragActive) return;
+      if (
+        t instanceof Element &&
+        t.closest("input, textarea, select, [contenteditable]")
+      )
+        return;
+      if (renameOpen || triageOpen || manageIndex !== null || dragActive)
+        return;
       if (document.querySelector('[role="dialog"]')) return;
       const k = e.key.toLowerCase();
 
@@ -1045,13 +1387,19 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
 
       // Selection mode: number keys rate the whole selection in one call.
       if (selectMode && selected.size > 0) {
-        const ids = feed.items.filter((x) => selected.has(x.id)).map((x) => x.id);
+        const ids = feed.items
+          .filter((x) => selected.has(x.id))
+          .map((x) => x.id);
         if (/^[0-5]$/.test(k)) {
           e.preventDefault();
           void fetch("/api/assets/bulk", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "stars", assetIds: ids, value: Number(k) }),
+            body: JSON.stringify({
+              action: "stars",
+              assetIds: ids,
+              value: Number(k),
+            }),
           }).then(() => refresh());
           return;
         }
@@ -1060,20 +1408,48 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
           void fetch("/api/assets/bulk", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "color", assetIds: ids, value: Number(k) - 5 }),
+            body: JSON.stringify({
+              action: "color",
+              assetIds: ids,
+              value: Number(k) - 5,
+            }),
           }).then(() => refresh());
           return;
         }
-        if (k === "p") { e.preventDefault(); void bulk("approve"); return; }
-        if (k === "x") { e.preventDefault(); void bulk("reject"); return; }
+        if (k === "p") {
+          e.preventDefault();
+          void bulk("approve");
+          return;
+        }
+        if (k === "x") {
+          e.preventDefault();
+          void bulk("reject");
+          return;
+        }
         return;
       }
 
       // Grid culling on the focused card (first action key focuses card 0).
-      if (e.key === "ArrowRight") { e.preventDefault(); moveFocus(1, "x"); return; }
-      if (e.key === "ArrowLeft") { e.preventDefault(); moveFocus(-1, "x"); return; }
-      if (e.key === "ArrowDown") { e.preventDefault(); moveFocus(1, "y"); return; }
-      if (e.key === "ArrowUp") { e.preventDefault(); moveFocus(-1, "y"); return; }
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        moveFocus(1, "x");
+        return;
+      }
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        moveFocus(-1, "x");
+        return;
+      }
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        moveFocus(1, "y");
+        return;
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        moveFocus(-1, "y");
+        return;
+      }
       const idx = focusIndex ?? 0;
       const item = feed.items[idx];
       if (!item) return;
@@ -1087,11 +1463,19 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
       if (k === "x") return act(() => flagAsset(item.id, "reject"));
       if (k === "u") return act(() => flagAsset(item.id, "reset"));
       if (k === "f") return act(() => toggleFavorite(item.id));
-      if (k === "v" || e.key === "Enter") { e.preventDefault(); setFocusIndex(idx); setManageIndex(idx); return; }
-      if (/^[0-5]$/.test(k)) return act(() => rateAsset(item.id, { stars: Number(k) }));
+      if (k === "v" || e.key === "Enter") {
+        e.preventDefault();
+        setFocusIndex(idx);
+        setManageIndex(idx);
+        return;
+      }
+      if (/^[0-5]$/.test(k))
+        return act(() => rateAsset(item.id, { stars: Number(k) }));
       if (/^[6-9]$/.test(k)) {
         const c = Number(k) - 5;
-        return act(() => rateAsset(item.id, { color: item.color === c ? 0 : c }));
+        return act(() =>
+          rateAsset(item.id, { color: item.color === c ? 0 : c }),
+        );
       }
     };
     window.addEventListener("keydown", onKey);
@@ -1105,9 +1489,16 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
     return feed.items.filter((a) => selected.has(a.id));
   }
   function selectedExamples(): string[] {
-    return selectedInGridOrder().slice(0, 3).map((a) => a.filename);
+    return selectedInGridOrder()
+      .slice(0, 3)
+      .map((a) => a.filename);
   }
-  function renamePreview(base: string, start: number, pad: number, examples: string[]): string[] {
+  function renamePreview(
+    base: string,
+    start: number,
+    pad: number,
+    examples: string[],
+  ): string[] {
     return examples.map((name, i) => {
       const ext = name.includes(".") ? name.split(".").pop() : "";
       return `${base}${String(start + i).padStart(pad, "0")}${ext ? "." + ext : ""}`;
@@ -1122,13 +1513,28 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
       const res = await fetch("/api/assets/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "rename", assetIds: ids, base: renameBase.trim(), start: renameStart, pad: renamePad }),
+        body: JSON.stringify({
+          action: "rename",
+          assetIds: ids,
+          base: renameBase.trim(),
+          start: renameStart,
+          pad: renamePad,
+        }),
       });
-      const body = (await res.json().catch(() => ({}))) as { done?: number; error?: string };
+      const body = (await res.json().catch(() => ({}))) as {
+        done?: number;
+        error?: string;
+      };
       if (!res.ok) {
-        setNotice(body.error === "invalid_base" ? "Pick a base name (letters, numbers, dashes)." : "Rename failed — try again.");
+        setNotice(
+          body.error === "invalid_base"
+            ? "Pick a base name (letters, numbers, dashes)."
+            : "Rename failed — try again.",
+        );
       } else {
-        setNotice(`Renamed ${body.done ?? 0} file${(body.done ?? 0) === 1 ? "" : "s"}.`);
+        setNotice(
+          `Renamed ${body.done ?? 0} file${(body.done ?? 0) === 1 ? "" : "s"}.`,
+        );
         setRenameOpen(false);
         refresh();
       }
@@ -1153,10 +1559,21 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
     setPurging(true);
     setNotice("");
     try {
-      const res = await fetch(`/api/projects/${projectId}/assets/purge-rejected`, { method: "POST" });
-      const body = (await res.json().catch(() => ({}))) as { deleted?: number; skipped?: number; error?: string };
+      const res = await fetch(
+        `/api/projects/${projectId}/assets/purge-rejected`,
+        { method: "POST" },
+      );
+      const body = (await res.json().catch(() => ({}))) as {
+        deleted?: number;
+        skipped?: number;
+        error?: string;
+      };
       if (!res.ok) {
-        setNotice(body.error === "not_found" ? "Project not found." : "Purge failed — try again.");
+        setNotice(
+          body.error === "not_found"
+            ? "Project not found."
+            : "Purge failed — try again.",
+        );
       } else {
         setNotice(
           body.skipped
@@ -1194,13 +1611,24 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
   const sessions = useRef<Map<string, string>>(new Map());
   const canceled = useRef<Set<string>>(new Set());
 
-  const updateItem = useCallback((itemId: string, patch: Partial<QueueItem>) => {
-    setQueue((q) => q.map((it) => (it.id === itemId ? { ...it, ...patch } : it)));
-  }, []);
+  const updateItem = useCallback(
+    (itemId: string, patch: Partial<QueueItem>) => {
+      setQueue((q) =>
+        q.map((it) => (it.id === itemId ? { ...it, ...patch } : it)),
+      );
+    },
+    [],
+  );
 
   /** XHR PUT with progress; resolves to the ETag response header. */
   const putBlob = useCallback(
-    (itemId: string, url: string, blob: Blob, contentType: string | null, onLoaded: (loaded: number) => void) =>
+    (
+      itemId: string,
+      url: string,
+      blob: Blob,
+      contentType: string | null,
+      onLoaded: (loaded: number) => void,
+    ) =>
       new Promise<string>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         const set = activeXhrs.current.get(itemId) ?? new Set<XMLHttpRequest>();
@@ -1217,7 +1645,8 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
         };
         xhr.onload = () => {
           cleanup();
-          if (xhr.status >= 200 && xhr.status < 300) resolve(xhr.getResponseHeader("ETag") ?? "");
+          if (xhr.status >= 200 && xhr.status < 300)
+            resolve(xhr.getResponseHeader("ETag") ?? "");
           else reject(new Error(`HTTP ${xhr.status}`));
         };
         xhr.onerror = () => {
@@ -1233,7 +1662,11 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
     [],
   );
 
-  async function confirmUpload(assetId: string, etags?: string[], fingerprint?: string): Promise<void> {
+  async function confirmUpload(
+    assetId: string,
+    etags?: string[],
+    fingerprint?: string,
+  ): Promise<void> {
     const res = await fetch("/api/uploads/confirm", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -1248,7 +1681,11 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
   const startItem = useCallback(
     async (itemId: string, file: File, attempt: number) => {
       const backoff = Math.min(9000, 1000 * 3 ** attempt);
-      updateItem(itemId, { state: "uploading", attempts: attempt + 1, error: undefined });
+      updateItem(itemId, {
+        state: "uploading",
+        attempts: attempt + 1,
+        error: undefined,
+      });
       let assetId: string | null = null;
       try {
         const res = await fetch("/api/uploads", {
@@ -1261,15 +1698,19 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
             mimeType: file.type || "application/octet-stream",
           }),
         });
-        const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+        const body = (await res.json().catch(() => ({}))) as Record<
+          string,
+          unknown
+        >;
         if (!res.ok) {
           let message = String(body.error ?? `HTTP ${res.status}`);
           // Plan-gate failures read as reasons, not codes (kind rides at the
           // top level — the route spreads the gate's extra into the body).
           if (body.error === "plan_type_restricted") {
-            message = body.kind === "raw"
-              ? "RAW trial full (3 GB on Free) — Lite unlocks unlimited RAW"
-              : "Video uploads need a paid plan — Free covers JPG and the 3 GB RAW trial";
+            message =
+              body.kind === "raw"
+                ? "RAW trial full (3 GB on Free) — Lite unlocks unlimited RAW"
+                : "Video uploads need a paid plan — Free covers JPG and the 3 GB RAW trial";
           } else if (body.error === "storage_locked") {
             message = "Storage limit reached — upgrade to keep uploading";
           } else if (body.error === "upload_rate_bound") {
@@ -1286,7 +1727,14 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
           const etags: string[] = new Array(urls.length);
           const loaded = new Array(urls.length).fill(0);
           const report = () =>
-            updateItem(itemId, { progress: Math.min(99, Math.round((loaded.reduce((a, b) => a + b, 0) / file.size) * 100)) });
+            updateItem(itemId, {
+              progress: Math.min(
+                99,
+                Math.round(
+                  (loaded.reduce((a, b) => a + b, 0) / file.size) * 100,
+                ),
+              ),
+            });
           let nextPart = 0;
           const workers = Math.min(3, urls.length);
           await Promise.all(
@@ -1294,7 +1742,10 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
               for (;;) {
                 const i = nextPart++;
                 if (i >= urls.length) return;
-                const blob = file.slice(i * partSize, Math.min((i + 1) * partSize, file.size));
+                const blob = file.slice(
+                  i * partSize,
+                  Math.min((i + 1) * partSize, file.size),
+                );
                 etags[i] = await putBlob(itemId, urls[i], blob, null, (l) => {
                   loaded[i] = l;
                   report();
@@ -1305,13 +1756,27 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
           await confirmUpload(assetId, etags, fpStore.current.get(itemId));
         } else {
           const headers = body.headers as Record<string, string> | undefined;
-          await putBlob(itemId, String(body.url), file, headers?.["Content-Type"] ?? null, (l) =>
-            updateItem(itemId, { progress: Math.min(99, Math.round((l / file.size) * 100)) }),
+          await putBlob(
+            itemId,
+            String(body.url),
+            file,
+            headers?.["Content-Type"] ?? null,
+            (l) =>
+              updateItem(itemId, {
+                progress: Math.min(99, Math.round((l / file.size) * 100)),
+              }),
           );
           await confirmUpload(assetId, undefined, fpStore.current.get(itemId));
         }
         sessions.current.delete(itemId);
         updateItem(itemId, { state: "done", progress: 100 });
+        // WEB-184: remember which ZIP folder this confirmed asset belongs
+        // to; folders are created + files moved once the queue settles.
+        const zipFolder = zipItemFolders.current.get(itemId);
+        if (zipFolder && assetId) {
+          zipAssetFolders.current.set(assetId, zipFolder);
+          zipItemFolders.current.delete(itemId);
+        }
         // WEB-116: derivatives are generated client-side after the original
         // lands — never gate the queue on them.
         if (assetId) {
@@ -1357,12 +1822,17 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
       const next = filesPending.current.shift();
       if (!next) break;
       slots--;
-      void startItem(next.itemId, next.file, itemById.current.get(next.itemId)?.attempts ?? 0);
+      void startItem(
+        next.itemId,
+        next.file,
+        itemById.current.get(next.itemId)?.attempts ?? 0,
+      );
     }
   }, [paused, uploading, startItem]);
 
   function cancelUploads() {
-    for (const set of activeXhrs.current.values()) for (const xhr of set) xhr.abort();
+    for (const set of activeXhrs.current.values())
+      for (const xhr of set) xhr.abort();
     activeXhrs.current.clear();
     filesPending.current = [];
     for (const assetId of sessions.current.values()) {
@@ -1374,12 +1844,20 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
     }
     sessions.current.clear();
     for (const id of itemById.current.keys()) canceled.current.add(id);
-    setQueue((q) => q.map((it) => (it.state === "pending" || it.state === "uploading" ? { ...it, state: "canceled" } : it)));
+    setQueue((q) =>
+      q.map((it) =>
+        it.state === "pending" || it.state === "uploading"
+          ? { ...it, state: "canceled" }
+          : it,
+      ),
+    );
     setUploading(false);
   }
 
   function retryFailed() {
-    const failed = queue.filter((it) => it.state === "failed" || it.state === "canceled");
+    const failed = queue.filter(
+      (it) => it.state === "failed" || it.state === "canceled",
+    );
     if (!failed.length) return;
     // re-attach files: failed items kept their File in a side map
     for (const it of failed) {
@@ -1387,10 +1865,27 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
       if (!f) continue;
       fileStore.current.delete(it.id);
       canceled.current.delete(it.id);
-      itemById.current.set(it.id, { ...it, state: "pending", attempts: 0, progress: 0 });
+      itemById.current.set(it.id, {
+        ...it,
+        state: "pending",
+        attempts: 0,
+        progress: 0,
+      });
       filesPending.current.push({ file: f, itemId: it.id });
     }
-    setQueue((q) => q.map((it) => (it.state === "failed" || it.state === "canceled" ? { ...it, state: "pending", attempts: 0, progress: 0, error: undefined } : it)));
+    setQueue((q) =>
+      q.map((it) =>
+        it.state === "failed" || it.state === "canceled"
+          ? {
+              ...it,
+              state: "pending",
+              attempts: 0,
+              progress: 0,
+              error: undefined,
+            }
+          : it,
+      ),
+    );
     setUploading(true);
     setPaused(false);
     pump();
@@ -1401,6 +1896,85 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
   // content fingerprint per queue item — sent at confirm so the asset row
   // carries it for future duplicate checks.
   const fpStore = useRef<Map<string, string>>(new Map());
+  // WEB-184 ZIP import: folder label per queue item (extraction time) and per
+  // confirmed asset id (confirm time) — consumed by fileZipFolders() when the
+  // queue settles, so folders are created and files moved in one pass.
+  const zipItemFolders = useRef<Map<string, string>>(new Map());
+  const zipAssetFolders = useRef<Map<string, string>>(new Map());
+
+  /** WEB-184 ZIP import finisher: create the folders the archive(s) mapped
+   * to (reusing same-name folders that already exist), then bulk-move each
+   * batch of confirmed assets. Failures leave files uploaded + unfiled —
+   * never lost. */
+  async function fileZipFolders() {
+    const targets = zipAssetFolders.current;
+    if (!targets.size) return;
+    zipAssetFolders.current = new Map();
+    const byFolder = new Map<string, string[]>();
+    for (const [assetId, folder] of targets) {
+      const list = byFolder.get(folder) ?? [];
+      list.push(assetId);
+      byFolder.set(folder, list);
+    }
+    let filed = 0;
+    try {
+      const listFolders = () =>
+        fetch(`/api/projects/${projectId}/folders`)
+          .then((r) => r.json())
+          .catch(() => ({})) as Promise<{ folders?: FolderItem[] }>;
+      const known = new Map(
+        (await listFolders()).folders?.map((f) => [
+          f.name.toLowerCase(),
+          f.id,
+        ]) ?? [],
+      );
+      for (const [name, assetIds] of byFolder) {
+        let folderId = known.get(name.toLowerCase());
+        if (!folderId) {
+          const res = await fetch(`/api/projects/${projectId}/folders`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name }),
+          });
+          const body = (await res.json().catch(() => ({}))) as {
+            id?: string;
+            error?: string;
+          };
+          if (res.ok && body.id) {
+            folderId = body.id;
+            known.set(name.toLowerCase(), folderId);
+          } else if (body.error === "name_taken") {
+            // case-sensitive clash the lowercase map missed — re-list.
+            folderId = (await listFolders()).folders?.find(
+              (f) => f.name === name,
+            )?.id;
+          }
+        }
+        if (!folderId) {
+          setNotice(
+            `Couldn't file ${assetIds.length} ZIP import${assetIds.length === 1 ? "" : "s"} into “${name}” — move them from the grid.`,
+          );
+          continue;
+        }
+        const res = await fetch("/api/assets/bulk", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "move", assetIds, folderId }),
+        });
+        const body = (await res.json().catch(() => ({}))) as { done?: number };
+        filed += body.done ?? 0;
+      }
+      if (filed)
+        setNotice(
+          `ZIP import: filed ${filed} file${filed === 1 ? "" : "s"} into ${byFolder.size} folder${byFolder.size === 1 ? "" : "s"}.`,
+        );
+    } catch {
+      setNotice(
+        "ZIP import: uploads finished, but folder filing failed — move files from the grid.",
+      );
+    }
+    refresh();
+  }
 
   // Whole-tab drop target (Files polish): dropping anywhere on the tab
   // uploads instead of the browser navigating to the file. Depth-counted
@@ -1415,7 +1989,8 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
   const enqueueRef = useRef(enqueueWithStore);
   enqueueRef.current = enqueueWithStore;
   useEffect(() => {
-    const hasFiles = (e: DragEvent) => Array.from(e.dataTransfer?.types ?? []).includes("Files");
+    const hasFiles = (e: DragEvent) =>
+      Array.from(e.dataTransfer?.types ?? []).includes("Files");
     const onDragStart = () => {
       internalDrag.current = true;
     };
@@ -1444,7 +2019,8 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
       }
       if (!hasFiles(e)) return;
       e.preventDefault();
-      if (e.dataTransfer?.files?.length) void enqueueRef.current(e.dataTransfer.files);
+      if (e.dataTransfer?.files?.length)
+        void enqueueRef.current(e.dataTransfer.files);
     };
     document.addEventListener("dragstart", onDragStart, true);
     document.addEventListener("dragend", onDragEnd, true);
@@ -1463,10 +2039,47 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
   }, []);
 
   async function enqueueWithStore(files: FileList | File[]) {
-    const arr = Array.from(files);
+    const incoming = Array.from(files);
+    if (!incoming.length) return;
+    /* WEB-184 ZIP import: archives are extracted in the browser BEFORE
+     * upload — bomb/traversal guards and folder mapping live in
+     * lib/zip-import.ts. On the client portal surface (clientEmail) the
+     * folder mapping flattens to Unfiled; folder creation is org-gated. */
+    const arr: File[] = [];
+    const folderByFile = new Map<File, string | null>();
+    for (const f of incoming) {
+      const isZip =
+        /\.zip$/i.test(f.name) ||
+        /^(application\/(x-)?zip|application\/x-zip-compressed)$/i.test(f.type);
+      if (!isZip) {
+        arr.push(f);
+        continue;
+      }
+      setNotice(`Extracting ${f.name}…`);
+      const extracted = await extractZipFile(f);
+      if (!extracted.ok) {
+        setNotice(zipImportError(f.name, extracted.error));
+        continue;
+      }
+      for (const x of extracted.files) {
+        arr.push(x.file);
+        folderByFile.set(x.file, clientEmail ? null : x.folder);
+      }
+      const skipped =
+        extracted.skippedJunk +
+        extracted.skippedUnsafe +
+        extracted.skippedUnsupported;
+      setNotice(
+        `${f.name}: extracted ${extracted.files.length} file${extracted.files.length === 1 ? "" : "s"}${
+          skipped ? `, skipped ${skipped} (junk/unsupported)` : ""
+        }.`,
+      );
+    }
     if (!arr.length) return;
     // stash files for retry support
-    const stash = arr.map((_, i) => `${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}`);
+    const stash = arr.map(
+      (_, i) => `${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}`,
+    );
     stash.forEach((id, i) => fileStore.current.set(id, arr[i]));
 
     // Duplicate pre-check: fingerprint every file (bounded read), ask the
@@ -1476,26 +2089,40 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
     const checkable = fps.filter((f): f is string => Boolean(f));
     if (checkable.length) {
       try {
-        const res = await fetch(`/api/projects/${projectId}/assets/dedup-check`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ fingerprints: checkable }),
-        });
-        const body = (await res.json().catch(() => ({}))) as { duplicates?: { fingerprint: string; filename: string }[] };
-        const dupFps = new Set((body.duplicates ?? []).map((d) => d.fingerprint));
+        const res = await fetch(
+          `/api/projects/${projectId}/assets/dedup-check`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ fingerprints: checkable }),
+          },
+        );
+        const body = (await res.json().catch(() => ({}))) as {
+          duplicates?: { fingerprint: string; filename: string }[];
+        };
+        const dupFps = new Set(
+          (body.duplicates ?? []).map((d) => d.fingerprint),
+        );
         if (dupFps.size) {
-          const dupNames = arr.filter((_, i) => fps[i] && dupFps.has(fps[i]!)).map((f) => f.name);
+          const dupNames = arr
+            .filter((_, i) => fps[i] && dupFps.has(fps[i]!))
+            .map((f) => f.name);
           const skip = await confirm({
             title: `${dupNames.length} duplicate file${dupNames.length === 1 ? "" : "s"}`,
             body: (
               <>
-                Already in this project (identical content): <b className="text-ink">{dupNames.slice(0, 3).join(", ")}</b>
-                {dupNames.length > 3 ? ` +${dupNames.length - 3} more` : ""}. Skip them, or cancel to upload everything anyway.
+                Already in this project (identical content):{" "}
+                <b className="text-ink">{dupNames.slice(0, 3).join(", ")}</b>
+                {dupNames.length > 3 ? ` +${dupNames.length - 3} more` : ""}.
+                Skip them, or cancel to upload everything anyway.
               </>
             ),
             confirmLabel: "Skip duplicates",
           });
-          if (skip) arr.forEach((_, i) => { if (fps[i] && dupFps.has(fps[i]!)) skipIds.add(stash[i]); });
+          if (skip)
+            arr.forEach((_, i) => {
+              if (fps[i] && dupFps.has(fps[i]!)) skipIds.add(stash[i]);
+            });
         }
       } catch {
         /* dedup check is advisory — network failure just uploads */
@@ -1514,7 +2141,10 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
     for (const it of items) itemById.current.set(it.id, it);
     for (let i = 0; i < arr.length; i++) {
       if (fps[i]) fpStore.current.set(stash[i], fps[i]!);
-      if (!skipIds.has(stash[i])) filesPending.current.push({ file: arr[i], itemId: stash[i] });
+      const zipFolder = folderByFile.get(arr[i]);
+      if (zipFolder) zipItemFolders.current.set(stash[i], zipFolder);
+      if (!skipIds.has(stash[i]))
+        filesPending.current.push({ file: arr[i], itemId: stash[i] });
     }
     setQueue((q) => [...q, ...items]);
     setUploading(true);
@@ -1525,19 +2155,33 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
   // queue completion → refresh + summary
   useEffect(() => {
     if (!uploading) return;
-    const active = queue.filter((q) => q.state === "pending" || q.state === "uploading");
+    const active = queue.filter(
+      (q) => q.state === "pending" || q.state === "uploading",
+    );
     if (active.length === 0 && queue.length > 0) {
       setUploading(false);
       const failed = queue.filter((q) => q.state === "failed").length;
-      setNotice(failed ? `Upload finished — ${failed} failed. Retry the failures below.` : "All uploads finished.");
+      setNotice(
+        failed
+          ? `Upload finished — ${failed} failed. Retry the failures below.`
+          : "All uploads finished.",
+      );
+      // WEB-184: file confirmed ZIP-import assets into their mapped folders.
+      void fileZipFolders();
       refresh();
       // WEB-401: derivatives (carrying the phashes) trail the originals by a
       // few seconds — recluster near-duplicates once they've landed, then
       // quietly refresh so the "×N similar" badges appear without a reload.
-      const hadImages = queue.some((q) => q.state === "done" && /\.(jpe?g|png|webp|avif|gif|bmp)$/i.test(q.name));
+      const hadImages = queue.some(
+        (q) =>
+          q.state === "done" &&
+          /\.(jpe?g|png|webp|avif|gif|bmp)$/i.test(q.name),
+      );
       if (hadImages) {
         setTimeout(() => {
-          void fetch(`/api/projects/${projectId}/assets/regroup`, { method: "POST" })
+          void fetch(`/api/projects/${projectId}/assets/regroup`, {
+            method: "POST",
+          })
             .then(() => load(true))
             .catch(() => undefined);
         }, 10_000);
@@ -1549,7 +2193,9 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
 
   const inputRef = useRef<HTMLInputElement>(null);
   const counts = feed.counts;
-  const activeFilters = Boolean(status || kind || tag || rating || colorSel || cull);
+  const activeFilters = Boolean(
+    status || kind || tag || rating || colorSel || cull,
+  );
   /* Day groups (Midjourney organize-style): date-sorted contiguous items
    * share one bordered mosaic block with a date header, so the outline
    * hugs the first/last images of each group. Non-date sorts render as a
@@ -1558,10 +2204,24 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
     const flat = feed.items.map((a, i) => ({ a, i }));
     if (sort !== "date") return [{ key: "all", label: "", entries: flat }];
     const today = new Date().toISOString().slice(0, 10);
-    const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+    const yesterday = new Date(Date.now() - 86_400_000)
+      .toISOString()
+      .slice(0, 10);
     const fmtDay = (key: string) =>
-      key === today ? "Today" : key === yesterday ? "Yesterday" : new Date(`${key}T12:00:00Z`).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
-    const out: { key: string; label: string; entries: { a: AssetItem; i: number }[] }[] = [];
+      key === today
+        ? "Today"
+        : key === yesterday
+          ? "Yesterday"
+          : new Date(`${key}T12:00:00Z`).toLocaleDateString("en-US", {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            });
+    const out: {
+      key: string;
+      label: string;
+      entries: { a: AssetItem; i: number }[];
+    }[] = [];
     for (const e of flat) {
       const key = e.a.createdAt.slice(0, 10);
       const last = out[out.length - 1];
@@ -1574,36 +2234,106 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
   const summary = useMemo(() => {
     const done = queue.filter((q) => q.state === "done").length;
     const failed = queue.filter((q) => q.state === "failed").length;
-    const overallPct = queue.length ? Math.round(queue.reduce((n, q) => n + (q.state === "done" ? 100 : q.progress), 0) / queue.length) : 0;
+    const overallPct = queue.length
+      ? Math.round(
+          queue.reduce(
+            (n, q) => n + (q.state === "done" ? 100 : q.progress),
+            0,
+          ) / queue.length,
+        )
+      : 0;
     return { done, failed, total: queue.length, overallPct };
   }, [queue]);
 
   /* Filter menu (hierarchical): root rows + flyout submenus. */
-  const CULL_LABELS: Record<string, string> = { blurry: "Soft focus", under: "Too dark", over: "Too bright", edited: "Edited", dupes: "Similar groups" };
+  const CULL_LABELS: Record<string, string> = {
+    blurry: "Soft focus",
+    under: "Too dark",
+    over: "Too bright",
+    edited: "Edited",
+    dupes: "Similar groups",
+  };
   const FILTER_ROOT = [
-    { key: "status" as const, label: "Status", current: status || "All", has: Boolean(status), clear: () => setStatus("") },
-    { key: "kind" as const, label: "Type", current: kind || "All", has: Boolean(kind), clear: () => setKind("") },
-    { key: "tag" as const, label: "Tags", current: tag || "All", has: Boolean(tag), clear: () => setTag("") },
-    { key: "stars" as const, label: "Stars", current: rating ? (rating === "unrated" ? "Unrated" : `${rating}+`) : "Any", has: Boolean(rating), clear: () => setRating("") },
-    { key: "color" as const, label: "Color", current: colorSel ? (colorSel === "none" ? "None" : COLOR_NAMES[Number(colorSel)]) : "Any", has: Boolean(colorSel), clear: () => setColorSel("") },
-    { key: "cull" as const, label: "Quality", current: cull ? CULL_LABELS[cull] : "Any", has: Boolean(cull), clear: () => setCull("") },
+    {
+      key: "status" as const,
+      label: "Status",
+      current: status || "All",
+      has: Boolean(status),
+      clear: () => setStatus(""),
+    },
+    {
+      key: "kind" as const,
+      label: "Type",
+      current: kind || "All",
+      has: Boolean(kind),
+      clear: () => setKind(""),
+    },
+    {
+      key: "tag" as const,
+      label: "Tags",
+      current: tag || "All",
+      has: Boolean(tag),
+      clear: () => setTag(""),
+    },
+    {
+      key: "stars" as const,
+      label: "Stars",
+      current: rating
+        ? rating === "unrated"
+          ? "Unrated"
+          : `${rating}+`
+        : "Any",
+      has: Boolean(rating),
+      clear: () => setRating(""),
+    },
+    {
+      key: "color" as const,
+      label: "Color",
+      current: colorSel
+        ? colorSel === "none"
+          ? "None"
+          : COLOR_NAMES[Number(colorSel)]
+        : "Any",
+      has: Boolean(colorSel),
+      clear: () => setColorSel(""),
+    },
+    {
+      key: "cull" as const,
+      label: "Quality",
+      current: cull ? CULL_LABELS[cull] : "Any",
+      has: Boolean(cull),
+      clear: () => setCull(""),
+    },
     {
       key: "sort" as const,
       label: "Sort by",
-      current: sort === "name" ? "Name" : sort === "size" ? "Largest" : sort === "status" ? "Status" : "Newest",
+      current:
+        sort === "name"
+          ? "Name"
+          : sort === "size"
+            ? "Largest"
+            : sort === "status"
+              ? "Status"
+              : "Newest",
       has: sort !== "date",
       clear: () => setSort("date"),
     },
   ];
 
-  function filterGroupDef(key: "status" | "kind" | "tag" | "stars" | "color" | "cull" | "sort") {
+  function filterGroupDef(
+    key: "status" | "kind" | "tag" | "stars" | "color" | "cull" | "sort",
+  ) {
     if (key === "status")
       return {
         allLabel: "All statuses",
         allValue: "",
         current: status,
         apply: (v: string) => setStatus(v),
-        options: STATUSES.map((s) => ({ value: s, label: s, count: counts[s] ?? 0 })),
+        options: STATUSES.map((s) => ({
+          value: s,
+          label: s,
+          count: counts[s] ?? 0,
+        })),
       };
     if (key === "kind")
       return {
@@ -1619,7 +2349,11 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
         allValue: "",
         current: tag,
         apply: (v: string) => setTag(v),
-        options: feed.tags.map((t) => ({ value: t.tag, label: t.tag, count: t.n })),
+        options: feed.tags.map((t) => ({
+          value: t.tag,
+          label: t.tag,
+          count: t.n,
+        })),
       };
     if (key === "stars")
       return {
@@ -1628,11 +2362,18 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
         current: rating,
         apply: (v: string) => setRating(v),
         options: [
-          { value: "unrated", label: "Unrated", count: Number(feed.ratings?.stars["0"] ?? 0) },
+          {
+            value: "unrated",
+            label: "Unrated",
+            count: Number(feed.ratings?.stars["0"] ?? 0),
+          },
           ...[5, 4, 3, 2, 1].map((n) => ({
             value: String(n),
             label: `${"★".repeat(n)} ${n}+`,
-            count: Object.entries(feed.ratings?.stars ?? {}).reduce((acc, [k, c]) => (Number(k) >= n ? acc + c : acc), 0),
+            count: Object.entries(feed.ratings?.stars ?? {}).reduce(
+              (acc, [k, c]) => (Number(k) >= n ? acc + c : acc),
+              0,
+            ),
           })),
         ],
       };
@@ -1643,8 +2384,16 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
         current: colorSel,
         apply: (v: string) => setColorSel(v),
         options: [
-          { value: "none", label: "No label", count: Number(feed.ratings?.colors["0"] ?? 0) },
-          ...[1, 2, 3, 4, 5].map((n) => ({ value: String(n), label: COLOR_NAMES[n], count: Number(feed.ratings?.colors[String(n)] ?? 0) })),
+          {
+            value: "none",
+            label: "No label",
+            count: Number(feed.ratings?.colors["0"] ?? 0),
+          },
+          ...[1, 2, 3, 4, 5].map((n) => ({
+            value: String(n),
+            label: COLOR_NAMES[n],
+            count: Number(feed.ratings?.colors[String(n)] ?? 0),
+          })),
         ],
       };
     if (key === "cull")
@@ -1658,7 +2407,11 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
           { value: "under", label: "Too dark", count: feed.quality?.under },
           { value: "over", label: "Too bright", count: feed.quality?.over },
           { value: "edited", label: "Edited", count: feed.quality?.edited },
-          { value: "dupes", label: "Similar groups", count: feed.quality?.dupes },
+          {
+            value: "dupes",
+            label: "Similar groups",
+            count: feed.quality?.dupes,
+          },
         ],
       };
     return {
@@ -1681,7 +2434,8 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
   useEffect(() => {
     if (!actionsOpen) return;
     function onDown(e: MouseEvent) {
-      if (actionsRef.current && !actionsRef.current.contains(e.target as Node)) setActionsOpen(false);
+      if (actionsRef.current && !actionsRef.current.contains(e.target as Node))
+        setActionsOpen(false);
     }
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") setActionsOpen(false);
@@ -1698,7 +2452,11 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
   useEffect(() => {
     if (!folderMenuOpen) return;
     function onDown(e: MouseEvent) {
-      if (folderMenuRef.current && !folderMenuRef.current.contains(e.target as Node)) setFolderMenuOpen(false);
+      if (
+        folderMenuRef.current &&
+        !folderMenuRef.current.contains(e.target as Node)
+      )
+        setFolderMenuOpen(false);
     }
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") setFolderMenuOpen(false);
@@ -1743,145 +2501,233 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
        * button are desktop controls (no keyboard, no hover on touch). */}
       <div className="flex flex-wrap items-center gap-1.5 rounded-[12px] border border-hairline bg-surface-1 p-2 sm:gap-2 sm:p-3">
         <div className="mr-2 hidden text-sm text-ink-subtle sm:block">
-          {Object.values(counts).reduce((a, b) => a + b, 0)} file{Object.values(counts).reduce((a, b) => a + b, 0) === 1 ? "" : "s"}
+          {Object.values(counts).reduce((a, b) => a + b, 0)} file
+          {Object.values(counts).reduce((a, b) => a + b, 0) === 1 ? "" : "s"}
           {counts.approved ? ` · ${counts.approved} approved` : ""}
           {counts.rejected ? ` · ${counts.rejected} rejected` : ""}
           {counts.shared ? ` · ${counts.shared} shared` : ""}
         </div>
 
-      {/* Folder dropdown (WEB-216/223) — same pattern as Filter: one compact
-       * trigger (with a folder icon before created folder names) instead of a
-       * chip rail that ate toolbar space. Rows filter the feed and accept
-       * dragged cards; folders are free on every tier. */}
-      <div className="relative shrink-0" ref={folderMenuRef}>
-        <button
-          type="button"
-          onClick={() => setFolderMenuOpen((o) => !o)}
-          aria-expanded={folderMenuOpen}
+        {/* Folder dropdown (WEB-216/223) — same pattern as Filter: one compact
+         * trigger (with a folder icon before created folder names) instead of a
+         * chip rail that ate toolbar space. Rows filter the feed and accept
+         * dragged cards; folders are free on every tier. */}
+        <div className="relative shrink-0" ref={folderMenuRef}>
+          <button
+            type="button"
+            onClick={() => setFolderMenuOpen((o) => !o)}
+            aria-expanded={folderMenuOpen}
             className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs transition-colors ${
-            folder
-              ? "border-primary/40 bg-primary/10 text-primary"
-              : "border-hairline bg-canvas text-ink-muted hover:bg-surface-2"
-          }`}
-        >
-          <Folder className="h-3.5 w-3.5" aria-hidden />
-          <span className="max-w-40 truncate">
-            {folder === "none" ? `Unfiled${feed.unfiledCount ? ` · ${feed.unfiledCount}` : ""}` : folder ? `${folderName(folder) ?? "Folder"}${(() => { const f = folders.find((x) => x.id === folder); return f ? ` · ${f.count}` : ""; })()}` : "All files"}
-          </span>
-          <ChevronDown className="h-3 w-3" aria-hidden />
-        </button>
-        {folderMenuOpen && (
-          <div className="absolute left-0 top-full z-40 mt-1.5 w-64 rounded-[10px] border border-hairline bg-surface-1 p-1 shadow-lg" role="menu" aria-label="Folders">
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => { setFolder(""); setFolderMenuOpen(false); }}
-              className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] transition-colors hover:bg-surface-2 ${folder === "" ? "text-ink" : "text-ink-muted"}`}
+              folder
+                ? "border-primary/40 bg-primary/10 text-primary"
+                : "border-hairline bg-canvas text-ink-muted hover:bg-surface-2"
+            }`}
+          >
+            <Folder className="h-3.5 w-3.5" aria-hidden />
+            <span className="max-w-40 truncate">
+              {folder === "none"
+                ? `Unfiled${feed.unfiledCount ? ` · ${feed.unfiledCount}` : ""}`
+                : folder
+                  ? `${folderName(folder) ?? "Folder"}${(() => {
+                      const f = folders.find((x) => x.id === folder);
+                      return f ? ` · ${f.count}` : "";
+                    })()}`
+                  : "All files"}
+            </span>
+            <ChevronDown className="h-3 w-3" aria-hidden />
+          </button>
+          {folderMenuOpen && (
+            <div
+              className="absolute left-0 top-full z-40 mt-1.5 w-64 rounded-[10px] border border-hairline bg-surface-1 p-1 shadow-lg"
+              role="menu"
+              aria-label="Folders"
             >
-              <Folder className="h-3.5 w-3.5 text-ink-tertiary" aria-hidden />
-              <span className="flex-1">All files</span>
-              {folder === "" && <Check className="h-3.5 w-3.5 text-ink-tertiary" aria-hidden />}
-            </button>
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => { setFolder("none"); setFolderMenuOpen(false); }}
-              onDragOver={(e) => { if (e.dataTransfer.types.includes("application/x-snap-assets")) { e.preventDefault(); setDropFolder("none"); } }}
-              onDragLeave={() => setDropFolder((d) => (d === "none" ? null : d))}
-              onDrop={(e) => folderDrop(e, null)}
-              className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] transition-colors hover:bg-surface-2 ${
-                dropFolder === "none" ? "ring-2 ring-primary" : ""
-              } ${folder === "none" ? "text-ink" : "text-ink-muted"}`}
-            >
-              <span className="flex-1">Unfiled{feed.unfiledCount ? ` · ${feed.unfiledCount}` : ""}</span>
-              {folder === "none" && <Check className="h-3.5 w-3.5 text-ink-tertiary" aria-hidden />}
-            </button>
-            {folders.length > 0 && <div className="my-1 border-t border-hairline" />}
-            {folders.map((f) => (
-              <div key={f.id} className="group/frow flex items-center">
-                {folderEdit === f.id ? (
-                  <input
-                    autoFocus
-                    value={folderDraft}
-                    onChange={(e) => setFolderDraft(e.target.value)}
-                    onBlur={() => void submitFolderEdit()}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") void submitFolderEdit();
-                      if (e.key === "Escape") { setFolderEdit(null); setFolderDraft(""); }
-                    }}
-                    aria-label="Rename folder"
-                    className="my-1 w-full rounded-md border border-primary bg-canvas px-2 py-1 text-xs text-ink outline-none"
-                  />
-                ) : (
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={() => { setFolder(f.id); setFolderMenuOpen(false); }}
-                    onDragOver={(e) => { if (e.dataTransfer.types.includes("application/x-snap-assets")) { e.preventDefault(); setDropFolder(f.id); } }}
-                    onDragLeave={() => setDropFolder((d) => (d === f.id ? null : d))}
-                    onDrop={(e) => folderDrop(e, f.id)}
-                    className={`flex min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] transition-colors hover:bg-surface-2 ${
-                      dropFolder === f.id ? "ring-2 ring-primary" : ""
-                    } ${folder === f.id ? "text-ink" : "text-ink-muted"}`}
-                  >
-                    <Folder className="h-3.5 w-3.5 shrink-0 text-ink-tertiary" aria-hidden />
-                    <span className="flex-1 truncate">
-                      {f.name} <span className="text-[11px] text-ink-tertiary">· {f.count}</span>
-                    </span>
-                    {folder === f.id && <Check className="h-3.5 w-3.5 shrink-0 text-ink-tertiary" aria-hidden />}
-                  </button>
-                )}
-                {folderEdit !== f.id && (
-                  <span className="ml-0.5 hidden shrink-0 items-center group-hover/frow:inline-flex">
-                    <button
-                      type="button"
-                      aria-label={`Rename ${f.name}`}
-                      onClick={() => { setFolderEdit(f.id); setFolderDraft(f.name); }}
-                      className="rounded p-0.5 text-ink-tertiary hover:text-ink"
-                    >
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /></svg>
-                    </button>
-                    <button
-                      type="button"
-                      aria-label={`Delete ${f.name}`}
-                      onClick={() => void deleteFolderClick(f)}
-                      className="rounded p-0.5 text-ink-tertiary hover:text-destructive"
-                    >
-                      <X className="h-3 w-3" aria-hidden />
-                    </button>
-                  </span>
-                )}
-              </div>
-            ))}
-            <div className="my-1 border-t border-hairline" />
-            {folderEdit === "new" ? (
-              <input
-                autoFocus
-                value={folderDraft}
-                onChange={(e) => setFolderDraft(e.target.value)}
-                onBlur={() => void submitFolderEdit()}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") void submitFolderEdit();
-                  if (e.key === "Escape") { setFolderEdit(null); setFolderDraft(""); }
-                }}
-                aria-label="New folder name"
-                placeholder="Folder name"
-                className="my-1 w-full rounded-md border border-primary bg-canvas px-2 py-1 text-xs text-ink outline-none"
-              />
-            ) : (
               <button
                 type="button"
                 role="menuitem"
-                onClick={() => { setFolderEdit("new"); setFolderDraft(""); }}
-                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] text-ink-tertiary transition-colors hover:bg-surface-2 hover:text-primary"
+                onClick={() => {
+                  setFolder("");
+                  setFolderMenuOpen(false);
+                }}
+                className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] transition-colors hover:bg-surface-2 ${folder === "" ? "text-ink" : "text-ink-muted"}`}
               >
-                <FolderPlus className="h-3.5 w-3.5" aria-hidden />
-                New folder
+                <Folder className="h-3.5 w-3.5 text-ink-tertiary" aria-hidden />
+                <span className="flex-1">All files</span>
+                {folder === "" && (
+                  <Check
+                    className="h-3.5 w-3.5 text-ink-tertiary"
+                    aria-hidden
+                  />
+                )}
               </button>
-            )}
-          </div>
-        )}
-      </div>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setFolder("none");
+                  setFolderMenuOpen(false);
+                }}
+                onDragOver={(e) => {
+                  if (
+                    e.dataTransfer.types.includes("application/x-snap-assets")
+                  ) {
+                    e.preventDefault();
+                    setDropFolder("none");
+                  }
+                }}
+                onDragLeave={() =>
+                  setDropFolder((d) => (d === "none" ? null : d))
+                }
+                onDrop={(e) => folderDrop(e, null)}
+                className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] transition-colors hover:bg-surface-2 ${
+                  dropFolder === "none" ? "ring-2 ring-primary" : ""
+                } ${folder === "none" ? "text-ink" : "text-ink-muted"}`}
+              >
+                <span className="flex-1">
+                  Unfiled{feed.unfiledCount ? ` · ${feed.unfiledCount}` : ""}
+                </span>
+                {folder === "none" && (
+                  <Check
+                    className="h-3.5 w-3.5 text-ink-tertiary"
+                    aria-hidden
+                  />
+                )}
+              </button>
+              {folders.length > 0 && (
+                <div className="my-1 border-t border-hairline" />
+              )}
+              {folders.map((f) => (
+                <div key={f.id} className="group/frow flex items-center">
+                  {folderEdit === f.id ? (
+                    <input
+                      autoFocus
+                      value={folderDraft}
+                      onChange={(e) => setFolderDraft(e.target.value)}
+                      onBlur={() => void submitFolderEdit()}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") void submitFolderEdit();
+                        if (e.key === "Escape") {
+                          setFolderEdit(null);
+                          setFolderDraft("");
+                        }
+                      }}
+                      aria-label="Rename folder"
+                      className="my-1 w-full rounded-md border border-primary bg-canvas px-2 py-1 text-xs text-ink outline-none"
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setFolder(f.id);
+                        setFolderMenuOpen(false);
+                      }}
+                      onDragOver={(e) => {
+                        if (
+                          e.dataTransfer.types.includes(
+                            "application/x-snap-assets",
+                          )
+                        ) {
+                          e.preventDefault();
+                          setDropFolder(f.id);
+                        }
+                      }}
+                      onDragLeave={() =>
+                        setDropFolder((d) => (d === f.id ? null : d))
+                      }
+                      onDrop={(e) => folderDrop(e, f.id)}
+                      className={`flex min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] transition-colors hover:bg-surface-2 ${
+                        dropFolder === f.id ? "ring-2 ring-primary" : ""
+                      } ${folder === f.id ? "text-ink" : "text-ink-muted"}`}
+                    >
+                      <Folder
+                        className="h-3.5 w-3.5 shrink-0 text-ink-tertiary"
+                        aria-hidden
+                      />
+                      <span className="flex-1 truncate">
+                        {f.name}{" "}
+                        <span className="text-[11px] text-ink-tertiary">
+                          · {f.count}
+                        </span>
+                      </span>
+                      {folder === f.id && (
+                        <Check
+                          className="h-3.5 w-3.5 shrink-0 text-ink-tertiary"
+                          aria-hidden
+                        />
+                      )}
+                    </button>
+                  )}
+                  {folderEdit !== f.id && (
+                    <span className="ml-0.5 hidden shrink-0 items-center group-hover/frow:inline-flex">
+                      <button
+                        type="button"
+                        aria-label={`Rename ${f.name}`}
+                        onClick={() => {
+                          setFolderEdit(f.id);
+                          setFolderDraft(f.name);
+                        }}
+                        className="rounded p-0.5 text-ink-tertiary hover:text-ink"
+                      >
+                        <svg
+                          width="11"
+                          height="11"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          aria-hidden
+                        >
+                          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`Delete ${f.name}`}
+                        onClick={() => void deleteFolderClick(f)}
+                        className="rounded p-0.5 text-ink-tertiary hover:text-destructive"
+                      >
+                        <X className="h-3 w-3" aria-hidden />
+                      </button>
+                    </span>
+                  )}
+                </div>
+              ))}
+              <div className="my-1 border-t border-hairline" />
+              {folderEdit === "new" ? (
+                <input
+                  autoFocus
+                  value={folderDraft}
+                  onChange={(e) => setFolderDraft(e.target.value)}
+                  onBlur={() => void submitFolderEdit()}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") void submitFolderEdit();
+                    if (e.key === "Escape") {
+                      setFolderEdit(null);
+                      setFolderDraft("");
+                    }
+                  }}
+                  aria-label="New folder name"
+                  placeholder="Folder name"
+                  className="my-1 w-full rounded-md border border-primary bg-canvas px-2 py-1 text-xs text-ink outline-none"
+                />
+              ) : (
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setFolderEdit("new");
+                    setFolderDraft("");
+                  }}
+                  className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] text-ink-tertiary transition-colors hover:bg-surface-2 hover:text-primary"
+                >
+                  <FolderPlus className="h-3.5 w-3.5" aria-hidden />
+                  New folder
+                </button>
+              )}
+            </div>
+          )}
+        </div>
 
         <div className="relative" ref={filterRef}>
           <button
@@ -1895,7 +2741,9 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
             <ListFilter className="h-3.5 w-3.5" aria-hidden />
             Filter
             {filterCount > 0 && (
-              <span className="rounded-full bg-primary/15 px-1.5 text-[10px] font-medium text-primary">{filterCount}</span>
+              <span className="rounded-full bg-primary/15 px-1.5 text-[10px] font-medium text-primary">
+                {filterCount}
+              </span>
             )}
             <ChevronDown className="h-3 w-3" aria-hidden />
           </button>
@@ -1904,11 +2752,17 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
               {FILTER_ROOT.map((g) => {
                 const def = filterGroupDef(g.key);
                 return (
-                  <div key={g.key} className="relative" onMouseEnter={() => filterOpen && setFilterGroup(g.key)}>
+                  <div
+                    key={g.key}
+                    className="relative"
+                    onMouseEnter={() => filterOpen && setFilterGroup(g.key)}
+                  >
                     <div className="flex items-center">
                       <button
                         type="button"
-                        onClick={() => setFilterGroup(filterGroup === g.key ? "" : g.key)}
+                        onClick={() =>
+                          setFilterGroup(filterGroup === g.key ? "" : g.key)
+                        }
                         aria-expanded={filterGroup === g.key}
                         className={`flex flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] transition-colors hover:bg-surface-2 ${
                           filterGroup === g.key ? "text-ink" : "text-ink-muted"
@@ -1916,9 +2770,16 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
                       >
                         <span className="flex-1 truncate">
                           {g.label}
-                          {g.has && <span className="ml-1.5 text-[11px] text-primary">{g.current}</span>}
+                          {g.has && (
+                            <span className="ml-1.5 text-[11px] text-primary">
+                              {g.current}
+                            </span>
+                          )}
                         </span>
-                        <ChevronRight className={`h-3.5 w-3.5 text-ink-tertiary transition-transform ${filterGroup === g.key ? "rotate-90" : ""}`} aria-hidden />
+                        <ChevronRight
+                          className={`h-3.5 w-3.5 text-ink-tertiary transition-transform ${filterGroup === g.key ? "rotate-90" : ""}`}
+                          aria-hidden
+                        />
                       </button>
                       {g.has && (
                         <button
@@ -1935,26 +2796,47 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
                       <div className="absolute left-[calc(100%+6px)] top-0 z-50 w-56 rounded-[10px] border border-hairline bg-surface-1 p-1 shadow-lg">
                         <button
                           type="button"
-                          onClick={() => { def.apply(def.allValue); setFilterOpen(false); setFilterGroup(""); }}
+                          onClick={() => {
+                            def.apply(def.allValue);
+                            setFilterOpen(false);
+                            setFilterGroup("");
+                          }}
                           className="flex w-full items-center rounded-md px-2 py-1.5 text-left text-[13px] text-ink-muted transition-colors hover:bg-surface-2"
                         >
                           <span className="flex-1">{def.allLabel}</span>
-                          {(def.current === def.allValue || (!def.current && def.allValue === "")) && <Check className="h-3.5 w-3.5 text-ink-tertiary" aria-hidden />}
+                          {(def.current === def.allValue ||
+                            (!def.current && def.allValue === "")) && (
+                            <Check
+                              className="h-3.5 w-3.5 text-ink-tertiary"
+                              aria-hidden
+                            />
+                          )}
                         </button>
                         {def.options.map((opt) => (
                           <button
                             key={opt.value}
                             type="button"
-                            onClick={() => { def.apply(opt.value); setFilterOpen(false); setFilterGroup(""); }}
+                            onClick={() => {
+                              def.apply(opt.value);
+                              setFilterOpen(false);
+                              setFilterGroup("");
+                            }}
                             className="flex w-full items-center rounded-md px-2 py-1.5 pl-3 text-left text-[13px] text-ink-muted transition-colors hover:bg-surface-2"
                           >
                             <span className="flex-1 capitalize">
                               {opt.label}
                               {opt.count !== undefined && opt.count > 0 && (
-                                <span className="ml-1.5 text-[11px] text-ink-tertiary">{opt.count}</span>
+                                <span className="ml-1.5 text-[11px] text-ink-tertiary">
+                                  {opt.count}
+                                </span>
                               )}
                             </span>
-                            {def.current === opt.value && <Check className="h-3.5 w-3.5 text-ink-tertiary" aria-hidden />}
+                            {def.current === opt.value && (
+                              <Check
+                                className="h-3.5 w-3.5 text-ink-tertiary"
+                                aria-hidden
+                              />
+                            )}
                           </button>
                         ))}
                       </div>
@@ -1985,12 +2867,18 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
         <div className="ml-auto flex flex-wrap items-center justify-end gap-1.5">
           <div className="hidden items-center gap-1.5 md:flex">
             {view === "grid" && (
-              <div className="flex overflow-hidden rounded-md border border-hairline" role="group" aria-label="Grid size">
-                {([
-                  ["s", Grid3x3, "Small — dense contact sheet"],
-                  ["m", Grid2x2, "Medium — balanced masonry"],
-                  ["l", Square, "Large — review tiles"],
-                ] as const).map(([d, Icon, title]) => (
+              <div
+                className="flex overflow-hidden rounded-md border border-hairline"
+                role="group"
+                aria-label="Grid size"
+              >
+                {(
+                  [
+                    ["s", Grid3x3, "Small — dense contact sheet"],
+                    ["m", Grid2x2, "Medium — balanced masonry"],
+                    ["l", Square, "Large — review tiles"],
+                  ] as const
+                ).map(([d, Icon, title]) => (
                   <button
                     key={d}
                     type="button"
@@ -2026,10 +2914,22 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
             </Button>
           </div>
           <div className="hidden items-center gap-1.5 sm:flex">
-            <Button size="sm" variant="outline" onClick={() => { setSelectMode((s) => !s); setSelected(new Set()); }}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setSelectMode((s) => !s);
+                setSelected(new Set());
+              }}
+            >
               {selectMode ? "Done" : "Select"}
             </Button>
-            <Button size="sm" variant="outline" disabled={!feed.items.length} onClick={() => setTriageOpen(true)}>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={!feed.items.length}
+              onClick={() => setTriageOpen(true)}
+            >
               Triage
             </Button>
             <Button
@@ -2041,7 +2941,13 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
             >
               {grouping ? "Grouping…" : "Group similar"}
             </Button>
-            <Button size="sm" variant={heatOn ? "default" : "outline"} disabled={!feed.items.length} onClick={() => setHeatOn((v) => !v)} title="Heat: which photos your client looked at most (Studio)">
+            <Button
+              size="sm"
+              variant={heatOn ? "default" : "outline"}
+              disabled={!feed.items.length}
+              onClick={() => setHeatOn((v) => !v)}
+              title="Heat: which photos your client looked at most (Studio)"
+            >
               {heatOn ? "Heat on" : "Heat"}
             </Button>
           </div>
@@ -2054,11 +2960,19 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
               onClick={() => void purgeRejected()}
               title="Permanently delete this project's rejected files now — files in an active client gallery are skipped"
             >
-              {purging ? "Deleting…" : `Delete rejected (${feed.counts.rejected})`}
+              {purging
+                ? "Deleting…"
+                : `Delete rejected (${feed.counts.rejected})`}
             </Button>
           )}
           <div className="hidden items-center gap-1.5 sm:flex">
-            <Button size="sm" variant="outline" disabled={!(counts.approved || counts.shared) && !folders.length} onClick={() => setShareOpen(true)} title="Send a secure gallery link to the client — approved files or specific folders">
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={!(counts.approved || counts.shared) && !folders.length}
+              onClick={() => setShareOpen(true)}
+              title="Send a secure gallery link to the client — approved files or specific folders"
+            >
               <Share2 className="h-3.5 w-3.5 sm:mr-1" aria-hidden />
               <span className="hidden sm:inline">Share</span>
             </Button>
@@ -2066,11 +2980,17 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
               ref={inputRef}
               type="file"
               multiple
-              accept=".jpg,.jpeg,.png,.webp,.avif,.heic,.gif,.bmp,.mp4,.mov,.webm,.lrf,.tif,.tiff,.psd,.psb,.ai,.eps,.aep,.pdf,.svg,.mp3,.wav,.cr2,.cr3,.nef,.arw,.dng,.rwl,.lfr"
+              accept=".zip,.jpg,.jpeg,.png,.webp,.avif,.heic,.gif,.bmp,.mp4,.mov,.webm,.lrf,.tif,.tiff,.psd,.psb,.ai,.eps,.aep,.pdf,.svg,.mp3,.wav,.cr2,.cr3,.nef,.arw,.dng,.rwl,.lfr"
               className="hidden"
-              onChange={(e) => e.target.files?.length && enqueueWithStore(e.target.files)}
+              onChange={(e) =>
+                e.target.files?.length && enqueueWithStore(e.target.files)
+              }
             />
-            <Button size="sm" disabled={uploading} onClick={() => inputRef.current?.click()}>
+            <Button
+              size="sm"
+              disabled={uploading}
+              onClick={() => inputRef.current?.click()}
+            >
               {uploading ? "Uploading…" : "Upload"}
             </Button>
           </div>
@@ -2089,11 +3009,19 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
               <ChevronDown className="h-3 w-3" aria-hidden />
             </button>
             {actionsOpen && (
-              <div className="absolute right-0 top-full z-40 mt-1.5 w-48 rounded-[10px] border border-hairline bg-surface-1 p-1 shadow-lg" role="menu" aria-label="Actions">
+              <div
+                className="absolute right-0 top-full z-40 mt-1.5 w-48 rounded-[10px] border border-hairline bg-surface-1 p-1 shadow-lg"
+                role="menu"
+                aria-label="Actions"
+              >
                 <button
                   type="button"
                   role="menuitem"
-                  onClick={() => { setSelectMode((x) => !x); setSelected(new Set()); setActionsOpen(false); }}
+                  onClick={() => {
+                    setSelectMode((x) => !x);
+                    setSelected(new Set());
+                    setActionsOpen(false);
+                  }}
                   className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-[13px] text-ink-muted transition-colors hover:bg-surface-2"
                 >
                   <Square className="h-4 w-4" aria-hidden />
@@ -2103,7 +3031,10 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
                   type="button"
                   role="menuitem"
                   disabled={!feed.items.length}
-                  onClick={() => { setTriageOpen(true); setActionsOpen(false); }}
+                  onClick={() => {
+                    setTriageOpen(true);
+                    setActionsOpen(false);
+                  }}
                   className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-[13px] text-ink-muted transition-colors hover:bg-surface-2 disabled:opacity-50"
                 >
                   <Zap className="h-4 w-4" aria-hidden />
@@ -2112,8 +3043,13 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
                 <button
                   type="button"
                   role="menuitem"
-                  disabled={!(counts.approved || counts.shared) && !folders.length}
-                  onClick={() => { setShareOpen(true); setActionsOpen(false); }}
+                  disabled={
+                    !(counts.approved || counts.shared) && !folders.length
+                  }
+                  onClick={() => {
+                    setShareOpen(true);
+                    setActionsOpen(false);
+                  }}
                   className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-[13px] text-ink-muted transition-colors hover:bg-surface-2 disabled:opacity-50"
                 >
                   <Share2 className="h-4 w-4" aria-hidden />
@@ -2123,7 +3059,10 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
                   type="button"
                   role="menuitem"
                   disabled={uploading}
-                  onClick={() => { setActionsOpen(false); inputRef.current?.click(); }}
+                  onClick={() => {
+                    setActionsOpen(false);
+                    inputRef.current?.click();
+                  }}
                   className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-[13px] text-ink-muted transition-colors hover:bg-surface-2 disabled:opacity-50"
                 >
                   <Upload className="h-4 w-4" aria-hidden />
@@ -2142,11 +3081,14 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
           e.preventDefault();
           e.stopPropagation(); // the document-level handler would enqueue again
           if (internalDrag.current) return; // in-page drags never upload
-          if (e.dataTransfer.files?.length) void enqueueWithStore(e.dataTransfer.files);
+          if (e.dataTransfer.files?.length)
+            void enqueueWithStore(e.dataTransfer.files);
         }}
         className="hidden rounded-[12px] border border-dashed border-hairline-strong bg-surface-1 p-4 text-center text-xs text-ink-subtle sm:block"
       >
-        Drag & drop photos, videos, and RAWs here (up to 5 GB per file)
+        Drag & drop photos, videos, RAWs, or a .zip archive here (up to 5 GB per
+        file) — ZIPs are extracted in your browser and folders inside map to
+        project folders
       </div>
 
       {notice && <p className="text-xs text-ink-muted">{notice}</p>}
@@ -2157,30 +3099,60 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
         <div className="flex flex-col gap-2 rounded-[12px] border border-hairline bg-surface-1 p-3">
           <div className="flex flex-wrap items-center gap-3 text-xs text-ink-subtle">
             <span className="shrink-0 font-medium text-ink">
-              {uploading ? `Uploading ${summary.done + (uploading ? 1 : 0) > summary.total ? summary.total : summary.done}/${summary.total}` : `${summary.done}/${summary.total} uploaded`}
+              {uploading
+                ? `Uploading ${summary.done + (uploading ? 1 : 0) > summary.total ? summary.total : summary.done}/${summary.total}`
+                : `${summary.done}/${summary.total} uploaded`}
               {summary.failed ? ` · ${summary.failed} failed` : ""}
             </span>
-            <div className="h-1.5 min-w-24 flex-1 overflow-hidden rounded-full bg-surface-2" role="progressbar" aria-valuenow={summary.overallPct} aria-valuemin={0} aria-valuemax={100}>
+            <div
+              className="h-1.5 min-w-24 flex-1 overflow-hidden rounded-full bg-surface-2"
+              role="progressbar"
+              aria-valuenow={summary.overallPct}
+              aria-valuemin={0}
+              aria-valuemax={100}
+            >
               <div
                 className={`h-full rounded-full transition-[width] duration-300 ${summary.failed ? "bg-primary" : "bg-primary"}`}
                 style={{ width: `${summary.overallPct}%` }}
               />
             </div>
-            <span className="w-9 shrink-0 text-right tabular-nums text-ink-tertiary">{summary.overallPct}%</span>
+            <span className="w-9 shrink-0 text-right tabular-nums text-ink-tertiary">
+              {summary.overallPct}%
+            </span>
             <div className="flex shrink-0 gap-1.5">
               {uploading && (
-                <Button size="sm" variant="ghost" onClick={() => { setPaused(!paused); if (paused) pump(); }}>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setPaused(!paused);
+                    if (paused) pump();
+                  }}
+                >
                   {paused ? "Resume" : "Pause"}
                 </Button>
               )}
               {summary.failed > 0 && !uploading && (
-                <Button size="sm" variant="outline" onClick={retryFailed}>Retry failed</Button>
+                <Button size="sm" variant="outline" onClick={retryFailed}>
+                  Retry failed
+                </Button>
               )}
               {uploading && (
-                <Button size="sm" variant="ghost" onClick={cancelUploads}>Cancel</Button>
+                <Button size="sm" variant="ghost" onClick={cancelUploads}>
+                  Cancel
+                </Button>
               )}
-              <Button size="sm" variant="ghost" onClick={() => setQueueOpen((o) => !o)} aria-expanded={queueOpen}>
-                {queueOpen ? <ChevronUp className="h-3.5 w-3.5" aria-hidden /> : <ChevronDown className="h-3.5 w-3.5" aria-hidden />}
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setQueueOpen((o) => !o)}
+                aria-expanded={queueOpen}
+              >
+                {queueOpen ? (
+                  <ChevronUp className="h-3.5 w-3.5" aria-hidden />
+                ) : (
+                  <ChevronDown className="h-3.5 w-3.5" aria-hidden />
+                )}
                 {queueOpen ? "Hide" : "Files"}
               </Button>
             </div>
@@ -2188,18 +3160,39 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
           {queueOpen && (
             <div className="flex max-h-56 flex-col gap-2 overflow-y-auto pr-1">
               {queue.slice(-200).map((q) => (
-                <div key={q.id} className="flex min-w-0 items-center gap-2 text-xs">
-                  <span className="w-28 shrink-0 truncate text-ink-muted sm:w-44" title={`${q.name} (${mb(q.size)})${q.error ? ` — ${q.error}` : ""}`}>
-                    {q.name} <span className="text-ink-tertiary">({mb(q.size)})</span>
+                <div
+                  key={q.id}
+                  className="flex min-w-0 items-center gap-2 text-xs"
+                >
+                  <span
+                    className="w-28 shrink-0 truncate text-ink-muted sm:w-44"
+                    title={`${q.name} (${mb(q.size)})${q.error ? ` — ${q.error}` : ""}`}
+                  >
+                    {q.name}{" "}
+                    <span className="text-ink-tertiary">({mb(q.size)})</span>
                   </span>
                   <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2">
                     <div
                       className={`h-full transition-[width] ${q.state === "failed" ? "bg-destructive" : q.state === "done" ? "bg-success" : "bg-primary"}`}
-                      style={{ width: `${q.state === "done" ? 100 : q.progress}%` }}
+                      style={{
+                        width: `${q.state === "done" ? 100 : q.progress}%`,
+                      }}
                     />
                   </div>
-                  <span className={`w-16 shrink-0 text-right sm:w-24 ${q.state === "failed" ? "text-destructive" : q.state === "done" ? "text-success-text" : "text-ink-tertiary"}`}>
-                    {q.state === "uploading" ? `${q.progress}%` : q.state === "pending" ? (q.attempts ? `retry ${q.attempts}` : "waiting") : q.state === "canceled" ? (q.error ? "skipped" : "canceled") : q.state}
+                  <span
+                    className={`w-16 shrink-0 text-right sm:w-24 ${q.state === "failed" ? "text-destructive" : q.state === "done" ? "text-success-text" : "text-ink-tertiary"}`}
+                  >
+                    {q.state === "uploading"
+                      ? `${q.progress}%`
+                      : q.state === "pending"
+                        ? q.attempts
+                          ? `retry ${q.attempts}`
+                          : "waiting"
+                        : q.state === "canceled"
+                          ? q.error
+                            ? "skipped"
+                            : "canceled"
+                          : q.state}
                   </span>
                 </div>
               ))}
@@ -2211,16 +3204,57 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
       {/* Bulk action bar (WEB-128) */}
       {selectMode && (
         <div className="sticky top-2 z-10 flex flex-wrap items-center gap-1.5 rounded-[12px] border border-hairline bg-surface-1 p-2.5 shadow-sm">
-          <span className="px-1 text-xs text-ink-subtle">{selected.size} selected</span>
-          <Button size="sm" variant="ghost" onClick={() => setSelected(new Set(feed.items.map((a) => a.id)))}>All</Button>
-          <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())}>None</Button>
+          <span className="px-1 text-xs text-ink-subtle">
+            {selected.size} selected
+          </span>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setSelected(new Set(feed.items.map((a) => a.id)))}
+          >
+            All
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setSelected(new Set())}
+          >
+            None
+          </Button>
           <span className="mx-1 h-4 w-px bg-hairline" aria-hidden />
-          <Button size="sm" variant="outline" disabled={!selected.size} onClick={() => void bulk("approve")}>Approve</Button>
-          <Button size="sm" variant="outline" disabled={!selected.size} onClick={() => void bulk("reject")}>Reject</Button>
-          <Button size="sm" variant="outline" disabled={!selected.size} onClick={() => void bulk("tag", "favorite")}>Favorite</Button>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!selected.size}
+            onClick={() => void bulk("approve")}
+          >
+            Approve
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!selected.size}
+            onClick={() => void bulk("reject")}
+          >
+            Reject
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!selected.size}
+            onClick={() => void bulk("tag", "favorite")}
+          >
+            Favorite
+          </Button>
           {/* WEB-402: edit look actions — enhance/paste fix measured problems
            * in one call, then looks render in the background (progress above). */}
-          <Button size="sm" variant="outline" disabled={!selected.size || renderQueueN > 0} onClick={() => void bulkEdit("auto_enhance")} title="Auto-correct exposure, clipping and flat range on every selected photo">
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!selected.size || renderQueueN > 0}
+            onClick={() => void bulkEdit("auto_enhance")}
+            title="Auto-correct exposure, clipping and flat range on every selected photo"
+          >
             Auto-enhance
           </Button>
           <Button
@@ -2228,22 +3262,59 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
             variant="outline"
             disabled={!selected.size}
             onClick={() => {
-              const first = feed.items.find((a) => selected.has(a.id) && a.edits);
+              const first = feed.items.find(
+                (a) => selected.has(a.id) && a.edits,
+              );
               if (first?.edits) setEditClipboard(first.edits);
             }}
             title="Copy the edited look of the first selected photo"
           >
             Copy look
           </Button>
-          <Button size="sm" variant="outline" disabled={!selected.size || !editClipboard || renderQueueN > 0} onClick={() => void bulkEdit("set_edits")} title={editClipboard ? "Paste the copied look onto every selected photo" : "Copy a look first (from the editor or the bulk bar)"}>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!selected.size || !editClipboard || renderQueueN > 0}
+            onClick={() => void bulkEdit("set_edits")}
+            title={
+              editClipboard
+                ? "Paste the copied look onto every selected photo"
+                : "Copy a look first (from the editor or the bulk bar)"
+            }
+          >
             Paste look
           </Button>
-          <Button size="sm" variant="ghost" disabled={!selected.size} onClick={() => void bulkEdit("clear_edits")} title="Remove edits from the selection — originals were never touched">
+          <Button
+            size="sm"
+            variant="ghost"
+            disabled={!selected.size}
+            onClick={() => void bulkEdit("clear_edits")}
+            title="Remove edits from the selection — originals were never touched"
+          >
             Clear edits
           </Button>
-          <Button size="sm" variant="outline" disabled={!selected.size} onClick={() => void bulk("peek-on")} title="A first look on the client home before the gallery opens (Studio)">Sneak peek</Button>
-          <Button size="sm" variant="ghost" disabled={!selected.size} onClick={() => void bulk("peek-off")} title="Remove the sneak-peek flag">Un-peek</Button>
-          <TagInput disabled={!selected.size} onTag={(t) => void bulk("tag", t)} />
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!selected.size}
+            onClick={() => void bulk("peek-on")}
+            title="A first look on the client home before the gallery opens (Studio)"
+          >
+            Sneak peek
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            disabled={!selected.size}
+            onClick={() => void bulk("peek-off")}
+            title="Remove the sneak-peek flag"
+          >
+            Un-peek
+          </Button>
+          <TagInput
+            disabled={!selected.size}
+            onTag={(t) => void bulk("tag", t)}
+          />
           <span className="relative">
             <select
               aria-label="Move selection to folder"
@@ -2254,7 +3325,10 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
                 if (!v) return;
                 if (v === "__new") setMoveNewOpen(true);
                 else {
-                  void moveIdsTo(Array.from(selected), v === "__none" ? null : v);
+                  void moveIdsTo(
+                    Array.from(selected),
+                    v === "__none" ? null : v,
+                  );
                   setSelected(new Set());
                 }
               }}
@@ -2263,7 +3337,9 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
               <option value="">Move to…</option>
               <option value="__none">Unfiled</option>
               {folders.map((f) => (
-                <option key={f.id} value={f.id}>{f.name}</option>
+                <option key={f.id} value={f.id}>
+                  {f.name}
+                </option>
               ))}
               <option value="__new">+ New folder…</option>
             </select>
@@ -2273,25 +3349,50 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
               autoFocus
               value={moveNewDraft}
               onChange={(e) => setMoveNewDraft(e.target.value)}
-              onBlur={() => { setMoveNewOpen(false); setMoveNewDraft(""); }}
+              onBlur={() => {
+                setMoveNewOpen(false);
+                setMoveNewDraft("");
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") void createAndMoveSelection();
-                if (e.key === "Escape") { setMoveNewOpen(false); setMoveNewDraft(""); }
+                if (e.key === "Escape") {
+                  setMoveNewOpen(false);
+                  setMoveNewDraft("");
+                }
               }}
               aria-label="New folder name"
               placeholder="Folder name + Enter"
               className="w-40 rounded-md border border-primary bg-canvas px-2 py-1 text-xs text-ink outline-none"
             />
           )}
-          <Button size="sm" variant="outline" disabled={!selected.size} onClick={() => setRenameOpen(true)}>Rename</Button>
-          <Button size="sm" variant="ghost" disabled={!selected.size} onClick={() => void bulk("delete")}>Delete</Button>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!selected.size}
+            onClick={() => setRenameOpen(true)}
+          >
+            Rename
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            disabled={!selected.size}
+            onClick={() => void bulk("delete")}
+          >
+            Delete
+          </Button>
         </div>
       )}
 
-      <Dialog open={renameOpen} onOpenChange={(v) => !renaming && setRenameOpen(v)}>
+      <Dialog
+        open={renameOpen}
+        onOpenChange={(v) => !renaming && setRenameOpen(v)}
+      >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Rename {selected.size} file{selected.size === 1 ? "" : "s"}</DialogTitle>
+            <DialogTitle>
+              Rename {selected.size} file{selected.size === 1 ? "" : "s"}
+            </DialogTitle>
             <DialogDescription asChild>
               <div className="flex flex-col gap-3 text-sm text-ink-subtle">
                 <p>
@@ -2301,7 +3402,13 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
                   Base name
                   <input
                     value={renameBase}
-                    onChange={(e) => setRenameBase(e.target.value.replace(/[\\/:*?"<>|]/g, "-").slice(0, 80))}
+                    onChange={(e) =>
+                      setRenameBase(
+                        e.target.value
+                          .replace(/[\\/:*?"<>|]/g, "-")
+                          .slice(0, 80),
+                      )
+                    }
                     className="rounded-md border border-hairline bg-canvas px-2.5 py-2 text-sm text-ink"
                     placeholder="e.g. golden-hour"
                   />
@@ -2314,7 +3421,14 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
                       min={0}
                       max={999999}
                       value={renameStart}
-                      onChange={(e) => setRenameStart(Math.max(0, Math.min(999999, Number(e.target.value) || 0)))}
+                      onChange={(e) =>
+                        setRenameStart(
+                          Math.max(
+                            0,
+                            Math.min(999999, Number(e.target.value) || 0),
+                          ),
+                        )
+                      }
                       className="rounded-md border border-hairline bg-canvas px-2.5 py-2 text-sm text-ink"
                     />
                   </label>
@@ -2326,21 +3440,38 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
                       className="snap-select rounded-md border border-hairline bg-canvas px-2.5 py-2 text-sm text-ink"
                     >
                       {[1, 2, 3, 4, 5].map((d) => (
-                        <option key={d} value={d}>{d} ({String(1).padStart(d, "0")})</option>
+                        <option key={d} value={d}>
+                          {d} ({String(1).padStart(d, "0")})
+                        </option>
                       ))}
                     </select>
                   </label>
                 </div>
                 <p className="text-xs text-ink-tertiary">
-                  Preview: {renamePreview(renameBase, renameStart, renamePad, selectedExamples()).join(", ")}
+                  Preview:{" "}
+                  {renamePreview(
+                    renameBase,
+                    renameStart,
+                    renamePad,
+                    selectedExamples(),
+                  ).join(", ")}
                   {selected.size > 3 ? ` … +${selected.size - 3}` : ""}
                 </p>
               </div>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" disabled={renaming} onClick={() => setRenameOpen(false)}>Cancel</Button>
-            <Button disabled={renaming || !renameBase.trim() || !selected.size} onClick={() => void applyRename()}>
+            <Button
+              variant="outline"
+              disabled={renaming}
+              onClick={() => setRenameOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={renaming || !renameBase.trim() || !selected.size}
+              onClick={() => void applyRename()}
+            >
               {renaming ? "Renaming…" : `Rename ${selected.size}`}
             </Button>
           </DialogFooter>
@@ -2353,16 +3484,24 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
        * count (s = square contact sheet, m/l = natural-ratio masonry). */}
       {view === "grid" &&
         groups.map((g) => (
-          <section key={g.key} aria-label={g.label || "All files"} className="flex flex-col gap-1.5">
+          <section
+            key={g.key}
+            aria-label={g.label || "All files"}
+            className="flex flex-col gap-1.5"
+          >
             {g.label && (
               <div className="flex items-baseline gap-2 px-0.5 pt-1">
-                <h3 className="text-xs font-medium text-ink-muted">{g.label}</h3>
+                <h3 className="text-xs font-medium text-ink-muted">
+                  {g.label}
+                </h3>
                 <span className="text-[11px] text-ink-tertiary">
                   {g.entries.length} file{g.entries.length === 1 ? "" : "s"}
                 </span>
               </div>
             )}
-            <div className={`overflow-hidden rounded-[10px] border border-hairline ${compact ? "p-0.5" : "p-0.5 sm:p-1"}`}>
+            <div
+              className={`overflow-hidden rounded-[10px] border border-hairline ${compact ? "p-0.5" : "p-0.5 sm:p-1"}`}
+            >
               <div
                 className={
                   density === "s"
@@ -2379,8 +3518,13 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
                     draggable={!selectMode}
                     onDragStart={(e) => {
                       // Dragging a selected card carries the whole selection.
-                      const ids = selected.has(a.id) ? Array.from(selected) : [a.id];
-                      e.dataTransfer.setData("application/x-snap-assets", JSON.stringify(ids));
+                      const ids = selected.has(a.id)
+                        ? Array.from(selected)
+                        : [a.id];
+                      e.dataTransfer.setData(
+                        "application/x-snap-assets",
+                        JSON.stringify(ids),
+                      );
                       e.dataTransfer.effectAllowed = "move";
                     }}
                     className={`group relative flex break-inside-avoid flex-col transition-opacity ${
@@ -2393,7 +3537,9 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
                     {heatOn && heat && heat[a.id] ? (
                       <span
                         className="pointer-events-none absolute bottom-1 left-1 z-20 rounded px-1.5 py-0.5 text-[9px] font-bold text-white"
-                        style={{ background: `rgba(225,29,72,${0.35 + 0.65 * Math.min(1, heat[a.id] / heatMax)})` }}
+                        style={{
+                          background: `rgba(225,29,72,${0.35 + 0.65 * Math.min(1, heat[a.id] / heatMax)})`,
+                        }}
                         title={`${heat[a.id]} view${heat[a.id] === 1 ? "" : "s"}`}
                       >
                         {heat[a.id]}
@@ -2408,7 +3554,10 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
                       <input
                         type="checkbox"
                         checked={selected.has(a.id)}
-                        onClick={(e) => { e.stopPropagation(); toggleSelect(a.id, i, e.shiftKey); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleSelect(a.id, i, e.shiftKey);
+                        }}
                         onChange={() => undefined}
                         className="absolute left-1.5 top-1.5 z-20 h-4 w-4 accent-[var(--primary)]"
                         aria-label={`Select ${a.filename}`}
@@ -2421,8 +3570,12 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
                       draggable={false}
                       title={selectMode ? undefined : "Manage this file"}
                       className={`relative block ${compact ? "bg-canvas" : ""} ${selectMode ? "" : "cursor-zoom-in"}`}
-                      onMouseEnter={() => a.kind === "video" && setVideoHover(a.id)}
-                      onMouseLeave={() => setVideoHover((v) => (v === a.id ? null : v))}
+                      onMouseEnter={() =>
+                        a.kind === "video" && setVideoHover(a.id)
+                      }
+                      onMouseLeave={() =>
+                        setVideoHover((v) => (v === a.id ? null : v))
+                      }
                       onClick={(e) => {
                         if (selectMode) e.preventDefault();
                         else {
@@ -2441,59 +3594,101 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
                           className={`block w-full object-cover ${compact ? "aspect-square" : "aspect-square sm:aspect-auto"}`}
                         />
                       ) : a.kind === "video" ? (
-                        <span className={`block w-full ${compact ? "aspect-square" : "aspect-square sm:aspect-auto"}`}>
+                        <span
+                          className={`block w-full ${compact ? "aspect-square" : "aspect-square sm:aspect-auto"}`}
+                        >
                           <VideoTile id={a.id} hover={videoHover === a.id} />
                         </span>
                       ) : (
-                        <span className={`flex w-full items-center justify-center bg-surface-2/60 ${compact ? "aspect-square" : "aspect-square sm:min-h-32"}`}>
-                          <FileTypeIcon kind={a.kind} filename={a.filename} className="h-8 w-8" />
+                        <span
+                          className={`flex w-full items-center justify-center bg-surface-2/60 ${compact ? "aspect-square" : "aspect-square sm:min-h-32"}`}
+                        >
+                          <FileTypeIcon
+                            kind={a.kind}
+                            filename={a.filename}
+                            className="h-8 w-8"
+                          />
                         </span>
                       )}
                       {/* image-only indicators (small density + mobile):
-                         * overlays on the image, never card chrome */}
+                       * overlays on the image, never card chrome */}
                       {a.status === "rejected" && (
-                        <span className={`absolute inset-0 z-[5] bg-canvas/45 `} aria-hidden />
+                        <span
+                          className={`absolute inset-0 z-[5] bg-canvas/45 `}
+                          aria-hidden
+                        />
                       )}
                       {a.status === "approved" && (
-                        <span className={`absolute inset-x-0 bottom-0 z-[5] h-[3px] bg-emerald-500 `} aria-hidden />
+                        <span
+                          className={`absolute inset-x-0 bottom-0 z-[5] h-[3px] bg-emerald-500 `}
+                          aria-hidden
+                        />
                       )}
                       {a.color > 0 && (
-                        <span className={`absolute inset-y-0 left-0 z-[5] w-[3px] `} style={{ background: COLOR_HEX[a.color] }} aria-hidden />
+                        <span
+                          className={`absolute inset-y-0 left-0 z-[5] w-[3px] `}
+                          style={{ background: COLOR_HEX[a.color] }}
+                          aria-hidden
+                        />
                       )}
                       {a.stars > 0 && (
-                        <span className={`absolute right-1 top-1 z-[6] rounded-full bg-black/55 px-1.5 py-0.5 text-[9px] font-medium leading-none text-amber-400 `}>
+                        <span
+                          className={`absolute right-1 top-1 z-[6] rounded-full bg-black/55 px-1.5 py-0.5 text-[9px] font-medium leading-none text-amber-400 `}
+                        >
                           {"★".repeat(a.stars)}
                         </span>
                       )}
                       {a.tags.includes("favorite") && (
-                        <span className={`absolute left-1 top-1 z-[6] text-[10px] leading-none text-amber-400 drop-shadow `} aria-hidden>
+                        <span
+                          className={`absolute left-1 top-1 z-[6] text-[10px] leading-none text-amber-400 drop-shadow `}
+                          aria-hidden
+                        >
                           ♥
                         </span>
                       )}
                       {/* WEB-401: near-duplicate stack badge — on the cluster
                        * cover only (members badge in the manage pane). */}
-                      {a.groupCover === a.id && (feed.groupSizes?.[a.id] ?? 0) > 1 && (
-                        <span
-                          className="absolute left-1 bottom-1 z-[6] rounded-full bg-black/55 px-1.5 py-0.5 text-[9px] font-medium leading-none text-white"
-                          title={`${feed.groupSizes?.[a.id]} near-identical frames — this is the sharpest of the stack (filter: Quality → Similar groups)`}
-                        >
-                          ⧉ {feed.groupSizes?.[a.id]}
-                        </span>
-                      )}
+                      {a.groupCover === a.id &&
+                        (feed.groupSizes?.[a.id] ?? 0) > 1 && (
+                          <span
+                            className="absolute left-1 bottom-1 z-[6] rounded-full bg-black/55 px-1.5 py-0.5 text-[9px] font-medium leading-none text-white"
+                            title={`${feed.groupSizes?.[a.id]} near-identical frames — this is the sharpest of the stack (filter: Quality → Similar groups)`}
+                          >
+                            ⧉ {feed.groupSizes?.[a.id]}
+                          </span>
+                        )}
                       {/* WEB-401: cull-assist flags (uploads analyzed at upload). */}
                       {a.analysis && qualityFlags(a.analysis).blurry && (
-                        <span className="absolute bottom-1 right-1 z-[6] rounded-full bg-black/55 px-1.5 py-0.5 text-[9px] font-medium leading-none text-sky-300" title="Soft focus — check sharpness before delivering">
+                        <span
+                          className="absolute bottom-1 right-1 z-[6] rounded-full bg-black/55 px-1.5 py-0.5 text-[9px] font-medium leading-none text-sky-300"
+                          title="Soft focus — check sharpness before delivering"
+                        >
                           ◐ soft
                         </span>
                       )}
-                      {a.analysis && !qualityFlags(a.analysis).blurry && (qualityFlags(a.analysis).under || qualityFlags(a.analysis).over) && (
-                        <span className="absolute bottom-1 right-1 z-[6] rounded-full bg-black/55 px-1.5 py-0.5 text-[9px] font-medium leading-none text-amber-300" title={qualityFlags(a.analysis).under ? "Underexposed — auto-enhance lifts it" : "Overexposed — auto-enhance recovers highlights"}>
-                          {qualityFlags(a.analysis).under ? "▾ dark" : "▴ bright"}
-                        </span>
-                      )}
+                      {a.analysis &&
+                        !qualityFlags(a.analysis).blurry &&
+                        (qualityFlags(a.analysis).under ||
+                          qualityFlags(a.analysis).over) && (
+                          <span
+                            className="absolute bottom-1 right-1 z-[6] rounded-full bg-black/55 px-1.5 py-0.5 text-[9px] font-medium leading-none text-amber-300"
+                            title={
+                              qualityFlags(a.analysis).under
+                                ? "Underexposed — auto-enhance lifts it"
+                                : "Overexposed — auto-enhance recovers highlights"
+                            }
+                          >
+                            {qualityFlags(a.analysis).under
+                              ? "▾ dark"
+                              : "▴ bright"}
+                          </span>
+                        )}
                       {/* WEB-402: edited marker. */}
                       {a.edits && (
-                        <span className="absolute right-1 top-7 z-[6] rounded-full bg-primary/80 px-1.5 py-0.5 text-[9px] font-medium leading-none text-white" title="Edited look — clients see this grade">
+                        <span
+                          className="absolute right-1 top-7 z-[6] rounded-full bg-primary/80 px-1.5 py-0.5 text-[9px] font-medium leading-none text-white"
+                          title="Edited look — clients see this grade"
+                        >
                           ✎
                         </span>
                       )}
@@ -2511,39 +3706,110 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
                        * Buttons reflect live state: ✓ stays emerald once
                        * approved, ✕ red once rejected, ♥ amber when favorite. */}
                       {!selectMode && (
-                        <div className={`pointer-events-none absolute z-20 flex items-center gap-1 rounded-lg bg-black/60 px-1.5 py-1 opacity-0 backdrop-blur-sm transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 ${micro ? "inset-x-1 bottom-1" : "inset-x-1.5 bottom-1.5"}`}>
-                          <span className="mr-0.5 hidden text-[9px] font-medium uppercase tracking-wide text-white/60 sm:inline" aria-hidden>
-                            {a.status === "shared" ? "shared" : a.status === "approved" ? "approved" : a.status === "rejected" ? "rejected" : ""}
+                        <div
+                          className={`pointer-events-none absolute z-20 flex items-center gap-1 rounded-lg bg-black/60 px-1.5 py-1 opacity-0 backdrop-blur-sm transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 ${micro ? "inset-x-1 bottom-1" : "inset-x-1.5 bottom-1.5"}`}
+                        >
+                          <span
+                            className="mr-0.5 hidden text-[9px] font-medium uppercase tracking-wide text-white/60 sm:inline"
+                            aria-hidden
+                          >
+                            {a.status === "shared"
+                              ? "shared"
+                              : a.status === "approved"
+                                ? "approved"
+                                : a.status === "rejected"
+                                  ? "rejected"
+                                  : ""}
                           </span>
-                          <button type="button" title="Reject (X)" aria-label={`Reject ${a.filename}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); void flagAsset(a.id, "reject"); }} className={`rounded p-0.5 ${a.status === "rejected" ? "text-red-400" : "text-white/80 hover:text-red-400"}`}>✕</button>
-                          <button type="button" title="Approve (P)" aria-label={`Approve ${a.filename}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); void flagAsset(a.id, "approve"); }} className={`rounded p-0.5 ${a.status === "approved" || a.status === "shared" ? "text-emerald-400" : "text-white/80 hover:text-emerald-400"}`}>✓</button>
-                          <button type="button" title="Favorite (F)" aria-label={`Favorite ${a.filename}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); void toggleFavorite(a.id); }} className={`rounded p-0.5 ${a.tags.includes("favorite") ? "text-amber-400" : "text-white/80 hover:text-amber-300"}`}>♥</button>
-                          {!micro && (
-                          <span className="ml-1 flex items-center" role="group" aria-label={`Rate ${a.filename}`}>
-                            {[1, 2, 3, 4, 5].map((n) => (
-                              <button
-                                key={n}
-                                type="button"
-                                title={`${n} star${n > 1 ? "s" : ""} (${n})`}
-                                aria-label={`Rate ${a.filename} ${n} stars`}
-                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); void rateAsset(a.id, { stars: a.stars === n ? 0 : n }); }}
-                                className={`px-[1px] text-[11px] leading-none ${n <= a.stars ? "text-amber-400" : "text-white/45 hover:text-white/80"}`}
-                              >
-                                ★
-                              </button>
-                            ))}
-                          </span>
-                          )}
-                          {!micro && (
                           <button
                             type="button"
-                            title={`Color: ${COLOR_NAMES[a.color]} — cycles (6–9 keys)`}
-                            aria-label={`Cycle color label for ${a.filename}`}
-                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); void rateAsset(a.id, { color: (a.color + 1) % 6 }); }}
-                            className="ml-auto flex items-center gap-1 rounded p-0.5 text-[9px] text-white/70 hover:text-white"
+                            title="Reject (X)"
+                            aria-label={`Reject ${a.filename}`}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              void flagAsset(a.id, "reject");
+                            }}
+                            className={`rounded p-0.5 ${a.status === "rejected" ? "text-red-400" : "text-white/80 hover:text-red-400"}`}
                           >
-                            <span aria-hidden className="h-2.5 w-2.5 rounded-full border border-white/40" style={{ background: a.color ? COLOR_HEX[a.color] : "transparent" }} />
+                            ✕
                           </button>
+                          <button
+                            type="button"
+                            title="Approve (P)"
+                            aria-label={`Approve ${a.filename}`}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              void flagAsset(a.id, "approve");
+                            }}
+                            className={`rounded p-0.5 ${a.status === "approved" || a.status === "shared" ? "text-emerald-400" : "text-white/80 hover:text-emerald-400"}`}
+                          >
+                            ✓
+                          </button>
+                          <button
+                            type="button"
+                            title="Favorite (F)"
+                            aria-label={`Favorite ${a.filename}`}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              void toggleFavorite(a.id);
+                            }}
+                            className={`rounded p-0.5 ${a.tags.includes("favorite") ? "text-amber-400" : "text-white/80 hover:text-amber-300"}`}
+                          >
+                            ♥
+                          </button>
+                          {!micro && (
+                            <span
+                              className="ml-1 flex items-center"
+                              role="group"
+                              aria-label={`Rate ${a.filename}`}
+                            >
+                              {[1, 2, 3, 4, 5].map((n) => (
+                                <button
+                                  key={n}
+                                  type="button"
+                                  title={`${n} star${n > 1 ? "s" : ""} (${n})`}
+                                  aria-label={`Rate ${a.filename} ${n} stars`}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    void rateAsset(a.id, {
+                                      stars: a.stars === n ? 0 : n,
+                                    });
+                                  }}
+                                  className={`px-[1px] text-[11px] leading-none ${n <= a.stars ? "text-amber-400" : "text-white/45 hover:text-white/80"}`}
+                                >
+                                  ★
+                                </button>
+                              ))}
+                            </span>
+                          )}
+                          {!micro && (
+                            <button
+                              type="button"
+                              title={`Color: ${COLOR_NAMES[a.color]} — cycles (6–9 keys)`}
+                              aria-label={`Cycle color label for ${a.filename}`}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                void rateAsset(a.id, {
+                                  color: (a.color + 1) % 6,
+                                });
+                              }}
+                              className="ml-auto flex items-center gap-1 rounded p-0.5 text-[9px] text-white/70 hover:text-white"
+                            >
+                              <span
+                                aria-hidden
+                                className="h-2.5 w-2.5 rounded-full border border-white/40"
+                                style={{
+                                  background: a.color
+                                    ? COLOR_HEX[a.color]
+                                    : "transparent",
+                                }}
+                              />
+                            </button>
                           )}
                         </div>
                       )}
@@ -2576,11 +3842,23 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
                 <tr
                   key={a.id}
                   className={`cursor-default transition-opacity ${selected.has(a.id) ? "bg-primary/5" : ""} ${deleting.has(a.id) ? "opacity-40" : ""}`}
-                  onClick={() => selectMode && toggleSelect(a.id, i, (window.event as MouseEvent)?.shiftKey ?? false)}
+                  onClick={() =>
+                    selectMode &&
+                    toggleSelect(
+                      a.id,
+                      i,
+                      (window.event as MouseEvent)?.shiftKey ?? false,
+                    )
+                  }
                 >
                   {selectMode && (
                     <td className="px-3 py-2">
-                      <input type="checkbox" checked={selected.has(a.id)} readOnly className="h-4 w-4 accent-[var(--primary)]" />
+                      <input
+                        type="checkbox"
+                        checked={selected.has(a.id)}
+                        readOnly
+                        className="h-4 w-4 accent-[var(--primary)]"
+                      />
                     </td>
                   )}
                   <td className="max-w-72 px-4 py-2 text-ink">
@@ -2596,7 +3874,12 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
                         />
                       ) : (
                         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-surface-2">
-                          <FileTypeIcon kind={a.kind} filename={a.filename} className="h-4.5 w-4.5" badge={false} />
+                          <FileTypeIcon
+                            kind={a.kind}
+                            filename={a.filename}
+                            className="h-4.5 w-4.5"
+                            badge={false}
+                          />
                         </span>
                       )}
                       <a
@@ -2611,26 +3894,62 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
                       >
                         {a.filename}
                       </a>
-                      {deleting.has(a.id) && <span className="shrink-0 text-[10px] text-ink-tertiary">Deleting…</span>}
+                      {deleting.has(a.id) && (
+                        <span className="shrink-0 text-[10px] text-ink-tertiary">
+                          Deleting…
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td className="px-4 py-2 text-ink-muted">
                     {a.kind}
-                    {a.rawArchivedAt && <a href="/dashboard/raw-vault" title="In RAW vault cold storage — restorable" className="ml-1.5 rounded-full bg-sky-500/10 px-2 py-0.5 text-[10px] font-medium text-sky-600 dark:text-sky-400">❄ cold</a>}
+                    {a.rawArchivedAt && (
+                      <a
+                        href="/dashboard/raw-vault"
+                        title="In RAW vault cold storage — restorable"
+                        className="ml-1.5 rounded-full bg-sky-500/10 px-2 py-0.5 text-[10px] font-medium text-sky-600 dark:text-sky-400"
+                      >
+                        ❄ cold
+                      </a>
+                    )}
                   </td>
                   <td className="px-4 py-2 text-ink-muted">{mb(a.bytes)}</td>
                   <td className="px-4 py-2">
-                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${STATUS_BADGE[a.status] ?? ""}`}>{a.status}</span>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${STATUS_BADGE[a.status] ?? ""}`}
+                    >
+                      {a.status}
+                    </span>
                   </td>
                   <td className="px-4 py-2">
                     <span className="flex items-center gap-1.5 text-xs">
-                      {a.stars > 0 && <span className="text-amber-500" title={`${a.stars} stars`}>{"★".repeat(a.stars)}</span>}
-                      {a.color > 0 && <span aria-hidden title={COLOR_NAMES[a.color]} className="h-2 w-2 rounded-full" style={{ background: COLOR_HEX[a.color] }} />}
-                      {a.stars === 0 && a.color === 0 && <span className="text-ink-tertiary">—</span>}
+                      {a.stars > 0 && (
+                        <span
+                          className="text-amber-500"
+                          title={`${a.stars} stars`}
+                        >
+                          {"★".repeat(a.stars)}
+                        </span>
+                      )}
+                      {a.color > 0 && (
+                        <span
+                          aria-hidden
+                          title={COLOR_NAMES[a.color]}
+                          className="h-2 w-2 rounded-full"
+                          style={{ background: COLOR_HEX[a.color] }}
+                        />
+                      )}
+                      {a.stars === 0 && a.color === 0 && (
+                        <span className="text-ink-tertiary">—</span>
+                      )}
                     </span>
                   </td>
-                  <td className="px-4 py-2 text-xs text-ink-muted">{a.tags.join(", ") || "—"}</td>
-                  <td className="px-4 py-2 text-xs text-ink-tertiary">{a.createdAt.slice(0, 10)}</td>
+                  <td className="px-4 py-2 text-xs text-ink-muted">
+                    {a.tags.join(", ") || "—"}
+                  </td>
+                  <td className="px-4 py-2 text-xs text-ink-tertiary">
+                    {a.createdAt.slice(0, 10)}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -2652,7 +3971,12 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
 
       {feed.nextCursor && (
         <div className="flex justify-center">
-          <Button size="sm" variant="outline" disabled={loading} onClick={() => void load(false)}>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={loading}
+            onClick={() => void load(false)}
+          >
             {loading ? "Loading…" : "Load more"}
           </Button>
         </div>
@@ -2686,12 +4010,17 @@ export function ProjectFiles({ projectId, clientEmail, initial, defaultExpiryDay
           </div>
         </div>
       )}
-
     </div>
   );
 }
 
-function TagInput({ disabled, onTag }: { disabled: boolean; onTag: (t: string) => void }) {
+function TagInput({
+  disabled,
+  onTag,
+}: {
+  disabled: boolean;
+  onTag: (t: string) => void;
+}) {
   const [value, setValue] = useState("");
   return (
     <span className="flex items-center gap-1">

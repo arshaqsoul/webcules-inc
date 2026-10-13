@@ -2,7 +2,8 @@
  * Lightroom Classic publish plugin) authenticate against your Snap studio.
  * Facts from components/integrations-panel.tsx, lib/integrations/tokens.ts,
  * lib/integrations/auth.ts and app/dashboard/settings/integrations/page.tsx
- * (WEB-186, Integrations 1/6). */
+ * (WEB-186, Integrations 1/6). ZIP import facts from lib/zip-import.ts and
+ * components/project-files.tsx (WEB-184, Integrations 3/6). */
 import { H2, H3, Note, Callout, Steps, Related } from "@/lib/docs/primitives";
 
 export default function Integrations() {
@@ -12,9 +13,10 @@ export default function Integrations() {
         An integration connects a tool outside Snap — the Lightroom Classic
         publish plugin is the first — to your studio, so it can do things like
         publish finished photos straight into a client gallery. Instead of your
-        Snap password, the tool authenticates with an <strong>integration
-        token</strong>: a long, single-purpose key you create, scope down to
-        exactly what the tool needs, and can cut off at any time.
+        Snap password, the tool authenticates with an{" "}
+        <strong>integration token</strong>: a long, single-purpose key you
+        create, scope down to exactly what the tool needs, and can cut off at
+        any time.
       </p>
 
       <H2>What a token is — and isn&rsquo;t</H2>
@@ -37,16 +39,17 @@ export default function Integrations() {
         </li>
         <li>
           <strong>It can be revoked instantly.</strong> Revoking stops the tool
-          from working immediately, without touching any other token or your
-          own sign-in.
+          from working immediately, without touching any other token or your own
+          sign-in.
         </li>
       </ul>
 
       <H2>Create a token</H2>
       <p>
-        Tokens live in <a href="/dashboard/settings/integrations">Settings →
-        Integrations</a>, which only studio admins can open — the same bar as
-        the other settings sections.
+        Tokens live in{" "}
+        <a href="/dashboard/settings/integrations">Settings → Integrations</a>,
+        which only studio admins can open — the same bar as the other settings
+        sections.
       </p>
       <Steps
         items={[
@@ -56,8 +59,8 @@ export default function Integrations() {
             &ldquo;Lightroom on the studio iMac&rdquo;.
           </>,
           <>
-            <strong>Pick the permissions</strong> the tool needs (below) —
-            at least one. When in doubt, start with the narrowest.
+            <strong>Pick the permissions</strong> the tool needs (below) — at
+            least one. When in doubt, start with the narrowest.
           </>,
           <>
             Click <strong>Create token</strong>. Snap shows the full{" "}
@@ -79,8 +82,8 @@ export default function Integrations() {
       </p>
       <H3>View galleries and collections</H3>
       <p>
-        <code>galleries:read</code> — see the studio&rsquo;s galleries and what&rsquo;s
-        in them. Read-only.
+        <code>galleries:read</code> — see the studio&rsquo;s galleries and
+        what&rsquo;s in them. Read-only.
       </p>
       <H3>Create galleries and collections</H3>
       <p>
@@ -90,7 +93,8 @@ export default function Integrations() {
       </p>
       <H3>View photos and metadata</H3>
       <p>
-        <code>assets:read</code> — see photo files and their metadata. Read-only.
+        <code>assets:read</code> — see photo files and their metadata.
+        Read-only.
       </p>
       <H3>Upload and publish photos</H3>
       <p>
@@ -126,19 +130,19 @@ export default function Integrations() {
         collection maps to the Snap gallery of the same name — the gallery is
         created on first publish if it doesn&rsquo;t exist — and pressing{" "}
         <strong>Publish</strong> sends the finished photos straight into it.
-        Edit a published photo and Lightroom marks it{" "}
-        <strong>Modified</strong>; publish again and the gallery gets the new
-        version, not a duplicate. Remove a photo from the collection and it
-        leaves the gallery too — unless it&rsquo;s already live in a client
-        link, in which case Snap asks you to decide in the studio first.
+        Edit a published photo and Lightroom marks it <strong>Modified</strong>;
+        publish again and the gallery gets the new version, not a duplicate.
+        Remove a photo from the collection and it leaves the gallery too —
+        unless it&rsquo;s already live in a client link, in which case Snap asks
+        you to decide in the studio first.
       </p>
       <Steps
         items={[
           <>
             In Snap, create an integration token named for your Lightroom
             computer with <em>View galleries</em> and{" "}
-            <em>Upload and publish photos</em> (add <em>Create galleries</em>{" "}
-            to let new publish collections create their gallery).
+            <em>Upload and publish photos</em> (add <em>Create galleries</em> to
+            let new publish collections create their gallery).
           </>,
           <>
             In Lightroom Classic: install the plugin under{" "}
@@ -153,10 +157,48 @@ export default function Integrations() {
         ]}
       />
       <Note>
-        Sharing a gallery with a client still happens in Snap — publishing
-        from Lightroom puts photos in the gallery; the client link, welcome
-        page and download rules are yours to switch on when it&rsquo;s ready.
+        Sharing a gallery with a client still happens in Snap — publishing from
+        Lightroom puts photos in the gallery; the client link, welcome page and
+        download rules are yours to switch on when it&rsquo;s ready.
       </Note>
+
+      <H2>Importing a ZIP of photos</H2>
+      <p>
+        Drop a <code>.zip</code> onto a project&rsquo;s <strong>Files</strong>{" "}
+        tab (or pick one with the <strong>Upload</strong> button) and Snap
+        unpacks it <strong>in your browser</strong> before anything is uploaded.
+        The archive itself never leaves your computer — only the photos inside
+        it do, one by one, through the same upload queue as drag-and-dropped
+        files with the same duplicate checks.
+      </p>
+      <p>
+        <strong>Folders come along.</strong> A single folder wrapping the whole
+        archive (&ldquo;Smith Wedding/…&rdquo;) is ignored; the folders inside
+        map to the project folders in your Files tab. Anything nested deeper
+        than that lands in its top-level folder, and files sitting loose at the
+        top of the archive stay unfiled. On a client upload page, everything
+        arrives unfiled.
+      </p>
+      <ul>
+        <li>
+          OS clutter like <code>.DS_Store</code> and <code>__MACOSX</code>{" "}
+          entries is skipped.
+        </li>
+        <li>
+          File types Snap doesn&rsquo;t accept are skipped, and you&rsquo;re
+          told how many.
+        </li>
+        <li>
+          Guard rails: at most 5,000 entries, 2&nbsp;GB per file and 8&nbsp;GB
+          total once expanded; archives that break a limit — or expand
+          implausibly far beyond their zipped size — are refused before a single
+          byte is uploaded.
+        </li>
+        <li>
+          Standard zips only: archives in the older ZIP64 format can&rsquo;t be
+          read — re-export them as a regular zip.
+        </li>
+      </ul>
 
       <Related slugs={["security", "gallery-delivery"]} />
     </>
