@@ -1833,3 +1833,86 @@ export const importSessions = sqliteTable(
     index("import_session_project_idx").on(t.projectId, t.createdAt),
   ],
 );
+
+/* ---------------- Portfolio core (WEB-305 — curated public collections) ---------------- */
+
+/** One portfolio site per org in v1 (WEB-301 §3.1). `slug` is the global
+ * public namespace ({slug}.snaphq.app / /portfolio/{slug}); collisions get a
+ * nonce suffix. status draft | published | unlisted; theme/home/seo are JSON
+ * extending the gallery-design token vocabulary (designMinTier precedent).
+ * DDL: migrations/0077_portfolio_collections.sql. */
+export const portfolioSites = sqliteTable("portfolio_site", {
+  organizationId: text("organization_id")
+    .primaryKey()
+    .references(() => organization.id, { onDelete: "cascade" }),
+  slug: text("slug").notNull().unique(),
+  status: text("status").notNull().default("draft"),
+  theme: text("theme").notNull().default("{}"),
+  home: text("home").notNull().default("{}"),
+  seo: text("seo").notNull().default("{}"),
+  publishedAt: integer("published_at", { mode: "timestamp" }),
+  createdAt: ts("created_at"),
+  updatedAt: ts("updated_at"),
+});
+
+/** A curated collection of existing assets. Items point at `asset` rows —
+ * bytes are never copied (WEB-216 doctrine); deleting the project removes
+ * items via cascade, which is intended. visibility public | unlisted(token).
+ * Tier caps (Free 1 / Lite 5 / Studio+ ∞) enforced on every write path. */
+export const portfolioCollections = sqliteTable(
+  "portfolio_collection",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    slug: text("slug").notNull(),
+    title: text("title").notNull(),
+    subtitle: text("subtitle"),
+    coverAssetId: text("cover_asset_id").references(() => assets.id, {
+      onDelete: "set null",
+    }),
+    sort: integer("sort").notNull().default(0),
+    visibility: text("visibility").notNull().default("public"),
+    createdAt: ts("created_at"),
+    updatedAt: ts("updated_at"),
+  },
+  (t) => [
+    uniqueIndex("portfolio_collection_org_slug_idx").on(
+      t.organizationId,
+      t.slug,
+    ),
+    index("portfolio_collection_org_idx").on(t.organizationId, t.sort),
+  ],
+);
+
+/** Curation M2M: which assets a collection showcases, in order, with
+ * per-item caption/alt/crop. UNIQUE(collection, asset); both FKs cascade.
+ * THIS membership is the public-ness boundary — an asset not in a (visible)
+ * collection is never publicly servable. */
+export const portfolioCollectionAssets = sqliteTable(
+  "portfolio_collection_asset",
+  {
+    id: text("id").primaryKey(),
+    collectionId: text("collection_id")
+      .notNull()
+      .references(() => portfolioCollections.id, { onDelete: "cascade" }),
+    assetId: text("asset_id")
+      .notNull()
+      .references(() => assets.id, { onDelete: "cascade" }),
+    sort: integer("sort").notNull().default(0),
+    caption: text("caption"),
+    altText: text("alt_text"),
+    /** JSON aspect hint for the renderer. */
+    displayCrop: text("display_crop"),
+    createdAt: ts("created_at"),
+  },
+  (t) => [
+    uniqueIndex("portfolio_collection_asset_unique_idx").on(
+      t.collectionId,
+      t.assetId,
+    ),
+    index("portfolio_collection_asset_coll_idx").on(t.collectionId, t.sort),
+    index("portfolio_collection_asset_asset_idx").on(t.assetId),
+  ],
+);
