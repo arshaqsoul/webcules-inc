@@ -292,6 +292,19 @@ export async function extractZipFile(
   };
 }
 
+/** WEB-314: destination folder for an extracted file on a given surface.
+ * Folder mapping keys off an EXPLICIT surface flag, never off `clientEmail` —
+ * the dashboard Files tab passes the project's client contact email to
+ * pre-fill Share, and the old `clientEmail ? null : folder` wiring silently
+ * disabled folder mapping there (the only surface this component ships on).
+ * The client portal is the one surface that flattens to Unfiled. */
+export function zipFolderForSurface(
+  folder: string | null,
+  surface: { isClientPortal?: boolean },
+): string | null {
+  return surface.isClientPortal ? null : folder;
+}
+
 function extOf(name: string): string {
   return (name.split(".").pop() ?? "").toLowerCase();
 }

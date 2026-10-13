@@ -10,6 +10,7 @@ import {
   extractZipBytes,
   normalizeZipPath,
   sanitizeFolderLabel,
+  zipFolderForSurface,
 } from "@/lib/zip-import";
 
 const jpg = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3, 4, 5, 6, 7, 8]);
@@ -190,5 +191,47 @@ describe("extractZipBytes", () => {
     expect(res.ok).toBe(false);
     if (res.ok) return;
     expect(["zip_corrupt", "zip_no_files"]).toContain(res.error);
+  });
+});
+
+/* WEB-314 regression: the dashboard Files tab is the only surface
+ * ProjectFiles ships on, and it passes the project's client contact email
+ * (a Share recipient pre-fill). The old wiring keyed folder mapping off
+ * clientEmail, so mapping never ran for any project with a client. The
+ * surface must be decided by an explicit flag, and a client email must
+ * never disable mapping on the dashboard. */
+describe("zipFolderForSurface (WEB-314)", () => {
+  it("maps archive folders on the dashboard even when a client email is set", () => {
+    // Exactly the dashboard case that regressed: clientEmail present,
+    // isClientPortal false.
+    expect(zipFolderForSurface("Ceremony", {})).toBe("Ceremony");
+    expect(zipFolderForSurface("Ceremony", { isClientPortal: false })).toBe(
+      "Ceremony",
+    );
+  });
+
+  it("flattens to Unfiled only on the client-portal surface", () => {
+    expect(zipFolderForSurface("Ceremony", { isClientPortal: true })).toBeNull();
+    expect(zipFolderForSurface(null, { isClientPortal: true })).toBeNull();
+  });
+
+  it("keeps root-level (null) files unfiled on every surface", () => {
+    expect(zipFolderForSurface(null, {})).toBeNull();
+  });
+
+  it("composes with extraction: the dashboard path keeps every mapped folder", async () => {
+    const zip = entry({
+      "Smith Wedding/Ceremony/a.jpg": jpg,
+      "Smith Wedding/Reception/b.png": png,
+      "Smith Wedding/cover.jpg": jpg,
+    });
+    const res = await extractZipBytes(zip);
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    // What the dashboard upload path should record per extracted file.
+    const mapped = res.files.map((f) =>
+      zipFolderForSurface(f.folder, { isClientPortal: false }),
+    );
+    expect(mapped).toEqual(["Ceremony", "Reception", null]);
   });
 });
