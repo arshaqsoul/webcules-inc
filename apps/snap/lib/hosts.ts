@@ -47,6 +47,18 @@ export const APP_HOSTS: readonly string[] = [
 /** Registrable zones studios can never put a custom hostname under. */
 export const RESERVED_ZONES = ["webcules.com", NEW_HOST] as const;
 
+/** WEB-307 (Stark's ruling, cross-posted WEB-323/WEB-297): Google Drive
+ * consent only works on the origins registered as authorized JavaScript
+ * origins on the GIS OAuth client — the first-party hosts above (the fallback
+ * origin routes custom-hostname traffic but is not a client surface and is
+ * not registered). Studio custom hostnames (Cloudflare for SaaS) can't be
+ * pre-registered on one shared client, so the gallery's Drive button is
+ * hidden there; the Dropbox Saver is origin-agnostic and unaffected. */
+export function isDriveConsentHost(host: string | null | undefined): boolean {
+  const h = (host ?? "").split(",")[0].trim().toLowerCase().split(":")[0];
+  return h !== "" && APP_HOSTS.includes(h) && h !== FALLBACK_ORIGIN_HOST;
+}
+
 /** www.snaphq.app -> snaphq.app (WEB-330): one canonical site for search
  * engines. Returns the absolute target, or null to serve as usual. Never
  * redirects API or embed paths: webhooks, uploads and widgets must not be
