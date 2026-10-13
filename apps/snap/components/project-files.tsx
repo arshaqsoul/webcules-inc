@@ -12,6 +12,7 @@ import {
   ChevronDown,
   ChevronRight,
   ChevronUp,
+  Cloud,
   Folder,
   FolderPlus,
   Grid2x2,
@@ -48,7 +49,17 @@ import {
 import { colorKeyFromRgba } from "@/lib/color-sort";
 import { qualityFlags, type ImageAnalysis } from "@/lib/image-analysis";
 import { autoEdits, type PartialEdits } from "@/lib/edits";
-import { extractZipFile, zipFolderForSurface } from "@/lib/zip-import";
+import {
+  extractZipFile,
+  zipFolderForSurface,
+} from "@/lib/zip-import";
+import {
+  DRIVE_IMPORT_MAX_FILES,
+  fetchDriveFile,
+  filterPickedDocs,
+  outcomeForQueueState,
+  pickFromDrive,
+} from "@/lib/drive-import";
 import { FileTypeIcon } from "@/components/file-type-icon";
 import { useConfirm } from "@/components/confirm-provider";
 import { SharePanel } from "@/components/share-panel";
@@ -497,6 +508,7 @@ export function ProjectFiles({
   initial,
   defaultExpiryDays,
   defaultAllowDownload,
+  driveClientId,
 }: {
   projectId: string;
   /** Client contact email — ONLY a Share-panel recipient pre-fill. Never a
@@ -511,6 +523,7 @@ export function ProjectFiles({
   initial?: AssetItem[];
   defaultExpiryDays?: number;
   defaultAllowDownload?: boolean;
+  driveClientId?: string | null;
 }) {
   const confirm = useConfirm();
   const [feed, setFeed] = useState<Feed>({
@@ -643,6 +656,8 @@ export function ProjectFiles({
       .catch(() => setHeat({}));
   }, [heatOn, heat, projectId]);
   const [notice, setNotice] = useState("");
+  // WEB-183 Drive import: picker/relay in flight (gates the Drive button).
+  const [driveBusy, setDriveBusy] = useState(false);
   const [purging, setPurging] = useState(false);
   // Ids being deleted right now — cards dim + badge until the server replies.
   const [deleting, setDeleting] = useState<Set<string>>(new Set());
@@ -1910,6 +1925,10 @@ export function ProjectFiles({
   // queue settles, so folders are created and files moved in one pass.
   const zipItemFolders = useRef<Map<string, string>>(new Map());
   const zipAssetFolders = useRef<Map<string, string>>(new Map());
+  // WEB-183 Drive import: queue item id → Drive file id, plus the open
+  // import session — consumed by closeDriveSession() when the queue settles.
+  const driveItemIds = useRef<Map<string, string>>(new Map());
+  const driveSessionRef = useRef<{ id: string } | null>(null);
 
   /** WEB-184 ZIP import finisher: create the folders the archive(s) mapped
    * to (reusing same-name folders that already exist), then bulk-move each
@@ -1985,6 +2004,134 @@ export function ProjectFiles({
     refresh();
   }
 
+  /** WEB-183 Drive import finisher: fold the queue's final states into
+   * per-file outcomes and close the import session (idempotent server-side;
+   * a lost PATCH retry is harmless). Picked files that never made it into
+   * the queue (download failures) simply have no entry — the session's
+   * file_count vs entries diff makes them visible. */
+  async function closeDriveSession() {
+    const session = driveSessionRef.current;
+    if (!session) return;
+    driveSessionRef.current = null;
+    const stashToDrive = driveItemIds.current;
+    driveItemIds.current = new Map();
+    const entries: { driveFileId: string; outcome: string }[] = [];
+    const seen = new Set<string>();
+    for (const [stashId, driveId] of stashToDrive) {
+      if (seen.has(driveId)) continue;
+      seen.add(driveId);
+      const item = itemById.current.get(stashId);
+      entries.push({
+        driveFileId: driveId,
+        outcome: outcomeForQueueState(
+          (item?.state ?? "failed") as Parameters<
+            typeof outcomeForQueueState
+          >[0],
+          item?.error,
+        ),
+      });
+    }
+    if (!entries.length) return;
+    try {
+      await fetch(`/api/projects/${projectId}/import-sessions/${session.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ entries }),
+      });
+    } catch {
+      /* the session stays open server-side — bookkeeping only, never a
+       * user-facing failure */
+    }
+  }
+
+  /** WEB-183 Google Drive import (Picker + drive.file, browser relay): the
+   * picker selection is filtered client-side, an explicit import session is
+   * opened, each file downloads in the browser and enters the SAME upload
+   * queue (dedup, retry, multipart) as drag-and-dropped files. Google bytes
+   * and tokens never touch Snap's Worker. Studio surface only. */
+  async function importFromDrive() {
+    if (!driveClientId || clientEmail || driveBusy) return;
+    setDriveBusy(true);
+    try {
+      const picked = await pickFromDrive(driveClientId);
+      if (!picked) return; // user closed the picker
+      const filtered = filterPickedDocs(picked.docs);
+      if (!filtered.ok) {
+        setNotice(
+          `Drive import: too many files in that selection (${DRIVE_IMPORT_MAX_FILES} max).`,
+        );
+        return;
+      }
+      const skipped =
+        filtered.skippedGoogleNative +
+        filtered.skippedUnsupported +
+        filtered.skippedTooLarge;
+      if (!filtered.files.length) {
+        setNotice(
+          `Drive import: nothing importable in that selection${
+            skipped ? ` — skipped ${skipped} (Docs/folders or unsupported types)` : ""
+          }.`,
+        );
+        return;
+      }
+      // Open the explicit import session (picked files recorded server-side).
+      let sessionId: string | null = null;
+      try {
+        const res = await fetch(`/api/projects/${projectId}/import-sessions`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            source: "google_drive",
+            files: filtered.files.map((f) => ({
+              driveFileId: f.id,
+              name: f.name,
+              ...(f.sizeBytes !== undefined ? { sizeBytes: f.sizeBytes } : {}),
+            })),
+          }),
+        });
+        const body = (await res.json().catch(() => ({}))) as { id?: string };
+        if (res.ok && body.id) sessionId = body.id;
+      } catch {
+        /* session open failed — the import itself can proceed; it just
+         * won't be audited as an explicit session */
+      }
+      if (sessionId) driveSessionRef.current = { id: sessionId };
+      // Browser relay: download each picked file, then hand them to the
+      // normal queue in one batch.
+      const files: File[] = [];
+      const driveByFile = new Map<File, string>();
+      let failedDownloads = 0;
+      for (const f of filtered.files) {
+        setNotice(`Downloading from Google Drive: ${f.name}…`);
+        try {
+          const file = await fetchDriveFile(picked.token, f);
+          files.push(file);
+          driveByFile.set(file, f.id);
+        } catch {
+          failedDownloads++;
+        }
+      }
+      if (files.length) await enqueueWithStore(files, { driveByFile });
+      const bits = [
+        `Drive import: ${files.length} file${files.length === 1 ? "" : "s"} added to the upload queue`,
+        skipped ? `skipped ${skipped} (Docs/folders or unsupported)` : "",
+        failedDownloads ? `${failedDownloads} couldn't be downloaded` : "",
+      ].filter(Boolean);
+      setNotice(bits.join(", ") + ".");
+    } catch (err) {
+      const code = String((err as Error)?.message ?? err);
+      setNotice(
+        code === "drive_client_id_invalid"
+          ? "Drive import isn't configured for this Snap."
+          : code === "gis_unavailable" || code === "picker_unavailable"
+            ? "Drive import couldn't load Google's picker — check blockers and try again."
+            : "Drive import failed before anything was uploaded — nothing was changed.",
+      );
+    } finally {
+      setDriveBusy(false);
+    }
+  }
+
   // Whole-tab drop target (Files polish): dropping anywhere on the tab
   // uploads instead of the browser navigating to the file. Depth-counted
   // dragenter/leave drives a full-viewport "Drop to upload" overlay.
@@ -2047,7 +2194,14 @@ export function ProjectFiles({
     };
   }, []);
 
-  async function enqueueWithStore(files: FileList | File[]) {
+  async function enqueueWithStore(
+    files: FileList | File[],
+    opts?: {
+      /* WEB-183 Drive import: File → Drive file id, so queue items can be
+       * tied back to the import session when it closes. */
+      driveByFile?: Map<File, string>;
+    },
+  ) {
     const incoming = Array.from(files);
     if (!incoming.length) return;
     /* WEB-184 ZIP import: archives are extracted in the browser BEFORE
@@ -2154,6 +2308,8 @@ export function ProjectFiles({
       if (fps[i]) fpStore.current.set(stash[i], fps[i]!);
       const zipFolder = folderByFile.get(arr[i]);
       if (zipFolder) zipItemFolders.current.set(stash[i], zipFolder);
+      const driveId = opts?.driveByFile?.get(arr[i]);
+      if (driveId) driveItemIds.current.set(stash[i], driveId);
       if (!skipIds.has(stash[i]))
         filesPending.current.push({ file: arr[i], itemId: stash[i] });
     }
@@ -2179,6 +2335,8 @@ export function ProjectFiles({
       );
       // WEB-184: file confirmed ZIP-import assets into their mapped folders.
       void fileZipFolders();
+      // WEB-183: close the Drive import session with per-file outcomes.
+      void closeDriveSession();
       refresh();
       // WEB-401: derivatives (carrying the phashes) trail the originals by a
       // few seconds — recluster near-duplicates once they've landed, then
@@ -3004,6 +3162,22 @@ export function ProjectFiles({
             >
               {uploading ? "Uploading…" : "Upload"}
             </Button>
+            {/* WEB-183 Drive import — hidden without the env key (WEB-195
+             * gating convention) and on client-upload surfaces. */}
+            {driveClientId && !clientEmail && (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={uploading || driveBusy}
+                onClick={() => void importFromDrive()}
+                title="Pick files from your Google Drive — they download in your browser and upload through the same queue"
+              >
+                <Cloud className="h-3.5 w-3.5 sm:mr-1" aria-hidden />
+                <span className="hidden sm:inline">
+                  {driveBusy ? "Importing…" : "Drive"}
+                </span>
+              </Button>
+            )}
           </div>
 
           {/* Mobile: one Actions button instead of the four desktop controls. */}
@@ -3079,6 +3253,21 @@ export function ProjectFiles({
                   <Upload className="h-4 w-4" aria-hidden />
                   {uploading ? "Uploading…" : "Upload"}
                 </button>
+                {driveClientId && !clientEmail && (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    disabled={uploading || driveBusy}
+                    onClick={() => {
+                      setActionsOpen(false);
+                      void importFromDrive();
+                    }}
+                    className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-[13px] text-ink-muted transition-colors hover:bg-surface-2 disabled:opacity-50"
+                  >
+                    <Cloud className="h-4 w-4" aria-hidden />
+                    {driveBusy ? "Importing…" : "Import from Drive"}
+                  </button>
+                )}
               </div>
             )}
           </div>
