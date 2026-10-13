@@ -104,7 +104,9 @@ export default function GalleryDelivery() {
       <p>
         Per gallery you can also allow downloads (or not), set a 4&ndash;8 digit PIN{" "}
         <Tier plan="lite" />, cap how many single photos a client can pull, offer a web-size option{" "}
-        <Tier plan="lite" />, and require your approval before bulk downloads{" "}
+        <Tier plan="lite" />, ask for an email before downloads unlock{" "}
+        <Tier plan="lite" /> (guest galleries and event shares &mdash; you get the list of who
+        downloaded), and require your approval before bulk downloads{" "}
         <Tier plan="studio" />. Downloads follow the gallery&apos;s protections: proofing galleries
         deliver watermarked previews only, and original JPEGs leave without location data.
         Revoking or expiring a gallery stops downloads immediately &mdash; even ones already in
