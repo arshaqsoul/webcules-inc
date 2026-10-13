@@ -38,6 +38,23 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.21.0" date="October 13, 2026">
+        <p>
+          <strong>Save gallery downloads straight to the cloud.</strong> In a
+          client gallery, the download controls now offer, alongside the usual
+          download: <strong>Save to Google Drive</strong> and
+          <strong>Save to Dropbox</strong>. Pick a single photo, a selection,
+          or everything at once — the files flow from Snap through your
+          browser into a folder you choose in your own Drive or Dropbox, so
+          nothing is re-uploaded from your phone and hotel Wi-Fi. Google asks
+          you for per-file access only: Snap can never see or touch anything
+          else in your Drive, and Dropbox saves through its own official
+          chooser. On galleries served from a studio&rsquo;s own domain the
+          Drive button stays hidden (Google only trusts our own addresses);
+          the Dropbox button works everywhere.
+        </p>
+      </Release>
+
       <Release version="0.20.0" date="October 13, 2026">
         <p>
           <strong>Import straight from Google Drive.</strong> A new{" "}
