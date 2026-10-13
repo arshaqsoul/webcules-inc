@@ -92,6 +92,8 @@ import m76 from "../../migrations/0076_drive_import_sessions.sql?raw";
 // WEB-305 portfolio core: curated public collections (site + collection +
 // curation M2M) — the shared primitive for features A/B/C.
 import m77 from "../../migrations/0077_portfolio_collections.sql?raw";
+// WEB-182 client-upload links: tokenized upload requests + quarantine rows.
+import m78 from "../../migrations/0078_upload_requests.sql?raw";
 
 const MIGRATIONS = [
   m01, m02, m03, m04, m05, m06, m07, m08, m09, m10, m11, m12, m13, m14, m15,
@@ -106,11 +108,12 @@ m69,
 m70,
 m71,
 m72,
-m73, m74, m75, m76, m77,
+m73, m74, m75, m76, m77, m78,
 ];
 
 /** Every table, in an order that satisfies FK constraints when deleting. */
 const TABLES = [
+  "upload_request_asset", "upload_request",
   "portfolio_collection_asset", "portfolio_collection", "portfolio_site",
   "checkout_session",
   "integration_token",

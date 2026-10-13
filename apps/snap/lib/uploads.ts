@@ -11,11 +11,14 @@
  * The R2 bucket's CORS policy allows PUT only from the app origin. */
 import { and, eq, lt } from "drizzle-orm";
 
+import { env } from "cloudflare:workers";
+
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { getPlanEntitlements } from "@/lib/plans";
 import { classifyUpload } from "@/lib/repos/assets";
-import { buildKey } from "@/lib/storage/service";
+import { scanCapturedAt } from "@/lib/repos/gallery-order";
+import { buildKey, deleteObject } from "@/lib/storage/service";
 import { objectUrl, s3Client } from "@/lib/storage/r2s3";
 
 /** Hard ceiling per file (S3 multipart: ≤10,000 parts — we stay far under). */
@@ -147,7 +150,9 @@ export type UploadSession = typeof schema.uploadSessions.$inferSelect;
 export async function createUploadSession(params: {
   organizationId: string;
   projectId: string;
-  uploadedBy: string;
+  /** Studio uploader user id, or null for guest uploads through a
+   * client-upload link (WEB-182) — the session table allows null. */
+  uploadedBy: string | null;
   filename: string;
   mimeType: string;
   bytes: number;
@@ -300,4 +305,69 @@ export async function checkUploadGate(
     return { ok: false, error: "file_cap", status: 413, extra: usage };
   }
   return { ok: true };
+}
+
+/* ---------------- Shared confirm core (WEB-182) ---------------- */
+
+/** The verify-and-record half of POST /api/uploads/confirm, extracted so the
+ * token-authed guest path (/api/u/{token}/uploads/confirm) runs byte-for-byte
+ * the same enforcement: multipart completion, HEAD, exact declared size,
+ * magic-byte sniff against the declared kind, asset-row write, session
+ * cleanup, EXIF "date taken" scan. Mismatched/undeclared objects are deleted
+ * and the session dropped — the caller just forwards the error envelope. */
+export async function verifyAndRecordUpload(
+  session: UploadSession,
+  opts: { etags?: string[]; fingerprint?: string },
+): Promise<{ ok: true; bytes: number } | { ok: false; error: string; status: number; extra?: Record<string, unknown> }> {
+  if (session.mode === "multipart") {
+    if (!session.uploadId || !opts.etags?.length) return { ok: false, error: "etags_required", status: 400 };
+    await completeMultipartUpload(session.storageKey, session.uploadId, opts.etags);
+  }
+
+  const head = await env.R2.head(session.storageKey);
+  if (!head) {
+    await deleteUploadSession(session.id);
+    return { ok: false, error: "object_missing", status: 409 };
+  }
+  if (head.size !== session.declaredBytes) {
+    await deleteObject(session.organizationId, session.storageKey);
+    await deleteUploadSession(session.id);
+    return { ok: false, error: "size_mismatch", status: 409, extra: { declared: session.declaredBytes, actual: head.size } };
+  }
+
+  const probe = await env.R2.get(session.storageKey, { range: { offset: 0, length: 64 } });
+  if (!probe) {
+    await deleteUploadSession(session.id);
+    return { ok: false, error: "object_missing", status: 409 };
+  }
+  const head0 = new Uint8Array(await probe.arrayBuffer());
+  const sniffed = sniffKind(head0);
+  // "other" (studio/design/docs: psd, pdf, ai, aep, audio…) has no single
+  // magic to verify — accept an unrecognized payload, but still refuse a
+  // KNOWN family (renamed media must not sneak in as a "document").
+  const kindOk = sniffed === session.kind || (session.kind === "other" && sniffed === null);
+  if (!kindOk) {
+    await deleteObject(session.organizationId, session.storageKey);
+    await deleteUploadSession(session.id);
+    return { ok: false, error: "type_mismatch", status: 409, extra: { declared: session.kind, detected: sniffed ?? "unknown" } };
+  }
+
+  await getDb().insert(schema.assets).values({
+    id: session.id,
+    organizationId: session.organizationId,
+    projectId: session.projectId,
+    storageKey: session.storageKey,
+    kind: session.kind,
+    filename: session.filename,
+    mimeType: session.mimeType,
+    bytes: head.size,
+    checksum: head.etag ?? null,
+    fingerprint: opts.fingerprint,
+    uploadedBy: session.uploadedBy,
+  });
+  await deleteUploadSession(session.id);
+  // "Date taken" sort: read the EXIF capture time now (best effort — never
+  // fails the upload).
+  await scanCapturedAt(session.organizationId, { id: session.id, storageKey: session.storageKey, kind: session.kind });
+  return { ok: true, bytes: head.size };
 }
