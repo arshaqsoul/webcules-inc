@@ -57,6 +57,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
       limit: settings.limit,
       limitUsed: used,
       pin: Boolean(settings.pinHash),
+      emailCapture: settings.emailCapture,
       ...cloud,
     },
   });

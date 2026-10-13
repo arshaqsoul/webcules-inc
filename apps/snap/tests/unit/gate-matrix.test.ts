@@ -86,6 +86,7 @@ describe("WEB-267 gallery ladder (gates as shipped)", () => {
       ["scheduling_requires_lite", lifecycleRoute],
       ["pin_requires_lite", downloadSettingsRoute],
       ["web_size_requires_lite", downloadSettingsRoute],
+      ["email_capture_requires_lite", downloadSettingsRoute],
       ["approvals_require_studio", downloadSettingsRoute],
       ["notes_require_studio", favoriteRoute],
       ["exports_require_studio", favoritesExportRoute],
@@ -122,5 +123,20 @@ describe("WEB-196 review fix — proofing swallows the size ladder", () => {
 
   it("download-request suppresses the ladder for proofing grants (controls + sizePref)", () => {
     expect(downloadRequestRoute).toContain("settings.webSize && !grant.proofing");
+  });
+});
+
+describe("WEB-194 email-capture gate — enforced before any download branch", () => {
+  it("the asset + zip routes refuse with email_required (cookie pattern, stacked with the PIN)", () => {
+    // The asset route can't run under the workers test pool, so the gate is
+    // pinned statically like the proofing block above: it must sit with the
+    // PIN check, ABOVE the proofing block and the size rungs.
+    expect(assetRoute).toContain("email_required");
+    expect(zipRoute).toContain("email_required");
+    const emailAt = assetRoute.indexOf("email_required");
+    const proofingAt = assetRoute.indexOf("grant.allowDownload && grant.proofing");
+    expect(proofingAt).toBeGreaterThanOrEqual(0);
+    expect(emailAt).toBeGreaterThan(-1);
+    expect(emailAt).toBeLessThan(proofingAt);
   });
 });

@@ -35,6 +35,29 @@ export default function Releases() {
         polish fold into the next entry rather than getting their own.
       </Note>
 
+      <Release version="0.18.0" date="October 13, 2026">
+        <p>
+          <strong>Know exactly who took the photos.</strong> Guest galleries,
+          minis and event shares can now ask for an email before downloads
+          unlock — turn on <strong>Email before download</strong> in a
+          gallery&rsquo;s download controls, and every visitor is asked once,
+          the first time they try to download anything (a photo, a size, a
+          whole-gallery ZIP or a save to their cloud).
+        </p>
+        <p>
+          <strong>The list comes to you.</strong> The download controls show
+          every email captured for that gallery with how many times they
+          downloaded, most recent first — your follow-up list for thank-yous,
+          upsells and future shoots.
+        </p>
+        <p>
+          <strong>It plays well with the other gates.</strong> Email capture
+          stacks with PIN locks, download caps and approval rules — a visitor
+          clears each one you&rsquo;ve turned on. It&rsquo;s a Lite feature,
+          like PIN and web sizes.
+        </p>
+      </Release>
+
       <Release version="0.17.0" date="October 13, 2026">
         <p>
           <strong>Skip the download — save straight to your client&rsquo;s

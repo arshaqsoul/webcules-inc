@@ -1092,6 +1092,24 @@ export const shareAccessLogs = sqliteTable(
   (t) => [index("share_access_log_grant_idx").on(t.grantId, t.createdAt)],
 );
 
+/* WEB-194 email-capture gate — one row per email a guest typed to unlock
+ * downloads; the studio's who-took-files list for guest galleries. */
+
+export const downloadEmailCaptures = sqliteTable(
+  "download_email_capture",
+  {
+    id: text("id").primaryKey(),
+    grantId: text("grant_id")
+      .notNull()
+      .references(() => shareGrants.id, { onDelete: "cascade" }),
+    email: text("email").notNull(),
+    ip: text("ip"),
+    userAgent: text("user_agent"),
+    createdAt: ts("created_at"),
+  },
+  (t) => [index("download_email_capture_grant_idx").on(t.grantId, t.createdAt)],
+);
+
 /* Gallery OTP gate — hashed 6-digit codes bound to a grant, plus a send log
  * that enforces the email-cost caps (WEB-132 worst-case guardrails). */
 

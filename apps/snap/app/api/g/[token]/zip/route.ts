@@ -26,6 +26,7 @@ import {
 import { parseAssetIds, parseSizePref, type DownloadScope, type SizePref } from "@/lib/gallery-downloads";
 import { buildZipPlan, grantGuard, manifestOf, zipPartResponse, type ZipSelection } from "@/lib/zip-delivery";
 import { downloadCookieOk } from "@/app/api/g/[token]/download-request/verify/route";
+import { emailCaptureCookieOk } from "@/app/api/g/[token]/download-request/email/route";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +50,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
     !(await downloadCookieOk(grant.id, req.headers.get("cookie")?.match(/(?:^|;\s*)snap-dl=([^;]+)/)?.[1] ?? null))
   ) {
     return Response.json({ error: "pin_required" }, { status: 401 });
+  }
+  // WEB-194: email-capture gate — same cookie pattern as the PIN.
+  if (
+    settings.emailCapture &&
+    !(await emailCaptureCookieOk(grant.id, req.headers.get("cookie")?.match(/(?:^|;\s*)snap-dl-email=([^;]+)/)?.[1] ?? null))
+  ) {
+    return Response.json({ error: "email_required" }, { status: 401 });
   }
 
   const url = new URL(req.url);

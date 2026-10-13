@@ -348,6 +348,8 @@ export type DlControls = {
   limit: number | null;
   limitUsed: number;
   pin: boolean;
+  /** WEB-194: downloads need an email first (guest capture). */
+  emailCapture?: boolean;
   /** WEB-195 Downloads 3b: public browser keys for the client-side
    * destinations — null (or absent on older caches) hides the buttons. */
   driveClientId?: string | null;
@@ -1602,6 +1604,9 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
   const [dlBusy, setDlBusy] = useState(false);
   const [dlFlash, setDlFlash] = useState("");
   const [pinPrompt, setPinPrompt] = useState<{ retry: () => void } | null>(null);
+  // WEB-194: the email-capture gate prompt (same pattern as the PIN retry).
+  const [emailPrompt, setEmailPrompt] = useState<{ retry: () => void } | null>(null);
+  const [emailValue, setEmailValue] = useState("");
   // Download-all split into several archives (> 2 GB galleries): the parts sheet.
   const [zipSheet, setZipSheet] = useState<{ manifest: ZipManifest; qs: string; started: number[] } | null>(null);
   const [pinValue, setPinValue] = useState("");
@@ -1621,6 +1626,14 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
     void refreshDownloads();
   }, [refreshDownloads]);
 
+  /** WEB-194: a 401 email_required opens the capture dialog and replays the
+   * download once the studio's gate is satisfied. Shared by every download
+   * path (single photo, size rungs, cloud saves, ZIPs). */
+  const gateOnEmail = useCallback((retry: () => void) => {
+    setDlBusy(false);
+    setEmailPrompt({ retry });
+  }, []);
+
   /** Fetch a download as a blob (so a 401 pin_required can open the PIN
    * modal instead of silently failing) and save it. */
   const downloadVia = useCallback(
@@ -1628,9 +1641,14 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
       setDlBusy(true);
       try {
         const res = await fetch(url);
-        if (res.status === 401 && ((await res.json().catch(() => ({}))) as { error?: string }).error === "pin_required") {
+        const gate = res.status === 401 ? ((await res.json().catch(() => ({}))) as { error?: string }) : null;
+        if (gate?.error === "pin_required") {
           setDlBusy(false);
           setPinPrompt({ retry: () => void downloadVia(url, fallbackName) });
+          return;
+        }
+        if (gate?.error === "email_required") {
+          gateOnEmail(() => void downloadVia(url, fallbackName));
           return;
         }
         if (!res.ok) {
@@ -1652,7 +1670,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
       }
       setDlBusy(false);
     },
-    [],
+    [gateOnEmail],
   );
 
   /** WEB-196: the 1280px rung. Fetches through the authorized download
@@ -1666,9 +1684,14 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
       setDlBusy(true);
       try {
         const res = await fetch(`/api/assets/${asset.id}?download=1&size=mid`);
-        if (res.status === 401 && ((await res.json().catch(() => ({}))) as { error?: string }).error === "pin_required") {
+        const gate = res.status === 401 ? ((await res.json().catch(() => ({}))) as { error?: string }) : null;
+        if (gate?.error === "pin_required") {
           setDlBusy(false);
           setPinPrompt({ retry: () => void downloadMid(asset) });
+          return;
+        }
+        if (gate?.error === "email_required") {
+          gateOnEmail(() => void downloadMid(asset));
           return;
         }
         if (!res.ok) {
@@ -1691,7 +1714,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
       }
       setDlBusy(false);
     },
-    [],
+    [gateOnEmail],
   );
 
   /** WEB-195 Downloads 3b — save this photo straight to the client's own
@@ -1711,9 +1734,14 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
       };
       try {
         const res = await fetch(`/api/assets/${asset.id}?download=1`);
-        if (res.status === 401 && ((await res.json().catch(() => ({}))) as { error?: string }).error === "pin_required") {
+        const gate = res.status === 401 ? ((await res.json().catch(() => ({}))) as { error?: string }) : null;
+        if (gate?.error === "pin_required") {
           setDlBusy(false);
           setPinPrompt({ retry: () => void saveToCloud(dest, asset) });
+          return;
+        }
+        if (gate?.error === "email_required") {
+          gateOnEmail(() => void saveToCloud(dest, asset));
           return;
         }
         if (!res.ok) {
@@ -1735,7 +1763,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
       }
       setDlBusy(false);
     },
-    [dl?.controls.driveClientId, dl?.controls.dropboxAppKey],
+    [dl?.controls.driveClientId, dl?.controls.dropboxAppKey, gateOnEmail],
   );
 
   /** Download-all: resolve the plan, then hand the browser a streaming URL
@@ -1756,6 +1784,10 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
       if (res.status === 401 && body.error === "pin_required") {
         setDlBusy(false);
         setPinPrompt({ retry: () => void pullZip(qs) });
+        return;
+      }
+      if (res.status === 401 && body.error === "email_required") {
+        gateOnEmail(() => void pullZip(qs));
         return;
       }
       if (!res.ok || !body.parts) {
@@ -1910,6 +1942,35 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
     } catch {
       // notes are best-effort on the client side
     }
+  }
+
+  /** WEB-194: submit the capture email; on success replay the download. */
+  async function verifyEmail() {
+    if (!emailPrompt) return;
+    setDlBusy(true);
+    try {
+      const res = await fetch(`/api/g/${clientToken}/download-request/email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: emailValue }),
+      });
+      if (res.ok) {
+        const retry = emailPrompt.retry;
+        setEmailPrompt(null);
+        setEmailValue("");
+        retry();
+      } else if (res.status === 429) {
+        setDlFlash("Too many attempts — try again in a little while.");
+        setTimeout(() => setDlFlash(""), 4000);
+      } else {
+        setDlFlash("That email doesn't look right — check it and try again.");
+        setTimeout(() => setDlFlash(""), 4000);
+      }
+    } catch {
+      setDlFlash("Network error — try again.");
+      setTimeout(() => setDlFlash(""), 3000);
+    }
+    setDlBusy(false);
   }
 
   async function verifyPin() {
@@ -2800,6 +2861,33 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
               </button>
               <button type="button" onClick={pullAllParts} className="flex-1 rounded-lg px-4 py-2 text-sm font-semibold text-white" style={{ background: "var(--accent)" }}>
                 Download all parts
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {emailPrompt && (
+        <div role="dialog" aria-modal="true" aria-label="Enter your email to download" className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm rounded-[16px] bg-surface-1 p-6">
+            <h2 className="text-base font-semibold text-ink">Where should your photographer send thanks?</h2>
+            <p className="mt-1 text-sm text-ink-subtle">Your photographer asks for an email before downloads unlock — it's only used to let them know you got the photos.</p>
+            <input
+              type="email"
+              autoComplete="email"
+              maxLength={254}
+              value={emailValue}
+              onChange={(e) => setEmailValue(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && emailValue.includes("@")) void verifyEmail(); }}
+              placeholder="you@example.com"
+              className="mt-4 w-full rounded-lg border border-hairline-strong bg-canvas px-3 py-2.5 text-center text-base text-ink outline-none focus:border-[var(--accent)]"
+            />
+            <div className="mt-4 flex gap-2">
+              <button type="button" onClick={() => { setEmailPrompt(null); setEmailValue(""); }} className="flex-1 rounded-lg border border-hairline px-4 py-2 text-sm text-ink-muted">
+                Cancel
+              </button>
+              <button type="button" disabled={dlBusy || !emailValue.includes("@")} onClick={() => void verifyEmail()} className="flex-1 rounded-lg px-4 py-2 text-sm font-semibold text-white disabled:opacity-60" style={{ background: "var(--accent)" }}>
+                {dlBusy ? "Checking…" : "Unlock downloads"}
               </button>
             </div>
           </div>

@@ -21,12 +21,15 @@ import {
   purgeLegacyZips,
   saveDownloadSettings,
   downloadSettingsOf,
+  listCapturedEmails,
+  MAX_EMAIL_CAPTURES_PER_HOUR,
   zipPartsStartedSince,
 } from "@/lib/repos/downloads";
 import { buildZipPlan, grantGuard, manifestOf, zipPartResponse } from "@/lib/zip-delivery";
 import { hashDownloadPin } from "@/lib/gallery-downloads";
 import { PART_BYTES } from "@/lib/zip-stream";
 import { downloadCookieOk } from "@/app/api/g/[token]/download-request/verify/route";
+import { POST as emailCapturePost, emailCaptureCookieOk } from "@/app/api/g/[token]/download-request/email/route";
 import { GET as downloadRequestGet, POST as downloadRequestPost } from "@/app/api/g/[token]/download-request/route";
 import { GET as zipRoute } from "@/app/api/g/[token]/zip/route";
 import { resetDb } from "../helpers/db";
@@ -305,7 +308,7 @@ describe("/api/g/{token}/zip - the route a client's browser hits", () => {
   it("PIN-protected galleries need the PIN cookie before anything streams", async () => {
     const g = await seedGallery(1);
     const pinHash = await hashDownloadPin("2468", g.grantId);
-    await saveDownloadSettings(g.studio.organizationId, g.grantId, { pinHash, limit: null, approval: false, webSize: false });
+    await saveDownloadSettings(g.studio.organizationId, g.grantId, { pinHash, limit: null, approval: false, webSize: false, emailCapture: false });
 
     const locked = await callZip(g.token, g.grantId, "scope=all");
     expect(locked.status).toBe(401);
@@ -325,7 +328,7 @@ describe("/api/g/{token}/zip - the route a client's browser hits", () => {
 
   it("approval galleries: no request → 403, pending → 409, approved → streams (and flips delivered), rejected → 403", async () => {
     const g = await seedGallery(2, { plan: "studio" });
-    await saveDownloadSettings(g.studio.organizationId, g.grantId, { pinHash: null, limit: null, approval: true, webSize: false });
+    await saveDownloadSettings(g.studio.organizationId, g.grantId, { pinHash: null, limit: null, approval: true, webSize: false, emailCapture: false });
     expect((await callZip(g.token, g.grantId, "scope=all&part=1")).status).toBe(403); // the scope query can't bypass approval
 
     const made = await createDownloadRequest({ grant: await grantRow(g.grantId), clientEmail: "client@t.test", scope: "all", sizePref: "full", approvalRequired: true });
@@ -352,7 +355,7 @@ describe("/api/g/{token}/zip - the route a client's browser hits", () => {
   it("a client can't use another gallery's approved request", async () => {
     const a = await seedGallery(1, { plan: "studio" });
     const b = await seedGallery(1, { plan: "studio" });
-    await saveDownloadSettings(b.studio.organizationId, b.grantId, { pinHash: null, limit: null, approval: true, webSize: false });
+    await saveDownloadSettings(b.studio.organizationId, b.grantId, { pinHash: null, limit: null, approval: true, webSize: false, emailCapture: false });
     const made = await createDownloadRequest({ grant: await grantRow(a.grantId), clientEmail: "c@t.test", scope: "all", sizePref: "full", approvalRequired: false });
     if (!made.ok) throw new Error("req");
     expect((await callZip(b.token, b.grantId, `req=${made.request.id}&part=1`)).status).toBe(403);
@@ -422,8 +425,8 @@ describe("approval lifecycle (Studio+)", () => {
   it("settings save canonically and the PIN cookie round-trips", async () => {
     const g = await seedGallery(1, { plan: "studio" });
     const pinHash = await hashDownloadPin("2468", g.grantId);
-    expect(await saveDownloadSettings(g.studio.organizationId, g.grantId, { pinHash, limit: 10, approval: true, webSize: true })).toBe(true);
-    expect(downloadSettingsOf(await grantRow(g.grantId))).toEqual({ pinHash, limit: 10, approval: true, webSize: true });
+    expect(await saveDownloadSettings(g.studio.organizationId, g.grantId, { pinHash, limit: 10, approval: true, webSize: true, emailCapture: false })).toBe(true);
+    expect(downloadSettingsOf(await grantRow(g.grantId))).toEqual({ pinHash, limit: 10, approval: true, webSize: true, emailCapture: false });
     expect(await downloadCookieOk(g.grantId, "garbage")).toBe(false);
     expect(await downloadCookieOk(g.grantId, null)).toBe(false);
   });
@@ -484,7 +487,7 @@ describe("size ladder: the mid rung (WEB-196)", () => {
   it("the zip route honors size=mid only when the gallery offers web sizes", async () => {
     const g = await seedLadder();
     // webSize off → mid degrades to full: originals ship
-    await saveDownloadSettings(g.studio.organizationId, g.grantId, { pinHash: null, limit: null, approval: false, webSize: false });
+    await saveDownloadSettings(g.studio.organizationId, g.grantId, { pinHash: null, limit: null, approval: false, webSize: false, emailCapture: false });
     const gated = await callZip(g.token, g.grantId, "scope=all&size=mid&part=1");
     expect(gated.status).toBe(200);
     const gatedRaw = text(new Uint8Array(await gated.arrayBuffer()));
@@ -492,7 +495,7 @@ describe("size ladder: the mid rung (WEB-196)", () => {
     expect(gatedRaw).not.toContain("MID-prepared");
 
     // webSize on → mid ships the mid derivative
-    await saveDownloadSettings(g.studio.organizationId, g.grantId, { pinHash: null, limit: null, approval: false, webSize: true });
+    await saveDownloadSettings(g.studio.organizationId, g.grantId, { pinHash: null, limit: null, approval: false, webSize: true, emailCapture: false });
     const mid = await callZip(g.token, g.grantId, "scope=all&size=mid&part=1");
     expect(mid.status).toBe(200);
     const midRaw = text(new Uint8Array(await mid.arrayBuffer()));
@@ -537,7 +540,7 @@ describe("size ladder: the mid rung (WEB-196)", () => {
 
   it("an approved request keeps its mid preference through delivery", async () => {
     const g = await seedLadder();
-    await saveDownloadSettings(g.studio.organizationId, g.grantId, { pinHash: null, limit: null, approval: true, webSize: true });
+    await saveDownloadSettings(g.studio.organizationId, g.grantId, { pinHash: null, limit: null, approval: true, webSize: true, emailCapture: false });
     const made = await createDownloadRequest({ grant: await grantRow(g.grantId), clientEmail: "c@t.test", scope: "all", sizePref: "mid", approvalRequired: true });
     expect(made.ok && made.request.sizePref).toBe("mid");
     if (!made.ok) throw new Error("req");
@@ -546,7 +549,7 @@ describe("size ladder: the mid rung (WEB-196)", () => {
     expect(res.status).toBe(200);
     expect(text(new Uint8Array(await res.arrayBuffer()))).toContain("MID-prepared");
     // the studio turning web sizes off downgrades the request to full, never errors
-    await saveDownloadSettings(g.studio.organizationId, g.grantId, { pinHash: null, limit: null, approval: true, webSize: false });
+    await saveDownloadSettings(g.studio.organizationId, g.grantId, { pinHash: null, limit: null, approval: true, webSize: false, emailCapture: false });
     const downgraded = await callZip(g.token, g.grantId, `req=${made.request.id}&part=1`);
     expect(downgraded.status).toBe(200);
     expect(text(new Uint8Array(await downgraded.arrayBuffer()))).toContain("ORIGINAL-prepared");
@@ -558,7 +561,7 @@ describe("size ladder: the mid rung (WEB-196)", () => {
     // proofing grant — buildZipPlan would otherwise report empty_scope)
     await putObject(g.studio.organizationId, `${g.project}/${g.assetIds[0]}/preview_wm.jpg`, bytesOf("WM-derivative"), "image/jpeg");
     await getDb().update(schema.assets).set({ previewWmKey: `${g.studio.organizationId}/${g.project}/${g.assetIds[0]}/preview_wm.jpg` }).where(eq(schema.assets.id, g.assetIds[0]));
-    await saveDownloadSettings(g.studio.organizationId, g.grantId, { pinHash: null, limit: null, approval: true, webSize: true });
+    await saveDownloadSettings(g.studio.organizationId, g.grantId, { pinHash: null, limit: null, approval: true, webSize: true, emailCapture: false });
     const cookie = await cookieFor(g.grantId);
 
     // GET controls: webSize suppressed for the proofing grant (lightbox hides the rungs)
@@ -595,7 +598,7 @@ describe("size ladder: the mid rung (WEB-196)", () => {
 
   it("WEB-195: cloud destination keys flow through the controls (public browser values)", async () => {
     const g = await seedGallery(1, { plan: "studio" });
-    await saveDownloadSettings(g.studio.organizationId, g.grantId, { pinHash: null, limit: null, approval: false, webSize: false });
+    await saveDownloadSettings(g.studio.organizationId, g.grantId, { pinHash: null, limit: null, approval: false, webSize: false, emailCapture: false });
     const cookie = await cookieFor(g.grantId);
     const res = await downloadRequestGet(
       new Request(`https://snap.test/api/g/${g.token}/download-request`, { headers: { cookie } }),
@@ -607,5 +610,87 @@ describe("size ladder: the mid rung (WEB-196)", () => {
     // is what lights the lightbox buttons up in a configured environment.
     expect(body.controls.driveClientId).toBe("test-drive-client-id.apps.googleusercontent.com");
     expect(body.controls.dropboxAppKey).toBe("test-dropbox-app-key");
+  });
+});
+
+describe("WEB-194: email-capture gate (guest galleries)", () => {
+  async function callEmail(token: string, grantId: string, email: string) {
+    return emailCapturePost(
+      new Request(`https://snap.test/api/g/${token}/download-request/email`, {
+        method: "POST",
+        headers: { cookie: await cookieFor(grantId), "content-type": "application/json" },
+        body: JSON.stringify({ email }),
+      }),
+      { params: Promise.resolve({ token }) },
+    );
+  }
+
+  it("ZIP refuses until an email is submitted, then streams; the capture is recorded for the studio", async () => {
+    const g = await seedGallery(1);
+    await saveDownloadSettings(g.studio.organizationId, g.grantId, { pinHash: null, limit: null, approval: false, webSize: false, emailCapture: true });
+
+    // locked: same shape as the PIN gate
+    const locked = await callZip(g.token, g.grantId, "scope=all&part=1");
+    expect(locked.status).toBe(401);
+    expect(((await locked.json()) as { error: string }).error).toBe("email_required");
+
+    // junk email rejected
+    expect((await callEmail(g.token, g.grantId, "not-an-email")).status).toBe(400);
+
+    // valid email: cookie minted, download unlocked
+    const ok = await callEmail(g.token, g.grantId, "  Guest@Event.Test ");
+    expect(ok.status).toBe(200);
+    const setCookie = ok.headers.get("set-cookie") ?? "";
+    const emCookie = setCookie.match(/snap-dl-email=([^;]+)/)?.[1] ?? null;
+    expect(emCookie).toBeTruthy();
+    expect(await emailCaptureCookieOk(g.grantId, emCookie)).toBe(true);
+
+    const zip = await callZip(g.token, g.grantId, "scope=all&part=1", `snap-dl-email=${emCookie}`);
+    expect(zip.status).toBe(200);
+
+    // the studio's who-took-files list (normalized + counted)
+    const captured = await listCapturedEmails(g.grantId);
+    expect(captured).toEqual([{ email: "guest@event.test", count: 1, lastAt: captured[0]?.lastAt }]);
+  });
+
+  it("the capture cookie is grant-bound (another gallery's cookie fails) and stacks with the PIN gate", async () => {
+    const a = await seedGallery(1);
+    const b = await seedGallery(1);
+    const pinHash = await hashDownloadPin("1357", a.grantId);
+    await saveDownloadSettings(a.studio.organizationId, a.grantId, { pinHash, limit: null, approval: false, webSize: false, emailCapture: true });
+    await saveDownloadSettings(b.studio.organizationId, b.grantId, { pinHash: null, limit: null, approval: false, webSize: false, emailCapture: true });
+
+    const ok = await callEmail(b.token, b.grantId, "b@t.test");
+    const bCookie = (ok.headers.get("set-cookie") ?? "").match(/snap-dl-email=([^;]+)/)?.[1] ?? null;
+    expect(await emailCaptureCookieOk(a.grantId, bCookie)).toBe(false); // cross-grant replay
+
+    // a's client submitted the email but not the PIN: still locked on the PIN
+    const emailOk = await callEmail(a.token, a.grantId, "a@t.test");
+    const aEmail = (emailOk.headers.get("set-cookie") ?? "").match(/snap-dl-email=([^;]+)/)?.[1] ?? null;
+    const stillPin = await callZip(a.token, a.grantId, "scope=all&part=1", `snap-dl-email=${aEmail}`);
+    expect(stillPin.status).toBe(401);
+    expect(((await stillPin.json()) as { error: string }).error).toBe("pin_required");
+  });
+
+  it("controls surface the gate so the lightbox can pre-ask; a gallery without the gate never blocks", async () => {
+    const g = await seedGallery(1);
+    await saveDownloadSettings(g.studio.organizationId, g.grantId, { pinHash: null, limit: null, approval: false, webSize: false, emailCapture: true });
+    const res = await downloadRequestGet(
+      new Request(`https://snap.test/api/g/${g.token}/download-request`, { headers: { cookie: await cookieFor(g.grantId) } }),
+      { params: Promise.resolve({ token: g.token }) },
+    );
+    expect(((await res.json()) as { controls: { emailCapture: boolean } }).controls.emailCapture).toBe(true);
+
+    await saveDownloadSettings(g.studio.organizationId, g.grantId, { pinHash: null, limit: null, approval: false, webSize: false, emailCapture: false });
+    expect((await callZip(g.token, g.grantId, "scope=all&part=1")).status).toBe(200);
+  });
+
+  it("capture endpoint is rate-capped per grant per hour", async () => {
+    const g = await seedGallery(1);
+    await saveDownloadSettings(g.studio.organizationId, g.grantId, { pinHash: null, limit: null, approval: false, webSize: false, emailCapture: true });
+    await getDb().insert(schema.downloadEmailCaptures).values(
+      Array.from({ length: MAX_EMAIL_CAPTURES_PER_HOUR }, () => ({ id: crypto.randomUUID(), grantId: g.grantId, email: "flood@t.test", createdAt: new Date() })),
+    );
+    expect((await callEmail(g.token, g.grantId, "next@t.test")).status).toBe(429);
   });
 });

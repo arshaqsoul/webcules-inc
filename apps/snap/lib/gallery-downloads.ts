@@ -15,12 +15,15 @@ export type DownloadSettings = {
   /** Offer the 2048px web-size option (preview derivative + download
    * headers — zero server processing). */
   webSize: boolean;
+  /** WEB-194: ask for an email before downloads unlock (guest galleries /
+   * minis / event shares — the studio wants to know who took files). */
+  emailCapture: boolean;
 };
 
 export const DOWNLOAD_SETTINGS_MAX_JSON = 512;
 
 export function parseDownloadSettings(stored: string | null | undefined): DownloadSettings {
-  const fallback: DownloadSettings = { pinHash: null, limit: null, approval: false, webSize: false };
+  const fallback: DownloadSettings = { pinHash: null, limit: null, approval: false, webSize: false, emailCapture: false };
   if (!stored) return fallback;
   try {
     const raw = JSON.parse(stored) as Record<string, unknown>;
@@ -30,6 +33,7 @@ export function parseDownloadSettings(stored: string | null | undefined): Downlo
       limit,
       approval: raw.approval === true,
       webSize: raw.webSize === true,
+      emailCapture: raw.emailCapture === true,
     };
   } catch {
     return fallback;
@@ -56,6 +60,7 @@ export function normalizeDownloadSettingsInput(input: unknown): DownloadSettings
     limit,
     approval: raw.approval === true,
     webSize: raw.webSize === true,
+    emailCapture: raw.emailCapture === true,
   };
 }
 
@@ -72,6 +77,14 @@ export async function hashDownloadPin(pin: string, grantId: string): Promise<str
 /** 4–8 digits. */
 export function isValidPin(pin: string): boolean {
   return /^[0-9]{4,8}$/.test(pin);
+}
+
+/** WEB-194: a practical email shape for the capture gate — one @, a dot in
+ * the domain, no whitespace, at most 254 chars. It's a who-downloaded
+ * signal for the studio, not a deliverability guarantee. */
+export function normalizeCaptureEmail(input: string): string | null {
+  const email = input.trim().toLowerCase().slice(0, 254);
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) ? email : null;
 }
 
 /* ---------------- approval state machine ---------------- */
