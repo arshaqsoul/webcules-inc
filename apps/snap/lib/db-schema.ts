@@ -1995,3 +1995,22 @@ export const uploadRequestAssets = sqliteTable(
     index("upload_request_asset_org_idx").on(t.organizationId, t.createdAt),
   ],
 );
+
+/** WEB-346: the Free-tier image-view budget counter (WEB-302 §4 — 100k
+ * image-views/mo, hard). One row per org per UTC month ('YYYY-MM'),
+ * incremented on every /api/pubimg serve; paid tiers carry no hard cap but
+ * still count (the Portfolio hub meter reads the same rows).
+ * DDL: migrations/0081_portfolio_views.sql. */
+export const portfolioViewMonthly = sqliteTable(
+  "portfolio_view_monthly",
+  {
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    /** UTC month key, 'YYYY-MM'. */
+    ym: text("ym").notNull(),
+    views: integer("views").notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.organizationId, t.ym] })],
+
+);

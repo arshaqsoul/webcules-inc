@@ -17,6 +17,8 @@ import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { getDb } from "../db";
 import * as schema from "../db-schema";
 import { pubimgLink, purgePubimgCache } from "../pubimg-link";
+import { RESERVED_SUBDOMAIN_LABELS } from "../hosts";
+import { parsePortfolioHome, parsePortfolioTheme, tierAllowsTheme } from "../portfolio-theme";
 
 export type PortfolioSiteRow = typeof schema.portfolioSites.$inferSelect;
 export type PortfolioCollectionRow = typeof schema.portfolioCollections.$inferSelect;
@@ -32,7 +34,9 @@ export type PortfolioError =
   | "not_owned"
   | "not_image"
   | "empty_site"
-  | "rights_attestation_required";
+  | "rights_attestation_required"
+  /** WEB-346 AC4: the theme's tokens exceed the org's plan (themeMinTier). */
+  | "theme_tier";
 
 const SITE_STATUSES = ["draft", "published", "unlisted"] as const;
 const VISIBILITIES = ["public", "unlisted"] as const;
@@ -52,10 +56,14 @@ function slugify(input: string): string {
   );
 }
 
-/** Validate a client-supplied slug (site rename / collection slug pick). */
+/** Validate a client-supplied slug (site rename / collection slug pick).
+ * Reserved subdomain labels (www, api, domains, …) are refused: the site
+ * slug is also the {slug}.snaphq.app namespace (WEB-346). */
 export function validSlug(input: string): string | null {
   const s = slugify(input);
-  return s === "portfolio" ? null : s;
+  if (s === "portfolio") return null;
+  if ((RESERVED_SUBDOMAIN_LABELS as readonly string[]).includes(s)) return null;
+  return s;
 }
 
 /** Serialize a JSON-object field under the byte cap; null = reject. */
@@ -149,7 +157,11 @@ export type SiteUpdateInput = {
    * time the site goes live (draft → published|unlisted). */
   rightsAttested?: boolean;
   /** Who attested (recorded for audit); routes pass the session user. */
+  rightsAttestedBy?: string;
   actorUserId?: string;
+  /** WEB-346 AC4: the org's plan — Studio-only theme tokens (explicit
+   * colors) are REJECTED on Free/Lite write paths (themeMinTier). */
+  plan?: string | null;
 };
 
 export async function updatePortfolioSite(
@@ -200,17 +212,35 @@ export async function updatePortfolioSite(
     if (goingLive && !existing.rightsAttestedAt) {
       if (input.rightsAttested !== true) return { ok: false, error: "rights_attestation_required" };
       set.rightsAttestedAt = new Date();
-      set.rightsAttestedBy = input.actorUserId ?? null;
+      set.rightsAttestedBy = input.rightsAttestedBy ?? input.actorUserId ?? null;
     } else if (input.rightsAttested === true) {
       set.rightsAttestedAt = new Date();
-      set.rightsAttestedBy = input.actorUserId ?? null;
+      set.rightsAttestedBy = input.rightsAttestedBy ?? input.actorUserId ?? null;
     }
     if (input.status === "published" && existing.status !== "published") {
       set.publishedAt = new Date();
     }
     set.status = input.status;
   }
-  for (const field of ["theme", "home", "seo"] as const) {
+  // WEB-346: theme/home are validated to their canonical form BEFORE they
+  // are stored — a saved site is always renderable as stored, and theme
+  // tokens beyond the org's plan are rejected (designMinTier precedent).
+  if (input.theme !== undefined) {
+    const parsed = parsePortfolioTheme(input.theme);
+    if (parsed === null) return { ok: false, error: "invalid_values" };
+    if (!tierAllowsTheme(input.plan ?? "free", parsed)) {
+      return { ok: false, error: "theme_tier" };
+    }
+    set.theme = JSON.stringify(parsed);
+  }
+  if (input.home !== undefined) {
+    if (input.home !== null && (typeof input.home !== "object" || Array.isArray(input.home))) {
+      return { ok: false, error: "invalid_values" };
+    }
+    const parsed = parsePortfolioHome(input.home);
+    set.home = JSON.stringify({ sections: parsed });
+  }
+  for (const field of ["seo"] as const) {
     const value = input[field];
     if (value === undefined) continue;
     const serialized = jsonField(value);
@@ -745,11 +775,19 @@ export type PublicPortfolioCollection = {
   slug: string;
   title: string;
   subtitle: string | null;
+  /** Signed pubimg URL of the card cover: the curated cover asset when it
+   * is in this collection, else the first item. Null on an empty list
+   * (public collections always have ≥1 item by the publish gate, but the
+   * payload is defensive). */
+  coverImage: string | null;
   items: PublicPortfolioItem[];
 };
 
 export type PublicPortfolio = {
   slug: string;
+  /** The owning org — public consumers resolve plan/badge/budget from this
+   * (WEB-346), never from the payload itself. */
+  organizationId: string;
   theme: unknown;
   home: unknown;
   seo: unknown;
@@ -786,21 +824,27 @@ export async function getPublishedPortfolio(slug: string): Promise<PublicPortfol
       .innerJoin(schema.assets, eq(schema.portfolioCollectionAssets.assetId, schema.assets.id))
       .where(eq(schema.portfolioCollectionAssets.collectionId, c.id))
       .orderBy(asc(schema.portfolioCollectionAssets.sort), asc(schema.portfolioCollectionAssets.createdAt));
+    const mapped = await Promise.all(
+      items.map(async ({ item, width, height }) => ({
+        assetId: item.assetId,
+        sort: item.sort,
+        caption: item.caption,
+        altText: item.altText,
+        image: await pubimgLink(item.assetId),
+        width,
+        height,
+      })),
+    );
+    // Card cover: the curated cover asset when it is itself curated into
+    // this collection, else the first item (WEB-346 work-index cards).
+    const cover =
+      (c.coverAssetId && mapped.find((m) => m.assetId === c.coverAssetId)) || mapped[0] || null;
     withItems.push({
       slug: c.slug,
       title: c.title,
       subtitle: c.subtitle,
-      items: await Promise.all(
-        items.map(async ({ item, width, height }) => ({
-          assetId: item.assetId,
-          sort: item.sort,
-          caption: item.caption,
-          altText: item.altText,
-          image: await pubimgLink(item.assetId),
-          width,
-          height,
-        })),
-      ),
+      coverImage: cover?.image ?? null,
+      items: mapped,
     });
   }
   const parse = (s: string): unknown => {
@@ -812,10 +856,92 @@ export async function getPublishedPortfolio(slug: string): Promise<PublicPortfol
   };
   return {
     slug: site.slug,
+    organizationId: site.organizationId,
     theme: parse(site.theme),
     home: parse(site.home),
     seo: parse(site.seo),
     publishedAt: site.publishedAt,
     collections: withItems,
   };
+}
+
+/* --------------------- WEB-346: view budget counters --------------------- */
+
+/** UTC month key ('YYYY-MM') for a date — the counter grain. */
+export function portfolioViewMonth(now = new Date()): string {
+  return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+/** Image views served this UTC month (0 when never counted). Paid tiers
+ * count too — the Portfolio hub meter reads the same rows. */
+export async function countPortfolioViews(organizationId: string, now = new Date()): Promise<number> {
+  const rows = await getDb()
+    .select({ views: schema.portfolioViewMonthly.views })
+    .from(schema.portfolioViewMonthly)
+    .where(
+      and(
+        eq(schema.portfolioViewMonthly.organizationId, organizationId),
+        eq(schema.portfolioViewMonthly.ym, portfolioViewMonth(now)),
+      ),
+    )
+    .limit(1);
+  return rows[0]?.views ?? 0;
+}
+
+/** Atomically record one served image view and return the month's new
+ * total. The read-modify-write the /api/pubimg budget check needs in ONE
+ * statement, so concurrent requests can't each see "under budget". */
+export async function incrementPortfolioView(
+  organizationId: string,
+  now = new Date(),
+): Promise<number> {
+  const db = getDb();
+  const rows = await db
+    .insert(schema.portfolioViewMonthly)
+    .values({ organizationId, ym: portfolioViewMonth(now), views: 1 })
+    .onConflictDoUpdate({
+      target: [schema.portfolioViewMonthly.organizationId, schema.portfolioViewMonthly.ym],
+      set: { views: sql`${schema.portfolioViewMonthly.views} + 1` },
+    })
+    .returning({ views: schema.portfolioViewMonthly.views });
+  return rows[0]?.views ?? 1;
+}
+
+/** The one budget decision /api/pubimg makes per serve (WEB-346 AC3,
+ * WEB-302 §4): count the view; when the org carries a hard monthly budget
+ * and this serve crossed it, the caller serves the cap state instead. Pure
+ * enough to unit-test — the increment is the atomic counter above. */
+export function viewOverBudget(totalAfterIncrement: number, budget: number | null): boolean {
+  return budget !== null && totalAfterIncrement > budget;
+}
+
+/** Stark's WEB-345 review follow-up, landed with WEB-346: when a curated
+ * asset's preview/preview_wm derivative is REPLACED (the WEB-242 watermark
+ * backfill re-renders bytes under the same R2 key), the pubimg edge entry
+ * keyed asset+derivative+revision would keep serving the OLD bytes. Rotating
+ * the site revision makes the stale entry unreachable and bumps fresh links
+ * onto the new one. No-op for assets that aren't portfolio-curated. */
+export async function onDerivativeReplaced(
+  organizationId: string,
+  assetId: string,
+): Promise<void> {
+  const db = getDb();
+  const curated = await db
+    .select({ id: schema.portfolioCollectionAssets.id })
+    .from(schema.portfolioCollectionAssets)
+    .innerJoin(
+      schema.portfolioCollections,
+      eq(schema.portfolioCollectionAssets.collectionId, schema.portfolioCollections.id),
+    )
+    .where(
+      and(
+        eq(schema.portfolioCollectionAssets.assetId, assetId),
+        eq(schema.portfolioCollections.organizationId, organizationId),
+      ),
+    )
+    .limit(1);
+  if (!curated[0]) return;
+  const rev = await currentSiteRevision(organizationId);
+  await purgePubimgCache(assetId, rev);
+  await touchSiteRevision(organizationId);
 }

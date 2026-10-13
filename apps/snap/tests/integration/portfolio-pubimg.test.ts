@@ -13,9 +13,12 @@ import { pubimgCacheKey, pubimgLink, purgePubimgCache, verifyPubimgSig } from "@
 import { deleteObject, putObject } from "@/lib/storage/service";
 import {
   addAssetsToCollection,
+  countPortfolioViews,
   createCollection,
   getOrCreatePortfolioSite,
+  getPortfolioSiteBySlug,
   getPublishedPortfolio,
+  portfolioViewMonth,
   removeAssetFromCollection,
   resolvePublicPortfolioImage,
   updateCollection,
@@ -53,7 +56,7 @@ async function publishedSiteWithImage() {
   const pub = await updatePortfolioSite(studio.organizationId, {
     status: "published",
     rightsAttested: true,
-    actorUserId: studio.userId,
+    rightsAttestedBy: studio.userId,
   });
   if (!pub.ok) throw new Error("seed publish failed");
   return { studio, site, collection: col.collection, ids };
@@ -306,10 +309,72 @@ describe("/api/pubimg route (WEB-345 acceptance)", () => {
     const col = await createCollection(studio.organizationId, { title: "Best" }, null);
     if (!col.ok) throw new Error("seed collection failed");
     await addAssetsToCollection(studio.organizationId, col.collection.id, [id], null);
-    await updatePortfolioSite(studio.organizationId, { status: "published", rightsAttested: true });
+    await updatePortfolioSite(studio.organizationId, {
+      status: "published",
+      rightsAttested: true,
+      rightsAttestedBy: studio.userId,
+    });
 
     const res = await fetchPubimg(id);
     expect(res.status).toBe(200);
     expect(new TextDecoder().decode(await res.arrayBuffer())).toBe("WM-PREVIEW");
+  });
+});
+
+describe("WEB-346 view budget at the serve boundary (AC3, WEB-302 §4)", () => {
+  async function seedAtViews(views: number, plan: string) {
+    const studio = await seedStudio({ plan });
+    const site = await getOrCreatePortfolioSite(studio.organizationId, "Showcase");
+    const project = await seedProject(studio.organizationId);
+    const id = await seedAsset({ organizationId: studio.organizationId, projectId: project, kind: "image" });
+    await getDb()
+      .update(schema.assets)
+      .set({ previewKey: `${studio.organizationId}/${id}/preview.jpg` })
+      .where(eq(schema.assets.id, id));
+    await putObject(studio.organizationId, `${id}/preview.jpg`, new TextEncoder().encode("preview").buffer as ArrayBuffer, "image/jpeg");
+    const col = await createCollection(studio.organizationId, { title: "Best" }, null);
+    if (!col.ok) throw new Error(`seed: ${col.error}`);
+    await addAssetsToCollection(studio.organizationId, col.collection.id, [id], null);
+    const pub = await updatePortfolioSite(studio.organizationId, {
+      status: "published",
+      rightsAttested: true,
+      rightsAttestedBy: studio.userId,
+    });
+    if (!pub.ok) throw new Error(`publish: ${pub.error}`);
+    if (views > 0) {
+      await getDb()
+        .insert(schema.portfolioViewMonthly)
+        .values({ organizationId: studio.organizationId, ym: portfolioViewMonth(), views });
+        // A prior-month row proves the budget only reads the CURRENT month.
+        if (views > 1) {
+          await getDb()
+            .insert(schema.portfolioViewMonthly)
+            .values({ organizationId: studio.organizationId, ym: "2000-01", views: 5_000_000 });
+        }
+    }
+    return { studio, id };
+  }
+
+  it("a Free org at the 100k cap gets the graceful 429 cap state, never a 500", async () => {
+    const { id } = await seedAtViews(100_000, "free");
+    const res = await fetchPubimg(id);
+    expect(res.status).toBe(429);
+    expect(res.headers.get("cache-control")).toBe("no-store");
+    await expect(res.json()).resolves.toEqual({ error: "view_budget_exhausted" });
+    // The counter recorded the attempt but nothing beyond the serve refusal.
+    expect(await countPortfolioViews((await getPortfolioSiteBySlug((await getDb().select({ slug: schema.portfolioSites.slug }).from(schema.portfolioSites).limit(1))[0].slug))!.organizationId)).toBe(100_001);
+  });
+
+  it("just under the cap the serve succeeds and crosses it for the next one", async () => {
+    const { id } = await seedAtViews(99_999, "free");
+    expect((await fetchPubimg(id)).status).toBe(200);
+    const capped = await fetchPubimg(id);
+    expect(capped.status).toBe(429);
+  });
+
+  it("a Lite org never caps (soft meter only) and still counts", async () => {
+    const { studio, id } = await seedAtViews(500_000, "lite");
+    expect((await fetchPubimg(id)).status).toBe(200);
+    expect(await countPortfolioViews(studio.organizationId)).toBe(500_001);
   });
 });
