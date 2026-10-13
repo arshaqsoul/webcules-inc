@@ -2050,7 +2050,7 @@ export function ProjectFiles({
    * queue (dedup, retry, multipart) as drag-and-dropped files. Google bytes
    * and tokens never touch Snap's Worker. Studio surface only. */
   async function importFromDrive() {
-    if (!driveClientId || clientEmail || driveBusy) return;
+    if (!driveClientId || isClientPortal || driveBusy) return;
     setDriveBusy(true);
     try {
       const picked = await pickFromDrive(driveClientId);
@@ -3163,8 +3163,9 @@ export function ProjectFiles({
               {uploading ? "Uploading…" : "Upload"}
             </Button>
             {/* WEB-183 Drive import — hidden without the env key (WEB-195
-             * gating convention) and on client-upload surfaces. */}
-            {driveClientId && !clientEmail && (
+             * gating convention) and on client-upload surfaces (the explicit
+             * isClientPortal flag per WEB-314, not clientEmail). */}
+            {driveClientId && !isClientPortal && (
               <Button
                 size="sm"
                 variant="outline"
@@ -3253,7 +3254,7 @@ export function ProjectFiles({
                   <Upload className="h-4 w-4" aria-hidden />
                   {uploading ? "Uploading…" : "Upload"}
                 </button>
-                {driveClientId && !clientEmail && (
+                {driveClientId && !isClientPortal && (
                   <button
                     type="button"
                     role="menuitem"
