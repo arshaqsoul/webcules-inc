@@ -38,6 +38,25 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.20.0" date="October 13, 2026">
+        <p>
+          <strong>Import straight from Google Drive.</strong> A new{" "}
+          <strong>Drive</strong> button on a project&rsquo;s Files tab opens
+          Google&rsquo;s own file picker over your Drive — tick the photos,
+          videos and RAWs you want, and they download through your browser
+          into the same upload queue as drag-and-dropped files, with the same
+          duplicate checks. Snap asks Google for per-file access only: nothing
+          else in your Drive is ever visible to it, and your files travel
+          Google → your browser → Snap without a detour. Google Docs,
+          Sheets and folders in a selection are left behind (as are file
+          types Snap doesn&rsquo;t accept), and you&rsquo;re told how many;
+          the same 5&nbsp;GB-per-file limit as uploads applies, up to 500
+          files per import. (Your Snap needs to be connected to a Google app
+          first — if the button isn&rsquo;t there yet, it hasn&rsquo;t been
+          switched on for your environment.)
+        </p>
+      </Release>
+
       <Release version="0.19.1" date="October 13, 2026">
         <p>
           <strong>ZIP folders file themselves again.</strong> A wiring slip in

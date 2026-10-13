@@ -35,6 +35,8 @@ import { getProjectSlideshow } from "@/lib/repos/slideshow";
 import { getDefaultTemplate } from "@/lib/repos/templates";
 import { parseGalleryDesignJson } from "@/lib/gallery-design";
 import { getPlanEntitlements } from "@/lib/plans";
+import { cloudDestinationsFromEnv } from "@/lib/cloud-destinations";
+import { env } from "cloudflare:workers";
 
 export const metadata = { title: "Project" };
 
@@ -287,7 +289,10 @@ export default async function ProjectDetailPage({
           <p className="mb-4 mt-1 text-xs text-ink-subtle">
             Upload the shoot, triage with Triage, curate in the grid — shared files are locked.
           </p>
-          <ProjectFiles projectId={id} clientEmail={client?.email} defaultExpiryDays={deliveryDefaults.expiryDays} defaultAllowDownload={deliveryDefaults.allowDownload} />
+          {/* WEB-183 Drive import: the Google GIS client id is a public
+           * browser value (WEB-195 convention) — unset env keeps the Drive
+           * button hidden. */}
+          <ProjectFiles projectId={id} clientEmail={client?.email} defaultExpiryDays={deliveryDefaults.expiryDays} defaultAllowDownload={deliveryDefaults.allowDownload} driveClientId={cloudDestinationsFromEnv(env).driveClientId} />
         </section>
       )}
 
