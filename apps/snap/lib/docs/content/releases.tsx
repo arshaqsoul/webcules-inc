@@ -38,6 +38,30 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.19.0" date="October 13, 2026">
+        <p>
+          <strong>Drop a ZIP, skip the unzipping.</strong> Project Files now
+          accepts a <code>.zip</code> alongside photos, videos and RAWs — and
+          unpacks it in your browser before anything uploads. The archive itself
+          never leaves your computer; the files inside it stream through the
+          same upload queue as drag-and-dropped files, with the same duplicate
+          checks.
+        </p>
+        <p>
+          <strong>Folders inside the ZIP become project folders.</strong> A
+          single wrapper folder around the whole archive is ignored, and the
+          folders within are filed into matching project folders in your Files
+          tab (anything nested deeper lands in its top-level folder). Mac and
+          Windows clutter like <code>.DS_Store</code> is skipped automatically,
+          and file types Snap doesn&rsquo;t accept are left behind with a note
+          of how many. Guard rails keep hostile archives out: at most 5,000
+          entries, 2 GB per file and 8 GB total once expanded (very large imports
+          are best split up — a browser tab runs out of memory long before
+          Snap does), and anything that expands implausibly far beyond its
+          zipped size is refused before a single byte is uploaded.
+        </p>
+      </Release>
+
       <Release version="0.18.0" date="October 13, 2026">
         <p>
           <strong>Know exactly who took the photos.</strong> Guest galleries,
@@ -83,30 +107,6 @@ export default function Releases() {
           <strong>Nothing to set up in the studio.</strong> The buttons
           appear per gallery link based on which destinations your Snap
           environment has enabled.
-        </p>
-      </Release>
-
-      <Release version="0.18.0" date="October 13, 2026">
-        <p>
-          <strong>Drop a ZIP, skip the unzipping.</strong> Project Files now
-          accepts a <code>.zip</code> alongside photos, videos and RAWs — and
-          unpacks it in your browser before anything uploads. The archive itself
-          never leaves your computer; the files inside it stream through the
-          same upload queue as drag-and-dropped files, with the same duplicate
-          checks.
-        </p>
-        <p>
-          <strong>Folders inside the ZIP become project folders.</strong> A
-          single wrapper folder around the whole archive is ignored, and the
-          folders within are filed into matching project folders in your Files
-          tab (anything nested deeper lands in its top-level folder). Mac and
-          Windows clutter like <code>.DS_Store</code> is skipped automatically,
-          and file types Snap doesn&rsquo;t accept are left behind with a note
-          of how many. Guard rails keep hostile archives out: at most 5,000
-          entries, 2 GB per file and 8 GB total once expanded (very large imports
-          are best split up — a browser tab runs out of memory long before
-          Snap does), and anything that expands implausibly far beyond its
-          zipped size is refused before a single byte is uploaded.
         </p>
       </Release>
 
