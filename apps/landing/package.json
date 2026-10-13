@@ -7,11 +7,12 @@
     "dev": "next dev --turbopack",
     "build": "node scripts/build-registry.mjs && next build",
     "deploy": "node scripts/build-registry.mjs && opennextjs-cloudflare build && node scripts/fix-worker-manifest.mjs && opennextjs-cloudflare deploy",
-    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "preview": "node scripts/build-registry.mjs && opennextjs-cloudflare build && node scripts/fix-worker-manifest.mjs && opennextjs-cloudflare preview",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "typecheck": "tsc --noEmit",
+    "check-types": "tsc --noEmit",
     "db:migrate": "wrangler d1 execute webcules-cms --local --file=./migrations/0001_auth.sql",
     "registry:build": "node scripts/build-registry.mjs"
   },
