@@ -3,7 +3,9 @@
  * Facts from components/integrations-panel.tsx, lib/integrations/tokens.ts,
  * lib/integrations/auth.ts and app/dashboard/settings/integrations/page.tsx
  * (WEB-186, Integrations 1/6). ZIP import facts from lib/zip-import.ts and
- * components/project-files.tsx (WEB-184, Integrations 3/6). */
+ * components/project-files.tsx (WEB-184, Integrations 3/6). Drive import
+ * facts from lib/drive-import.ts and components/project-files.tsx
+ * (WEB-183, Integrations 4/6). */
 import { H2, H3, Note, Callout, Steps, Related } from "@/lib/docs/primitives";
 
 export default function Integrations() {
@@ -199,6 +201,32 @@ export default function Integrations() {
           read — re-export them as a regular zip.
         </li>
       </ul>
+
+      <H2>Importing from Google Drive</H2>
+      <p>
+        The <strong>Drive</strong> button on a project&rsquo;s{" "}
+        <strong>Files</strong> tab opens Google&rsquo;s own file picker over
+        your Drive — browse it exactly like you would in Google&rsquo;s apps,
+        tick the photos, videos and RAWs you want, and press{" "}
+        <strong>Select</strong>. Your browser downloads each picked file and
+        feeds it into the same upload queue as drag-and-dropped files, with
+        the same duplicate checks.
+      </p>
+      <p>
+        <strong>Snap only ever sees what you picked.</strong> The consent
+        screen asks for per-file access — the narrowest Google offers — so
+        nothing else in your Drive is visible to Snap, and your files go
+        straight from Google to your browser to Snap. Google Docs, Sheets and
+        folders in a selection are left behind (as are file types Snap
+        doesn&rsquo;t accept), and you&rsquo;re told how many. The same
+        5&nbsp;GB-per-file limit as uploads applies, and up to 500 files per
+        import.
+      </p>
+      <Note>
+        The Drive button appears only when your Snap has been connected to a
+        Google app for imports — if you don&rsquo;t see it, it hasn&rsquo;t
+        been switched on for your environment.
+      </Note>
 
       <Related slugs={["security", "gallery-delivery"]} />
     </>
