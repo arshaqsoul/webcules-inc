@@ -179,6 +179,13 @@ function writeStagingConfig() {
     : [
         { pattern: "staging.snaphq.app", custom_domain: true },
         { pattern: "snap-staging.webcules.com", custom_domain: true },
+        // WEB-389: per-studio wildcard route ({slug}.staging.snaphq.app) — must
+        // be declared here or `wrangler deploy` PRUNES it on every staging
+        // deploy (wrangler syncs routes to exactly what the config carries).
+        // Inert until the zone has a *.staging DNS record (originless proxied
+        // A -> 192.0.2.1, WEB-233 pattern); staging.snaphq.app itself is a
+        // custom domain, which always takes precedence over this wildcard.
+        { pattern: "*.staging.snaphq.app/*", zone_name: "snaphq.app" },
       ];
   cfg.d1_databases[0].database_name = STAGING.d1Name;
   cfg.d1_databases[0].database_id = STAGING.d1Id;
