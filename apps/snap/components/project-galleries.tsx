@@ -810,6 +810,9 @@ function GrantDownloadSettings({ grantId, canLite, canStudio }: { grantId: strin
   // WEB-194: email-capture gate + the studio's who-took-files list.
   const [emailCapture, setEmailCapture] = useState(false);
   const [captured, setCaptured] = useState<{ email: string; count: number; lastAt: string }[]>([]);
+  // WEB-193: license acknowledgment (all tiers) + audit-frozen ack count.
+  const [licenseText, setLicenseText] = useState("");
+  const [licenseAcks, setLicenseAcks] = useState(0);
   const [hasPin, setHasPin] = useState(false);
   const [sharing, setSharing] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -820,13 +823,15 @@ function GrantDownloadSettings({ grantId, canLite, canStudio }: { grantId: strin
   async function load() {
     const res = await fetch(`/api/grants/${grantId}/download-settings`);
     if (!res.ok) return;
-    const body = (await res.json()) as { settings: { pin: boolean; limit: number | null; approval: boolean; webSize: boolean; emailCapture?: boolean }; captured?: { email: string; count: number; lastAt: string }[]; allowSharing?: boolean };
+    const body = (await res.json()) as { settings: { pin: boolean; limit: number | null; approval: boolean; webSize: boolean; emailCapture?: boolean }; captured?: { email: string; count: number; lastAt: string }[]; licenseText?: string | null; licenseAcks?: number; allowSharing?: boolean };
     setHasPin(body.settings.pin);
     setLimit(body.settings.limit === null ? "" : String(body.settings.limit));
     setApproval(body.settings.approval);
     setWebSize(body.settings.webSize);
     setEmailCapture(body.settings.emailCapture === true);
     setCaptured(body.captured ?? []);
+    setLicenseText(body.licenseText ?? "");
+    setLicenseAcks(body.licenseAcks ?? 0);
     setSharing(body.allowSharing !== false);
   }
 
@@ -845,6 +850,8 @@ function GrantDownloadSettings({ grantId, canLite, canStudio }: { grantId: strin
           settings: { limit: limit === "" ? null : Number(limit), approval, webSize, emailCapture },
           ...(clearPin ? { clearPin: true } : pin ? { pin } : {}),
           allowSharing: sharing,
+          // WEB-193: always sends the current text — "" turns the gate off.
+          licenseText,
         }),
       });
       const body = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
@@ -973,6 +980,23 @@ function GrantDownloadSettings({ grantId, canLite, canStudio }: { grantId: strin
             <Button size="sm" disabled={busy} onClick={() => void save()} className="ml-auto">
               {busy ? "Saving…" : "Save"}
             </Button>
+          </div>
+          {/* WEB-193: license acknowledgment — all tiers, never a feature gate. */}
+          <div className="rounded-md border border-hairline bg-canvas px-3 py-2">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs font-medium text-ink-subtle" title="Visitors must agree before any download unlocks — recorded in an uneditable audit log">
+                License before download
+              </p>
+              <span className="text-[11px] text-ink-tertiary">{licenseText.length}/2048{licenseText ? ` · ${licenseAcks} acknowledgment${licenseAcks === 1 ? "" : "s"}` : ""}</span>
+            </div>
+            <textarea
+              value={licenseText}
+              onChange={(e) => setLicenseText(e.target.value.slice(0, 2048))}
+              rows={3}
+              placeholder="e.g. Images are licensed for personal use only — no commercial use, resale, or AI training. Copyright stays with the studio."
+              className="mt-1.5 w-full resize-y rounded-md border border-hairline bg-surface-1 px-2 py-1.5 text-xs text-ink outline-none focus:border-ink-muted"
+            />
+            <p className="mt-1 text-[11px] text-ink-tertiary">Empty = no agreement step. Editing the text asks every visitor to agree again; past agreements stay frozen in the audit log. Available on every plan.</p>
           </div>
           {webSize && (
             <div className="flex flex-wrap items-center gap-2">

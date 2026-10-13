@@ -747,6 +747,9 @@ export const shareGrants = sqliteTable(
     /** WEB-261: downloads 2.0 controls (PIN hash, count limit, approval
      * toggle, web-size option) as validated JSON. NULL = plain downloads. */
     downloadSettings: text("download_settings"),
+    /** WEB-193: license text shown + acknowledged before downloads unlock
+     * (≤ 2 KB, sanitized on write; empty/NULL = gate off). All tiers. */
+    licenseText: text("license_text"),
     /** WEB-262: per-photo social sharing allowed (default on). */
     allowSharing: integer("allow_sharing", { mode: "boolean" }).notNull().default(true),
     /** WEB-266: scheduled opening — before this moment the gallery renders
@@ -1108,6 +1111,26 @@ export const downloadEmailCaptures = sqliteTable(
     createdAt: ts("created_at"),
   },
   (t) => [index("download_email_capture_grant_idx").on(t.grantId, t.createdAt)],
+);
+
+/* WEB-193 license-acknowledgment gate — AUDIT-FROZEN, append-only: one row
+ * per agreement, freezing the exact license text + its SHA-256 as the
+ * visitor saw it. Editing share_grant.license_text never rewrites these. */
+
+export const downloadLicenseAcks = sqliteTable(
+  "download_license_ack",
+  {
+    id: text("id").primaryKey(),
+    grantId: text("grant_id")
+      .notNull()
+      .references(() => shareGrants.id, { onDelete: "cascade" }),
+    licenseSha256: text("license_sha256").notNull(),
+    licenseText: text("license_text").notNull(),
+    ip: text("ip"),
+    userAgent: text("user_agent"),
+    createdAt: ts("created_at"),
+  },
+  (t) => [index("download_license_ack_grant_idx").on(t.grantId, t.createdAt)],
 );
 
 /* Gallery OTP gate — hashed 6-digit codes bound to a grant, plus a send log

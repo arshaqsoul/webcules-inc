@@ -99,6 +99,8 @@ import m79 from "../../migrations/0079_upload_requests.sql?raw";
 import m80 from "../../migrations/0080_upload_session_request_ref.sql?raw";
 // WEB-346: Free-tier image-view budget counter (100k/mo hard, WEB-302 §4).
 import m81 from "../../migrations/0081_portfolio_views.sql?raw";
+// WEB-193 license acknowledgment: per-grant license text + audit-frozen acks.
+import m82 from "../../migrations/0082_license_ack.sql?raw";
 
 const MIGRATIONS = [
   m01, m02, m03, m04, m05, m06, m07, m08, m09, m10, m11, m12, m13, m14, m15,
@@ -113,7 +115,7 @@ m69,
 m70,
 m71,
 m72,
-m73, m74, m75, m76, m77, m78, m79, m80, m81,
+m73, m74, m75, m76, m77, m78, m79, m80, m81, m82,
 ];
 
 /** Every table, in an order that satisfies FK constraints when deleting. */
@@ -126,6 +128,7 @@ const TABLES = [
   "inbox_item", "thread_message", "thread",
   "two_factor", "import_batch",
   "gallery_selection", "gallery_favorite", "share_otp_log", "share_otp", "share_access_log", "download_email_capture",
+  "download_license_ack",
   "share_grant_asset", "share_grant",
   "asset_tag", "upload_session", "integration_publish", "asset", "folder", "custom_domain",
   "form_response", "contract", "invoice", "payment", "org_counter",
