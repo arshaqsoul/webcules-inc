@@ -7,8 +7,11 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { and, eq } from "drizzle-orm";
 
 import { getDb, schema } from "@/lib/db";
+import { createUploadSession } from "@/lib/uploads";
 import { createShareGrant } from "@/lib/shares/grants";
 import {
+  GUEST_MINTS_PER_MIN,
+  checkGuestUploadRate,
   createUploadRequest,
   decideUploadRequestAssets,
   effectiveFileCap,
@@ -409,5 +412,132 @@ describe("tenant isolation", () => {
         actorUserId: other.userId,
       }),
     ).resolves.toMatchObject({ ok: false, error: "not_found" });
+  });
+});
+
+/* WEB-374 fast-follows: per-IP rate limiting, the atomic cap guard, the
+ * notify-slot ordering, and per-link session stamping. */
+describe("WEB-374 guest-upload hardening", () => {
+  it("rate-limits mint/confirm per IP with separate buckets per kind and IP", async () => {
+    for (let i = 0; i < GUEST_MINTS_PER_MIN; i++) {
+      expect(await checkGuestUploadRate("mint", "203.0.113.9")).toBe(true);
+    }
+    expect(await checkGuestUploadRate("mint", "203.0.113.9")).toBe(false);
+    // Kinds and IPs bucket independently — a throttled minter can still
+    // confirm, and a different IP is untouched.
+    expect(await checkGuestUploadRate("confirm", "203.0.113.9")).toBe(true);
+    expect(await checkGuestUploadRate("mint", "198.51.100.4")).toBe(true);
+  });
+
+  it("the atomic cap guard keeps uploadedCount at the cap even when concurrent confirms race", async () => {
+    const { s, project } = await seedAll();
+    const created = await createUploadRequest({
+      organizationId: s.organizationId,
+      projectId: project,
+      title: "Guest photos",
+      maxFiles: 1,
+      createdById: s.userId,
+    });
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+
+    // Same stale request row for both confirms — exactly the read-then-act
+    // window the mint route's check leaves open.
+    const stale = (await resolveUploadRequestByToken(created.token))!;
+    const a1 = await seedAsset({ organizationId: s.organizationId, projectId: project });
+    const a2 = await seedAsset({ organizationId: s.organizationId, projectId: project });
+    await recordGuestUpload({ request: stale, assetId: a1, uploaderName: null });
+    await recordGuestUpload({ request: stale, assetId: a2, uploaderName: null });
+
+    const row = (await getDb().select().from(schema.uploadRequests).limit(1))[0];
+    expect(row.uploadedCount).toBe(1); // never exceeds the cap
+    // The losing confirm still lands a reviewable quarantine row.
+    const quarantined = await getDb().select().from(schema.uploadRequestAssets);
+    expect(quarantined).toHaveLength(2);
+    expect(quarantined.every((q) => q.status === "pending")).toBe(true);
+  });
+
+  it("a prefs-off studio never burns the hourly email slot", async () => {
+    const { s, project } = await seedAll();
+    await getDb()
+      .update(schema.studioProfiles)
+      .set({ notificationPrefs: JSON.stringify({ gallery: false }) })
+      .where(eq(schema.studioProfiles.organizationId, s.organizationId));
+    const created = await createUploadRequest({
+      organizationId: s.organizationId,
+      projectId: project,
+      title: "Guest photos",
+      createdById: s.userId,
+    });
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    const asset = await seedAsset({ organizationId: s.organizationId, projectId: project });
+    await recordGuestUpload({
+      request: (await resolveUploadRequestByToken(created.token))!,
+      assetId: asset,
+      uploaderName: null,
+    });
+    const row = (await getDb().select().from(schema.uploadRequests).limit(1))[0];
+    expect(row.lastNotifiedAt).toBeNull(); // slot unclaimed — no phantom burn
+  });
+
+  it("stamps the minting link on the session; confirm scopes strictly by it", async () => {
+    const { s, project } = await seedAll();
+    const linkA = await createUploadRequest({
+      organizationId: s.organizationId,
+      projectId: project,
+      title: "Link A",
+      createdById: s.userId,
+    });
+    const linkB = await createUploadRequest({
+      organizationId: s.organizationId,
+      projectId: project,
+      title: "Link B",
+      createdById: s.userId,
+    });
+    expect(linkA.ok && linkB.ok).toBe(true);
+    if (!linkA.ok || !linkB.ok) return;
+
+    const minted = await createUploadSession({
+      organizationId: s.organizationId,
+      projectId: project,
+      uploadedBy: null,
+      uploadRequestId: linkA.id,
+      filename: "phone-pic.jpg",
+      mimeType: "image/jpeg",
+      bytes: 1000,
+    });
+    expect(minted.ok).toBe(true);
+    if (!minted.ok) return;
+    expect(minted.session.uploadRequestId).toBe(linkA.id);
+
+    // The confirm-route lookup: scoped by org + minting link, link B's
+    // token can no longer confirm link A's session (same project or not).
+    const viaA = (
+      await getDb()
+        .select()
+        .from(schema.uploadSessions)
+        .where(
+          and(
+            eq(schema.uploadSessions.id, minted.session.id),
+            eq(schema.uploadSessions.organizationId, s.organizationId),
+            eq(schema.uploadSessions.uploadRequestId, linkA.id),
+          ),
+        )
+    )[0];
+    expect(viaA?.id).toBe(minted.session.id);
+    const viaB = (
+      await getDb()
+        .select()
+        .from(schema.uploadSessions)
+        .where(
+          and(
+            eq(schema.uploadSessions.id, minted.session.id),
+            eq(schema.uploadSessions.organizationId, s.organizationId),
+            eq(schema.uploadSessions.uploadRequestId, linkB.id),
+          ),
+        )
+    )[0];
+    expect(viaB).toBeUndefined();
   });
 });
