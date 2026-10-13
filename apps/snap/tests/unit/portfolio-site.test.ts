@@ -4,7 +4,8 @@
  * builders, and the budget decision function. */
 import { describe, expect, it } from "vitest";
 
-import { portfolioSlugFromHost, isPortfolioSubdomainHost } from "@/lib/hosts";
+import { portfolioSlugFromHost, isPortfolioSubdomainHost, PUBLIC_ORIGIN } from "@/lib/hosts";
+import { portfolioOrigin, planAllowsSubdomain } from "@/lib/portfolio-page";
 import {
   defaultPortfolioHome,
   parsePortfolioHome,
@@ -154,6 +155,37 @@ describe("view budget decision (WEB-346 AC3, WEB-302 §4)", () => {
     expect(viewOverBudget(100_000, 100_000)).toBe(false);
     expect(viewOverBudget(10_000_000, null)).toBe(false);
     expect(viewOverBudget(2, 1)).toBe(true);
+  });
+});
+
+describe("portfolio origin canonicalization (WEB-411)", () => {
+  it("Lite+ on the site's own subdomain keeps that host in both environments", () => {
+    expect(portfolioOrigin("priya.snaphq.app", true)).toBe("https://priya.snaphq.app");
+    expect(portfolioOrigin("priya.staging.snaphq.app", true)).toBe("https://priya.staging.snaphq.app");
+  });
+
+  it("non-subdomain hosts canonicalize to the deployment's app origin, not the compile-time prod constant", () => {
+    const staging = "https://staging.snaphq.app";
+    expect(portfolioOrigin("snap-staging.webcules.com", false, staging)).toBe(staging);
+    expect(portfolioOrigin("staging.snaphq.app", false, staging)).toBe(staging);
+  });
+
+  it("production is unchanged: legacy prod host, custom hosts and no-env callers still get PUBLIC_ORIGIN", () => {
+    expect(portfolioOrigin("snap.webcules.com", false, "https://snaphq.app")).toBe(PUBLIC_ORIGIN);
+    expect(portfolioOrigin("gallery.studio.com", false, "https://snaphq.app")).toBe(PUBLIC_ORIGIN);
+    expect(portfolioOrigin("snap.webcules.com", false)).toBe(PUBLIC_ORIGIN);
+  });
+
+  it("Free on the subdomain funnels to the deployment's app origin (WEB-351 leakage floor)", () => {
+    expect(portfolioOrigin("priya.snaphq.app", false, "https://snaphq.app")).toBe("https://snaphq.app");
+    expect(portfolioOrigin("priya.staging.snaphq.app", false, "https://staging.snaphq.app")).toBe(
+      "https://staging.snaphq.app",
+    );
+  });
+
+  it("planAllowsSubdomain stays lite+ only", () => {
+    expect(planAllowsSubdomain("free")).toBe(false);
+    expect(planAllowsSubdomain("lite")).toBe(true);
   });
 });
 

@@ -20,7 +20,8 @@ import { resolveStudioByHost } from "@/lib/repos/domains";
 import { requestHost } from "@/lib/domains";
 import { getStudioSlug } from "@/lib/repos/studios";
 import { getSessionUser } from "@/lib/session";
-import { portfolioSlugFromHost, PUBLIC_ORIGIN } from "@/lib/hosts";
+import { portfolioSlugFromHost } from "@/lib/hosts";
+import { appOrigin } from "@/lib/app-origin";
 import { getPortfolioSiteBySlug } from "@/lib/repos/portfolio";
 import { getPlanEntitlements } from "@/lib/plans";
 import { planAllowsSubdomain } from "@/lib/portfolio-page";
@@ -58,7 +59,9 @@ export default async function Home() {
     if (!site || site.status !== "published") notFound();
     const ent = await getPlanEntitlements(site.organizationId);
     if (planAllowsSubdomain(ent?.id)) redirect(`/portfolio/${site.slug}`);
-    redirect(`${PUBLIC_ORIGIN}/portfolio/${site.slug}`);
+    // WEB-411: the DEPLOYMENT's app origin (staging funnels to staging), not
+    // the compile-time production constant.
+    redirect(`${await appOrigin()}/portfolio/${site.slug}`);
   }
   // WEB-227: a studio's custom hostname IS the client surface — `/` there is
   // the studio's booking page, not our marketing landing. Unknown hosts (no
