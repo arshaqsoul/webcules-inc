@@ -3,9 +3,16 @@
  * DOM/network-bound and covered by the wiring assertions in
  * tests/integration/downloads.test.ts; these tests pin the parts that must
  * not regress silently. */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
-import { DRIVE_SCOPE, cloudDestinationsFromEnv, driveUploadBody } from "@/lib/cloud-destinations";
+import {
+  DROPINS_SRC,
+  DRIVE_SCOPE,
+  cloudDestinationsFromEnv,
+  driveUploadBody,
+  dropinsAttrs,
+  loadScriptOnce,
+} from "@/lib/cloud-destinations";
 
 describe("WEB-195 cloud destinations", () => {
   it("maps env keys to controls, hiding destinations whose key is unset or blank", () => {
@@ -46,5 +53,44 @@ describe("WEB-195 cloud destinations", () => {
 
   it("requests the create-file-only Drive scope — never full drive access", () => {
     expect(DRIVE_SCOPE).toBe("https://www.googleapis.com/auth/drive.file");
+  });
+
+  /* WEB-327: dropins.js resolves the app key via
+   * document.getElementById("dropboxjs").getAttribute("data-app-key") — a
+   * tag without that id opens the Saver with app_key=undefined and Dropbox
+   * answers "App is misconfigured". */
+  it("gives the dropins script tag id=\"dropboxjs\" alongside data-app-key", async () => {
+    const attrs = dropinsAttrs("dbkey327");
+    expect(attrs).toEqual({ id: "dropboxjs", "data-app-key": "dbkey327" });
+
+    // …and loadScriptOnce applies exactly those attributes to the injected tag.
+    const tag: Record<string, string> = {};
+    const el = {
+      set src(v: string) {
+        tag.src = v;
+      },
+      async: false,
+      setAttribute: (k: string, v: string) => {
+        tag[k] = v;
+      },
+      onload: null as (() => void) | null,
+      onerror: null as (() => void) | null,
+    };
+    vi.stubGlobal("document", {
+      createElement: () => el,
+      head: {
+        appendChild: () => {
+          el.onload?.();
+        },
+      },
+    });
+    try {
+      await loadScriptOnce(DROPINS_SRC, attrs);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+    expect(tag.src).toBe(DROPINS_SRC);
+    expect(tag.id).toBe("dropboxjs");
+    expect(tag["data-app-key"]).toBe("dbkey327");
   });
 });

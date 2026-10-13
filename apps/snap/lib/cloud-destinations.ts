@@ -141,6 +141,14 @@ type SaverOptions = {
 };
 type Dropins = { save: (options: SaverOptions) => void; isSupported?: () => boolean };
 
+/** dropins.js reads the app key from the <script id="dropboxjs"
+ * data-app-key> tag itself (document.getElementById("dropboxjs")) — a tag
+ * with only data-app-key loads the Saver with app_key=undefined and Dropbox
+ * shows "App is misconfigured" (WEB-327). Pure so it is unit-testable. */
+export function dropinsAttrs(appKey: string): Record<string, string> {
+  return { id: "dropboxjs", "data-app-key": appKey };
+}
+
 /** Push one blob to the client's Dropbox via the Saver. The blob is handed
  * over as an object URL — dropins reads it in this tab, so the authorized
  * gallery URL (and its cookie gate) is never exposed to Dropbox's servers. */
@@ -149,7 +157,7 @@ export async function saveToDropbox(opts: {
   filename: string;
   bytes: Blob;
 }): Promise<"saved" | "cancelled"> {
-  await loadScriptOnce(DROPINS_SRC, { "data-app-key": opts.appKey });
+  await loadScriptOnce(DROPINS_SRC, dropinsAttrs(opts.appKey));
   const dropbox = (window as unknown as { Dropbox?: Dropins }).Dropbox;
   if (!dropbox || (dropbox.isSupported && !dropbox.isSupported())) throw new Error("saver_unsupported");
   const url = URL.createObjectURL(opts.bytes);
