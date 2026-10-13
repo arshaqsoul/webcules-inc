@@ -153,6 +153,9 @@ export async function createUploadSession(params: {
   /** Studio uploader user id, or null for guest uploads through a
    * client-upload link (WEB-182) — the session table allows null. */
   uploadedBy: string | null;
+  /** WEB-374: the client-upload link minting this guest session. The guest
+   * confirm route scopes strictly by it (no cross-link session mixing). */
+  uploadRequestId?: string | null;
   filename: string;
   mimeType: string;
   bytes: number;
@@ -213,6 +216,7 @@ export async function createUploadSession(params: {
     declaredBytes: params.bytes,
     kind: classified.kind,
     uploadedBy: params.uploadedBy,
+    uploadRequestId: params.uploadRequestId ?? null,
     createdAt: now,
     expiresAt: now + SESSION_TTL_SECONDS,
   };

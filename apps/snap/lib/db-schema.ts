@@ -1583,6 +1583,12 @@ export const uploadSessions = sqliteTable(
     /** image | video | raw — re-verified against magic bytes on confirm. */
     kind: text("kind").notNull(),
     uploadedBy: text("uploaded_by").references(() => user.id, { onDelete: "set null" }),
+    /** WEB-374: the client-upload link that minted this guest session.
+     * The guest confirm route scopes strictly by it, so within one project
+     * link A's token can never confirm a session minted via link B. */
+    uploadRequestId: text("upload_request_id").references(() => uploadRequests.id, {
+      onDelete: "set null",
+    }),
     createdAt: integer("created_at").notNull(),
     /** Epoch seconds — the cron aborts multipart uploads past this. */
     expiresAt: integer("expires_at").notNull(),

@@ -5,14 +5,18 @@
  * quarantine row (pending — invisible to every client link) and notifies
  * the studio. The link is re-validated; a link closed or filled between
  * mint and confirm still lands the bytes safely but is recorded against
- * the request that minted the session. */
+ * the request that minted the session. WEB-374: confirm is rate-limited
+ * per IP, and the session must have been minted by THIS link (stamped
+ * upload_request_id at mint) — no cross-link session mixing within a
+ * project. */
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
+import { clientIp } from "@/lib/shares/gallery-auth";
 import { verifyAndRecordUpload } from "@/lib/uploads";
-import { getUploadRequestByToken, recordGuestUpload } from "@/lib/shares/upload-requests";
+import { getUploadRequestByToken, checkGuestUploadRate, recordGuestUpload } from "@/lib/shares/upload-requests";
 
 
 export const dynamic = "force-dynamic";
@@ -35,6 +39,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
   const request = await getUploadRequestByToken(token);
   if (!request) return Response.json({ error: "not_found" }, { status: 404 });
 
+  // WEB-374: per-IP rate limit, mirroring the mint route.
+  const ip = clientIp(req);
+  if (ip && !(await checkGuestUploadRate("confirm", ip))) {
+    return Response.json({ error: "rate_limited" }, { status: 429, headers: { "Retry-After": "60" } });
+  }
+
   let body: unknown;
   try {
     body = await req.json();
@@ -44,8 +54,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
   const parsed = confirmSchema.safeParse(body);
   if (!parsed.success) return Response.json({ error: "invalid_body" }, { status: 400 });
 
-  // The session must belong to THIS link's org + project — a guest token
-  // must never confirm a studio-minted (or another org's) session.
+  // The session must belong to THIS link: minted by it (WEB-374
+  // upload_request_id stamp — a token from link A can never confirm a
+  // session minted via link B in the same project) and within this org
+  // (tenant isolation; the project match is implied by the stamp).
   const session = (
     await getDb()
       .select()
@@ -54,7 +66,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
         and(
           eq(schema.uploadSessions.id, parsed.data.assetId),
           eq(schema.uploadSessions.organizationId, request.organizationId),
-          eq(schema.uploadSessions.projectId, request.projectId),
+          eq(schema.uploadSessions.uploadRequestId, request.id),
         ),
       )
       .limit(1)
