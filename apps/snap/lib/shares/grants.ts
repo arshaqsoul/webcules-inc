@@ -598,6 +598,82 @@ export async function getGrantAssets(grant: typeof schema.shareGrants.$inferSele
     .then((rows) => rows.map((r) => ({ ...r.asset, folder: r.share_grant_asset.folderName, position: r.share_grant_asset.position })));
 }
 
+/** WEB-182: append already-uploaded assets to a LIVE grant — client-upload
+ * approvals publish straight into the client gallery. Assets already in the
+ * grant are skipped (not an error); folder labels snapshot at append time,
+ * positions continue after the current tail so the gallery order never
+ * shuffles. Caller keeps ownership of the culling status flip. */
+export async function appendAssetsToGrant(
+  organizationId: string,
+  grantId: string,
+  assetIds: string[],
+): Promise<{ ok: true; added: number } | { ok: false; error: "grant_not_found" | "grant_inactive" | "asset_mismatch" }> {
+  const db = getDb();
+  const grant = (
+    await db
+      .select()
+      .from(schema.shareGrants)
+      .where(and(eq(schema.shareGrants.id, grantId), eq(schema.shareGrants.organizationId, organizationId)))
+      .limit(1)
+  )[0];
+  if (!grant) return { ok: false, error: "grant_not_found" };
+  if (!grantIsEffectivelyActive(grant)) return { ok: false, error: "grant_inactive" };
+  if (!assetIds.length) return { ok: true, added: 0 };
+
+  const owned = await selectInChunks(assetIds, (chunk) =>
+    db
+      .select({ id: schema.assets.id })
+      .from(schema.assets)
+      .where(
+        and(
+          eq(schema.assets.organizationId, organizationId),
+          eq(schema.assets.projectId, grant.projectId),
+          inArray(schema.assets.id, chunk),
+        ),
+      ),
+  );
+  if (owned.length !== new Set(assetIds).size) return { ok: false, error: "asset_mismatch" };
+
+  // Skip assets the grant already carries (idempotent re-approve).
+  const existing = await selectInChunks(assetIds, (chunk) =>
+    db
+      .select({ assetId: schema.shareGrantAssets.assetId })
+      .from(schema.shareGrantAssets)
+      .where(and(eq(schema.shareGrantAssets.grantId, grantId), inArray(schema.shareGrantAssets.assetId, chunk))),
+  );
+  const already = new Set(existing.map((r) => r.assetId));
+  const fresh = [...new Set(assetIds)].filter((id) => !already.has(id));
+  if (!fresh.length) return { ok: true, added: 0 };
+
+  const folderRows = await selectInChunks(fresh, (chunk) =>
+    db
+      .select({ assetId: schema.assets.id, folderName: schema.folders.name })
+      .from(schema.assets)
+      .leftJoin(schema.folders, eq(schema.folders.id, schema.assets.folderId))
+      .where(inArray(schema.assets.id, chunk)),
+  );
+  const folderByAsset = new Map(folderRows.map((r) => [r.assetId, r.folderName]));
+
+  const tail = (
+    await db
+      .select({ max: sql<number | null>`max(${schema.shareGrantAssets.position})` })
+      .from(schema.shareGrantAssets)
+      .where(eq(schema.shareGrantAssets.grantId, grantId))
+  )[0];
+  let next = (tail?.max ?? 0) + 1;
+
+  await insertGrantAssets(
+    fresh.map((assetId) => ({
+      grantId,
+      assetId,
+      folderName: folderByAsset.get(assetId) ?? null,
+      position: next++,
+    })),
+  );
+  return { ok: true, added: fresh.length };
+}
+
+
 /** After a grant ends (revoked / superseded / expired), recompute 'shared'
  * flags: an asset keeps the lock only while another effectively-active grant
  * still includes it; otherwise it reverts to 'approved'. */

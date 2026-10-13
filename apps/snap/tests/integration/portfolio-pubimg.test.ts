@@ -101,7 +101,11 @@ describe("resolvePublicPortfolioImage (membership is the boundary)", () => {
     // Draft site → null.
     await updatePortfolioSite(owner.organizationId, { status: "draft" });
     expect(await resolvePublicPortfolioImage(ids[0])).toBeNull();
-    await updatePortfolioSite(owner.organizationId, { status: "published" });
+    await updatePortfolioSite(owner.organizationId, {
+      status: "published",
+      rightsAttested: true,
+      actorUserId: owner.userId,
+    });
     expect(await resolvePublicPortfolioImage(ids[0])).not.toBeNull();
 
     // Unlisted collection → null (even though the site stays published).
@@ -275,7 +279,7 @@ describe("/api/pubimg route (WEB-345 acceptance)", () => {
 
     // Re-curate + re-publish rotates the revision and serves fresh bytes.
     await addAssetsToCollection(org, col.id, [ids[0]], null);
-    await updatePortfolioSite(org, { status: "published" });
+    await updatePortfolioSite(org, { status: "published", rightsAttested: true });
     await putObject(org, previewSuffix, new TextEncoder().encode("preview-bytes-2").buffer as ArrayBuffer, "image/jpeg");
     const again = await fetchPubimg(ids[0]);
     expect(again.status).toBe(200);

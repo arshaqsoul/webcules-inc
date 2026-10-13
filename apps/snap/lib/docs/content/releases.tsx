@@ -40,6 +40,8 @@ export default function Releases() {
 
       <Release version="0.22.0" date="October 13, 2026">
         <p>
+      <Release version="0.23.0" date="October 13, 2026">
+        <p>
           <strong>Your portfolio, generated from your library.</strong> The
           first piece of the portfolio showcase is live: curated collections
           publish as a real website — hero, selected work, about, and a
@@ -50,6 +52,23 @@ export default function Releases() {
           Lite adds the dedicated subdomain and bigger showcases; Studio
           removes the badge. Your originals never leave the vault — public
           pages serve web-size previews only, with metadata stripped.
+        </p>
+      </Release>
+
+      <Release version="0.22.0" date="October 13, 2026">
+        <p>
+          <strong>Client upload links — let guests and clients add their own
+          photos.</strong> A new <strong>Client uploads</strong> card on a
+          project&rsquo;s Client gallery tab mints a shareable link: anyone
+          holding it — wedding guests, the couple, a client — can upload
+          photos and videos straight into your project from their phone, no
+          account, up to 1&nbsp;GB per file. Everything lands in quarantine:
+          nothing is visible in any client gallery until you approve it, and
+          approving can publish straight into a client gallery you pick when
+          minting the link. Close or expire the link any time; you&rsquo;re
+          notified as uploads arrive.
+        </p>
+      </Release>
         </p>
       </Release>
 

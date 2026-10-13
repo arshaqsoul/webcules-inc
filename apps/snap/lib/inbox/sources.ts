@@ -21,6 +21,7 @@ const ALERT_KIND_BY_EVENT: Record<string, StudioAlertKind> = {
   "invoice.refunded": "invoice",
   "gallery.delivered": "gallery",
   "gallery.first_view": "gallery",
+  "upload.submitted": "gallery",
   "order.paid": "order",
   "order.shipped": "order",
   "lead.created": "inquiry",
