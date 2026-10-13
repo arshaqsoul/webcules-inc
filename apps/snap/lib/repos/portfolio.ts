@@ -30,7 +30,8 @@ export type PortfolioError =
   | "not_found"
   | "not_owned"
   | "not_image"
-  | "empty_site";
+  | "empty_site"
+  | "rights_attestation_required";
 
 const SITE_STATUSES = ["draft", "published", "unlisted"] as const;
 const VISIBILITIES = ["public", "unlisted"] as const;
@@ -143,6 +144,11 @@ export type SiteUpdateInput = {
   theme?: unknown;
   home?: unknown;
   seo?: unknown;
+  /** WEB-344 AC3: explicit "I hold the rights" flag — required the first
+   * time the site goes live (draft → published|unlisted). */
+  rightsAttested?: boolean;
+  /** Who attested (recorded for audit); routes pass the session user. */
+  actorUserId?: string;
 };
 
 export async function updatePortfolioSite(
@@ -177,6 +183,18 @@ export async function updatePortfolioSite(
           ),
         );
       if ((ready[0]?.n ?? 0) < 1) return { ok: false, error: "empty_site" };
+    }
+    // WEB-344 AC3: first publish REQUIRES the explicit rights attestation —
+    // a silent publish is never allowed. Recorded who/when; a re-publish
+    // after unpublish keeps the prior attestation, a fresh one overwrites it.
+    const goingLive = input.status !== undefined && input.status !== "draft";
+    if (goingLive && !existing.rightsAttestedAt) {
+      if (input.rightsAttested !== true) return { ok: false, error: "rights_attestation_required" };
+      set.rightsAttestedAt = new Date();
+      set.rightsAttestedBy = input.actorUserId ?? null;
+    } else if (input.rightsAttested === true) {
+      set.rightsAttestedAt = new Date();
+      set.rightsAttestedBy = input.actorUserId ?? null;
     }
     if (input.status === "published" && existing.status !== "published") {
       set.publishedAt = new Date();
