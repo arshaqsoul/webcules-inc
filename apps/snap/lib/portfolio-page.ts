@@ -6,6 +6,7 @@
  * the page files so the collection page, the sitemap route and tests share
  * the exact same rules. */
 import { portfolioSlugFromHost, PUBLIC_ORIGIN } from "./hosts";
+import { appOrigin } from "./app-origin";
 import { getPlanEntitlements } from "./plans";
 import {
   countPortfolioViews,
@@ -39,10 +40,23 @@ export type PublicPortfolioPage = {
 /** The canonical public origin for a portfolio request: the site's own
  * subdomain when the request arrived on it AND the plan serves subdomains
  * (Lite+), else the app origin (the Free path URL is the only free
- * surface — the WEB-351 leakage floor). */
-export function portfolioOrigin(host: string, planAllowsSubdomain: boolean): string {
+ * surface — the WEB-351 leakage floor).
+ *
+ * WEB-411: the app origin is the DEPLOYMENT's own (lib/app-origin.ts reads
+ * NEXT_PUBLIC_APP_URL — https://snaphq.app in production, the staging URL on
+ * staging), so a non-canonical host canonicalizes within its environment
+ * instead of emitting production URLs from staging. On production the var IS
+ * PUBLIC_ORIGIN, so prod behavior is unchanged. The param default keeps the
+ * pure function unit-testable without worker env. */
+export function portfolioOrigin(
+  host: string,
+  planAllowsSubdomain: boolean,
+  origin: string = PUBLIC_ORIGIN,
+): string {
   const slug = portfolioSlugFromHost(host);
-  return slug && planAllowsSubdomain ? `https://${host.split(",")[0].trim().toLowerCase()}` : PUBLIC_ORIGIN;
+  return slug && planAllowsSubdomain
+    ? `https://${host.split(",")[0].trim().toLowerCase()}`
+    : origin;
 }
 
 export function planAllowsSubdomain(plan: string | null | undefined): boolean {
@@ -67,7 +81,9 @@ export async function resolvePublicPortfolioPage(
     portfolio.collections.find((c) => c.coverImage)?.coverImage ??
     portfolio.collections[0]?.items[0]?.image ??
     null;
-  const origin = portfolioOrigin(host, planAllowsSubdomain(plan));
+  // WEB-411: the deployment's own app origin (staging lands on staging), not
+  // the compile-time production constant.
+  const origin = portfolioOrigin(host, planAllowsSubdomain(plan), await appOrigin());
   const studioName = profile?.studioName ?? "Studio";
   const ctx: SeoContext = {
     siteSlug: portfolio.slug,
