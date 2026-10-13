@@ -9,8 +9,8 @@ import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { getOrgContext } from "@/lib/session";
 import { getPlanEntitlements } from "@/lib/plans";
-import { downloadSettingsOf, listCapturedEmails, saveDownloadSettings } from "@/lib/repos/downloads";
-import { hashDownloadPin, isValidPin, normalizeDownloadSettingsInput } from "@/lib/gallery-downloads";
+import { downloadSettingsOf, listCapturedEmails, listLicenseAcks, saveDownloadSettings, saveLicenseText } from "@/lib/repos/downloads";
+import { hashDownloadPin, isValidPin, licenseTextOf, normalizeDownloadSettingsInput, sanitizeLicenseText } from "@/lib/gallery-downloads";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +21,9 @@ const bodySchema = z.object({
   clearPin: z.boolean().optional(),
   /** WEB-262: per-gallery social sharing kill-switch (any tier). */
   allowSharing: z.boolean().optional(),
+  /** WEB-193: per-gallery license text (≤ 2 KB, sanitized server-side).
+   * String (may be empty = gate off) updates it; absent leaves it alone. */
+  licenseText: z.string().optional(),
 });
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -62,16 +65,29 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (settings.approval && !studio) return Response.json({ error: "approvals_require_studio" }, { status: 403 });
   // WEB-194: email-capture rides with the other download gates (Lite+).
   if (settings.emailCapture && !lite) return Response.json({ error: "email_capture_requires_lite" }, { status: 403 });
+  // WEB-193 (license_ack_all_tiers): the license acknowledgment is legal
+  // cover on free downloads — deliberately UNGATED. Every tier, including
+  // free, may set license text; no tier-gated error branch exists for it.
 
   const ok = await saveDownloadSettings(ctx.organizationId, grant.id, settings);
   if (!ok) return Response.json({ error: "not_found" }, { status: 404 });
+  // WEB-193: per-gallery license text — sanitized, capped, empty = gate off.
+  // Single write path for this column: the org-scoped repo helper.
+  let licenseText: string | null = null;
+  if (parsed.data.licenseText !== undefined) {
+    licenseText = sanitizeLicenseText(parsed.data.licenseText) || null;
+    if (!(await saveLicenseText(ctx.organizationId, grant.id, licenseText)))
+      return Response.json({ error: "not_found" }, { status: 404 });
+  } else {
+    licenseText = grant.licenseText ?? null;
+  }
   if (parsed.data.allowSharing !== undefined) {
     await getDb()
       .update(schema.shareGrants)
       .set({ allowSharing: parsed.data.allowSharing })
       .where(eq(schema.shareGrants.id, grant.id));
   }
-  return Response.json({ ok: true, settings: { pin: Boolean(settings.pinHash), limit: settings.limit, approval: settings.approval, webSize: settings.webSize, emailCapture: settings.emailCapture }, allowSharing: parsed.data.allowSharing ?? grant.allowSharing });
+  return Response.json({ ok: true, settings: { pin: Boolean(settings.pinHash), limit: settings.limit, approval: settings.approval, webSize: settings.webSize, emailCapture: settings.emailCapture }, licenseText, allowSharing: parsed.data.allowSharing ?? grant.allowSharing });
 }
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -89,5 +105,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const s = downloadSettingsOf(grant);
   // WEB-194: the studio's who-took-files list rides along when the gate is on.
   const captured = s.emailCapture ? await listCapturedEmails(grant.id) : [];
-  return Response.json({ settings: { pin: Boolean(s.pinHash), limit: s.limit, approval: s.approval, webSize: s.webSize, emailCapture: s.emailCapture }, captured, allowSharing: grant.allowSharing });
+  // WEB-193: effective license text + the audit-frozen acknowledgment ledger.
+  const license = licenseTextOf(grant) || null;
+  const acks = license ? await listLicenseAcks(grant.id) : [];
+  return Response.json({ settings: { pin: Boolean(s.pinHash), limit: s.limit, approval: s.approval, webSize: s.webSize, emailCapture: s.emailCapture }, captured, licenseText: license, licenseAcks: acks.length, allowSharing: grant.allowSharing });
 }

@@ -22,7 +22,11 @@ import {
   saveDownloadSettings,
   downloadSettingsOf,
   listCapturedEmails,
+  licenseSha256,
+  listLicenseAcks,
+  saveLicenseText,
   MAX_EMAIL_CAPTURES_PER_HOUR,
+  MAX_LICENSE_ACKS_PER_HOUR,
   zipPartsStartedSince,
 } from "@/lib/repos/downloads";
 import { buildZipPlan, grantGuard, manifestOf, zipPartResponse } from "@/lib/zip-delivery";
@@ -30,6 +34,7 @@ import { hashDownloadPin } from "@/lib/gallery-downloads";
 import { PART_BYTES } from "@/lib/zip-stream";
 import { downloadCookieOk } from "@/app/api/g/[token]/download-request/verify/route";
 import { POST as emailCapturePost, emailCaptureCookieOk } from "@/app/api/g/[token]/download-request/email/route";
+import { POST as licenseAckPost, licenseAckCookieOk } from "@/app/api/g/[token]/download-request/license/route";
 import { GET as downloadRequestGet, POST as downloadRequestPost } from "@/app/api/g/[token]/download-request/route";
 import { GET as zipRoute } from "@/app/api/g/[token]/zip/route";
 import { resetDb } from "../helpers/db";
@@ -706,5 +711,110 @@ describe("WEB-194: email-capture gate (guest galleries)", () => {
       Array.from({ length: MAX_EMAIL_CAPTURES_PER_HOUR }, () => ({ id: crypto.randomUUID(), grantId: g.grantId, email: "flood@t.test", createdAt: new Date() })),
     );
     expect((await callEmail(g.token, g.grantId, "next@t.test")).status).toBe(429);
+  });
+});
+
+describe("WEB-193: license acknowledgment gate (audit-frozen, all tiers)", () => {
+  const LICENSE = "Personal-use license: images may be printed and shared for personal use; commercial use, resale, or AI training requires written permission.";
+
+  async function callAck(token: string, grantId: string, body: Record<string, unknown>, cookieExtra = "") {
+    return licenseAckPost(
+      new Request(`https://snap.test/api/g/${token}/download-request/license`, {
+        method: "POST",
+        headers: { cookie: await cookieFor(grantId, cookieExtra), "content-type": "application/json" },
+        body: JSON.stringify(body),
+      }),
+      { params: Promise.resolve({ token }) },
+    );
+  }
+
+  it("ZIP refuses until agreed, then streams; the agreement freezes text+SHA into the append-only ledger (free plan)", async () => {
+    // free tier on purpose — the license gate is legal cover, never a feature
+    const g = await seedGallery(1);
+    await saveLicenseText(g.studio.organizationId, g.grantId, LICENSE);
+
+    const locked = await callZip(g.token, g.grantId, "scope=all&part=1");
+    expect(locked.status).toBe(401);
+    expect(((await locked.json()) as { error: string }).error).toBe("license_required");
+
+    // a POST without the explicit agreement is refused
+    expect((await callAck(g.token, g.grantId, {})).status).toBe(400);
+
+    // agreeing mints the remembered cookie and unlocks the download
+    const ok = await callAck(g.token, g.grantId, { agree: true });
+    expect(ok.status).toBe(200);
+    const ackCookie = (ok.headers.get("set-cookie") ?? "").match(/snap-dl-license=([^;]+)/)?.[1] ?? null;
+    expect(ackCookie).toBeTruthy();
+    expect(await licenseAckCookieOk(g.grantId, await licenseSha256(LICENSE), ackCookie)).toBe(true);
+
+    const zip = await callZip(g.token, g.grantId, "scope=all&part=1", `snap-dl-license=${ackCookie}`);
+    expect(zip.status).toBe(200);
+
+    // AUDIT-FROZEN: the row carries the exact text + its SHA as agreed
+    const acks = await listLicenseAcks(g.grantId);
+    expect(acks).toHaveLength(1);
+    expect(acks[0]?.licenseSha256).toBe(await licenseSha256(LICENSE));
+    const frozen = (await getDb().select().from(schema.downloadLicenseAcks).where(eq(schema.downloadLicenseAcks.grantId, g.grantId)).limit(1))[0]!;
+    expect(frozen.licenseText).toBe(LICENSE);
+  });
+
+  it("editing the license text re-locks the gallery — the cookie is version-bound; the old agreement stays frozen", async () => {
+    const g = await seedGallery(1);
+    await saveLicenseText(g.studio.organizationId, g.grantId, LICENSE);
+    const ok = await callAck(g.token, g.grantId, { agree: true });
+    const v1 = (ok.headers.get("set-cookie") ?? "").match(/snap-dl-license=([^;]+)/)?.[1] ?? null;
+
+    const v2Text = `${LICENSE} Version 2: no third-party licensing.`;
+    await saveLicenseText(g.studio.organizationId, g.grantId, v2Text);
+
+    const relocked = await callZip(g.token, g.grantId, "scope=all&part=1", `snap-dl-license=${v1}`);
+    expect(relocked.status).toBe(401);
+    expect(((await relocked.json()) as { error: string }).error).toBe("license_required");
+
+    // fresh agreement on v2 → new ledger row; the v1 row is untouched
+    const ok2 = await callAck(g.token, g.grantId, { agree: true });
+    const v2 = (ok2.headers.get("set-cookie") ?? "").match(/snap-dl-license=([^;]+)/)?.[1] ?? null;
+    expect(await licenseAckCookieOk(g.grantId, await licenseSha256(v2Text), v2)).toBe(true);
+    const rows = await getDb().select().from(schema.downloadLicenseAcks).where(eq(schema.downloadLicenseAcks.grantId, g.grantId));
+    expect(rows).toHaveLength(2);
+    expect(rows.map((r) => r.licenseText).sort()).toEqual([LICENSE, v2Text].sort());
+
+    expect((await callZip(g.token, g.grantId, "scope=all&part=1", `snap-dl-license=${v2}`)).status).toBe(200);
+  });
+
+  it("the ack cookie is grant-bound (another gallery's cookie fails)", async () => {
+    const a = await seedGallery(1);
+    const b = await seedGallery(1);
+    await saveLicenseText(a.studio.organizationId, a.grantId, LICENSE);
+    await saveLicenseText(b.studio.organizationId, b.grantId, LICENSE);
+    const ok = await callAck(b.token, b.grantId, { agree: true });
+    const bCookie = (ok.headers.get("set-cookie") ?? "").match(/snap-dl-license=([^;]+)/)?.[1] ?? null;
+    expect(await licenseAckCookieOk(a.grantId, await licenseSha256(LICENSE), bCookie)).toBe(false);
+  });
+
+  it("controls surface the license text; clearing it removes the gate entirely", async () => {
+    const g = await seedGallery(1);
+    await saveLicenseText(g.studio.organizationId, g.grantId, LICENSE);
+    const res = await downloadRequestGet(
+      new Request(`https://snap.test/api/g/${g.token}/download-request`, { headers: { cookie: await cookieFor(g.grantId) } }),
+      { params: Promise.resolve({ token: g.token }) },
+    );
+    expect(((await res.json()) as { controls: { license: string | null } }).controls.license).toBe(LICENSE);
+
+    await saveLicenseText(g.studio.organizationId, g.grantId, null);
+    expect((await callZip(g.token, g.grantId, "scope=all&part=1")).status).toBe(200);
+  });
+
+  it("the ack endpoint is rate-capped per grant per hour", async () => {
+    const g = await seedGallery(1);
+    await saveLicenseText(g.studio.organizationId, g.grantId, LICENSE);
+    const rows = Array.from({ length: MAX_LICENSE_ACKS_PER_HOUR }, () => ({
+      id: crypto.randomUUID(), grantId: g.grantId, licenseSha256: "f".repeat(64), licenseText: "x", createdAt: new Date(),
+    }));
+    // D1 caps ~100 bound params per statement — insert in small batches.
+    for (let i = 0; i < rows.length; i += 10) {
+      await getDb().insert(schema.downloadLicenseAcks).values(rows.slice(i, i + 10));
+    }
+    expect((await callAck(g.token, g.grantId, { agree: true })).status).toBe(429);
   });
 });

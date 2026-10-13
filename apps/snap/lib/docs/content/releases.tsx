@@ -38,6 +38,21 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.24.0" date="October 13, 2026">
+        <p>
+          <strong>A license agreement, on every gallery.</strong> You can now
+          attach a short license to any gallery you share &mdash; your terms,
+          in your words &mdash; and nothing downloads until your client has
+          read and agreed to it: not a single photo, not a web-size copy, not
+          a ZIP. Every agreement is frozen the moment it happens in an
+          uneditable log that records the exact text they saw (and its
+          fingerprint), so you can always prove who agreed to what. Edit the
+          license later and everyone is asked to agree again on their next
+          download. This one is legal cover for the free plan too: it works
+          on every plan, no exceptions.
+        </p>
+      </Release>
+
       <Release version="0.23.0" date="October 13, 2026">
         <p>
           <strong>Your portfolio, generated from your library.</strong> The

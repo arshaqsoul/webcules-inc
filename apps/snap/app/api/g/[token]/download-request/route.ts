@@ -12,7 +12,7 @@ import {
   listGrantDownloadRequests,
   photoDownloadCount,
 } from "@/lib/repos/downloads";
-import { DOWNLOAD_SCOPES, REQUEST_MAX_ASSET_IDS, parseSizePref, type DownloadScope } from "@/lib/gallery-downloads";
+import { DOWNLOAD_SCOPES, LICENSE_TEXT_MAX, REQUEST_MAX_ASSET_IDS, licenseTextOf, parseSizePref, type DownloadScope } from "@/lib/gallery-downloads";
 import { cloudDestinationsFromEnv } from "@/lib/cloud-destinations";
 import { isDriveConsentHost } from "@/lib/hosts";
 import { requestHost } from "@/lib/domains";
@@ -65,6 +65,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
       limitUsed: used,
       pin: Boolean(settings.pinHash),
       emailCapture: settings.emailCapture,
+      // WEB-193: the effective license text ("" = gate off) so the lightbox
+      // can render the acknowledgment dialog before replaying the download.
+      license: licenseTextOf(grant).slice(0, LICENSE_TEXT_MAX) || null,
       ...cloud,
     },
   });

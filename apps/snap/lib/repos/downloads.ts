@@ -217,6 +217,80 @@ export async function recordEmailCapture(params: { grantId: string; email: strin
   });
 }
 
+/* ---------------- WEB-193: license-acknowledgment gate ---------------- */
+
+/** Abuse ceiling on the ack endpoint: agreements per grant per hour (the
+ * cookie short-circuits repeats; only fresh visitors/edits hit the table). */
+export const MAX_LICENSE_ACKS_PER_HOUR = 30;
+
+/** SHA-256 hex of the license text — the version stamp the ack cookie and
+ * the frozen audit rows are bound to. */
+export async function licenseSha256(text: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/** Save the per-gallery license text (already sanitized; null clears the
+ * gate). All tiers — this is legal cover, never a feature gate. */
+export async function saveLicenseText(organizationId: string, grantId: string, text: string | null): Promise<boolean> {
+  const updated = await getDb()
+    .update(schema.shareGrants)
+    .set({ licenseText: text })
+    .where(and(eq(schema.shareGrants.id, grantId), eq(schema.shareGrants.organizationId, organizationId)))
+    .returning({ id: schema.shareGrants.id });
+  return updated.length > 0;
+}
+
+/** AUDIT-FROZEN agreement: append-only, freezing the exact text + SHA the
+ * visitor acknowledged. No update/delete path exists — editing the gallery's
+ * license text only adds new rows. */
+export async function recordLicenseAck(params: {
+  grantId: string;
+  licenseSha: string;
+  licenseText: string;
+  req?: Request;
+}): Promise<void> {
+  await getDb().insert(schema.downloadLicenseAcks).values({
+    id: crypto.randomUUID(),
+    grantId: params.grantId,
+    licenseSha256: params.licenseSha,
+    licenseText: params.licenseText,
+    ip: params.req?.headers.get("cf-connecting-ip") ?? null,
+    userAgent: params.req?.headers.get("user-agent")?.slice(0, 250) ?? null,
+    createdAt: new Date(),
+  });
+}
+
+export async function licenseAcksSince(grantId: string, sinceMs: number): Promise<number> {
+  const rows = await getDb()
+    .select({ n: sql<number>`count(*)` })
+    .from(schema.downloadLicenseAcks)
+    .where(
+      and(
+        eq(schema.downloadLicenseAcks.grantId, grantId),
+        sql`${schema.downloadLicenseAcks.createdAt} >= ${Math.floor(sinceMs / 1000)}`,
+      ),
+    );
+  return rows[0]?.n ?? 0;
+}
+
+export type LicenseAck = { licenseSha256: string; createdAt: string; ip: string | null };
+
+/** The studio's acknowledgment ledger (audit view), most recent first. */
+export async function listLicenseAcks(grantId: string, limit = 50): Promise<LicenseAck[]> {
+  const rows = await getDb()
+    .select({
+      licenseSha256: schema.downloadLicenseAcks.licenseSha256,
+      createdAt: schema.downloadLicenseAcks.createdAt,
+      ip: schema.downloadLicenseAcks.ip,
+    })
+    .from(schema.downloadLicenseAcks)
+    .where(eq(schema.downloadLicenseAcks.grantId, grantId))
+    .orderBy(desc(schema.downloadLicenseAcks.createdAt))
+    .limit(limit);
+  return rows.map((r) => ({ licenseSha256: r.licenseSha256, createdAt: r.createdAt.toISOString(), ip: r.ip }));
+}
+
 export type CapturedEmail = { email: string; count: number; lastAt: string };
 
 /** The studio's who-took-files list: distinct emails, most recent first. */

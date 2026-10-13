@@ -140,3 +140,24 @@ describe("WEB-194 email-capture gate — enforced before any download branch", (
     expect(emailAt).toBeLessThan(proofingAt);
   });
 });
+
+describe("WEB-193 license acknowledgment — audit-frozen, ALL tiers", () => {
+  it("the asset + zip routes refuse with license_required, stacked above the proofing block", () => {
+    expect(assetRoute).toContain("license_required");
+    expect(zipRoute).toContain("license_required");
+    const licenseAt = assetRoute.indexOf("license_required");
+    const proofingAt = assetRoute.indexOf("grant.allowDownload && grant.proofing");
+    expect(licenseAt).toBeGreaterThan(-1);
+    expect(licenseAt).toBeLessThan(proofingAt);
+  });
+
+  it("license_ack_all_tiers: the settings route saves license text with NO tier gate", () => {
+    // The marker documents the deliberate decision that the license gate is
+    // legal cover, not a feature: no license_requires_lite/_studio branch
+    // may ever appear next to the other gated toggles.
+    expect(downloadSettingsRoute).toContain("license_ack_all_tiers");
+    expect(downloadSettingsRoute).toContain("licenseText");
+    expect(downloadSettingsRoute).not.toContain("license_requires_lite");
+    expect(downloadSettingsRoute).not.toContain("license_requires_studio");
+  });
+});

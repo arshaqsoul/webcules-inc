@@ -106,8 +106,12 @@ export default function GalleryDelivery() {
         <Tier plan="lite" />, cap how many single photos a client can pull, offer a web-size option{" "}
         <Tier plan="lite" />, ask for an email before downloads unlock{" "}
         <Tier plan="lite" /> (guest galleries and event shares &mdash; you get the list of who
-        downloaded), and require your approval before bulk downloads{" "}
-        <Tier plan="studio" />. Downloads follow the gallery&apos;s protections: proofing galleries
+        downloaded), require your approval before bulk downloads{" "}
+        <Tier plan="studio" />, and attach a short license agreement your clients must
+        accept before anything downloads &mdash; on every plan, with no tier gate. Each
+        acceptance is frozen in an uneditable audit log with the exact text they agreed
+        to, and editing the license asks everyone again on their next download.
+        Downloads follow the gallery&apos;s protections: proofing galleries
         deliver watermarked previews only, and original JPEGs leave without location data.
         Revoking or expiring a gallery stops downloads immediately &mdash; even ones already in
         progress &mdash; and renewing the link restores them.

@@ -11,7 +11,9 @@ import { getOrgContext } from "@/lib/session";
 import { clientIp, logShareAccess, resolveGalleryAccess } from "@/lib/shares/gallery-auth";
 import { assetInGrant, getGrantById } from "@/lib/shares/grants";
 import { checkImageView, countAssetView } from "@/lib/limits";
-import { downloadSettingsOf, photoDownloadCount } from "@/lib/repos/downloads";
+import { downloadSettingsOf, photoDownloadCount, licenseSha256 } from "@/lib/repos/downloads";
+import { licenseTextOf } from "@/lib/gallery-downloads";
+import { licenseAckCookieOk } from "@/app/api/g/[token]/download-request/license/route";
 import { emailCaptureCookieOk } from "@/app/api/g/[token]/download-request/email/route";
 import { downloadCookieOk } from "@/app/api/g/[token]/download-request/verify/route";
 
@@ -148,6 +150,16 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       // pattern as the PIN (minted by the email route). Both gates apply.
       if (settings.emailCapture && !(await emailCaptureCookieOk(grant.id, req.headers.get("cookie")?.match(/(?:^|;\s*)snap-dl-email=([^;]+)/)?.[1] ?? null))) {
         return Response.json({ error: "email_required" }, { status: 401 });
+      }
+      // WEB-193: license acknowledgment — the studio's legal cover on free
+      // downloads, ALL tiers (never a feature gate). The ack cookie is bound
+      // to the text version, so editing the license re-locks the gallery.
+      const license = licenseTextOf(grant);
+      if (license) {
+        const licenseSha = await licenseSha256(license);
+        if (!(await licenseAckCookieOk(grant.id, licenseSha, req.headers.get("cookie")?.match(/(?:^|;\s*)snap-dl-license=([^;]+)/)?.[1] ?? null))) {
+          return Response.json({ error: "license_required" }, { status: 401 });
+        }
       }
       if (settings.limit && (await photoDownloadCount(grant.id)) >= settings.limit) {
         return Response.json({ error: "download_limit_reached", limit: settings.limit }, { status: 403 });

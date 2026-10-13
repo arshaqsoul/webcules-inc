@@ -20,13 +20,15 @@ import { grantIsOpen, resolveGrantByToken } from "@/lib/shares/grants";
 import {
   downloadSettingsOf,
   getDownloadRequestForGrant,
+  licenseSha256,
   recordRequestDelivery,
   zipPartsStartedSince,
 } from "@/lib/repos/downloads";
-import { parseAssetIds, parseSizePref, type DownloadScope, type SizePref } from "@/lib/gallery-downloads";
+import { parseAssetIds, parseSizePref, licenseTextOf, type DownloadScope, type SizePref } from "@/lib/gallery-downloads";
 import { buildZipPlan, grantGuard, manifestOf, zipPartResponse, type ZipSelection } from "@/lib/zip-delivery";
 import { downloadCookieOk } from "@/app/api/g/[token]/download-request/verify/route";
 import { emailCaptureCookieOk } from "@/app/api/g/[token]/download-request/email/route";
+import { licenseAckCookieOk } from "@/app/api/g/[token]/download-request/license/route";
 
 export const dynamic = "force-dynamic";
 
@@ -57,6 +59,16 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
     !(await emailCaptureCookieOk(grant.id, req.headers.get("cookie")?.match(/(?:^|;\s*)snap-dl-email=([^;]+)/)?.[1] ?? null))
   ) {
     return Response.json({ error: "email_required" }, { status: 401 });
+  }
+  // WEB-193: license acknowledgment — ALL tiers, never a feature gate. The
+  // ack cookie is bound to the text version, so editing the license
+  // re-locks the gallery until it's agreed again.
+  const license = licenseTextOf(grant);
+  if (license) {
+    const licenseSha = await licenseSha256(license);
+    if (!(await licenseAckCookieOk(grant.id, licenseSha, req.headers.get("cookie")?.match(/(?:^|;\s*)snap-dl-license=([^;]+)/)?.[1] ?? null))) {
+      return Response.json({ error: "license_required" }, { status: 401 });
+    }
   }
 
   const url = new URL(req.url);
