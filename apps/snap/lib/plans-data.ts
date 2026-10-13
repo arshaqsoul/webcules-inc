@@ -61,6 +61,13 @@ export type PlanDef = {
   packagesAllowed: boolean;
   /** Custom/lab-fulfilled products — Studio+ (prints land post-MVP). */
   customProductsAllowed: boolean;
+  /** WEB-305 portfolio core: curated public collections (CFO ruling
+   * WEB-302 §4). Org-wide caps enforced server-side on every write path in
+   * lib/repos/portfolio.ts — Free 1 collection / 20 items, Lite 5 / 250,
+   * Studio+ unlimited. */
+  maxPortfolioCollections: number | null;
+  /** Total curated portfolio items across all collections (org-wide). */
+  maxPortfolioItems: number | null;
 };
 
 const GB = 1024 ** 3;
@@ -75,6 +82,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     maxActiveBookings: null, maxActiveGalleries: 5, maxLinkedStudios: 1, otpCapPerUser: 30, maxSessionTypes: 1, maxContractTemplates: 2, maxEmailSnippets: 5, maxContactForms: 1, maxQuestionnaires: 1,
     maxCustomDomains: 0, maxTeamSeats: 1, inboxSnooze: false,
     storeEnabled: false, maxPriceLists: 0, packagesAllowed: false, customProductsAllowed: false,
+    maxPortfolioCollections: 1, maxPortfolioItems: 20,
   },
   lite: {
     id: "lite", name: "Lite", priceMonthlyUsd: 15,
@@ -84,6 +92,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     maxActiveBookings: null, maxActiveGalleries: 15, maxLinkedStudios: 3, otpCapPerUser: 30, maxSessionTypes: 3, maxContractTemplates: 2, maxEmailSnippets: 5, maxContactForms: 1, maxQuestionnaires: 3,
     maxCustomDomains: 0, maxTeamSeats: 1, inboxSnooze: true,
     storeEnabled: true, maxPriceLists: 1, packagesAllowed: false, customProductsAllowed: false,
+    maxPortfolioCollections: 5, maxPortfolioItems: 250,
   },
   studio: {
     id: "studio", name: "Studio", priceMonthlyUsd: 29,
@@ -93,6 +102,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     maxActiveBookings: null, maxActiveGalleries: null, maxLinkedStudios: null, otpCapPerUser: 30, maxSessionTypes: null, maxContractTemplates: null, maxEmailSnippets: null, maxContactForms: null, maxQuestionnaires: null,
     maxCustomDomains: 0, maxTeamSeats: 3, inboxSnooze: true,
     storeEnabled: true, maxPriceLists: 5, packagesAllowed: true, customProductsAllowed: true,
+    maxPortfolioCollections: null, maxPortfolioItems: null,
   },
   pro: {
     id: "pro", name: "Pro", priceMonthlyUsd: 59,
@@ -102,6 +112,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     maxActiveBookings: null, maxActiveGalleries: null, maxLinkedStudios: null, otpCapPerUser: 30, maxSessionTypes: null, maxContractTemplates: null, maxEmailSnippets: null, maxContactForms: null, maxQuestionnaires: null,
     maxCustomDomains: 2, maxTeamSeats: 10, inboxSnooze: true,
     storeEnabled: true, maxPriceLists: null, packagesAllowed: true, customProductsAllowed: true,
+    maxPortfolioCollections: null, maxPortfolioItems: null,
   },
 };
 
