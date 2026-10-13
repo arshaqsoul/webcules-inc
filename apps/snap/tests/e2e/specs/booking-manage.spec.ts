@@ -24,7 +24,8 @@ test.beforeEach(async ({ page }) => {
       await page.waitForTimeout(2_000);
     }
   }
-  await expect(page.getByText("E2E Widget Studio")).toBeVisible();
+  // CI cold-compile of the manage route can exceed the default 10s — WEB-262.
+  await expect(page.getByText("E2E Widget Studio")).toBeVisible({ timeout: 60_000 });
 });
 
 // Runs first — no mutations yet (later tests reschedule and cancel the same
@@ -35,7 +36,7 @@ test("an unknown token gets the neutral denial", async ({ page }) => {
 });
 
 test("client reschedules from the manage link", async ({ page }) => {
-  await expect(page.getByText(/9:00 AM/)).toBeVisible();
+  await expect(page.getByText(/9:00 AM/)).toBeVisible({ timeout: 60_000 });
   // The page renders from server HTML before React hydrates — retry the
   // click until it lands (pre-hydration clicks are silently lost).
   await expect(async () => {
@@ -44,7 +45,7 @@ test("client reschedules from the manage link", async ({ page }) => {
   }).toPass({ timeout: 30_000 });
 
   const frame = page.frameLocator("iframe");
-  await expect(frame.getByText(/times in/i)).toBeVisible();
+  await expect(frame.getByText(/times in/i)).toBeVisible({ timeout: 60_000 });
 
   // Walk to the seeded month (~12 days out), then open the target day.
   const dayBtn = frame.getByRole("button", { name: new RegExp(`^${monthHeading} ${d}(,| )`) });
@@ -73,7 +74,7 @@ test("client reschedules from the manage link", async ({ page }) => {
 
 test("client cancels from the manage link", async ({ page }) => {
   // Runs after the reschedule test — the booking now sits at 10:00.
-  await expect(page.getByText(/10:00 AM/).first()).toBeVisible();
+  await expect(page.getByText(/10:00 AM/).first()).toBeVisible({ timeout: 60_000 });
   // Retry until hydrated (pre-hydration clicks are silently lost).
   await expect(async () => {
     await page.getByRole("button", { name: /cancel booking/i }).click();
