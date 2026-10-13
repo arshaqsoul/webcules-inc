@@ -11,6 +11,8 @@ import * as schema from "@/lib/db-schema";
 import { getOrgContext } from "@/lib/session";
 import { getPlanEntitlements } from "@/lib/plans";
 import { listFavoriteDetails } from "@/lib/shares/selections";
+import { downloadSettingsOf } from "@/lib/repos/downloads";
+import { parseSizePref, type SizePref } from "@/lib/gallery-downloads";
 import { buildZipPlan, manifestOf, zipPartResponse } from "@/lib/zip-delivery";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +20,7 @@ export const dynamic = "force-dynamic";
 const bodySchema = z.object({
   zip: z.boolean().optional(),
   listId: z.string().optional(),
-  sizePref: z.enum(["full", "web"]).optional(),
+  sizePref: z.enum(["full", "web", "mid"]).optional(),
 });
 
 function csvCell(value: string): string {
@@ -27,7 +29,7 @@ function csvCell(value: string): string {
 
 type GrantRow = typeof schema.shareGrants.$inferSelect;
 
-function zipPlanFor(grant: GrantRow, assetIds: string[], size: "full" | "web") {
+function zipPlanFor(grant: GrantRow, assetIds: string[], size: SizePref) {
   return buildZipPlan({
     organizationId: grant.organizationId,
     grantId: grant.id,
@@ -63,7 +65,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const url = new URL(req.url);
   const listId = url.searchParams.get("listId");
   const details = (await listFavoriteDetails(loaded.grant.id)).filter((d) => !listId || d.listId === listId);
-  const plan = await zipPlanFor(loaded.grant, details.map((d) => d.assetId), url.searchParams.get("size") === "web" ? "web" : "full");
+  // WEB-196: the export ladder rides the gallery's webSize toggle like the
+  // client paths — an unoffered size exports full, never errors.
+  const plan = await zipPlanFor(loaded.grant, details.map((d) => d.assetId), parseSizePref(url.searchParams.get("size"), downloadSettingsOf(loaded.grant).webSize));
   const part = Number(url.searchParams.get("part") ?? 1);
   if (!plan.items.length || !Number.isInteger(part)) return Response.json({ error: "empty" }, { status: 400 });
   const seen = url.searchParams.get("v");
@@ -88,7 +92,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const nameOf = new Map(assetRows.map((a) => [a.id, a.filename]));
 
   if (parsed.data?.zip) {
-    const plan = await zipPlanFor(grant, details.map((d) => d.assetId), parsed.data.sizePref === "web" ? "web" : "full");
+    const plan = await zipPlanFor(grant, details.map((d) => d.assetId), parseSizePref(parsed.data.sizePref, downloadSettingsOf(grant).webSize));
     if (!plan.items.length) return Response.json({ error: "empty" }, { status: 400 });
     return Response.json({ zip: true, fileCount: plan.items.length, ...manifestOf(plan) });
   }

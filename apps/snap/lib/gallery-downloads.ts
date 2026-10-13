@@ -106,7 +106,28 @@ export function canTransition(from: DownloadState, to: DownloadState): boolean {
 
 export const DOWNLOAD_SCOPES = ["all", "favorites", "photos", "folder"] as const;
 export type DownloadScope = (typeof DOWNLOAD_SCOPES)[number];
-export type SizePref = "full" | "web";
+/** WEB-196: the download size ladder — Original (the source bytes), web
+ * (~2048px preview derivative), mid (~1280px on-demand derivative). */
+export type SizePref = "full" | "web" | "mid";
+
+/** Long-edge px of each non-original rung, for source-aware hiding. */
+export const SIZE_LONG_EDGE: Record<"web" | "mid", number> = { web: 2048, mid: 1280 };
+
+/** SmugMug-style source-aware hiding (WEB-196): a rung is only offered when
+ * the source is at least that big — never hand a client an upscale. Unknown
+ * intrinsic size (RAW/HEIC, legacy rows) → best effort: offer the rung and
+ * let delivery degrade gracefully server-side. */
+export function sizeOffered(pref: "web" | "mid", sourceLongEdge: number | null | undefined): boolean {
+  if (sourceLongEdge === null || sourceLongEdge === undefined) return true;
+  return sourceLongEdge >= SIZE_LONG_EDGE[pref];
+}
+
+/** Parse a client-supplied size into a SizePref. The whole ladder beyond
+ * Original (web + mid) rides the grant's single `webSize` toggle — a
+ * gallery that doesn't offer web sizes only ever ships "full". */
+export function parseSizePref(value: string | null | undefined, webSizeOffered: boolean): SizePref {
+  return webSizeOffered && (value === "web" || value === "mid") ? value : "full";
+}
 
 /** Cap on explicit asset ids in a `photos` request (studio favorites). */
 export const REQUEST_MAX_ASSET_IDS = 5000;

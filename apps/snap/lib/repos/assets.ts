@@ -370,7 +370,7 @@ export async function bulkAssetAction(
     const db = getDb();
     const assets = await selectInChunks(ids, (chunk) =>
       db
-        .select({ id: schema.assets.id, storageKey: schema.assets.storageKey, thumbKey: schema.assets.thumbKey, previewKey: schema.assets.previewKey, projectId: schema.assets.projectId })
+        .select({ id: schema.assets.id, storageKey: schema.assets.storageKey, thumbKey: schema.assets.thumbKey, previewKey: schema.assets.previewKey, midKey: schema.assets.midKey, projectId: schema.assets.projectId })
         .from(schema.assets)
         .where(and(eq(schema.assets.organizationId, organizationId), inArray(schema.assets.id, chunk))),
     );
@@ -398,7 +398,7 @@ export async function bulkAssetAction(
         (chunk) => db.delete(schema.assets).where(and(eq(schema.assets.organizationId, organizationId), inArray(schema.assets.id, chunk))),
       );
       await Promise.allSettled(
-        doomed.flatMap((a) => [a.storageKey, a.thumbKey, a.previewKey].filter((k): k is string => Boolean(k)).map((k) => deleteObject(organizationId, k))),
+        doomed.flatMap((a) => [a.storageKey, a.thumbKey, a.previewKey, a.midKey].filter((k): k is string => Boolean(k)).map((k) => deleteObject(organizationId, k))),
       );
     }
     if (guarded.size) {
@@ -575,7 +575,7 @@ export async function getAsset(organizationId: string, assetId: string) {
 export async function attachDerivative(params: {
   organizationId: string;
   assetId: string;
-  kind: "thumb" | "preview" | "preview_wm" | "edited";
+  kind: "thumb" | "preview" | "preview_wm" | "edited" | "mid";
   bytes: ArrayBuffer;
   contentType: string;
   /** WEB-117: enforce the studio's EXIF-strip policy — reject a derivative
@@ -630,7 +630,9 @@ export async function attachDerivative(params: {
           ? { previewKey: key }
           : params.kind === "edited"
             ? { editKey: key }
-            : { previewWmKey: key }),
+            : params.kind === "mid"
+              ? { midKey: key }
+              : { previewWmKey: key }),
       ...(params.verifyNoExif ? { exifStripped: true } : {}),
       ...(params.width && !asset.width ? { width: Math.round(params.width) } : {}),
       ...(params.height && !asset.height ? { height: Math.round(params.height) } : {}),
@@ -903,9 +905,10 @@ export async function deleteAsset(organizationId: string, assetId: string): Prom
   await db.delete(schema.assets).where(eq(schema.assets.id, assetId));
   await deleteObject(organizationId, asset.storageKey);
   // WEB-116: derivative objects live beside the original — remove them too
-  // (WEB-402: including the edited look).
+  // (WEB-402: including the edited look; WEB-196: including the mid).
   if (asset.thumbKey) await deleteObject(organizationId, asset.thumbKey).catch(() => undefined);
   if (asset.previewKey) await deleteObject(organizationId, asset.previewKey).catch(() => undefined);
+  if (asset.midKey) await deleteObject(organizationId, asset.midKey).catch(() => undefined);
   if (asset.editKey) await deleteObject(organizationId, asset.editKey).catch(() => undefined);
   return { ok: true };
 }

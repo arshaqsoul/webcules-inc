@@ -1,6 +1,6 @@
 /* /api/g/{token}/zip (downloads 3.0) - download-all, streamed on demand.
  *
- *   GET ?scope=all|folder|favorites[&folder=][&size=web]
+ *   GET ?scope=all|folder|favorites[&folder=][&size=web|mid]
  *       → JSON manifest: how many ≤2 GiB archive parts, files and bytes.
  *   GET ?...&part=N[&v=revision]
  *       → part N as a streamed ZIP straight from R2 (no build step, no
@@ -23,7 +23,7 @@ import {
   recordRequestDelivery,
   zipPartsStartedSince,
 } from "@/lib/repos/downloads";
-import { parseAssetIds, type DownloadScope, type SizePref } from "@/lib/gallery-downloads";
+import { parseAssetIds, parseSizePref, type DownloadScope, type SizePref } from "@/lib/gallery-downloads";
 import { buildZipPlan, grantGuard, manifestOf, zipPartResponse, type ZipSelection } from "@/lib/zip-delivery";
 import { downloadCookieOk } from "@/app/api/g/[token]/download-request/verify/route";
 
@@ -66,14 +66,16 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
       scope: approvalRow.scope as DownloadScope,
       folderName: approvalRow.folderName,
       assetIds: parseAssetIds(approvalRow.assetIds),
-      size: approvalRow.sizePref === "web" && settings.webSize ? "web" : "full",
+      // WEB-196: the ladder (web/mid) rides the webSize toggle; anything
+      // else — or a gallery that stopped offering sizes — falls to full.
+      size: parseSizePref(approvalRow.sizePref, settings.webSize),
     };
   } else {
     const scope = url.searchParams.get("scope");
     if (scope !== "all" && scope !== "folder" && scope !== "favorites") {
       return Response.json({ error: "invalid_scope" }, { status: 400 });
     }
-    const size: SizePref = url.searchParams.get("size") === "web" && settings.webSize ? "web" : "full";
+    const size: SizePref = parseSizePref(url.searchParams.get("size"), settings.webSize);
     selection = { scope, folderName: scope === "folder" ? url.searchParams.get("folder") : null, size };
   }
 

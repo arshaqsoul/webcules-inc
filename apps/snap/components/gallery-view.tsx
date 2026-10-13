@@ -22,6 +22,7 @@ import {
   type GalleryDesign,
 } from "@/lib/gallery-design";
 import type { RenderPlan, RenderSection, SectionAsset } from "@/lib/gallery-sections";
+import { sizeOffered, type SizePref } from "@/lib/gallery-downloads";
 import { PUBLIC_HOST } from "@/lib/hosts";
 import { useTurnstile } from "@/components/use-turnstile";
 
@@ -385,6 +386,42 @@ function startBrowserDownload(href: string) {
   document.body.appendChild(a);
   a.click();
   a.remove();
+}
+
+/** WEB-196: intrinsic long edge when the upload recorded it (drives the
+ * SmugMug-style source-aware hiding of ladder rungs). */
+function longEdgeOf(a: { width?: number | null; height?: number | null }): number | null {
+  return a.width != null && a.height != null ? Math.max(a.width, a.height) : null;
+}
+
+/** WEB-196: the on-demand mid rung — the same canvas pipeline as
+ * thumb/preview (decode → downscale → re-encode, EXIF-free by
+ * construction). Only re-encodes when the fetched bytes are BIGGER than
+ * the rung (a stored mid passes through untouched); null when the browser
+ * can't decode them (RAW) — the caller saves the fetched bytes as-is. */
+async function canvasAtMost(blob: Blob, maxLongEdge: number): Promise<Blob | null> {
+  try {
+    const bitmap = await createImageBitmap(blob);
+    const longEdge = Math.max(bitmap.width, bitmap.height);
+    if (longEdge <= maxLongEdge) {
+      bitmap.close();
+      return null;
+    }
+    const scale = maxLongEdge / longEdge;
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      bitmap.close();
+      return null;
+    }
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close();
+    return await new Promise<Blob | null>((r) => canvas.toBlob((b) => r(b), "image/jpeg", 0.85));
+  } catch {
+    return null;
+  }
 }
 
 /** Autoplay slideshow: crossfade + optional Ken Burns drift per slide, pace
@@ -1613,9 +1650,48 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
     [],
   );
 
+  /** WEB-196: the 1280px rung. Fetches through the authorized download
+   * path (?size=mid — PIN, per-client cap and audit apply exactly like the
+   * other rungs), then finishes the on-demand derivative in this browser:
+   * when only the ~2048px preview exists server-side, canvas downscales it
+   * to ~1280 (EXIF-free by construction); a stored mid or an undecodable
+   * source is saved untouched. */
+  const downloadMid = useCallback(
+    async (asset: { id: string; filename: string }) => {
+      setDlBusy(true);
+      try {
+        const res = await fetch(`/api/assets/${asset.id}?download=1&size=mid`);
+        if (res.status === 401 && ((await res.json().catch(() => ({}))) as { error?: string }).error === "pin_required") {
+          setDlBusy(false);
+          setPinPrompt({ retry: () => void downloadMid(asset) });
+          return;
+        }
+        if (!res.ok) {
+          setDlFlash(res.status === 403 ? "You've reached the download limit for this gallery — your photographer can lift it." : "Download failed — try again.");
+          setTimeout(() => setDlFlash(""), 4000);
+          return;
+        }
+        const fetched = await res.blob();
+        const shrunk = await canvasAtMost(fetched, 1280);
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(shrunk ?? fetched);
+        a.download = shrunk ? `${asset.filename.replace(/\.[^.]+$/, "")}-1280.jpg` : asset.filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 30_000);
+      } catch {
+        setDlFlash("Network error - try again.");
+        setTimeout(() => setDlFlash(""), 3000);
+      }
+      setDlBusy(false);
+    },
+    [],
+  );
+
   /** Download-all: resolve the plan, then hand the browser a streaming URL
    * per part. Galleries that need studio approval file a request instead. */
-  async function requestZip(scope: "all" | "folder" | "favorites", sizePref: "full" | "web") {
+  async function requestZip(scope: "all" | "folder" | "favorites", sizePref: SizePref) {
     setDlMenuOpen(false);
     if (dl?.controls.approval) return fileApprovalRequest(scope, sizePref);
     const qs = new URLSearchParams({ scope, size: sizePref });
@@ -1671,7 +1747,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
     zipSheet.manifest.parts.forEach((p, i) => setTimeout(() => pullPart(p.index), i * 1500));
   }
 
-  async function fileApprovalRequest(scope: "all" | "folder" | "favorites", sizePref: "full" | "web") {
+  async function fileApprovalRequest(scope: "all" | "folder" | "favorites", sizePref: SizePref) {
     setDlBusy(true);
     try {
       const res = await fetch(`/api/g/${clientToken}/download-request`, {
@@ -2213,9 +2289,14 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
                   <button type="button" disabled={dlBusy} onClick={() => void requestZip("all", "full")} className="mt-1.5 w-full rounded-md bg-surface-2 px-3 py-2 text-left text-xs font-medium text-ink hover:bg-surface-3 disabled:opacity-60">
                     Everything · full resolution
                   </button>
-                  {dl.controls.webSize && (
+                  {dl.controls.webSize && assets.some((a) => a.kind === "image" && sizeOffered("web", longEdgeOf(a))) && (
                     <button type="button" disabled={dlBusy} onClick={() => void requestZip("all", "web")} className="mt-1.5 w-full rounded-md bg-surface-2 px-3 py-2 text-left text-xs font-medium text-ink hover:bg-surface-3 disabled:opacity-60">
                       Everything · web size (2048px)
+                    </button>
+                  )}
+                  {dl.controls.webSize && assets.some((a) => a.kind === "image" && sizeOffered("mid", longEdgeOf(a))) && (
+                    <button type="button" disabled={dlBusy} onClick={() => void requestZip("all", "mid")} className="mt-1.5 w-full rounded-md bg-surface-2 px-3 py-2 text-left text-xs font-medium text-ink hover:bg-surface-3 disabled:opacity-60">
+                      Everything · small (1280px)
                     </button>
                   )}
                   {activeFolder && (
@@ -2766,7 +2847,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
                 >
                   Download
                 </button>
-                {dl?.controls.webSize && current.kind === "image" && (
+                {dl?.controls.webSize && current.kind === "image" && sizeOffered("web", longEdgeOf(current)) && (
                   <button
                     type="button"
                     disabled={dlBusy}
@@ -2774,7 +2855,18 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
                     className="rounded-md px-2.5 py-1.5 text-xs text-white/70 underline-offset-2 hover:bg-white/10 hover:underline disabled:opacity-60"
                     title="2048px web size — great for sharing"
                   >
-                    Web
+                    2048
+                  </button>
+                )}
+                {dl?.controls.webSize && current.kind === "image" && sizeOffered("mid", longEdgeOf(current)) && (
+                  <button
+                    type="button"
+                    disabled={dlBusy}
+                    onClick={() => void downloadMid(current)}
+                    className="rounded-md px-2.5 py-1.5 text-xs text-white/70 underline-offset-2 hover:bg-white/10 hover:underline disabled:opacity-60"
+                    title="1280px — small and email-friendly"
+                  >
+                    1280
                   </button>
                 )}
               </span>

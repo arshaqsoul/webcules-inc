@@ -49,6 +49,7 @@ type ZipRow = {
   thumbKey: string | null;
   previewKey: string | null;
   previewWmKey: string | null;
+  midKey: string | null;
   editKey: string | null;
   folderName: string | null;
 };
@@ -89,6 +90,7 @@ async function resolveRows(grantId: string, sel: ZipSelection): Promise<ZipRow[]
       thumbKey: schema.assets.thumbKey,
       previewKey: schema.assets.previewKey,
       previewWmKey: schema.assets.previewWmKey,
+      midKey: schema.assets.midKey,
       editKey: schema.assets.editKey,
       folderName: schema.shareGrantAssets.folderName,
     })
@@ -128,6 +130,14 @@ function sourceKey(row: ZipRow, size: SizePref, proofing: boolean): { key: strin
   }
   if (size === "web") {
     const key = row.editKey ?? row.previewKey;
+    return key ? { key, strip: false, derivative: true } : null;
+  }
+  // WEB-196: mid rung (~1280px). The mid derivative is generated on demand,
+  // so a gallery that hasn't prepared it yet falls back to the preview —
+  // the closest smaller stored bytes (never an upscale, archive stays
+  // complete). WEB-402 precedence mirrors the web rung: the grade wins.
+  if (size === "mid") {
+    const key = row.editKey ?? row.midKey ?? row.previewKey;
     return key ? { key, strip: false, derivative: true } : null;
   }
   if (row.editKey) return { key: row.editKey, strip: false, derivative: true };

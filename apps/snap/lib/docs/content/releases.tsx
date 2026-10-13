@@ -37,6 +37,23 @@ export default function Releases() {
 
       <Release version="0.16.0" date="October 12, 2026">
         <p>
+          <strong>Downloads in the size your clients actually need.</strong>{" "}
+          When you turn on <strong>Web sizes</strong> for a gallery, clients
+          now see a small ladder next to every photo — the original, a
+          2048px web size, and a new 1280px size that&rsquo;s small enough to
+          email or text. Sizes a photo is too small for simply don&rsquo;t
+          appear, so nobody is offered an upscale.
+        </p>
+        <p>
+          <strong>The 1280px size makes itself.</strong> It&rsquo;s prepared
+          on demand — a single photo is sized right in your client&rsquo;s
+          browser the moment they click, and a{" "}
+          <strong>Prepare 1280px size</strong> button in the gallery&rsquo;s
+          download controls readies the whole gallery for bulk ZIP
+          downloads. Same protections as ever: PIN, download caps and
+          approval rules apply to every size.
+        </p>
+        <p>
           <strong>Publish straight from Lightroom Classic.</strong> The new{" "}
           <strong>Snap Publish</strong> plugin adds a Snap entry to
           Lightroom&rsquo;s Publish Services panel: create a publish collection

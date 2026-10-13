@@ -14,6 +14,7 @@ import downloadSettingsRoute from "../../app/api/grants/[id]/download-settings/r
 import favoriteRoute from "../../app/api/g/[token]/favorite/route.ts?raw";
 import favoritesExportRoute from "../../app/api/grants/[id]/favorites/export/route.ts?raw";
 import sneakPeekRoute from "../../app/api/assets/sneak-peek/route.ts?raw";
+import assetRoute from "../../app/api/assets/[id]/route.ts?raw";
 import assetViewsRoute from "../../app/api/projects/[id]/asset-views/route.ts?raw";
 
 import { PLANS } from "@/lib/plans";
@@ -101,5 +102,25 @@ describe("WEB-267 gallery ladder (gates as shipped)", () => {
       expect(src, `${name} route must not gate on plan`).not.toMatch(/getPlanEntitlements|requires_lite|requires_studio|ent\?\.id/);
     }
     expect(zipRoute).toContain("allowDownload"); // the photographer's per-gallery switch still rules
+  });
+});
+
+describe("WEB-196 review fix — proofing swallows the size ladder", () => {
+  it("the WEB-242 proofing block sits ABOVE the web/mid size rungs in the asset route", () => {
+    // The /api/assets route can't run under the workers test pool (it imports
+    // next/headers via the session), so the branch ORDER is pinned statically:
+    // a proofing grant with downloads + webSize on must hit the watermarked
+    // proofing serve before any clean size rung can answer (closes the
+    // pre-existing WEB-261 web hole and the new WEB-196 mid rung).
+    const proofingAt = assetRoute.indexOf("grant.allowDownload && grant.proofing");
+    const webRungAt = assetRoute.indexOf('sizeParam === "web"');
+    const midRungAt = assetRoute.indexOf('sizeParam === "mid"');
+    expect(proofingAt).toBeGreaterThanOrEqual(0);
+    expect(webRungAt).toBeGreaterThan(proofingAt);
+    expect(midRungAt).toBeGreaterThan(proofingAt);
+  });
+
+  it("download-request suppresses the ladder for proofing grants (controls + sizePref)", () => {
+    expect(downloadRequestRoute).toContain("settings.webSize && !grant.proofing");
   });
 });

@@ -27,7 +27,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     return Response.json({ error: "expected_multipart" }, { status: 400 });
   }
   const kind = form.get("kind");
-  if (kind !== "thumb" && kind !== "preview" && kind !== "preview_wm" && kind !== "edited") {
+  if (kind !== "thumb" && kind !== "preview" && kind !== "preview_wm" && kind !== "edited" && kind !== "mid") {
     return Response.json({ error: "invalid_kind" }, { status: 400 });
   }
   // WEB-242: preview_wm exists only for entitled studios (margin + abuse).

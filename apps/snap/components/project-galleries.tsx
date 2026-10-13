@@ -569,7 +569,7 @@ export function ProjectGalleries({
                   <li key={r.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-hairline bg-surface-1 px-3 py-2 text-sm">
                     <span className="text-ink">
                       {r.scope === "all" ? "Whole gallery" : r.scope === "folder" ? `Folder “${r.folderName ?? "?"}”` : r.scope === "favorites" ? "Their favorites" : "Selected photos"}
-                      {r.fileCount ? ` · ${r.fileCount} photos` : ""} · {r.sizePref === "web" ? "web size" : "full size"}
+                      {r.fileCount ? ` · ${r.fileCount} photos` : ""} · {r.sizePref === "web" ? "web size" : r.sizePref === "mid" ? "1280px" : "full size"}
                     </span>
                     {r.note ? <span className="text-xs italic text-ink-subtle">“{r.note}”</span> : null}
                     <span className="ml-auto flex gap-1.5">
@@ -811,6 +811,8 @@ function GrantDownloadSettings({ grantId, canLite, canStudio }: { grantId: strin
   const [sharing, setSharing] = useState(true);
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
+  // WEB-196: browser-side "prepare 1280s" backfill for the mid rung.
+  const [midPrep, setMidPrep] = useState<{ running: boolean; done: number }>({ running: false, done: 0 });
 
   async function load() {
     const res = await fetch(`/api/grants/${grantId}/download-settings`);
@@ -860,6 +862,58 @@ function GrantDownloadSettings({ grantId, canLite, canStudio }: { grantId: strin
     setTimeout(() => setNote(""), 3500);
   }
 
+  /** WEB-196: the mid derivative (~1280px) is generated ON DEMAND, in this
+   * browser, from each photo's preview — the same canvas pipeline as
+   * thumb/preview. Pages through this gallery's not-yet-prepared images
+   * (keyset cursor, resume-safe); single-photo 1280 downloads render
+   * client-side even without this pass, but ZIPs and future destination
+   * exports serve the stored bytes. */
+  async function prepareMids() {
+    if (midPrep.running) return;
+    setMidPrep({ running: true, done: 0 });
+    setNote("Preparing 1280px sizes…");
+    let cursor = "";
+    let done = 0;
+    try {
+      for (;;) {
+        const listRes = await fetch(`/api/grants/${grantId}/mid-assets?limit=50${cursor ? `&after=${cursor}` : ""}`);
+        if (!listRes.ok) break;
+        const list = (await listRes.json()) as { ids: string[]; nextCursor: string | null };
+        if (list.ids.length === 0) break;
+        for (const id of list.ids) {
+          const imgRes = await fetch(`/api/assets/${id}?variant=preview`);
+          if (!imgRes.ok) continue;
+          const bitmap = await createImageBitmap(await imgRes.blob()).catch(() => null);
+          if (!bitmap) continue;
+          const scale = Math.min(1, 1280 / Math.max(bitmap.width, bitmap.height));
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+          canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+          const ctx = canvas.getContext("2d");
+          if (!ctx) continue;
+          ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+          bitmap.close();
+          const out = await new Promise<Blob | null>((r) => canvas.toBlob((b) => r(b), "image/jpeg", 0.85));
+          if (!out) continue;
+          const form = new FormData();
+          form.set("kind", "mid");
+          form.set("file", out, "mid.jpg");
+          form.set("replace", "1");
+          await fetch(`/api/assets/${id}/derivative`, { method: "POST", body: form }).catch(() => null);
+          done += 1;
+          setMidPrep({ running: true, done });
+        }
+        if (!list.nextCursor) break;
+        cursor = list.nextCursor;
+      }
+      setNote(done > 0 ? `Prepared ${done} photo${done === 1 ? "" : "s"} at 1280px ✓` : "All photos already have a 1280px size ✓");
+    } catch {
+      setNote(`Preparation paused after ${done} — click again to resume.`);
+    }
+    setMidPrep({ running: false, done });
+    setTimeout(() => setNote(""), 5000);
+  }
+
   return (
     <div className="border-t border-hairline px-4 py-2">
       <button type="button" onClick={() => setOpen((o) => !o)} className="text-xs font-medium text-ink-subtle hover:text-ink">
@@ -899,9 +953,9 @@ function GrantDownloadSettings({ grantId, canLite, canStudio }: { grantId: strin
               <input type="checkbox" checked={approval} onChange={(e) => setApproval(e.target.checked)} disabled={!canStudio} className="h-4 w-4" />
               Approvals
             </label>
-            <label className="flex items-center gap-2 text-ink-subtle" title="Offer a 2048px web-size option">
+            <label className="flex items-center gap-2 text-ink-subtle" title="Offer web sizes: 2048px and 1280px (hidden per photo when the source is smaller)">
               <input type="checkbox" checked={webSize} onChange={(e) => setWebSize(e.target.checked)} disabled={!canLite} className="h-4 w-4" />
-              Web size
+              Web sizes
             </label>
             <label className="flex items-center gap-2 text-ink-subtle" title="Clients can share single photos as link cards (they die with this gallery)">
               <input type="checkbox" checked={sharing} onChange={(e) => setSharing(e.target.checked)} className="h-4 w-4" />
@@ -911,6 +965,14 @@ function GrantDownloadSettings({ grantId, canLite, canStudio }: { grantId: strin
               {busy ? "Saving…" : "Save"}
             </Button>
           </div>
+          {webSize && (
+            <div className="flex flex-wrap items-center gap-2">
+              <Button size="sm" variant="outline" onClick={() => void prepareMids()} disabled={midPrep.running}>
+                {midPrep.running ? `Preparing… ${midPrep.done}` : midPrep.done > 0 ? `Prepare 1280px size (${midPrep.done} done)` : "Prepare 1280px size"}
+              </Button>
+              <p className="text-xs text-ink-tertiary">Renders the small size in this browser for ZIP downloads — keep this tab open.</p>
+            </div>
+          )}
           {!canLite && <p className="text-xs text-ink-tertiary">PIN and web-size downloads are Lite features — upgrade to unlock.</p>}
           {canLite && !canStudio && <p className="text-xs text-ink-tertiary">Download approvals are a Studio feature.</p>}
           {note && <p className="text-xs text-ink-subtle">{note}</p>}
