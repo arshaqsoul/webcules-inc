@@ -38,6 +38,21 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.22.0" date="October 13, 2026">
+        <p>
+          <strong>Client upload links — let guests and clients add their own
+          photos.</strong> A new <strong>Client uploads</strong> card on a
+          project&rsquo;s Client gallery tab mints a shareable link: anyone
+          holding it — wedding guests, the couple, a client — can upload
+          photos and videos straight into your project from their phone, no
+          account, up to 1&nbsp;GB per file. Everything lands in quarantine:
+          nothing is visible in any client gallery until you approve it, and
+          approving can publish straight into a client gallery you pick when
+          minting the link. Close or expire the link any time; you&rsquo;re
+          notified as uploads arrive.
+        </p>
+      </Release>
+
       <Release version="0.21.1" date="October 13, 2026">
         <p>
           <strong>The consolidation ship.</strong> One release carrying the

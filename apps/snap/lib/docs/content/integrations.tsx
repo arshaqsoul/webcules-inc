@@ -228,6 +228,45 @@ export default function Integrations() {
         been switched on for your environment.
       </Note>
 
+      <H2>Client upload links</H2>
+      <p>
+        On a project&rsquo;s <strong>Client gallery</strong> tab, the{" "}
+        <strong>Client uploads</strong> card mints a link you can text to
+        wedding guests or hand to a client: anyone holding it can add photos
+        and videos from their phone, no account needed — perfect for the
+        &ldquo;everyone&rsquo;s phone pictures from the wedding&rdquo; pile
+        no platform except the big two ever offered.
+      </p>
+      <p>
+        <strong>Everything lands in quarantine.</strong> Guest uploads go
+        straight into your project but are invisible to every client link
+        until you approve them in the same card — approve (optionally
+        publishing straight into a chosen client gallery) or reject, one at
+        a time or all at once. Rejected uploads follow the same retention
+        clock as your own rejections.
+      </p>
+      <ul>
+        <li>
+          The link itself is the key: it works for anyone who has it, so
+          treat it like a gallery link — close it when the window is over,
+          set an expiry or a file cap when you mint it.
+        </li>
+        <li>
+          Guests can upload up to 1&nbsp;GB per file (phone videos welcome)
+          and at most 500 files per link; your plan&rsquo;s storage and type
+          rules still apply.
+        </li>
+        <li>
+          You&rsquo;re notified as uploads arrive — an inbox item per file,
+          plus at most one email per link per hour pointing at the review
+          queue.
+        </li>
+        <li>
+          Uploads arrive unfiled, exactly like a client upload page from a
+          ZIP import — file them into folders once approved.
+        </li>
+      </ul>
+
       <Related slugs={["security", "gallery-delivery"]} />
     </>
   );
