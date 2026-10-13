@@ -38,6 +38,21 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.22.0" date="October 13, 2026">
+        <p>
+          <strong>Your portfolio, generated from your library.</strong> The
+          first piece of the portfolio showcase is live: curated collections
+          publish as a real website — hero, selected work, about, and a
+          contact section with your booking link — server-rendered for search
+          engines, with a sitemap, structured data and a social share image
+          drawn from your own photos. Free portfolios live at a snaphq.app
+          address with one collection and a generous monthly image budget;
+          Lite adds the dedicated subdomain and bigger showcases; Studio
+          removes the badge. Your originals never leave the vault — public
+          pages serve web-size previews only, with metadata stripped.
+        </p>
+      </Release>
+
       <Release version="0.21.1" date="October 13, 2026">
         <p>
           <strong>The consolidation ship.</strong> One release carrying the

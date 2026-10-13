@@ -207,6 +207,13 @@ export const DOC_CATEGORIES: DocCategory[] = [
           "Every gallery platform markets \"protection.\" This is the straight version: the layers Snap actually gives you, what each one does, and what none of them can do.",
         icon: "lock",
       },
+      {
+        slug: "portfolio",
+        title: "Portfolio sites",
+        description:
+          "A shareable portfolio site built from the photos already in Snap — collections you curate, published as server-rendered pages with SEO, on a snaphq.app address or your own domain. One collection free; more from Lite.",
+        icon: "globe",
+      },
     ],
   },
   {

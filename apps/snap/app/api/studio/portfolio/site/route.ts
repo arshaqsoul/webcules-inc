@@ -52,15 +52,19 @@ export async function PATCH(req: Request) {
   } catch {
     return Response.json({ error: "invalid_body" }, { status: 400 });
   }
+  const [ent] = await Promise.all([getPlanEntitlements(ctx.organizationId)]);
   const result = await updatePortfolioSite(ctx.organizationId, {
     ...body,
     actorUserId: ctx.user.id,
+    // WEB-346 AC4: Studio-only theme tokens are rejected on Free/Lite.
+    plan: ent?.id ?? "free",
   });
   if (!result.ok) {
     const status =
       result.error === "not_found" ? 404
       : result.error === "empty_site" ? 409
       : result.error === "rights_attestation_required" ? 403
+      : result.error === "theme_tier" ? 403
       : 400;
     return Response.json({ error: result.error }, { status });
   }

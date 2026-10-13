@@ -12,7 +12,11 @@
 import { getObject } from "@/lib/storage/service";
 import { jpegExifInfo, stripJpegExif } from "@/lib/exif";
 import { pubimgCacheKey, verifyPubimgSig, type PubimgDerivative } from "@/lib/pubimg-link";
-import { resolvePublicPortfolioImage } from "@/lib/repos/portfolio";
+import {
+  incrementPortfolioView,
+  resolvePublicPortfolioImage,
+  viewOverBudget,
+} from "@/lib/repos/portfolio";
 import { getPlanEntitlements } from "@/lib/plans";
 import { effectiveWatermark } from "@/lib/watermark";
 import { getStudioProfile } from "@/lib/repos/studios";
@@ -28,6 +32,31 @@ const CACHE_CONTROL = "public, max-age=86400, stale-while-revalidate=604800";
  * key embeds the site revision — a revoking mutation rotates the key rather
  * than needing the entry to expire (WEB-345 "long-lived edge cache"). */
 const EDGE_CACHE_CONTROL = "public, max-age=31536000, immutable";
+
+/** WEB-346 AC3 (WEB-302 §4): record one served view against the org's
+ * monthly counter and decide the Free-tier budget. Returns true when the
+ * serve may proceed. A capped org gets 429 + no-store (never a cached cap,
+ * never a 500); paid tiers count for the hub meter but never cap. Counting
+ * happens only on actual serves — 404s (bad sig, curated-out, missing
+ * derivative) never consume budget. Note: requests served by Cloudflare's
+ * outer edge cache without invoking the worker are invisible to the
+ * counter — the budget is enforced on worker-reached serves, which the
+ * CACHE_CONTROL browser TTL bounds; good enough for a 100k/mo fairness
+ * budget (and revisitable if the CFO wants exactness). */
+async function countViewAndCheckBudget(organizationId: string): Promise<boolean> {
+  const ent = await getPlanEntitlements(organizationId);
+  const total = await incrementPortfolioView(organizationId);
+  return !viewOverBudget(total, ent?.portfolioImageViewsPerMonth ?? null);
+}
+
+/** Capped response — a fresh instance per serve (a Response body is
+ * single-use; never share one across requests). */
+function capResponse(): Response {
+  return new Response(JSON.stringify({ error: "view_budget_exhausted" }), {
+    status: 429,
+    headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+  });
+}
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -71,6 +100,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   if (cache) {
     const hit = await cache.match(cacheKey);
     if (hit) {
+      if (!(await countViewAndCheckBudget(resolved.organizationId))) return capResponse();
       const headers = new Headers(hit.headers);
       headers.set("Cache-Control", CACHE_CONTROL);
       headers.set("Access-Control-Allow-Origin", "*");
@@ -80,6 +110,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   const object = await getObject(resolved.organizationId, key);
   if (!object) return Response.json({ error: "not_found" }, { status: 404 });
+  // Budget is counted before materializing the serve (WEB-346 AC3).
+  if (!(await countViewAndCheckBudget(resolved.organizationId))) return capResponse();
   const contentType = object.httpMetadata?.contentType ?? "image/jpeg";
   const headers = new Headers({
     "Content-Type": contentType,

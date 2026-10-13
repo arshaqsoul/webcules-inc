@@ -81,6 +81,59 @@ export function isSnapMailDomain(domain: string): boolean {
   return domain.toLowerCase() === EMAIL_DOMAIN;
 }
 
+/* ------------- WEB-346: {slug}.snaphq.app portfolio subdomains ------------- */
+
+/** Labels under the app zone that are NOT portfolio slugs — operational
+ * hostnames and everything validSlug must refuse to hand out. */
+export const RESERVED_SUBDOMAIN_LABELS = [
+  "www", "staging", "domains", "api", "app", "docs", "blog", "help",
+  "support", "mail", "status", "assets", "cdn", "img",
+] as const;
+
+const PORTFOLIO_SLUG_RE = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;
+
+/** Slug encoded in ONE host label ("priya.snaphq.app"), or null. */
+function slugFromSingleHost(h: string): string | null {
+  for (const zone of [NEW_HOST, ...STAGING_HOSTS.filter((s) => s.endsWith(`.${NEW_HOST}`))]) {
+    const suffix = `.${zone}`;
+    if (!h.endsWith(suffix)) continue;
+    const labels = h.slice(0, -suffix.length);
+    // staging form: {slug}.staging.snaphq.app (staging hosts themselves are
+    // in APP_HOSTS and never reach here, but the parse must still recognize
+    // the shape when asked directly).
+    const parts = labels.split(".");
+    const slug = parts.length === 2 && parts[1] === "staging" ? parts[0] : parts.length === 1 ? parts[0] : null;
+    if (!slug) return null;
+    if ((RESERVED_SUBDOMAIN_LABELS as readonly string[]).includes(slug)) return null;
+    return PORTFOLIO_SLUG_RE.test(slug) ? slug : null;
+  }
+  return null;
+}
+
+/** The public portfolio slug encoded in a request host, if any: production
+ * `{slug}.snaphq.app` and the staging-testable `{slug}.staging.snaphq.app`.
+ * Everything else (app hosts, custom studio hostnames, bare zone, reserved
+ * labels, multi-label garbage) is null. A comma-separated host chain
+ * (proxies append: "host, forwarded-host") is scanned part by part. Pure —
+ * used by the landing root, the portfolio routes and tests. */
+export function portfolioSlugFromHost(host: string | null | undefined): string | null {
+  const h = (host ?? "").split(",")[0].trim().toLowerCase().split(":")[0];
+  const parts = (host ?? "").split(",").map((p) => p.trim().toLowerCase().split(":")[0]).filter(Boolean);
+  for (const part of parts.length ? parts : [h]) {
+    // App hosts (snaphq.app, www, staging, domains…) are never slugs.
+    if (APP_HOSTS.includes(part)) continue;
+    const slug = slugFromSingleHost(part);
+    if (slug) return slug;
+  }
+  return null;
+}
+
+/** True when a request host is a portfolio subdomain of ours (as opposed to
+ * a studio's custom hostname, which resolves through custom_domain rows). */
+export function isPortfolioSubdomainHost(host: string | null | undefined): boolean {
+  return portfolioSlugFromHost(host) !== null;
+}
+
 /** The origin to use for a request that arrived on `host`: that host when it
  * is one of ours (so the same code serves snaphq.app AND the legacy host
  * without crossing them), else the public origin. Never reflects an arbitrary
