@@ -64,8 +64,12 @@ for (const file of files) {
 
   // B. any remaining dynamic-require throw shims get a manifest lookup + rethrow
   if (src.includes("Dynamic require of")) {
+    // The guard's rethrow must use quoting this regex CANNOT re-match
+    // (double-quoted fragments) — a re-run otherwise re-patches the guard
+    // itself and idempotency is lost. Runtime message is identical to the
+    // original shim: Dynamic require of "<id>" is not supported
     const guard = (v) =>
-      `{const __wc_m=self.__WC_MANIFESTS&&self.__WC_MANIFESTS[${v}];if(__wc_m!==undefined)return __wc_m;throw new Error('Dynamic require of "'+${v}+'" is not supported')}`;
+      `{const __wc_m=self.__WC_MANIFESTS&&self.__WC_MANIFESTS[${v}];if(__wc_m!==undefined)return __wc_m;throw new Error('Dynamic require of'+' "'+${v}+'" '+'is not supported')}`;
     src = src.replace(
       /throw (?:new )?Error\('Dynamic require of "'\s*\+\s*([A-Za-z0-9_$]+)\s*\+\s*'" is not supported'\)/g,
       (_, v) => guard(v),
