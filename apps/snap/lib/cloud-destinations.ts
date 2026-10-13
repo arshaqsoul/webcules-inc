@@ -139,7 +139,11 @@ type SaverOptions = {
   progress?: (percent: number) => void;
   cancel?: () => void;
 };
-type Dropins = { save: (options: SaverOptions) => void; isSupported?: () => boolean };
+type Dropins = {
+  save: (options: SaverOptions) => void;
+  isSupported?: () => boolean;
+  init?: (options: { appKey: string }) => void;
+};
 
 /** dropins.js reads the app key from the <script id="dropboxjs"
  * data-app-key> tag itself (document.getElementById("dropboxjs")) — a tag
@@ -160,6 +164,12 @@ export async function saveToDropbox(opts: {
   await loadScriptOnce(DROPINS_SRC, dropinsAttrs(opts.appKey));
   const dropbox = (window as unknown as { Dropbox?: Dropins }).Dropbox;
   if (!dropbox || (dropbox.isSupported && !dropbox.isSupported())) throw new Error("saver_unsupported");
+  // WEB-328: dropins resolves the app key from the <script id="dropboxjs">
+  // tag at load time; if that lookup ever misses (dynamic inject edge,
+  // cached script, library change) the Saver opens with app_key=undefined
+  // and Dropbox answers "App is misconfigured". Set the key explicitly too
+  // — verified in-page on staging — so the Saver can never lose it.
+  dropbox.init?.({ appKey: opts.appKey });
   const url = URL.createObjectURL(opts.bytes);
   try {
     return await new Promise<"saved" | "cancelled">((resolve, reject) => {

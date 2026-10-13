@@ -12,6 +12,7 @@ import {
   driveUploadBody,
   dropinsAttrs,
   loadScriptOnce,
+  saveToDropbox,
 } from "@/lib/cloud-destinations";
 
 describe("WEB-195 cloud destinations", () => {
@@ -92,5 +93,40 @@ describe("WEB-195 cloud destinations", () => {
     expect(tag.src).toBe(DROPINS_SRC);
     expect(tag.id).toBe("dropboxjs");
     expect(tag["data-app-key"]).toBe("dbkey327");
+  });
+
+  /* WEB-328: even if dropins' script-tag key lookup misses, the Saver must
+   * not open with app_key=undefined — saveToDropbox sets the key explicitly
+   * via Dropbox.init (verified in-page on staging). */
+  it("saveToDropbox sets the app key explicitly via Dropbox.init", async () => {
+    const el = {
+      src: "",
+      async: false,
+      setAttribute: () => {},
+      onload: null as (() => void) | null,
+      onerror: null as (() => void) | null,
+    };
+    vi.stubGlobal("document", {
+      createElement: () => el,
+      head: { appendChild: () => el.onload?.() },
+    });
+    const init = vi.fn();
+    const dropins = {
+      isSupported: () => true,
+      init,
+      save: (options: { success?: () => void }) => options.success?.(),
+    };
+    vi.stubGlobal("window", { Dropbox: dropins });
+    vi.stubGlobal("URL", {
+      createObjectURL: () => "blob:web328",
+      revokeObjectURL: () => {},
+    });
+    try {
+      const result = await saveToDropbox({ appKey: "dbkey328", filename: "p.jpg", bytes: new Blob(["x"]) });
+      expect(result).toBe("saved");
+    } finally {
+      vi.unstubAllGlobals();
+    }
+    expect(init).toHaveBeenCalledWith({ appKey: "dbkey328" });
   });
 });
