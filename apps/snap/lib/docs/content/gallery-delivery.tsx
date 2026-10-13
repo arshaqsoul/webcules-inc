@@ -2,7 +2,9 @@
  * (copy preserved) with the delivery machinery verified against code:
  * lib/shares/grants.ts, lib/shares/gallery-auth.ts, lib/gallery-downloads.ts,
  * lib/zip-delivery.ts, app/api/assets/[id]/route.ts, lib/plans-data.ts,
- * app/dashboard/galleries/page.tsx. */
+ * app/dashboard/galleries/page.tsx, and the WEB-195 save-to-cloud path
+ * (lib/cloud-destinations.ts, components/gallery-view.tsx, lib/hosts.ts +
+ * the host gate in app/api/g/[token]/download-request/route.ts). */
 import { H2, Note, Callout, Shot, Tier, Related } from "@/lib/docs/primitives";
 
 export default function GalleryDelivery() {
@@ -116,6 +118,32 @@ export default function GalleryDelivery() {
         Revoking or expiring a gallery stops downloads immediately &mdash; even ones already in
         progress &mdash; and renewing the link restores them.
       </p>
+
+      <H2>Save to Google Drive or Dropbox</H2>
+      <p>
+        When downloads are on, the client gallery&apos;s full-screen view has two extra buttons
+        beside the download controls: <strong>Drive</strong> and <strong>Dropbox</strong> (they
+        appear once cloud destinations are switched on for your environment &mdash; if you
+        don&apos;t see them, they haven&apos;t been yet; see{" "}
+        <a href="/docs/integrations">Integrations</a>). Your client can save the photo or film
+        they&apos;re viewing straight to their own cloud: the file flows from Snap through their
+        browser into their account, so nothing is re-uploaded from their device. Nothing is stored
+        by Snap either &mdash; no tokens, no file handles, no copy.
+      </p>
+      <p>
+        Google Drive asks for per-file consent (<code>drive.file</code> scope, the narrowest
+        Google offers) and saves into the client&apos;s own Drive &mdash; Snap can never see or
+        touch anything else there, and the consent token is never stored. Dropbox saves through
+        its own official chooser, where the client picks where it goes. Every protection the
+        gallery carries still applies &mdash; PIN, download caps, proofing watermarking &mdash;
+        and if a save doesn&apos;t complete, the client sees an error message in the page, never
+        a silent failure.
+      </p>
+      <Note>
+        <strong>Drive</strong> appears only on galleries served from Snap&apos;s own addresses
+        (Google only consents on origins registered to our app). On a gallery served from your own
+        domain the Drive button is hidden &mdash; <strong>Dropbox</strong> works everywhere.
+      </Note>
 
       <H2>Arrange the order your client sees</H2>
       <p>
