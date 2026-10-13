@@ -24,9 +24,20 @@ describe("driveAppId", () => {
     expect(driveAppId("  42.apps.googleusercontent.com ")).toBe("42");
   });
 
+  it("accepts the standard issued form <projectnumber>-<suffix> (WEB-325)", () => {
+    // Google issues web client ids exclusively in this shape; the bare-numeric
+    // form above is the legacy/other-client-type case.
+    expect(
+      driveAppId("606239879894-xk3js8fq1n2br7vc9d0e.apps.googleusercontent.com"),
+    ).toBe("606239879894");
+    expect(driveAppId("1-a.apps.googleusercontent.com")).toBe("1");
+  });
+
   it("rejects anything that is not a client id", () => {
     expect(driveAppId("not-a-client-id")).toBeNull();
     expect(driveAppId("123.apps.googleusercontent.com.evil.example")).toBeNull();
+    expect(driveAppId("606239879894-UPPER.apps.googleusercontent.com")).toBeNull();
+    expect(driveAppId("606239879894-.apps.googleusercontent.com")).toBeNull();
     expect(driveAppId("")).toBeNull();
   });
 });

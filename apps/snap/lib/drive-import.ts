@@ -44,10 +44,14 @@ export const DRIVE_NAME_MAX = 255;
 /* ---------------- pure helpers ---------------- */
 
 /** The Picker's `setAppId` wants the numeric project id the client id
- * belongs to ("123456" of "123456.apps.googleusercontent.com"). */
+ * belongs to. Google issues web client ids exclusively as
+ * `<projectnumber>-<suffix>.apps.googleusercontent.com` (e.g.
+ * `606239879894-abc123.apps.googleusercontent.com`); the bare-numeric
+ * `<projectnumber>.apps.googleusercontent.com` form is also accepted.
+ * Either way the project number prefix is the Picker app id. */
 export function driveAppId(clientId: string): string | null {
   const trimmed = clientId.trim();
-  const m = /^(\d+)\.apps\.googleusercontent\.com$/.exec(trimmed);
+  const m = /^(\d+)(?:-[a-z0-9]+)?\.apps\.googleusercontent\.com$/.exec(trimmed);
   return m ? m[1] : null;
 }
 
