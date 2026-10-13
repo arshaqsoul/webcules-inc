@@ -123,6 +123,12 @@ export function UploadRequestView({
         };
         if (!mintRes.ok) throw new Error(mint.error ?? "upload_refused");
 
+        // WEB-387: confirm is NOT optional on any path — the asset +
+        // quarantine rows and uploaded_count are written by the confirm
+        // route, never by the PUT. The single-mode branch used to fall
+        // straight through to "done", silently losing every guest upload
+        // under the 100 MB multipart threshold.
+        let etags: string[] | undefined;
         if (mint.mode === "single" && mint.url) {
           await putWithProgress(mint.url, item.file, mint.headers ?? {}, (f) =>
             patch({ progress: f }),
@@ -130,7 +136,7 @@ export function UploadRequestView({
         } else if (mint.partUrls?.length) {
           const partSize =
             mint.partSize ?? Math.ceil(item.file.size / mint.partUrls.length);
-          const etags: string[] = [];
+          etags = [];
           for (let p = 0; p < mint.partUrls.length; p++) {
             const slice = item.file.slice(
               p * partSize,
@@ -144,27 +150,17 @@ export function UploadRequestView({
             );
             etags.push(etag.replace(/^"|"$/g, ""));
           }
-          const confirmRes = await fetch(`/api/u/${token}/uploads/confirm`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              assetId: mint.assetId,
-              etags,
-              uploaderName: name || undefined,
-            }),
-          });
-          if (!confirmRes.ok) throw new Error("confirm_failed");
-        } else {
-          const confirmRes = await fetch(`/api/u/${token}/uploads/confirm`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              assetId: mint.assetId,
-              uploaderName: name || undefined,
-            }),
-          });
-          if (!confirmRes.ok) throw new Error("confirm_failed");
         }
+        const confirmRes = await fetch(`/api/u/${token}/uploads/confirm`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            assetId: mint.assetId,
+            etags,
+            uploaderName: name || undefined,
+          }),
+        });
+        if (!confirmRes.ok) throw new Error("confirm_failed");
         patch({ status: "done", progress: 1 });
         setSlots((s) => Math.max(0, s - 1));
       } catch (err) {
