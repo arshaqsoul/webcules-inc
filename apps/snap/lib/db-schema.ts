@@ -1920,3 +1920,72 @@ export const portfolioCollectionAssets = sqliteTable(
     index("portfolio_collection_asset_asset_idx").on(t.assetId),
   ],
 );
+
+/* ---------------- Client-upload links (WEB-182, Integrations 5/6) ----------------
+ * Tokenized upload-request links: a studio mints one per project (optionally
+ * bound to a client gallery), guests upload through /u/{token}, and every
+ * file lands in quarantine (upload_request_asset status pending) — invisible
+ * to clients until the studio approves. Token storage mirrors share_grant:
+ * SHA-256 hash (lookup) + AES-GCM enc (re-display); raw token never stored. */
+export const uploadRequests = sqliteTable(
+  "upload_request",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    /** Approvals are appended to this client gallery; SET NULL keeps the
+     * link alive when the gallery is revoked/deleted. */
+    grantId: text("grant_id").references(() => shareGrants.id, { onDelete: "set null" }),
+    title: text("title").notNull(),
+    tokenHash: text("token_hash").notNull().unique(),
+    tokenEnc: text("token_enc").notNull(),
+    /** open | closed */
+    status: text("status").notNull().default("open"),
+    expiresAt: integer("expires_at", { mode: "timestamp" }),
+    /** Studio-set per-link file cap; null = uncapped. */
+    maxFiles: integer("max_files"),
+    uploadedCount: integer("uploaded_count").notNull().default(0),
+    createdBy: text("created_by").references(() => user.id, { onDelete: "set null" }),
+    /** Studio-notification throttle (one "uploads await review" email per hour). */
+    lastNotifiedAt: integer("last_notified_at"),
+    createdAt: ts("created_at"),
+    closedAt: integer("closed_at", { mode: "timestamp" }),
+  },
+  (t) => [
+    index("upload_request_org_idx").on(t.organizationId, t.createdAt),
+    index("upload_request_project_idx").on(t.projectId, t.createdAt),
+  ],
+);
+
+/** Quarantine + decision record: one row per guest-uploaded file. */
+export const uploadRequestAssets = sqliteTable(
+  "upload_request_asset",
+  {
+    id: text("id").primaryKey(),
+    uploadRequestId: text("upload_request_id")
+      .notNull()
+      .references(() => uploadRequests.id, { onDelete: "cascade" }),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    assetId: text("asset_id")
+      .notNull()
+      .references(() => assets.id, { onDelete: "cascade" }),
+    /** Free-text display name the guest typed on the upload page. */
+    uploaderName: text("uploader_name"),
+    /** pending | approved | rejected */
+    status: text("status").notNull().default("pending"),
+    decidedBy: text("decided_by").references(() => user.id, { onDelete: "set null" }),
+    decidedAt: integer("decided_at", { mode: "timestamp" }),
+    createdAt: ts("created_at"),
+  },
+  (t) => [
+    uniqueIndex("upload_request_asset_uniq").on(t.uploadRequestId, t.assetId),
+    index("upload_request_asset_req_idx").on(t.uploadRequestId, t.status, t.createdAt),
+    index("upload_request_asset_org_idx").on(t.organizationId, t.createdAt),
+  ],
+);

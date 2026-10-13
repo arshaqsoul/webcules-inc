@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { ProjectFiles } from "@/components/project-files";
 import { ProjectGalleries } from "@/components/project-galleries";
+import { ClientUploadsPanel } from "@/components/client-uploads-panel";
 import { ProjectPayments } from "@/components/project-payments";
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
@@ -344,6 +345,10 @@ export default async function ProjectDetailPage({
             canStudio={ent?.id === "studio" || ent?.id === "pro"}
           />
         </section>
+        <ClientUploadsPanel
+          projectId={id}
+          grants={grants.map((g) => ({ id: g.id, clientEmail: g.clientEmail, state: g.state }))}
+        />
         </>
       )}
 
