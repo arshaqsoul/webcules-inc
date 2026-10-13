@@ -16,6 +16,7 @@ export default defineConfig({
   use: {
     baseURL: BASE,
     screenshot: "only-on-failure",
+    trace: "retain-on-failure", // WEB-262: CI-only failures need network/console
   },
   expect: {
     timeout: 10_000,

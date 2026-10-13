@@ -48,4 +48,5 @@ jobs:
           name: snap-e2e-artifacts
           path: apps/snap/tests/e2e/.artifacts
           if-no-files-found: ignore
+          include-hidden-files: true # .artifacts is a dot-dir — skipped otherwise
           retention-days: 7
