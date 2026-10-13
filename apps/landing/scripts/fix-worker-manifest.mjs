@@ -9,7 +9,14 @@
  * B. Any remaining dynamic-require throw shims get a lookup into the inlined
  *    manifest store (self.__WC_MANIFESTS) and only then rethrow.
  *
- * Run AFTER `opennextjs-cloudflare build` (idempotent).
+ * Run AFTER `opennextjs-cloudflare build`. Idempotent: a re-run on an
+ * already-patched tree (detected via the self.__WC_MANIFESTS marker) exits 0.
+ *
+ * Tripwire: if this patches 0 files and finds no marker, it exits 1 — the
+ * minified Next.js internals it string-matches have changed. Runbook when it
+ * fires (e.g. a Next/OpenNext upgrade fixes the dynamic-require bug upstream):
+ * verify the "Dynamic require" runtime error no longer reproduces, then delete
+ * this script and its call sites in package.json.
  */
 import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -34,6 +41,7 @@ for (const f of readdirSync(nextServerDir)) {
 
 // 2. walk .open-next and patch js/mjs bundles
 let patched = 0;
+let alreadyPatched = 0;
 const files = [];
 function walk(dir) {
   for (const e of readdirSync(dir, { withFileTypes: true })) {
@@ -73,17 +81,27 @@ for (const file of files) {
     writeFileSync(file, src);
     patched++;
     console.log(`patched ${file}`);
+  } else if (src.includes("self.__WC_MANIFESTS=")) {
+    // Patch B's marker is present — this file was already patched on a
+    // previous run, so a no-op here is a successful idempotent re-run.
+    alreadyPatched++;
   }
 }
 
 console.log(`fix-worker-manifest: patched ${patched} bundle file(s)`);
 if (patched === 0) {
-  console.error(
-    "fix-worker-manifest: patched 0 bundle files — the expected minified Next.js patterns " +
-      "(getMiddlewareManifest / dynamic-require shims) were not found. Next.js internals " +
-      "likely changed and the runtime \"Dynamic require\" error would NOT be fixed. " +
-      "Failing the deploy pipeline so this is investigated instead of silently shipping " +
-      "a worker that 500s at runtime.",
-  );
-  process.exit(1);
+  if (alreadyPatched > 0) {
+    console.log(
+      `fix-worker-manifest: ${alreadyPatched} bundle file(s) already patched (idempotent re-run) — nothing to do.`,
+    );
+  } else {
+    console.error(
+      "fix-worker-manifest: patched 0 bundle files and no previous patch marker found — the expected minified Next.js patterns " +
+        "(getMiddlewareManifest / dynamic-require shims) were not found. Next.js internals " +
+        "likely changed and the runtime \"Dynamic require\" error would NOT be fixed. " +
+        "Failing the deploy pipeline so this is investigated instead of silently shipping " +
+        "a worker that 500s at runtime.",
+    );
+    process.exit(1);
+  }
 }
