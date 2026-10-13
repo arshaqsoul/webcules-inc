@@ -302,10 +302,14 @@ export function StoreHome({
               storeOpen ? "border-primary bg-primary" : "border-hairline bg-surface-2"
             } disabled:opacity-50`}
           >
+            {/* Thumb is anchored with left-0.5 and moved with translate —
+             * translate alone offsets from the span's UA "static position",
+             * which inside a <button> is the centered-content point, not the
+             * track's left edge (knob detached ~18px past the track when ON). */}
             <span
               aria-hidden
-              className={`store-status-switch-thumb absolute top-0.5 rounded-full bg-white shadow transition-transform ${
-                storeOpen ? "translate-x-[22px]" : "translate-x-1"
+              className={`store-status-switch-thumb absolute left-0.5 top-0.5 rounded-full bg-white shadow transition-transform ${
+                storeOpen ? "translate-x-[22px]" : "translate-x-0"
               }`}
               style={{ height: 18, width: 18 }}
             />
