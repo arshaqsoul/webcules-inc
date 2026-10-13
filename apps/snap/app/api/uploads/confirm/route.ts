@@ -1,16 +1,13 @@
-/* POST /api/uploads/confirm (WEB-111) — finalize a direct upload. Completes
- * multipart server-side (part ETags from the client), HEADs the object,
- * verifies declared size byte-for-byte and magic bytes against the declared
- * kind, then records the asset. Mismatched/undeclared objects are deleted. */
+/* POST /api/uploads/confirm (WEB-111) — finalize a direct upload. Delegates
+ * to verifyAndRecordUpload (WEB-182): completes multipart server-side,
+ * HEADs the object, verifies declared size byte-for-byte and magic bytes
+ * against the declared kind, then records the asset row. Mismatched or
+ * undeclared objects are deleted. The guest client-upload path
+ * (/api/u/{token}/uploads/confirm) runs the exact same core. */
 import { z } from "zod";
 
-import { getDb } from "@/lib/db";
-import * as schema from "@/lib/db-schema";
-import { completeMultipartUpload, deleteUploadSession, getUploadSession, sniffKind } from "@/lib/uploads";
+import { getUploadSession, verifyAndRecordUpload } from "@/lib/uploads";
 import { getOrgContext } from "@/lib/session";
-import { deleteObject } from "@/lib/storage/service";
-import { scanCapturedAt } from "@/lib/repos/gallery-order";
-import { env } from "cloudflare:workers";
 
 export const dynamic = "force-dynamic";
 
@@ -39,58 +36,10 @@ export async function POST(req: Request) {
   if (!session) return Response.json({ error: "session_not_found" }, { status: 404 });
 
   try {
-    if (session.mode === "multipart") {
-      if (!session.uploadId || !parsed.data.etags?.length) {
-        return Response.json({ error: "etags_required" }, { status: 400 });
-      }
-      await completeMultipartUpload(session.storageKey, session.uploadId, parsed.data.etags);
+    const result = await verifyAndRecordUpload(session, { etags: parsed.data.etags, fingerprint: parsed.data.fingerprint });
+    if (!result.ok) {
+      return Response.json({ error: result.error, ...result.extra }, { status: result.status });
     }
-
-    // Verify the object: exists, exact declared size, magic bytes match the declared kind.
-    const head = await env.R2.head(session.storageKey);
-    if (!head) {
-      await deleteUploadSession(session.id);
-      return Response.json({ error: "object_missing" }, { status: 409 });
-    }
-    if (head.size !== session.declaredBytes) {
-      await deleteObject(ctx.organizationId, session.storageKey);
-      await deleteUploadSession(session.id);
-      return Response.json({ error: "size_mismatch", declared: session.declaredBytes, actual: head.size }, { status: 409 });
-    }
-
-    const probe = await env.R2.get(session.storageKey, { range: { offset: 0, length: 64 } });
-    if (!probe) {
-      await deleteUploadSession(session.id);
-      return Response.json({ error: "object_missing" }, { status: 409 });
-    }
-    const head0 = new Uint8Array(await probe.arrayBuffer());
-    const sniffed = sniffKind(head0);
-    // "other" (studio/design/docs: psd, pdf, ai, aep, audio…) has no single
-    // magic to verify — accept an unrecognized payload, but still refuse a
-    // KNOWN family (renamed media must not sneak in as a "document").
-    const ok = sniffed === session.kind || (session.kind === "other" && sniffed === null);
-    if (!ok) {
-      await deleteObject(ctx.organizationId, session.storageKey);
-      await deleteUploadSession(session.id);
-      return Response.json({ error: "type_mismatch", declared: session.kind, detected: sniffed ?? "unknown" }, { status: 409 });
-    }
-
-    await getDb().insert(schema.assets).values({
-      id: session.id,
-      organizationId: session.organizationId,
-      projectId: session.projectId,
-      storageKey: session.storageKey,
-      kind: session.kind,
-      filename: session.filename,
-      mimeType: session.mimeType,
-      bytes: head.size,
-      checksum: head.etag ?? null,
-      fingerprint: parsed.data.fingerprint,
-      uploadedBy: session.uploadedBy,
-    });
-    await deleteUploadSession(session.id);
-    // "Date taken" sort: read the EXIF capture time now (best effort - never fails the upload).
-    await scanCapturedAt(session.organizationId, { id: session.id, storageKey: session.storageKey, kind: session.kind });
     return Response.json({ ok: true, assetId: session.id });
   } catch (err) {
     const message = String(err instanceof Error ? err.message : err);
