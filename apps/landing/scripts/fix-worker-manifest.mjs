@@ -78,5 +78,12 @@ for (const file of files) {
 
 console.log(`fix-worker-manifest: patched ${patched} bundle file(s)`);
 if (patched === 0) {
-  console.log("fix-worker-manifest: nothing to patch (already patched, or no dynamic-require shims present)");
+  console.error(
+    "fix-worker-manifest: patched 0 bundle files — the expected minified Next.js patterns " +
+      "(getMiddlewareManifest / dynamic-require shims) were not found. Next.js internals " +
+      "likely changed and the runtime \"Dynamic require\" error would NOT be fixed. " +
+      "Failing the deploy pipeline so this is investigated instead of silently shipping " +
+      "a worker that 500s at runtime.",
+  );
+  process.exit(1);
 }

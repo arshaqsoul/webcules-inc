@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
+import { fileURLToPath } from "node:url";
 
 // Keep dev (`next dev --turbopack`) and production builds in separate output
 // directories — building while the dev server runs otherwise corrupts .next
@@ -17,6 +18,10 @@ if (isDev) {
 
 const nextConfig = {
   distDir: isDev ? ".next-dev" : ".next",
+  // Pin the tracing root to the monorepo root so workspace-root inference is
+  // deterministic (stray lockfiles elsewhere on the machine otherwise confuse
+  // Next's search for the workspace root).
+  outputFileTracingRoot: fileURLToPath(new URL("../../", import.meta.url)),
   transpilePackages: ["@webcules/ui"],
   images: {
     // Next.js image optimization requires sharp, which is not available on Cloudflare Workers
