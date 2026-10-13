@@ -29,6 +29,7 @@ export const PREFIX_LEN = 14;
  * this list; stored tokens keep working because scopes are matched by id. */
 export const SCOPE_CATALOG = [
   { id: "galleries:read", label: "View galleries and collections" },
+  { id: "galleries:write", label: "Create galleries and collections" },
   { id: "assets:read", label: "View photos and metadata" },
   { id: "assets:write", label: "Upload and publish photos" },
 ] as const;

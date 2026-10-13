@@ -74,10 +74,13 @@ export function classifyUpload(filename: string): {
 export async function createAsset(params: {
   organizationId: string;
   projectId: string;
-  uploadedBy: string;
+  uploadedBy?: string | null;
   filename: string;
   mimeType: string;
   bytes: ArrayBuffer;
+  /** EXIF capture time, epoch seconds — the Lightroom plugin reports it so
+   * "date taken" is right without a browser-side EXIF scan. */
+  capturedAt?: number | null;
 }): Promise<{ id: string } | { error: "unsupported_type" }> {
   const classified = classifyUpload(params.filename);
   if (!classified) return { error: "unsupported_type" };
@@ -97,7 +100,8 @@ export async function createAsset(params: {
     filename: safeName,
     mimeType: params.mimeType,
     bytes: params.bytes.byteLength,
-    uploadedBy: params.uploadedBy,
+    uploadedBy: params.uploadedBy ?? null,
+    capturedAt: params.capturedAt ?? null,
   });
   return { id: assetId };
 }

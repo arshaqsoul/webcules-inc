@@ -80,8 +80,11 @@ import m71 from "../../migrations/0071_integration_tokens.sql?raw";
 // WEB-277 store designer landed as 0072 on master (0071 was held by the
 // WEB-186 integration-tokens branch).
 import m72 from "../../migrations/0072_store_designer.sql?raw";
-// WEB-196 download size ladder: the on-demand mid (~1280px) derivative.
-import m73 from "../../migrations/0073_mid_derivative.sql?raw";
+// WEB-185 Lightroom publish ledger (landed as 0073 on master).
+import m73 from "../../migrations/0073_integration_publish.sql?raw";
+// WEB-196 download size ladder: the on-demand mid (~1280px) derivative
+// (renumbered from 0073 during merge — master took 0073).
+import m74 from "../../migrations/0074_mid_derivative.sql?raw";
 
 const MIGRATIONS = [
   m01, m02, m03, m04, m05, m06, m07, m08, m09, m10, m11, m12, m13, m14, m15,
@@ -97,6 +100,7 @@ m70,
 m71,
 m72,
 m73,
+m74,
 ];
 
 /** Every table, in an order that satisfies FK constraints when deleting. */
@@ -108,7 +112,7 @@ const TABLES = [
   "two_factor", "import_batch",
   "gallery_selection", "gallery_favorite", "share_otp_log", "share_otp", "share_access_log",
   "share_grant_asset", "share_grant",
-  "asset_tag", "upload_session", "asset", "folder", "custom_domain",
+  "asset_tag", "upload_session", "integration_publish", "asset", "folder", "custom_domain",
   "form_response", "contract", "invoice", "payment", "org_counter",
   "lead_message", "lead",
   "booking", "booking_reminders", "project_status_event", "project", "client",

@@ -82,6 +82,12 @@ export default function Integrations() {
         <code>galleries:read</code> — see the studio&rsquo;s galleries and what&rsquo;s
         in them. Read-only.
       </p>
+      <H3>Create galleries and collections</H3>
+      <p>
+        <code>galleries:write</code> — create new galleries. The Lightroom
+        plugin uses this when it auto-creates the gallery for a new publish
+        collection; leave it off if you want to create galleries yourself.
+      </p>
       <H3>View photos and metadata</H3>
       <p>
         <code>assets:read</code> — see photo files and their metadata. Read-only.
@@ -112,6 +118,45 @@ export default function Integrations() {
         token into a fresh one, create the new token first, move the tool over,
         then revoke the old — no downtime.
       </p>
+
+      <H2>Publishing from Lightroom Classic</H2>
+      <p>
+        The <strong>Snap Publish</strong> plugin puts a Snap service in
+        Lightroom Classic&rsquo;s Publish Services panel. Each publish
+        collection maps to the Snap gallery of the same name — the gallery is
+        created on first publish if it doesn&rsquo;t exist — and pressing{" "}
+        <strong>Publish</strong> sends the finished photos straight into it.
+        Edit a published photo and Lightroom marks it{" "}
+        <strong>Modified</strong>; publish again and the gallery gets the new
+        version, not a duplicate. Remove a photo from the collection and it
+        leaves the gallery too — unless it&rsquo;s already live in a client
+        link, in which case Snap asks you to decide in the studio first.
+      </p>
+      <Steps
+        items={[
+          <>
+            In Snap, create an integration token named for your Lightroom
+            computer with <em>View galleries</em> and{" "}
+            <em>Upload and publish photos</em> (add <em>Create galleries</em>{" "}
+            to let new publish collections create their gallery).
+          </>,
+          <>
+            In Lightroom Classic: install the plugin under{" "}
+            <em>File → Plug-in Manager</em>, paste your studio address and the
+            token, and click <em>Test Connection</em>.
+          </>,
+          <>
+            In the Library&rsquo;s Publish Services panel, set up the Snap
+            service and create a publish collection named after the gallery it
+            should feed. Drag photos in and hit <em>Publish</em>.
+          </>,
+        ]}
+      />
+      <Note>
+        Sharing a gallery with a client still happens in Snap — publishing
+        from Lightroom puts photos in the gallery; the client link, welcome
+        page and download rules are yours to switch on when it&rsquo;s ready.
+      </Note>
 
       <Related slugs={["security", "gallery-delivery"]} />
     </>
