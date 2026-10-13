@@ -7,7 +7,10 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
+import { GET as pubimgRoute } from "@/app/api/pubimg/[id]/route";
+import { jpegExifInfo } from "@/lib/exif";
 import { pubimgCacheKey, pubimgLink, purgePubimgCache, verifyPubimgSig } from "@/lib/pubimg-link";
+import { deleteObject, putObject } from "@/lib/storage/service";
 import {
   addAssetsToCollection,
   createCollection,
@@ -157,5 +160,148 @@ describe("public payload carries signed pubimg URLs, not R2 keys", () => {
       const u = new URL(item.image, "https://x.test");
       expect(await verifyPubimgSig(item.assetId, u.searchParams.get("e")!, u.searchParams.get("h")!)).toBe(true);
     }
+  });
+});
+
+/* ------------------------------ route level ------------------------------ */
+
+async function fetchPubimg(assetId: string, link?: string) {
+  const l = link ?? (await pubimgLink(assetId));
+  const [path, query] = l.slice(1).split("?");
+  return pubimgRoute(new Request(`https://x.test/${path}?${query}`), {
+    params: Promise.resolve({ id: assetId }),
+  });
+}
+
+/** Minimal JPEG carrying an APP1/Exif (TIFF, no GPS) segment. */
+function exifJpeg(): Uint8Array {
+  const tiff = [
+    0x49, 0x49, 0x2a, 0x00, 0x08, 0x00, 0x00, 0x00, // II*, IFD0 @ 8
+    0x00, 0x00, // IFD0 entry count = 0
+  ];
+  const payload = [0x45, 0x78, 0x69, 0x66, 0x00, 0x00, ...tiff]; // "Exif\0\0" + TIFF
+  const size = payload.length + 2;
+  return new Uint8Array([
+    0xff, 0xd8, // SOI
+    0xff, 0xe1, size >> 8, size & 0xff, ...payload, // APP1 Exif
+    0xff, 0xda, 0x00, 0x02, // SOS
+    0xff, 0xd9, // EOI
+  ]);
+}
+
+describe("/api/pubimg route (WEB-345 acceptance)", () => {
+  it("AC1/AC2: private assets and bad signatures all 404 through the route", async () => {
+    const { studio, ids } = await publishedSiteWithImage();
+    // Both images are public; curate ids[1] out to make it private.
+    const col = (await getDb().select().from(schema.portfolioCollections).limit(1))[0];
+    await removeAssetFromCollection(studio.organizationId, col.id, ids[1]);
+
+    // Valid sig on a non-member (private) asset → 404, no bytes oracle.
+    const priv = await fetchPubimg(ids[1]);
+    expect(priv.status).toBe(404);
+
+    // Tampered signature on a PUBLIC asset → 404 (membership alone is not enough).
+    const link = await pubimgLink(ids[0]);
+    const tampered = link.replace(/h=[a-f0-9]{64}/, `h=${"0".repeat(64)}`);
+    expect((await fetchPubimg(ids[0], tampered)).status).toBe(404);
+
+    // Expired signature → 404.
+    const stale = await pubimgLink(ids[0], Date.now() / 1000 - 8 * 24 * 60 * 60);
+    expect((await fetchPubimg(ids[0], stale)).status).toBe(404);
+
+    // Malformed id → 404 without touching anything.
+    expect((await fetchPubimg("../../etc/passwd")).status).toBe(404);
+  });
+
+  it("AC4: serves the web-size preview derivative only, EXIF-stripped", async () => {
+    const { studio, ids } = await publishedSiteWithImage();
+    const org = studio.organizationId;
+    // The original exists in R2 — it must never be reachable through pubimg.
+    await putObject(org, `${ids[0]}/original.jpg`, new TextEncoder().encode("ORIGINAL-BYTES-NEVER-PUBLIC").buffer as ArrayBuffer, "image/jpeg");
+    // A preview derivative that (against doctrine) still carries EXIF.
+    const previewSuffix = `${ids[0]}/preview.jpg`;
+    await putObject(org, previewSuffix, exifJpeg().slice().buffer as ArrayBuffer, "image/jpeg");
+    expect(jpegExifInfo(exifJpeg().slice().buffer as ArrayBuffer).exif).toBe(true); // fixture sanity
+
+    const res = await fetchPubimg(ids[0]);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toBe("image/jpeg");
+    expect(res.headers.get("cache-control")).toContain("public");
+    expect(res.headers.get("x-snap-exif")).toBe("stripped");
+    const bytes = await res.arrayBuffer();
+    expect(jpegExifInfo(bytes).exif).toBe(false);
+    // Stripped bytes are the APP1-less prefix/suffix of the seeded derivative…
+    expect(bytes.byteLength).toBeLessThan(exifJpeg().byteLength);
+    // …and never the original.
+    expect(new TextDecoder().decode(bytes)).not.toContain("ORIGINAL-BYTES-NEVER-PUBLIC");
+  });
+
+  it("AC3: curate-out 404s immediately even with a warm edge entry; re-curate serves again", async () => {
+    const { studio, ids } = await publishedSiteWithImage();
+    const org = studio.organizationId;
+    const previewSuffix = `${ids[0]}/preview.jpg`;
+    await putObject(org, previewSuffix, new TextEncoder().encode("preview-bytes").buffer as ArrayBuffer, "image/jpeg");
+    const col = (await getDb().select().from(schema.portfolioCollections).limit(1))[0];
+
+    const first = await fetchPubimg(ids[0]);
+    expect(first.status).toBe(200);
+    expect(new TextDecoder().decode(await first.arrayBuffer())).toBe("preview-bytes");
+
+    // The edge entry exists and serves without R2 (long-lived cache proof).
+    await deleteObject(org, `${org}/${previewSuffix}`);
+    const cached = await fetchPubimg(ids[0]);
+    const cache = (globalThis as { caches?: { default?: Cache } }).caches?.default;
+    if (cache) {
+      expect(cached.status).toBe(200);
+      expect(new TextDecoder().decode(await cached.arrayBuffer())).toBe("preview-bytes");
+    }
+
+    // Curate-out purges: the very next fetch 404s, warm cache or not.
+    expect(await removeAssetFromCollection(org, col.id, ids[0])).toBe(true);
+    expect((await fetchPubimg(ids[0])).status).toBe(404);
+
+    // Unpublish kills the remaining asset the same way.
+    await putObject(org, `${ids[1]}/preview.jpg`, new TextEncoder().encode("preview-1").buffer as ArrayBuffer, "image/jpeg");
+    expect((await fetchPubimg(ids[1])).status).toBe(200);
+    await updatePortfolioSite(org, { status: "draft" });
+    expect((await fetchPubimg(ids[1])).status).toBe(404);
+
+    // Re-curate + re-publish rotates the revision and serves fresh bytes.
+    await addAssetsToCollection(org, col.id, [ids[0]], null);
+    await updatePortfolioSite(org, { status: "published" });
+    await putObject(org, previewSuffix, new TextEncoder().encode("preview-bytes-2").buffer as ArrayBuffer, "image/jpeg");
+    const again = await fetchPubimg(ids[0]);
+    expect(again.status).toBe(200);
+    expect(new TextDecoder().decode(await again.arrayBuffer())).toBe("preview-bytes-2");
+  });
+
+  it("watermarked studio gets the wm derivative — the original is structurally unreachable", async () => {
+    const studio = await seedStudio({ plan: "studio" });
+    await getOrCreatePortfolioSite(studio.organizationId, "Showcase");
+    const project = await seedProject(studio.organizationId);
+    const id = await seedAsset({ organizationId: studio.organizationId, projectId: project, kind: "image" });
+    await getDb()
+      .update(schema.assets)
+      .set({
+        previewKey: `${studio.organizationId}/${id}/preview.jpg`,
+        previewWmKey: `${studio.organizationId}/${id}/preview_wm.jpg`,
+        storageKey: `${studio.organizationId}/${id}/original.jpg`,
+      })
+      .where(eq(schema.assets.id, id));
+    await putObject(studio.organizationId, `${id}/original.jpg`, new TextEncoder().encode("ORIGINAL").buffer as ArrayBuffer, "image/jpeg");
+    await putObject(studio.organizationId, `${id}/preview.jpg`, new TextEncoder().encode("PLAIN-PREVIEW").buffer as ArrayBuffer, "image/jpeg");
+    await putObject(studio.organizationId, `${id}/preview_wm.jpg`, new TextEncoder().encode("WM-PREVIEW").buffer as ArrayBuffer, "image/jpeg");
+    await getDb()
+      .update(schema.studioProfiles)
+      .set({ brand: JSON.stringify({ watermark: { mode: "corner" } }) })
+      .where(eq(schema.studioProfiles.organizationId, studio.organizationId));
+    const col = await createCollection(studio.organizationId, { title: "Best" }, null);
+    if (!col.ok) throw new Error("seed collection failed");
+    await addAssetsToCollection(studio.organizationId, col.collection.id, [id], null);
+    await updatePortfolioSite(studio.organizationId, { status: "published" });
+
+    const res = await fetchPubimg(id);
+    expect(res.status).toBe(200);
+    expect(new TextDecoder().decode(await res.arrayBuffer())).toBe("WM-PREVIEW");
   });
 });

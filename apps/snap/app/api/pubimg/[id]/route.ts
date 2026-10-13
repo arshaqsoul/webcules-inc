@@ -10,6 +10,7 @@
  * revision so every revoking mutation rotates them; the revoking repo
  * paths also delete eagerly. Crawlers and visitors carry no cookies. */
 import { getObject } from "@/lib/storage/service";
+import { jpegExifInfo, stripJpegExif } from "@/lib/exif";
 import { pubimgCacheKey, verifyPubimgSig, type PubimgDerivative } from "@/lib/pubimg-link";
 import { resolvePublicPortfolioImage } from "@/lib/repos/portfolio";
 import { getPlanEntitlements } from "@/lib/plans";
@@ -71,6 +72,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const hit = await cache.match(cacheKey);
     if (hit) {
       const headers = new Headers(hit.headers);
+      headers.set("Cache-Control", CACHE_CONTROL);
       headers.set("Access-Control-Allow-Origin", "*");
       return new Response(hit.body, { status: 200, headers });
     }
@@ -78,15 +80,39 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   const object = await getObject(resolved.organizationId, key);
   if (!object) return Response.json({ error: "not_found" }, { status: 404 });
+  const contentType = object.httpMetadata?.contentType ?? "image/jpeg";
   const headers = new Headers({
-    "Content-Type": object.httpMetadata?.contentType ?? "image/jpeg",
+    "Content-Type": contentType,
     "Cache-Control": CACHE_CONTROL,
     "Access-Control-Allow-Origin": "*",
   });
-  const response = new Response(object.body, { status: 200, headers });
+  // Materialize once: the same bytes back both the visitor response and the
+  // edge entry (a stream can only be read once).
+  let bytes = await new Response(object.body).arrayBuffer();
+  // EXIF never leaves on public bytes (WEB-345 AC4 / WEB-302 §4): preview
+  // derivatives are metadata-free by construction, but this is the boundary
+  // that proves it — a derivative that somehow carries an APP1/Exif segment
+  // is stripped here, once, before it can seed the edge cache.
+  if (contentType === "image/jpeg" && jpegExifInfo(bytes).exif) {
+    const stripped = stripJpegExif(bytes);
+    if (stripped) {
+      bytes = stripped.buffer.slice(
+        stripped.byteOffset,
+        stripped.byteOffset + stripped.byteLength,
+      ) as ArrayBuffer;
+      headers.set("Content-Length", String(bytes.byteLength));
+      headers.set("X-Snap-Exif", "stripped");
+    }
+  }
   if (cache) {
     // Best-effort fill; membership is re-resolved ahead of every future hit.
-    await cache.put(cacheKey, response.clone()).catch(() => undefined);
+    // The edge entry outlives the visitor TTL: its key embeds the site
+    // revision, so it is rotated by mutation, not by expiry.
+    const edgeHeaders = new Headers(headers);
+    edgeHeaders.set("Cache-Control", EDGE_CACHE_CONTROL);
+    await cache.put(cacheKey, new Response(bytes, { status: 200, headers: edgeHeaders })).catch(
+      () => undefined,
+    );
   }
-  return response;
+  return new Response(bytes, { status: 200, headers });
 }
