@@ -9,6 +9,7 @@ import {
   isDownloadState,
   downloadScopeLabel,
   isValidPin,
+  normalizeCaptureEmail,
   normalizeDownloadSettingsInput,
   parseDownloadSettings,
   parseSizePref,
@@ -16,7 +17,7 @@ import {
   type DownloadSettings,
 } from "@/lib/gallery-downloads";
 
-const SETTINGS: DownloadSettings = { pinHash: null, limit: null, approval: false, webSize: false };
+const SETTINGS: DownloadSettings = { pinHash: null, limit: null, approval: false, webSize: false, emailCapture: false };
 
 describe("parseDownloadSettings (WEB-261)", () => {
   it("null/junk → safe defaults", () => {
@@ -27,20 +28,43 @@ describe("parseDownloadSettings (WEB-261)", () => {
 
   it("keeps valid fields, drops junk", () => {
     const s = parseDownloadSettings('{"pinHash":"'.concat("a".repeat(64), '","limit":10,"approval":true,"webSize":true,"bogus":1}'));
-    expect(s).toEqual({ pinHash: "a".repeat(64), limit: 10, approval: true, webSize: true });
+    expect(s).toEqual({ pinHash: "a".repeat(64), limit: 10, approval: true, webSize: true, emailCapture: false });
     expect(parseDownloadSettings('{"pinHash":"xyz"}').pinHash).toBeNull();
     expect(parseDownloadSettings('{"limit":0}').limit).toBeNull();
     expect(parseDownloadSettings('{"limit":99999999}').limit).toBe(10_000); // read-side clamp; write-side rejects
+  });
+
+  it("WEB-194: emailCapture parses true; junk stays false", () => {
+    expect(parseDownloadSettings('{"emailCapture":true}').emailCapture).toBe(true);
+    expect(parseDownloadSettings('{"emailCapture":"yes"}').emailCapture).toBe(false);
+    expect(parseDownloadSettings(null).emailCapture).toBe(false);
   });
 });
 
 describe("normalizeDownloadSettingsInput (WEB-261)", () => {
   it("accepts a clean payload; rejects a bad limit", () => {
-    expect(normalizeDownloadSettingsInput({ limit: 25, approval: true, webSize: true })).toEqual({ pinHash: null, limit: 25, approval: true, webSize: true });
+    expect(normalizeDownloadSettingsInput({ limit: 25, approval: true, webSize: true, emailCapture: false })).toEqual({ pinHash: null, limit: 25, approval: true, webSize: true, emailCapture: false });
     expect(normalizeDownloadSettingsInput({ limit: 0 })).toBeNull();
     expect(normalizeDownloadSettingsInput({ limit: "ten" })).toBeNull();
     expect(normalizeDownloadSettingsInput(null)).toBeNull();
     expect(normalizeDownloadSettingsInput([])).toBeNull();
+  });
+
+  it("WEB-194: emailCapture round-trips through the API input path", () => {
+    expect(normalizeDownloadSettingsInput({ emailCapture: true })?.emailCapture).toBe(true);
+    expect(normalizeDownloadSettingsInput({ emailCapture: 1 })?.emailCapture).toBe(false); // truthy-boolean only
+  });
+});
+
+describe("capture email (WEB-194)", () => {
+  it("normalizeCaptureEmail trims, lowercases, and rejects junk", () => {
+    expect(normalizeCaptureEmail("  Guest@Event.Test ")).toBe("guest@event.test");
+    expect(normalizeCaptureEmail("a@b.co")).toBe("a@b.co");
+    expect(normalizeCaptureEmail("nope")).toBeNull();
+    expect(normalizeCaptureEmail("a b@c.test")).toBeNull();
+    expect(normalizeCaptureEmail("a@nodot")).toBeNull();
+    expect(normalizeCaptureEmail("@c.test")).toBeNull();
+    expect(normalizeCaptureEmail("a@b.c")).toBeNull(); // TLD too short
   });
 });
 

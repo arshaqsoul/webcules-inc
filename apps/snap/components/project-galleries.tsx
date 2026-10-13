@@ -807,6 +807,9 @@ function GrantDownloadSettings({ grantId, canLite, canStudio }: { grantId: strin
   const [limit, setLimit] = useState("");
   const [approval, setApproval] = useState(false);
   const [webSize, setWebSize] = useState(false);
+  // WEB-194: email-capture gate + the studio's who-took-files list.
+  const [emailCapture, setEmailCapture] = useState(false);
+  const [captured, setCaptured] = useState<{ email: string; count: number; lastAt: string }[]>([]);
   const [hasPin, setHasPin] = useState(false);
   const [sharing, setSharing] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -817,11 +820,13 @@ function GrantDownloadSettings({ grantId, canLite, canStudio }: { grantId: strin
   async function load() {
     const res = await fetch(`/api/grants/${grantId}/download-settings`);
     if (!res.ok) return;
-    const body = (await res.json()) as { settings: { pin: boolean; limit: number | null; approval: boolean; webSize: boolean }; allowSharing?: boolean };
+    const body = (await res.json()) as { settings: { pin: boolean; limit: number | null; approval: boolean; webSize: boolean; emailCapture?: boolean }; captured?: { email: string; count: number; lastAt: string }[]; allowSharing?: boolean };
     setHasPin(body.settings.pin);
     setLimit(body.settings.limit === null ? "" : String(body.settings.limit));
     setApproval(body.settings.approval);
     setWebSize(body.settings.webSize);
+    setEmailCapture(body.settings.emailCapture === true);
+    setCaptured(body.captured ?? []);
     setSharing(body.allowSharing !== false);
   }
 
@@ -837,7 +842,7 @@ function GrantDownloadSettings({ grantId, canLite, canStudio }: { grantId: strin
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          settings: { limit: limit === "" ? null : Number(limit), approval, webSize },
+          settings: { limit: limit === "" ? null : Number(limit), approval, webSize, emailCapture },
           ...(clearPin ? { clearPin: true } : pin ? { pin } : {}),
           allowSharing: sharing,
         }),
@@ -845,7 +850,7 @@ function GrantDownloadSettings({ grantId, canLite, canStudio }: { grantId: strin
       const body = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
       if (!res.ok || !body.ok) {
         setNote(
-          body.error === "pin_requires_lite" || body.error === "web_size_requires_lite" ? "PIN and web-size are Lite features."
+          body.error === "pin_requires_lite" || body.error === "web_size_requires_lite" || body.error === "email_capture_requires_lite" ? "PIN, web-size and email capture are Lite features."
           : body.error === "approvals_require_studio" ? "Download approvals are a Studio feature."
           : body.error === "invalid_pin" ? "PIN is 4–8 digits."
           : "Couldn't save — try again.",
@@ -957,6 +962,10 @@ function GrantDownloadSettings({ grantId, canLite, canStudio }: { grantId: strin
               <input type="checkbox" checked={webSize} onChange={(e) => setWebSize(e.target.checked)} disabled={!canLite} className="h-4 w-4" />
               Web sizes
             </label>
+            <label className="flex items-center gap-2 text-ink-subtle" title="Ask for an email before downloads unlock — the who-took-files list for guest galleries">
+              <input type="checkbox" checked={emailCapture} onChange={(e) => setEmailCapture(e.target.checked)} disabled={!canLite} className="h-4 w-4" />
+              Email before download
+            </label>
             <label className="flex items-center gap-2 text-ink-subtle" title="Clients can share single photos as link cards (they die with this gallery)">
               <input type="checkbox" checked={sharing} onChange={(e) => setSharing(e.target.checked)} className="h-4 w-4" />
               Social sharing
@@ -971,6 +980,25 @@ function GrantDownloadSettings({ grantId, canLite, canStudio }: { grantId: strin
                 {midPrep.running ? `Preparing… ${midPrep.done}` : midPrep.done > 0 ? `Prepare 1280px size (${midPrep.done} done)` : "Prepare 1280px size"}
               </Button>
               <p className="text-xs text-ink-tertiary">Renders the small size in this browser for ZIP downloads — keep this tab open.</p>
+            </div>
+          )}
+          {emailCapture && (
+            <div className="rounded-md border border-hairline bg-canvas px-3 py-2">
+              <p className="text-xs font-medium text-ink-subtle">
+                Who downloaded{captured.length ? ` (${captured.length})` : ""}
+              </p>
+              {captured.length === 0 ? (
+                <p className="mt-1 text-xs text-ink-tertiary">No emails captured yet — guests see the ask the first time they download.</p>
+              ) : (
+                <ul className="mt-1 flex max-h-32 flex-col gap-0.5 overflow-y-auto text-xs text-ink-subtle">
+                  {captured.map((c) => (
+                    <li key={c.email} className="flex items-center justify-between gap-2">
+                      <span className="truncate">{c.email}</span>
+                      <span className="shrink-0 text-ink-tertiary">{c.count}×</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           )}
           {!canLite && <p className="text-xs text-ink-tertiary">PIN and web-size downloads are Lite features — upgrade to unlock.</p>}

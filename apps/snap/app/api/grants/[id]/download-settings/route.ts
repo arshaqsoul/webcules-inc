@@ -9,7 +9,7 @@ import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { getOrgContext } from "@/lib/session";
 import { getPlanEntitlements } from "@/lib/plans";
-import { downloadSettingsOf, saveDownloadSettings } from "@/lib/repos/downloads";
+import { downloadSettingsOf, listCapturedEmails, saveDownloadSettings } from "@/lib/repos/downloads";
 import { hashDownloadPin, isValidPin, normalizeDownloadSettingsInput } from "@/lib/gallery-downloads";
 
 export const dynamic = "force-dynamic";
@@ -60,6 +60,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (settings.pinHash && !lite) return Response.json({ error: "pin_requires_lite" }, { status: 403 });
   if (settings.webSize && !lite) return Response.json({ error: "web_size_requires_lite" }, { status: 403 });
   if (settings.approval && !studio) return Response.json({ error: "approvals_require_studio" }, { status: 403 });
+  // WEB-194: email-capture rides with the other download gates (Lite+).
+  if (settings.emailCapture && !lite) return Response.json({ error: "email_capture_requires_lite" }, { status: 403 });
 
   const ok = await saveDownloadSettings(ctx.organizationId, grant.id, settings);
   if (!ok) return Response.json({ error: "not_found" }, { status: 404 });
@@ -69,7 +71,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       .set({ allowSharing: parsed.data.allowSharing })
       .where(eq(schema.shareGrants.id, grant.id));
   }
-  return Response.json({ ok: true, settings: { pin: Boolean(settings.pinHash), limit: settings.limit, approval: settings.approval, webSize: settings.webSize }, allowSharing: parsed.data.allowSharing ?? grant.allowSharing });
+  return Response.json({ ok: true, settings: { pin: Boolean(settings.pinHash), limit: settings.limit, approval: settings.approval, webSize: settings.webSize, emailCapture: settings.emailCapture }, allowSharing: parsed.data.allowSharing ?? grant.allowSharing });
 }
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -85,5 +87,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   )[0];
   if (!grant) return Response.json({ error: "not_found" }, { status: 404 });
   const s = downloadSettingsOf(grant);
-  return Response.json({ settings: { pin: Boolean(s.pinHash), limit: s.limit, approval: s.approval, webSize: s.webSize }, allowSharing: grant.allowSharing });
+  // WEB-194: the studio's who-took-files list rides along when the gate is on.
+  const captured = s.emailCapture ? await listCapturedEmails(grant.id) : [];
+  return Response.json({ settings: { pin: Boolean(s.pinHash), limit: s.limit, approval: s.approval, webSize: s.webSize, emailCapture: s.emailCapture }, captured, allowSharing: grant.allowSharing });
 }

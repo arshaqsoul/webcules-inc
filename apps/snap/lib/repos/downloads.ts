@@ -187,6 +187,54 @@ export async function zipPartsStartedSince(grantId: string, sinceMs: number): Pr
   return rows[0]?.n ?? 0;
 }
 
+/* ---------------- WEB-194: email-capture gate ---------------- */
+
+/** Abuse ceiling on the capture endpoint: submissions per grant per hour.
+ * A real guest types their address once or twice; a script hits this. */
+export const MAX_EMAIL_CAPTURES_PER_HOUR = 20;
+
+export async function emailCapturesSince(grantId: string, sinceMs: number): Promise<number> {
+  const rows = await getDb()
+    .select({ n: sql<number>`count(*)` })
+    .from(schema.downloadEmailCaptures)
+    .where(
+      and(
+        eq(schema.downloadEmailCaptures.grantId, grantId),
+        sql`${schema.downloadEmailCaptures.createdAt} >= ${Math.floor(sinceMs / 1000)}`,
+      ),
+    );
+  return rows[0]?.n ?? 0;
+}
+
+export async function recordEmailCapture(params: { grantId: string; email: string; req?: Request }): Promise<void> {
+  await getDb().insert(schema.downloadEmailCaptures).values({
+    id: crypto.randomUUID(),
+    grantId: params.grantId,
+    email: params.email,
+    ip: params.req?.headers.get("cf-connecting-ip") ?? null,
+    userAgent: params.req?.headers.get("user-agent")?.slice(0, 250) ?? null,
+    createdAt: new Date(),
+  });
+}
+
+export type CapturedEmail = { email: string; count: number; lastAt: string };
+
+/** The studio's who-took-files list: distinct emails, most recent first. */
+export async function listCapturedEmails(grantId: string, limit = 20): Promise<CapturedEmail[]> {
+  const rows = await getDb()
+    .select({
+      email: schema.downloadEmailCaptures.email,
+      count: sql<number>`count(*)`,
+      lastAt: sql<number>`max(${schema.downloadEmailCaptures.createdAt})`,
+    })
+    .from(schema.downloadEmailCaptures)
+    .where(eq(schema.downloadEmailCaptures.grantId, grantId))
+    .groupBy(schema.downloadEmailCaptures.email)
+    .orderBy(desc(sql`max(${schema.downloadEmailCaptures.createdAt})`))
+    .limit(limit);
+  return rows.map((r) => ({ email: r.email, count: r.count, lastAt: new Date(Number(r.lastAt) * 1000).toISOString() }));
+}
+
 /** One-time cleanup of archives the retired cron pipeline left in R2 (rows
  * from before downloads 3.0 still carry a zip_key). Bounded per run; once it
  * reports 0 everywhere this function and the zip_key column can be dropped. */
