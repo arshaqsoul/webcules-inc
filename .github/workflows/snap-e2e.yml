@@ -38,8 +38,8 @@ jobs:
         working-directory: apps/snap
         run: npx playwright install --with-deps chromium
 
-      - name: E2E (signup-onboarding)
-        run: pnpm --filter snap test:e2e -- signup-onboarding
+      - name: E2E (full suite)
+        run: pnpm --filter snap test:e2e
 
       - name: Upload E2E artifacts
         if: failure()

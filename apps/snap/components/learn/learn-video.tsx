@@ -24,6 +24,10 @@ export function LearnVideo({
   const params = useSearchParams();
   const [active, setActive] = useState(0);
   const [activeLine, setActiveLine] = useState(-1);
+  // The chapter/line the user picked: stays highlighted until playback
+  // actually arrives there (deep seeks wait on a CDN Range response, which
+  // not every host honors) or playback moves past it.
+  const pin = useRef<{ chapter: number; line: number } | null>(null);
 
   // Deep link support: /learn/<slug>?t=<seconds> starts at that timestamp
   // (used by docs search chapter hits).
@@ -41,8 +45,23 @@ export function LearnVideo({
   }, []);
 
   // Robust seek: applies once metadata is ready, re-applies on canplay in
-  // case the initial assignment raced the loader, then plays.
-  const seek = (start: number) => {
+  // case the initial assignment raced the loader, then plays. The rail and
+  // transcript highlight update HERE, not only on timeupdate — the user gets
+  // immediate feedback for the chapter they picked (deep seeks beyond the
+  // buffered prefix depend on the CDN honoring Range, which not every host
+  // does; the highlight must not).
+  const seek = (start: number, chapterIdx?: number, lineIdx?: number) => {
+    let a = 0;
+    chapters.forEach((c, i) => {
+      if (start >= c.start) a = i;
+    });
+    let l = -1;
+    transcript.forEach((line, i) => {
+      if (start >= line.start - 0.15) l = i;
+    });
+    pin.current = { chapter: chapterIdx ?? a, line: lineIdx ?? l };
+    setActive(pin.current.chapter);
+    setActiveLine(pin.current.line);
     const v = ref.current;
     if (!v) return;
     const apply = () => {
@@ -68,12 +87,20 @@ export function LearnVideo({
     chapters.forEach((c, i) => {
       if (t >= c.start) a = i;
     });
-    setActive(a);
     let l = -1;
     transcript.forEach((line, i) => {
       if (t >= line.start - 0.15) l = i;
     });
-    setActiveLine(l);
+    const p = pin.current;
+    if (p && (t >= chapters[p.chapter].start - 0.3 || a > p.chapter)) {
+      // Playback arrived at (or passed) the picked chapter — follow playback.
+      pin.current = null;
+      setActive(a);
+      setActiveLine(l);
+      return;
+    }
+    setActive(p ? p.chapter : a);
+    setActiveLine(p ? p.line : l);
   };
 
   return (
@@ -95,18 +122,20 @@ export function LearnVideo({
       </div>
 
       <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_240px]">
-        {/* Narration as prose — click a paragraph to jump to it */}
+        {/* Narration as prose — click a paragraph to jump to it. Real <button>s
+         * (not clickable <p>): keyboard-reachable, and role-correct for e2e. */}
         <div className="flex min-w-0 flex-col gap-5">
           {transcript.map((line, i) => (
-            <p
+            <button
+              type="button"
               key={line.start}
-              onClick={() => seek(line.start)}
-              className={`cursor-pointer text-[15px] leading-relaxed transition-colors ${
+              onClick={() => seek(line.start, undefined, i)}
+              className={`cursor-pointer text-left text-[15px] leading-relaxed transition-colors ${
                 i === activeLine ? "text-ink" : "text-ink-muted hover:text-ink"
               }`}
             >
               {line.text}
-            </p>
+            </button>
           ))}
         </div>
 
@@ -118,7 +147,8 @@ export function LearnVideo({
               <li key={c.title}>
                 <button
                   type="button"
-                  onClick={() => seek(c.start)}
+                  aria-current={i === active ? "true" : undefined}
+                  onClick={() => seek(c.start, i)}
                   className={`flex w-full items-baseline gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors ${
                     i === active ? "bg-surface-2 text-ink" : "text-ink-subtle hover:bg-surface-1 hover:text-ink"
                   }`}
