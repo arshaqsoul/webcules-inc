@@ -11,6 +11,7 @@ import {
   PUBLIC_HOST,
   PUBLIC_ORIGIN,
   emailAddress,
+  isDriveConsentHost,
   isSnapMailDomain,
   originForHost,
   trustedAppOrigins,
@@ -124,5 +125,23 @@ describe("www redirect", () => {
     for (const h of ["snaphq.app", "snap.webcules.com", "staging.snaphq.app", "www.example.com"]) {
       expect(wwwRedirectTarget(h, "/login"), h).toBeNull();
     }
+  });
+});
+
+describe("isDriveConsentHost - WEB-307 first-party-only Drive consent", () => {
+  it("allows every first-party host (incl. staging and legacy)", () => {
+    for (const h of [LEGACY_HOST, NEW_HOST, `www.${NEW_HOST}`, "snap-staging.webcules.com", "staging.snaphq.app"]) {
+      expect(isDriveConsentHost(h), h).toBe(true);
+      expect(isDriveConsentHost(`${h}:443`), h).toBe(true);
+      expect(isDriveConsentHost(h.toUpperCase()), h).toBe(true);
+    }
+  });
+
+  it("refuses studio custom hostnames, the fallback origin, and strangers", () => {
+    for (const h of ["gallery.yourstudio.com", "prairiepeakgear.com", "domains.snaphq.app", "localhost", "snap.preview.workers.dev", ""]) {
+      expect(isDriveConsentHost(h), h).toBe(false);
+    }
+    expect(isDriveConsentHost(null)).toBe(false);
+    expect(isDriveConsentHost(undefined)).toBe(false);
   });
 });

@@ -14,6 +14,8 @@ import {
 } from "@/lib/repos/downloads";
 import { DOWNLOAD_SCOPES, REQUEST_MAX_ASSET_IDS, parseSizePref, type DownloadScope } from "@/lib/gallery-downloads";
 import { cloudDestinationsFromEnv } from "@/lib/cloud-destinations";
+import { isDriveConsentHost } from "@/lib/hosts";
+import { requestHost } from "@/lib/domains";
 import { resolveGrantByToken } from "@/lib/shares/grants";
 
 export const dynamic = "force-dynamic";
@@ -36,6 +38,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
   // keys are public browser values (GIS client id / dropins app key); the
   // buttons stay hidden in any environment that hasn't set them.
   const cloud = cloudDestinationsFromEnv(env);
+  // WEB-307 (Stark's ruling): Drive consent is refused by Google from any
+  // origin not registered on the GIS client — i.e. anything but our
+  // first-party hosts. Custom-hostname galleries get no Drive button
+  // (it would only ever error); Dropbox works everywhere.
+  if (!isDriveConsentHost(requestHost(req.headers))) cloud.driveClientId = null;
   return Response.json({
     requests: requests.map((r) => ({
       id: r.id,
