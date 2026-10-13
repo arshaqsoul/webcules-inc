@@ -38,8 +38,6 @@ export default function Releases() {
         getting their own.
       </Note>
 
-      <Release version="0.22.0" date="October 13, 2026">
-        <p>
       <Release version="0.23.0" date="October 13, 2026">
         <p>
           <strong>Your portfolio, generated from your library.</strong> The
@@ -52,6 +50,18 @@ export default function Releases() {
           Lite adds the dedicated subdomain and bigger showcases; Studio
           removes the badge. Your originals never leave the vault — public
           pages serve web-size previews only, with metadata stripped.
+        </p>
+        <p>
+          <strong>Client upload links got a bodyguard.</strong> The shareable
+          upload links from v0.22.0 are hardened against abuse behind the
+          scenes: a link hammered by a script from one address is now told to
+          slow down (a &ldquo;too many requests&rdquo; refusal) instead of
+          being farmed for free storage, the per-link upload cap can no
+          longer be outrun by several guests uploading in the same instant
+          — the count is checked and raised in a single step, so it can
+          never finish past the cap — and every guest session is stamped to
+          the exact link that opened it, so an upload can never be completed
+          against a different link than the one it started from.
         </p>
       </Release>
 
@@ -67,8 +77,6 @@ export default function Releases() {
           approving can publish straight into a client gallery you pick when
           minting the link. Close or expire the link any time; you&rsquo;re
           notified as uploads arrive.
-        </p>
-      </Release>
         </p>
       </Release>
 
