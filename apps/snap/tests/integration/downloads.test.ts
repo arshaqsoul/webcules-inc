@@ -600,8 +600,11 @@ describe("size ladder: the mid rung (WEB-196)", () => {
     const g = await seedGallery(1, { plan: "studio" });
     await saveDownloadSettings(g.studio.organizationId, g.grantId, { pinHash: null, limit: null, approval: false, webSize: false, emailCapture: false });
     const cookie = await cookieFor(g.grantId);
+    // WEB-307: the GIS consent gate keys off the request host (requestHost
+    // prefers x-forwarded-host). A bare URL does not populate the Host header
+    // in tests, so declare the first-party origin explicitly.
     const res = await downloadRequestGet(
-      new Request(`https://snap.test/api/g/${g.token}/download-request`, { headers: { cookie } }),
+      new Request(`https://snap.test/api/g/${g.token}/download-request`, { headers: { cookie, "x-forwarded-host": "snap.webcules.com" } }),
       { params: Promise.resolve({ token: g.token }) },
     );
     expect(res.status).toBe(200);
@@ -610,6 +613,17 @@ describe("size ladder: the mid rung (WEB-196)", () => {
     // is what lights the lightbox buttons up in a configured environment.
     expect(body.controls.driveClientId).toBe("test-drive-client-id.apps.googleusercontent.com");
     expect(body.controls.dropboxAppKey).toBe("test-dropbox-app-key");
+
+    // Gate contrast (WEB-307): from any host not in APP_HOSTS (e.g. a studio
+    // custom hostname) the Drive client id is withheld, Dropbox is not.
+    const gated = await downloadRequestGet(
+      new Request(`https://snap.test/api/g/${g.token}/download-request`, { headers: { cookie, "x-forwarded-host": "gallery.acme-studio.com" } }),
+      { params: Promise.resolve({ token: g.token }) },
+    );
+    expect(gated.status).toBe(200);
+    const gatedBody = (await gated.json()) as { controls: { driveClientId: string | null; dropboxAppKey: string | null } };
+    expect(gatedBody.controls.driveClientId).toBeNull();
+    expect(gatedBody.controls.dropboxAppKey).toBe("test-dropbox-app-key");
   });
 });
 
