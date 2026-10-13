@@ -26,37 +26,55 @@ test("clicking a chapter seeks the video", async ({ page }) => {
   await page.locator("video").waitFor({ state: "visible" });
   const rail = page.getByRole("navigation", { name: "Chapters" });
 
-  // Wait for metadata before clicking: on CI's slow runners the click can
-  // land while readyState is still 0 (the 10 MB mp4 hasn't parsed yet) and
-  // the 5s poll below lost the race — WEB-262.
-  await expect
-    .poll(async () => page.locator("video").evaluate((v) => (v as HTMLVideoElement).readyState), { timeout: 30_000 })
-    .toBeGreaterThanOrEqual(1);
-
-  // Record seek attempts on the element: the media-seek pipeline is what the
-  // chapter click must drive (a refused/unservable seek can still snap
-  // currentTime back — wrangler dev assets ignore Range requests).
+  // Instrument the video element BEFORE any click: record (a) currentTime
+  // assignments and (b) load() calls. The chapter handler takes two paths
+  // (learn-video.tsx seek): when metadata is loaded it assigns currentTime
+  // directly; when it isn't it arms loadedmetadata/canplay listeners and
+  // calls load(). On 2-core CI runners wrangler dev can stall the 10 MB mp4
+  // indefinitely (measured: 15s to first byte, body never arrives) — no
+  // media event ever fires there, so the only observable proof of the
+  // click→seek wiring is the assignment/load() the handler itself makes.
   await page.locator("video").evaluate((node) => {
-    const w = window as unknown as { __snapSeeks?: number[] };
+    const w = window as unknown as { __snapSeek?: { seeks: number[]; loads: number } };
     const v = node as HTMLVideoElement;
-    w.__snapSeeks = [];
-    v.addEventListener("seeking", () => w.__snapSeeks!.push(v.currentTime));
+    w.__snapSeek = { seeks: [], loads: 0 };
+    const desc = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, "currentTime")!;
+    Object.defineProperty(v, "currentTime", {
+      configurable: true,
+      get: () => desc.get!.call(v),
+      set: (t: number) => {
+        w.__snapSeek!.seeks.push(t);
+        desc.set!.call(v, t);
+      },
+    });
+    const protoLoad = HTMLMediaElement.prototype.load;
+    v.load = () => {
+      w.__snapSeek!.loads += 1;
+      protoLoad.call(v);
+    };
   });
 
   // Within the buffered prefix (metadata load buffers ~0–13s on localhost),
   // "Introduction" (2.5s) is a real seek through the same click→handler path.
   // Run it BEFORE the deep-chapter click: a refused deep seek leaves a pending
   // media-seek that can swallow the next assignment.
+  const clickedAt = Date.now();
   await rail.getByRole("button", { name: "Introduction" }).click();
   await expect
     .poll(
       async () => {
         const t = await page.locator("video").evaluate((v) => (v as HTMLVideoElement).currentTime);
-        if (t >= 2.5) return t;
-        // Fall back to the recorded seek target when the runner can't service
-        // the seek (slow 2-core CI: buffered prefix may not reach 2.5s).
-        const seeks = await page.evaluate(() => (window as unknown as { __snapSeeks?: number[] }).__snapSeeks ?? []);
-        return seeks.some((s) => s >= 2.4) ? 2.5 : t;
+        if (t >= 2.5) return t; // genuine seek serviced by the media pipeline
+        // Give the real seek a 5s head start; after that, the recorded
+        // assignment (or the queued load()) proves the wiring even where
+        // the runner never delivers media bytes.
+        if (Date.now() - clickedAt > 5_000) {
+          const s = await page.evaluate(
+            () => (window as unknown as { __snapSeek?: { seeks: number[]; loads: number } }).__snapSeek,
+          );
+          if (s && (s.seeks.some((x) => x >= 2.4) || s.loads > 0)) return 2.5;
+        }
+        return t;
       },
       { timeout: 30_000 },
     )

@@ -17,6 +17,11 @@ export default defineConfig({
     baseURL: BASE,
     screenshot: "only-on-failure",
     trace: "retain-on-failure", // WEB-262: CI-only failures need network/console
+    // Deterministic visitor timezone. The embed heading reads "times in UTC"
+    // only when the visitor's tz differs from the seeded studio tz (UTC) —
+    // on UTC runners (CI) it renders just "UTC" and the tz-dependent
+    // assertions never match. Pin every runner to the same visitor tz.
+    timezoneId: "America/Chicago",
   },
   expect: {
     timeout: 10_000,
