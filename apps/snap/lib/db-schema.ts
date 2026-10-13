@@ -1792,3 +1792,44 @@ export const integrationPublish = sqliteTable(
     index("integration_publish_org_idx").on(t.organizationId, t.source, t.updatedAt),
   ],
 );
+
+/* ---------------- Import sessions (WEB-183 / Integrations 4/6) ---------------- */
+
+/** Explicit import sessions for browser-relayed imports (Google Drive
+ * first): opened at pick time with the picked external files, closed with
+ * per-file outcomes. Bookkeeping only — the bytes themselves go browser →
+ * upload queue, never through the Worker (see lib/drive-import.ts).
+ * DDL: migrations/0076_drive_import_sessions.sql. */
+export const importSessions = sqliteTable(
+  "import_session",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    /** 'google_drive'. */
+    source: text("source").notNull(),
+    createdBy: text("created_by").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    /** JSON of the picked files at open: [{driveFileId, name, sizeBytes?}]. */
+    picked: text("picked").notNull().default("[]"),
+    fileCount: integer("file_count").notNull(),
+    /** open | complete. */
+    status: text("status").notNull().default("open"),
+    importedCount: integer("imported_count"),
+    skippedCount: integer("skipped_count"),
+    failedCount: integer("failed_count"),
+    /** JSON per-file outcomes, written at close. */
+    detail: text("detail"),
+    createdAt: ts("created_at"),
+    completedAt: integer("completed_at", { mode: "timestamp" }),
+  },
+  (t) => [
+    index("import_session_org_idx").on(t.organizationId, t.createdAt),
+    index("import_session_project_idx").on(t.projectId, t.createdAt),
+  ],
+);
