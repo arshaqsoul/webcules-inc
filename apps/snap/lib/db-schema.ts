@@ -1851,6 +1851,10 @@ export const portfolioSites = sqliteTable("portfolio_site", {
   home: text("home").notNull().default("{}"),
   seo: text("seo").notNull().default("{}"),
   publishedAt: integer("published_at", { mode: "timestamp" }),
+  /** WEB-344 AC3: explicit rights attestation, required at first publish
+   * (status → published|unlisted) and recorded who/when. Unpublish keeps it. */
+  rightsAttestedAt: integer("rights_attested_at", { mode: "timestamp" }),
+  rightsAttestedBy: text("rights_attested_by").references(() => user.id, { onDelete: "set null" }),
   createdAt: ts("created_at"),
   updatedAt: ts("updated_at"),
 });
