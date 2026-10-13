@@ -50,7 +50,11 @@ async function publishedSiteWithImage() {
   if (!col.ok) throw new Error("seed collection failed");
   const add = await addAssetsToCollection(studio.organizationId, col.collection.id, ids, null);
   if (!add.ok) throw new Error("seed add failed");
-  const pub = await updatePortfolioSite(studio.organizationId, { status: "published" });
+  const pub = await updatePortfolioSite(studio.organizationId, {
+    status: "published",
+    rightsAttested: true,
+    actorUserId: studio.userId,
+  });
   if (!pub.ok) throw new Error("seed publish failed");
   return { studio, site, collection: col.collection, ids };
 }
@@ -94,7 +98,11 @@ describe("resolvePublicPortfolioImage (membership is the boundary)", () => {
     // Draft site → null.
     await updatePortfolioSite(owner.organizationId, { status: "draft" });
     expect(await resolvePublicPortfolioImage(ids[0])).toBeNull();
-    await updatePortfolioSite(owner.organizationId, { status: "published" });
+    await updatePortfolioSite(owner.organizationId, {
+      status: "published",
+      rightsAttested: true,
+      actorUserId: owner.userId,
+    });
     expect(await resolvePublicPortfolioImage(ids[0])).not.toBeNull();
 
     // Unlisted collection → null (even though the site stays published).
@@ -268,7 +276,7 @@ describe("/api/pubimg route (WEB-345 acceptance)", () => {
 
     // Re-curate + re-publish rotates the revision and serves fresh bytes.
     await addAssetsToCollection(org, col.id, [ids[0]], null);
-    await updatePortfolioSite(org, { status: "published" });
+    await updatePortfolioSite(org, { status: "published", rightsAttested: true });
     await putObject(org, previewSuffix, new TextEncoder().encode("preview-bytes-2").buffer as ArrayBuffer, "image/jpeg");
     const again = await fetchPubimg(ids[0]);
     expect(again.status).toBe(200);
@@ -298,7 +306,7 @@ describe("/api/pubimg route (WEB-345 acceptance)", () => {
     const col = await createCollection(studio.organizationId, { title: "Best" }, null);
     if (!col.ok) throw new Error("seed collection failed");
     await addAssetsToCollection(studio.organizationId, col.collection.id, [id], null);
-    await updatePortfolioSite(studio.organizationId, { status: "published" });
+    await updatePortfolioSite(studio.organizationId, { status: "published", rightsAttested: true });
 
     const res = await fetchPubimg(id);
     expect(res.status).toBe(200);
