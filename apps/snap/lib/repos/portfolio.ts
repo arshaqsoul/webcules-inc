@@ -16,6 +16,7 @@ import { and, asc, eq, inArray, sql } from "drizzle-orm";
 
 import { getDb } from "../db";
 import * as schema from "../db-schema";
+import { pubimgLink, purgePubimgCache } from "../pubimg-link";
 
 export type PortfolioSiteRow = typeof schema.portfolioSites.$inferSelect;
 export type PortfolioCollectionRow = typeof schema.portfolioCollections.$inferSelect;
@@ -30,7 +31,8 @@ export type PortfolioError =
   | "not_found"
   | "not_owned"
   | "not_image"
-  | "empty_site";
+  | "empty_site"
+  | "rights_attestation_required";
 
 const SITE_STATUSES = ["draft", "published", "unlisted"] as const;
 const VISIBILITIES = ["public", "unlisted"] as const;
@@ -143,6 +145,11 @@ export type SiteUpdateInput = {
   theme?: unknown;
   home?: unknown;
   seo?: unknown;
+  /** WEB-344 AC3: explicit "I hold the rights" flag — required the first
+   * time the site goes live (draft → published|unlisted). */
+  rightsAttested?: boolean;
+  /** Who attested (recorded for audit); routes pass the session user. */
+  actorUserId?: string;
 };
 
 export async function updatePortfolioSite(
@@ -153,6 +160,14 @@ export async function updatePortfolioSite(
   if (!existing) return { ok: false, error: "not_found" };
   const db = getDb();
   const set: Partial<PortfolioSiteRow> = { updatedAt: new Date() };
+
+  // Leaving `published` (or changing slug) revokes every pubimg URL: eagerly
+  // purge the org's curated assets from the edge cache (WEB-345). The bump of
+  // site.updated_at below also rotates the cache revision, so anything the
+  // capped eager sweep misses becomes unreachable regardless.
+  if (input.status !== undefined && input.status !== existing.status) {
+    await purgeOrgPortfolioImages(organizationId);
+  }
 
   if (input.slug !== undefined) {
     const slug = validSlug(input.slug);
@@ -177,6 +192,18 @@ export async function updatePortfolioSite(
           ),
         );
       if ((ready[0]?.n ?? 0) < 1) return { ok: false, error: "empty_site" };
+    }
+    // WEB-344 AC3: first publish REQUIRES the explicit rights attestation —
+    // a silent publish is never allowed. Recorded who/when; a re-publish
+    // after unpublish keeps the prior attestation, a fresh one overwrites it.
+    const goingLive = input.status !== undefined && input.status !== "draft";
+    if (goingLive && !existing.rightsAttestedAt) {
+      if (input.rightsAttested !== true) return { ok: false, error: "rights_attestation_required" };
+      set.rightsAttestedAt = new Date();
+      set.rightsAttestedBy = input.actorUserId ?? null;
+    } else if (input.rightsAttested === true) {
+      set.rightsAttestedAt = new Date();
+      set.rightsAttestedBy = input.actorUserId ?? null;
     }
     if (input.status === "published" && existing.status !== "published") {
       set.publishedAt = new Date();
@@ -348,6 +375,17 @@ export async function updateCollection(
         eq(schema.portfolioCollections.organizationId, organizationId),
       ),
     );
+  // Visibility flips change what is publicly servable: eagerly purge the
+  // collection's assets and rotate the site revision (WEB-345).
+  if (visibility !== existing.visibility) {
+    const rev = await currentSiteRevision(organizationId);
+    const members = await getDb()
+      .select({ assetId: schema.portfolioCollectionAssets.assetId })
+      .from(schema.portfolioCollectionAssets)
+      .where(eq(schema.portfolioCollectionAssets.collectionId, id));
+    for (const m of members) await purgePubimgCache(m.assetId, rev);
+    await touchSiteRevision(organizationId);
+  }
   return { ok: true, collection: (await getOwnedCollection(organizationId, id))! };
 }
 
@@ -356,6 +394,11 @@ export async function deleteCollection(
   organizationId: string,
   id: string,
 ): Promise<boolean> {
+  const rev = await currentSiteRevision(organizationId);
+  const members = await getDb()
+    .select({ assetId: schema.portfolioCollectionAssets.assetId })
+    .from(schema.portfolioCollectionAssets)
+    .where(eq(schema.portfolioCollectionAssets.collectionId, id));
   const rows = await getDb()
     .delete(schema.portfolioCollections)
     .where(
@@ -365,6 +408,10 @@ export async function deleteCollection(
       ),
     )
     .returning({ id: schema.portfolioCollections.id });
+  if (rows.length > 0) {
+    for (const m of members) await purgePubimgCache(m.assetId, rev);
+    await touchSiteRevision(organizationId);
+  }
   return rows.length > 0;
 }
 
@@ -495,6 +542,7 @@ export async function removeAssetFromCollection(
 ): Promise<boolean> {
   const collection = await getOwnedCollection(organizationId, collectionId);
   if (!collection) return false;
+  const rev = await currentSiteRevision(organizationId);
   const rows = await getDb()
     .delete(schema.portfolioCollectionAssets)
     .where(
@@ -504,6 +552,12 @@ export async function removeAssetFromCollection(
       ),
     )
     .returning({ id: schema.portfolioCollectionAssets.id });
+  if (rows.length > 0) {
+    // Curated-out = revoked (WEB-345 AC): eagerly purge the edge entry and
+    // rotate the revision so the next pubimg fetch 404s immediately.
+    await purgePubimgCache(assetId, rev);
+    await touchSiteRevision(organizationId);
+  }
   return rows.length > 0;
 }
 
@@ -583,13 +637,106 @@ export async function reorderCollectionAssets(
 
 /* --------------------------- public payload --------------------------- */
 
+/** The pubimg revision for an org = portfolio_site.updated_at (seconds).
+ * Every revoking mutation (curate-out, unlist, unpublish, delete) bumps it,
+ * which rotates the /api/pubimg edge-cache keys (WEB-345). */
+async function currentSiteRevision(organizationId: string): Promise<number> {
+  const site = await getPortfolioSite(organizationId);
+  return site?.updatedAt ? Math.floor(site.updatedAt.getTime() / 1000) : 0;
+}
+
+async function touchSiteRevision(organizationId: string): Promise<void> {
+  await getDb()
+    .update(schema.portfolioSites)
+    .set({ updatedAt: new Date() })
+    .where(eq(schema.portfolioSites.organizationId, organizationId));
+}
+
+/** Eagerly purge an org's curated assets from the pubimg edge cache
+ * (publish/unpublish transitions). Capped: the revision bump that follows
+ * makes every missed entry unreachable anyway — this sweep just reclaims
+ * the popular ones promptly. */
+export async function purgeOrgPortfolioImages(organizationId: string, cap = 200): Promise<void> {
+  const rev = await currentSiteRevision(organizationId);
+  const rows = await getDb()
+    .select({ assetId: schema.portfolioCollectionAssets.assetId })
+    .from(schema.portfolioCollectionAssets)
+    .innerJoin(
+      schema.portfolioCollections,
+      eq(schema.portfolioCollectionAssets.collectionId, schema.portfolioCollections.id),
+    )
+    .where(eq(schema.portfolioCollections.organizationId, organizationId))
+    .limit(cap);
+  for (const r of rows) await purgePubimgCache(r.assetId, rev);
+}
+
+/** Live public-ness resolve for /api/pubimg/{assetId} (WEB-345): the asset
+ * is servable iff it is curated into a PUBLIC collection of a PUBLISHED
+ * site and is kind='image'. Called on EVERY pubimg request (before any
+ * cache lookup), so curating out / unpublishing 404s immediately. */
+export type PublicPortfolioImage = {
+  organizationId: string;
+  assetId: string;
+  previewKey: string | null;
+  previewWmKey: string | null;
+  width: number | null;
+  height: number | null;
+  /** Epoch seconds of the site revision — part of the edge-cache key. */
+  revision: number;
+};
+
+export async function resolvePublicPortfolioImage(assetId: string): Promise<PublicPortfolioImage | null> {
+  if (!/^[A-Za-z0-9_-]{1,64}$/.test(assetId)) return null;
+  const rows = await getDb()
+    .select({
+      organizationId: schema.assets.organizationId,
+      kind: schema.assets.kind,
+      previewKey: schema.assets.previewKey,
+      previewWmKey: schema.assets.previewWmKey,
+      width: schema.assets.width,
+      height: schema.assets.height,
+      siteUpdatedAt: schema.portfolioSites.updatedAt,
+    })
+    .from(schema.portfolioCollectionAssets)
+    .innerJoin(
+      schema.portfolioCollections,
+      eq(schema.portfolioCollectionAssets.collectionId, schema.portfolioCollections.id),
+    )
+    .innerJoin(
+      schema.portfolioSites,
+      eq(schema.portfolioCollections.organizationId, schema.portfolioSites.organizationId),
+    )
+    .innerJoin(schema.assets, eq(schema.portfolioCollectionAssets.assetId, schema.assets.id))
+    .where(
+      and(
+        eq(schema.portfolioCollectionAssets.assetId, assetId),
+        eq(schema.assets.kind, "image"),
+        eq(schema.portfolioCollections.visibility, "public"),
+        eq(schema.portfolioSites.status, "published"),
+      ),
+    )
+    .limit(1);
+  const r = rows[0];
+  if (!r) return null;
+  return {
+    organizationId: r.organizationId,
+    assetId,
+    previewKey: r.previewKey,
+    previewWmKey: r.previewWmKey,
+    width: r.width,
+    height: r.height,
+    revision: r.siteUpdatedAt ? Math.floor(r.siteUpdatedAt.getTime() / 1000) : 0,
+  };
+}
+
 export type PublicPortfolioItem = {
   assetId: string;
   sort: number;
   caption: string | null;
   altText: string | null;
-  previewKey: string | null;
-  thumbKey: string | null;
+  /** Signed /api/pubimg URL — the ONLY image handle the public payload
+   * carries; R2 keys stay private (WEB-345). */
+  image: string;
   width: number | null;
   height: number | null;
 };
@@ -632,8 +779,6 @@ export async function getPublishedPortfolio(slug: string): Promise<PublicPortfol
     const items = await db
       .select({
         item: schema.portfolioCollectionAssets,
-        previewKey: schema.assets.previewKey,
-        thumbKey: schema.assets.thumbKey,
         width: schema.assets.width,
         height: schema.assets.height,
       })
@@ -645,16 +790,17 @@ export async function getPublishedPortfolio(slug: string): Promise<PublicPortfol
       slug: c.slug,
       title: c.title,
       subtitle: c.subtitle,
-      items: items.map(({ item, previewKey, thumbKey, width, height }) => ({
-        assetId: item.assetId,
-        sort: item.sort,
-        caption: item.caption,
-        altText: item.altText,
-        previewKey,
-        thumbKey,
-        width,
-        height,
-      })),
+      items: await Promise.all(
+        items.map(async ({ item, width, height }) => ({
+          assetId: item.assetId,
+          sort: item.sort,
+          caption: item.caption,
+          altText: item.altText,
+          image: await pubimgLink(item.assetId),
+          width,
+          height,
+        })),
+      ),
     });
   }
   const parse = (s: string): unknown => {

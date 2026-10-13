@@ -157,7 +157,11 @@ describe("site lifecycle and public boundary", () => {
     const ids = await seedImages(studio.organizationId, 3);
     const col = await mustCollection(studio.organizationId, "Weddings");
     await mustAdd(studio.organizationId, col.id, ids, null);
-    const published = await updatePortfolioSite(studio.organizationId, { status: "published" });
+    const published = await updatePortfolioSite(studio.organizationId, {
+      status: "published",
+      rightsAttested: true,
+      actorUserId: studio.userId,
+    });
     expect(published.ok).toBe(true);
 
     const pub = await getPublishedPortfolio(site.slug);
@@ -175,7 +179,11 @@ describe("site lifecycle and public boundary", () => {
     const otherCol = await mustCollection(studio.organizationId, "Sneak");
     await mustAdd(studio.organizationId, publicCol.id, ids, null);
     await mustAdd(studio.organizationId, otherCol.id, ids, null);
-    await updatePortfolioSite(studio.organizationId, { status: "published" });
+    await updatePortfolioSite(studio.organizationId, {
+      status: "published",
+      rightsAttested: true,
+      actorUserId: studio.userId,
+    });
 
     // Both visible while both are public.
     let pub = await getPublishedPortfolio(site.slug);
@@ -191,6 +199,51 @@ describe("site lifecycle and public boundary", () => {
     const off = await updatePortfolioSite(studio.organizationId, { status: "draft" });
     expect(off.ok).toBe(true);
     expect(await getPublishedPortfolio(site.slug)).toBeNull();
+  });
+
+  it("WEB-344 AC3: first publish requires the explicit rights attestation; unpublish flips immediately and keeps the record", async () => {
+    const studio = await seedStudio();
+    const site = await getOrCreatePortfolioSite(studio.organizationId, "Attest");
+    const ids = await seedImages(studio.organizationId, 2);
+    const col = await mustCollection(studio.organizationId, "Set");
+    await mustAdd(studio.organizationId, col.id, ids, null);
+
+    // Without the flag: rejected, nothing goes live, nothing recorded.
+    const refused = await updatePortfolioSite(studio.organizationId, { status: "published" });
+    expect(refused).toEqual({ ok: false, error: "rights_attestation_required" });
+    expect(await getPublishedPortfolio(site.slug)).toBeNull();
+
+    // Unlisted is also a publish — same gate.
+    const unlistedRefused = await updatePortfolioSite(studio.organizationId, { status: "unlisted" });
+    expect(unlistedRefused).toEqual({ ok: false, error: "rights_attestation_required" });
+
+    // With the flag: live, and who/when recorded for audit.
+    const live = await updatePortfolioSite(studio.organizationId, {
+      status: "published",
+      rightsAttested: true,
+      actorUserId: studio.userId,
+    });
+    expect(live.ok).toBe(true);
+    if (live.ok) {
+      expect(live.site.status).toBe("published");
+      expect(live.site.rightsAttestedAt).not.toBeNull();
+      expect(live.site.rightsAttestedBy).toBe(studio.userId);
+    }
+    expect(await getPublishedPortfolio(site.slug)).not.toBeNull();
+
+    // Unpublish flips state immediately; the attestation record survives
+    // (publishedAt stays as first-published history — landed WEB-305 semantics).
+    const off = await updatePortfolioSite(studio.organizationId, { status: "draft" });
+    expect(off.ok).toBe(true);
+    if (off.ok) {
+      expect(off.site.status).toBe("draft");
+      expect(off.site.rightsAttestedAt).not.toBeNull();
+    }
+    expect(await getPublishedPortfolio(site.slug)).toBeNull();
+
+    // Re-publish keeps the prior attestation — no flag needed.
+    const again = await updatePortfolioSite(studio.organizationId, { status: "published" });
+    expect(again.ok).toBe(true);
   });
 });
 
