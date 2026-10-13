@@ -32,6 +32,10 @@
     // Test-only secret — token encryption (AES-GCM under a derived key) needs one.
     "BETTER_AUTH_SECRET": "test-secret-test-secret-test-secret-0123456789",
     // WEB-352: enables the "connect an existing Stripe account" OAuth routes under test.
-    "STRIPE_CONNECT_CLIENT_ID": "ca_test_client"
+    "STRIPE_CONNECT_CLIENT_ID": "ca_test_client",
+    // WEB-195: cloud destination keys — asserted to flow env → controls in
+    // tests/integration/downloads.test.ts.
+    "GOOGLE_DRIVE_CLIENT_ID": "test-drive-client-id.apps.googleusercontent.com",
+    "DROPBOX_APP_KEY": "test-dropbox-app-key"
   }
 }

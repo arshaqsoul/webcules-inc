@@ -88,7 +88,12 @@
     "CLOUDFLARE_ZONE_ID": "9576286851f6ba68ddcb3ff31a1e74db",
     // WEB-319: Template Studio harness (/dev/template-harness) — always open
     // in local dev (NODE_ENV), this flips it on for a deployed environment
-    // (staging sets "1"; production keeps it off).
-    "SNAP_DEV_HARNESS": "0"
+    // (staging sets it "1"; production keeps it off).
+    "SNAP_DEV_HARNESS": "0",
+    // WEB-195 Downloads 3b — client-side cloud destinations (public browser
+    // keys; set per environment once the Google GIS + Dropbox dropins apps
+    // are created — unset keeps the destination buttons hidden):
+    // "GOOGLE_DRIVE_CLIENT_ID": "<client-id>.apps.googleusercontent.com",
+    // "DROPBOX_APP_KEY": "<dropbox-app-key>",
   }
 }

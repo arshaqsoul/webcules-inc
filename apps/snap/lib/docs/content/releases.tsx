@@ -35,6 +35,31 @@ export default function Releases() {
         polish fold into the next entry rather than getting their own.
       </Note>
 
+      <Release version="0.17.0" date="October 13, 2026">
+        <p>
+          <strong>Skip the download — save straight to your client&rsquo;s
+          own cloud.</strong> In any gallery with downloads on, the
+          full-screen photo view can now send a photo directly to your
+          client&rsquo;s <strong>Google Drive</strong> or{" "}
+          <strong>Dropbox</strong>. The transfer happens entirely in their
+          browser, with their own account: Google asks their permission in a
+          small pop-up (and only for the file being saved), and Dropbox uses
+          its familiar saver window. Nothing is stored on our side — no
+          passwords, no lasting access to their cloud.
+        </p>
+        <p>
+          <strong>The same rules apply as a regular download.</strong> PIN
+          locks, per-client download caps and your approval settings are all
+          enforced before a single byte moves, and every save counts in your
+          download analytics exactly like a download to disk.
+        </p>
+        <p>
+          <strong>Nothing to set up in the studio.</strong> The buttons
+          appear per gallery link based on which destinations your Snap
+          environment has enabled.
+        </p>
+      </Release>
+
       <Release version="0.16.0" date="October 12, 2026">
         <p>
           <strong>Downloads in the size your clients actually need.</strong>{" "}

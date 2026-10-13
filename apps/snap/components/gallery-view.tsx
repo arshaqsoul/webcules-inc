@@ -23,6 +23,7 @@ import {
 } from "@/lib/gallery-design";
 import type { RenderPlan, RenderSection, SectionAsset } from "@/lib/gallery-sections";
 import { sizeOffered, type SizePref } from "@/lib/gallery-downloads";
+import { saveToDrive, saveToDropbox } from "@/lib/cloud-destinations";
 import { PUBLIC_HOST } from "@/lib/hosts";
 import { useTurnstile } from "@/components/use-turnstile";
 
@@ -347,6 +348,10 @@ export type DlControls = {
   limit: number | null;
   limitUsed: number;
   pin: boolean;
+  /** WEB-195 Downloads 3b: public browser keys for the client-side
+   * destinations — null (or absent on older caches) hides the buttons. */
+  driveClientId?: string | null;
+  dropboxAppKey?: string | null;
 };
 export type DlRequest = {
   id: string;
@@ -1689,6 +1694,50 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
     [],
   );
 
+  /** WEB-195 Downloads 3b — save this photo straight to the client's own
+   * cloud. The browser fetches through the same authorized download path
+   * (PIN, per-client cap, proofing watermarking and audit all apply), then
+   * pushes the bytes with THEIR consent — Google Drive via a one-off GIS
+   * token (drive.file scope), Dropbox via the Saver reading an object URL.
+   * Nothing is stored server-side. */
+  const saveToCloud = useCallback(
+    async (dest: "drive" | "dropbox", asset: { id: string; filename: string }) => {
+      const driveClientId = dl?.controls.driveClientId ?? null;
+      const dropboxAppKey = dl?.controls.dropboxAppKey ?? null;
+      setDlBusy(true);
+      const flash = (msg: string, ms = 4000) => {
+        setDlFlash(msg);
+        setTimeout(() => setDlFlash(""), ms);
+      };
+      try {
+        const res = await fetch(`/api/assets/${asset.id}?download=1`);
+        if (res.status === 401 && ((await res.json().catch(() => ({}))) as { error?: string }).error === "pin_required") {
+          setDlBusy(false);
+          setPinPrompt({ retry: () => void saveToCloud(dest, asset) });
+          return;
+        }
+        if (!res.ok) {
+          flash(res.status === 403 ? "You've reached the download limit for this gallery — your photographer can lift it." : "Couldn't fetch the photo — try again.");
+          return;
+        }
+        const bytes = await res.blob();
+        if (dest === "drive") {
+          if (!driveClientId) throw new Error("drive_not_configured");
+          await saveToDrive({ clientId: driveClientId, filename: asset.filename, bytes });
+          flash(`Saved “${asset.filename}” to your Google Drive.`);
+        } else {
+          if (!dropboxAppKey) throw new Error("dropbox_not_configured");
+          const outcome = await saveToDropbox({ appKey: dropboxAppKey, filename: asset.filename, bytes });
+          if (outcome === "saved") flash(`Saved “${asset.filename}” to your Dropbox.`);
+        }
+      } catch {
+        flash(dest === "drive" ? "Google Drive save didn't complete — try again." : "Dropbox save didn't complete — try again.");
+      }
+      setDlBusy(false);
+    },
+    [dl?.controls.driveClientId, dl?.controls.dropboxAppKey],
+  );
+
   /** Download-all: resolve the plan, then hand the browser a streaming URL
    * per part. Galleries that need studio approval file a request instead. */
   async function requestZip(scope: "all" | "folder" | "favorites", sizePref: SizePref) {
@@ -2868,6 +2917,34 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
                   >
                     1280
                   </button>
+                )}
+                {/* WEB-195: save-to-cloud — client-side only, rendered when the
+                 * environment carries the (public) destination keys. */}
+                {(dl?.controls.driveClientId || dl?.controls.dropboxAppKey) && (
+                  <span className="ml-1 flex items-center gap-1 border-l border-white/20 pl-2">
+                    {dl?.controls.driveClientId && (
+                      <button
+                        type="button"
+                        disabled={dlBusy}
+                        onClick={() => void saveToCloud("drive", current)}
+                        className="rounded-md px-2.5 py-1.5 text-xs text-white/70 underline-offset-2 hover:bg-white/10 hover:underline disabled:opacity-60"
+                        title="Save to your Google Drive — nothing is stored by the studio"
+                      >
+                        Drive
+                      </button>
+                    )}
+                    {dl?.controls.dropboxAppKey && (
+                      <button
+                        type="button"
+                        disabled={dlBusy}
+                        onClick={() => void saveToCloud("dropbox", current)}
+                        className="rounded-md px-2.5 py-1.5 text-xs text-white/70 underline-offset-2 hover:bg-white/10 hover:underline disabled:opacity-60"
+                        title="Save to your Dropbox — nothing is stored by the studio"
+                      >
+                        Dropbox
+                      </button>
+                    )}
+                  </span>
                 )}
               </span>
             )}

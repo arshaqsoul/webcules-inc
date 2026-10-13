@@ -3,6 +3,7 @@
  * and the client's approval requests; POST files an approval request
  * (Studio+ galleries that require sign-off). Download-all itself streams
  * from /api/g/{token}/zip on every plan - nothing is queued or built. */
+import { env } from "cloudflare:workers";
 import { resolveGalleryAccess } from "@/lib/shares/gallery-auth";
 import { assetInGrant } from "@/lib/shares/grants";
 import {
@@ -12,6 +13,7 @@ import {
   photoDownloadCount,
 } from "@/lib/repos/downloads";
 import { DOWNLOAD_SCOPES, REQUEST_MAX_ASSET_IDS, parseSizePref, type DownloadScope } from "@/lib/gallery-downloads";
+import { cloudDestinationsFromEnv } from "@/lib/cloud-destinations";
 import { resolveGrantByToken } from "@/lib/shares/grants";
 
 export const dynamic = "force-dynamic";
@@ -30,6 +32,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
   // the buttons only download clean unwatermarked derivatives, which the
   // WEB-242 asset route refuses anyway. Hide the ladder in the lightbox.
   const webSize = settings.webSize && !grant.proofing;
+  // WEB-195: client-side cloud destinations ride the same controls — the
+  // keys are public browser values (GIS client id / dropins app key); the
+  // buttons stay hidden in any environment that hasn't set them.
+  const cloud = cloudDestinationsFromEnv(env);
   return Response.json({
     requests: requests.map((r) => ({
       id: r.id,
@@ -51,6 +57,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
       limit: settings.limit,
       limitUsed: used,
       pin: Boolean(settings.pinHash),
+      ...cloud,
     },
   });
 }
