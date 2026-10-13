@@ -39,6 +39,36 @@ export const GUEST_MAX_FILE_BYTES = 1024 * 1024 * 1024;
 /** "Uploads await review" emails: at most one per link per hour. */
 const NOTIFY_THROTTLE_SECONDS = 3600;
 
+/* Guest mint/confirm per-IP rate limits (WEB-374): fixed-window counters on
+ * the shared rate_limit table, same pattern as the public form presign
+ * surface (forms/q/{token}/file). Generous enough for one phone batch-
+ * uploading dozens of files, tight enough to stop unthrottled presign
+ * farming of the public /api/u/{token}/uploads surface. Buckets are
+ * purpose-prefixed so they never interact with other rate_limit consumers. */
+const GUEST_RATE_WINDOW_S = 60;
+export const GUEST_MINTS_PER_MIN = 60;
+export const GUEST_CONFIRMS_PER_MIN = 60;
+
+export async function checkGuestUploadRate(
+  kind: "mint" | "confirm",
+  ip: string,
+): Promise<boolean> {
+  const now = Math.floor(Date.now() / 1000);
+  const windowStart = now - (now % GUEST_RATE_WINDOW_S);
+  const key = `guest-upload:${kind}:${ip}`;
+  const rows = await getDb().all<{ count: number }>(sql`
+    INSERT INTO rate_limit (id, key, count, last_request) VALUES (${crypto.randomUUID()}, ${key}, 1, ${windowStart})
+    ON CONFLICT(key) DO UPDATE SET
+      count = CASE WHEN rate_limit.last_request < ${windowStart} THEN 1 ELSE rate_limit.count + 1 END,
+      last_request = ${windowStart}
+    RETURNING count
+  `);
+  return (
+    (rows[0]?.count ?? 0) <=
+    (kind === "mint" ? GUEST_MINTS_PER_MIN : GUEST_CONFIRMS_PER_MIN)
+  );
+}
+
 const nowSec = () => Math.floor(Date.now() / 1000);
 
 export function uploadRequestState(
@@ -331,10 +361,24 @@ export async function recordGuestUpload(params: {
     uploaderName: name,
     status: "pending",
   });
+
+  // WEB-374 cap race: the mint route's `uploadedCount >= cap` check is
+  // read-then-act, so concurrent guests could all pass it before any
+  // confirm lands. This conditional increment is the atomic guard — the
+  // stored counter can never exceed the cap. A confirm that loses the race
+  // still keeps its quarantine row above (the bytes are already in R2 and
+  // stay reviewable); only the counter stops at the cap, and the mint gate
+  // then refuses further uploads. Worst case is a handful of over-cap
+  // quarantine rows, bounded by the 500-file hard ceiling and plan gates.
   await db
     .update(schema.uploadRequests)
     .set({ uploadedCount: sql`${schema.uploadRequests.uploadedCount} + 1` })
-    .where(eq(schema.uploadRequests.id, params.request.id));
+    .where(
+      and(
+        eq(schema.uploadRequests.id, params.request.id),
+        sql`${schema.uploadRequests.uploadedCount} < ${effectiveFileCap(params.request)}`,
+      ),
+    );
 
   await notifyStudioOfUpload(params.request, params.assetId, name);
 }
@@ -364,10 +408,16 @@ async function notifyStudioOfUpload(
       preview: `${who} uploaded ${asset?.filename ?? "a file"} (awaiting your review)`,
     });
 
-    // Email throttle: one nudge per link per hour, prefs-gated.
+    // Email throttle: one nudge per link per hour, prefs-gated. WEB-374:
+    // prefs and contact-email are checked BEFORE claiming the hourly slot —
+    // a prefs-off studio (or one with no contact email) must not burn the
+    // hour's slot for a send that would never go out.
     const now = nowSec();
     const last = request.lastNotifiedAt ?? 0;
     if (now - last < NOTIFY_THROTTLE_SECONDS) return;
+    if (!(await studioWantsEmail(request.organizationId, "gallery"))) return;
+    const profile = await getStudioProfile(request.organizationId);
+    if (!profile?.contactEmail) return;
     const db = getDb();
     const claimed = (
       await db
@@ -382,9 +432,6 @@ async function notifyStudioOfUpload(
         .returning({ id: schema.uploadRequests.id })
     )[0];
     if (!claimed) return; // a concurrent confirm already sent this hour's email
-    if (!(await studioWantsEmail(request.organizationId, "gallery"))) return;
-    const profile = await getStudioProfile(request.organizationId);
-    if (!profile?.contactEmail) return;
     const link = await appUrl(
       `/dashboard/projects/${request.projectId}?tab=gallery`,
     );

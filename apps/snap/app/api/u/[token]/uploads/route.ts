@@ -3,13 +3,17 @@
  * login: the link token is the capability, re-validated on every call
  * (open + unexpired + under the file cap). Guest files cap at 1 GB; the
  * studio's plan gates still apply (checkUploadGate inside
- * createUploadSession). Quarantine is applied at confirm. */
+ * createUploadSession). Quarantine is applied at confirm. WEB-374: mint is
+ * rate-limited per IP, and every session is stamped with the minting link
+ * (upload_request_id) so confirm can scope strictly to it. */
 import { z } from "zod";
 
+import { clientIp } from "@/lib/shares/gallery-auth";
 import { ALLOWED_EXTENSIONS } from "@/lib/repos/assets";
 import { DIRECT_MAX_BYTES, createUploadSession } from "@/lib/uploads";
 import {
   GUEST_MAX_FILE_BYTES,
+  checkGuestUploadRate,
   effectiveFileCap,
   resolveUploadRequestByToken,
 } from "@/lib/shares/upload-requests";
@@ -30,6 +34,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
   const request = await resolveUploadRequestByToken(token);
   if (!request) return Response.json({ error: "link_unavailable" }, { status: 404 });
 
+  // WEB-374: the public presign surface is per-IP rate-limited, same as
+  // the comparable form-file presign endpoint.
+  const ip = clientIp(req);
+  if (ip && !(await checkGuestUploadRate("mint", ip))) {
+    return Response.json({ error: "rate_limited" }, { status: 429, headers: { "Retry-After": "60" } });
+  }
+
   let body: unknown;
   try {
     body = await req.json();
@@ -40,6 +51,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
   if (!parsed.success) return Response.json({ error: "invalid_body" }, { status: 400 });
 
   const cap = effectiveFileCap(request);
+  // Fast reject; the authoritative atomic guard against concurrent overshoot
+  // is the conditional counter increment at confirm (recordGuestUpload).
   if (request.uploadedCount >= cap) {
     return Response.json({ error: "link_full", maxFiles: cap }, { status: 409 });
   }
@@ -51,6 +64,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
     organizationId: request.organizationId,
     projectId: request.projectId,
     uploadedBy: null, // guest — the quarantine row carries the uploader name
+    uploadRequestId: request.id, // WEB-374: confirm scopes strictly by this
     filename: parsed.data.filename,
     mimeType: parsed.data.mimeType,
     bytes: parsed.data.bytes,
