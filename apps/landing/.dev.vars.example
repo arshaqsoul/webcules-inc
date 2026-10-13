@@ -1,6 +1,8 @@
 # Local dev secrets for the landing worker (read by the wrangler platform
 # proxy). Copy to .dev.vars and fill in real values — .dev.vars is gitignored.
-# Auth fails closed at startup without a secret (lib/auth.server.ts).
+# Without a secret, auth requests fail closed with a clear error
+# (lib/auth.server.ts); first run also needs the local D1 database provisioned
+# via `pnpm db:migrate` before signing in.
 
 # REQUIRED. Generate one with: openssl rand -base64 32
 BETTER_AUTH_SECRET=

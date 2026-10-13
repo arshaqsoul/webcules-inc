@@ -9,7 +9,14 @@
  * B. Any remaining dynamic-require throw shims get a lookup into the inlined
  *    manifest store (self.__WC_MANIFESTS) and only then rethrow.
  *
- * Run AFTER `opennextjs-cloudflare build` (idempotent).
+ * Run AFTER `opennextjs-cloudflare build`. Idempotent: a re-run on an
+ * already-patched tree (detected via the self.__WC_MANIFESTS marker) exits 0.
+ *
+ * Tripwire: if this patches 0 files and finds no marker, it exits 1 — the
+ * minified Next.js internals it string-matches have changed. Runbook when it
+ * fires (e.g. a Next/OpenNext upgrade fixes the dynamic-require bug upstream):
+ * verify the "Dynamic require" runtime error no longer reproduces, then delete
+ * this script and its call sites in package.json.
  */
 import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -34,6 +41,7 @@ for (const f of readdirSync(nextServerDir)) {
 
 // 2. walk .open-next and patch js/mjs bundles
 let patched = 0;
+let alreadyPatched = 0;
 const files = [];
 function walk(dir) {
   for (const e of readdirSync(dir, { withFileTypes: true })) {
@@ -56,8 +64,12 @@ for (const file of files) {
 
   // B. any remaining dynamic-require throw shims get a manifest lookup + rethrow
   if (src.includes("Dynamic require of")) {
+    // The guard's rethrow must use quoting this regex CANNOT re-match
+    // (double-quoted fragments) — a re-run otherwise re-patches the guard
+    // itself and idempotency is lost. Runtime message is identical to the
+    // original shim: Dynamic require of "<id>" is not supported
     const guard = (v) =>
-      `{const __wc_m=self.__WC_MANIFESTS&&self.__WC_MANIFESTS[${v}];if(__wc_m!==undefined)return __wc_m;throw new Error('Dynamic require of "'+${v}+'" is not supported')}`;
+      `{const __wc_m=self.__WC_MANIFESTS&&self.__WC_MANIFESTS[${v}];if(__wc_m!==undefined)return __wc_m;throw new Error('Dynamic require of'+' "'+${v}+'" '+'is not supported')}`;
     src = src.replace(
       /throw (?:new )?Error\('Dynamic require of "'\s*\+\s*([A-Za-z0-9_$]+)\s*\+\s*'" is not supported'\)/g,
       (_, v) => guard(v),
@@ -73,17 +85,27 @@ for (const file of files) {
     writeFileSync(file, src);
     patched++;
     console.log(`patched ${file}`);
+  } else if (src.includes("self.__WC_MANIFESTS=")) {
+    // Patch B's marker is present — this file was already patched on a
+    // previous run, so a no-op here is a successful idempotent re-run.
+    alreadyPatched++;
   }
 }
 
 console.log(`fix-worker-manifest: patched ${patched} bundle file(s)`);
 if (patched === 0) {
-  console.error(
-    "fix-worker-manifest: patched 0 bundle files — the expected minified Next.js patterns " +
-      "(getMiddlewareManifest / dynamic-require shims) were not found. Next.js internals " +
-      "likely changed and the runtime \"Dynamic require\" error would NOT be fixed. " +
-      "Failing the deploy pipeline so this is investigated instead of silently shipping " +
-      "a worker that 500s at runtime.",
-  );
-  process.exit(1);
+  if (alreadyPatched > 0) {
+    console.log(
+      `fix-worker-manifest: ${alreadyPatched} bundle file(s) already patched (idempotent re-run) — nothing to do.`,
+    );
+  } else {
+    console.error(
+      "fix-worker-manifest: patched 0 bundle files and no previous patch marker found — the expected minified Next.js patterns " +
+        "(getMiddlewareManifest / dynamic-require shims) were not found. Next.js internals " +
+        "likely changed and the runtime \"Dynamic require\" error would NOT be fixed. " +
+        "Failing the deploy pipeline so this is investigated instead of silently shipping " +
+        "a worker that 500s at runtime.",
+    );
+    process.exit(1);
+  }
 }

@@ -183,7 +183,12 @@ export async function getAuth() {
   return betterAuth({
     appName: "Webcules",
     secret,
-    baseURL: env.BETTER_AUTH_URL || "http://localhost:3000",
+    // No localhost fallback in production: the deployed worker serves
+    // webcules.com (wrangler routes), so a missing BETTER_AUTH_URL still
+    // resolves against the real origin instead of localhost.
+    baseURL:
+      env.BETTER_AUTH_URL ||
+      (process.env.NODE_ENV === "production" ? "https://webcules.com" : "http://localhost:3000"),
     trustedOrigins: [
       "http://localhost:3000",
       "https://webcules.com",
