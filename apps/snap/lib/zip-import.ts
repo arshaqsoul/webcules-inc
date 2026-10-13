@@ -183,12 +183,18 @@ export function extractZipBytes(
       hardError = { error: "zip_bomb", detail: file.name };
       return false;
     }
+    // Directory entries ("Smith/") are metadata, not files — skip them
+    // BEFORE the unsafe-name check: their trailing slash would otherwise
+    // split into an empty segment and count as "unsafe", flagging a bogus
+    // warning on virtually every real-world archive (Finder, Explorer,
+    // WinZip and Dropbox all write directory entries).
+    if (file.name.endsWith("/")) return false;
     const segs = normalizeZipPath(file.name);
     if (!segs) {
       skippedUnsafe++;
       return false;
     }
-    if (file.name.endsWith("/") || segs.length === 0) return false; // directory entry
+    if (segs.length === 0) return false;
     if (isJunk(segs)) {
       skippedJunk++;
       return false;

@@ -82,6 +82,33 @@ describe("extractZipBytes", () => {
     expect(res.ok && res.files[0].folder).toBe("Day 1");
   });
 
+  it("counts real directory entries as plain skips, not unsafe (WEB-308)", async () => {
+    // Nested objects make zipSync emit real "Smith/"-style directory
+    // entries — the flat records used elsewhere never do. Finder, Explorer,
+    // WinZip and Dropbox all write these, so they must not trip the
+    // "skipped N (unsafe)" warning.
+    const zip = zipSync({
+      "Smith Wedding": { Ceremony: { "a.jpg": jpg }, "b.png": png } as any,
+      "c.jpg": jpg,
+    });
+    const res = await extractZipBytes(zip);
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.files.map((f) => f.name).sort()).toEqual([
+      "a.jpg",
+      "b.png",
+      "c.jpg",
+    ]);
+    expect(res.files.map((f) => f.folder)).toEqual([
+      "Smith Wedding",
+      "Smith Wedding",
+      null,
+    ]);
+    expect(res.skippedUnsafe).toBe(0);
+    expect(res.skippedJunk).toBe(0);
+    expect(res.skippedUnsupported).toBe(0);
+  });
+
   it("skips OS junk and unsupported file types", async () => {
     const zip = entry({
       "Ceremony/a.jpg": jpg,
