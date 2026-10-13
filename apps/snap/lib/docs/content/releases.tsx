@@ -38,6 +38,18 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.19.1" date="October 13, 2026">
+        <p>
+          <strong>ZIP folders file themselves again.</strong> A wiring slip in
+          v0.19.0 meant that on a project with a client attached, dropping a
+          ZIP into the Files tab unpacked it correctly but filed everything
+          as Unfiled — the folders inside never became project folders. That
+          email is only used to pre-fill the share recipient; it no longer
+          has any say in how archives are filed. Projects without a client
+          were unaffected, and no files were ever lost.
+        </p>
+      </Release>
+
       <Release version="0.19.0" date="October 13, 2026">
         <p>
           <strong>Drop a ZIP, skip the unzipping.</strong> Project Files now

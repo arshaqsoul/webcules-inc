@@ -48,7 +48,7 @@ import {
 import { colorKeyFromRgba } from "@/lib/color-sort";
 import { qualityFlags, type ImageAnalysis } from "@/lib/image-analysis";
 import { autoEdits, type PartialEdits } from "@/lib/edits";
-import { extractZipFile } from "@/lib/zip-import";
+import { extractZipFile, zipFolderForSurface } from "@/lib/zip-import";
 import { FileTypeIcon } from "@/components/file-type-icon";
 import { useConfirm } from "@/components/confirm-provider";
 import { SharePanel } from "@/components/share-panel";
@@ -493,12 +493,21 @@ function VideoTile({ id, hover }: { id: string; hover: boolean }) {
 export function ProjectFiles({
   projectId,
   clientEmail,
+  isClientPortal = false,
   initial,
   defaultExpiryDays,
   defaultAllowDownload,
 }: {
   projectId: string;
+  /** Client contact email — ONLY a Share-panel recipient pre-fill. Never a
+   * surface marker: the dashboard passes it for any project with a client,
+   * and keying ZIP folder mapping off it disabled mapping everywhere
+   * (WEB-314). Use `isClientPortal` for surface behavior. */
   clientEmail?: string;
+  /** WEB-314: true only on the client-portal surface, where ZIP imports
+   * land Unfiled. The dashboard Files tab leaves it false so archive
+   * folders map to project folders. */
+  isClientPortal?: boolean;
   initial?: AssetItem[];
   defaultExpiryDays?: number;
   defaultAllowDownload?: boolean;
@@ -2043,8 +2052,10 @@ export function ProjectFiles({
     if (!incoming.length) return;
     /* WEB-184 ZIP import: archives are extracted in the browser BEFORE
      * upload — bomb/traversal guards and folder mapping live in
-     * lib/zip-import.ts. On the client portal surface (clientEmail) the
-     * folder mapping flattens to Unfiled; folder creation is org-gated. */
+     * lib/zip-import.ts. Folder mapping keys off the explicit isClientPortal
+     * surface flag (WEB-314), NOT clientEmail — the dashboard passes the
+     * project's client contact email for Share pre-fill and still maps
+     * folders; folder creation is org-gated. */
     const arr: File[] = [];
     const folderByFile = new Map<File, string | null>();
     for (const f of incoming) {
@@ -2063,7 +2074,7 @@ export function ProjectFiles({
       }
       for (const x of extracted.files) {
         arr.push(x.file);
-        folderByFile.set(x.file, clientEmail ? null : x.folder);
+        folderByFile.set(x.file, zipFolderForSurface(x.folder, { isClientPortal }));
       }
       const skipped =
         extracted.skippedJunk +
