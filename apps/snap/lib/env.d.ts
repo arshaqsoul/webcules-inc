@@ -36,6 +36,12 @@ declare namespace Cloudflare {
     CF_API_BASE?: string;
     /** E2E only (WEB-233): redirect DoH TXT/CNAME lookups at a local mock. */
     DOH_BASE?: string;
+    /** WEB-195 Downloads 3b: public GIS OAuth client id — lights up the
+     * "save to Google Drive" destination when set (unset → hidden). */
+    GOOGLE_DRIVE_CLIENT_ID?: string;
+    /** WEB-195 Downloads 3b: public dropins app key — lights up the
+     * Dropbox Saver destination when set (unset → hidden). */
+    DROPBOX_APP_KEY?: string;
   }
 }
 
@@ -58,6 +64,8 @@ interface Env {
   CLOUDFLARE_ZONE_ID?: string;
   CF_API_BASE?: string;
   DOH_BASE?: string;
+  GOOGLE_DRIVE_CLIENT_ID?: string;
+  DROPBOX_APP_KEY?: string;
   /** Set only by the e2e server (tests/e2e/server.mjs) — loosens dev-only limits. */
   SNAP_E2E?: string;
 }
