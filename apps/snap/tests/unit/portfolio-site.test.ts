@@ -36,6 +36,18 @@ describe("portfolio subdomain hosts (WEB-346)", () => {
     expect(portfolioSlugFromHost("priya.staging.snaphq.app")).toBe("priya");
   });
 
+  it("parses the WEB-419 re-scoped {slug}.studios.snaphq.app surface", () => {
+    expect(portfolioSlugFromHost("priya.studios.snaphq.app")).toBe("priya");
+    expect(portfolioSlugFromHost("Aurora-Studio.studios.snaphq.app")).toBe("aurora-studio");
+    expect(portfolioSlugFromHost("priya.studios.snaphq.app:443")).toBe("priya");
+    expect(portfolioSlugFromHost("x-forwarded, priya.studios.snaphq.app")).toBe("priya");
+  });
+
+  it("parses the staging analog {slug}.studios.staging.snaphq.app", () => {
+    expect(portfolioSlugFromHost("priya.studios.staging.snaphq.app")).toBe("priya");
+    expect(portfolioSlugFromHost("PRIYA.STUDIOS.STAGING.SNAPHQ.APP")).toBe("priya");
+  });
+
   it("reserved labels and app hosts are not portfolio slugs", () => {
     expect(portfolioSlugFromHost("www.snaphq.app")).toBeNull();
     expect(portfolioSlugFromHost("staging.snaphq.app")).toBeNull();
@@ -45,6 +57,13 @@ describe("portfolio subdomain hosts (WEB-346)", () => {
     expect(portfolioSlugFromHost("deep.a.b.snaphq.app")).toBeNull();
     expect(portfolioSlugFromHost("a.b.c.snaphq.app")).toBeNull();
     expect(portfolioSlugFromHost("studio.example.com")).toBeNull();
+    // the studios label itself is reserved — no shadowing the whole surface
+    expect(portfolioSlugFromHost("studios.snaphq.app")).toBeNull();
+    expect(portfolioSlugFromHost("staging.studios.snaphq.app")).toBeNull();
+    expect(portfolioSlugFromHost("studios.staging.snaphq.app")).toBeNull();
+    // unknown label shapes under studios.* are not slugs either
+    expect(portfolioSlugFromHost("a.b.studios.snaphq.app")).toBeNull();
+    expect(portfolioSlugFromHost("priya.gallery.snaphq.app")).toBeNull();
     expect(portfolioSlugFromHost(null)).toBeNull();
   });
 

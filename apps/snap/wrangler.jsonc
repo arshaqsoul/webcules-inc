@@ -63,9 +63,16 @@
     // It captured every sibling worker hostname on a direct subdomain that
     // resolves into this zone, including staging.snaphq.app (snap-staging's
     // custom domain), routing staging traffic to the PROD worker/D1. Do NOT
-    // re-add a bare-subdomain wildcard here: when WEB-384 (per-studio
-    // hostnames) lands, use a dedicated label (e.g. *.studios.snaphq.app),
-    // mirroring how staging uses *.staging.snaphq.app.
+    // re-add a bare-subdomain wildcard here (merged policy, 406774e / PR #62).
+    // WEB-419 (WEB-384 remaining leg): the per-studio surface instead lives
+    // on the DEDICATED label below, mirroring staging's *.staging.snaphq.app.
+    // Nothing else lives under studios.*, so there is no collision surface.
+    // Inert until the zone gets a *.studios DNS record (Thor, on WEB-384) —
+    // declared here so `wrangler deploy` never prunes it.
+    {
+      "pattern": "*.studios.snaphq.app/*",
+      "zone_name": "snaphq.app"
+    },
     // WEB-224/233: staging probe host — exercises the serving guard and the
     // neutral org-less 404 on a live third-party-shaped hostname (our zone's
     // own subdomain, so no external DNS needed). Harmless: no custom_domain

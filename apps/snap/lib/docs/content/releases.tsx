@@ -38,6 +38,18 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.25.0" date="October 14, 2026">
+        <p>
+          <strong>A home of its own for your portfolio: your-name.studios.snaphq.app.</strong>
+          Every published portfolio on Lite and above now has a dedicated web
+          address on Snap&apos;s new studios.snaphq.app label, alongside the
+          existing snaphq.app/portfolio/your-name path. Nothing changes in your
+          dashboard &mdash; publish as usual and both addresses serve the same
+          site, with your own photos, theme, and domain-level polish. The
+          addresses switch on for visitors as the new label is rolled out.
+        </p>
+      </Release>
+
       <Release version="0.24.0" date="October 13, 2026">
         <p>
           <strong>A license agreement, on every gallery.</strong> You can now

@@ -31,7 +31,7 @@ export default function Portfolio() {
             <td>Free</td>
           </tr>
           <tr>
-            <td>your-slug.snaphq.app dedicated subdomain <Tier plan="lite" /></td>
+            <td>your-slug.studios.snaphq.app dedicated subdomain <Tier plan="lite" /></td>
             <td>Lite</td>
           </tr>
           <tr>

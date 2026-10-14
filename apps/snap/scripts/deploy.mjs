@@ -186,6 +186,12 @@ function writeStagingConfig() {
         // A -> 192.0.2.1, WEB-233 pattern); staging.snaphq.app itself is a
         // custom domain, which always takes precedence over this wildcard.
         { pattern: "*.staging.snaphq.app/*", zone_name: "snaphq.app" },
+        // WEB-419 (WEB-384 re-scope): staging analog of the prod
+        // *.studios.snaphq.app surface — {slug}.studios.staging.snaphq.app —
+        // so the re-scoped host parsing and serving QA staging-first. Same
+        // prune rule as above; inert until the *.studios.staging DNS record
+        // exists (Thor, on WEB-384).
+        { pattern: "*.studios.staging.snaphq.app/*", zone_name: "snaphq.app" },
       ];
   cfg.d1_databases[0].database_name = STAGING.d1Name;
   cfg.d1_databases[0].database_id = STAGING.d1Id;

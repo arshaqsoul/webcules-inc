@@ -81,28 +81,48 @@ export function isSnapMailDomain(domain: string): boolean {
   return domain.toLowerCase() === EMAIL_DOMAIN;
 }
 
-/* ------------- WEB-346: {slug}.snaphq.app portfolio subdomains ------------- */
+/* ------- WEB-346/WEB-419: {slug}.studios.snaphq.app portfolio subdomains ------- */
+
+/** WEB-419: the dedicated label per-studio portfolio hostnames live on.
+ * The apex wildcard approach is dead — the `*.snaphq.app/*` route was removed
+ * (WEB-409) and merged policy (406774e / PR #62) forbids re-adding it — so the
+ * WEB-384 surface is `{slug}.studios.snaphq.app`, mirroring how staging uses
+ * `*.staging.snaphq.app`. Nothing else lives under studios.*, so the wildcard
+ * route has no collision surface. */
+export const STUDIOS_LABEL = "studios";
 
 /** Labels under the app zone that are NOT portfolio slugs — operational
- * hostnames and everything validSlug must refuse to hand out. */
+ * hostnames and everything validSlug must refuse to hand out. Includes the
+ * per-studio label itself so no studio can claim slug "studios" and shadow
+ * the whole surface. */
 export const RESERVED_SUBDOMAIN_LABELS = [
-  "www", "staging", "domains", "api", "app", "docs", "blog", "help",
+  "www", "staging", STUDIOS_LABEL, "domains", "api", "app", "docs", "blog", "help",
   "support", "mail", "status", "assets", "cdn", "img",
 ] as const;
 
 const PORTFOLIO_SLUG_RE = /^[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?$/;
 
-/** Slug encoded in ONE host label ("priya.snaphq.app"), or null. */
+/** Slug encoded in host labels under one of our zones ("priya.snaphq.app"),
+ * or null. Recognized shapes (WEB-419 re-scope): {slug}, {slug}.staging (the
+ * staging-test form), {slug}.studios (the WEB-384 per-studio surface) and
+ * {slug}.studios.staging (its staging analog). The pre-studios shapes stay
+ * recognized so parsing never depends on which zone routes are attached. */
 function slugFromSingleHost(h: string): string | null {
   for (const zone of [NEW_HOST, ...STAGING_HOSTS.filter((s) => s.endsWith(`.${NEW_HOST}`))]) {
     const suffix = `.${zone}`;
     if (!h.endsWith(suffix)) continue;
     const labels = h.slice(0, -suffix.length);
-    // staging form: {slug}.staging.snaphq.app (staging hosts themselves are
-    // in APP_HOSTS and never reach here, but the parse must still recognize
-    // the shape when asked directly).
+    // staging hosts themselves are in APP_HOSTS and never reach here, but the
+    // parse must still recognize the shape when asked directly.
     const parts = labels.split(".");
-    const slug = parts.length === 2 && parts[1] === "staging" ? parts[0] : parts.length === 1 ? parts[0] : null;
+    const slug =
+      parts.length === 1
+        ? parts[0]
+        : parts.length === 2 && (parts[1] === "staging" || parts[1] === STUDIOS_LABEL)
+          ? parts[0]
+          : parts.length === 3 && parts[1] === STUDIOS_LABEL && parts[2] === "staging"
+            ? parts[0]
+            : null;
     if (!slug) return null;
     if ((RESERVED_SUBDOMAIN_LABELS as readonly string[]).includes(slug)) return null;
     return PORTFOLIO_SLUG_RE.test(slug) ? slug : null;
@@ -110,8 +130,10 @@ function slugFromSingleHost(h: string): string | null {
   return null;
 }
 
-/** The public portfolio slug encoded in a request host, if any: production
- * `{slug}.snaphq.app` and the staging-testable `{slug}.staging.snaphq.app`.
+/** The public portfolio slug encoded in a request host, if any: the dedicated
+ * per-studio label `{slug}.studios.snaphq.app` (WEB-419/WEB-384) and the
+ * staging-testable `{slug}.studios.staging.snaphq.app`, plus the legacy
+ * `{slug}.snaphq.app` / `{slug}.staging.snaphq.app shapes.
  * Everything else (app hosts, custom studio hostnames, bare zone, reserved
  * labels, multi-label garbage) is null. A comma-separated host chain
  * (proxies append: "host, forwarded-host") is scanned part by part. Pure —
