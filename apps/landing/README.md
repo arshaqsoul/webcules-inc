@@ -15,7 +15,8 @@ fully down:
 | `/` (home) | Not CMS-backed — unaffected | 200 |
 | `/posts`, `/posts/page/N` | Branded empty state ("No posts yet - check back soon.") via `PostsGrid` | 200 |
 | `/posts/[slug]` | Branded 404 via `not-found.tsx` (guarded redirect lookup falls through) | 404 |
-| `/search`, `/search/[slug]` | Page shell + "No results found." (empty result set) | 200 |
+| `/search` | Page shell + "No results found." (empty result set) | 200 |
+| `/search/[slug]` | Branded 404 via `not-found.tsx` (page lookup fails → `CmsRedirects` falls through) | 404 |
 | `/pages-sitemap.xml` | Valid sitemap with static entries only | 200 |
 | `/posts-sitemap.xml` | Valid empty sitemap | 200 |
 | Any other render error | `app/error.tsx` — on-brand copy, retry + link home | 500 (branded) |
