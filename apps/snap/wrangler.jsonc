@@ -59,19 +59,13 @@
       "pattern": "domains.snaphq.app/*",
       "zone_name": "snaphq.app"
     },
-    // WEB-389: per-studio wildcard route ({slug}.snaphq.app) — the production
-    // mirror of the staging wildcard in scripts/deploy.mjs. INERT until the
-    // zone gets an apex wildcard DNS record (originless proxied A -> 192.0.2.1,
-    // WEB-233 pattern): routes only fire for hostnames that resolve into
-    // Cloudflare. Cannot shadow existing traffic: snaphq.app / www.snaphq.app
-    // are custom domains (custom domains always take precedence over routes),
-    // domains.snaphq.app/* is a more-specific route (specificity wins), and
-    // SaaS custom hostnames live in customer zones CNAME'd to
-    // domains.snaphq.app, outside this zone's wildcard entirely.
-    {
-      "pattern": "*.snaphq.app/*",
-      "zone_name": "snaphq.app"
-    },
+    // WEB-409: `*.snaphq.app/*` (d465c77, WEB-389) REMOVED — it was NOT inert.
+    // It captured every sibling worker hostname on a direct subdomain that
+    // resolves into this zone, including staging.snaphq.app (snap-staging's
+    // custom domain), routing staging traffic to the PROD worker/D1. Do NOT
+    // re-add a bare-subdomain wildcard here: when WEB-384 (per-studio
+    // hostnames) lands, use a dedicated label (e.g. *.studios.snaphq.app),
+    // mirroring how staging uses *.staging.snaphq.app.
     // WEB-224/233: staging probe host — exercises the serving guard and the
     // neutral org-less 404 on a live third-party-shaped hostname (our zone's
     // own subdomain, so no external DNS needed). Harmless: no custom_domain
