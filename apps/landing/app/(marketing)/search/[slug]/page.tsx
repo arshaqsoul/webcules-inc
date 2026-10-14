@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 
-import { PayloadRedirects } from "@webcules/payload/components/PayloadRedirects/index";
 import configPromise from "@webcules/payload/payload.config";
 import { getPayload, type RequiredDataFromCollectionSlug } from "payload";
 import { draftMode } from "next/headers";
@@ -9,26 +8,35 @@ import React, { cache } from "react";
 import { RenderBlocks } from "@webcules/payload/blocks/RenderBlocks";
 import { RenderHero } from "@webcules/payload/heros/RenderHero";
 import { generateMeta } from "@webcules/payload/utilities/generateMeta";
+import { CmsRedirects } from "@/components/shared/cms-redirects";
+import { emptyPaginatedDocs, safeCmsQuery } from "@/lib/cms";
+import type { Page } from "@webcules/payload/payload-types";
 import PageClient from "./page.client";
 import { LivePreviewListener } from "@webcules/payload/components/LivePreviewListener/index";
 
 export async function generateStaticParams() {
   const payload = await getPayload({ config: configPromise });
-  const pages = await payload.find({
-    collection: "pages",
-    draft: false,
-    limit: 1000,
-    overrideAccess: false,
-    pagination: false,
-    select: {
-      slug: true,
-    },
-    where: {
-      application: {
-        equals: "webcules",
-      },
-    },
-  });
+  const pages = await safeCmsQuery(
+    payload,
+    "pages:static-params",
+    () =>
+      payload.find({
+        collection: "pages",
+        draft: false,
+        limit: 1000,
+        overrideAccess: false,
+        pagination: false,
+        select: {
+          slug: true,
+        },
+        where: {
+          application: {
+            equals: "webcules",
+          },
+        },
+      }),
+    emptyPaginatedDocs<Page>(),
+  );
 
   const params = pages.docs
     ?.filter((doc) => {
@@ -58,7 +66,7 @@ export default async function Page({ params: paramsPromise }: Args) {
     });
 
   if (!page) {
-    return <PayloadRedirects url={url} />;
+    return <CmsRedirects url={url} />;
   }
 
   const { hero, layout } = page;
@@ -67,7 +75,7 @@ export default async function Page({ params: paramsPromise }: Args) {
     <article className="pt-16 pb-24">
       <PageClient />
       {/* Allows redirects for valid pages too */}
-      <PayloadRedirects disableNotFound url={url} />
+      <CmsRedirects disableNotFound url={url} />
 
       {draft && <LivePreviewListener />}
 
@@ -93,27 +101,33 @@ const queryPageBySlug = cache(async ({ slug }: { slug: string }) => {
 
   const payload = await getPayload({ config: configPromise });
 
-  const result = await payload.find({
-    collection: "pages",
-    draft,
-    limit: 1,
-    pagination: false,
-    overrideAccess: draft,
-    where: {
-      and: [
-        {
-          slug: {
-            equals: slug,
-          },
+  const result = await safeCmsQuery(
+    payload,
+    "pages:by-slug",
+    () =>
+      payload.find({
+        collection: "pages",
+        draft,
+        limit: 1,
+        pagination: false,
+        overrideAccess: draft,
+        where: {
+          and: [
+            {
+              slug: {
+                equals: slug,
+              },
+            },
+            {
+              application: {
+                equals: "webcules",
+              },
+            },
+          ],
         },
-        {
-          application: {
-            equals: "webcules",
-          },
-        },
-      ],
-    },
-  });
+      }),
+    emptyPaginatedDocs<Page>(),
+  );
 
   return result.docs?.[0] || null;
 });
