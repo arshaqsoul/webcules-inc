@@ -34,6 +34,7 @@ import { KIND_ICON, type InboxKind } from "@/components/inbox/kinds";
 import { ShortcutsSheet } from "@/components/inbox/shortcuts-sheet";
 import { SnoozeDialog } from "@/components/inbox/snooze-dialog";
 import { TriagePane } from "@/components/inbox/triage-pane";
+import { formatDay, formatDayTime } from "@/lib/dates";
 import { splitReplyForDisplay } from "@/lib/strip-reply";
 import { isPlaceholderClientEmail } from "@/lib/inbox/threading";
 import { ConnectClientDialog } from "@/components/inbox/connect-client-dialog";
@@ -127,8 +128,8 @@ function eventLink(e: TimelineEvent, t: ThreadData["thread"]): { href: string; l
   }
 }
 
-const fmtTime = (iso: string) =>
-  new Date(iso).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+/* WEB-367: locale + timeZone pinned so client/worker render identical strings. */
+const fmtTime = (iso: string) => formatDayTime(iso);
 
 /** Relative list time — Linear's list is "2m", the pane keeps the stamp. */
 function relTime(iso: string): string {
@@ -137,7 +138,7 @@ function relTime(iso: string): string {
   if (s < 3600) return `${Math.floor(s / 60)}m`;
   if (s < 86400) return `${Math.floor(s / 3600)}h`;
   if (s < 7 * 86400) return `${Math.floor(s / 86400)}d`;
-  return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  return formatDay(iso);
 }
 
 /** A client email: quote-collapsed text (render-time split — the stored body

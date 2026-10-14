@@ -8,6 +8,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { formatDay } from "@/lib/dates";
+
 export type BoardProject = {
   id: string;
   title: string;
@@ -125,7 +127,7 @@ export function KanbanBoard({ projects }: { projects: BoardProject[] }) {
                   <p className="mt-0.5 truncate text-xs text-ink-subtle">{p.clientName ?? p.clientEmail}</p>
                   <div className="mt-1.5 flex items-center gap-2 text-[11px] text-ink-tertiary">
                     {p.eventDate && (
-                      <span>📅 {new Date(p.eventDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+                      <span>📅 {formatDay(p.eventDate)}</span>
                     )}
                     {p.payStatus && p.payStatus !== "none" && (
                       <span

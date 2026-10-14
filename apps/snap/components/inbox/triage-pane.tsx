@@ -8,6 +8,7 @@ import { Inbox, Search } from "lucide-react";
 
 import { Button } from "@webcules/ui/components/button";
 import { ConnectClientDialog } from "@/components/inbox/connect-client-dialog";
+import { formatFullDateTime } from "@/lib/dates";
 
 type Option =
   | { kind: "lead"; id: string; label: string; sub: string; status: string }
@@ -113,7 +114,7 @@ export function TriagePane({
         <h2 className="mt-1 text-[15px] font-medium text-ink">{item.title}</h2>
         <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-ink-subtle">{item.preview || "(no preview)"}</p>
         <p className="mt-1 text-xs text-ink-tertiary">
-          {new Date(item.createdAt).toLocaleString()} · {item.kind}
+          {formatFullDateTime(item.createdAt)} · {item.kind}
         </p>
       </div>
 
