@@ -82,7 +82,9 @@ function otpEmailHtml(otp: string, purpose: string): string {
 
 /**
  * Send via the Resend REST API. Callers short-circuit to console delivery when
- * RESEND_API_KEY is unset (local dev), so this only runs with a real key.
+ * RESEND_API_KEY is unset — local dev ONLY (guarded by NODE_ENV); in production
+ * an unset key makes delivery throw so sign-in fails visibly instead of
+ * leaking credentials into retained Worker logs.
  */
 async function sendEmail(env: AppEnv, to: string, subject: string, html: string): Promise<void> {
   const apiKey = env.RESEND_API_KEY;
@@ -108,6 +110,13 @@ async function sendEmail(env: AppEnv, to: string, subject: string, html: string)
 async function sendMagicLinkEmail(env: AppEnv, to: string, url: string): Promise<void> {
   const subject = "Your Webcules sign-in link";
   if (!env.RESEND_API_KEY) {
+    if (process.env.NODE_ENV === "production") {
+      // Fail visibly instead of logging the link: Worker logs are retained
+      // (wrangler observability), so a console.log here would leak credentials.
+      throw new Error(
+        "[auth] RESEND_API_KEY is not set — cannot deliver magic-link email in production.",
+      );
+    }
     console.log(
       `[auth:dev-delivery] RESEND_API_KEY not set — printing email instead of sending.\n` +
         `[auth:dev-delivery] to=${to}\n` +
@@ -127,6 +136,13 @@ async function sendOtpEmail(
 ): Promise<void> {
   const subject = `Your Webcules verification code: ${otp}`;
   if (!env.RESEND_API_KEY) {
+    if (process.env.NODE_ENV === "production") {
+      // Fail visibly instead of logging the code: Worker logs are retained
+      // (wrangler observability), so a console.log here would leak credentials.
+      throw new Error(
+        "[auth] RESEND_API_KEY is not set — cannot deliver OTP email in production.",
+      );
+    }
     console.log(
       `[auth:dev-delivery] RESEND_API_KEY not set — printing email instead of sending.\n` +
         `[auth:dev-delivery] to=${to}\n` +
@@ -140,18 +156,17 @@ async function sendOtpEmail(
 
 /* ---------------- Better Auth instance ---------------- */
 
-const DEV_FALLBACK_SECRET = "dev-insecure-secret-change-me";
-
 export async function getAuth() {
   const [db, env] = await Promise.all([getDb(), getEnv()]);
 
-  let secret = env.BETTER_AUTH_SECRET;
+  // Fail closed: no secret, no auth. A hardcoded fallback secret would let
+  // anyone with a copy of this repo forge session cookies.
+  const secret = env.BETTER_AUTH_SECRET;
   if (!secret) {
-    console.warn(
-      "[auth] BETTER_AUTH_SECRET is not set — falling back to an insecure dev secret. " +
-        "Set it with `wrangler secret put BETTER_AUTH_SECRET` before deploying.",
+    throw new Error(
+      "[auth] BETTER_AUTH_SECRET is not set — refusing to initialize auth. " +
+        "Set it in .dev.vars (local dev) or via `wrangler secret put BETTER_AUTH_SECRET` (deployed).",
     );
-    secret = DEV_FALLBACK_SECRET;
   }
 
   const socialProviders: BetterAuthOptions["socialProviders"] = {
@@ -168,7 +183,12 @@ export async function getAuth() {
   return betterAuth({
     appName: "Webcules",
     secret,
-    baseURL: env.BETTER_AUTH_URL || "http://localhost:3000",
+    // No localhost fallback in production: the deployed worker serves
+    // webcules.com (wrangler routes), so a missing BETTER_AUTH_URL still
+    // resolves against the real origin instead of localhost.
+    baseURL:
+      env.BETTER_AUTH_URL ||
+      (process.env.NODE_ENV === "production" ? "https://webcules.com" : "http://localhost:3000"),
     trustedOrigins: [
       "http://localhost:3000",
       "https://webcules.com",

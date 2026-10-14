@@ -68,6 +68,11 @@ export type PlanDef = {
   maxPortfolioCollections: number | null;
   /** Total curated portfolio items across all collections (org-wide). */
   maxPortfolioItems: number | null;
+  /** WEB-346 (WEB-302 §4): hard monthly image-view budget for the public
+   * portfolio, enforced server-side at /api/pubimg (Free = 100k; null =
+   * unlimited — paid tiers still COUNT views for the hub meter, they are
+   * never capped). */
+  portfolioImageViewsPerMonth: number | null;
 };
 
 const GB = 1024 ** 3;
@@ -83,6 +88,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     maxCustomDomains: 0, maxTeamSeats: 1, inboxSnooze: false,
     storeEnabled: false, maxPriceLists: 0, packagesAllowed: false, customProductsAllowed: false,
     maxPortfolioCollections: 1, maxPortfolioItems: 20,
+    portfolioImageViewsPerMonth: 100_000,
   },
   lite: {
     id: "lite", name: "Lite", priceMonthlyUsd: 15,
@@ -93,6 +99,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     maxCustomDomains: 0, maxTeamSeats: 1, inboxSnooze: true,
     storeEnabled: true, maxPriceLists: 1, packagesAllowed: false, customProductsAllowed: false,
     maxPortfolioCollections: 5, maxPortfolioItems: 250,
+    portfolioImageViewsPerMonth: null,
   },
   studio: {
     id: "studio", name: "Studio", priceMonthlyUsd: 29,
@@ -103,6 +110,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     maxCustomDomains: 0, maxTeamSeats: 3, inboxSnooze: true,
     storeEnabled: true, maxPriceLists: 5, packagesAllowed: true, customProductsAllowed: true,
     maxPortfolioCollections: null, maxPortfolioItems: null,
+    portfolioImageViewsPerMonth: null,
   },
   pro: {
     id: "pro", name: "Pro", priceMonthlyUsd: 59,
@@ -113,6 +121,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
     maxCustomDomains: 2, maxTeamSeats: 10, inboxSnooze: true,
     storeEnabled: true, maxPriceLists: null, packagesAllowed: true, customProductsAllowed: true,
     maxPortfolioCollections: null, maxPortfolioItems: null,
+    portfolioImageViewsPerMonth: null,
   },
 };
 

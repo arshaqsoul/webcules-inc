@@ -4,15 +4,18 @@ import { describe, expect, it } from "vitest";
 
 import {
   DOWNLOAD_STATES,
+  LICENSE_TEXT_MAX,
   SIZE_LONG_EDGE,
   canTransition,
   isDownloadState,
   downloadScopeLabel,
   isValidPin,
+  licenseTextOf,
   normalizeCaptureEmail,
   normalizeDownloadSettingsInput,
   parseDownloadSettings,
   parseSizePref,
+  sanitizeLicenseText,
   sizeOffered,
   type DownloadSettings,
 } from "@/lib/gallery-downloads";
@@ -143,5 +146,28 @@ describe("size ladder (WEB-196)", () => {
     expect(parseSizePref("web", false)).toBe("full");
     expect(parseSizePref("huge", true)).toBe("full");
     expect(parseSizePref(null, true)).toBe("full");
+  });
+});
+
+describe("license text (WEB-193)", () => {
+  it("sanitizeLicenseText strips HTML, control chars, and caps at 2 KB", () => {
+    expect(sanitizeLicenseText("  Personal use only.  ")).toBe("Personal use only.");
+    expect(sanitizeLicenseText("<script>alert(1)</script>Personal use")).toBe("alert(1)Personal use");
+    expect(sanitizeLicenseText("a\u0000b\u0007c")).toBe("abc");
+    expect(sanitizeLicenseText("line\r\nbreak")).toBe("line\nbreak");
+    expect(sanitizeLicenseText("x".repeat(LICENSE_TEXT_MAX + 50))).toHaveLength(LICENSE_TEXT_MAX);
+  });
+
+  it("empty/whitespace-only text sanitizes to empty (gate off)", () => {
+    expect(sanitizeLicenseText("   ")).toBe("");
+    expect(sanitizeLicenseText("<p></p>")).toBe("");
+  });
+
+  it("licenseTextOf re-sanitizes stored rows and treats null as off", () => {
+    expect(licenseTextOf(null)).toBe("");
+    expect(licenseTextOf({ licenseText: null })).toBe("");
+    expect(licenseTextOf({ licenseText: "  ok  " })).toBe("ok");
+    // a hand-edited legacy row can't smuggle markup past the read path
+    expect(licenseTextOf({ licenseText: "<b>bold</b> text" })).toBe("bold text");
   });
 });

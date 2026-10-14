@@ -16,7 +16,6 @@ import { draftMode } from "next/headers";
 
 import "@webcules/ui/globals.css";
 import "./landing.css";
-import { getServerSideURL } from "@webcules/payload/utilities/getURL";
 
 const display = Instrument_Serif({
   weight: "400",
@@ -63,13 +62,22 @@ export default async function RootLayout({
 }
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_BASE_URL || getServerSideURL(),
-  ),
-  openGraph: mergeOpenGraph(),
+  // Deterministic production origin — never localhost: OG/Twitter image URLs
+  // resolve against metadataBase. (NEXT_PUBLIC_BASE_URL is set in wrangler
+  // vars for the deployed worker; the literal keeps local builds sane too.)
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "https://webcules.com"),
+  // The shared mergeOpenGraph() default builds an absolute image URL from
+  // NEXT_PUBLIC_SERVER_URL (the CMS origin, or localhost locally). Override
+  // with a metadataBase-relative URL so OG images always resolve against the
+  // site origin above.
+  openGraph: {
+    ...mergeOpenGraph(),
+    images: [{ url: "/opengraph-image.png" }],
+  },
   twitter: {
     card: "summary_large_image",
     creator: "@arshaq",
+    images: [{ url: "/opengraph-image.png" }],
   },
 };
 

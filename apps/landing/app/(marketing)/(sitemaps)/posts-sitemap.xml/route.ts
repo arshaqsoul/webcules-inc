@@ -6,11 +6,14 @@ import { unstable_cache } from "next/cache";
 const getPostsSitemap = unstable_cache(
   async () => {
     const payload = await getPayload({ config });
+    // Fail closed: no base URL, no sitemap — never fall back to example.com.
+    // GET() returns 404 when this resolves to null.
     const SITE_URL =
       process.env.NEXT_PUBLIC_BASE_URL ||
       process.env.NEXT_PUBLIC_SERVER_URL ||
       process.env.VERCEL_PROJECT_PRODUCTION_URL ||
-      "https://example.com";
+      null;
+    if (!SITE_URL) return null;
 
     const results = await payload.find({
       collection: "posts",
@@ -51,6 +54,11 @@ const getPostsSitemap = unstable_cache(
 
 export async function GET() {
   const sitemap = await getPostsSitemap();
-
+  if (!sitemap) {
+    return new Response("Sitemap unavailable: site base URL is not configured.\n", {
+      status: 404,
+      headers: { "content-type": "text/plain; charset=utf-8" },
+    });
+  }
   return getServerSideSitemap(sitemap);
 }

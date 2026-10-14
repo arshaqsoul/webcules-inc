@@ -747,6 +747,9 @@ export const shareGrants = sqliteTable(
     /** WEB-261: downloads 2.0 controls (PIN hash, count limit, approval
      * toggle, web-size option) as validated JSON. NULL = plain downloads. */
     downloadSettings: text("download_settings"),
+    /** WEB-193: license text shown + acknowledged before downloads unlock
+     * (≤ 2 KB, sanitized on write; empty/NULL = gate off). All tiers. */
+    licenseText: text("license_text"),
     /** WEB-262: per-photo social sharing allowed (default on). */
     allowSharing: integer("allow_sharing", { mode: "boolean" }).notNull().default(true),
     /** WEB-266: scheduled opening — before this moment the gallery renders
@@ -1108,6 +1111,26 @@ export const downloadEmailCaptures = sqliteTable(
     createdAt: ts("created_at"),
   },
   (t) => [index("download_email_capture_grant_idx").on(t.grantId, t.createdAt)],
+);
+
+/* WEB-193 license-acknowledgment gate — AUDIT-FROZEN, append-only: one row
+ * per agreement, freezing the exact license text + its SHA-256 as the
+ * visitor saw it. Editing share_grant.license_text never rewrites these. */
+
+export const downloadLicenseAcks = sqliteTable(
+  "download_license_ack",
+  {
+    id: text("id").primaryKey(),
+    grantId: text("grant_id")
+      .notNull()
+      .references(() => shareGrants.id, { onDelete: "cascade" }),
+    licenseSha256: text("license_sha256").notNull(),
+    licenseText: text("license_text").notNull(),
+    ip: text("ip"),
+    userAgent: text("user_agent"),
+    createdAt: ts("created_at"),
+  },
+  (t) => [index("download_license_ack_grant_idx").on(t.grantId, t.createdAt)],
 );
 
 /* Gallery OTP gate — hashed 6-digit codes bound to a grant, plus a send log
@@ -1583,6 +1606,12 @@ export const uploadSessions = sqliteTable(
     /** image | video | raw — re-verified against magic bytes on confirm. */
     kind: text("kind").notNull(),
     uploadedBy: text("uploaded_by").references(() => user.id, { onDelete: "set null" }),
+    /** WEB-374: the client-upload link that minted this guest session.
+     * The guest confirm route scopes strictly by it, so within one project
+     * link A's token can never confirm a session minted via link B. */
+    uploadRequestId: text("upload_request_id").references(() => uploadRequests.id, {
+      onDelete: "set null",
+    }),
     createdAt: integer("created_at").notNull(),
     /** Epoch seconds — the cron aborts multipart uploads past this. */
     expiresAt: integer("expires_at").notNull(),
@@ -1851,6 +1880,10 @@ export const portfolioSites = sqliteTable("portfolio_site", {
   home: text("home").notNull().default("{}"),
   seo: text("seo").notNull().default("{}"),
   publishedAt: integer("published_at", { mode: "timestamp" }),
+  /** WEB-344 AC3: explicit rights attestation, required at first publish
+   * (status → published|unlisted) and recorded who/when. Unpublish keeps it. */
+  rightsAttestedAt: integer("rights_attested_at", { mode: "timestamp" }),
+  rightsAttestedBy: text("rights_attested_by").references(() => user.id, { onDelete: "set null" }),
   createdAt: ts("created_at"),
   updatedAt: ts("updated_at"),
 });
@@ -1915,4 +1948,92 @@ export const portfolioCollectionAssets = sqliteTable(
     index("portfolio_collection_asset_coll_idx").on(t.collectionId, t.sort),
     index("portfolio_collection_asset_asset_idx").on(t.assetId),
   ],
+);
+
+/* ---------------- Client-upload links (WEB-182, Integrations 5/6) ----------------
+ * Tokenized upload-request links: a studio mints one per project (optionally
+ * bound to a client gallery), guests upload through /u/{token}, and every
+ * file lands in quarantine (upload_request_asset status pending) — invisible
+ * to clients until the studio approves. Token storage mirrors share_grant:
+ * SHA-256 hash (lookup) + AES-GCM enc (re-display); raw token never stored. */
+export const uploadRequests = sqliteTable(
+  "upload_request",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    /** Approvals are appended to this client gallery; SET NULL keeps the
+     * link alive when the gallery is revoked/deleted. */
+    grantId: text("grant_id").references(() => shareGrants.id, { onDelete: "set null" }),
+    title: text("title").notNull(),
+    tokenHash: text("token_hash").notNull().unique(),
+    tokenEnc: text("token_enc").notNull(),
+    /** open | closed */
+    status: text("status").notNull().default("open"),
+    expiresAt: integer("expires_at", { mode: "timestamp" }),
+    /** Studio-set per-link file cap; null = uncapped. */
+    maxFiles: integer("max_files"),
+    uploadedCount: integer("uploaded_count").notNull().default(0),
+    createdBy: text("created_by").references(() => user.id, { onDelete: "set null" }),
+    /** Studio-notification throttle (one "uploads await review" email per hour). */
+    lastNotifiedAt: integer("last_notified_at"),
+    createdAt: ts("created_at"),
+    closedAt: integer("closed_at", { mode: "timestamp" }),
+  },
+  (t) => [
+    index("upload_request_org_idx").on(t.organizationId, t.createdAt),
+    index("upload_request_project_idx").on(t.projectId, t.createdAt),
+  ],
+);
+
+/** Quarantine + decision record: one row per guest-uploaded file. */
+export const uploadRequestAssets = sqliteTable(
+  "upload_request_asset",
+  {
+    id: text("id").primaryKey(),
+    uploadRequestId: text("upload_request_id")
+      .notNull()
+      .references(() => uploadRequests.id, { onDelete: "cascade" }),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    assetId: text("asset_id")
+      .notNull()
+      .references(() => assets.id, { onDelete: "cascade" }),
+    /** Free-text display name the guest typed on the upload page. */
+    uploaderName: text("uploader_name"),
+    /** pending | approved | rejected */
+    status: text("status").notNull().default("pending"),
+    decidedBy: text("decided_by").references(() => user.id, { onDelete: "set null" }),
+    decidedAt: integer("decided_at", { mode: "timestamp" }),
+    createdAt: ts("created_at"),
+  },
+  (t) => [
+    uniqueIndex("upload_request_asset_uniq").on(t.uploadRequestId, t.assetId),
+    index("upload_request_asset_req_idx").on(t.uploadRequestId, t.status, t.createdAt),
+    index("upload_request_asset_org_idx").on(t.organizationId, t.createdAt),
+  ],
+);
+
+/** WEB-346: the Free-tier image-view budget counter (WEB-302 §4 — 100k
+ * image-views/mo, hard). One row per org per UTC month ('YYYY-MM'),
+ * incremented on every /api/pubimg serve; paid tiers carry no hard cap but
+ * still count (the Portfolio hub meter reads the same rows).
+ * DDL: migrations/0081_portfolio_views.sql. */
+export const portfolioViewMonthly = sqliteTable(
+  "portfolio_view_monthly",
+  {
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    /** UTC month key, 'YYYY-MM'. */
+    ym: text("ym").notNull(),
+    views: integer("views").notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.organizationId, t.ym] })],
+
 );

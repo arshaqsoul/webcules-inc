@@ -20,6 +20,11 @@ import { resolveStudioByHost } from "@/lib/repos/domains";
 import { requestHost } from "@/lib/domains";
 import { getStudioSlug } from "@/lib/repos/studios";
 import { getSessionUser } from "@/lib/session";
+import { portfolioSlugFromHost } from "@/lib/hosts";
+import { appOrigin } from "@/lib/app-origin";
+import { getPortfolioSiteBySlug } from "@/lib/repos/portfolio";
+import { getPlanEntitlements } from "@/lib/plans";
+import { planAllowsSubdomain } from "@/lib/portfolio-page";
 
 export const dynamic = "force-dynamic";
 
@@ -42,10 +47,25 @@ export const metadata = {
  * Chrome + typography stay inside the Linear-derived system.
  */
 export default async function Home() {
+  const host = requestHost(await headers());
+  // WEB-346: {slug}.snaphq.app is a portfolio site, not the landing. One
+  // renderer: published sites redirect to their /portfolio/{slug} route on
+  // the SAME host (Lite+ keeps the subdomain origin); Free is path-URL only
+  // (WEB-302 §4 / the WEB-351 leakage floor) and lands on the app origin;
+  // unknown, draft or unlisted slugs 404 like any unknown host.
+  const portfolioSlug = portfolioSlugFromHost(host);
+  if (portfolioSlug) {
+    const site = await getPortfolioSiteBySlug(portfolioSlug);
+    if (!site || site.status !== "published") notFound();
+    const ent = await getPlanEntitlements(site.organizationId);
+    if (planAllowsSubdomain(ent?.id)) redirect(`/portfolio/${site.slug}`);
+    // WEB-411: the DEPLOYMENT's app origin (staging funnels to staging), not
+    // the compile-time production constant.
+    redirect(`${await appOrigin()}/portfolio/${site.slug}`);
+  }
   // WEB-227: a studio's custom hostname IS the client surface — `/` there is
   // the studio's booking page, not our marketing landing. Unknown hosts (no
   // active domain row) get a neutral 404: no tenant data by hostname alone.
-  const host = requestHost(await headers());
   if (host && isCustomAppHost(host)) {
     const studio = await resolveStudioByHost(host);
     if (studio) {

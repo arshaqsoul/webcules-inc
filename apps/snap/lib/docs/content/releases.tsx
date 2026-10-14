@@ -38,6 +38,63 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.24.0" date="October 13, 2026">
+        <p>
+          <strong>A license agreement, on every gallery.</strong> You can now
+          attach a short license to any gallery you share &mdash; your terms,
+          in your words &mdash; and nothing downloads until your client has
+          read and agreed to it: not a single photo, not a web-size copy, not
+          a ZIP. Every agreement is frozen the moment it happens in an
+          uneditable log that records the exact text they saw (and its
+          fingerprint), so you can always prove who agreed to what. Edit the
+          license later and everyone is asked to agree again on their next
+          download. This one is legal cover for the free plan too: it works
+          on every plan, no exceptions.
+        </p>
+      </Release>
+
+      <Release version="0.23.0" date="October 13, 2026">
+        <p>
+          <strong>Your portfolio, generated from your library.</strong> The
+          first piece of the portfolio showcase is live: curated collections
+          publish as a real website — hero, selected work, about, and a
+          contact section with your booking link — server-rendered for search
+          engines, with a sitemap, structured data and a social share image
+          drawn from your own photos. Free portfolios live at a snaphq.app
+          address with one collection and a generous monthly image budget;
+          Lite adds the dedicated subdomain and bigger showcases; Studio
+          removes the badge. Your originals never leave the vault — public
+          pages serve web-size previews only, with metadata stripped.
+        </p>
+        <p>
+          <strong>Client upload links got a bodyguard.</strong> The shareable
+          upload links from v0.22.0 are hardened against abuse behind the
+          scenes: a link hammered by a script from one address is now told to
+          slow down (a &ldquo;too many requests&rdquo; refusal) instead of
+          being farmed for free storage, the per-link upload cap can no
+          longer be outrun by several guests uploading in the same instant
+          — the count is checked and raised in a single step, so it can
+          never finish past the cap — and every guest session is stamped to
+          the exact link that opened it, so an upload can never be completed
+          against a different link than the one it started from.
+        </p>
+      </Release>
+
+      <Release version="0.22.0" date="October 13, 2026">
+        <p>
+          <strong>Client upload links — let guests and clients add their own
+          photos.</strong> A new <strong>Client uploads</strong> card on a
+          project&rsquo;s Client gallery tab mints a shareable link: anyone
+          holding it — wedding guests, the couple, a client — can upload
+          photos and videos straight into your project from their phone, no
+          account, up to 1&nbsp;GB per file. Everything lands in quarantine:
+          nothing is visible in any client gallery until you approve it, and
+          approving can publish straight into a client gallery you pick when
+          minting the link. Close or expire the link any time; you&rsquo;re
+          notified as uploads arrive.
+        </p>
+      </Release>
+
       <Release version="0.21.1" date="October 13, 2026">
         <p>
           <strong>The consolidation ship.</strong> One release carrying the

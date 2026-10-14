@@ -350,6 +350,9 @@ export type DlControls = {
   pin: boolean;
   /** WEB-194: downloads need an email first (guest capture). */
   emailCapture?: boolean;
+  /** WEB-193: license text that must be acknowledged before downloads
+   * unlock (null/absent = gate off). Rendered as plain text. */
+  license?: string | null;
   /** WEB-195 Downloads 3b: public browser keys for the client-side
    * destinations — null (or absent on older caches) hides the buttons. */
   driveClientId?: string | null;
@@ -1607,6 +1610,9 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
   // WEB-194: the email-capture gate prompt (same pattern as the PIN retry).
   const [emailPrompt, setEmailPrompt] = useState<{ retry: () => void } | null>(null);
   const [emailValue, setEmailValue] = useState("");
+  // WEB-193: the license-acknowledgment gate prompt (same replay pattern).
+  const [licensePrompt, setLicensePrompt] = useState<{ retry: () => void } | null>(null);
+  const [licenseAgreed, setLicenseAgreed] = useState(false);
   // Download-all split into several archives (> 2 GB galleries): the parts sheet.
   const [zipSheet, setZipSheet] = useState<{ manifest: ZipManifest; qs: string; started: number[] } | null>(null);
   const [pinValue, setPinValue] = useState("");
@@ -1634,6 +1640,14 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
     setEmailPrompt({ retry });
   }, []);
 
+  /** WEB-193: a 401 license_required opens the acknowledgment dialog and
+   * replays the download once agreed. Same sharing as the email gate. */
+  const gateOnLicense = useCallback((retry: () => void) => {
+    setDlBusy(false);
+    setLicenseAgreed(false);
+    setLicensePrompt({ retry });
+  }, []);
+
   /** Fetch a download as a blob (so a 401 pin_required can open the PIN
    * modal instead of silently failing) and save it. */
   const downloadVia = useCallback(
@@ -1649,6 +1663,10 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
         }
         if (gate?.error === "email_required") {
           gateOnEmail(() => void downloadVia(url, fallbackName));
+          return;
+        }
+        if (gate?.error === "license_required") {
+          gateOnLicense(() => void downloadVia(url, fallbackName));
           return;
         }
         if (!res.ok) {
@@ -1670,7 +1688,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
       }
       setDlBusy(false);
     },
-    [gateOnEmail],
+    [gateOnEmail, gateOnLicense],
   );
 
   /** WEB-196: the 1280px rung. Fetches through the authorized download
@@ -1694,6 +1712,10 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
           gateOnEmail(() => void downloadMid(asset));
           return;
         }
+        if (gate?.error === "license_required") {
+          gateOnLicense(() => void downloadMid(asset));
+          return;
+        }
         if (!res.ok) {
           setDlFlash(res.status === 403 ? "You've reached the download limit for this gallery — your photographer can lift it." : "Download failed — try again.");
           setTimeout(() => setDlFlash(""), 4000);
@@ -1714,7 +1736,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
       }
       setDlBusy(false);
     },
-    [gateOnEmail],
+    [gateOnEmail, gateOnLicense],
   );
 
   /** WEB-195 Downloads 3b — save this photo straight to the client's own
@@ -1744,6 +1766,10 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
           gateOnEmail(() => void saveToCloud(dest, asset));
           return;
         }
+        if (gate?.error === "license_required") {
+          gateOnLicense(() => void saveToCloud(dest, asset));
+          return;
+        }
         if (!res.ok) {
           flash(res.status === 403 ? "You've reached the download limit for this gallery — your photographer can lift it." : "Couldn't fetch the photo — try again.");
           return;
@@ -1763,7 +1789,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
       }
       setDlBusy(false);
     },
-    [dl?.controls.driveClientId, dl?.controls.dropboxAppKey, gateOnEmail],
+    [dl?.controls.driveClientId, dl?.controls.dropboxAppKey, gateOnEmail, gateOnLicense],
   );
 
   /** Download-all: resolve the plan, then hand the browser a streaming URL
@@ -1788,6 +1814,10 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
       }
       if (res.status === 401 && body.error === "email_required") {
         gateOnEmail(() => void pullZip(qs));
+        return;
+      }
+      if (res.status === 401 && body.error === "license_required") {
+        gateOnLicense(() => void pullZip(qs));
         return;
       }
       if (!res.ok || !body.parts) {
@@ -1964,6 +1994,37 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
         setTimeout(() => setDlFlash(""), 4000);
       } else {
         setDlFlash("That email doesn't look right — check it and try again.");
+        setTimeout(() => setDlFlash(""), 4000);
+      }
+    } catch {
+      setDlFlash("Network error — try again.");
+      setTimeout(() => setDlFlash(""), 3000);
+    }
+    setDlBusy(false);
+  }
+
+  /** WEB-193: record the license agreement; on success replay the download.
+   * The server freezes the exact text + SHA into the audit ledger and mints
+   * the remembered ack cookie. */
+  async function verifyLicense() {
+    if (!licensePrompt) return;
+    setDlBusy(true);
+    try {
+      const res = await fetch(`/api/g/${clientToken}/download-request/license`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ agree: true }),
+      });
+      if (res.ok) {
+        const retry = licensePrompt.retry;
+        setLicensePrompt(null);
+        setLicenseAgreed(false);
+        retry();
+      } else if (res.status === 429) {
+        setDlFlash("Too many attempts — try again in a little while.");
+        setTimeout(() => setDlFlash(""), 4000);
+      } else {
+        setDlFlash("Something went wrong recording your agreement — try again.");
         setTimeout(() => setDlFlash(""), 4000);
       }
     } catch {
@@ -2861,6 +2922,35 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
               </button>
               <button type="button" onClick={pullAllParts} className="flex-1 rounded-lg px-4 py-2 text-sm font-semibold text-white" style={{ background: "var(--accent)" }}>
                 Download all parts
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {licensePrompt && (
+        <div role="dialog" aria-modal="true" aria-label="License agreement" className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-[16px] bg-surface-1 p-6">
+            <h2 className="text-base font-semibold text-ink">License agreement</h2>
+            <p className="mt-1 text-sm text-ink-subtle">Your photographer asks you to acknowledge this license before downloading.</p>
+            <div className="mt-3 max-h-56 overflow-y-auto whitespace-pre-wrap rounded-lg border border-hairline bg-canvas px-3 py-2.5 text-xs leading-relaxed text-ink-subtle">
+              {dl?.controls.license ?? ""}
+            </div>
+            <label className="mt-3 flex items-start gap-2 text-sm text-ink-subtle">
+              <input
+                type="checkbox"
+                checked={licenseAgreed}
+                onChange={(e) => setLicenseAgreed(e.target.checked)}
+                className="mt-0.5 h-4 w-4"
+              />
+              I have read and agree to the license above
+            </label>
+            <div className="mt-4 flex gap-2">
+              <button type="button" onClick={() => { setLicensePrompt(null); setLicenseAgreed(false); }} className="flex-1 rounded-lg border border-hairline px-4 py-2 text-sm text-ink-muted">
+                Cancel
+              </button>
+              <button type="button" disabled={dlBusy || !licenseAgreed} onClick={() => void verifyLicense()} className="flex-1 rounded-lg px-4 py-2 text-sm font-semibold text-white disabled:opacity-60" style={{ background: "var(--accent)" }}>
+                {dlBusy ? "Recording…" : "Agree & download"}
               </button>
             </div>
           </div>

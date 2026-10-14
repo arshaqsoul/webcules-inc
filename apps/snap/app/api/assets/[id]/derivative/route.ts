@@ -6,6 +6,7 @@
  * WEB-402: kind "edited" is the browser-rendered look (edit.jpg) — always
  * replaceable, every save re-renders. */
 import { attachDerivative } from "@/lib/repos/assets";
+import { onDerivativeReplaced } from "@/lib/repos/portfolio";
 import { getPlanEntitlements } from "@/lib/plans";
 import { getStudioProfile } from "@/lib/repos/studios";
 import { getOrgContext } from "@/lib/session";
@@ -83,6 +84,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (!result.ok) {
     const status = result.error === "not_found" ? 404 : result.error === "metadata_present" ? 422 : 400;
     return Response.json({ error: result.error }, { status });
+  }
+  // WEB-346 (Stark's WEB-345 review follow-up): a REPLACED preview/watermark
+  // derivative re-renders bytes under the same R2 key — rotate the pubimg
+  // site revision so the public edge cache can't keep serving the old ones.
+  if (replace && (kind === "preview" || kind === "preview_wm")) {
+    await onDerivativeReplaced(ctx.organizationId, id);
   }
   return Response.json({ ok: true });
 }

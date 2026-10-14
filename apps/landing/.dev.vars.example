@@ -1,0 +1,15 @@
+# Local dev secrets for the landing worker (read by the wrangler platform
+# proxy). Copy to .dev.vars and fill in real values — .dev.vars is gitignored.
+# Without a secret, auth requests fail closed with a clear error
+# (lib/auth.server.ts); first run also needs the local D1 database provisioned
+# via `pnpm db:migrate` before signing in.
+
+# REQUIRED. Generate one with: openssl rand -base64 32
+BETTER_AUTH_SECRET=
+
+# Optional. Without a Resend key, sign-in emails print to the console in local
+# dev ONLY; in production, sign-in fails visibly instead of logging credentials.
+RESEND_API_KEY=
+
+EMAIL_FROM=Webcules <noreply@resend.dev>
+BETTER_AUTH_URL=http://localhost:3000

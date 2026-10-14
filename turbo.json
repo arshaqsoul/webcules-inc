@@ -3,19 +3,37 @@
   "ui": "tui",
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**", "build/**"]
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*"
+      ],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        "dist/**",
+        "build/**"
+      ]
     },
     "generate:types": {
-      "dependsOn": ["^generate:types"],
-      "outputs": ["generated-types/**"]
+      "dependsOn": [
+        "^generate:types"
+      ],
+      "outputs": [
+        "generated-types/**"
+      ]
     },
     "lint": {
-      "dependsOn": ["^lint"]
+      "dependsOn": [
+        "^lint"
+      ]
     },
     "check-types": {
-      "dependsOn": ["^check-types"]
+      "dependsOn": [
+        "^check-types"
+      ]
     },
     "dev": {
       "cache": false,
@@ -23,6 +41,7 @@
     }
   },
   "globalEnv": [
+    "NODE_ENV",
     "PAYLOAD_SECRET",
     "DATABASE_URI",
     "NEXT_PUBLIC_PAYLOAD_URL",

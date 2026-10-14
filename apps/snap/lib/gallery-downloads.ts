@@ -87,6 +87,30 @@ export function normalizeCaptureEmail(input: string): string | null {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) ? email : null;
 }
 
+/* ---------------- WEB-193: license acknowledgment ---------------- */
+
+/** License text cap (per the Downloads 3.0 spec). */
+export const LICENSE_TEXT_MAX = 2048;
+
+/** WEB-193: sanitize a studio-entered license text — strip HTML tags and
+ * control characters (defense in depth: the client renders it as plain
+ * text), collapse trailing/leading whitespace, cap at 2 KB. Empty result
+ * means the gate is off. */
+export function sanitizeLicenseText(input: string): string {
+  return input
+    .replace(/<[^>]*>/g, "")
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "")
+    .replace(/\r\n/g, "\n")
+    .trim()
+    .slice(0, LICENSE_TEXT_MAX);
+}
+
+/** The effective license text for a grant row ("" = gate off). Stored text
+ * is re-sanitized on read so legacy/hand-edited rows can't smuggle markup. */
+export function licenseTextOf(grant: { licenseText?: string | null } | null | undefined): string {
+  return grant?.licenseText ? sanitizeLicenseText(grant.licenseText) : "";
+}
+
 /* ---------------- approval state machine ---------------- */
 
 /** Download-all streams on demand (lib/zip-delivery.ts) - there is no

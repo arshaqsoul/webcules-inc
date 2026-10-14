@@ -17,6 +17,8 @@ const siteUpdate = z.object({
   theme: z.record(z.string(), z.unknown()).optional(),
   home: z.record(z.string(), z.unknown()).optional(),
   seo: z.record(z.string(), z.unknown()).optional(),
+  /** WEB-344 AC3: required on first publish — the explicit rights attestation. */
+  rightsAttested: z.boolean().optional(),
 });
 
 export async function GET() {
@@ -50,10 +52,20 @@ export async function PATCH(req: Request) {
   } catch {
     return Response.json({ error: "invalid_body" }, { status: 400 });
   }
-  const result = await updatePortfolioSite(ctx.organizationId, body);
+  const [ent] = await Promise.all([getPlanEntitlements(ctx.organizationId)]);
+  const result = await updatePortfolioSite(ctx.organizationId, {
+    ...body,
+    actorUserId: ctx.user.id,
+    // WEB-346 AC4: Studio-only theme tokens are rejected on Free/Lite.
+    plan: ent?.id ?? "free",
+  });
   if (!result.ok) {
     const status =
-      result.error === "not_found" ? 404 : result.error === "empty_site" ? 409 : 400;
+      result.error === "not_found" ? 404
+      : result.error === "empty_site" ? 409
+      : result.error === "rights_attestation_required" ? 403
+      : result.error === "theme_tier" ? 403
+      : 400;
     return Response.json({ error: result.error }, { status });
   }
   return Response.json({ site: result.site });
