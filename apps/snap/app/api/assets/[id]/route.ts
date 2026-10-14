@@ -5,6 +5,7 @@
  * inline/attachment modes; gallery downloads respect the grant's policy. */
 import { getObject } from "@/lib/storage/service";
 import { deleteAsset, getAsset, setAssetEdits, setAssetRating, setAssetStatus } from "@/lib/repos/assets";
+import { firstValidOrgKey, variantServeKey } from "@/lib/assets-serving";
 import { normalizeEditSet } from "@/lib/edits";
 import { stripJpegExif } from "@/lib/exif";
 import { getOrgContext } from "@/lib/session";
@@ -33,20 +34,10 @@ type ServableAsset = {
  * regenerated → clean preview — transitional, never a broken image).
  * WEB-402: when the asset has an edited look (edit.jpg), thumb/preview serve
  * it — the grade is the deliverable; originals stay untouched (staff "Open
- * original" and full-res delivery still stream the original bytes). */
-function variantKey(
-  asset: { thumbKey: string | null; previewKey: string | null; previewWmKey: string | null; editKey: string | null },
-  variant: string | null,
-): string | null {
-  if (variant === "edited") return asset.editKey;
-  // (audit fix): never fall back to the clean full preview for preview_wm —
-  // a watermarking gallery would serve the unwatermarked image wherever the
-  // wm derivative hasn't been generated yet. Thumb is the safe fallback.
-  if (variant === "preview_wm") return asset.previewWmKey ?? asset.thumbKey;
-  if (variant === "thumb") return asset.editKey ?? asset.thumbKey;
-  if (variant === "preview") return asset.editKey ?? asset.previewKey;
-  return null;
-}
+ * original" and full-res delivery still stream the original bytes).
+ * WEB-440: selection lives in lib/assets-serving.ts — every rung is
+ * org-prefix-validated so a malformed stored key degrades down the ladder
+ * instead of throwing a 500 (the edit_key asset 500s + &r= retry storm). */
 
 /** Shared R2 streaming with Range + disposition (used by both paths). */
 async function serveAsset(req: Request, asset: ServableAsset, allowDownload: boolean): Promise<Response> {
@@ -104,7 +95,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   if (ctx) {
     const asset = await getAsset(ctx.organizationId, id);
     if (!asset) return Response.json({ error: "not_found" }, { status: 404 });
-    const dk = variantKey(asset, url.searchParams.get("variant"));
+    const dk = variantServeKey(asset, url.searchParams.get("variant"));
     return serveAsset(req, dk ? { ...asset, storageKey: dk, mimeType: "image/jpeg" } : asset, true);
   }
 
@@ -166,7 +157,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       }
       await logShareAccess(grant.id, "download", req);
     }
-    const dk = variantKey(asset, url.searchParams.get("variant"));
+    const dk = variantServeKey(asset, url.searchParams.get("variant"));
 
     // WEB-242 proofing mode: downloads deliver the watermarked preview
     // (pre-sale delivery) — original bytes never leave in proofing grants.
@@ -177,7 +168,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     // to reach the rungs first and download the clean unwatermarked
     // derivatives. Proofing swallows every size param.
     if (wantsDownload && grant.allowDownload && grant.proofing) {
-      const wmKey = asset.editKey ?? asset.previewWmKey ?? asset.previewKey;
+      // WEB-440: validated ladder — a malformed stored key can't throw here.
+      const wmKey = firstValidOrgKey(asset.organizationId, [asset.editKey, asset.previewWmKey, asset.previewKey], "proofing download");
       if (wmKey) {
         return serveAsset(
           req,
@@ -195,20 +187,19 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     // falling back to the preview until the studio's on-demand prepare
     // pass (or a re-render) has landed one — closest smaller bytes.
     // (Proofing grants never reach here — the WEB-242 block above wins.)
+    // WEB-440: every rung org-validated; malformed keys degrade, never 500.
     const sizeParam = url.searchParams.get("size");
-    if (wantsDownload && grant.allowDownload && sizeParam === "web" && (asset.editKey ?? asset.previewKey)) {
-      return serveAsset(
-        req,
-        { ...asset, storageKey: (asset.editKey ?? asset.previewKey) as string, mimeType: "image/jpeg" },
-        true,
-      );
+    if (wantsDownload && grant.allowDownload && sizeParam === "web") {
+      const key = firstValidOrgKey(asset.organizationId, [asset.editKey, asset.previewKey], "web download");
+      if (key) {
+        return serveAsset(req, { ...asset, storageKey: key, mimeType: "image/jpeg" }, true);
+      }
     }
-    if (wantsDownload && grant.allowDownload && sizeParam === "mid" && (asset.midKey ?? asset.previewKey)) {
-      return serveAsset(
-        req,
-        { ...asset, storageKey: (asset.midKey ?? asset.previewKey) as string, mimeType: "image/jpeg" },
-        true,
-      );
+    if (wantsDownload && grant.allowDownload && sizeParam === "mid") {
+      const key = firstValidOrgKey(asset.organizationId, [asset.midKey, asset.previewKey], "mid download");
+      if (key) {
+        return serveAsset(req, { ...asset, storageKey: key, mimeType: "image/jpeg" }, true);
+      }
     }
 
     // WEB-172: original JPEG downloads from a client gallery are delivered
@@ -216,12 +207,17 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     // downloads keep the photographer's originals untouched. WEB-402: with
     // an edited look, the edit.jpg IS the client deliverable (full-res,
     // EXIF-free) — the untouched original never needs stripping for it.
-    if (wantsDownload && grant.allowDownload && !dk && asset.editKey) {
-      return serveAsset(
-        req,
-        { ...asset, storageKey: asset.editKey, mimeType: "image/jpeg", filename: asset.filename },
-        true,
-      );
+    // (WEB-440: only a VALID edit key takes this branch; a malformed one
+    // falls through to the original-bytes path below instead of throwing.)
+    if (wantsDownload && grant.allowDownload && !dk) {
+      const editKey = firstValidOrgKey(asset.organizationId, [asset.editKey], "full-res download");
+      if (editKey) {
+        return serveAsset(
+          req,
+          { ...asset, storageKey: editKey, mimeType: "image/jpeg", filename: asset.filename },
+          true,
+        );
+      }
     }
     if (wantsDownload && grant.allowDownload && !dk && asset.mimeType === "image/jpeg") {
       const object = await getObject(asset.organizationId, asset.storageKey);
@@ -250,7 +246,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     // serve; thumb when wm hasn't been generated. (WEB-402: an edited look
     // carries the watermark too, so it qualifies as the proof-grade serve.)
     if (grant.proofing && !dk) {
-      const wmKey = asset.editKey ?? asset.previewWmKey ?? asset.thumbKey;
+      // (WEB-440: validated ladder.)
+      const wmKey = firstValidOrgKey(asset.organizationId, [asset.editKey, asset.previewWmKey, asset.thumbKey], "proofing inline");
       if (wmKey) return serveAsset(req, { ...asset, storageKey: wmKey, mimeType: "image/jpeg" }, grant.allowDownload);
     }
     return serveAsset(req, dk ? { ...asset, storageKey: dk, mimeType: "image/jpeg" } : asset, grant.allowDownload);

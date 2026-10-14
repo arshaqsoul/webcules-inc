@@ -38,6 +38,17 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.25.1" date="October 14, 2026">
+        <p>
+          <strong>Photos you edited in Snap now always load for your clients.</strong>{" "}
+          A small number of edited photos could fail to display in client
+          galleries &mdash; the gallery kept retrying the broken image instead of
+          showing it. Serving now falls back to the next-best version of the
+          photo whenever a stored edit can&apos;t be used, so what you grade is
+          what your clients see, and your originals were never touched.
+        </p>
+      </Release>
+
       <Release version="0.25.0" date="October 14, 2026">
         <p>
           <strong>A home of its own for your portfolio: your-name.studios.snaphq.app.</strong>

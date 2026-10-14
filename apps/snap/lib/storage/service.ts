@@ -23,6 +23,17 @@ export function assertOrgKey(orgId: string, key: string): void {
   }
 }
 
+/** WEB-440: non-throwing prefix check for READ-side key selection. Stored
+ * derivative keys are data — a value that fails this check is stale/corrupt
+ * (never produced by the current write path, which builds every key via
+ * buildKey) and must not be passed to get/delete (both assert). Serving code
+ * uses this to skip the bad key and fall back down the derivative ladder
+ * instead of letting assertOrgKey throw a 500 (and triggering the client's
+ * &r= retry storm). */
+export function isOrgKey(orgId: string, key: string | null | undefined): boolean {
+  return typeof key === "string" && key.startsWith(`${orgId}/`);
+}
+
 export async function putObject(
   orgId: string,
   keySuffix: string,
