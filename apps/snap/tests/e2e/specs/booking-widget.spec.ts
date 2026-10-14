@@ -22,9 +22,11 @@ test.beforeEach(async ({ page }) => {
       await page.waitForTimeout(2_000);
     }
   }
-  await expect(page.getByText(/times in/i)).toBeVisible();
+  // CI (2-core runners) can take well over the default 10s expect timeout to
+  // cold-compile the embed route + availability fetch — WEB-262.
+  await expect(page.getByText(/times in/i)).toBeVisible({ timeout: 60_000 });
   // Grid rendered (days exist; the current month may be all-past/disabled).
-  await expect(page.locator('button[aria-label*=" 2026"]').first()).toBeVisible();
+  await expect(page.locator('button[aria-label*=" 2026"]').first()).toBeVisible({ timeout: 60_000 });
 });
 
 /** Navigate to the seeded month and open the target day. */
