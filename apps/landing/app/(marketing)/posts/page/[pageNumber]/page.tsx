@@ -4,6 +4,8 @@ import { PostsGrid } from "@/components/shared/posts-grid";
 import configPromise from "@webcules/payload/payload.config";
 import { getPayload } from "payload";
 import React from "react";
+import { emptyPaginatedDocs, safeCmsQuery } from "@/lib/cms";
+import type { Post } from "@webcules/payload/payload-types";
 import PageClient from "./page.client";
 import { notFound } from "next/navigation";
 
@@ -23,19 +25,25 @@ export default async function Page({ params: paramsPromise }: Args) {
 
   if (!Number.isInteger(sanitizedPageNumber)) notFound();
 
-  const posts = await payload.find({
-    collection: "posts",
-    depth: 1,
-    limit: 12,
-    page: sanitizedPageNumber,
-    overrideAccess: false,
-    sort: "-publishedAt",
-    where: {
-      application: {
-        equals: "webcules",
-      },
-    },
-  });
+  const posts = await safeCmsQuery(
+    payload,
+    "posts:list:page",
+    () =>
+      payload.find({
+        collection: "posts",
+        depth: 1,
+        limit: 12,
+        page: sanitizedPageNumber,
+        overrideAccess: false,
+        sort: "-publishedAt",
+        where: {
+          application: {
+            equals: "webcules",
+          },
+        },
+      }),
+    emptyPaginatedDocs<Post>(),
+  );
 
   return (
     <div className="relative flex flex-col items-center bg-darkest pt-40 pb-32 min-h-[80vh]">

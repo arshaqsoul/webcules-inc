@@ -5,6 +5,7 @@ import configPromise from "@webcules/payload/payload.config";
 import { getPayload } from "payload";
 import React from "react";
 import { Search } from "@webcules/payload/search/Component";
+import { emptyPaginatedDocs, safeCmsQuery } from "@/lib/cms";
 import PageClient from "./page.client";
 import { CardPostData } from "@webcules/payload/components/Card/index";
 
@@ -19,47 +20,55 @@ export default async function Page({
   const { q: query } = await searchParamsPromise;
   const payload = await getPayload({ config: configPromise });
 
-  const posts = await payload.find({
-    collection: "search",
-    depth: 1,
-    limit: 12,
-    select: {
-      title: true,
-      slug: true,
-      categories: true,
-      meta: true,
-    },
-    // pagination: false reduces overhead if you don't need totalDocs
-    pagination: false,
-    ...(query
-      ? {
-          where: {
-            or: [
-              {
-                title: {
-                  like: query,
-                },
+  const posts = await safeCmsQuery(
+    payload,
+    "search",
+    () =>
+      payload.find({
+        collection: "search",
+        depth: 1,
+        limit: 12,
+        select: {
+          title: true,
+          slug: true,
+          categories: true,
+          meta: true,
+        },
+        // pagination: false reduces overhead if you don't need totalDocs
+        pagination: false,
+        ...(query
+          ? {
+              where: {
+                or: [
+                  {
+                    title: {
+                      like: query,
+                    },
+                  },
+                  {
+                    "meta.description": {
+                      like: query,
+                    },
+                  },
+                  {
+                    "meta.title": {
+                      like: query,
+                    },
+                  },
+                  {
+                    slug: {
+                      like: query,
+                    },
+                  },
+                ],
               },
-              {
-                "meta.description": {
-                  like: query,
-                },
-              },
-              {
-                "meta.title": {
-                  like: query,
-                },
-              },
-              {
-                slug: {
-                  like: query,
-                },
-              },
-            ],
-          },
-        }
-      : {}),
-  });
+            }
+          : {}),
+      }),
+    // The search collection is unversioned; an empty result page is the
+    // graceful degrade when the CMS is unavailable.
+    emptyPaginatedDocs<never>(),
+  );
 
   return (
     <div className="pt-24 pb-24">
