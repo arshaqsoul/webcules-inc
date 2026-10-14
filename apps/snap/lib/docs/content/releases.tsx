@@ -60,8 +60,6 @@ export default function Releases() {
           a single calendar everywhere, so the board paints once and stays put.
         </p>
       </Release>
-        </p>
-      </Release>
 
       <Release version="0.24.0" date="October 13, 2026">
         <p>
