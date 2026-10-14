@@ -38,13 +38,25 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.25.0" date="October 14, 2026">
+        <p>
+          <strong>A home of its own for your portfolio: your-name.studios.snaphq.app.</strong>
+          Every published portfolio on Lite and above now has a dedicated web
+          address on Snap&apos;s new studios.snaphq.app label, alongside the
+          existing snaphq.app/portfolio/your-name path. Nothing changes in your
+          dashboard &mdash; publish as usual and both addresses serve the same
+          site, with your own photos, theme, and domain-level polish. The
+          addresses switch on for visitors as the new label is rolled out.
+        </p>
+      </Release>
+
       <Release version="0.24.1" date="October 13, 2026">
         <p>
           <strong>Project dates no longer flicker for clients outside UTC.</strong>{" "}
           If your studio or your clients are in a timezone west of Greenwich,
           the Projects board could briefly rebuild itself on load &mdash; a
-          behind-the-scenes disagreement between the server's calendar and your
-          browser's over dates landing near midnight. Dates are now anchored to
+          behind-the-scenes disagreement between the server&apos;s calendar and your
+          browser&apos;s over dates landing near midnight. Dates are now anchored to
           a single calendar everywhere, so the board paints once and stays put.
         </p>
       </Release>
