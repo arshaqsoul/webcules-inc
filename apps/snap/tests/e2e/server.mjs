@@ -245,8 +245,11 @@ const seedSql = `INSERT INTO organization (id, name, slug, created_at, updated_a
 -- WEB-301 preview e2e: a designed project (columns + hero slider) plus a
 -- zero-config one, each with approved assets (no R2 objects — DOM-level
 -- assertions only).
+-- WEB-367: event_date is a seconds-mode integer column (Drizzle
+-- mode "timestamp") — store SECONDS, not ms (the previous * 1000
+-- produced a far-future date that formatted as "Feb 22").
 INSERT INTO project (id, organization_id, title, event_date, status, gallery_design, created_at, updated_at)
-VALUES ('${previewProjectId}', '${proOrgId}', 'Autumn Winds Shoot', strftime('%s','2026-10-18') * 1000, 'booked',
+VALUES ('${previewProjectId}', '${proOrgId}', 'Autumn Winds Shoot', strftime('%s','2026-10-18'), 'booked',
         '{"layout":"grid","columns":{"mobile":2,"md":2},"theme":{"background":"light","padding":"normal","radius":"16px","captions":"off"},"cover":{"assetId":"","focal":{"x":0.5,"y":0.5},"style":"static","title":"Anna & Elias","subtitle":"Preview family session"}}',
         unixepoch(), unixepoch());
 INSERT INTO project (id, organization_id, title, status, created_at, updated_at)

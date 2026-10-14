@@ -38,6 +38,17 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.24.1" date="October 13, 2026">
+        <p>
+          <strong>Project dates no longer flicker for clients outside UTC.</strong>{" "}
+          If your studio or your clients are in a timezone west of Greenwich,
+          the Projects board could briefly rebuild itself on load &mdash; a
+          behind-the-scenes disagreement between the server's calendar and your
+          browser's over dates landing near midnight. Dates are now anchored to
+          a single calendar everywhere, so the board paints once and stays put.
+        </p>
+      </Release>
+
       <Release version="0.24.0" date="October 13, 2026">
         <p>
           <strong>A license agreement, on every gallery.</strong> You can now
