@@ -28,8 +28,13 @@ a CMS-down-tolerant local replacement for the shared
 `packages/payload/src/utilities/getRedirects.ts` is still unguarded for other
 consumers — landing no longer relies on it).
 
-Slow CMS responses show branded skeletons (`loading.tsx` under `posts/` and
-`search/`) instead of a blank frame.
+Slow CMS responses show branded skeletons (`loading.tsx` under `posts/(listing)/`
+and `search/(index)/`) instead of a blank frame. The skeletons cover only the
+listing routes (`/posts`, `/posts/page/N`, `/search`), which always render 200.
+The `[slug]` detail routes deliberately have **no** loading boundary above them:
+once a segment streams its shell, the status code is committed as 200 before
+`notFound()` throws, turning unknown slugs into soft-404s (WEB-431). Detail
+pages render without a skeleton so unknown slugs keep a real 404 status.
 
 Ops routes (`/next/preview`, `/next/seed`) already handle their own errors.
 
