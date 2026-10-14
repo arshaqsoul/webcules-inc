@@ -187,11 +187,15 @@ async function createAuthInstance() {
       updateAge: 60 * 60 * 24, // refresh daily
     },
     rateLimit: {
-      enabled: true,
+      // SNAP_E2E: the e2e server has no client IP, so better-auth buckets every
+      // signup of a full-suite run into ONE shared per-path bucket — a 429
+      // partway through. E2E drives the whole auth lifecycle serially against
+      // an isolated D1; the limiter adds nothing there. Keep it for dev/prod.
+      enabled: env.SNAP_E2E !== "1",
       // Workers are multi-isolate: database storage makes limits global, not per-isolate.
       storage: "database",
       window: 60,
-      // Local dev + e2e drive whole auth lifecycles from one localhost IP
+      // Local dev drives whole auth lifecycles from one localhost IP
       // within a minute — headroom there; production keeps the tight cap.
       max: env.BETTER_AUTH_URL?.includes("localhost") ? 500 : 30,
     },

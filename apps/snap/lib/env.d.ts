@@ -21,6 +21,8 @@ declare namespace Cloudflare {
     R2_S3_ACCOUNT_ID?: string;
     /** "otp" (default) | "off" — email-shock contingency for gallery OTPs. */
     GALLERY_OTP_MODE?: string;
+    /** Set only by the e2e server (tests/e2e/server.mjs) — loosens dev-only limits. */
+    SNAP_E2E?: string;
     /** WEB-284: "1" enables R2 storage-class moves (IA tiering). Keep "0" —
      * IA ops bill in rounded 1M blocks ($9/mo min) with no free tier; only
      * flip when cold RAW volume nears ~2TB. */
