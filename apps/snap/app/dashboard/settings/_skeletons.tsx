@@ -18,8 +18,8 @@ export function SkeletonCard({ children, className = "" }: { children: React.Rea
   );
 }
 
-export function SkeletonCardTitle() {
-  return <div className="h-4 w-36 animate-pulse rounded bg-surface-2" />;
+export function SkeletonCardTitle({ className = "w-36" }: { className?: string }) {
+  return <div className={`h-4 ${className} animate-pulse rounded bg-surface-2`} />;
 }
 
 export function SkeletonFields({ rows = 4 }: { rows?: number }) {

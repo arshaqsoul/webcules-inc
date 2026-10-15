@@ -38,6 +38,18 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.26.1" date="October 15, 2026">
+        <p>
+          <strong>Every dashboard page now reacts the moment you click.</strong>{" "}
+          Moving around Snap used to leave the screen sitting still for a
+          second or two while the page fetched your data. Now a matching
+          outline of the page &mdash; tables, the calendar, your inbox &mdash;
+          appears instantly on every dashboard navigation, so the app feels
+          immediate while the real content loads, with no jump or shuffle
+          when it arrives.
+        </p>
+      </Release>
+
       <Release version="0.26.0" date="October 15, 2026">
         <p>
           <strong>Snap is faster.</strong>{" "}
