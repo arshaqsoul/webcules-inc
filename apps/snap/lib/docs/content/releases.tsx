@@ -38,17 +38,6 @@ export default function Releases() {
         getting their own.
       </Note>
 
-      <Release version="0.26.1" date="October 15, 2026">
-        <p>
-          <strong>Client galleries load fully again, instantly.</strong>{" "}
-          Large galleries no longer stall after the first screen of photos:
-          every thumbnail now loads on the first pass, and the view counting
-          that used to run per photo now happens once per gallery visit
-          &mdash; a 200-photo gallery that used to trigger ~600 database
-          writes per view now does a handful.
-        </p>
-      </Release>
-
       <Release version="0.26.2" date="October 15, 2026">
         <p>
           <strong>Every dashboard page now reacts the moment you click.</strong>{" "}
@@ -58,6 +47,17 @@ export default function Releases() {
           appears instantly on every dashboard navigation, so the app feels
           immediate while the real content loads, with no jump or shuffle
           when it arrives.
+        </p>
+      </Release>
+
+      <Release version="0.26.1" date="October 15, 2026">
+        <p>
+          <strong>Client galleries load fully again, instantly.</strong>{" "}
+          Large galleries no longer stall after the first screen of photos:
+          every thumbnail now loads on the first pass, and the view counting
+          that used to run per photo now happens once per gallery visit
+          &mdash; a 200-photo gallery that used to trigger ~600 database
+          writes per view now does a handful.
         </p>
       </Release>
 
