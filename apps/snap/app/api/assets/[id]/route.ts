@@ -11,7 +11,7 @@ import { stripJpegExif } from "@/lib/exif";
 import { getOrgContext } from "@/lib/session";
 import { clientIp, logShareAccess, resolveGalleryAccess } from "@/lib/shares/gallery-auth";
 import { assetInGrant, getGrantById } from "@/lib/shares/grants";
-import { checkImageView, countAssetView } from "@/lib/limits";
+import { checkImageView, countAssetView, viewLimiterApplies } from "@/lib/limits";
 import { downloadSettingsOf, photoDownloadCount, licenseSha256 } from "@/lib/repos/downloads";
 import { licenseTextOf } from "@/lib/gallery-downloads";
 import { licenseAckCookieOk } from "@/app/api/g/[token]/download-request/license/route";
@@ -110,6 +110,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
     // WEB-160: per-IP 30 views/min + per-gallery monthly budget. Range
     // requests (video scrubbing) continue an already-admitted view.
+    // WEB-443: grid thumbs (variant=thumb, not a download) are exempt —
+    // a gallery page loads every thumb at once, so the 30/min cap 429'd
+    // everything past photo 30 and drove the &r= cache-busting retry
+    // storm. Thumb view counts are batched per page load instead (see
+    // countGalleryAssetViews in the gallery page); the monthly budget
+    // still gates thumbs at the page level (countGalleryOpen).
     const ip = clientIp(req);
     // (audit fix): only CONTINUATION ranges (start > 0, video scrubbing)
     // skip the budget — a client sending `Range: bytes=0-` on every GET used
@@ -117,7 +123,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const rangeHeader = req.headers.get("Range");
     const rangeStart = rangeHeader ? Number(rangeHeader.match(/bytes=(\d*)-/)?.[1] || 0) : null;
     const continuation = rangeStart !== null && rangeStart > 0;
-    if (ip && !continuation) {
+    if (ip && !continuation && viewLimiterApplies(url.searchParams.get("variant"), wantsDownload)) {
       const limit = await checkImageView(ip, grant.organizationId, grant.id);
       // WEB-265: per-photo interest counter (heat overlay) — only admitted
       // views count, same moment as the budget.
