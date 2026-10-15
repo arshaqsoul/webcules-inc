@@ -1,6 +1,7 @@
 /* Studio (organization) repository — every mutation runs inside an authed
  * request; createStudioForUser is called from the onboarding route only. */
 import { eq } from "drizzle-orm";
+import { cache } from "react";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
@@ -101,8 +102,10 @@ export async function createStudioForUser(params: {
   return { organizationId, slug, embedKey, plan: planId };
 }
 
-/** The studio profile for an org, or null. */
-export async function getStudioProfile(organizationId: string): Promise<StudioProfile | null> {
+/** The studio profile for an org, or null. Deduped per render (WEB-442) —
+ * the dashboard layout, dormancy banner, and setup guide used to re-read this
+ * same row up to 6x per navigation. */
+export const getStudioProfile = cache(async (organizationId: string): Promise<StudioProfile | null> => {
   const db = getDb();
   const rows = await db
     .select()
@@ -110,7 +113,7 @@ export async function getStudioProfile(organizationId: string): Promise<StudioPr
     .where(eq(schema.studioProfiles.organizationId, organizationId))
     .limit(1);
   return rows[0] ?? null;
-}
+});
 
 /** The studio's unique slug (used for its inbound email tag). */
 export async function getStudioSlug(organizationId: string): Promise<string> {
