@@ -38,6 +38,17 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.26.0" date="October 15, 2026">
+        <p>
+          <strong>Snap is faster.</strong>{" "}
+          The dashboard no longer repeats the same database lookups on every
+          page view. Studios should see dashboard pages load noticeably
+          quicker &mdash; roughly two-second navigations dropping to well under
+          one second &mdash; with no change to how plans, studios, or the setup
+          guide behave.
+        </p>
+      </Release>
+
       <Release version="0.25.2" date="October 15, 2026">
         <p>
           <strong>The Files feed no longer drops out when a filter count hiccups.</strong>{" "}
