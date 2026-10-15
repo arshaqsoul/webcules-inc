@@ -1560,17 +1560,28 @@ export const galleryViewMonthly = sqliteTable(
 /* ---------------- Usage snapshots / margin monitoring (WEB-161) ---------------- */
 
 /** Month-to-date usage per org, refreshed daily by the cron; the month key
- * rolls over so the last write of a month freezes its snapshot. */
+ * rolls over so the last write of a month freezes its snapshot. WEB-445 adds
+ * the entitlement columns: lifetime aggregates live in the sentinel
+ * month='total' row (stored_bytes, file_count, raw_bytes) and monthly upload
+ * volume in the 'YYYY-MM' rows (upload_bytes, upload_ops). They are kept
+ * exact by the asset triggers in migrations/0083 — see lib/plans.ts for the
+ * read side and lib/repos/usage-counters.ts for the nightly re-derive. */
 export const usageCounters = sqliteTable(
   "usage_counters",
   {
     organizationId: text("organization_id").notNull(),
-    /** 'YYYY-MM' */
+    /** 'YYYY-MM', or 'total' for the lifetime aggregate row. */
     month: text("month").notNull(),
     storedBytes: integer("stored_bytes").notNull().default(0),
     imageViews: integer("image_views").notNull().default(0),
     emailsSent: integer("emails_sent").notNull().default(0),
     uploadOps: integer("upload_ops").notNull().default(0),
+    /** WEB-445: lifetime asset count (month='total' rows only). */
+    fileCount: integer("file_count").notNull().default(0),
+    /** WEB-445: lifetime RAW bytes, kind='raw' (month='total' rows only). */
+    rawBytes: integer("raw_bytes").notNull().default(0),
+    /** WEB-445: bytes uploaded during this month (monthly upload budget). */
+    uploadBytes: integer("upload_bytes").notNull().default(0),
     updatedAt: integer("updated_at").notNull(),
   },
   (t) => [
