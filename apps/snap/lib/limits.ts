@@ -53,9 +53,39 @@ export async function checkImageView(ip: string, organizationId: string, grantId
   return { ok: true };
 }
 
-/** WEB-265: per-photo interest counter (heat overlay) — rides the same
- * admitted-view moment as the budget counters; months roll like the
- * gallery counter. */
+/** WEB-443: does this serve hit the per-IP view limiter? Grid thumbs are
+ * exempt — one gallery page loads EVERY thumb at once, so a 30/min per-IP
+ * image cap 429'd everything past photo 30 and the client's cache-busting
+ * retries (&r=) made it worse. Full-size serves (lightbox previews,
+ * originals, downloads — even a ?variant=thumb WITH download=1, which is a
+ * deliberate byte fetch, not a grid tile) stay limited. The monthly budget
+ * still applies to thumbs at the page level via countGalleryOpen. */
+export function viewLimiterApplies(variant: string | null, wantsDownload: boolean): boolean {
+  return wantsDownload || variant !== "thumb";
+}
+
+/** WEB-443: batched per-photo interest counter — ONE aggregate statement per
+ * gallery page load (scheduled via ctx.waitUntil by the gallery page)
+ * instead of one write per thumb GET. Counts a view for every asset in the
+ * grant's delivered set; heat-overlay semantics are unchanged (a gallery
+ * open = one view per delivered photo, which is what the eager thumb grid
+ * always produced). */
+export async function countGalleryAssetViews(organizationId: string, grantId: string): Promise<void> {
+  try {
+    const db = getDb();
+    await db.all(sql`
+      INSERT INTO asset_view_monthly (organization_id, grant_id, asset_id, month, views)
+      SELECT ${organizationId}, ${grantId}, sga.asset_id, ${monthKey()}, 1
+      FROM share_grant_asset sga WHERE sga.grant_id = ${grantId}
+      ON CONFLICT (organization_id, grant_id, asset_id, month) DO UPDATE SET views = views + 1
+    `);
+  } catch (err) {
+    console.error("batched asset view counter failed:", String(err)); // analytics must never break serving
+  }
+}
+
+/** WEB-265: per-photo interest counter (heat overlay) — full-size serves
+ * only since WEB-443 (grid thumbs are batched per page load above). */
 export async function countAssetView(organizationId: string, grantId: string, assetId: string): Promise<void> {
   try {
     const db = getDb();

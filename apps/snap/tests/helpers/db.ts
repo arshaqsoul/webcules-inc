@@ -136,7 +136,7 @@ const TABLES = [
   "booking", "booking_reminders", "project_status_event", "project", "client",
   "availability_rule", "blackout_date",
   "email_log", "portal_otp_log", "portal_otp",
-  "gallery_view_monthly", "view_rate_window", "usage_counters", "rate_limit", "system_state",
+  "gallery_view_monthly", "view_rate_window", "asset_view_monthly", "usage_counters", "rate_limit", "system_state",
   "audit_log", "template", "session_type", "studio_profile", "member", "invitation",
   "session", "account", "verification", "user", "organization",
 ];

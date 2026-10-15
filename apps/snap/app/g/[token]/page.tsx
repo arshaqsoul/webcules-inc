@@ -4,6 +4,7 @@
  * OTP-verified snap-g cookie (WEB-132) or, under the email-shock contingency
  * (GALLERY_OTP_MODE=off), link possession alone. */
 import { headers } from "next/headers";
+import { after } from "next/server";
 import type { Metadata } from "next";
 import { eq } from "drizzle-orm";
 import { env } from "cloudflare:workers";
@@ -25,7 +26,7 @@ import { GalleryPreRegister } from "@/components/gallery-preregister";
 import { welcomeLink } from "@/lib/welcome-link";
 import { ensureFavoriteLists, getFavoritesForList, getLatestSelection, listFavoriteDetails } from "@/lib/shares/selections";
 import { safeHexColor } from "@/lib/embed";
-import { countGalleryOpen } from "@/lib/limits";
+import { countGalleryAssetViews, countGalleryOpen } from "@/lib/limits";
 import { buildMergeValues, renderMerge } from "@/lib/merge";
 import { mergeRenderDesign, resolveDesignSections } from "@/lib/gallery-sections";
 import { fontFamilyOf, FONTS_CSS_HREF } from "@/lib/fonts";
@@ -242,6 +243,9 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
     if (!(await countGalleryOpen(grant.organizationId, grant.id))) {
       return <GalleryPaused {...shared} />;
     }
+    // WEB-443: one batched aggregate increment for the whole delivered set
+    // (heat overlay) — rides ctx.waitUntil, off the response path.
+    if (assets.length > 0) after(() => countGalleryAssetViews(grant.organizationId, grant.id));
     return (
       <>
         {fontLink}
@@ -290,6 +294,9 @@ export default async function GalleryPage({ params }: { params: Promise<{ token:
   if (!(await countGalleryOpen(grant.organizationId, grant.id))) {
     return <GalleryPaused {...shared} />;
   }
+  // WEB-443: one batched aggregate increment for the whole delivered set
+  // (heat overlay) — rides ctx.waitUntil, off the response path.
+  if (assets.length > 0) after(() => countGalleryAssetViews(grant.organizationId, grant.id));
   return (
     <>
       {fontLink}
