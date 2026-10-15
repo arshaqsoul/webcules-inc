@@ -38,6 +38,18 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.25.2" date="October 15, 2026">
+        <p>
+          <strong>The Files feed no longer drops out when a filter count hiccups.</strong>{" "}
+          Project Files loads your photos and a row of filter counts (ratings,
+          quality flags, similar-photo groups) in one go; if a momentary
+          database hiccup hit one of those count queries, the whole Files feed
+          could fail to load instead of just showing zeros. The photo list now
+          stays live no matter what &mdash; a stuck count simply renders empty
+          and retries the next time you visit.
+        </p>
+      </Release>
+
       <Release version="0.25.1" date="October 14, 2026">
         <p>
           <strong>Photos you edited in Snap now always load for your clients.</strong>{" "}

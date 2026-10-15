@@ -7,7 +7,7 @@ import { and, eq } from "drizzle-orm";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
-import { groupSizes, listAssetsPaged, listProjectTags, qualityCounts, ratingCounts, statusCounts, type AssetFilter } from "@/lib/repos/assets";
+import { groupSizes, listAssetsPaged, listProjectTags, qualityCounts, ratingCounts, safeFacet, statusCounts, type AssetFilter } from "@/lib/repos/assets";
 import { listFolders } from "@/lib/repos/folders";
 import { getOrgContext } from "@/lib/session";
 
@@ -51,14 +51,17 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     group: q.get("group") === "dupes" ? "dupes" : undefined,
   };
 
+  // WEB-441: the cull-assist facet queries (quality counts, group_cover
+  // sizes) degrade to empty instead of 500ing the Files feed when a
+  // transient D1 failure hits them — the asset list itself stays live.
   const [page, counts, tags, ratings, folderInfo, quality, groups] = await Promise.all([
     listAssetsPaged(ctx.organizationId, id, filter),
     statusCounts(ctx.organizationId, id),
     listProjectTags(ctx.organizationId, id),
     ratingCounts(ctx.organizationId, id),
     listFolders(ctx.organizationId, id),
-    qualityCounts(ctx.organizationId, id),
-    groupSizes(ctx.organizationId, id),
+    safeFacet("quality-counts", () => qualityCounts(ctx.organizationId, id), { blurry: 0, under: 0, over: 0, edited: 0, dupes: 0 }),
+    safeFacet("group-cover-sizes", () => groupSizes(ctx.organizationId, id), {}),
   ]);
 
   return Response.json({
