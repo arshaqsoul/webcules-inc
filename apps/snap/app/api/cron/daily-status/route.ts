@@ -201,6 +201,19 @@ export async function POST(req: Request) {
     console.error("margin rollup failed:", String(err));
   }
 
+  // WEB-445: entitlement counters are trigger-maintained, but re-derive them
+  // from the ledger every night so drift (dropped trigger, hand-edited D1)
+  // self-heals. Parity is assertable any time via usageCounterParity().
+  let usageResync = { rows: 0, drifted: false };
+  try {
+    const { resyncUsageCounters, usageCounterParity } = await import("@/lib/repos/usage-counters");
+    usageResync.rows = await resyncUsageCounters();
+    usageResync.drifted = (await usageCounterParity()).length > 0;
+    if (usageResync.drifted) console.error("usage-counter parity failed after re-derive");
+  } catch (err) {
+    console.error("usage-counter resync failed:", String(err));
+  }
+
   // WEB-111: expired presigned upload sessions — abort orphaned multipart
   // uploads (their part URLs are long dead) and clear the rows.
   let expiredUploads = 0;
@@ -282,5 +295,5 @@ export async function POST(req: Request) {
     console.error("inbox prune failed:", String(err));
   }
 
-  return Response.json({ ok: true, moved: due.length, warned, downgraded, expiredHolds, vault, dormancy, margin, expiredUploads, rejectedPurged, domains, addonSettled, galleries, reminders, setup, inboxPrune });
+  return Response.json({ ok: true, moved: due.length, warned, downgraded, expiredHolds, vault, dormancy, margin, usageResync, expiredUploads, rejectedPurged, domains, addonSettled, galleries, reminders, setup, inboxPrune });
 }

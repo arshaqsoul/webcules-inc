@@ -12,7 +12,7 @@
  * Storage is 97–98.5% of COGS; the guardrails below come from the worst-case
  * simulation: hard upload lock at 2× included bytes (overage zone between cap
  * and lock), monthly upload bytes ≤ 2× cap, and a 250k file cap per org. */
-import { and, eq, gte, inArray, isNull, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { cache } from "react";
 
 import { getDb } from "@/lib/db";
@@ -26,7 +26,8 @@ void PLANS;
 export type Entitlements = PlanDef & {
   organizationId: string;
   planStatus: string;
-  /** Live usage (D1 sums — can't drift from the ledger), POOLED across the
+  /** Live usage (WEB-445: trigger-maintained usage_counters — exact against
+   * the asset ledger, nightly re-derived as a safety net), POOLED across the
    * whole studio family (WEB-217): storage, uploads, galleries, bookings
    * and file counts all share the parent's single subscription. */
   storageUsedBytes: number;
@@ -83,12 +84,29 @@ export async function resolveFamily(
   return { rootId: current, ids: [current, ...children.map((c) => c.id)] };
 }
 
+/** WEB-445: the usage_counters month key — 'YYYY-MM' in UTC, matching the
+ * asset triggers' strftime('%Y-%m', …). */
+export function usageMonthKey(date = new Date()): string {
+  return date.toISOString().slice(0, 7);
+}
+
+/** WEB-445: sentinel month for the lifetime aggregate row. */
+export const USAGE_TOTAL_MONTH = "total";
+
 /** One helper every gate reads: plan + live usage + derived flags. The plan
- * comes from the family ROOT's studio_profile; usage sums across the whole
+ * comes from the family ROOT's studio_profile; usage pools across the whole
  * family so quotas genuinely pool (Lite × 3 studios = ONE 150 GB envelope,
  * not three — the pricing condition for multi-studio). Deduped per render
  * (WEB-442): the layout and the page both gating used to re-run the whole
- * usage aggregation per navigation. */
+ * usage aggregation per navigation.
+ *
+ * WEB-445: storage/file/RAW/monthly-upload usage is served from the
+ * usage_counters rows maintained by the asset triggers (migrations/0083) —
+ * two O(#family) point lookups on the (organization_id, month) primary key
+ * instead of SUM/COUNT scans over the org family's entire asset table, which
+ * grew linearly with every upload. The counters track the ledger exactly
+ * (every insert/delete/cascade fires a trigger); the nightly cron re-derives
+ * them from the live SUM as a safety net (lib/repos/usage-counters.ts). */
 export const getPlanEntitlements = cache(async (organizationId: string): Promise<Entitlements | null> => {
   const db = getDb();
   const family = await resolveFamily(organizationId);
@@ -105,23 +123,29 @@ export const getPlanEntitlements = cache(async (organizationId: string): Promise
   )[0];
   if (!profile) return null;
 
-  const monthStart = new Date();
-  monthStart.setUTCDate(1);
-  monthStart.setUTCHours(0, 0, 0, 0);
-
   const [usage, monthBytes, galleries, bookings, domains] = await Promise.all([
     db
       .select({
-        bytes: sql<number>`coalesce(sum(${schema.assets.bytes}), 0)`,
-        files: sql<number>`count(*)`,
-        rawBytes: sql<number>`coalesce(sum(case when ${schema.assets.kind} = 'raw' then ${schema.assets.bytes} else 0 end), 0)`,
+        bytes: sql<number>`coalesce(sum(${schema.usageCounters.storedBytes}), 0)`,
+        files: sql<number>`coalesce(sum(${schema.usageCounters.fileCount}), 0)`,
+        rawBytes: sql<number>`coalesce(sum(${schema.usageCounters.rawBytes}), 0)`,
       })
-      .from(schema.assets)
-      .where(inArray(schema.assets.organizationId, family.ids)),
+      .from(schema.usageCounters)
+      .where(
+        and(
+          inArray(schema.usageCounters.organizationId, family.ids),
+          eq(schema.usageCounters.month, USAGE_TOTAL_MONTH),
+        ),
+      ),
     db
-      .select({ bytes: sql<number>`coalesce(sum(${schema.assets.bytes}), 0)` })
-      .from(schema.assets)
-      .where(and(inArray(schema.assets.organizationId, family.ids), gte(schema.assets.createdAt, monthStart))),
+      .select({ bytes: sql<number>`coalesce(sum(${schema.usageCounters.uploadBytes}), 0)` })
+      .from(schema.usageCounters)
+      .where(
+        and(
+          inArray(schema.usageCounters.organizationId, family.ids),
+          eq(schema.usageCounters.month, usageMonthKey()),
+        ),
+      ),
     // Expired grants never flip status in the DB (grantLive() evaluates
     // expiresAt on read) — the slot count honors expiry the same way, so a
     // lapsed gallery releases the tier slot the moment it lapses.

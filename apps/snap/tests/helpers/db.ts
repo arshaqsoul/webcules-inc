@@ -101,21 +101,13 @@ import m80 from "../../migrations/0080_upload_session_request_ref.sql?raw";
 import m81 from "../../migrations/0081_portfolio_views.sql?raw";
 // WEB-193 license acknowledgment: per-grant license text + audit-frozen acks.
 import m82 from "../../migrations/0082_license_ack.sql?raw";
+// WEB-445: entitlement counters on usage_counters (columns + asset triggers).
+import m83 from "../../migrations/0083_usage_counter_entitlements.sql?raw";
 
 const MIGRATIONS = [
   m01, m02, m03, m04, m05, m06, m07, m08, m09, m10, m11, m12, m13, m14, m15,
   m16, m17, m18, m19, m20, m21, m22, m23, m24, m25, m26, m27, m28, m29, m30, m31, m32, m33, m34, m35, m36, m37, m38, m39, m40, m41, m42, m43, m44, m45, m46, m47, m48, m49, m50, m51, m52, m53, m54, m55, m56, m57, m58, m59, m60, m61, m62,
-m63,
-m64,
-m65,
-m66,
-m67,
-m68,
-m69,
-m70,
-m71,
-m72,
-m73, m74, m75, m76, m77, m78, m79, m80, m81, m82,
+m63, m64, m65, m66, m67, m68, m69, m70, m71, m72, m73, m74, m75, m76, m77, m78, m79, m80, m81, m82, m83,
 ];
 
 /** Every table, in an order that satisfies FK constraints when deleting. */
@@ -141,16 +133,19 @@ const TABLES = [
   "session", "account", "verification", "user", "organization",
 ];
 
-/** Split SQL into statements (quote-aware; no triggers/BEGIN blocks in these
- * migrations, so a top-level `;` split is exact) and strip `--` comments —
- * D1's exec() is line-oriented, so multi-line DDL must go through batch(). */
+/** Split SQL into statements (quote-aware; comments stripped — D1's exec()
+ * is line-oriented, so multi-line DDL must go through batch()). CREATE
+ * TRIGGER bodies are BEGIN…END blocks whose inner statements end in `;`, so
+ * while inside one (0083) the accumulator only closes on a bare `END;`. */
 function sqlStatements(sql: string): string[] {
   const out: string[] = [];
   let current = "";
   let quote: string | null = null;
+  let inTrigger = false;
   for (const line of sql.split("\n")) {
     const trimmed = line.trim();
     if (!quote && (trimmed.startsWith("--") || trimmed === "")) continue;
+    if (!quote && !inTrigger && /^\s*create\s+trigger/i.test(`${current}${line}`)) inTrigger = true;
     for (let i = 0; i < line.length; i++) {
       const ch = line[i];
       if (quote) {
@@ -161,8 +156,10 @@ function sqlStatements(sql: string): string[] {
     }
     current += (current ? "\n" : "") + line;
     if (!quote && trimmed.endsWith(";")) {
+      if (inTrigger && !/^end;$/i.test(trimmed)) continue;
       out.push(current);
       current = "";
+      inTrigger = false;
     }
   }
   if (current.trim()) out.push(current);

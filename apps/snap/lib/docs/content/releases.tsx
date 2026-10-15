@@ -38,6 +38,18 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.26.3" date="October 15, 2026">
+        <p>
+          <strong>Storage meters stay instant as your library grows.</strong>{" "}
+          Every time a page loaded, Snap re-measured your entire photo library
+          from scratch to work out how much storage you had used &mdash; fine
+          at a few hundred files, slower every week after that. Those numbers
+          are now kept up to date as you upload and delete, so dashboards,
+          storage bars, and upload limits read instantly no matter how big the
+          library gets.
+        </p>
+      </Release>
+
       <Release version="0.26.2" date="October 15, 2026">
         <p>
           <strong>Every dashboard page now reacts the moment you click.</strong>{" "}
