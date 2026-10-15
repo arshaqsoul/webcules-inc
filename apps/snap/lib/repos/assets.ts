@@ -1106,3 +1106,18 @@ export async function groupSizes(organizationId: string, projectId: string): Pro
   for (const r of rows) if (r.cover) out[r.cover] = Number(r.n);
   return out;
 }
+
+/** WEB-441: Files-feed facet queries (quality counts, group_cover sizes)
+ * must not take the whole feed down when a transient D1 failure hits one of
+ * them — the same degradation posture as safeCmsQuery. The failure is logged
+ * (so telemetry still shows it and the acceptance gate can count it) and the
+ * caller gets the fallback: filter chips render with zero counts instead of
+ * the Files feed 500ing. */
+export async function safeFacet<T>(label: string, run: () => Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await run();
+  } catch (err) {
+    console.error(`[files-feed] ${label} facet query failed, degrading to fallback:`, err);
+    return fallback;
+  }
+}
