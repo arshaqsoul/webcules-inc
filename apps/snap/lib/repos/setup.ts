@@ -6,11 +6,13 @@
  * the demo-gallery action (sample images → real project → real grant → the
  * real gallery email) and the daily-cron activation rollup. */
 import { and, eq, sql } from "drizzle-orm";
+import { cache } from "react";
 import { env } from "cloudflare:workers";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
 import { countActiveSessionTypes } from "./session-types";
+import { getStudioProfile } from "./studios";
 import { getGrantToken } from "@/lib/shares/grants";
 import { putObject } from "@/lib/storage/service";
 
@@ -71,15 +73,23 @@ function templateTouched(rows: { createdAt: Date; updatedAt: Date }[], profileCr
   return rows.some((r) => r.updatedAt.getTime() > r.createdAt.getTime() || r.createdAt.getTime() > profileCreatedAt.getTime() + 60_000);
 }
 
-/** The checklist for one studio — all signals in parallel. */
-export async function getSetupState(organizationId: string): Promise<SetupState> {
+/** The checklist for one studio — all signals in parallel. Deduped per render
+ * (WEB-442): the layout and page both deriving state share one pass. */
+export const getSetupState = cache(async (organizationId: string): Promise<SetupState> => {
   const db = getDb();
 
-  const profileRow = (
-    await db.select().from(schema.studioProfiles).where(eq(schema.studioProfiles.organizationId, organizationId)).limit(1)
-  )[0];
+  // WEB-442: read the profile FIRST (shared with the layout's cached
+  // getStudioProfile) — when the guide is dismissed there is nothing to
+  // render, so the ~11 signal queries never run at all.
+  const profileRow = await getStudioProfile(organizationId);
   if (!profileRow) {
     return { steps: SETUP_STEPS.map((s) => ({ ...s, done: false })), done: 0, total: SETUP_STEPS.length, dismissed: false };
+  }
+  if (profileRow.setupDismissedAt !== null) {
+    // Dismissed: step detail is never shown. done/total report as "nothing
+    // done" — the only consumer of done while dismissed is the sidebar's
+    // reopen affordance, which is now driven purely by `dismissed`.
+    return { steps: SETUP_STEPS.map((s) => ({ ...s, done: false })), done: 0, total: SETUP_STEPS.length, dismissed: true };
   }
 
   const [
@@ -188,9 +198,10 @@ export async function getSetupState(organizationId: string): Promise<SetupState>
     steps,
     done: steps.filter((s) => s.done).length,
     total: steps.length,
-    dismissed: profileRow.setupDismissedAt !== null,
+    // Dismissed studios returned early above — reaching here means visible.
+    dismissed: false,
   };
-}
+});
 
 /* ---------------- Dismiss / reopen ---------------- */
 

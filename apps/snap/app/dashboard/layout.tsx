@@ -7,6 +7,8 @@ import { redirect } from "next/navigation";
 import { getOrgContext } from "@/lib/session";
 import { getStudioProfile, listUserStudios } from "@/lib/repos/studios";
 import { getPlanEntitlements } from "@/lib/plans";
+import { getDormancyBanner } from "@/lib/dormancy";
+import { getSetupState } from "@/lib/repos/setup";
 import { SignOutButton } from "@/components/sign-out-button";
 import { DormancyBanner } from "@/components/dormancy-banner";
 import { ConfirmProvider } from "@/components/confirm-provider";
@@ -17,11 +19,20 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const ctx = await getOrgContext();
   if (!ctx) redirect("/login");
 
-  const profile = await getStudioProfile(ctx.organizationId);
+  // WEB-442: one round-trip layer, not six sequential awaits — these four are
+  // independent once the org context is known, and every underlying reader
+  // (session, profile, entitlements, setup) is React-cache() deduped so the
+  // pages below this layout re-resolve nothing.
+  const [profile, ent, studios, dormancy, setupState] = await Promise.all([
+    getStudioProfile(ctx.organizationId),
+    getPlanEntitlements(ctx.organizationId),
+    listUserStudios(ctx.user.id),
+    getDormancyBanner(ctx.organizationId),
+    getSetupState(ctx.organizationId),
+  ]);
   if (!profile) redirect("/onboarding");
 
   // WEB-150: persistent usage banner at ≥90% of plan storage / hard lock.
-  const ent = await getPlanEntitlements(ctx.organizationId);
   const usageBanner =
     ent && (ent.atHardLock || ent.storagePct >= 90)
       ? ent.atHardLock
@@ -29,17 +40,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
         : `Storage at ${ent.storagePct}% of your ${ent.name} plan — uploads lock at 2× your cap.`
       : null;
 
-  // WEB-217: studio family — the switcher (and its add/link affordances).
-  const studios = await listUserStudios(ctx.user.id);
-
-  // WEB-159: cold-storage banner for returning dormant studios.
-  const { getDormancyBanner } = await import("@/lib/dormancy");
-  const dormancy = await getDormancyBanner(ctx.organizationId);
-
   // WEB-270: setup guide — always derived for the ACTIVE studio; hidden
   // (null) once dismissed or complete, reopenable while unfinished.
-  const { getSetupState } = await import("@/lib/repos/setup");
-  const setupState = await getSetupState(ctx.organizationId);
   const setupVisible = !setupState.dismissed && setupState.done < setupState.total;
 
   return (
@@ -62,7 +64,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
               }
             : null
         }
-        setupReopenable={setupState.dismissed && setupState.done < setupState.total}
+        setupReopenable={setupState.dismissed}
       />
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-14 items-center justify-between gap-2 border-b border-hairline px-4 md:hidden">

@@ -13,6 +13,7 @@
  * simulation: hard upload lock at 2× included bytes (overage zone between cap
  * and lock), monthly upload bytes ≤ 2× cap, and a 250k file cap per org. */
 import { and, eq, gte, inArray, isNull, sql } from "drizzle-orm";
+import { cache } from "react";
 
 import { getDb } from "@/lib/db";
 import * as schema from "@/lib/db-schema";
@@ -85,8 +86,10 @@ export async function resolveFamily(
 /** One helper every gate reads: plan + live usage + derived flags. The plan
  * comes from the family ROOT's studio_profile; usage sums across the whole
  * family so quotas genuinely pool (Lite × 3 studios = ONE 150 GB envelope,
- * not three — the pricing condition for multi-studio). */
-export async function getPlanEntitlements(organizationId: string): Promise<Entitlements | null> {
+ * not three — the pricing condition for multi-studio). Deduped per render
+ * (WEB-442): the layout and the page both gating used to re-run the whole
+ * usage aggregation per navigation. */
+export const getPlanEntitlements = cache(async (organizationId: string): Promise<Entitlements | null> => {
   const db = getDb();
   const family = await resolveFamily(organizationId);
   const profile = (
@@ -171,4 +174,4 @@ export async function getPlanEntitlements(organizationId: string): Promise<Entit
     addonCustomDomain,
     activeCustomDomains: Number(domains[0].n),
   };
-}
+});

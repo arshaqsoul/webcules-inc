@@ -185,6 +185,15 @@ async function createAuthInstance() {
     session: {
       expiresIn: 60 * 60 * 24 * 30, // 30 days
       updateAge: 60 * 60 * 24, // refresh daily
+      // WEB-442: cookie-backed session cache — getSession was a D1 join run
+      // 2–3x per navigation. 5-minute TTL: read-heavy dashboard navigations
+      // skip the join entirely; any session-changing call (sign-out, org
+      // switch, password reset) is reflected within maxAge seconds. Revocation
+      // latency: a server-side revoked session can serve reads up to 5 min.
+      cookieCache: {
+        enabled: true,
+        maxAge: 5 * 60,
+      },
     },
     rateLimit: {
       // SNAP_E2E: the e2e server has no client IP, so better-auth buckets every
