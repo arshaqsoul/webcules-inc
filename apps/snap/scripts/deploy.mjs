@@ -142,6 +142,25 @@ function assertTypecheckGreen() {
   }
 }
 
+/* WEB-468 gate: refuse to ship code whose D1 migrations are not ALL applied.
+ * Twice now prod served code needing a migration prod D1 never got (0074 /
+ * asset.mid_key, WEB-196) and client galleries 500'd. The d1_migrations
+ * ledger (see scripts/migrate.mjs) is the only accepted proof — a table
+ * looking present is NOT. Fails closed: if the ledger cannot be read, the
+ * deploy refuses. No override flag. */
+function assertMigrationsApplied(target) {
+  console.log(`• D1 migrations gate — every migrations/*.sql must be applied to ${target} (WEB-468)`);
+  try {
+    execSync(`node scripts/migrate.mjs assert ${target}`, { cwd: appDir, stdio: "inherit" });
+  } catch {
+    refuse(
+      `${target} D1 is missing migrations — this is how prod 500'd on 0074 (WEB-468).\n` +
+        `   Fix: node scripts/migrate.mjs apply staging   (verify staging!), then\n` +
+        `        node scripts/migrate.mjs apply production`,
+    );
+  }
+}
+
 function preflight(target) {
   if (target === "production" && !stagingVerified) {
     console.error(
@@ -156,6 +175,7 @@ function preflight(target) {
   }
   assertCleanTree();
   assertTypecheckGreen();
+  assertMigrationsApplied(target);
   const sha = gitOut("git rev-parse --short HEAD").trim();
   const subject = gitOut("git log -1 --pretty=%s").trim();
   console.log(`• deploying commit ${sha} (${subject})`);
@@ -304,7 +324,7 @@ if (target === "staging") {
   console.log("• smoke check:");
   const ok = (await smoke(PROD_URL)) && (await smoke(LEGACY_PROD_URL));
   console.log(ok ? "✅ production live at " + PROD_URL + " and " + LEGACY_PROD_URL : "⚠️  smoke check failed — CHECK IMMEDIATELY");
-  console.log("   D1 reminder: apply any new migrations to BOTH databases (staging first, then prod).");
+  console.log("   D1: the preflight migrations gate already proved both ledgers complete; new migrations go through node scripts/migrate.mjs (staging first).");
   await ensureActiveDomainRoutes();
 } else {
   console.error("usage: node scripts/deploy.mjs <staging|production> [--staging-verified] [--no-routes] [--skip-secret-check]");
