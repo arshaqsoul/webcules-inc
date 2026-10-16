@@ -25,10 +25,26 @@ pnpm --filter snap dev              # vinext dev (workerd, local bindings)
 pnpm --filter snap build            # production build
 pnpm --filter snap run deploy       # build + deploy to snap.webcules.com
                                      # (`run` is required: pnpm reserves bare `deploy`)
-pnpm --filter snap db:migrate       # apply migrations/0001_init.sql to local D1
-pnpm --filter snap db:migrate:remote# apply to production D1 (explicit, never in CI build)
 pnpm --filter snap typecheck
 ```
 
 Secrets: `.dev.vars` locally (see `.dev.vars.example`); production via
 `wrangler secret put`. Migrations are explicit — never run during builds.
+
+## D1 migrations (tracked ledger — WEB-468)
+
+Remote migrations go through the ledger tool ONLY, never bare
+`wrangler d1 execute --file` (hand-applies with no record are how production
+missed 0074/asset.mid_key and client galleries 500'd — twice):
+
+```
+node scripts/migrate.mjs status staging      # or production — inspect the ledger
+node scripts/migrate.mjs apply staging       # staging FIRST, verify the app there
+node scripts/migrate.mjs apply production    # then prod
+```
+
+A migration counts as applied only when its file name is a row in that
+database's `d1_migrations` table. `node scripts/deploy.mjs` preflight
+REFUSES to deploy (staging and production, no override) unless EVERY
+`migrations/*.sql` file is on the target's ledger.
+

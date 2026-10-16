@@ -11,8 +11,9 @@
     "preview": "vinext build && wrangler dev --config dist/server/wrangler.json",
     "typecheck": "tsc --noEmit",
     "check:hosts": "node scripts/check-hosts.mjs",
-    "db:migrate": "wrangler d1 execute webcules-snap --local --file=./migrations/0018_contracts.sql",
-    "db:migrate:remote": "wrangler d1 execute webcules-snap --remote --file=./migrations/0018_contracts.sql",
+    "db:migrate:status": "node scripts/migrate.mjs status staging",
+    "db:migrate:staging": "node scripts/migrate.mjs apply staging",
+    "db:migrate:production": "node scripts/migrate.mjs apply production",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test"
