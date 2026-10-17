@@ -12,7 +12,7 @@ import { getOrgContext } from "@/lib/session";
 import { clientIp, logShareAccess, resolveGalleryAccess } from "@/lib/shares/gallery-auth";
 import { assetInGrant, getGrantById } from "@/lib/shares/grants";
 import { checkImageView, countAssetView, viewLimiterApplies } from "@/lib/limits";
-import { downloadSettingsOf, photoDownloadCount, licenseSha256 } from "@/lib/repos/downloads";
+import { downloadSettingsOf, assetFavorited, photoDownloadCount, licenseSha256 } from "@/lib/repos/downloads";
 import { licenseTextOf } from "@/lib/gallery-downloads";
 import { licenseAckCookieOk } from "@/app/api/g/[token]/download-request/license/route";
 import { emailCaptureCookieOk } from "@/app/api/g/[token]/download-request/email/route";
@@ -147,6 +147,14 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       // pattern as the PIN (minted by the email route). Both gates apply.
       if (settings.emailCapture && !(await emailCaptureCookieOk(grant.id, req.headers.get("cookie")?.match(/(?:^|;\s*)snap-dl-email=([^;]+)/)?.[1] ?? null))) {
         return Response.json({ error: "email_required" }, { status: 401 });
+      }
+      // WEB-102 selection-only delivery: when the grant locks downloads to
+      // the client's favorites, any non-favorited asset 403s — on every
+      // rung (original/web/mid), full quality included. Favorited assets
+      // deliver exactly as before; the approval flow doesn't bypass this
+      // (approved ZIP pulls are scoped separately on the zip route).
+      if (settings.selectionOnly && !(await assetFavorited(grant.id, id))) {
+        return Response.json({ error: "selection_only" }, { status: 403 });
       }
       // WEB-193: license acknowledgment — the studio's legal cover on free
       // downloads, ALL tiers (never a feature gate). The ack cookie is bound

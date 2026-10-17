@@ -65,6 +65,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (settings.approval && !studio) return Response.json({ error: "approvals_require_studio" }, { status: 403 });
   // WEB-194: email-capture rides with the other download gates (Lite+).
   if (settings.emailCapture && !lite) return Response.json({ error: "email_capture_requires_lite" }, { status: 403 });
+  // WEB-102: selection-only delivery locks downloads to the client's
+  // favorites — same gate family as PIN/web-size (Lite+, WEB-267 matrix).
+  if (settings.selectionOnly && !lite) return Response.json({ error: "selection_only_requires_lite" }, { status: 403 });
   // WEB-193 (license_ack_all_tiers): the license acknowledgment is legal
   // cover on free downloads — deliberately UNGATED. Every tier, including
   // free, may set license text; no tier-gated error branch exists for it.
@@ -87,7 +90,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       .set({ allowSharing: parsed.data.allowSharing })
       .where(eq(schema.shareGrants.id, grant.id));
   }
-  return Response.json({ ok: true, settings: { pin: Boolean(settings.pinHash), limit: settings.limit, approval: settings.approval, webSize: settings.webSize, emailCapture: settings.emailCapture }, licenseText, allowSharing: parsed.data.allowSharing ?? grant.allowSharing });
+  return Response.json({ ok: true, settings: { pin: Boolean(settings.pinHash), limit: settings.limit, approval: settings.approval, webSize: settings.webSize, emailCapture: settings.emailCapture, selectionOnly: settings.selectionOnly }, licenseText, allowSharing: parsed.data.allowSharing ?? grant.allowSharing });
 }
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -108,5 +111,5 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   // WEB-193: effective license text + the audit-frozen acknowledgment ledger.
   const license = licenseTextOf(grant) || null;
   const acks = license ? await listLicenseAcks(grant.id) : [];
-  return Response.json({ settings: { pin: Boolean(s.pinHash), limit: s.limit, approval: s.approval, webSize: s.webSize, emailCapture: s.emailCapture }, captured, licenseText: license, licenseAcks: acks.length, allowSharing: grant.allowSharing });
+  return Response.json({ settings: { pin: Boolean(s.pinHash), limit: s.limit, approval: s.approval, webSize: s.webSize, emailCapture: s.emailCapture, selectionOnly: s.selectionOnly }, captured, licenseText: license, licenseAcks: acks.length, allowSharing: grant.allowSharing });
 }

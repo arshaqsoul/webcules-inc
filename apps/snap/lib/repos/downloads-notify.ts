@@ -12,6 +12,7 @@ import { buildMergeValues, renderMerge } from "../merge";
 import { getStudioProfile } from "./studios";
 import { getGrantById, decryptToken } from "../shares/grants";
 import { downloadScopeLabel, type DownloadScope } from "../gallery-downloads";
+import { downloadSettingsOf } from "./downloads";
 
 export async function sendDownloadApprovedEmail(requestId: string): Promise<void> {
   const db = getDb();
@@ -25,9 +26,12 @@ export async function sendDownloadApprovedEmail(requestId: string): Promise<void
   const values = await buildMergeValues({ organizationId: grant.organizationId, projectId: grant.projectId, clientEmail: grant.clientEmail });
   const link = await clientUrl(grant.organizationId, `/g/${galleryToken}`);
   const scopeLabel = downloadScopeLabel(row.scope as DownloadScope, row.folderName);
+  // WEB-102 selection-only delivery: the copy names the scope honestly —
+  // when the studio locked the gallery down, only the picks are included.
+  const selectionNote = downloadSettingsOf(grant).selectionOnly ? " This gallery includes only your selected (favorited) photos." : "";
   const subject = renderMerge("Your download is approved 📦", values, { surface: "plain" });
   const body = renderMerge(
-    `Hi {{client_name}},\n\n${profile.studioName} approved your download of ${scopeLabel}${row.fileCount ? ` - ${row.fileCount} file${row.fileCount === 1 ? "" : "s"}` : ""}. Open your gallery and press Download - it starts right away.`,
+    `Hi {{client_name}},\n\n${profile.studioName} approved your download of ${scopeLabel}${row.fileCount ? ` - ${row.fileCount} file${row.fileCount === 1 ? "" : "s"}` : ""}. Open your gallery and press Download - it starts right away.${selectionNote}`,
     values,
     { surface: "plain" },
   );

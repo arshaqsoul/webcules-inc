@@ -87,6 +87,7 @@ describe("WEB-267 gallery ladder (gates as shipped)", () => {
       ["pin_requires_lite", downloadSettingsRoute],
       ["web_size_requires_lite", downloadSettingsRoute],
       ["email_capture_requires_lite", downloadSettingsRoute],
+      ["selection_only_requires_lite", downloadSettingsRoute],
       ["approvals_require_studio", downloadSettingsRoute],
       ["notes_require_studio", favoriteRoute],
       ["exports_require_studio", favoritesExportRoute],
@@ -103,6 +104,20 @@ describe("WEB-267 gallery ladder (gates as shipped)", () => {
       expect(src, `${name} route must not gate on plan`).not.toMatch(/getPlanEntitlements|requires_lite|requires_studio|ent\?\.id/);
     }
     expect(zipRoute).toContain("allowDownload"); // the photographer's per-gallery switch still rules
+  });
+});
+
+describe("WEB-102 selection-only delivery — server decides, every download path", () => {
+  it("the asset route 403s non-favorited downloads; the zip route clamps scope to favorites", () => {
+    expect(assetRoute).toContain("selection_only");
+    expect(zipRoute).toContain('settings.selectionOnly && selection.scope !== "favorites"');
+    expect(downloadRequestRoute).toContain('settings.selectionOnly ? "favorites" : scope');
+    // The gate sits with the other download gates, ABOVE the proofing block
+    // and the size rungs — no rung (original/web/mid) may bypass it.
+    const selAt = assetRoute.indexOf("selection_only");
+    const proofingAt = assetRoute.indexOf("grant.allowDownload && grant.proofing");
+    expect(selAt).toBeGreaterThan(-1);
+    expect(selAt).toBeLessThan(proofingAt);
   });
 });
 
