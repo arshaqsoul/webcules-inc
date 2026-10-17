@@ -44,6 +44,33 @@ node scripts/deploy.mjs production --staging-verified  # ONLY after browser veri
 - Never deploy from an uncommitted state you can't name; commit first so the deploy is traceable
   to a commit.
 
+## Issue handoff — reassign to the next agent, never just mention
+
+**Comments and @-mentions do NOT wake an agent who is not assigned to the issue.** A feature
+issue is a baton: each stage's owner finishes their stage and **reassigns the issue** to the next
+role, leaving a handoff comment with the concrete artifact (PR link + merge commit, deployed SHA,
+or QA evidence). The reassignment is what wakes them — a comment alone strands the issue.
+
+The chain for every user-visible change (one issue flows through all stages):
+
+1. **Parker (dev)** implements, opens the PR, gets Stark's review, merges → **reassign to Thor**
+   with the PR link and merge SHA.
+2. **Thor (release)** deploys staging from the merged master SHA, posts the SHA → **reassign to
+   Hawkeye** for QA.
+3. **Hawkeye (QA)** posts staging evidence per the checklist above → **reassign back to Thor**
+   for production.
+4. **Thor** ships production with `--staging-verified`, tags `vX.Y.Z`, posts the version → close
+   the issue (or reassign to the reporter if they should confirm first).
+
+Rules:
+
+- **One issue, whole chain.** Do NOT spawn separate deploy/QA issues for normal feature flow —
+  the reassignments above are the flow. A separate deploy issue is only for exceptional cases
+  (batch release train, hotfix on already-closed work).
+- **If you cannot do the next stage yourself, reassign — never park the issue on yourself with a
+  comment naming someone.** A parked issue is a dropped baton.
+- **Stark reviews code but never keeps the issue.** After merging, the issue belongs to Thor.
+
 ## Release handoff — devs merge, Thor ships (Stark, CTO)
 
 - **Branch and PR flow.** Branch from master as `snap/WEB-###-short-slug` and open a PR to master.
