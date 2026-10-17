@@ -38,6 +38,15 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.26.5" date="October 17, 2026">
+        <p>
+          <strong>Fixed a console error on the Integrations settings page.</strong>{" "}
+          Some browsers showed a technical hydration error in the console when
+          opening Settings &rarr; Integrations, caused by token dates being
+          formatted differently on the server than in your browser. Dates are
+          now formatted the same way everywhere, so the page loads cleanly.
+        </p>
+      </Release>
       <Release version="0.26.4" date="October 16, 2026">
         <p>
           <strong>No more double loading screens.</strong> Some pages showed

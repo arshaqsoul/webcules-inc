@@ -40,10 +40,11 @@ function fmt(iso: string | null): string {
   const d = new Date(iso);
   return Number.isNaN(d.getTime())
     ? "—"
-    : d.toLocaleDateString(undefined, {
+    : d.toLocaleDateString("en-US", {
         year: "numeric",
         month: "short",
         day: "numeric",
+        timeZone: "UTC",
       });
 }
 
