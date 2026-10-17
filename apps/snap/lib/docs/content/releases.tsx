@@ -38,6 +38,17 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.26.4" date="October 16, 2026">
+        <p>
+          <strong>No more double loading screens.</strong> Some pages showed
+          a loading outline, then a second one, before your content appeared,
+          and switching tabs or filters on Projects, Leads and the Calendar
+          could flash the whole outline again. Those pages now show their
+          content as it arrives, with loading outlines kept only where they
+          help &mdash; so moving around feels calm instead of flickery.
+        </p>
+      </Release>
+
       <Release version="0.26.3" date="October 15, 2026">
         <p>
           <strong>Storage meters stay instant as your library grows.</strong>{" "}

@@ -3,15 +3,6 @@
  * heights, field grids, chips) so streaming in never shifts layout. Private
  * file: the underscore prefix keeps it out of routing. */
 
-export function SkeletonHeader() {
-  return (
-    <div className="flex flex-col gap-2">
-      <div className="h-8 w-28 animate-pulse rounded-md bg-surface-2" />
-      <div className="h-4 w-80 max-w-full animate-pulse rounded bg-surface-2" />
-    </div>
-  );
-}
-
 export function SkeletonCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
     <section className={`rounded-[12px] border border-hairline bg-surface-1 p-5 ${className}`}>{children}</section>
