@@ -38,6 +38,20 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.27.0" date="October 17, 2026">
+        <p>
+          <strong>Deliver just their picks — favorites-only downloads.</strong>{" "}
+          A new &ldquo;Favorites only&rdquo; switch in the gallery&rsquo;s
+          download controls locks downloads to the photos your client
+          selected: everything else in the gallery stays locked, while their
+          picks download in full resolution. Turn it on after the selection
+          comes in — no more re-opening the whole gallery just to hand over
+          the chosen files. Clients see only a &ldquo;My favorites&rdquo;
+          download on locked galleries, and the download and reminder emails
+          say exactly what&rsquo;s included. Available on Lite and above,
+          alongside the other download controls.
+        </p>
+      </Release>
       <Release version="0.26.5" date="October 17, 2026">
         <p>
           <strong>Fixed a console error on the Integrations settings page.</strong>{" "}

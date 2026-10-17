@@ -10,7 +10,7 @@ import { clientUrl } from "../client-urls";
 import { sendEmail } from "../email";
 import { buildMergeValues } from "../merge";
 import { getStudioProfile } from "./studios";
-import { purgeLegacyZips } from "./downloads";
+import { purgeLegacyZips, downloadSettingsOf } from "./downloads";
 import { sweepOrphanWelcomeImages } from "./welcome-image";
 
 export type GallerySweepSummary = { reminded: number; opened: number; legacyZipsPurged: number; welcomeOrphansPurged: number };
@@ -49,12 +49,16 @@ export async function sendExpiryReminders(): Promise<number> {
     const days = Math.max(1, Math.ceil((grant.expiresAt!.getTime() - Date.now()) / 86400_000));
     const link = await clientUrl(grant.organizationId, `/g/${token}`);
     const expires = new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" }).format(grant.expiresAt!);
+    // WEB-102 selection-only delivery: a locked gallery's reminder points at
+    // the picks, not the whole gallery.
+    const picksOnly = downloadSettingsOf(grant).selectionOnly;
+    const ask = picksOnly ? "Download your selected (favorited) photos before then." : "Download your favorites before then.";
 
     await sendEmail({
       to: grant.clientEmail,
       subject: `Your gallery closes in ${days} day${days === 1 ? "" : "s"} — download your photos`,
-      text: `Hi ${values.client_name},\n\nA friendly note: your gallery from ${profile.studioName} closes on ${expires}. Download your favorites before then.\n\n${link}\n\n— ${profile.studioName}`,
-      html: `<p>Hi ${values.client_name},</p><p>A friendly note: your gallery from <strong>${profile.studioName}</strong> closes on <strong>${expires}</strong>. Download your favorites before then.</p><p><a href="${link}" style="display:inline-block;background:#5e6ad2;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:600">Open your gallery</a></p>`,
+      text: `Hi ${values.client_name},\n\nA friendly note: your gallery from ${profile.studioName} closes on ${expires}. ${ask}\n\n${link}\n\n— ${profile.studioName}`,
+      html: `<p>Hi ${values.client_name},</p><p>A friendly note: your gallery from <strong>${profile.studioName}</strong> closes on <strong>${expires}</strong>. ${ask}</p><p><a href="${link}" style="display:inline-block;background:#5e6ad2;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:600">Open your gallery</a></p>`,
       organizationId: grant.organizationId,
       template: "gallery.expiring_reminder",
       refId: grant.id,

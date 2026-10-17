@@ -99,6 +99,14 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
     selection = { scope, folderName: scope === "folder" ? url.searchParams.get("folder") : null, size };
   }
 
+  // WEB-102 selection-only delivery: every archive scope clamps to the
+  // client's favorites — a direct `scope=all`, a folder pick, or a legacy
+  // approval row scoped wider than favorites all deliver ONLY the favorited
+  // photos when the studio locked the gallery down.
+  if (settings.selectionOnly && selection.scope !== "favorites") {
+    selection = { scope: "favorites", folderName: null, size: selection.size };
+  }
+
   const plan = await buildZipPlan({ organizationId: grant.organizationId, grantId: grant.id, proofing: grant.proofing, selection });
   if (!plan.items.length) return Response.json({ error: "empty_scope" }, { status: 404 });
 
