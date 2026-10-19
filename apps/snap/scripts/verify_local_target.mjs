@@ -61,7 +61,7 @@ check("gallery opens with OTP gate", gal.ok && galHtml.includes("you@example.com
 // local email capture — the mechanism the PP-002/008/009/010 fixtures rely on.
 const token = new URL(mintBody.url).pathname.split("/g/")[1];
 const otpStart = Date.now();
-const send = await req(`/g/${token}/otp/send`, { method: "POST", body: JSON.stringify({ email: "client@example.com" }) });
+const send = await req(`/g/${token}/otp/send`, { method: "POST", body: JSON.stringify({ email: "client@example.com", turnstileToken: "local-test-token" }) });
 check("otp/send accepted", send.ok, `HTTP ${send.status}`);
 
 let code = null;
