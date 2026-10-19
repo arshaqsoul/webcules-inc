@@ -49,7 +49,11 @@ const PROJ_WED = "demo-proj-wedding";
 const PROJ_FAM = "demo-proj-family";
 const PROJ_CORP = "demo-proj-corporate";
 const PROJ_NEW = "demo-proj-newborn";
-const GRANT_ID = "demo-grant-wedding";
+/* WEB-107 redo: the id must match the gallery-cookie validator's UUID shape
+ * (`^[\da-f-]{36}$`, gallery-auth.ts) — the old "demo-grant-wedding" string
+ * minted OTP cookies that resolveGalleryAccess always rejected, bouncing every
+ * verified client back to the gate. Hex-shaped constant, same idempotency. */
+const GRANT_ID = "de400000-0000-4000-8000-00000000da10";
 const FAV_LIST_ID = "demo-flist-wedding";
 const ALBUM_THREAD_ID = "demo-thread-album";
 
