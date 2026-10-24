@@ -1,0 +1,17 @@
+{
+  "hook": "You keep 100% of sales",
+  "end": {
+    "claim": "Sell prints from your gallery",
+    "note": "0% commission - Lite and up",
+    "link": "snaphq.app"
+  },
+  "claims": [
+    { "text": "Online store, 0% commission", "source": "apps/snap/lib/tier-cards.ts" },
+    { "text": "Store available on Lite and up", "source": "apps/snap/app/dashboard/store/page.tsx" },
+    { "text": "Buy buttons live on galleries with an active price list", "source": "apps/snap/components/store-home.tsx" },
+    { "text": "Prints priced per variant with cost, markup and price", "source": "apps/snap/components/commerce-price-list-editor.tsx" },
+    { "text": "Photographers keep 100% of sales - the store charges 0% commission", "source": "apps/snap/lib/tier-cards.ts" },
+    { "text": "Payouts land in the studio's own Stripe account", "source": "apps/snap/components/payouts-panel.tsx" }
+  ],
+  "mark": "snaphq.app"
+}

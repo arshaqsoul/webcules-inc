@@ -1,0 +1,17 @@
+{
+  "hook": "Two shooters, one studio",
+  "end": {
+    "claim": "Your whole studio, one system",
+    "note": "Teams on Pro - talk to us",
+    "link": "snaphq.app"
+  },
+  "claims": [
+    { "text": "Roles: Owner, Admin, Member with real limits", "source": "apps/snap/components/settings-team.tsx" },
+    { "text": "Invites expire in 7 days", "source": "apps/snap/components/settings-team.tsx" },
+    { "text": "Members cannot open the RAW Vault unless the owner opts them in", "source": "apps/snap/app/dashboard/raw-vault/page.tsx" },
+    { "text": "Teams and permissions are on the Pro tier", "source": "apps/snap/lib/tier-cards.ts" },
+    { "text": "Pro is priced by arrangement, not self-serve", "source": "apps/snap/lib/tier-cards.ts" },
+    { "text": "The Studio plan already includes team seats", "source": "apps/snap/app/dashboard/settings/team/page.tsx" }
+  ],
+  "mark": "snaphq.app"
+}

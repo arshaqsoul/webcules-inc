@@ -1,0 +1,16 @@
+{
+  "hook": "Your RAW files, handled",
+  "end": {
+    "claim": "RAW that never vanishes",
+    "note": "3 GB RAW trial on Free",
+    "link": "snaphq.app"
+  },
+  "claims": [
+    { "text": "RAW files stay hot for 6 months, then move to cold storage", "source": "apps/snap/app/dashboard/raw-vault/page.tsx" },
+    { "text": "Cold files are downloadable anytime and restorable in one click", "source": "apps/snap/components/raw-vault-panel.tsx" },
+    { "text": "Nothing deletes without two emailed warnings", "source": "apps/snap/components/raw-vault-panel.tsx" },
+    { "text": "JPGs are never touched", "source": "apps/snap/app/dashboard/raw-vault/page.tsx" },
+    { "text": "3 GB RAW trial included on Free", "source": "apps/snap/lib/tier-cards.ts" }
+  ],
+  "mark": "snaphq.app"
+}

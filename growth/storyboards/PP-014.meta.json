@@ -1,0 +1,16 @@
+{
+  "hook": "One logo, branded everywhere",
+  "end": {
+    "claim": "Your brand on everything",
+    "note": "White-label on Studio",
+    "link": "snaphq.app"
+  },
+  "claims": [
+    { "text": "One logo generates favicon, apple-touch icon, email header, OG card and watermark", "source": "apps/snap/components/brand-asset-generator.ts" },
+    { "text": "Generation runs in the browser at logo-save time or from the retro-fill button", "source": "apps/snap/components/settings-brand.tsx" },
+    { "text": "White-label is on the Studio tier", "source": "apps/snap/lib/tier-cards.ts" },
+    { "text": "Brand assets are part of white-label (Studio)", "source": "apps/snap/components/settings-brand.tsx" },
+    { "text": "Accent and brand flow through galleries, emails and widgets", "source": "apps/snap/components/white-label-card.tsx" }
+  ],
+  "mark": "snaphq.app"
+}
