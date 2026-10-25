@@ -1,6 +1,8 @@
 /* Pure plan data (WEB-256) — client-safe (no DB imports): the plan
  * table + planDef live here; lib/plans.ts re-exports them and keeps the
  * usage resolvers. */
+import { FREE_CUSTOM_FIELD_CAP } from "@/lib/forms";
+
 export type PlanId = "free" | "lite" | "studio" | "pro";
 
 export type PlanDef = {
@@ -47,6 +49,27 @@ export type PlanDef = {
   /** WEB-275 team seats (members + pending invites) — Free 1 · Lite 1 ·
    * Studio 3 · Pro 10. Owner counts as one seat. */
   maxTeamSeats: number;
+  /** Custom form fields per form/questionnaire schema (null = unlimited;
+   * Free/Lite FREE_CUSTOM_FIELD_CAP=2 — enforced in app/api/studio/templates
+   * via lib/forms.countCustomFields). */
+  maxCustomFields: number | null;
+  /** Booking page designer (Lite+ — enforced in app/api/studio/booking-page,
+   * `lite_required`). */
+  bookingPageDesigner: boolean;
+  /** Designed galleries + client app (Lite+ — the design layer: gallery
+   * presets/designs gate on `presets_require_lite` / `design_requires_lite`). */
+  customGalleryDesigns: boolean;
+  /** Slideshow music + sharing (Lite+ — `music_requires_lite` in
+   * app/api/studio/slideshow-music). */
+  slideshowMusic: boolean;
+  /** Download PIN + web-size delivery (Lite+ — `pin_requires_lite` /
+   * `web_size_requires_lite` in download-settings). */
+  downloadPin: boolean;
+  /** Sneak peeks + client approvals (Studio+ — `sneak_peeks_require_studio` /
+   * `approvals_require_studio`). */
+  sneakPeeks: boolean;
+  /** Per-photo insights + heat map (Studio+ — `insights_require_studio`). */
+  perPhotoInsights: boolean;
   /** WEB-309 inbox: snooze (Lite+ — the inbox itself is free-for-all by
    * design; it's the retention surface). */
   inboxSnooze: boolean;
@@ -87,6 +110,8 @@ export const PLANS: Record<PlanId, PlanDef> = {
     maxActiveBookings: null, maxActiveGalleries: 5, maxLinkedStudios: 1, otpCapPerUser: 30, maxSessionTypes: 1, maxContractTemplates: 2, maxEmailSnippets: 5, maxContactForms: 1, maxQuestionnaires: 1,
     maxCustomDomains: 0, maxTeamSeats: 1, inboxSnooze: false,
     storeEnabled: false, maxPriceLists: 0, packagesAllowed: false, customProductsAllowed: false,
+    maxCustomFields: FREE_CUSTOM_FIELD_CAP, bookingPageDesigner: false, customGalleryDesigns: false, slideshowMusic: false,
+    downloadPin: false, sneakPeeks: false, perPhotoInsights: false,
     maxPortfolioCollections: 1, maxPortfolioItems: 20,
     portfolioImageViewsPerMonth: 100_000,
   },
@@ -98,6 +123,8 @@ export const PLANS: Record<PlanId, PlanDef> = {
     maxActiveBookings: null, maxActiveGalleries: 15, maxLinkedStudios: 3, otpCapPerUser: 30, maxSessionTypes: 3, maxContractTemplates: 2, maxEmailSnippets: 5, maxContactForms: 1, maxQuestionnaires: 3,
     maxCustomDomains: 0, maxTeamSeats: 1, inboxSnooze: true,
     storeEnabled: true, maxPriceLists: 1, packagesAllowed: false, customProductsAllowed: false,
+    maxCustomFields: FREE_CUSTOM_FIELD_CAP, bookingPageDesigner: true, customGalleryDesigns: true, slideshowMusic: true,
+    downloadPin: true, sneakPeeks: false, perPhotoInsights: false,
     maxPortfolioCollections: 5, maxPortfolioItems: 250,
     portfolioImageViewsPerMonth: null,
   },
@@ -109,6 +136,8 @@ export const PLANS: Record<PlanId, PlanDef> = {
     maxActiveBookings: null, maxActiveGalleries: null, maxLinkedStudios: null, otpCapPerUser: 30, maxSessionTypes: null, maxContractTemplates: null, maxEmailSnippets: null, maxContactForms: null, maxQuestionnaires: null,
     maxCustomDomains: 0, maxTeamSeats: 3, inboxSnooze: true,
     storeEnabled: true, maxPriceLists: 5, packagesAllowed: true, customProductsAllowed: true,
+    maxCustomFields: null, bookingPageDesigner: true, customGalleryDesigns: true, slideshowMusic: true,
+    downloadPin: true, sneakPeeks: true, perPhotoInsights: true,
     maxPortfolioCollections: null, maxPortfolioItems: null,
     portfolioImageViewsPerMonth: null,
   },
@@ -120,6 +149,8 @@ export const PLANS: Record<PlanId, PlanDef> = {
     maxActiveBookings: null, maxActiveGalleries: null, maxLinkedStudios: null, otpCapPerUser: 30, maxSessionTypes: null, maxContractTemplates: null, maxEmailSnippets: null, maxContactForms: null, maxQuestionnaires: null,
     maxCustomDomains: 2, maxTeamSeats: 10, inboxSnooze: true,
     storeEnabled: true, maxPriceLists: null, packagesAllowed: true, customProductsAllowed: true,
+    maxCustomFields: null, bookingPageDesigner: true, customGalleryDesigns: true, slideshowMusic: true,
+    downloadPin: true, sneakPeeks: true, perPhotoInsights: true,
     maxPortfolioCollections: null, maxPortfolioItems: null,
     portfolioImageViewsPerMonth: null,
   },

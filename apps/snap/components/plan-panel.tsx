@@ -16,7 +16,9 @@ import {
 } from "@webcules/ui/components/dialog";
 import { useConfirm } from "@/components/confirm-provider";
 import { DocHint } from "@/components/doc-hint";
+import { LockedFeature } from "@/components/locked-feature";
 import { PRO_CARD, TEAMS_CTA, TIER_CARDS } from "@/lib/tier-cards";
+import { customFieldsChip } from "@/lib/feature-chips";
 import { planDef, type PlanDef } from "@/lib/plans-data";
 
 type PlanStatus = {
@@ -349,13 +351,18 @@ export function PlanPanel({ returnHint }: { returnHint?: string }) {
         <a href="/dashboard/templates" className="rounded-full bg-surface-2 px-2.5 py-1 text-ink-muted hover:text-ink" title="Template library">
           {planDef(st.plan).maxContractTemplates === null ? "Unlimited templates" : `Contract templates · up to ${planDef(st.plan).maxContractTemplates}`}
         </a>
-        <span className={`rounded-full px-2.5 py-1 ${st.plan === "studio" || st.plan === "pro" ? "bg-surface-2 text-ink-muted" : "bg-surface-2 text-ink-tertiary line-through"}`}>Custom form fields</span>
-        <span className={`rounded-full px-2.5 py-1 ${st.plan !== "free" ? "bg-surface-2 text-ink-muted" : "bg-surface-2 text-ink-tertiary line-through"}`}>Booking page designer</span>
-        <span className={`rounded-full px-2.5 py-1 ${st.plan !== "free" ? "bg-surface-2 text-ink-muted" : "bg-surface-2 text-ink-tertiary line-through"}`}>Designed galleries + client app</span>
-        <span className={`rounded-full px-2.5 py-1 ${st.plan !== "free" ? "bg-surface-2 text-ink-muted" : "bg-surface-2 text-ink-tertiary line-through"}`}>Slideshows w/ music + sharing</span>
-        <span className={`rounded-full px-2.5 py-1 ${st.plan !== "free" ? "bg-surface-2 text-ink-muted" : "bg-surface-2 text-ink-tertiary line-through"}`}>Download PIN + web size</span>
-        <span className={`rounded-full px-2.5 py-1 ${st.plan === "studio" || st.plan === "pro" ? "bg-surface-2 text-ink-muted" : "bg-surface-2 text-ink-tertiary line-through"}`}>Sneak peeks + approvals</span>
-        <span className={`rounded-full px-2.5 py-1 ${st.plan === "studio" || st.plan === "pro" ? "bg-surface-2 text-ink-muted" : "bg-surface-2 text-ink-tertiary line-through"}`}>Per-photo insights</span>
+        {/* WEBC-117: chip states derive from lib/plans-data.ts via
+         * <LockedFeature> / planDef — the custom-fields chip shows the real
+         * Free/Lite cap (up to 2) instead of striking the feature through. */}
+        <span className="rounded-full bg-surface-2 px-2.5 py-1 text-ink-muted">
+          {customFieldsChip(st.plan).label}
+        </span>
+        <LockedFeature plan={st.plan} feature="bookingPageDesigner" label="Booking page designer" />
+        <LockedFeature plan={st.plan} feature="customGalleryDesigns" label="Designed galleries + client app" />
+        <LockedFeature plan={st.plan} feature="slideshowMusic" label="Slideshows w/ music + sharing" />
+        <LockedFeature plan={st.plan} feature="downloadPin" label="Download PIN + web size" />
+        <LockedFeature plan={st.plan} feature="sneakPeeks" label="Sneak peeks + approvals" />
+        <LockedFeature plan={st.plan} feature="perPhotoInsights" label="Per-photo insights" />
         {st.rawAllowed ? (
           <span className="rounded-full bg-surface-2 px-2.5 py-1 text-ink-muted">RAW uploads</span>
         ) : st.rawTrialBytes ? (
