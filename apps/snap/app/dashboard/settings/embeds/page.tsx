@@ -9,7 +9,7 @@ import { parseBookingPageConfig } from "@/lib/booking-page";
 import { getOrgContext } from "@/lib/session";
 import { can } from "@/lib/permissions";
 
-export const metadata = { title: "Settings · Embeds" };
+export const metadata = { title: "Settings · Website & booking" };
 
 export default async function SettingsEmbedsPage() {
   const ctx = await getOrgContext();
@@ -44,7 +44,9 @@ export default async function SettingsEmbedsPage() {
       bookingPage={{
         config: parseBookingPageConfig(profile.bookingPage ?? null),
         canEdit: ent ? ent.id !== "free" : false,
-        url: `/b/${slug}`,
+        // WEBC-112: the card shows + copies the full public link (and uses it
+        // as the preview iframe src — absolute is fine there too).
+        url: await clientUrl(ctx.organizationId, `/b/${slug}`),
       }}
     />
   );
