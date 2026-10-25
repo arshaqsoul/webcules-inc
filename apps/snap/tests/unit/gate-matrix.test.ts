@@ -16,6 +16,8 @@ import favoritesExportRoute from "../../app/api/grants/[id]/favorites/export/rou
 import sneakPeekRoute from "../../app/api/assets/sneak-peek/route.ts?raw";
 import assetRoute from "../../app/api/assets/[id]/route.ts?raw";
 import assetViewsRoute from "../../app/api/projects/[id]/asset-views/route.ts?raw";
+import commerceListRoute from "../../app/api/studio/commerce/[id]/route.ts?raw";
+import storeHomeSource from "../../components/store-home.tsx?raw";
 
 import { PLANS } from "@/lib/plans";
 import { FREE_CUSTOM_FIELD_CAP } from "@/lib/forms";
@@ -138,6 +140,29 @@ describe("WEB-196 review fix — proofing swallows the size ladder", () => {
 
   it("download-request suppresses the ladder for proofing grants (controls + sizePref)", () => {
     expect(downloadRequestRoute).toContain("settings.webSize && !grant.proofing");
+  });
+});
+
+describe("WEBC-121 store setup — the price-list PATCH route stays gated + org-scoped", () => {
+  it("the attach/detach branch runs INSIDE the work.manage permission gate", () => {
+    // The wizard's attach step rides the existing PATCH route; the attach
+    // and detach calls must sit below permissionDenied (same gate as
+    // rename/default) — attaching is never an unauthenticated operation.
+    expect(commerceListRoute).toContain('permissionDenied(ctx, "work.manage")');
+    const deniedAt = commerceListRoute.indexOf('permissionDenied(ctx, "work.manage")');
+    for (const marker of ["attachPriceListToGrant", "detachPriceListFromGrant"]) {
+      const at = commerceListRoute.indexOf(marker, deniedAt); // skip the import block
+      expect(at, `${marker} must be CALLED after the permission gate`).toBeGreaterThan(-1);
+    }
+    // Attach goes through the repo (attachPriceListToGrant), never raw SQL —
+    // the one-active-list-per-gallery batch invariant lives there.
+    expect(commerceListRoute).not.toMatch(/insert\(schema\.priceListGallery\)/);
+  });
+
+  it("the wizard routes attach through the SAME route shape (no parallel ungated surface)", () => {
+    // StoreHome must use /api/studio/commerce/<id> PATCH for attachments —
+    // a client-side fetch to any other write path would skip the gate.
+    expect(storeHomeSource).toContain('fetch(`/api/studio/commerce/${attachListId}`');
   });
 });
 
