@@ -15,9 +15,12 @@ import {
   Cloud,
   Folder,
   FolderPlus,
+  Flame,
   Grid2x2,
   Grid3x3,
+  Keyboard,
   ListFilter,
+  Lock,
   Share2,
   Square,
   Upload,
@@ -26,6 +29,8 @@ import {
 } from "lucide-react";
 
 import { Button } from "@webcules/ui/components/button";
+import Link from "next/link";
+import type { ReactNode } from "react";
 import {
   Dialog,
   DialogContent,
@@ -501,6 +506,135 @@ function VideoTile({ id, hover }: { id: string; hover: boolean }) {
   );
 }
 
+/* ---------------- Toolbar affordances (WEBC-113) ----------------
+ * The Files toolbar used to be eight sibling buttons explained only by
+ * hover `title` tooltips — invisible on touch, unannounced to AT, and
+ * Triage (the headline feature) had none at all. These three pieces
+ * replace that: labelled groups (Cull / Deliver / Add), a real tooltip
+ * that opens on hover AND keyboard focus AND tap, and the keyboard
+ * shortcut legend. UI-only — no server behaviour changes. */
+
+/** The legend's content — mirrors the actual handlers in this file and
+ * <TriageMode>, not intent (docs-truthfulness rule applies to UI copy). */
+const SHORTCUT_SECTIONS: { title: string; rows: [string, string][] }[] = [
+  {
+    title: "Files grid",
+    rows: [
+      ["← → ↑ ↓", "Move between photos"],
+      ["P / X / U", "Approve · reject · reset"],
+      ["0–5", "Star rating"],
+      ["6–9", "Colour label"],
+      ["F", "Favourite"],
+      ["V / Enter", "Open the viewer"],
+      ["A", "Auto-advance on/off"],
+    ],
+  },
+  {
+    title: "Triage",
+    rows: [
+      ["→ or A", "Approve"],
+      ["← or X", "Reject"],
+      ["0–5 / 6–9", "Stars / colour label"],
+      ["⌘Z", "Undo last"],
+      ["Esc", "Exit triage"],
+    ],
+  },
+];
+
+/** Real tooltip for one toolbar control: opens on hover, on keyboard focus
+ * (focusin bubbles from the control inside), and on tap (touch never
+ * hovers — a tap flashes it for a beat). Closes on Escape or an outside
+ * pointer-down. The control itself keeps its own accessible name. */
+function ToolbarTip({
+  tip,
+  className = "",
+  children,
+}: {
+  tip: string;
+  className?: string;
+  children: ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLSpanElement>(null);
+  const hideTimer = useRef<number | null>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    const onDown = (e: PointerEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("pointerdown", onDown);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("pointerdown", onDown);
+    };
+  }, [open]);
+  useEffect(
+    () => () => {
+      if (hideTimer.current !== null) window.clearTimeout(hideTimer.current);
+    },
+    [],
+  );
+  return (
+    <span
+      ref={ref}
+      className={`relative inline-flex ${className}`}
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+      onFocus={() => setOpen(true)}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null))
+          setOpen(false);
+      }}
+      onPointerDown={() => {
+        setOpen(true);
+        if (hideTimer.current !== null) window.clearTimeout(hideTimer.current);
+        hideTimer.current = window.setTimeout(() => setOpen(false), 1600);
+      }}
+    >
+      {children}
+      {open && (
+        <span
+          role="tooltip"
+          className="pointer-events-none absolute right-0 top-full z-50 mt-1.5 w-56 rounded-md border border-hairline bg-surface-1 px-2.5 py-1.5 text-[11px] font-normal leading-snug text-ink-muted shadow-lg"
+        >
+          {tip}
+        </span>
+      )}
+    </span>
+  );
+}
+
+/** A labelled cluster of toolbar controls (Cull / Deliver / Add). */
+function ToolbarGroup({
+  label,
+  className = "",
+  children,
+}: {
+  label: string;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      role="group"
+      aria-label={label}
+      className={`flex-col items-start gap-0.5 ${className}`}
+    >
+      <span
+        aria-hidden
+        className="text-[10px] font-medium uppercase tracking-wider text-ink-tertiary"
+      >
+        {label}
+      </span>
+      <div className="flex items-center gap-1.5">{children}</div>
+    </div>
+  );
+}
+
 export function ProjectFiles({
   projectId,
   clientEmail,
@@ -509,6 +643,7 @@ export function ProjectFiles({
   defaultExpiryDays,
   defaultAllowDownload,
   driveClientId,
+  canHeat = true,
 }: {
   projectId: string;
   /** Client contact email — ONLY a Share-panel recipient pre-fill. Never a
@@ -524,6 +659,10 @@ export function ProjectFiles({
   defaultExpiryDays?: number;
   defaultAllowDownload?: boolean;
   driveClientId?: string | null;
+  /** WEBC-113: whether the org's plan includes interest heat (Studio+).
+   * Presentation only — the asset-views endpoint stays server-gated;
+   * false turns the Heat control into the locked-row upgrade pattern. */
+  canHeat?: boolean;
 }) {
   const confirm = useConfirm();
   const [feed, setFeed] = useState<Feed>({
@@ -554,6 +693,9 @@ export function ProjectFiles({
   const [shareOpen, setShareOpen] = useState(false);
   // Mobile actions menu (Select/Triage/Share/Upload live behind one button).
   const [actionsOpen, setActionsOpen] = useState(false);
+  // WEBC-113: keyboard-shortcut legend popover (the "?" toolbar button).
+  const [legendOpen, setLegendOpen] = useState(false);
+  const legendRef = useRef<HTMLDivElement>(null);
   // Asset id whose video tile is hovered (plays inline).
   const [videoHover, setVideoHover] = useState<string | null>(null);
   const actionsRef = useRef<HTMLDivElement>(null);
@@ -1397,6 +1539,16 @@ export function ProjectFiles({
       if (
         t instanceof Element &&
         t.closest("input, textarea, select, [contenteditable]")
+      )
+        return;
+      // WEBC-113: a key pressed while a toolbar control or other chrome is
+      // focused belongs to that control — Enter on the shortcut legend (or
+      // any toolbar button) must not ALSO cull the first card. Grid cards
+      // stay cullable: they carry data-asset-idx.
+      if (
+        t instanceof Element &&
+        t.closest("button, a, [role='button']") &&
+        !t.closest("[data-asset-idx]")
       )
         return;
       if (renameOpen || triageOpen || manageIndex !== null || dragActive)
@@ -2617,6 +2769,24 @@ export function ProjectFiles({
     };
   }, [actionsOpen]);
 
+  // Close the shortcut-legend popover on outside click / Escape (WEBC-113).
+  useEffect(() => {
+    if (!legendOpen) return;
+    function onDown(e: MouseEvent) {
+      if (legendRef.current && !legendRef.current.contains(e.target as Node))
+        setLegendOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setLegendOpen(false);
+    }
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [legendOpen]);
+
   // Close the folder dropdown on outside click / Escape.
   useEffect(() => {
     if (!folderMenuOpen) return;
@@ -3073,78 +3243,120 @@ export function ProjectFiles({
                 </button>
               ))}
             </div>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setAutoAdvance((v) => !v)}
-              title="Keyboard culling: ←/→ focus · P approve · X reject · U reset · 0-5 stars · 6-9 color labels · F favorite · V open viewer · A toggles auto-advance"
-            >
-              {autoAdvance ? "Auto ⏩ on" : "Auto ⏩ off"}
-            </Button>
           </div>
-          <div className="hidden items-center gap-1.5 sm:flex">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                setSelectMode((s) => !s);
-                setSelected(new Set());
-              }}
-            >
-              {selectMode ? "Done" : "Select"}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={!feed.items.length}
-              onClick={() => setTriageOpen(true)}
-            >
-              Triage
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={!feed.items.length || grouping}
-              onClick={() => void regroup()}
-              title="Find near-identical frames (bursts, repeated poses) and stack them under their sharpest pick"
-            >
-              {grouping ? "Grouping…" : "Group similar"}
-            </Button>
-            <Button
-              size="sm"
-              variant={heatOn ? "default" : "outline"}
-              disabled={!feed.items.length}
-              onClick={() => setHeatOn((v) => !v)}
-              title="Heat: which photos your client looked at most (Studio)"
-            >
-              {heatOn ? "Heat on" : "Heat"}
-            </Button>
-          </div>
+
+          {/* WEBC-113: the toolbar as three labelled groups — Cull, Deliver,
+           * Add — with real tooltips and Auto-advance kept with the cull
+           * controls it belongs to. */}
+          <ToolbarGroup label="Cull" className="hidden sm:flex">
+            <ToolbarTip tip="Click photos to multi-select, then rate, approve, reject or move the whole selection at once">
+              <Button
+                size="sm"
+                variant="outline"
+                aria-label={selectMode ? "Exit select mode" : "Select mode"}
+                onClick={() => {
+                  setSelectMode((s) => !s);
+                  setSelected(new Set());
+                }}
+              >
+                {selectMode ? "Done" : "Select"}
+              </Button>
+            </ToolbarTip>
+            <ToolbarTip tip="Fast full-screen culling: swipe or press → / A to approve, ← / X to reject, 0–5 stars, 6–9 colour labels — Esc exits. Shortcuts: the ? button">
+              <Button
+                size="sm"
+                variant="outline"
+                aria-label="Triage — fast full-screen culling"
+                disabled={!feed.items.length}
+                onClick={() => setTriageOpen(true)}
+              >
+                Triage
+              </Button>
+            </ToolbarTip>
+            <ToolbarTip tip="Find near-identical frames (bursts, repeated poses) and stack them under their sharpest pick">
+              <Button
+                size="sm"
+                variant="outline"
+                aria-label="Group similar photos into stacks"
+                disabled={!feed.items.length || grouping}
+                onClick={() => void regroup()}
+              >
+                {grouping ? "Grouping…" : "Group similar"}
+              </Button>
+            </ToolbarTip>
+            {canHeat ? (
+              <ToolbarTip tip="Heat: which photos your client looked at most — warmer colour means more views (Studio)">
+                <Button
+                  size="sm"
+                  variant={heatOn ? "default" : "outline"}
+                  aria-pressed={heatOn}
+                  aria-label="Interest heat overlay"
+                  disabled={!feed.items.length}
+                  onClick={() => setHeatOn((v) => !v)}
+                >
+                  {heatOn ? "Heat on" : "Heat"}
+                </Button>
+              </ToolbarTip>
+            ) : (
+              <ToolbarTip tip="Heat shows which photos your client viewed most — included with Studio">
+                <Link
+                  href="/dashboard/settings/billing"
+                  aria-label="Heat — upgrade to Studio to unlock"
+                  className="flex items-center gap-1 rounded-md border border-hairline bg-canvas px-2.5 py-1.5 text-xs text-ink-tertiary transition-colors hover:bg-surface-2 hover:text-ink"
+                >
+                  <Lock className="h-3 w-3" aria-hidden />
+                  Heat
+                  <span className="rounded-full bg-primary/10 px-1.5 text-[10px] font-medium text-primary">
+                    Upgrade
+                  </span>
+                </Link>
+              </ToolbarTip>
+            )}
+            <ToolbarTip tip="Keyboard culling: after you act on a photo the focus jumps to the next one automatically. Toggle with A">
+              <Button
+                size="sm"
+                variant="outline"
+                aria-pressed={autoAdvance}
+                aria-label="Auto-advance"
+                onClick={() => setAutoAdvance((v) => !v)}
+              >
+                {autoAdvance ? "Auto ⏩ on" : "Auto ⏩ off"}
+              </Button>
+            </ToolbarTip>
+          </ToolbarGroup>
           {(feed.counts.rejected ?? 0) > 0 && (
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={purging}
+            <ToolbarTip
               className="hidden sm:inline-flex"
-              onClick={() => void purgeRejected()}
-              title="Permanently delete this project's rejected files now — files in an active client gallery are skipped"
+              tip="Permanently delete this project's rejected files now — files in an active client gallery are skipped"
             >
-              {purging
-                ? "Deleting…"
-                : `Delete rejected (${feed.counts.rejected})`}
-            </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={purging}
+                aria-label="Delete rejected files"
+                onClick={() => void purgeRejected()}
+              >
+                {purging
+                  ? "Deleting…"
+                  : `Delete rejected (${feed.counts.rejected})`}
+              </Button>
+            </ToolbarTip>
           )}
-          <div className="hidden items-center gap-1.5 sm:flex">
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={!(counts.approved || counts.shared) && !folders.length}
-              onClick={() => setShareOpen(true)}
-              title="Send a secure gallery link to the client — approved files or specific folders"
-            >
-              <Share2 className="h-3.5 w-3.5 sm:mr-1" aria-hidden />
-              <span className="hidden sm:inline">Share</span>
-            </Button>
+          <ToolbarGroup label="Deliver" className="hidden sm:flex">
+            <ToolbarTip tip="Send a secure gallery link to the client — approved files or specific folders">
+              <Button
+                size="sm"
+                variant="outline"
+                aria-label="Share with client"
+                disabled={!(counts.approved || counts.shared) && !folders.length}
+                onClick={() => setShareOpen(true)}
+              >
+                <Share2 className="h-3.5 w-3.5 sm:mr-1" aria-hidden />
+                <span className="hidden sm:inline">Share</span>
+              </Button>
+            </ToolbarTip>
+          </ToolbarGroup>
+          <ToolbarGroup label="Add" className="hidden sm:flex">
             <input
               ref={inputRef}
               type="file"
@@ -3155,29 +3367,73 @@ export function ProjectFiles({
                 e.target.files?.length && enqueueWithStore(e.target.files)
               }
             />
-            <Button
-              size="sm"
-              disabled={uploading}
-              onClick={() => inputRef.current?.click()}
-            >
-              {uploading ? "Uploading…" : "Upload"}
-            </Button>
+            <ToolbarTip tip="Upload photos and videos from this device — the queue shows progress and retries failures">
+              <Button
+                size="sm"
+                aria-label="Upload files"
+                disabled={uploading}
+                onClick={() => inputRef.current?.click()}
+              >
+                {uploading ? "Uploading…" : "Upload"}
+              </Button>
+            </ToolbarTip>
             {/* WEB-183 Drive import — hidden without the env key (WEB-195
              * gating convention) and on client-upload surfaces (the explicit
              * isClientPortal flag per WEB-314, not clientEmail). */}
             {driveClientId && !isClientPortal && (
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={uploading || driveBusy}
-                onClick={() => void importFromDrive()}
-                title="Pick files from your Google Drive — they download in your browser and upload through the same queue"
+              <ToolbarTip tip="Pick files from your Google Drive — they download in your browser and upload through the same queue">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  aria-label="Import from Google Drive"
+                  disabled={uploading || driveBusy}
+                  onClick={() => void importFromDrive()}
+                >
+                  <Cloud className="h-3.5 w-3.5 sm:mr-1" aria-hidden />
+                  <span className="hidden sm:inline">
+                    {driveBusy ? "Importing…" : "Drive"}
+                  </span>
+                </Button>
+              </ToolbarTip>
+            )}
+          </ToolbarGroup>
+
+          {/* WEBC-113: the visible keyboard-shortcut legend — keyboard-only
+           * users Tab here and press Enter; hover is never required. */}
+          <div className="relative hidden sm:block" ref={legendRef}>
+            <button
+              type="button"
+              onClick={() => setLegendOpen((o) => !o)}
+              aria-expanded={legendOpen}
+              aria-label="Keyboard shortcuts"
+              className="flex items-center rounded-md border border-hairline bg-canvas px-2 py-1.5 text-xs text-ink-muted transition-colors hover:bg-surface-2"
+            >
+              <Keyboard className="h-3.5 w-3.5" aria-hidden />
+            </button>
+            {legendOpen && (
+              <div
+                className="absolute right-0 top-full z-40 mt-1.5 w-64 rounded-[10px] border border-hairline bg-surface-1 p-3 shadow-lg"
+                role="dialog"
+                aria-label="Keyboard shortcuts"
               >
-                <Cloud className="h-3.5 w-3.5 sm:mr-1" aria-hidden />
-                <span className="hidden sm:inline">
-                  {driveBusy ? "Importing…" : "Drive"}
-                </span>
-              </Button>
+                {SHORTCUT_SECTIONS.map((s) => (
+                  <div key={s.title} className={s.title === "Triage" ? "mt-3" : ""}>
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-tertiary">
+                      {s.title}
+                    </p>
+                    <dl className="mt-1 space-y-0.5">
+                      {s.rows.map(([keys, what]) => (
+                        <div key={keys} className="flex items-baseline gap-2 text-[12px]">
+                          <dt className="w-20 shrink-0 font-mono text-[11px] text-ink-muted">
+                            {keys}
+                          </dt>
+                          <dd className="text-ink-subtle">{what}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
 
@@ -3196,10 +3452,17 @@ export function ProjectFiles({
             </button>
             {actionsOpen && (
               <div
-                className="absolute right-0 top-full z-40 mt-1.5 w-48 rounded-[10px] border border-hairline bg-surface-1 p-1 shadow-lg"
+                className="absolute right-0 top-full z-40 mt-1.5 w-52 rounded-[10px] border border-hairline bg-surface-1 p-1 shadow-lg"
                 role="menu"
                 aria-label="Actions"
               >
+                {/* WEBC-113: the same Cull / Deliver / Add groups as desktop. */}
+                <p
+                  aria-hidden
+                  className="px-2 pb-0.5 pt-1.5 text-[10px] font-medium uppercase tracking-wider text-ink-tertiary"
+                >
+                  Cull
+                </p>
                 <button
                   type="button"
                   role="menuitem"
@@ -3229,6 +3492,53 @@ export function ProjectFiles({
                 <button
                   type="button"
                   role="menuitem"
+                  disabled={!feed.items.length || grouping}
+                  onClick={() => {
+                    setActionsOpen(false);
+                    void regroup();
+                  }}
+                  className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-[13px] text-ink-muted transition-colors hover:bg-surface-2 disabled:opacity-50"
+                >
+                  <Grid2x2 className="h-4 w-4" aria-hidden />
+                  {grouping ? "Grouping…" : "Group similar"}
+                </button>
+                {canHeat ? (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    disabled={!feed.items.length}
+                    onClick={() => {
+                      setHeatOn((v) => !v);
+                      setActionsOpen(false);
+                    }}
+                    className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-[13px] text-ink-muted transition-colors hover:bg-surface-2 disabled:opacity-50"
+                  >
+                    <Flame className="h-4 w-4" aria-hidden />
+                    {heatOn ? "Heat on" : "Heat"}
+                  </button>
+                ) : (
+                  <Link
+                    href="/dashboard/settings/billing"
+                    role="menuitem"
+                    aria-label="Heat — upgrade to Studio to unlock"
+                    className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-[13px] text-ink-tertiary transition-colors hover:bg-surface-2 hover:text-ink"
+                  >
+                    <Lock className="h-4 w-4" aria-hidden />
+                    <span className="flex-1">Heat</span>
+                    <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                      Upgrade
+                    </span>
+                  </Link>
+                )}
+                <p
+                  aria-hidden
+                  className="px-2 pb-0.5 pt-1.5 text-[10px] font-medium uppercase tracking-wider text-ink-tertiary"
+                >
+                  Deliver
+                </p>
+                <button
+                  type="button"
+                  role="menuitem"
                   disabled={
                     !(counts.approved || counts.shared) && !folders.length
                   }
@@ -3241,6 +3551,12 @@ export function ProjectFiles({
                   <Share2 className="h-4 w-4" aria-hidden />
                   Share with client
                 </button>
+                <p
+                  aria-hidden
+                  className="px-2 pb-0.5 pt-1.5 text-[10px] font-medium uppercase tracking-wider text-ink-tertiary"
+                >
+                  Add
+                </p>
                 <button
                   type="button"
                   role="menuitem"

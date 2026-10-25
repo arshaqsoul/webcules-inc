@@ -208,6 +208,8 @@ const userId = crypto.randomUUID();
 const userEmail = "e2e-domains@test.test";
 const previewProjectId = crypto.randomUUID();
 const classicProjectId = crypto.randomUUID();
+// WEBC-113: Files-toolbar spec needs a project on the free org (Heat lock).
+const freeFilesProjectId = crypto.randomUUID();
 const proOrgId = crypto.randomUUID();
 const freeOrgId = crypto.randomUUID();
 const passwordHash = await hashPassword("TestPass123!x");
@@ -254,15 +256,20 @@ VALUES ('${previewProjectId}', '${proOrgId}', 'Autumn Winds Shoot', strftime('%s
         unixepoch(), unixepoch());
 INSERT INTO project (id, organization_id, title, status, created_at, updated_at)
 VALUES ('${classicProjectId}', '${proOrgId}', 'Rustic Barn Wedding', 'booked', unixepoch(), unixepoch());
+-- WEBC-113: a project on the FREE org so the Files toolbar e2e can assert
+-- the Heat lock (upgrade link) on a non-Studio tier.
+INSERT INTO project (id, organization_id, title, status, created_at, updated_at)
+VALUES ('${freeFilesProjectId}', '${freeOrgId}', 'Side Studio Cull', 'booked', unixepoch(), unixepoch());
 INSERT INTO asset (id, organization_id, project_id, storage_key, kind, filename, mime_type, bytes, status, width, height, created_at) VALUES
  ('e2eprev-a1', '${proOrgId}', '${previewProjectId}', '${proOrgId}/${previewProjectId}/e2eprev-a1/one.jpg', 'image', 'one.jpg', 'image/jpeg', 1000, 'approved', 1600, 1000, unixepoch()),
  ('e2eprev-a2', '${proOrgId}', '${previewProjectId}', '${proOrgId}/${previewProjectId}/e2eprev-a2/two.jpg', 'image', 'two.jpg', 'image/jpeg', 1000, 'approved', 1600, 1000, unixepoch()),
- ('e2eprev-a3', '${proOrgId}', '${classicProjectId}', '${proOrgId}/${classicProjectId}/e2eprev-a3/three.jpg', 'image', 'three.jpg', 'image/jpeg', 1000, 'approved', 1600, 1000, unixepoch());`;
+ ('e2eprev-a3', '${proOrgId}', '${classicProjectId}', '${proOrgId}/${classicProjectId}/e2eprev-a3/three.jpg', 'image', 'three.jpg', 'image/jpeg', 1000, 'approved', 1600, 1000, unixepoch()),
+ ('e2efiles-f1', '${freeOrgId}', '${freeFilesProjectId}', '${freeOrgId}/${freeFilesProjectId}/e2efiles-f1/four.jpg', 'image', 'four.jpg', 'image/jpeg', 1000, 'uploaded', 1600, 1000, unixepoch());`;
 writeFileSync(join(root, "tests", "e2e", ".seed.sql"), seedSql, "utf8");
 run("pnpm exec wrangler d1 execute webcules-snap --local --persist-to tests/e2e/.state --file tests/e2e/.seed.sql");
 writeFileSync(
   join(root, "tests", "e2e", ".seed.json"),
-  JSON.stringify({ orgId, embedKey, weekday, date, userId, userEmail, proOrgId, freeOrgId, proEmbedKey, mockPort, manageToken, previewProjectId, classicProjectId }),
+  JSON.stringify({ orgId, embedKey, weekday, date, userId, userEmail, proOrgId, freeOrgId, proEmbedKey, mockPort, manageToken, previewProjectId, classicProjectId, freeFilesProjectId }),
   "utf8",
 );
 console.log(`[e2e-server] seeded widget + domain studios (weekday ${weekday}, ${date})`);

@@ -38,6 +38,23 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.28.1" date="October 25, 2026">
+        <p>
+          <strong>A Files toolbar that explains itself.</strong>{" "}
+          The project Files controls now sit in three labelled groups —{" "}
+          <strong>Cull</strong> (Select, Triage, Group similar, Heat,
+          Auto-advance), <strong>Deliver</strong> (Share) and{" "}
+          <strong>Add</strong> (Upload, Drive) — on desktop and in the mobile
+          Actions menu alike. Every button carries a real tooltip that works
+          with a hover, a tap, or a keyboard focus, and a new{" "}
+          <strong>?</strong> button at the toolbar&rsquo;s right edge opens the
+          complete keyboard-shortcut legend (Triage has its own, too — press{" "}
+          <strong>?</strong> mid-cull). <strong>Heat</strong>{" "}
+          shows which photos your client viewed most — now marked with a lock
+          and an upgrade link on Free and Lite, since it&rsquo;s included with
+          Studio.
+        </p>
+      </Release>
       <Release version="0.28.0" date="October 25, 2026">
         <p>
           <strong>Your booking link, right where you look for it.</strong>{" "}

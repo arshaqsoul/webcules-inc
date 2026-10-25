@@ -141,7 +141,9 @@ export default async function ProjectDetailPage({
       tab === "gallery"
         ? (async () => (await getDefaultTemplate(ctx.organizationId, "gallery_preset"))?.body ?? null)().then((b) => parseGalleryDesignJson(b))
         : Promise.resolve(null),
-      tab === "gallery" ? getPlanEntitlements(ctx.organizationId) : Promise.resolve(null),
+      tab === "gallery" || tab === "files"
+        ? getPlanEntitlements(ctx.organizationId)
+        : Promise.resolve(null),
     ]);
 
   return (
@@ -293,7 +295,9 @@ export default async function ProjectDetailPage({
           {/* WEB-183 Drive import: the Google GIS client id is a public
            * browser value (WEB-195 convention) — unset env keeps the Drive
            * button hidden. */}
-          <ProjectFiles projectId={id} clientEmail={client?.email} defaultExpiryDays={deliveryDefaults.expiryDays} defaultAllowDownload={deliveryDefaults.allowDownload} driveClientId={cloudDestinationsFromEnv(env).driveClientId} />
+          {/* WEBC-113: canHeat is presentation-only — the interest-heat
+           * endpoint stays server-gated (Studio+). */}
+          <ProjectFiles projectId={id} clientEmail={client?.email} defaultExpiryDays={deliveryDefaults.expiryDays} defaultAllowDownload={deliveryDefaults.allowDownload} driveClientId={cloudDestinationsFromEnv(env).driveClientId} canHeat={ent?.id === "studio" || ent?.id === "pro"} />
         </section>
       )}
 
