@@ -1,8 +1,10 @@
 "use client";
 
-/* Settings → Embeds (WEB-234/235, formalized in 236): wraps EmbedHub with
- * the allowed-origins textarea that used to be the third card of the
- * settings monolith. Same API routes, same payloads — pure re-composition. */
+/* Settings → Website & booking (route kept: /dashboard/settings/embeds —
+ * WEBC-112 renamed the surface, not the path). Page order: the public booking
+ * link + its designer first, widget snippets second — what photographers look
+ * for ("my booking link") is no longer buried under developer-flavoured HTML.
+ * Same API routes, same payloads — pure re-composition. */
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -64,6 +66,9 @@ export function SettingsEmbeds({
 
   return (
     <div className="flex flex-col gap-4">
+      {/* WEBC-112: the booking link + designer lead the page. */}
+      <BookingPageCard initial={bookingPage.config} canEdit={bookingPage.canEdit} bookingUrl={bookingPage.url} />
+
       <EmbedHub
         embedKey={key}
         slug={slug}
@@ -93,8 +98,6 @@ export function SettingsEmbeds({
           <Button onClick={saveOrigins} disabled={busy} size="sm">Save origins</Button>
         </div>
       </section>
-
-      <BookingPageCard initial={bookingPage.config} canEdit={bookingPage.canEdit} bookingUrl={bookingPage.url} />
 
       {status && <p className="text-sm text-ink-subtle">{status}</p>}
     </div>

@@ -1,10 +1,11 @@
-/* Mirrors settings-embeds: the embed hub card (title + three snippet
- * blocks) and the allowed-origins card with its textarea + save row. */
+/* Mirrors settings-embeds (WEBC-112 order): the booking-page designer card
+ * first, then the embed hub card (title + three snippet blocks) and the
+ * allowed-origins card with its textarea + save row. */
 import { SkeletonCard, SkeletonCardTitle } from "../_skeletons";
 
 export default function EmbedsLoading() {
   return (
-    <div className="flex flex-col gap-4" aria-busy="true" aria-label="Loading embeds">
+    <div className="flex flex-col gap-4" aria-busy="true" aria-label="Loading website & booking settings">
       <SkeletonCard>
         <SkeletonCardTitle />
         <div className="mt-4 flex flex-col gap-2">
