@@ -12,9 +12,11 @@ import { hashPassword } from "better-auth/crypto";
 
 const root = process.cwd();
 const stateDir = join(root, "tests", "e2e", ".state");
+// Parameterized (WEBC-114): parallel agent runs on one machine can each
+// boot their own e2e stack — override with E2E_PORT / E2E_MOCK_PORT.
 const port = process.env.E2E_PORT ?? "3000";
 const base = `http://localhost:${port}`;
-const mockPort = 3117;
+const mockPort = process.env.E2E_MOCK_PORT ?? "3117";
 
 // Windows: orphaned workerd processes from earlier runs hold locks on dist/
 // and serve stale builds. Must happen HERE, before our own workerd exists

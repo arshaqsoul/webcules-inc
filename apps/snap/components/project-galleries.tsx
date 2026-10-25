@@ -3,6 +3,7 @@
 /* Client gallery panel — share links for this project: create (emails the
  * client), re-send, regenerate (old link dies), revoke, expiry editing. */
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { ChevronDown, ChevronRight } from "lucide-react";
@@ -225,6 +226,7 @@ export function ProjectGalleries({
   const [lightbox, setLightbox] = useState<number | null>(null);
 
   const deliverableFolders = folders.filter((f) => f.count > 0);
+  const approvedLabel = `${approvedCount} approved file${approvedCount === 1 ? "" : "s"}`;
   const deliverCount = deliverFolders.size
     ? deliverableFolders.filter((f) => deliverFolders.has(f.id)).reduce((n, f) => n + f.count, 0)
     : approvedCount;
@@ -425,7 +427,11 @@ export function ProjectGalleries({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-end gap-3 rounded-[12px] border border-hairline bg-surface-1 p-4">
+      {/* WEBC-114: #share — the step map's "Share" step anchors here. */}
+      <div
+        id="share"
+        className="flex scroll-mt-16 flex-wrap items-end gap-3 rounded-[12px] border border-hairline bg-surface-1 p-4"
+      >
         <label className="flex min-w-56 flex-1 flex-col gap-1 text-xs text-ink-subtle">
           Client email
           <input
@@ -556,7 +562,17 @@ export function ProjectGalleries({
       )}
       {error && <p className="text-xs text-destructive">{error}</p>}
       {approvedCount === 0 && (
-        <p className="text-xs text-ink-tertiary">Approve files below first — the gallery shares your approved set.</p>
+        <p className="text-xs text-ink-tertiary">
+          Nothing approved yet — {approvedLabel} so far, and the gallery shares your approved set.{" "}
+          {/* WEBC-114: a real path to the approvals, not a dead end —
+           * approving happens on the Files tab. */}
+          <Link
+            href={`/dashboard/projects/${projectId}?tab=files`}
+            className="font-medium text-primary hover:underline"
+          >
+            Approve files on the Files tab →
+          </Link>
+        </p>
       )}
 
       {grants.length > 0 && (

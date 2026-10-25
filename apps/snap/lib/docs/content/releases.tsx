@@ -38,6 +38,23 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.29.0" date="October 25, 2026">
+        <p>
+          <strong>The Client gallery tab now shows your sharing options before you share.</strong>{" "}
+          A new step map at the top of the tab — <strong>Design → Select files → Protect &amp;
+          settings → Share → Uploads</strong> — jumps you to any part of the flow, and{" "}
+          <strong>Select files</strong> takes you straight to the Files tab where approvals
+          happen. A <strong>Download protection</strong> panel lists every protection a link
+          can carry — download PIN, web sizes, favorites-only, email-before-download and
+          download approvals — what each one does, and which plan it needs{" "}
+          (<strong>Lite</strong> for PIN, web sizes, favorites-only and email capture;{" "}
+          <strong>Studio</strong> for approvals), so you can see the full picture before your
+          first link exists. When nothing is approved yet, the &ldquo;Approve files&rdquo;
+          hint is now a real link to the Files tab. Protections themselves are still set per
+          link under <strong>Download controls</strong> — nothing about existing links
+          changes.
+        </p>
+      </Release>
       <Release version="0.28.1" date="October 25, 2026">
         <p>
           <strong>A Files toolbar that explains itself.</strong>{" "}
