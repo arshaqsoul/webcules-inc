@@ -203,6 +203,19 @@ const manageBookingId = crypto.randomUUID();
 const manageStartEpoch = Math.floor(target.getTime() / 1000) + 540 * 60;
 const manageEndEpoch = manageStartEpoch + 3600;
 
+// WEBC-115 Galleries overview: unique hash-only share tokens for the seeded
+// grants (the seed SQL below needs a DISTINCT token_hash per row; the
+// plaintext token is never needed — resolution works from the hash alone).
+const DAY = 86400;
+const nowSec = Math.floor(Date.now() / 1000);
+const gtoken = () =>
+  Buffer.from(crypto.getRandomValues(new Uint8Array(32)))
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+const ghash = (t) => createHash("sha256").update(t).digest("hex");
+
 // Domain-flow studios (WEB-233): one pro + one free, one shared owner — the
 // E2E walks the locked upsell on free, the full lifecycle on pro, and the
 // panel re-scope when switching studios.
@@ -266,7 +279,26 @@ INSERT INTO asset (id, organization_id, project_id, storage_key, kind, filename,
  ('e2eprev-a1', '${proOrgId}', '${previewProjectId}', '${proOrgId}/${previewProjectId}/e2eprev-a1/one.jpg', 'image', 'one.jpg', 'image/jpeg', 1000, 'approved', 1600, 1000, unixepoch()),
  ('e2eprev-a2', '${proOrgId}', '${previewProjectId}', '${proOrgId}/${previewProjectId}/e2eprev-a2/two.jpg', 'image', 'two.jpg', 'image/jpeg', 1000, 'approved', 1600, 1000, unixepoch()),
  ('e2eprev-a3', '${proOrgId}', '${classicProjectId}', '${proOrgId}/${classicProjectId}/e2eprev-a3/three.jpg', 'image', 'three.jpg', 'image/jpeg', 1000, 'approved', 1600, 1000, unixepoch()),
- ('e2efiles-f1', '${freeOrgId}', '${freeFilesProjectId}', '${freeOrgId}/${freeFilesProjectId}/e2efiles-f1/four.jpg', 'image', 'four.jpg', 'image/jpeg', 1000, 'uploaded', 1600, 1000, unixepoch());`;
+ ('e2efiles-f1', '${freeOrgId}', '${freeFilesProjectId}', '${freeOrgId}/${freeFilesProjectId}/e2efiles-f1/four.jpg', 'image', 'four.jpg', 'image/jpeg', 1000, 'uploaded', 1600, 1000, unixepoch());
+
+-- WEBC-115 Galleries overview: share grants spanning both projects on the
+-- pro org (2 active on one, 1 active + revoked + expired + regenerated on
+-- the other) and 5 active on the free org — exactly its Free cap, so the
+-- header shows "5 of 5" with the upgrade link and Billing shows "5/5".
+-- Hash-only tokens (lookup needs no ciphertext — same trick as the
+-- manage-token above); expires_at is a SECONDS-mode integer column.
+INSERT INTO share_grant (id, organization_id, project_id, client_email, token_hash, status, expires_at, created_at) VALUES
+ ('e2eg-c1', '${proOrgId}', '${classicProjectId}', 'client-a@test.test', '${ghash(gtoken())}', 'active', NULL, ${nowSec - 10 * DAY}),
+ ('e2eg-c2', '${proOrgId}', '${classicProjectId}', 'client-b@test.test', '${ghash(gtoken())}', 'active', ${nowSec + 30 * DAY}, ${nowSec - 5 * DAY}),
+ ('e2eg-p1', '${proOrgId}', '${previewProjectId}', 'client-c@test.test', '${ghash(gtoken())}', 'active', NULL, ${nowSec - 2 * DAY}),
+ ('e2eg-p2', '${proOrgId}', '${previewProjectId}', 'client-old@test.test', '${ghash(gtoken())}', 'revoked', NULL, ${nowSec - 9 * DAY}),
+ ('e2eg-p3', '${proOrgId}', '${previewProjectId}', 'client-exp@test.test', '${ghash(gtoken())}', 'active', ${nowSec - DAY}, ${nowSec - 40 * DAY}),
+ ('e2eg-p4', '${proOrgId}', '${previewProjectId}', 'client-reg@test.test', '${ghash(gtoken())}', 'regenerated', NULL, ${nowSec - 15 * DAY}),
+ ('e2eg-f1', '${freeOrgId}', '${freeFilesProjectId}', 'free-client-1@test.test', '${ghash(gtoken())}', 'active', NULL, ${nowSec - 1 * DAY}),
+ ('e2eg-f2', '${freeOrgId}', '${freeFilesProjectId}', 'free-client-2@test.test', '${ghash(gtoken())}', 'active', NULL, ${nowSec - 2 * DAY}),
+ ('e2eg-f3', '${freeOrgId}', '${freeFilesProjectId}', 'free-client-3@test.test', '${ghash(gtoken())}', 'active', NULL, ${nowSec - 3 * DAY}),
+ ('e2eg-f4', '${freeOrgId}', '${freeFilesProjectId}', 'free-client-4@test.test', '${ghash(gtoken())}', 'active', NULL, ${nowSec - 4 * DAY}),
+ ('e2eg-f5', '${freeOrgId}', '${freeFilesProjectId}', 'free-client-5@test.test', '${ghash(gtoken())}', 'active', NULL, ${nowSec - 5 * DAY});`;
 writeFileSync(join(root, "tests", "e2e", ".seed.sql"), seedSql, "utf8");
 run("pnpm exec wrangler d1 execute webcules-snap --local --persist-to tests/e2e/.state --file tests/e2e/.seed.sql");
 writeFileSync(

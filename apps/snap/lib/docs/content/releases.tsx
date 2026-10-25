@@ -38,6 +38,21 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.31.0" date="October 25, 2026">
+        <p>
+          <strong>The Galleries page now reads like your galleries.</strong>{" "}
+          Instead of a flat log of every share link ever created, links are grouped under
+          their project, and revoked, regenerated and expired links tuck away behind a{" "}
+          <strong>Show inactive</strong> toggle — what you see first is what is actually
+          live. The header shows your slot usage against your plan (&ldquo;3 of 5 active
+          galleries&rdquo;, or unlimited on Studio and Pro) using the same count as the
+          billing page, with an upgrade link the moment you hit the cap. Every row opens
+          its project&rsquo;s gallery tab directly, and a <strong>New gallery</strong>{" "}
+          button picks a project and takes you straight to where links are made. Nothing
+          about your links, limits, or what clients can see has changed — only how the
+          overview is organized.
+        </p>
+      </Release>
       <Release version="0.30.0" date="October 25, 2026">
         <p>
           <strong>A guided path from empty store to first sale.</strong>{" "}

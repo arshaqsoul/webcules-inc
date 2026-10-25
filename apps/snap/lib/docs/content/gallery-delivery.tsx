@@ -40,7 +40,13 @@ export default function GalleryDelivery() {
         Expiry is yours to set — 7, 30, 60, 90, or 365 days, or no expiry — and you can change it,
         revoke, or regenerate the link at any moment (a regenerated link kills the old one and
         inherits the photos and settings). The <a href="/dashboard/galleries">Galleries</a> page
-        lists every link with its state:
+        groups every link under its project and shows your slot usage against the plan cap
+        (&ldquo;3 of 15 active galleries&rdquo; — unlimited on Studio and Pro, with an upgrade link
+        the moment you hit the cap). Revoked, regenerated and expired links are collapsed behind a{" "}
+        <strong>Show inactive</strong> toggle so the page shows what is actually live; flip it and
+        they are all still there. Each row opens the project&apos;s gallery tab, and{" "}
+        <strong>New gallery</strong> picks a project and drops you straight into its{" "}
+        <strong>Client gallery</strong> tab. Every link carries a state:
       </p>
       <table>
         <thead>
