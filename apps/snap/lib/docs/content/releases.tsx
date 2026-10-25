@@ -38,6 +38,23 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.30.0" date="October 25, 2026">
+        <p>
+          <strong>A guided path from empty store to first sale.</strong>{" "}
+          Opening a brand-new store no longer leaves you in a closed
+          storefront with an empty price list — a four-step setup wizard walks
+          you through creating your first price list and product, opening the
+          store, attaching the list to one of your galleries, and previewing
+          exactly what your clients will see. You can get there anytime from
+          the setup guide&rsquo;s <strong>Set up your store</strong> step,
+          which now checks off only when your store is truly selling: open,
+          with a product attached to a live gallery. And when you reach your
+          plan&rsquo;s price-list limit, the notice is now a clear upgrade card
+          that names what the next tier unlocks — <strong>Studio</strong> gives
+          you 5 price lists, packages, and custom products — with a direct
+          link to plans.
+        </p>
+      </Release>
       <Release version="0.29.0" date="October 25, 2026">
         <p>
           <strong>The Client gallery tab now shows your sharing options before you share.</strong>{" "}
