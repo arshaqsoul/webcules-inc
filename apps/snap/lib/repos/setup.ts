@@ -53,9 +53,11 @@ export const SETUP_STEPS: Array<Omit<SetupStep, "done">> = [
   // WEB-317/320: the template step — the natural 2.5, free and instant.
   { id: "gallery_template", title: "Pick a gallery template", why: "Ten designer looks for your client galleries — one click, free.", href: "/dashboard/projects" },
   { id: "payouts", title: "Connect payouts", why: "Deposits and invoices land in your bank.", href: "/dashboard/settings/payouts" },
-  // WEB-277: the store step joins after payouts — derived, never manual:
-  // done only when payouts are connected AND ≥1 price list exists.
-  { id: "store", title: "Set up your store", why: "Price lists and payouts — sell right from your galleries.", href: "/dashboard/store" },
+  // WEB-277: the store step joins after payouts — derived, never manual.
+  // WEBC-121 (audit F9): "done" now means the store is actually sellable —
+  // OPEN + at least one (active) product + at least one ACTIVE price-list →
+  // gallery attachment — not merely "a price list exists".
+  { id: "store", title: "Set up your store", why: "Open the store, price a product, and attach it to a gallery — sell right from your galleries.", href: "/dashboard/store?setup=1" },
   { id: "availability", title: "Set your availability", why: "Clients book while you sleep.", href: "/dashboard/calendar?tab=availability" },
   { id: "session_type", title: "Define a session type", why: "What clients can book — length, price, deposit.", href: "/dashboard/templates/session-types" },
   { id: "contact_form", title: "Design your contact form", why: "The questions you ask before you say yes.", href: "/dashboard/templates/forms" },
@@ -103,7 +105,8 @@ export const getSetupState = cache(async (organizationId: string): Promise<Setup
     domainsCount,
     templateApplied,
     demo,
-    priceListsCount,
+    storeProductsCount,
+    storeAttachmentsCount,
   ] = await Promise.all([
     db
       .select({ n: sql<number>`count(*)` })
@@ -154,11 +157,17 @@ export const getSetupState = cache(async (organizationId: string): Promise<Setup
           eq(schema.shareAccessLogs.event, "view"),
         ),
       ),
-    // WEB-277: the store step's second signal — ≥1 price list exists.
+    // WEBC-121: the store step's signals — ≥1 ACTIVE product exists, and
+    // ≥1 gallery carries an ACTIVE price-list attachment. (Store-open
+    // itself is profileRow.storeOpen — no extra query.)
     db
       .select({ n: sql<number>`count(*)` })
-      .from(schema.priceLists)
-      .where(eq(schema.priceLists.organizationId, organizationId)),
+      .from(schema.products)
+      .where(and(eq(schema.products.organizationId, organizationId), eq(schema.products.active, true))),
+    db
+      .select({ n: sql<number>`count(*)` })
+      .from(schema.priceListGallery)
+      .where(and(eq(schema.priceListGallery.organizationId, organizationId), sql`detached_at IS NULL`)),
   ]);
 
   let embedOrigins: string[] = [];
@@ -180,10 +189,14 @@ export const getSetupState = cache(async (organizationId: string): Promise<Setup
     brand: Boolean(profileRow.logoKey),
     gallery_template: Number(templateApplied[0]?.n ?? 0) > 0,
     payouts: Boolean(profileRow.stripeAccountId),
-    // WEB-277: BOTH signals required — payouts connected AND a price list.
-    // The step flips automatically when the second signal arrives; there is
-    // no manual "mark done" anywhere.
-    store: Boolean(profileRow.stripeAccountId) && Number(priceListsCount[0]?.n ?? 0) >= 1,
+    // WEBC-121: ALL THREE signals required — the store is OPEN, it has an
+    // active product, and a gallery carries an active price-list
+    // attachment. The step flips automatically when the last signal
+    // arrives; there is no manual "mark done" anywhere.
+    store:
+      profileRow.storeOpen === true &&
+      Number(storeProductsCount[0]?.n ?? 0) >= 1 &&
+      Number(storeAttachmentsCount[0]?.n ?? 0) >= 1,
     availability: Number(rules[0]?.n ?? 0) > 0,
     session_type: types > 0,
     contact_form: templateTouched(forms, profileRow.createdAt),
@@ -452,8 +465,11 @@ export async function setupCompletionRollup(): Promise<{ orgs: number; atLeastSe
       (sp.studio_name != '') +
       (sp.logo_key IS NOT NULL) +
       (sp.stripe_account_id IS NOT NULL) +
-      (sp.stripe_account_id IS NOT NULL AND
-       EXISTS(SELECT 1 FROM price_list pl WHERE pl.organization_id = sp.organization_id)) +
+      (sp.store_open = 1 AND
+       EXISTS(SELECT 1 FROM product p JOIN price_list pl ON p.price_list_id = pl.id
+              WHERE pl.organization_id = sp.organization_id AND p.active = 1) AND
+       EXISTS(SELECT 1 FROM price_list_gallery plg
+              WHERE plg.organization_id = sp.organization_id AND plg.detached_at IS NULL)) +
       EXISTS(SELECT 1 FROM availability_rule r WHERE r.organization_id = sp.organization_id AND r.active = 1) +
       EXISTS(SELECT 1 FROM session_type st WHERE st.organization_id = sp.organization_id AND st.active = 1) +
       EXISTS(SELECT 1 FROM template t WHERE t.organization_id = sp.organization_id AND t.kind = 'form' AND t.archived_at IS NULL

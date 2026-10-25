@@ -13,6 +13,14 @@
  *  - preview: preparing → opens /dashboard/store/preview beside the
  *    dashboard; error card with Try again.
  *
+ * WEBC-121 (audit F2+F9): the first-run picker became the Store setup
+ * wizard — create a price list with a product → open the store → attach
+ * the list to a gallery → test-buy preview — and stays up (dismissable)
+ * until the store is actually sellable. The Setup Guide's "Set up your
+ * store" step deep-links here with ?setup=1, which scrolls to and
+ * highlights the wizard. The plan-cap notice is an inline upgrade CTA
+ * naming what the next tier unlocks, not passive text.
+ *
  * Mutations go through /api/studio/commerce + /api/studio/store-status +
  * /api/studio/store-preview so plan gates and tenant scoping always run
  * server-side. */
@@ -20,7 +28,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-import { AlertTriangle, ArrowRight, ExternalLink, Loader2, Pencil, Plus, Star } from "lucide-react";
+import { AlertTriangle, ArrowRight, Check, ExternalLink, Loader2, Pencil, Plus, Star } from "lucide-react";
 
 import { Button } from "@webcules/ui/components/button";
 import { Input } from "@webcules/ui/components/input";
@@ -54,6 +62,15 @@ export type ProductRow = {
   maxPriceCents: number | null;
 };
 
+export type GalleryOption = { id: string; projectTitle: string };
+
+export type StoreAttachmentRow = {
+  grantId: string;
+  priceListId: string;
+  priceListName: string;
+  projectTitle: string;
+};
+
 const CURRENCIES = ["USD", "CAD", "EUR", "GBP", "AUD"];
 
 type WizardProduct = { kind: string; name: string; variants: Array<{ name: string; cost: string; price: string }> };
@@ -63,6 +80,13 @@ const KIND_LABELS: Record<string, string> = {
   print: "Print",
   package: "Package",
   custom: "Custom",
+};
+
+/** What the NEXT tier unlocks, shown inline on the plan-cap notice
+ * (WEBC-121 F2: the upgrade path must not be a 3-hop text pointer). */
+const NEXT_TIER_UNLOCKS: Record<string, string> = {
+  lite: "Studio unlocks 5 price lists, packages, and custom products.",
+  studio: "Pro unlocks unlimited price lists.",
 };
 
 /** The three first-run templates (WEB-175 handoff copy). The ids match
@@ -83,12 +107,20 @@ export function StoreHome({
   initialStoreOpen,
   payoutsConnected,
   gates,
+  plan,
+  galleries,
+  attachments,
+  setupMode,
 }: {
   initialLists: PriceListRow[];
   products: ProductRow[];
   initialStoreOpen: boolean;
   payoutsConnected: boolean;
   gates: Gates;
+  plan: string;
+  galleries: GalleryOption[];
+  attachments: StoreAttachmentRow[];
+  setupMode: boolean;
 }) {
   const router = useRouter();
   const [lists, setLists] = useState(initialLists);
@@ -104,15 +136,38 @@ export function StoreHome({
   const [error, setError] = useState<string | null>(null);
   const [templateBusy, setTemplateBusy] = useState<string | null>(null);
   const [preview, setPreview] = useState<"idle" | "preparing" | "error">("idle");
+  const [previewSeen, setPreviewSeen] = useState(false);
+
+  /* WEBC-121: setup-wizard state — active attachments live locally after
+   * an attach; the card hides once the store is sellable (or dismissed). */
+  const [atts, setAtts] = useState<StoreAttachmentRow[]>(attachments);
+  const [setupDismissed, setSetupDismissed] = useState(false);
+  const [attachListId, setAttachListId] = useState(initialLists[0]?.id ?? "");
+  const [attachGrantId, setAttachGrantId] = useState("");
+  const [attachBusy, setAttachBusy] = useState(false);
+  const wizardRef = useRef<HTMLDivElement | null>(null);
 
   const firstRun = lists.length === 0;
   const atCap = gates.maxPriceLists >= 0 && lists.length >= gates.maxPriceLists;
+  const hasProducts = products.length > 0;
+  const setupComplete = hasProducts && storeOpen && atts.length > 0;
+  const showWizard = !setupComplete && !setupDismissed;
 
   useEffect(() => {
     return () => {
       if (toastTimer.current) clearTimeout(toastTimer.current);
     };
   }, []);
+
+  /* ?setup=1 — the Setup Guide deep link: bring the wizard into view and
+   * ring it for a few seconds so the step lands somewhere, not nowhere. */
+  useEffect(() => {
+    if (!setupMode) return;
+    wizardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    wizardRef.current?.classList.add("ring-2", "ring-primary");
+    const fade = setTimeout(() => wizardRef.current?.classList.remove("ring-2", "ring-primary"), 4000);
+    return () => clearTimeout(fade);
+  }, [setupMode]);
 
   function showToast(kind: "success" | "error", text: string) {
     setToast({ kind, text });
@@ -212,10 +267,45 @@ export function StoreHome({
       if (!res.ok || !body.url) throw new Error("preview_failed");
       window.open(body.url, "_blank", "noopener");
       setPreview("idle");
+      setPreviewSeen(true);
     } catch {
       setPreview("error");
     }
   }
+
+  /* WEBC-121 wizard step 3: attach a price list to a gallery (the client
+   * store reads the ACTIVE assignment server-side; one per gallery). */
+  async function attachToGallery() {
+    if (!attachListId || !attachGrantId) return;
+    setAttachBusy(true);
+    try {
+      const res = await fetch(`/api/studio/commerce/${attachListId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ attachGrantId }),
+      });
+      if (!res.ok) throw new Error("attach_failed");
+      const list = lists.find((l) => l.id === attachListId);
+      const gallery = galleries.find((g) => g.id === attachGrantId);
+      setAtts((cur) => [
+        // re-attaching moves a gallery — drop its previous active row
+        ...cur.filter((a) => a.grantId !== attachGrantId),
+        { grantId: attachGrantId, priceListId: attachListId, priceListName: list?.name ?? "", projectTitle: gallery?.projectTitle ?? "—" },
+      ]);
+      setAttachGrantId("");
+      showToast("success", `Attached — clients on “${gallery?.projectTitle ?? "that gallery"}” see ${list?.name ?? "your price list"}.`);
+    } catch {
+      showToast("error", "Couldn't attach the price list — nothing changed. Try again.");
+    }
+    setAttachBusy(false);
+  }
+
+  const wizardSteps = [
+    { n: 1, title: "Create your first price list", done: hasProducts },
+    { n: 2, title: "Open your store", done: storeOpen },
+    { n: 3, title: "Attach it to a gallery", done: atts.length > 0 },
+    { n: 4, title: "See it as your client", done: previewSeen },
+  ];
 
   return (
     <div className="flex flex-col gap-5">
@@ -290,6 +380,13 @@ export function StoreHome({
             </>
           )}
         </div>
+        {/* WEBC-121 F2: a closed store gets a plain primary action next to
+         * the toggle — the money step shouldn't live in a subtle switch. */}
+        {!storeOpen && !firstRun && (
+          <Button size="sm" onClick={toggleStore} disabled={toggleBusy}>
+            {toggleBusy && <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />} Open store
+          </Button>
+        )}
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -324,39 +421,154 @@ export function StoreHome({
         </div>
       </div>
 
-      {/* First run: welcome + template picker */}
-      {firstRun ? (
-        <>
-          <p className="text-sm text-ink-subtle">
-            Welcome to your store. Price lists are shared across your galleries — one active list per gallery. Start from a template, then make it yours.
-          </p>
-          <div className="flex flex-col gap-4 rounded-xl border border-hairline bg-surface px-5 py-6">
+      {/* WEBC-121 (F2+F9): the Store setup wizard — the guided path from
+       * empty store to first sale. Shows until the store is sellable
+       * (product + open + attached) or the studio dismisses it; the Setup
+       * Guide's "Set up your store" step deep-links in with ?setup=1. */}
+      {showWizard && (
+        <div
+          ref={wizardRef}
+          className="flex flex-col gap-4 rounded-xl border border-hairline bg-surface px-5 py-6 transition-shadow"
+        >
+          <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="font-semibold text-ink">Set up your first price list</h2>
+              <h2 className="font-semibold text-ink">Set up your store</h2>
               <p className="mt-1 text-sm text-ink-subtle">
-                No price lists yet. Pick a starting point below — you can rename prices, add products, and reassign galleries at any time.
+                Four steps from empty to your first sale — most studios finish in about ten minutes.
               </p>
             </div>
-            <div className="grid gap-3 sm:grid-cols-3">
-              {TEMPLATE_CARDS.map((t) => (
-                <div key={t.id} className="flex flex-col gap-2 rounded-lg border border-hairline bg-canvas px-4 py-4">
-                  <p className="font-medium text-ink">{t.name}</p>
-                  <p className="flex-1 text-xs text-ink-tertiary">{t.blurb}</p>
-                  <Button size="sm" variant="outline" onClick={() => useTemplate(t.id)} disabled={templateBusy !== null}>
-                    {templateBusy === t.id && <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />} Use template
-                  </Button>
-                </div>
-              ))}
-            </div>
-            <div>
-              <Button variant="ghost" size="sm" onClick={() => setWizardOpen(true)} disabled={atCap}>
-                <Plus className="mr-1 h-4 w-4" /> Start from scratch
-              </Button>
-            </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            <button
+              type="button"
+              onClick={() => setSetupDismissed(true)}
+              className="text-xs font-medium text-ink-tertiary hover:text-ink"
+            >
+              Hide setup steps
+            </button>
           </div>
-        </>
-      ) : (
+          <ol className="flex flex-col gap-4">
+            {wizardSteps.map((s) => (
+              <li key={s.n} className="flex items-start gap-3">
+                <span
+                  aria-hidden
+                  className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[11px] font-semibold ${
+                    s.done ? "border-primary bg-primary text-white" : "border-hairline bg-surface-2 text-ink-tertiary"
+                  }`}
+                >
+                  {s.done ? <Check className="h-3 w-3" /> : s.n}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className={`text-sm font-medium ${s.done ? "text-ink-tertiary line-through" : "text-ink"}`}>{s.title}</p>
+                  {s.n === 1 && !s.done && (
+                    firstRun ? (
+                      <div className="mt-3 flex flex-col gap-3">
+                        <div className="grid gap-3 sm:grid-cols-3">
+                          {TEMPLATE_CARDS.map((t) => (
+                            <div key={t.id} className="flex flex-col gap-2 rounded-lg border border-hairline bg-canvas px-4 py-4">
+                              <p className="font-medium text-ink">{t.name}</p>
+                              <p className="flex-1 text-xs text-ink-tertiary">{t.blurb}</p>
+                              <Button size="sm" variant="outline" onClick={() => useTemplate(t.id)} disabled={templateBusy !== null}>
+                                {templateBusy === t.id && <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />} Use template
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                        <div>
+                          <Button variant="ghost" size="sm" onClick={() => setWizardOpen(true)} disabled={atCap}>
+                            <Plus className="mr-1 h-4 w-4" /> Start from scratch
+                          </Button>
+                        </div>
+                        {error && <p className="text-sm text-destructive">{error}</p>}
+                      </div>
+                    ) : (
+                      <p className="mt-1 text-sm text-ink-subtle">
+                        Your list {lists[0] ? `“${lists[0].name}”` : ""} has no products yet —{" "}
+                        <a href={lists[0] ? `/dashboard/store/${lists[0].id}` : "#"} className="font-medium text-primary hover:underline">
+                          add your first product
+                        </a>
+                        .
+                      </p>
+                    )
+                  )}
+                  {s.n === 2 && !s.done && (
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <Button size="sm" onClick={toggleStore} disabled={firstRun || toggleBusy}>
+                        {toggleBusy && <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />} Open your store
+                      </Button>
+                      <span className="text-xs text-ink-tertiary">
+                        {firstRun ? "Available once your price list exists — Buy buttons stay hidden until then." : "Buy buttons go live on every gallery with an active price list."}
+                      </span>
+                    </div>
+                  )}
+                  {s.n === 3 && !s.done && (
+                    galleries.length === 0 ? (
+                      <p className="mt-1 text-sm text-ink-subtle">
+                        No galleries delivered yet —{" "}
+                        <Link href="/dashboard/projects" className="font-medium text-primary hover:underline">send a client gallery</Link>
+                        , then attach this list to it.
+                      </p>
+                    ) : (
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <select
+                          value={attachListId}
+                          onChange={(e) => setAttachListId(e.target.value)}
+                          aria-label="Price list to attach"
+                          className="snap-select rounded-md border border-hairline bg-canvas px-2 py-1.5 text-sm text-ink"
+                        >
+                          {lists.map((l) => (
+                            <option key={l.id} value={l.id}>{l.name}</option>
+                          ))}
+                        </select>
+                        <span aria-hidden className="text-sm text-ink-tertiary">→</span>
+                        <select
+                          value={attachGrantId}
+                          onChange={(e) => setAttachGrantId(e.target.value)}
+                          aria-label="Gallery to attach it to"
+                          className="snap-select max-w-56 rounded-md border border-hairline bg-canvas px-2 py-1.5 text-sm text-ink"
+                        >
+                          <option value="">Pick a gallery…</option>
+                          {galleries.map((g) => (
+                            <option key={g.id} value={g.id}>{g.projectTitle}</option>
+                          ))}
+                        </select>
+                        <Button size="sm" onClick={attachToGallery} disabled={!attachListId || !attachGrantId || attachBusy}>
+                          {attachBusy && <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />} Attach
+                        </Button>
+                      </div>
+                    )
+                  )}
+                  {s.n === 3 && atts.length > 0 && (
+                    <ul className="mt-1 text-xs text-ink-tertiary">
+                      {atts.map((a) => (
+                        <li key={a.grantId}>
+                          {a.priceListName} → {a.projectTitle}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {s.n === 4 && !s.done && (
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <Button size="sm" variant="outline" onClick={openPreview} disabled={preview === "preparing"}>
+                        {preview === "preparing" ? <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" /> : <ExternalLink className="mr-1 h-4 w-4" />}
+                        Preview as client
+                      </Button>
+                      <span className="text-xs text-ink-tertiary">Exactly what your client sees — nothing can be ordered.</span>
+                    </div>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      {/* First run welcome line (the picker itself lives in wizard step 1) */}
+      {firstRun && (
+        <p className="text-sm text-ink-subtle">
+          Welcome to your store. Price lists are shared across your galleries — one active list per gallery. Start from a template, then make it yours.
+        </p>
+      )}
+
+      {!firstRun && (
         <Tabs defaultValue="lists">
           <TabsList>
             <TabsTrigger value="lists">Price lists</TabsTrigger>
@@ -366,9 +578,20 @@ export function StoreHome({
           {/* Price lists tab */}
           <TabsContent value="lists">
             {atCap && (
-              <p className="mb-3 rounded-lg border border-hairline bg-canvas px-4 py-3 text-sm text-ink-subtle">
-                You&apos;re using every price list your plan allows. Upgrade in Settings → Billing for more.
-              </p>
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-hairline bg-canvas px-4 py-3">
+                <div className="min-w-56">
+                  <p className="text-sm font-medium text-ink">You&apos;re using every price list your plan allows</p>
+                  <p className="mt-0.5 text-sm text-ink-subtle">
+                    {NEXT_TIER_UNLOCKS[plan] ?? "Upgrade for more price lists, packages, and custom products."}
+                  </p>
+                </div>
+                <Link
+                  href="/dashboard/settings/billing"
+                  className="shrink-0 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+                >
+                  See plans &amp; upgrade
+                </Link>
+              </div>
             )}
             {error && <p className="mb-3 text-sm text-destructive">{error}</p>}
             <div className="overflow-x-auto rounded-xl border border-hairline bg-surface">

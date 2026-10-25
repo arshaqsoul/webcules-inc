@@ -318,6 +318,34 @@ export async function attachPriceListToGrant(
   return { ok: true, value: true };
 }
 
+/* ── WEBC-121 (audit F2/F9): store-setup wiring — the org's ACTIVE
+ * price-list ↔ gallery assignments, read back for the Store home's setup
+ * wizard and the Setup Guide "store" step signal. */
+
+export type StoreAttachment = {
+  grantId: string;
+  priceListId: string;
+  priceListName: string;
+  projectTitle: string;
+};
+
+export async function listStoreAttachments(organizationId: string): Promise<StoreAttachment[]> {
+  const rows = await getDb()
+    .select({
+      grantId: schema.priceListGallery.grantId,
+      priceListId: schema.priceListGallery.priceListId,
+      priceListName: schema.priceLists.name,
+      projectTitle: schema.projects.title,
+    })
+    .from(schema.priceListGallery)
+    .innerJoin(schema.priceLists, eq(schema.priceListGallery.priceListId, schema.priceLists.id))
+    .innerJoin(schema.shareGrants, eq(schema.priceListGallery.grantId, schema.shareGrants.id))
+    .leftJoin(schema.projects, eq(schema.shareGrants.projectId, schema.projects.id))
+    .where(and(eq(schema.priceListGallery.organizationId, organizationId), isNull(schema.priceListGallery.detachedAt)))
+    .orderBy(asc(schema.priceListGallery.attachedAt));
+  return rows.map((r) => ({ ...r, projectTitle: r.projectTitle ?? "—" }));
+}
+
 /** Remove the active price list from a gallery (history rows stay). */
 export async function detachPriceListFromGrant(organizationId: string, grantId: string): Promise<CommerceResult<true>> {
   const db = getDb();

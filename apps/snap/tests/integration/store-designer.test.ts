@@ -1,24 +1,29 @@
 /* WEB-277 (Commerce C1 6/7) — the store designer surface: the open/closed
  * status toggle (studio-wide, audited), first-run template price lists
  * (atomic, plan-gated), the products overview, and the Setup Guide "store"
- * step's auto-flip behavior (done = payouts connected AND ≥1 price list —
- * every signal combination, and the automatic flip when the second signal
- * arrives). */
+ * step's auto-flip behavior. WEBC-121 (audit F9): done = store OPEN + ≥1
+ * active product + ≥1 ACTIVE price-list→gallery attachment — every signal
+ * combination, and the automatic flip when the last signal arrives. */
 import { beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 
 import { getDb, schema } from "@/lib/db";
 import {
   STORE_TEMPLATES,
+  attachPriceListToGrant,
   countPriceLists,
+  createPriceList,
   createPriceListFromTemplate,
+  createProduct,
+  createProductVariant,
+  detachPriceListFromGrant,
   getStoreOpen,
   listAllProducts,
   setStoreOpen,
 } from "@/lib/commerce";
 import { getSetupState } from "@/lib/repos/setup";
 import { resetDb } from "../helpers/db";
-import { seedStudio } from "../helpers/seed";
+import { seedProject, seedStudio } from "../helpers/seed";
 
 beforeEach(async () => {
   await resetDb();
@@ -26,13 +31,6 @@ beforeEach(async () => {
 
 function step(state: Awaited<ReturnType<typeof getSetupState>>, id: string) {
   return state.steps.find((s) => s.id === id)!;
-}
-
-async function connectPayouts(organizationId: string) {
-  await getDb()
-    .update(schema.studioProfiles)
-    .set({ stripeAccountId: "acct_test" })
-    .where(eq(schema.studioProfiles.organizationId, organizationId));
 }
 
 describe("store status (open/closed)", () => {
@@ -145,38 +143,93 @@ describe("products overview", () => {
   });
 });
 
-describe("Setup Guide \"Set up your store\" step — auto-flip", () => {
-  it("neither signal: not done", async () => {
+describe("Setup Guide \"Set up your store\" step — auto-flip (WEBC-121: open + product + attached)", () => {
+  /** A live gallery grant (attach needs an org-owned row to exist). */
+  async function seedGrant(organizationId: string, projectId: string, id: string): Promise<string> {
+    await getDb().insert(schema.shareGrants).values({
+      id, organizationId, projectId, clientEmail: "client@test.test",
+      tokenHash: `hash-${id}`, status: "active",
+    });
+    return id;
+  }
+
+  /** The full sellable state: open store, a product, an attachment. */
+  async function makeSellable(s: Awaited<ReturnType<typeof seedStudio>>) {
+    const listId = (await createPriceList(s.organizationId, { name: "Portrait session", currency: "usd" }));
+    if (!listId.ok) throw new Error(listId.error);
+    const product = await createProduct(s.organizationId, { priceListId: listId.value.id, kind: "digital", name: "Digital collection" });
+    if (!product.ok) throw new Error(product.error);
+    await createProductVariant(s.organizationId, { productId: product.value.id, name: "Single image", costCents: 0, priceCents: 1200 });
+    const projectId = await seedProject(s.organizationId);
+    const grantId = await seedGrant(s.organizationId, projectId, crypto.randomUUID());
+    const attach = await attachPriceListToGrant(s.organizationId, { grantId, priceListId: listId.value.id });
+    if (!attach.ok) throw new Error(attach.error);
+    return { listId: listId.value.id, grantId };
+  }
+
+  it("untouched studio: not done", async () => {
     const s = await seedStudio({ plan: "studio" });
     const state = await getSetupState(s.organizationId);
     expect(step(state, "store").done).toBe(false);
     expect(step(state, "store").title).toBe("Set up your store");
-    expect(step(state, "store").why).toBe("Price lists and payouts — sell right from your galleries.");
-    expect(step(state, "store").href).toBe("/dashboard/store");
+    expect(step(state, "store").why).toBe("Open the store, price a product, and attach it to a gallery — sell right from your galleries.");
+    expect(step(state, "store").href).toBe("/dashboard/store?setup=1");
   });
 
-  it("payouts only: not done", async () => {
+  it("open store only: not done", async () => {
     const s = await seedStudio({ plan: "studio" });
-    await connectPayouts(s.organizationId);
+    await setStoreOpen(s.organizationId, s.userId, true);
     expect(step(await getSetupState(s.organizationId), "store").done).toBe(false);
   });
 
-  it("price list only: not done", async () => {
+  it("open + product, nothing attached: not done", async () => {
     const s = await seedStudio({ plan: "studio" });
-    expect((await createPriceListFromTemplate(s.organizationId, "portrait", s.userId)).ok).toBe(true);
+    await setStoreOpen(s.organizationId, s.userId, true);
+    const list = await createPriceList(s.organizationId, { name: "Portrait session", currency: "usd" });
+    if (!list.ok) throw new Error(list.error);
+    const product = await createProduct(s.organizationId, { priceListId: list.value.id, kind: "print", name: "8×10 print" });
+    if (!product.ok) throw new Error(product.error);
+    await createProductVariant(s.organizationId, { productId: product.value.id, name: "Lustre", costCents: 200, priceCents: 1400 });
     expect(step(await getSetupState(s.organizationId), "store").done).toBe(false);
   });
 
-  it("both signals: done — and it flips automatically when the second arrives", async () => {
+  it("product + attachment but the store is closed: not done", async () => {
     const s = await seedStudio({ plan: "studio" });
-    await connectPayouts(s.organizationId);
+    await makeSellable(s);
+    // makeSellable leaves the store closed — closed means clients can't buy
     expect(step(await getSetupState(s.organizationId), "store").done).toBe(false);
-    // The second signal (a price list) arrives — the step must flip on its
-    // own; there is no manual "mark done" anywhere in the system.
-    expect((await createPriceListFromTemplate(s.organizationId, "portrait", s.userId)).ok).toBe(true);
+  });
+
+  it("all three signals: done — and it flips automatically when the last arrives", async () => {
+    const s = await seedStudio({ plan: "studio" });
+    await setStoreOpen(s.organizationId, s.userId, true);
+    expect(step(await getSetupState(s.organizationId), "store").done).toBe(false);
+    await makeSellable(s);
     const state = await getSetupState(s.organizationId);
     expect(step(state, "store").done).toBe(true);
     expect(state.total).toBe(12);
+  });
+
+  it("payouts are NOT part of the signal — open + priced + attached is done without Stripe", async () => {
+    const s = await seedStudio({ plan: "studio" });
+    expect((await getSetupState(s.organizationId)).steps.find((x) => x.id === "payouts")!.done).toBe(false);
+    await setStoreOpen(s.organizationId, s.userId, true);
+    await makeSellable(s);
+    expect(step(await getSetupState(s.organizationId), "store").done).toBe(true);
+  });
+
+  it("archiving the only product un-completes the step; detaching the gallery does too", async () => {
+    const s = await seedStudio({ plan: "studio" });
+    await setStoreOpen(s.organizationId, s.userId, true);
+    const { listId, grantId } = await makeSellable(s);
+    expect(step(await getSetupState(s.organizationId), "store").done).toBe(true);
+
+    expect(await detachPriceListFromGrant(s.organizationId, grantId)).toEqual({ ok: true, value: true });
+    expect(step(await getSetupState(s.organizationId), "store").done).toBe(false);
+
+    const attach = await attachPriceListToGrant(s.organizationId, { grantId, priceListId: listId });
+    expect(attach.ok).toBe(true);
+    expect(step(await getSetupState(s.organizationId), "store").done).toBe(true);
   });
 
   it("the checklist carries every step with a deep link except the demo action", async () => {
