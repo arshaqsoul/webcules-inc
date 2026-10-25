@@ -35,7 +35,7 @@ export default function Embeds() {
       <p>
         The contact form, booking calendar and booking button are one script tag each — they work
         on any website. Grab your snippets ready-made from{" "}
-        <a href="/dashboard/settings/embeds">Settings → Embeds</a>, or paste the examples below.
+        <a href="/dashboard/settings/embeds">Settings → Website & booking</a>, or paste the examples below.
         Want the pages themselves on your own domain? See{" "}
         <a href="/docs/domains">custom domains</a>.
       </p>
@@ -46,7 +46,7 @@ export default function Embeds() {
 
       <Callout tone="warn" title="Before you embed">
         Widgets render inside an iframe guarded by <code>frame-ancestors</code>. Add your site
-        under Settings → Embeds → Allowed embed sites, or the browser will block the iframe. If
+        under Settings → Website & booking → Allowed embed sites, or the browser will block the iframe. If
         your site ships its own CSP, allow <code>script-src {PUBLIC_ORIGIN}</code> and{" "}
         <code>frame-src {PUBLIC_ORIGIN}</code>.
       </Callout>
@@ -203,7 +203,7 @@ function App() {
 
       <p>
         Snippets are generated per studio with your key and theme at{" "}
-        <a href="/dashboard/settings/embeds">Settings → Embeds</a>. Questions —{" "}
+        <a href="/dashboard/settings/embeds">Settings → Website & booking</a>. Questions —{" "}
         <a href={`mailto:${emailAddress("hello")}`}>{emailAddress("hello")}</a>.
       </p>
 

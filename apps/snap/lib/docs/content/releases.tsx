@@ -38,6 +38,18 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.28.0" date="October 25, 2026">
+        <p>
+          <strong>Your booking link, right where you look for it.</strong>{" "}
+          The Calendar now has a &ldquo;Booking page&rdquo; tab next to Availability: copy your
+          public booking link, open it, or jump straight into customizing it — two clicks from the
+          sidebar, on every plan. Settings &rarr; Embeds is now called{" "}
+          <strong>Settings &rarr; Website &amp; booking</strong> (same address, nothing breaks),
+          and the page leads with your booking link and its designer, with the website widget
+          snippets below. Copying your link works on the free plan; the designer itself remains a
+          Lite feature, with the same upgrade prompt as before.
+        </p>
+      </Release>
       <Release version="0.27.0" date="October 17, 2026">
         <p>
           <strong>Deliver just their picks — favorites-only downloads.</strong>{" "}

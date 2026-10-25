@@ -3,13 +3,16 @@ import { redirect } from "next/navigation";
 
 import { CalendarMonth } from "@/components/calendar-month";
 import { AvailabilityEditor } from "@/components/availability-editor";
+import { CalendarBookingPage } from "@/components/calendar-booking-page";
 import { getAvailability } from "@/lib/repos/availability";
 import { listBookingsInRange } from "@/lib/repos/bookings";
 import { listProjectsInRange } from "@/lib/repos/projects";
 import { listLeadsInRange } from "@/lib/repos/leads";
 import { manageLinkState } from "@/lib/repos/booking-manage";
-import { getStudioProfile } from "@/lib/repos/studios";
+import { getStudioProfile, getStudioSlug } from "@/lib/repos/studios";
 import { getOrgContext } from "@/lib/session";
+import { clientUrl } from "@/lib/client-urls";
+import { getPlanEntitlements } from "@/lib/plans";
 
 export const metadata = { title: "Calendar" };
 
@@ -32,14 +35,18 @@ export default async function CalendarPage({
   const tabs = [
     { key: "calendar", label: "Calendar" },
     { key: "availability", label: "Availability" },
+    { key: "booking", label: "Booking page" },
   ];
   // Profile, the month's bookings and the month's committed projects /
-  // dated leads are independent — fetch in parallel.
-  const [profile, bookings, projects, leads] = await Promise.all([
+  // dated leads are independent — fetch in parallel. The booking-page tab
+  // (WEBC-112) needs the slug + plan instead of the month's data.
+  const [profile, bookings, projects, leads, slug, ent] = await Promise.all([
     getStudioProfile(ctx.organizationId),
-    tab === "availability" ? Promise.resolve([]) : listBookingsInRange(ctx.organizationId, rangeStart, rangeEnd),
-    tab === "availability" ? Promise.resolve([]) : listProjectsInRange(ctx.organizationId, rangeStart, rangeEnd),
-    tab === "availability" ? Promise.resolve([]) : listLeadsInRange(ctx.organizationId, rangeStart, rangeEnd),
+    tab === "calendar" ? listBookingsInRange(ctx.organizationId, rangeStart, rangeEnd) : Promise.resolve([]),
+    tab === "calendar" ? listProjectsInRange(ctx.organizationId, rangeStart, rangeEnd) : Promise.resolve([]),
+    tab === "calendar" ? listLeadsInRange(ctx.organizationId, rangeStart, rangeEnd) : Promise.resolve([]),
+    tab === "booking" ? getStudioSlug(ctx.organizationId) : Promise.resolve(""),
+    tab === "booking" ? getPlanEntitlements(ctx.organizationId) : Promise.resolve(null),
   ]);
   const tz = profile?.timezone ?? "UTC";
 
@@ -67,7 +74,12 @@ export default async function CalendarPage({
         </div>
       </div>
 
-      {tab === "availability" ? (
+      {tab === "booking" ? (
+        <CalendarBookingPage
+          bookingUrl={await clientUrl(ctx.organizationId, `/b/${slug}`)}
+          canEdit={ent ? ent.id !== "free" : false}
+        />
+      ) : tab === "availability" ? (
         <div className="flex flex-col gap-5">
           {/* WEB-286: session type definitions moved to Templates; Calendar
            * keeps availability + a pointer so the old muscle memory lands. */}

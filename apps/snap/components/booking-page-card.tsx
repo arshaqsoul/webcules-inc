@@ -3,6 +3,7 @@
 /* Booking page designer (WEB-254) — hero/intro/FAQ/socials/thanks for
  * /b/{slug}, with the studio's live booking page as the preview (the real
  * renderer). Lite+; Free sees the upgrade path. */
+import { Check, Copy } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@webcules/ui/components/button";
@@ -15,6 +16,17 @@ export function BookingPageCard({ initial, canEdit, bookingUrl }: { initial: Boo
   const [status, setStatus] = useState<string | null>(null);
   const [upsell, setUpsell] = useState(false);
   const [previewKey, setPreviewKey] = useState(0);
+  const [copied, setCopied] = useState(false);
+
+  // WEBC-112: the public link leads the card on every tier — copy is not gated.
+  async function copyLink() {
+    await navigator.clipboard.writeText(bookingUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+    // Same beacon EmbedHub's booking-link copy fires — the setup guide's
+    // "put Snap on your website" step tracks link shares too. Fire-and-forget.
+    void fetch("/api/studio/setup/embed-copied", { method: "POST" }).catch(() => {});
+  }
 
   const set = (patch: Partial<BookingPageConfig>) => setCfg((c) => ({ ...c, ...patch }));
   const input = "rounded-md border border-hairline bg-canvas px-3 py-2 text-sm text-ink outline-none focus:border-primary";
@@ -43,20 +55,50 @@ export function BookingPageCard({ initial, canEdit, bookingUrl }: { initial: Boo
 
   if (!canEdit) {
     return (
-      <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
+      <section className="rounded-[12px] border border-hairline bg-surface-1 p-5" id="booking-page">
         <h2 className="text-[15px] font-medium text-ink">Booking page</h2>
         <p className="mb-3 mt-1 text-xs text-ink-subtle">
           Your words on the booking page — hero copy, an intro, FAQ, social links and a custom thank-you. Included with Lite and above.
         </p>
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <code className="min-w-0 flex-1 truncate rounded-md bg-canvas px-3 py-2 font-mono text-xs text-ink">{bookingUrl}</code>
+          <Button variant="secondary" size="sm" aria-label="Copy booking link" onClick={() => void copyLink()}>
+            {copied ? <Check className="h-4 w-4" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />}
+            {copied ? "Copied" : "Copy link"}
+          </Button>
+          <a
+            href={bookingUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex h-9 items-center rounded-md border border-hairline bg-surface-1 px-3 text-sm text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink"
+          >
+            Open page
+          </a>
+        </div>
         <a href="/dashboard/settings/billing" className="text-xs font-medium text-primary hover:underline">Upgrade to Lite →</a>
       </section>
     );
   }
 
   return (
-    <section className="rounded-[12px] border border-hairline bg-surface-1 p-5">
+    <section className="rounded-[12px] border border-hairline bg-surface-1 p-5" id="booking-page">
       <h2 className="text-[15px] font-medium text-ink">Booking page</h2>
       <p className="mb-4 mt-1 text-xs text-ink-subtle">Hero copy, intro, FAQ (no-JS collapsibles), social links and the post-booking thank-you. Empty fields keep the defaults.</p>
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <code className="min-w-0 flex-1 truncate rounded-md bg-canvas px-3 py-2 font-mono text-xs text-ink">{bookingUrl}</code>
+        <Button variant="secondary" size="sm" aria-label="Copy booking link" onClick={() => void copyLink()}>
+          {copied ? <Check className="h-4 w-4" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />}
+          {copied ? "Copied" : "Copy link"}
+        </Button>
+        <a
+          href={bookingUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex h-9 items-center rounded-md border border-hairline bg-surface-1 px-3 text-sm text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink"
+        >
+          Open page
+        </a>
+      </div>
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="flex flex-col gap-3">
           <div className="grid gap-3 sm:grid-cols-2">
