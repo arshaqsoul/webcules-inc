@@ -1,5 +1,5 @@
 /* Booking page — the standalone public booking link at /b/{slug}: what
- * clients see, where the link lives (Settings → Embeds), the Lite-gated
+ * clients see, where the link lives (Settings → Website & booking), the Lite-gated
  * page designer, and how session types drive the page. */
 import { Callout, H2, Note, Related, Shot, Steps, Tier } from "@/lib/docs/primitives";
 
@@ -21,7 +21,7 @@ export default function BookingPage() {
 
       <H2>One link, no website needed</H2>
       <p>
-        The link lives in <a href="/dashboard/settings/embeds">Settings → Embeds</a> under{" "}
+        The link lives in <a href="/dashboard/settings/embeds">Settings → Website & booking</a> under{" "}
         <strong>Public booking link</strong>, with copy and open buttons right next to it. The page
         carries your logo, accent, and font automatically — theming follows your studio brand set
         in <a href="/dashboard/settings/brand">Settings → Brand</a>. Search engines are told to
@@ -81,7 +81,7 @@ export default function BookingPage() {
       </H2>
       <p>
         The <strong>Booking page</strong> card in{" "}
-        <a href="/dashboard/settings/embeds">Settings → Embeds</a> is a designer for every word on
+        <a href="/dashboard/settings/embeds">Settings → Website & booking</a> is a designer for every word on
         the page, with your real page as a live preview beside the fields:
       </p>
       <ul>

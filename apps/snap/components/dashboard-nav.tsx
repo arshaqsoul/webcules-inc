@@ -46,7 +46,7 @@ export const SETTINGS_ITEMS: { href: string; label: string; icon: LucideIcon; ow
   { href: "/dashboard/settings/security", label: "Security", icon: ShieldCheck },
   { href: "/dashboard/settings/brand", label: "Brand", icon: Palette },
   { href: "/dashboard/settings/domains", label: "Domains", icon: Globe },
-  { href: "/dashboard/settings/embeds", label: "Embeds", icon: Code2 },
+  { href: "/dashboard/settings/embeds", label: "Website & booking", icon: Code2 },
   { href: "/dashboard/settings/integrations", label: "Integrations", icon: PlugZap },
   { href: "/dashboard/settings/delivery", label: "Delivery", icon: PackageCheck },
   { href: "/dashboard/settings/notifications", label: "Notifications", icon: Bell },

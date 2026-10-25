@@ -141,7 +141,9 @@ export default async function ProjectDetailPage({
       tab === "gallery"
         ? (async () => (await getDefaultTemplate(ctx.organizationId, "gallery_preset"))?.body ?? null)().then((b) => parseGalleryDesignJson(b))
         : Promise.resolve(null),
-      tab === "gallery" ? getPlanEntitlements(ctx.organizationId) : Promise.resolve(null),
+      tab === "gallery" || tab === "files"
+        ? getPlanEntitlements(ctx.organizationId)
+        : Promise.resolve(null),
     ]);
 
   return (
@@ -293,12 +295,22 @@ export default async function ProjectDetailPage({
           {/* WEB-183 Drive import: the Google GIS client id is a public
            * browser value (WEB-195 convention) — unset env keeps the Drive
            * button hidden. */}
-          <ProjectFiles projectId={id} clientEmail={client?.email} defaultExpiryDays={deliveryDefaults.expiryDays} defaultAllowDownload={deliveryDefaults.allowDownload} driveClientId={cloudDestinationsFromEnv(env).driveClientId} />
+          {/* WEBC-113: canHeat is presentation-only — the interest-heat
+           * endpoint stays server-gated (Studio+). */}
+          <ProjectFiles projectId={id} clientEmail={client?.email} defaultExpiryDays={deliveryDefaults.expiryDays} defaultAllowDownload={deliveryDefaults.allowDownload} driveClientId={cloudDestinationsFromEnv(env).driveClientId} canHeat={ent?.id === "studio" || ent?.id === "pro"} />
         </section>
       )}
 
       {tab === "gallery" && (
         <>
+        {/* WEBC-114: sticky step map — the tab is a long scroll; this keeps
+         * the flow (design → select files → protect → share → uploads)
+         * visible and one click away. Anchors + one cross-tab link only;
+         * no data-flow change. */}
+        <GalleryStepNav projectId={id} />
+        {/* WEBC-114: #gallery-design — the step map's "Design" anchor wraps
+         * the template picker + designer. */}
+        <div id="gallery-design" className="flex scroll-mt-16 flex-col gap-5">
         {/* WEB-320: visual template picker. Free templates (cover-only looks)
           * apply on every tier; sectioned ones need Lite, collage Studio.
           * No saved design and no studio default = the Classic template. */}
@@ -319,6 +331,7 @@ export default async function ProjectDetailPage({
           initialSlideshow={slideshowCfg}
           canMusic={(ent?.id ?? "free") !== "free"}
         />
+        </div>
         <GalleryActivity
           analytics={await getGalleryAnalytics(ctx.organizationId, id)}
           grants={grants.map((g) => ({ id: g.id, clientEmail: g.clientEmail, state: g.state }))}
@@ -330,6 +343,14 @@ export default async function ProjectDetailPage({
           <p className="mb-4 mt-1 text-xs text-ink-subtle">
             Send a secure link — the client verifies by email code, and you can revoke or rotate it any time.
           </p>
+          {/* WEBC-114: protection options surfaced BEFORE the first link
+           * exists — per-link settings used to hide inside each grant's
+           * collapsible, so a photographer couldn't discover PIN / web
+           * sizes / favorites-only / approvals / email capture up front.
+           * Read-only: the create API takes no protection settings (that's
+           * a follow-up), so this panel shows what each option does and
+           * which plan unlocks it. */}
+          <DownloadProtectionOverview canLite={(ent?.id ?? "free") !== "free"} canStudio={ent?.id === "studio" || ent?.id === "pro"} />
           <ProjectGalleries
             projectId={id}
             clientEmail={client?.email ?? ""}
@@ -345,10 +366,13 @@ export default async function ProjectDetailPage({
             canStudio={ent?.id === "studio" || ent?.id === "pro"}
           />
         </section>
+        {/* WEBC-114: #client-uploads — the step map's "Uploads" anchor. */}
+        <div id="client-uploads" className="scroll-mt-16">
         <ClientUploadsPanel
           projectId={id}
           grants={grants.map((g) => ({ id: g.id, clientEmail: g.clientEmail, state: g.state }))}
         />
+        </div>
         </>
       )}
 
@@ -432,6 +456,91 @@ export default async function ProjectDetailPage({
       )}
 
       {tab === "activity" && <ActivityTab organizationId={ctx.organizationId} projectId={id} events={events} shareActivity={shareActivity} auditEvents={auditEvents} />}
+    </div>
+  );
+}
+
+/* WEBC-114: sticky step map for the Client gallery tab — one row, five
+ * steps. Everything is an in-page anchor except "Select files", which is
+ * the Files tab where approving happens. Server component: plain links,
+ * no client JS beyond Next's prefetch. */
+function GalleryStepNav({ projectId }: { projectId: string }) {
+  const steps = [
+    { label: "Design", href: "#gallery-design" },
+    { label: "Select files", href: `/dashboard/projects/${projectId}?tab=files` },
+    { label: "Protect & settings", href: "#download-protection" },
+    { label: "Share", href: "#share" },
+    { label: "Uploads", href: "#client-uploads" },
+  ];
+  return (
+    <nav
+      aria-label="Client gallery steps"
+      className="no-scrollbar sticky top-0 z-20 -mx-1 flex gap-1.5 overflow-x-auto overscroll-x-contain bg-canvas/95 px-1 py-1.5 backdrop-blur sm:flex-wrap sm:overflow-visible"
+    >
+      {steps.map((s, i) => (
+        <Link
+          key={s.label}
+          href={s.href}
+          className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-hairline bg-surface-1 px-3 py-1.5 text-xs font-medium text-ink-subtle transition-colors hover:bg-surface-2 hover:text-ink"
+        >
+          <span aria-hidden className="text-[10px] font-semibold text-ink-tertiary">{i + 1}</span>
+          {s.label}
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
+/* WEBC-114: the download protections are per-link and used to render only
+ * inside each grant's collapsible — undiscoverable before the first link
+ * exists. This read-only pre-share panel lists every option, what it does
+ * and which plan unlocks it. Tier gates mirror the API + GrantDownloadSettings
+ * exactly (PIN / web sizes / favorites-only / email capture Lite+,
+ * approvals Studio+); no data-flow change — the create-grant API takes no
+ * protection settings, so defaults-at-creation stays a follow-up. */
+function DownloadProtectionOverview({ canLite, canStudio }: { canLite: boolean; canStudio: boolean }) {
+  const rows: { name: string; desc: string; plan: "Lite" | "Studio"; locked: boolean }[] = [
+    { name: "Download PIN", plan: "Lite", locked: !canLite, desc: "A 4–8 digit code the client must enter before anything downloads." },
+    { name: "Web sizes (2048px · 1280px)", plan: "Lite", locked: !canLite, desc: "Offer smaller, email-friendly sizes next to the originals." },
+    { name: "Favorites only", plan: "Lite", locked: !canLite, desc: "Lock downloads to the photos the client favorited — everything else stays view-only." },
+    { name: "Email before download", plan: "Lite", locked: !canLite, desc: "Ask for an email before downloads unlock — you see who took files." },
+    { name: "Download approvals", plan: "Studio", locked: !canStudio, desc: "Bulk ZIP requests wait for your approval before anything is built." },
+  ];
+  return (
+    <div id="download-protection" className="mb-4 scroll-mt-16 rounded-[12px] border border-hairline bg-canvas p-4">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h3 className="text-sm font-medium text-ink">Download protection</h3>
+        <p className="text-[11px] text-ink-tertiary">Set per link — open “Download controls” under a share link below.</p>
+      </div>
+      <p className="mt-1 text-xs text-ink-subtle">
+        Every link carries its own protections. They apply once a link exists — create the link, then set them on it (or any time after).
+      </p>
+      <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+        {rows.map((r) => (
+          <li key={r.name} className="flex items-start justify-between gap-3 rounded-md border border-hairline bg-surface-1 px-3 py-2">
+            <div className="min-w-0">
+              <p className="text-xs font-medium text-ink">{r.name}</p>
+              <p className="mt-0.5 text-[11px] leading-snug text-ink-tertiary">{r.desc}</p>
+            </div>
+            {r.locked ? (
+              <a
+                href="/dashboard/settings/billing"
+                title={`${r.plan} feature — upgrade to unlock`}
+                className="shrink-0 text-[11px] font-medium text-primary hover:underline"
+              >
+                {r.plan} · Upgrade
+              </a>
+            ) : (
+              <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-primary">
+                Included
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
+      <p className="mt-3 text-[11px] text-ink-tertiary">
+        On every plan: cap downloads per client, require a license agreement before download, set an expiry and revoke instantly. Watermarking is a Studio feature (control above).
+      </p>
     </div>
   );
 }

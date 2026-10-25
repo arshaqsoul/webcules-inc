@@ -1,22 +1,30 @@
 /* /dashboard/store (WEB-277, Commerce C1 6/7) — the store home per the
  * approved WEB-175 handoff: store status (open/closed), Price lists /
  * Products tabs, first-run template picker, and "Preview the store as a
- * client". Free plan still sees the upgrade card (the store is Lite+).
- * Route states: loading.tsx (skeleton, aria-busy) and error.tsx
- * (role=alert card) carry the handoff copy. */
+ * client". WEBC-121 (audit F2/F9): the page also feeds the Store setup
+ * wizard (galleries + active attachments) and honors ?setup=1 — the
+ * Setup Guide "Set up your store" step's deep link, which opens the page
+ * with the wizard card highlighted. Free plan still sees the upgrade card
+ * (the store is Lite+). Route states: loading.tsx (skeleton, aria-busy)
+ * and error.tsx (role=alert card) carry the handoff copy. */
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { StoreHome } from "@/components/store-home";
-import { commerceGatesForPlan, getStoreOpen, listAllProducts, listPriceLists } from "@/lib/commerce";
+import { commerceGatesForPlan, getStoreOpen, listAllProducts, listPriceLists, listStoreAttachments } from "@/lib/commerce";
 import { getPlanEntitlements } from "@/lib/plans";
 import { getStudioProfile } from "@/lib/repos/studios";
+import { listStudioGrants } from "@/lib/shares/grants";
 import { getOrgContext } from "@/lib/session";
 
 export const metadata = { title: "Store" };
 export const dynamic = "force-dynamic";
 
-export default async function StorePage() {
+export default async function StorePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ setup?: string }>;
+}) {
   const ctx = await getOrgContext();
   if (!ctx) redirect("/login");
   const ent = await getPlanEntitlements(ctx.organizationId);
@@ -39,12 +47,15 @@ export default async function StorePage() {
     );
   }
 
-  const [lists, products, storeOpen, profile] = await Promise.all([
+  const [lists, products, storeOpen, profile, galleries, attachments] = await Promise.all([
     listPriceLists(ctx.organizationId),
     listAllProducts(ctx.organizationId),
     getStoreOpen(ctx.organizationId),
     getStudioProfile(ctx.organizationId),
+    listStudioGrants(ctx.organizationId, 200),
+    listStoreAttachments(ctx.organizationId),
   ]);
+  const { setup } = await searchParams;
 
   return (
     <StoreHome
@@ -53,6 +64,12 @@ export default async function StorePage() {
       initialStoreOpen={storeOpen}
       payoutsConnected={Boolean(profile?.stripeAccountId)}
       gates={commerceGatesForPlan(ent)}
+      plan={ent.id}
+      galleries={galleries
+        .filter((g) => g.state === "active" || g.state === "expiring_soon") // live galleries only
+        .map((g) => ({ id: g.id, projectTitle: g.projectTitle }))}
+      attachments={attachments}
+      setupMode={setup === "1"}
     />
   );
 }

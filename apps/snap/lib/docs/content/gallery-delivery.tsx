@@ -113,6 +113,10 @@ export default function GalleryDelivery() {
         accept before anything downloads &mdash; on every plan, with no tier gate. Each
         acceptance is frozen in an uneditable audit log with the exact text they agreed
         to, and editing the license asks everyone again on their next download.
+        Every option lives in <strong>Download controls</strong> under each share link
+        (project &rarr; Client gallery tab); the tab&rsquo;s step map jumps you straight
+        there, and its <strong>Download protection</strong> panel lists every option and
+        the plan it needs before you&rsquo;ve created a single link.
         Downloads follow the gallery&apos;s protections: proofing galleries
         deliver watermarked previews only, and original JPEGs leave without location data.
         Revoking or expiring a gallery stops downloads immediately &mdash; even ones already in

@@ -61,6 +61,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
       zip: grant.allowDownload,
       approval: settings.approval,
       webSize,
+      // WEB-102: downloads are locked to the client's favorited photos.
+      selectionOnly: settings.selectionOnly,
       limit: settings.limit,
       limitUsed: used,
       pin: Boolean(settings.pinHash),
@@ -96,6 +98,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
   const scope = (DOWNLOAD_SCOPES as readonly string[]).includes(String(body.scope)) ? (body.scope as DownloadScope) : null;
   if (!scope) return Response.json({ error: "invalid_scope" }, { status: 400 });
 
+  // WEB-102 selection-only delivery: a request is always and only the
+  // client's favorites — any wider scope is forced down (the ZIP route
+  // clamps too, so a forged POST can never file an "everything" request).
+  const effectiveScope: DownloadScope = settings.selectionOnly ? "favorites" : scope;
+
   // scope='photos' ids must be in this grant; folder must exist in it.
   if (scope === "photos") {
     const ids = Array.isArray(body.assetIds) ? body.assetIds.slice(0, REQUEST_MAX_ASSET_IDS) : [];
@@ -108,9 +115,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ token: 
   const result = await createDownloadRequest({
     grant,
     clientEmail: grant.clientEmail,
-    scope,
-    folderName: scope === "folder" ? body.folderName ?? null : null,
-    assetIds: scope === "photos" ? body.assetIds : undefined,
+    scope: effectiveScope,
+    folderName: effectiveScope === "folder" ? body.folderName ?? null : null,
+    assetIds: effectiveScope === "photos" ? body.assetIds : undefined,
     // (WEB-196 review fix): same proofing suppression as the GET controls —
     // a proofing gallery's approval rows record sizePref "full".
     sizePref: parseSizePref(body.sizePref, settings.webSize && !grant.proofing),

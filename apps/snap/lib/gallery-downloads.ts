@@ -1,8 +1,8 @@
 /* Downloads model (WEB-261, streaming since 3.0) — pure + client-safe:
  * per-gallery download controls (validated JSON on
  * share_grant.download_settings), the approval state machine, and PIN
- * hashing helpers. PIN + web size are Lite+; the approvals hub is Studio+;
- * download-all itself is on every plan (WEB-267 gate table). */
+ * hashing helpers. PIN + web size + selection-only are Lite+; the approvals
+ * hub is Studio+; download-all itself is on every plan (WEB-267 gate table). */
 
 export type DownloadSettings = {
   /** SHA-256 hex of `${pin}:${grantId}` — the PIN itself is never stored. */
@@ -18,12 +18,17 @@ export type DownloadSettings = {
   /** WEB-194: ask for an email before downloads unlock (guest galleries /
    * minis / event shares — the studio wants to know who took files). */
   emailCapture: boolean;
+  /** WEB-102 selection-only delivery: the client may download ONLY their
+   * favorited photos (any favorite list) — everything else 403s server-side
+   * and ZIP scope clamps to `favorites`. The free→paid proofing last mile:
+   * deliver the picks without unlocking the whole gallery. */
+  selectionOnly: boolean;
 };
 
 export const DOWNLOAD_SETTINGS_MAX_JSON = 512;
 
 export function parseDownloadSettings(stored: string | null | undefined): DownloadSettings {
-  const fallback: DownloadSettings = { pinHash: null, limit: null, approval: false, webSize: false, emailCapture: false };
+  const fallback: DownloadSettings = { pinHash: null, limit: null, approval: false, webSize: false, emailCapture: false, selectionOnly: false };
   if (!stored) return fallback;
   try {
     const raw = JSON.parse(stored) as Record<string, unknown>;
@@ -34,6 +39,7 @@ export function parseDownloadSettings(stored: string | null | undefined): Downlo
       approval: raw.approval === true,
       webSize: raw.webSize === true,
       emailCapture: raw.emailCapture === true,
+      selectionOnly: raw.selectionOnly === true,
     };
   } catch {
     return fallback;
@@ -61,6 +67,7 @@ export function normalizeDownloadSettingsInput(input: unknown): DownloadSettings
     approval: raw.approval === true,
     webSize: raw.webSize === true,
     emailCapture: raw.emailCapture === true,
+    selectionOnly: raw.selectionOnly === true,
   };
 }
 

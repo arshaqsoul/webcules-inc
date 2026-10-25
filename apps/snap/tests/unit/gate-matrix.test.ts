@@ -16,6 +16,8 @@ import favoritesExportRoute from "../../app/api/grants/[id]/favorites/export/rou
 import sneakPeekRoute from "../../app/api/assets/sneak-peek/route.ts?raw";
 import assetRoute from "../../app/api/assets/[id]/route.ts?raw";
 import assetViewsRoute from "../../app/api/projects/[id]/asset-views/route.ts?raw";
+import commerceListRoute from "../../app/api/studio/commerce/[id]/route.ts?raw";
+import storeHomeSource from "../../components/store-home.tsx?raw";
 
 import { PLANS } from "@/lib/plans";
 import { FREE_CUSTOM_FIELD_CAP } from "@/lib/forms";
@@ -87,6 +89,7 @@ describe("WEB-267 gallery ladder (gates as shipped)", () => {
       ["pin_requires_lite", downloadSettingsRoute],
       ["web_size_requires_lite", downloadSettingsRoute],
       ["email_capture_requires_lite", downloadSettingsRoute],
+      ["selection_only_requires_lite", downloadSettingsRoute],
       ["approvals_require_studio", downloadSettingsRoute],
       ["notes_require_studio", favoriteRoute],
       ["exports_require_studio", favoritesExportRoute],
@@ -103,6 +106,20 @@ describe("WEB-267 gallery ladder (gates as shipped)", () => {
       expect(src, `${name} route must not gate on plan`).not.toMatch(/getPlanEntitlements|requires_lite|requires_studio|ent\?\.id/);
     }
     expect(zipRoute).toContain("allowDownload"); // the photographer's per-gallery switch still rules
+  });
+});
+
+describe("WEB-102 selection-only delivery — server decides, every download path", () => {
+  it("the asset route 403s non-favorited downloads; the zip route clamps scope to favorites", () => {
+    expect(assetRoute).toContain("selection_only");
+    expect(zipRoute).toContain('settings.selectionOnly && selection.scope !== "favorites"');
+    expect(downloadRequestRoute).toContain('settings.selectionOnly ? "favorites" : scope');
+    // The gate sits with the other download gates, ABOVE the proofing block
+    // and the size rungs — no rung (original/web/mid) may bypass it.
+    const selAt = assetRoute.indexOf("selection_only");
+    const proofingAt = assetRoute.indexOf("grant.allowDownload && grant.proofing");
+    expect(selAt).toBeGreaterThan(-1);
+    expect(selAt).toBeLessThan(proofingAt);
   });
 });
 
@@ -123,6 +140,29 @@ describe("WEB-196 review fix — proofing swallows the size ladder", () => {
 
   it("download-request suppresses the ladder for proofing grants (controls + sizePref)", () => {
     expect(downloadRequestRoute).toContain("settings.webSize && !grant.proofing");
+  });
+});
+
+describe("WEBC-121 store setup — the price-list PATCH route stays gated + org-scoped", () => {
+  it("the attach/detach branch runs INSIDE the work.manage permission gate", () => {
+    // The wizard's attach step rides the existing PATCH route; the attach
+    // and detach calls must sit below permissionDenied (same gate as
+    // rename/default) — attaching is never an unauthenticated operation.
+    expect(commerceListRoute).toContain('permissionDenied(ctx, "work.manage")');
+    const deniedAt = commerceListRoute.indexOf('permissionDenied(ctx, "work.manage")');
+    for (const marker of ["attachPriceListToGrant", "detachPriceListFromGrant"]) {
+      const at = commerceListRoute.indexOf(marker, deniedAt); // skip the import block
+      expect(at, `${marker} must be CALLED after the permission gate`).toBeGreaterThan(-1);
+    }
+    // Attach goes through the repo (attachPriceListToGrant), never raw SQL —
+    // the one-active-list-per-gallery batch invariant lives there.
+    expect(commerceListRoute).not.toMatch(/insert\(schema\.priceListGallery\)/);
+  });
+
+  it("the wizard routes attach through the SAME route shape (no parallel ungated surface)", () => {
+    // StoreHome must use /api/studio/commerce/<id> PATCH for attachments —
+    // a client-side fetch to any other write path would skip the gate.
+    expect(storeHomeSource).toContain('fetch(`/api/studio/commerce/${attachListId}`');
   });
 });
 

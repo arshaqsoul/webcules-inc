@@ -29,6 +29,18 @@ export function downloadSettingsOf(grant: { downloadSettings: string | null }): 
   return parseDownloadSettings(grant.downloadSettings);
 }
 
+/** WEB-102 selection-only delivery: is this asset among the grant's client
+ * favorites? Any favorite list counts — the client hearts a photo, it's
+ * downloadable when the studio turns selection-only on. */
+export async function assetFavorited(grantId: string, assetId: string): Promise<boolean> {
+  const rows = await getDb()
+    .select({ assetId: schema.galleryFavorites.assetId })
+    .from(schema.galleryFavorites)
+    .where(and(eq(schema.galleryFavorites.grantId, grantId), eq(schema.galleryFavorites.assetId, assetId)))
+    .limit(1);
+  return rows.length > 0;
+}
+
 export async function saveDownloadSettings(organizationId: string, grantId: string, settings: DownloadSettings): Promise<boolean> {
   const updated = await getDb()
     .update(schema.shareGrants)

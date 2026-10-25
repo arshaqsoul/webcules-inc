@@ -105,7 +105,7 @@ export default function StartGuide() {
           </>,
           <>
             <strong>Put Snap on your website</strong> — one script tag adds the contact form or
-            booking calendar to any site. In <a href="/dashboard/settings/embeds">Settings → Embeds</a>;
+            booking calendar to any site. In <a href="/dashboard/settings/embeds">Settings → Website & booking</a>;
             see <a href="/docs/embeds">Embeds</a>.
           </>,
         ]}

@@ -38,7 +38,7 @@ export default function Releases() {
         getting their own.
       </Note>
 
-      <Release version="0.27.0" date="October 25, 2026">
+      <Release version="0.31.0" date="October 25, 2026">
         <p>
           <strong>The full dashboard now fits on every laptop.</strong> On
           smaller screens the sidebar could hide Templates and Settings below
@@ -50,7 +50,92 @@ export default function Releases() {
           until every step is done.
         </p>
       </Release>
-
+      <Release version="0.30.0" date="October 25, 2026">
+        <p>
+          <strong>A guided path from empty store to first sale.</strong>{" "}
+          Opening a brand-new store no longer leaves you in a closed
+          storefront with an empty price list — a four-step setup wizard walks
+          you through creating your first price list and product, opening the
+          store, attaching the list to one of your galleries, and previewing
+          exactly what your clients will see. You can get there anytime from
+          the setup guide&rsquo;s <strong>Set up your store</strong> step,
+          which now checks off only when your store is truly selling: open,
+          with a product attached to a live gallery. And when you reach your
+          plan&rsquo;s price-list limit, the notice is now a clear upgrade card
+          that names what the next tier unlocks — <strong>Studio</strong> gives
+          you 5 price lists, packages, and custom products — with a direct
+          link to plans.
+        </p>
+      </Release>
+      <Release version="0.29.0" date="October 25, 2026">
+        <p>
+          <strong>The Client gallery tab now shows your sharing options before you share.</strong>{" "}
+          A new step map at the top of the tab — <strong>Design → Select files → Protect &amp;
+          settings → Share → Uploads</strong> — jumps you to any part of the flow, and{" "}
+          <strong>Select files</strong> takes you straight to the Files tab where approvals
+          happen. A <strong>Download protection</strong> panel lists every protection a link
+          can carry — download PIN, web sizes, favorites-only, email-before-download and
+          download approvals — what each one does, and which plan it needs{" "}
+          (<strong>Lite</strong> for PIN, web sizes, favorites-only and email capture;{" "}
+          <strong>Studio</strong> for approvals), so you can see the full picture before your
+          first link exists. When nothing is approved yet, the &ldquo;Approve files&rdquo;
+          hint is now a real link to the Files tab. Protections themselves are still set per
+          link under <strong>Download controls</strong> — nothing about existing links
+          changes.
+        </p>
+      </Release>
+      <Release version="0.28.1" date="October 25, 2026">
+        <p>
+          <strong>A Files toolbar that explains itself.</strong>{" "}
+          The project Files controls now sit in three labelled groups —{" "}
+          <strong>Cull</strong> (Select, Triage, Group similar, Heat,
+          Auto-advance), <strong>Deliver</strong> (Share) and{" "}
+          <strong>Add</strong> (Upload, Drive) — on desktop and in the mobile
+          Actions menu alike. Every button carries a real tooltip that works
+          with a hover, a tap, or a keyboard focus, and a new{" "}
+          <strong>?</strong> button at the toolbar&rsquo;s right edge opens the
+          complete keyboard-shortcut legend (Triage has its own, too — press{" "}
+          <strong>?</strong> mid-cull). <strong>Heat</strong>{" "}
+          shows which photos your client viewed most — now marked with a lock
+          and an upgrade link on Free and Lite, since it&rsquo;s included with
+          Studio.
+        </p>
+      </Release>
+      <Release version="0.28.0" date="October 25, 2026">
+        <p>
+          <strong>Your booking link, right where you look for it.</strong>{" "}
+          The Calendar now has a &ldquo;Booking page&rdquo; tab next to Availability: copy your
+          public booking link, open it, or jump straight into customizing it — two clicks from the
+          sidebar, on every plan. Settings &rarr; Embeds is now called{" "}
+          <strong>Settings &rarr; Website &amp; booking</strong> (same address, nothing breaks),
+          and the page leads with your booking link and its designer, with the website widget
+          snippets below. Copying your link works on the free plan; the designer itself remains a
+          Lite feature, with the same upgrade prompt as before.
+        </p>
+      </Release>
+      <Release version="0.27.0" date="October 17, 2026">
+        <p>
+          <strong>Deliver just their picks — favorites-only downloads.</strong>{" "}
+          A new &ldquo;Favorites only&rdquo; switch in the gallery&rsquo;s
+          download controls locks downloads to the photos your client
+          selected: everything else in the gallery stays locked, while their
+          picks download in full resolution. Turn it on after the selection
+          comes in — no more re-opening the whole gallery just to hand over
+          the chosen files. Clients see only a &ldquo;My favorites&rdquo;
+          download on locked galleries, and the download and reminder emails
+          say exactly what&rsquo;s included. Available on Lite and above,
+          alongside the other download controls.
+        </p>
+      </Release>
+      <Release version="0.26.5" date="October 17, 2026">
+        <p>
+          <strong>Fixed a console error on the Integrations settings page.</strong>{" "}
+          Some browsers showed a technical hydration error in the console when
+          opening Settings &rarr; Integrations, caused by token dates being
+          formatted differently on the server than in your browser. Dates are
+          now formatted the same way everywhere, so the page loads cleanly.
+        </p>
+      </Release>
       <Release version="0.26.4" date="October 16, 2026">
         <p>
           <strong>No more double loading screens.</strong> Some pages showed

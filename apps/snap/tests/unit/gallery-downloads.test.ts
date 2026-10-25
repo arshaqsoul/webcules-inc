@@ -20,7 +20,7 @@ import {
   type DownloadSettings,
 } from "@/lib/gallery-downloads";
 
-const SETTINGS: DownloadSettings = { pinHash: null, limit: null, approval: false, webSize: false, emailCapture: false };
+const SETTINGS: DownloadSettings = { pinHash: null, limit: null, approval: false, webSize: false, emailCapture: false, selectionOnly: false };
 
 describe("parseDownloadSettings (WEB-261)", () => {
   it("null/junk → safe defaults", () => {
@@ -31,7 +31,7 @@ describe("parseDownloadSettings (WEB-261)", () => {
 
   it("keeps valid fields, drops junk", () => {
     const s = parseDownloadSettings('{"pinHash":"'.concat("a".repeat(64), '","limit":10,"approval":true,"webSize":true,"bogus":1}'));
-    expect(s).toEqual({ pinHash: "a".repeat(64), limit: 10, approval: true, webSize: true, emailCapture: false });
+    expect(s).toEqual({ pinHash: "a".repeat(64), limit: 10, approval: true, webSize: true, emailCapture: false, selectionOnly: false });
     expect(parseDownloadSettings('{"pinHash":"xyz"}').pinHash).toBeNull();
     expect(parseDownloadSettings('{"limit":0}').limit).toBeNull();
     expect(parseDownloadSettings('{"limit":99999999}').limit).toBe(10_000); // read-side clamp; write-side rejects
@@ -42,11 +42,17 @@ describe("parseDownloadSettings (WEB-261)", () => {
     expect(parseDownloadSettings('{"emailCapture":"yes"}').emailCapture).toBe(false);
     expect(parseDownloadSettings(null).emailCapture).toBe(false);
   });
+
+  it("WEB-102: selectionOnly parses true; junk stays false", () => {
+    expect(parseDownloadSettings('{"selectionOnly":true}').selectionOnly).toBe(true);
+    expect(parseDownloadSettings('{"selectionOnly":1}').selectionOnly).toBe(false);
+    expect(parseDownloadSettings(null).selectionOnly).toBe(false);
+  });
 });
 
 describe("normalizeDownloadSettingsInput (WEB-261)", () => {
   it("accepts a clean payload; rejects a bad limit", () => {
-    expect(normalizeDownloadSettingsInput({ limit: 25, approval: true, webSize: true, emailCapture: false })).toEqual({ pinHash: null, limit: 25, approval: true, webSize: true, emailCapture: false });
+    expect(normalizeDownloadSettingsInput({ limit: 25, approval: true, webSize: true, emailCapture: false })).toEqual({ pinHash: null, limit: 25, approval: true, webSize: true, emailCapture: false, selectionOnly: false });
     expect(normalizeDownloadSettingsInput({ limit: 0 })).toBeNull();
     expect(normalizeDownloadSettingsInput({ limit: "ten" })).toBeNull();
     expect(normalizeDownloadSettingsInput(null)).toBeNull();
@@ -56,6 +62,17 @@ describe("normalizeDownloadSettingsInput (WEB-261)", () => {
   it("WEB-194: emailCapture round-trips through the API input path", () => {
     expect(normalizeDownloadSettingsInput({ emailCapture: true })?.emailCapture).toBe(true);
     expect(normalizeDownloadSettingsInput({ emailCapture: 1 })?.emailCapture).toBe(false); // truthy-boolean only
+  });
+
+  it("WEB-102: selectionOnly round-trips through the API input path", () => {
+    expect(normalizeDownloadSettingsInput({ selectionOnly: true })?.selectionOnly).toBe(true);
+    expect(normalizeDownloadSettingsInput({ selectionOnly: "yes" })?.selectionOnly).toBe(false);
+    expect(normalizeDownloadSettingsInput({})?.selectionOnly).toBe(false);
+  });
+
+  it("WEB-102: the settings JSON stays inside the 512-byte cap with selectionOnly set", () => {
+    const worst = JSON.stringify({ ...SETTINGS, pinHash: "a".repeat(64), limit: 10_000, approval: true, webSize: true, emailCapture: true, selectionOnly: true });
+    expect(worst.length).toBeLessThanOrEqual(512);
   });
 });
 

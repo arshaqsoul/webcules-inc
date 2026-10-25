@@ -345,6 +345,9 @@ export type DlControls = {
   zip: boolean;
   approval: boolean;
   webSize: boolean;
+  /** WEB-102 selection-only delivery: downloads locked to the client's
+   * favorited photos (server enforces; UI mirrors it). */
+  selectionOnly?: boolean;
   limit: number | null;
   limitUsed: number;
   pin: boolean;
@@ -1069,6 +1072,8 @@ type SectionCtx = {
   onHeart: (assetId: string) => void;
   /** Per-photo hover download (GalleryTile dlOk). */
   downloadsOn: boolean;
+  /** WEB-102: downloads locked to the client's favorites (server decides). */
+  selectionOnly: boolean;
   onDownloadAsset: (assetId: string, filename: string) => void;
   onPick: (assetId: string) => void;
   onMeasured: (assetId: string, aspect: number) => void;
@@ -1248,8 +1253,8 @@ function GallerySectionView({ section, assets, ctx }: { section: Extract<RenderS
       captions={ctx.design.theme.captions}
       radiusCls={ctx.radiusCls}
       deterrents={ctx.deterrents}
-      dlOk={ctx.downloadsOn}
-      onDownload={ctx.downloadsOn ? () => ctx.onDownloadAsset(a.id, a.filename) : undefined}
+      dlOk={ctx.downloadsOn && (!ctx.selectionOnly || ctx.favorites.has(a.id))}
+      onDownload={ctx.downloadsOn && (!ctx.selectionOnly || ctx.favorites.has(a.id)) ? () => ctx.onDownloadAsset(a.id, a.filename) : undefined}
       onOpen={() => ctx.onOpenAsset(a.id)}
       onHeart={() => ctx.onHeart(a.id)}
       onPick={() => ctx.onPick(a.id)}
@@ -1346,8 +1351,8 @@ function FavoritesSectionView({ section, assets, ctx, fallbackHeading }: { secti
               captions={ctx.design.theme.captions}
               radiusCls={ctx.radiusCls}
               deterrents={ctx.deterrents}
-              dlOk={ctx.downloadsOn}
-              onDownload={ctx.downloadsOn ? () => ctx.onDownloadAsset(a.id, a.filename) : undefined}
+              dlOk={ctx.downloadsOn && (!ctx.selectionOnly || ctx.favorites.has(a.id))}
+              onDownload={ctx.downloadsOn && (!ctx.selectionOnly || ctx.favorites.has(a.id)) ? () => ctx.onDownloadAsset(a.id, a.filename) : undefined}
               onOpen={() => ctx.onOpenAsset(a.id)}
               onHeart={() => ctx.onHeart(a.id)}
               onPick={() => ctx.onPick(a.id)}
@@ -1670,7 +1675,14 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
           return;
         }
         if (!res.ok) {
-          setDlFlash(res.status === 403 ? "You've reached the download limit for this gallery — your photographer can lift it." : "Download failed — try again.");
+          // WEB-102: selection-only refusals get their own message (the
+          // per-client cap and the selection lock are both 403s).
+          const denied = res.status === 403 ? ((await res.json().catch(() => ({}))) as { error?: string }) : null;
+          setDlFlash(
+            denied?.error === "selection_only" ? "This gallery only allows downloads of your selected (favorited) photos."
+            : res.status === 403 ? "You've reached the download limit for this gallery — your photographer can lift it."
+            : "Download failed — try again.",
+          );
           setTimeout(() => setDlFlash(""), 4000);
           return;
         }
@@ -1717,7 +1729,12 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
           return;
         }
         if (!res.ok) {
-          setDlFlash(res.status === 403 ? "You've reached the download limit for this gallery — your photographer can lift it." : "Download failed — try again.");
+          const denied = res.status === 403 ? ((await res.json().catch(() => ({}))) as { error?: string }) : null;
+          setDlFlash(
+            denied?.error === "selection_only" ? "This gallery only allows downloads of your selected (favorited) photos."
+            : res.status === 403 ? "You've reached the download limit for this gallery — your photographer can lift it."
+            : "Download failed — try again.",
+          );
           setTimeout(() => setDlFlash(""), 4000);
           return;
         }
@@ -2195,6 +2212,11 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
 
   const deadlinePassed = selectionDeadline !== null && selectionDeadline < Date.now();
   const heartsOn = selectionMode !== "off";
+  // WEB-102 selection-only delivery: when the studio locked downloads to the
+  // client's favorites, only hearted photos offer the download button
+  // (client UI mirrors the server gate — the server decides).
+  const selectionOnlyOn = dl?.controls.selectionOnly === true;
+  const dlOkFor = useCallback((assetId: string) => allowDownload && (!selectionOnlyOn || favorites.has(assetId)), [allowDownload, selectionOnlyOn, favorites]);
   const picking = selectionMode === "selection" && !deadlinePassed;
 
   async function heart(assetId: string) {
@@ -2319,6 +2341,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
           onOpenAsset: openAsset,
           onHeart: (id) => void heart(id),
           downloadsOn: allowDownload,
+          selectionOnly: selectionOnlyOn,
           onDownloadAsset: (id, filename) => void downloadVia(`/api/assets/${id}?download=1`, filename),
           onPick: togglePick,
           onMeasured: measureAspect,
@@ -2457,33 +2480,44 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
               {dlMenuOpen && (
                 <div className="absolute left-0 top-full z-30 mt-2 w-64 rounded-[12px] border border-hairline bg-surface-1 p-3 shadow-lg" style={{ colorScheme: "light" }}>
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-tertiary">Download all</p>
-                  <button type="button" disabled={dlBusy} onClick={() => void requestZip("all", "full")} className="mt-1.5 w-full rounded-md bg-surface-2 px-3 py-2 text-left text-xs font-medium text-ink hover:bg-surface-3 disabled:opacity-60">
-                    Everything · full resolution
-                  </button>
-                  {dl.controls.webSize && assets.some((a) => a.kind === "image" && sizeOffered("web", longEdgeOf(a))) && (
-                    <button type="button" disabled={dlBusy} onClick={() => void requestZip("all", "web")} className="mt-1.5 w-full rounded-md bg-surface-2 px-3 py-2 text-left text-xs font-medium text-ink hover:bg-surface-3 disabled:opacity-60">
-                      Everything · web size (2048px)
-                    </button>
-                  )}
-                  {dl.controls.webSize && assets.some((a) => a.kind === "image" && sizeOffered("mid", longEdgeOf(a))) && (
-                    <button type="button" disabled={dlBusy} onClick={() => void requestZip("all", "mid")} className="mt-1.5 w-full rounded-md bg-surface-2 px-3 py-2 text-left text-xs font-medium text-ink hover:bg-surface-3 disabled:opacity-60">
-                      Everything · small (1280px)
-                    </button>
-                  )}
-                  {activeFolder && (
-                    <button type="button" disabled={dlBusy} onClick={() => void requestZip("folder", "full")} className="mt-1.5 w-full rounded-md bg-surface-2 px-3 py-2 text-left text-xs font-medium text-ink hover:bg-surface-3 disabled:opacity-60">
-                      Just “{activeFolder}”
-                    </button>
-                  )}
-                  {heartsOn && (
-                    <button type="button" disabled={dlBusy} onClick={() => void requestZip("favorites", "full")} className="mt-1.5 w-full rounded-md bg-surface-2 px-3 py-2 text-left text-xs font-medium text-ink hover:bg-surface-3 disabled:opacity-60">
-                      My favorites ({favorites.size})
-                    </button>
-                  )}
-                  {dl.controls.approval ? (
-                    <p className="mt-2 text-[11px] leading-relaxed text-ink-tertiary">Your photographer approves bulk downloads first - we'll email you the moment it is.</p>
+                  {selectionOnlyOn ? (
+                    <>
+                      <button type="button" disabled={dlBusy} onClick={() => void requestZip("favorites", "full")} className="mt-1.5 w-full rounded-md bg-surface-2 px-3 py-2 text-left text-xs font-medium text-ink hover:bg-surface-3 disabled:opacity-60">
+                        My favorites ({favorites.size})
+                      </button>
+                      <p className="mt-2 text-[11px] leading-relaxed text-ink-tertiary">Your photographer set this gallery so only your selected (favorited) photos can be downloaded.</p>
+                    </>
                   ) : (
-                    <p className="mt-2 text-[11px] leading-relaxed text-ink-tertiary">Starts right away. Big galleries arrive as a few ZIP parts.</p>
+                    <>
+                      <button type="button" disabled={dlBusy} onClick={() => void requestZip("all", "full")} className="mt-1.5 w-full rounded-md bg-surface-2 px-3 py-2 text-left text-xs font-medium text-ink hover:bg-surface-3 disabled:opacity-60">
+                        Everything · full resolution
+                      </button>
+                      {dl.controls.webSize && assets.some((a) => a.kind === "image" && sizeOffered("web", longEdgeOf(a))) && (
+                        <button type="button" disabled={dlBusy} onClick={() => void requestZip("all", "web")} className="mt-1.5 w-full rounded-md bg-surface-2 px-3 py-2 text-left text-xs font-medium text-ink hover:bg-surface-3 disabled:opacity-60">
+                          Everything · web size (2048px)
+                        </button>
+                      )}
+                      {dl.controls.webSize && assets.some((a) => a.kind === "image" && sizeOffered("mid", longEdgeOf(a))) && (
+                        <button type="button" disabled={dlBusy} onClick={() => void requestZip("all", "mid")} className="mt-1.5 w-full rounded-md bg-surface-2 px-3 py-2 text-left text-xs font-medium text-ink hover:bg-surface-3 disabled:opacity-60">
+                          Everything · small (1280px)
+                        </button>
+                      )}
+                      {activeFolder && (
+                        <button type="button" disabled={dlBusy} onClick={() => void requestZip("folder", "full")} className="mt-1.5 w-full rounded-md bg-surface-2 px-3 py-2 text-left text-xs font-medium text-ink hover:bg-surface-3 disabled:opacity-60">
+                          Just “{activeFolder}”
+                        </button>
+                      )}
+                      {heartsOn && (
+                        <button type="button" disabled={dlBusy} onClick={() => void requestZip("favorites", "full")} className="mt-1.5 w-full rounded-md bg-surface-2 px-3 py-2 text-left text-xs font-medium text-ink hover:bg-surface-3 disabled:opacity-60">
+                          My favorites ({favorites.size})
+                        </button>
+                      )}
+                      {dl.controls.approval ? (
+                        <p className="mt-2 text-[11px] leading-relaxed text-ink-tertiary">Your photographer approves bulk downloads first - we'll email you the moment it is.</p>
+                      ) : (
+                        <p className="mt-2 text-[11px] leading-relaxed text-ink-tertiary">Starts right away. Big galleries arrive as a few ZIP parts.</p>
+                      )}
+                    </>
                   )}
                   {dl.controls.limit !== null && (
                     <p className="mt-2 border-t border-hairline pt-2 text-[11px] text-ink-tertiary">
@@ -2695,8 +2729,8 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
                           captions={captions}
                           radiusCls={radiusCls}
                           deterrents={deterrents}
-                          dlOk={allowDownload}
-                          onDownload={allowDownload ? () => void downloadVia(`/api/assets/${a.id}?download=1`, a.filename) : undefined}
+                          dlOk={dlOkFor(a.id)}
+                          onDownload={dlOkFor(a.id) ? () => void downloadVia(`/api/assets/${a.id}?download=1`, a.filename) : undefined}
                           onOpen={() => setOpen(idx)}
                           onHeart={() => void heart(a.id)}
                           onPick={() => togglePick(a.id)}
@@ -2744,8 +2778,8 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
                         captions={captions}
                         radiusCls={radiusCls}
                         deterrents={deterrents}
-                        dlOk={allowDownload}
-                        onDownload={allowDownload ? () => void downloadVia(`/api/assets/${a.id}?download=1`, a.filename) : undefined}
+                        dlOk={dlOkFor(a.id)}
+                        onDownload={dlOkFor(a.id) ? () => void downloadVia(`/api/assets/${a.id}?download=1`, a.filename) : undefined}
                         onOpen={() => setOpen(idx)}
                         onHeart={() => void heart(a.id)}
                         onPick={() => togglePick(a.id)}
@@ -2772,8 +2806,8 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
                           captions={captions}
                           radiusCls={radiusCls}
                           deterrents={deterrents}
-                          dlOk={allowDownload}
-                          onDownload={allowDownload ? () => void downloadVia(`/api/assets/${a.id}?download=1`, a.filename) : undefined}
+                          dlOk={dlOkFor(a.id)}
+                          onDownload={dlOkFor(a.id) ? () => void downloadVia(`/api/assets/${a.id}?download=1`, a.filename) : undefined}
                           onOpen={() => setOpen(idx)}
                           onHeart={() => void heart(a.id)}
                           onPick={() => togglePick(a.id)}
@@ -3064,7 +3098,7 @@ export function GalleryView({ studioName, accent, logoUrl, contactEmail, whiteLa
                 Share
               </button>
             )}
-            {allowDownload && (
+            {dlOkFor(current.id) && (
               <span className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                 <button
                   type="button"

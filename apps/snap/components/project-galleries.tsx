@@ -3,6 +3,7 @@
 /* Client gallery panel — share links for this project: create (emails the
  * client), re-send, regenerate (old link dies), revoke, expiry editing. */
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { ChevronDown, ChevronRight } from "lucide-react";
@@ -225,6 +226,7 @@ export function ProjectGalleries({
   const [lightbox, setLightbox] = useState<number | null>(null);
 
   const deliverableFolders = folders.filter((f) => f.count > 0);
+  const approvedLabel = `${approvedCount} approved file${approvedCount === 1 ? "" : "s"}`;
   const deliverCount = deliverFolders.size
     ? deliverableFolders.filter((f) => deliverFolders.has(f.id)).reduce((n, f) => n + f.count, 0)
     : approvedCount;
@@ -425,7 +427,11 @@ export function ProjectGalleries({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-end gap-3 rounded-[12px] border border-hairline bg-surface-1 p-4">
+      {/* WEBC-114: #share — the step map's "Share" step anchors here. */}
+      <div
+        id="share"
+        className="flex scroll-mt-16 flex-wrap items-end gap-3 rounded-[12px] border border-hairline bg-surface-1 p-4"
+      >
         <label className="flex min-w-56 flex-1 flex-col gap-1 text-xs text-ink-subtle">
           Client email
           <input
@@ -556,7 +562,17 @@ export function ProjectGalleries({
       )}
       {error && <p className="text-xs text-destructive">{error}</p>}
       {approvedCount === 0 && (
-        <p className="text-xs text-ink-tertiary">Approve files below first — the gallery shares your approved set.</p>
+        <p className="text-xs text-ink-tertiary">
+          Nothing approved yet — {approvedLabel} so far, and the gallery shares your approved set.{" "}
+          {/* WEBC-114: a real path to the approvals, not a dead end —
+           * approving happens on the Files tab. */}
+          <Link
+            href={`/dashboard/projects/${projectId}?tab=files`}
+            className="font-medium text-primary hover:underline"
+          >
+            Approve files on the Files tab →
+          </Link>
+        </p>
       )}
 
       {grants.length > 0 && (
@@ -807,6 +823,8 @@ function GrantDownloadSettings({ grantId, canLite, canStudio }: { grantId: strin
   const [limit, setLimit] = useState("");
   const [approval, setApproval] = useState(false);
   const [webSize, setWebSize] = useState(false);
+  // WEB-102: selection-only delivery — downloads locked to the client's picks.
+  const [selectionOnly, setSelectionOnly] = useState(false);
   // WEB-194: email-capture gate + the studio's who-took-files list.
   const [emailCapture, setEmailCapture] = useState(false);
   const [captured, setCaptured] = useState<{ email: string; count: number; lastAt: string }[]>([]);
@@ -823,12 +841,13 @@ function GrantDownloadSettings({ grantId, canLite, canStudio }: { grantId: strin
   async function load() {
     const res = await fetch(`/api/grants/${grantId}/download-settings`);
     if (!res.ok) return;
-    const body = (await res.json()) as { settings: { pin: boolean; limit: number | null; approval: boolean; webSize: boolean; emailCapture?: boolean }; captured?: { email: string; count: number; lastAt: string }[]; licenseText?: string | null; licenseAcks?: number; allowSharing?: boolean };
+    const body = (await res.json()) as { settings: { pin: boolean; limit: number | null; approval: boolean; webSize: boolean; emailCapture?: boolean; selectionOnly?: boolean }; captured?: { email: string; count: number; lastAt: string }[]; licenseText?: string | null; licenseAcks?: number; allowSharing?: boolean };
     setHasPin(body.settings.pin);
     setLimit(body.settings.limit === null ? "" : String(body.settings.limit));
     setApproval(body.settings.approval);
     setWebSize(body.settings.webSize);
     setEmailCapture(body.settings.emailCapture === true);
+    setSelectionOnly(body.settings.selectionOnly === true);
     setCaptured(body.captured ?? []);
     setLicenseText(body.licenseText ?? "");
     setLicenseAcks(body.licenseAcks ?? 0);
@@ -847,7 +866,7 @@ function GrantDownloadSettings({ grantId, canLite, canStudio }: { grantId: strin
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          settings: { limit: limit === "" ? null : Number(limit), approval, webSize, emailCapture },
+          settings: { limit: limit === "" ? null : Number(limit), approval, webSize, emailCapture, selectionOnly },
           ...(clearPin ? { clearPin: true } : pin ? { pin } : {}),
           allowSharing: sharing,
           // WEB-193: always sends the current text — "" turns the gate off.
@@ -858,6 +877,7 @@ function GrantDownloadSettings({ grantId, canLite, canStudio }: { grantId: strin
       if (!res.ok || !body.ok) {
         setNote(
           body.error === "pin_requires_lite" || body.error === "web_size_requires_lite" || body.error === "email_capture_requires_lite" ? "PIN, web-size and email capture are Lite features."
+          : body.error === "selection_only_requires_lite" ? "Selection-only downloads are a Lite feature."
           : body.error === "approvals_require_studio" ? "Download approvals are a Studio feature."
           : body.error === "invalid_pin" ? "PIN is 4–8 digits."
           : "Couldn't save — try again.",
@@ -973,6 +993,10 @@ function GrantDownloadSettings({ grantId, canLite, canStudio }: { grantId: strin
               <input type="checkbox" checked={emailCapture} onChange={(e) => setEmailCapture(e.target.checked)} disabled={!canLite} className="h-4 w-4" />
               Email before download
             </label>
+            <label className="flex items-center gap-2 text-ink-subtle" title="The client can only download the photos they favorited — everything else stays locked. Full-resolution delivery of their picks.">
+              <input type="checkbox" checked={selectionOnly} onChange={(e) => setSelectionOnly(e.target.checked)} disabled={!canLite} className="h-4 w-4" />
+              Favorites only
+            </label>
             <label className="flex items-center gap-2 text-ink-subtle" title="Clients can share single photos as link cards (they die with this gallery)">
               <input type="checkbox" checked={sharing} onChange={(e) => setSharing(e.target.checked)} className="h-4 w-4" />
               Social sharing
@@ -1025,7 +1049,7 @@ function GrantDownloadSettings({ grantId, canLite, canStudio }: { grantId: strin
               )}
             </div>
           )}
-          {!canLite && <p className="text-xs text-ink-tertiary">PIN and web-size downloads are Lite features — upgrade to unlock.</p>}
+          {!canLite && <p className="text-xs text-ink-tertiary">PIN, web-size, email capture and favorites-only downloads are Lite features — upgrade to unlock.</p>}
           {canLite && !canStudio && <p className="text-xs text-ink-tertiary">Download approvals are a Studio feature.</p>}
           {note && <p className="text-xs text-ink-subtle">{note}</p>}
         </div>

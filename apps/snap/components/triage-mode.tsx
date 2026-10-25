@@ -33,6 +33,9 @@ export function TriageMode({
   // Culling ratings (WEB-209 P0): stars/color live on the order copy so
   // 1-9 key through the deck with advance.
   const [rated, setRated] = useState<Record<string, { stars?: number; color?: number }>>({});
+  // WEBC-113: visible shortcut legend — "?" or the HUD button opens it, so
+  // the shortcuts never live only in a tooltip (or only in memory).
+  const [legendOpen, setLegendOpen] = useState(false);
   const drag = useRef<{ x: number; active: boolean }>({ x: 0, active: false });
   const [dragDx, setDragDx] = useState(0);
 
@@ -118,7 +121,9 @@ const rate = useCallback(
         return;
       }
       const k = e.key.toLowerCase();
-      if (e.key === "Escape") return onClose();
+      if (e.key === "?") return setLegendOpen((v) => !v);
+      if (e.key === "Escape")
+        return legendOpen ? setLegendOpen(false) : onClose();
       if (e.key === "ArrowRight" || k === "a") return void act("approved");
       if (e.key === "ArrowLeft" || k === "x") return void act("rejected");
       if (/^[0-5]$/.test(k)) return void rate({ stars: Number(k) });
@@ -130,7 +135,7 @@ const rate = useCallback(
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [act, undo, onClose, rate, current, rated]);
+  }, [act, undo, onClose, rate, current, rated, legendOpen]);
 
   if (index >= total) {
     return (
@@ -172,7 +177,43 @@ const rate = useCallback(
             Undo (⌘Z)
           </button>
         )}
+        {/* WEBC-113: discoverable shortcut legend — button works from the
+         * keyboard (Tab + Enter) and "?" toggles it too. */}
+        <button
+          onClick={() => setLegendOpen((v) => !v)}
+          aria-expanded={legendOpen}
+          aria-label="Keyboard shortcuts"
+          className="rounded-md border border-hairline px-2 py-1 text-xs text-ink-muted hover:bg-surface-2"
+        >
+          ?
+        </button>
       </div>
+
+      {legendOpen && (
+        <div
+          className="absolute right-3 top-12 z-10 w-60 rounded-[10px] border border-hairline bg-surface-1 p-3 text-xs shadow-lg"
+          role="dialog"
+          aria-label="Triage keyboard shortcuts"
+        >
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-tertiary">Triage</p>
+          <dl className="mt-1 space-y-0.5">
+            {[
+              ["→ or A", "Approve"],
+              ["← or X", "Reject"],
+              ["0–5", "Star rating"],
+              ["6–9", "Colour label"],
+              ["⌘Z", "Undo last"],
+              ["Esc", "Exit triage"],
+              ["swipe", "Approve / reject on touch"],
+            ].map(([keys, what]) => (
+              <div key={keys} className="flex items-baseline gap-2">
+                <dt className="w-16 shrink-0 font-mono text-[11px] text-ink-muted">{keys}</dt>
+                <dd className="text-ink-subtle">{what}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      )}
 
       {/* Card */}
       <div className="relative flex min-h-0 flex-1 items-center justify-center px-6 pb-8">

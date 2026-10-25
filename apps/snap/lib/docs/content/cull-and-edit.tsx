@@ -4,7 +4,7 @@
  * lib/image-analysis.ts, lib/edits.ts, components/edit-panel.tsx,
  * components/edit-canvas.ts, components/project-files.tsx and the asset
  * serving paths in app/api/assets/[id]/route.ts. */
-import { H2, H3, Note, Steps, Related } from "@/lib/docs/primitives";
+import { H2, H3, Note, Steps, Related, Tier } from "@/lib/docs/primitives";
 
 export default function CullAndEdit() {
   return (
@@ -45,8 +45,13 @@ export default function CullAndEdit() {
 
       <H2>Culling with the assist</H2>
       <p>
-        Everything lives in the project's <strong>Files</strong> tab, alongside the culling tools
-        that were already there (stars, color labels, triage mode, keyboard shortcuts):
+        Everything lives in the project's <strong>Files</strong> tab, where the toolbar groups the
+        work the way a shoot actually flows: <strong>Cull</strong> (Select, Triage, Group similar,
+        Heat, Auto-advance), <strong>Deliver</strong> (Share) and <strong>Add</strong> (Upload,
+        Drive). Every button explains itself — hover, tap, or keyboard-focus it for the tooltip —
+        and the <strong>?</strong> button at the right edge opens the full keyboard-shortcut legend
+        (the same list is one tap away inside Triage). Alongside the culling tools that were
+        already there (stars, color labels, triage mode, keyboard shortcuts):
       </p>
       <ul>
         <li>
@@ -57,6 +62,11 @@ export default function CullAndEdit() {
           <strong>Group similar</strong> — one click clusters near-identical frames. Each stack
           shows a <em>⧉ N</em> badge on its sharpest member — that's the suggested pick; the
           others are one click away if the moment calls for them.
+        </li>
+        <li>
+          <strong>Heat</strong> <Tier plan="studio" /> — shows which photos your client looked at
+          most, right on the grid. On Free and Lite the button carries a lock and leads to
+          billing; the data itself stays protected server-side on every tier.
         </li>
         <li>
           <strong>Badges everywhere</strong> — the grid cards, the manage pane's details, and
