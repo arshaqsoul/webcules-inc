@@ -193,7 +193,9 @@ function NavGroup({
   );
 }
 
-export function DashboardNavLinks({ onNavigate, includeDocs = true, collapsed = false, onExpandSidebar, plan = "free", role = "owner" }: { onNavigate?: () => void; /** desktop aside groups Docs with theme/logout instead */ includeDocs?: boolean; /** icon rail: icons only, labels become tooltips */ collapsed?: boolean; /** collapsed rail: opening a group expands the sidebar */ onExpandSidebar?: () => void; /** WEB-286: gates nav rows whose `requires` exceeds the plan */ plan?: PlanId; /** WEB-275: staff role — members lose money surfaces + studio settings */ role?: string }) {
+export function DashboardNavLinks({ onNavigate, includeDocs = true, collapsed = false, onExpandSidebar, plan = "free", role = "owner", pinGroups = false }: { onNavigate?: () => void; /** desktop aside groups Docs with theme/logout instead */ includeDocs?: boolean; /** icon rail: icons only, labels become tooltips */ collapsed?: boolean; /** collapsed rail: opening a group expands the sidebar */ onExpandSidebar?: () => void; /** WEB-286: gates nav rows whose `requires` exceeds the plan */ plan?: PlanId; /** WEB-275: staff role — members lose money surfaces + studio settings */ role?: string; /** WEBC-111: desktop sidebar pins Templates/Settings below the
+  * scrolling primary list so both groups stay visible on short laptops;
+  * the mobile drawer keeps the single scrolling list (default). */ pinGroups?: boolean }) {
   const pathname = usePathname();
   // WEB-275: money surfaces are owner-only; templates (studio-wide
   // definitions) are admin+ — members work projects, leads, and calendar.
@@ -202,48 +204,48 @@ export function DashboardNavLinks({ onNavigate, includeDocs = true, collapsed = 
   const items = (includeDocs ? NAV_ITEMS : NAV_ITEMS.filter((i) => !i.href.startsWith("/docs"))).filter(
     (i) => (i.href !== "/dashboard/transactions" || isOwner),
   );
-  return (
-    <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-2">
-      {items.map((item) => {
-        const active = isActivePath(pathname, item.href);
-        const rowCls = `flex w-full items-center gap-2.5 rounded-md text-sm transition-colors ${collapsed ? "justify-center py-2" : "px-3 py-2"}`;
-        // Docs lives outside the dashboard — open beside it, keep the session.
-        if (item.href.startsWith("/docs")) {
-          return (
-            <a
-              key={item.href}
-              href={item.href}
-              target="_blank"
-              rel="noreferrer"
-              title={collapsed ? item.label : undefined}
-              aria-label={collapsed ? item.label : undefined}
-              className={rowCls + " text-ink-subtle hover:bg-surface-2 hover:text-ink"}
-            >
-              <item.icon className="h-4 w-4 shrink-0" aria-hidden />
-              {!collapsed && item.label}
-            </a>
-          );
-        }
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={onNavigate}
-            aria-current={active ? "page" : undefined}
-            title={collapsed ? item.label : undefined}
-            aria-label={collapsed ? item.label : undefined}
-            className={rowCls + ` ${
-              active ? "bg-surface-2 font-medium text-ink" : "text-ink-subtle hover:bg-surface-2 hover:text-ink"
-            }`}
-          >
-            <item.icon className="h-4 w-4 shrink-0" aria-hidden />
-            {!collapsed && item.label}
-            {/* WEB-306: the inbox row carries the unread badge (one number,
-                one truth) in every layout the nav renders. */}
-            {item.href === "/dashboard/inbox" && !collapsed && <InboxNavBadge />}
-          </Link>
-        );
-      })}
+  const rows = items.map((item) => {
+    const active = isActivePath(pathname, item.href);
+    const rowCls = `flex w-full items-center gap-2.5 rounded-md text-sm transition-colors ${collapsed ? "justify-center py-2" : "px-3 py-2"}`;
+    // Docs lives outside the dashboard — open beside it, keep the session.
+    if (item.href.startsWith("/docs")) {
+      return (
+        <a
+          key={item.href}
+          href={item.href}
+          target="_blank"
+          rel="noreferrer"
+          title={collapsed ? item.label : undefined}
+          aria-label={collapsed ? item.label : undefined}
+          className={rowCls + " text-ink-subtle hover:bg-surface-2 hover:text-ink"}
+        >
+          <item.icon className="h-4 w-4 shrink-0" aria-hidden />
+          {!collapsed && item.label}
+        </a>
+      );
+    }
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        onClick={onNavigate}
+        aria-current={active ? "page" : undefined}
+        title={collapsed ? item.label : undefined}
+        aria-label={collapsed ? item.label : undefined}
+        className={rowCls + ` ${
+          active ? "bg-surface-2 font-medium text-ink" : "text-ink-subtle hover:bg-surface-2 hover:text-ink"
+        }`}
+      >
+        <item.icon className="h-4 w-4 shrink-0" aria-hidden />
+        {!collapsed && item.label}
+        {/* WEB-306: the inbox row carries the unread badge (one number,
+            one truth) in every layout the nav renders. */}
+        {item.href === "/dashboard/inbox" && !collapsed && <InboxNavBadge />}
+      </Link>
+    );
+  });
+  const groups = (
+    <>
       {isAdmin && (
         <NavGroup pathname={pathname} collapsed={collapsed} onNavigate={onNavigate} onExpand={onExpandSidebar} plan={plan} role={role} parentHref="/dashboard/templates" label="Templates" icon={LayoutTemplate} items={TEMPLATES_ITEMS} />
       )}
@@ -260,6 +262,27 @@ export function DashboardNavLinks({ onNavigate, includeDocs = true, collapsed = 
         // members keep exactly one settings row: their own Security page
         items={isAdmin ? SETTINGS_ITEMS : SETTINGS_ITEMS.filter((i) => i.href.endsWith("/security"))}
       />
+    </>
+  );
+  // WEBC-111: the desktop sidebar pins the two collapsible groups below the
+  // primary list — the list scrolls, the groups don't, so Templates and
+  // Settings stay visible at laptop heights. Mobile keeps one scrolling list.
+  if (pinGroups) {
+    return (
+      <nav className="flex min-h-0 flex-1 flex-col">
+        <div className="min-h-0 flex-1 overflow-y-auto p-2">
+          {rows}
+        </div>
+        <div className="max-h-[55dvh] shrink-0 overflow-y-auto border-t border-hairline p-2">
+          {groups}
+        </div>
+      </nav>
+    );
+  }
+  return (
+    <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-2">
+      {rows}
+      {groups}
     </nav>
   );
 }

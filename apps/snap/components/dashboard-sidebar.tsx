@@ -5,15 +5,18 @@
  * icon rail (tooltips carry the labels) — clicking the studio block expands
  * it back up, per the Linear-style interaction. State persists in
  * localStorage (same mount-effect pattern as grid density).
- * WEB-270: hosts the setup-guide progress card (expanded sidebar, until the
- * checklist completes or the studio hides it) and its reopen affordance. */
+ * WEB-270: hosts the setup-guide reopen affordance (dismissed checklists).
+ * WEBC-111: the checklist card itself moved to the Overview page (it ate the
+ * nav's height); the sidebar keeps only a slim progress link, and the nav
+ * pins Templates/Settings below the scrolling primary list. */
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { BookOpen, ListChecks, PanelLeftClose } from "lucide-react";
 
 import { Button } from "@webcules/ui/components/button";
 
 import { DashboardNavLinks } from "@/components/dashboard-nav";
-import { SetupGuideCard, type SetupStepView } from "@/components/setup-guide-card";
+import type { SetupStepView } from "@/components/setup-guide-card";
 import { SignOutButton } from "@/components/sign-out-button";
 import { StudioSwitcher, type SwitcherStudio } from "@/components/studio-switcher";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -94,13 +97,24 @@ export function DashboardSidebar({
       </div>
 
       <DashboardNavLinks includeDocs={false} collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)} plan={plan}
-        role={role} />
+        role={role} pinGroups />
 
-      {/* WEB-270: setup progress card — expanded sidebar only (the rail keeps
-       * its icon density); auto-hides at 10/10 or dismissal via `setup`
-       * being null from the layout. */}
+      {/* WEBC-111: slim setup progress link — the full checklist card lives on
+       * the Overview page now; this just tracks progress and jumps there.
+       * Auto-hides at 10/10 or dismissal via `setup` being null from the
+       * layout; the dismissed-but-unfinished state keeps the reopen button in
+       * the utility group below. */}
       {!collapsed && setup && (
-        <SetupGuideCard steps={setup.steps} done={setup.done} total={setup.total} variant="card" />
+        <Link
+          href="/dashboard"
+          title="Studio setup"
+          aria-label={`Studio setup — ${setup.done} of ${setup.total} steps done`}
+          className="mx-2 mb-0.5 flex items-center gap-2.5 rounded-md border border-hairline bg-surface px-2.5 py-2 text-[13px] text-ink-subtle transition-colors hover:bg-surface-2 hover:text-ink"
+        >
+          <ListChecks className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+          <span className="min-w-0 flex-1 truncate font-medium">Studio setup</span>
+          <span className="shrink-0 text-[11px] text-ink-tertiary">{setup.done}/{setup.total}</span>
+        </Link>
       )}
 
       <div className={`mt-auto flex flex-col gap-0.5 border-t border-hairline ${collapsed ? "px-1.5 py-2" : "p-2"}`}>
