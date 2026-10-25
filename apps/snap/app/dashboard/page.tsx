@@ -46,10 +46,11 @@ async function Overview() {
   monthStart.setUTCHours(0, 0, 0, 0);
   const now = new Date();
 
-  // WEB-270: the first-login setup panel — shown while the guide is
-  // unfinished and the membership is fresh (≤14 days post-signup), until
-  // dismissed. Dismissal is permanent; the sidebar card carries progress
-  // from there.
+  // WEB-270 / WEBC-111: the setup checklist lives on the Overview page now
+  // (it used to sit in the sidebar and ate the nav's height on laptops).
+  // Fresh memberships (≤14 days) get the full first-login panel; after that
+  // the compact card carries the remaining steps — both until dismissed or
+  // complete, with the sidebar's slim progress link pointing here.
   const [setupState, memberRow] = await Promise.all([
     import("@/lib/repos/setup").then((m) => m.getSetupState(ctx.organizationId)),
     db
@@ -59,8 +60,9 @@ async function Overview() {
       .limit(1),
   ]);
   const membershipAgeMs = memberRow[0]?.createdAt ? Date.now() - memberRow[0].createdAt.getTime() : Infinity;
-  const showSetupPanel =
-    !setupState.dismissed && setupState.done < setupState.total && membershipAgeMs <= 14 * 86400_000;
+  const setupActive = !setupState.dismissed && setupState.done < setupState.total;
+  const freshMembership = membershipAgeMs <= 14 * 86400_000;
+  const setupSteps = setupState.steps.map((s) => ({ id: s.id, title: s.title, why: s.why, href: s.href, done: s.done }));
 
   const [profile, leadTotal, leadNew, upcomingBookings, projectTotal, projectActive, galleries, projectsByStatus] =
     await Promise.all([
@@ -133,13 +135,13 @@ async function Overview() {
         </p>
       </div>
 
-      {showSetupPanel && (
+      {setupActive && (
         <Suspense fallback={null}>
-          <SetupFirstLoginPanel
-            steps={setupState.steps.map((s) => ({ id: s.id, title: s.title, why: s.why, href: s.href, done: s.done }))}
-            done={setupState.done}
-            total={setupState.total}
-          />
+          {freshMembership ? (
+            <SetupFirstLoginPanel steps={setupSteps} done={setupState.done} total={setupState.total} />
+          ) : (
+            <SetupGuideCard steps={setupSteps} done={setupState.done} total={setupState.total} variant="card" />
+          )}
         </Suspense>
       )}
 
