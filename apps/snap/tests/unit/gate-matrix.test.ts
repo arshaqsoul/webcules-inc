@@ -18,6 +18,7 @@ import assetRoute from "../../app/api/assets/[id]/route.ts?raw";
 import assetViewsRoute from "../../app/api/projects/[id]/asset-views/route.ts?raw";
 import commerceListRoute from "../../app/api/studio/commerce/[id]/route.ts?raw";
 import storeHomeSource from "../../components/store-home.tsx?raw";
+import lightroomPluginRoute from "../../app/api/integrations/lightroom-plugin/route.ts?raw";
 
 import { PLANS } from "@/lib/plans";
 import { FREE_CUSTOM_FIELD_CAP } from "@/lib/forms";
@@ -163,6 +164,22 @@ describe("WEBC-121 store setup — the price-list PATCH route stays gated + org-
     // StoreHome must use /api/studio/commerce/<id> PATCH for attachments —
     // a client-side fetch to any other write path would skip the gate.
     expect(storeHomeSource).toContain('fetch(`/api/studio/commerce/${attachListId}`');
+  });
+});
+
+describe("WEBC-124 Lightroom plugin download — public by design", () => {
+  it("the plugin zip route carries NO session and NO plan gate", () => {
+    // The download is a plugin, not studio data — auth happens inside the
+    // plugin with the minted token. Pin the decision: no auth context, no
+    // tier branch may ever creep into the route.
+    expect(lightroomPluginRoute).toContain("lightroom_plugin_public");
+    expect(lightroomPluginRoute).not.toMatch(
+      /getOrgContext|getStudioProfile|getPlanEntitlements|requires_lite|requires_studio|permissionDenied/,
+    );
+    // Lightroom's Plug-in Manager needs the .lrplugin FOLDER wrapped by the
+    // zip — not its loose contents.
+    expect(lightroomPluginRoute).toContain('"SnapPublish.lrplugin/Info.lua"');
+    expect(lightroomPluginRoute).toContain("SnapPublish.lrplugin.zip");
   });
 });
 

@@ -12,6 +12,7 @@ import {
   AlertTriangle,
   Check,
   Copy,
+  Download,
   KeyRound,
   Loader2,
   Plus,
@@ -153,6 +154,80 @@ export function IntegrationsPanel({
 
   return (
     <div className="flex flex-col gap-4">
+      {/* Snap Publish setup card (WEBC-124, audit F5) — the plugin funnel used
+       * to dead-end here: mint a token, then go find the plugin somewhere
+       * else. The download and the three steps that take a photographer from
+       * zero to a first published collection now sit above the token form. */}
+      <section className={card}>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="text-[15px] font-medium text-ink">
+              Lightroom Classic plugin
+            </h2>
+            <p className="mt-1 text-sm text-ink-subtle">
+              Publish photos straight from Lightroom Classic into a Snap
+              gallery with the Snap Publish plugin.
+            </p>
+          </div>
+          <Button asChild size="sm">
+            <a href="/api/integrations/lightroom-plugin" download>
+              <Download className="h-4 w-4" aria-hidden />
+              Download plugin
+            </a>
+          </Button>
+        </div>
+        <ol className="mt-4 flex flex-col gap-2.5">
+          {[
+            <>
+              Download the plugin and install it in Lightroom Classic under{" "}
+              <em>File → Plug-in Manager → Add</em>.
+            </>,
+            <>
+              Create a token below, then paste it — together with your studio
+              address — into the plugin&rsquo;s connection settings and click{" "}
+              <em>Test Connection</em>.
+            </>,
+            <>
+              In Lightroom&rsquo;s Publish Services panel, set up{" "}
+              <em>Snap Publish</em>, create a publish collection named after
+              your gallery, drag photos in, and hit <em>Publish</em>.
+            </>,
+          ].map((step, i) => (
+            <li key={i} className="flex items-start gap-2.5">
+              <span
+                aria-hidden
+                className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-hairline bg-surface-2 text-[10px] font-semibold text-ink-subtle"
+              >
+                {i + 1}
+              </span>
+              <p className="text-[13px] leading-snug text-ink-subtle">
+                {step}
+              </p>
+            </li>
+          ))}
+        </ol>
+        <p className="mt-3 text-xs text-ink-tertiary">
+          Full setup guide:{" "}
+          <a
+            href="/docs/integrations"
+            target="_blank"
+            rel="noreferrer"
+            className="underline underline-offset-2 hover:text-ink"
+          >
+            Integrations
+          </a>{" "}
+          ·{" "}
+          <a
+            href="/docs/embeds"
+            target="_blank"
+            rel="noreferrer"
+            className="underline underline-offset-2 hover:text-ink"
+          >
+            Embeds
+          </a>
+        </p>
+      </section>
+
       <section className={card}>
         <div className="flex items-center gap-2">
           <h2 className="text-[15px] font-medium text-ink">

@@ -38,6 +38,18 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.31.0" date="October 25, 2026">
+        <p>
+          <strong>The Lightroom plugin is now one click away.</strong>{" "}
+          Settings → Integrations — where you create the token for the{" "}
+          <strong>Snap Publish</strong> plugin — now carries the plugin itself:
+          a <strong>Download plugin</strong> button plus the three steps that
+          take you from zero to your first published collection (install the
+          plugin, paste your token, publish a collection). No more hunting for
+          the download, and the served copy is always the current one. The
+          setup guide in the docs walks through the same steps.
+        </p>
+      </Release>
       <Release version="0.30.0" date="October 25, 2026">
         <p>
           <strong>A guided path from empty store to first sale.</strong>{" "}

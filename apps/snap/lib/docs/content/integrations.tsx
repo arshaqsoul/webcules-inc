@@ -147,9 +147,10 @@ export default function Integrations() {
             let new publish collections create their gallery).
           </>,
           <>
-            In Lightroom Classic: install the plugin under{" "}
-            <em>File → Plug-in Manager</em>, paste your studio address and the
-            token, and click <em>Test Connection</em>.
+            Download the Snap Publish plugin from{" "}
+            <strong>Settings → Integrations</strong>, install it in Lightroom
+            Classic under <em>File → Plug-in Manager → Add</em>, paste your
+            studio address and the token, and click <em>Test Connection</em>.
           </>,
           <>
             In the Library&rsquo;s Publish Services panel, set up the Snap

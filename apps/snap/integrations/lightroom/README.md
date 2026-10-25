@@ -35,7 +35,9 @@ auto-create is on), `assets:write`.
 
 ## Installing (photographers)
 
-1. Zip the `SnapPublish.lrplugin` folder (the folder itself, not its contents).
+1. Download `SnapPublish.lrplugin.zip` from Snap → **Settings →
+   Integrations** (the served zip is built from this folder; zipping it
+   yourself from a repo checkout works too).
 2. Lightroom Classic → File → Plug-in Manager → Add → pick `SnapPublish.zip` or
    the unzipped `.lrplugin` folder.
 3. In the plugin's panel: paste your **Studio URL** and an **Integration
