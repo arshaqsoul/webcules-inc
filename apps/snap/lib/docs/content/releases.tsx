@@ -38,6 +38,18 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.30.1" date="October 25, 2026">
+        <p>
+          <strong>The plan page now tells the tier truth.</strong>{" "}
+          On <strong>Plans &amp; Pricing</strong>, the feature chips read straight from the
+          plan table, so what you see always matches what your plan actually allows.
+          The visible fix: <strong>Custom form fields</strong> no longer shows as locked
+          on <strong>Free</strong> and <strong>Lite</strong> — the small print now says
+          honestly what those plans include (up to 2 custom fields per form), with{" "}
+          <strong>Studio</strong> and up unlimited. Nothing about plan limits, pricing
+          or enforcement changed — only the labels.
+        </p>
+      </Release>
       <Release version="0.30.0" date="October 25, 2026">
         <p>
           <strong>A guided path from empty store to first sale.</strong>{" "}
