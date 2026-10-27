@@ -202,4 +202,60 @@ const gallery = {
   },
 };
 
-export const STATIONS = { inbox, calendar, contract, invoice, payment, gallery };
+const phone = {
+  label: "PHONE",
+  draw(cam, T, x0, st) {
+    let s = plate(cam, T, x0, st.label ?? this.label);
+    // A side table with a desk phone that rings out, and a notepad of tally marks.
+    s += box(cam, T, x0 + 26, 12, 8, 92, 48, 18, { tone: "woodDark", bevel: 1.2 });
+    s += box(cam, T, x0 + 40, 20, 26, 54, 34, 12, { tone: "terra", bevel: 1 });
+    s += inlay(cam, [[x0 + 46, 54, 30], [x0 + 88, 54, 30], [x0 + 88, 54, 36], [x0 + 46, 54, 36]], "#1b1426");
+    const calls = Math.floor(clamp(st.k) * 4);
+    s += faceText(cam, "front", [x0 + 67, 54, 36], st.active > 0.05 ? (Math.sin(st.t * 6) > 0 ? "CALLING..." : "NO ANSWER") : "MISSED", { size: 4.4, dy: 5, anchor: "middle", fill: st.active > 0.05 ? "#ffd257" : T.red, weight: 800 });
+    // The handset jumps on its cradle while it rings.
+    const ring = st.active > 0.05 ? Math.max(0, Math.sin(st.t * 30)) * 2.2 : 0;
+    s += box(cam, T, x0 + 42, 24, 38 + ring, 50, 12, 6, { tone: "terra", bevel: 0.8 });
+    s += cylinder(cam, T, x0 + 48, 30, 5, 38 + ring, 7, { tone: "terra" });
+    s += cylinder(cam, T, x0 + 86, 30, 5, 38 + ring, 7, { tone: "terra" });
+    if (st.active > 0.05) {
+      const [cx, cy] = cam.p(x0 + 67, 30, 58);
+      for (let i = 0; i < 3; i++) {
+        const ph = (st.t * 2 + i / 3) % 1;
+        s += `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${(8 + ph * 26) * cam.s / 1.6}" fill="none" stroke="${T.mat ? "#ffffff" : T.hi}" stroke-width="${(2.2 * cam.s / 1.6).toFixed(2)}" opacity="${((1 - ph) * 0.8 * st.active).toFixed(3)}"/>`;
+      }
+    }
+    // Notepad: a tally mark for every unanswered call.
+    s += box(cam, T, x0 + 128, 18, 8, 44, 36, 3, { tone: "paper" });
+    for (let i = 0; i < calls + (st.visited ? 4 : 0) && i < 8; i++) s += line(cam, T, [[x0 + 134 + i * 4.5, 26, 11], [x0 + 134 + i * 4.5, 46, 11]], { tone: "#3a4b8c", width: 0.9 });
+    s += lamp(cam, T, x0 + 112, 20, 26, st);
+    return { back: s };
+  },
+};
+
+const reminders = {
+  label: "REMINDERS",
+  draw(cam, T, x0, st) {
+    let s = plate(cam, T, x0, st.label ?? this.label);
+    // A cork board on legs: a sticky note goes up for every follow-up.
+    s += box(cam, T, x0 + 34, 22, 8, 6, 6, 70, { tone: "woodDark" });
+    s += box(cam, T, x0 + 150, 22, 8, 6, 6, 70, { tone: "woodDark" });
+    s += box(cam, T, x0 + 28, 26, 26, 136, 6, 62, { tone: "wood", bevel: 1 });
+    s += inlay(cam, [[x0 + 33, 32, 30], [x0 + 159, 32, 30], [x0 + 159, 32, 84], [x0 + 33, 32, 84]], T.mat ? "#e4b77d" : T.lo);
+    const notes = [["DAY 3", "#ffd257"], ["DAY 7", "#ffa9c9"], ["DAY 10", "#8cc4ff"], ["DAY 14", "#8fdc86"], ["FINAL!", "#ff8f6e"]];
+    const shown = st.visited ? notes.length : Math.floor(clamp(st.k) * (notes.length + 0.5));
+    notes.forEach(([label, col], i) => {
+      if (i >= shown) return;
+      const pop = clamp((st.k * (notes.length + 0.5) - i) * 3);
+      const nx = x0 + 38 + (i % 3) * 40 + (i > 2 ? 20 : 0);
+      const nz = 80 - Math.floor(i / 3) * 26 - (1 - (st.visited ? 1 : pop)) * 6;
+      s += inlay(cam, [[nx, 32.5, nz - 20], [nx + 30, 32.5, nz - 20], [nx + 30, 32.5, nz], [nx, 32.5, nz]], col);
+      s += faceText(cam, "front", [nx + 15, 32.5, nz - 4], label, { size: 5.4, dy: 0, anchor: "middle", fill: "#2a1a24", weight: 800 });
+      const [px, py] = cam.p(nx + 15, 33, nz - 2);
+      s += `<circle cx="${px.toFixed(1)}" cy="${(py - 4 * cam.s / 1.6).toFixed(1)}" r="${(2.6 * cam.s / 1.6).toFixed(1)}" fill="#ff4d5e"/>`;
+    });
+    s += lamp(cam, T, x0 + 176, 40, 8, st);
+    return { back: s };
+  },
+};
+
+export const STATIONS = { inbox, calendar, contract, invoice, payment, gallery, phone, reminders };

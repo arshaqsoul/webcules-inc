@@ -144,6 +144,8 @@ export function synthesize(cues, duration, { seed = "reel", master = 0.8 } = {})
       case "station:invoice": tone(t, g * 0.12, 118, d * 0.9, { shape: "square", vib: 0.03, pan: -0.2 }); for (let j = 0; j < 7; j++) click(t + j * d / 7, g * 0.25, 3000, 0.4); break;
       case "station:payment": for (let j = 0; j < 2; j++) tone(t + 0.15 + j * 0.28, g * 0.22, 175, 0.18, { shape: "square", pan: 0.2 }); break;
       case "station:gallery": for (let j = 0; j < 6; j++) tone(t + j * d / 6, g * 0.15, midi(72 + j * 2), 0.08, { wet: 0.3, pan: -0.3 + j * 0.1 }); break;
+      case "station:phone": for (let j = 0; j < 2; j++) { const tt = t + j * 0.5; tone(tt, g * 0.13, 440, 0.38, { pan: 0.25, wet: 0.2, vib: 0.0 }); tone(tt, g * 0.13, 480, 0.38, { pan: 0.25, wet: 0.2 }); } break;
+      case "station:reminders": for (let j = 0; j < 5; j++) { const tt = t + (j + 0.3) * d / 5.5; click(tt, g * 0.5, 700, -0.2); tone(tt + 0.01, g * 0.12, midi(76 + j * 2), 0.07, { wet: 0.3, pan: -0.2 }); } break;
       case "whoosh": noiseSweep(t, g, d, 400, 5000, { wet: 0.1 }); break;
       case "riser": {
         noiseSweep(t, g * 0.7, d, 300, 9000, { shape: "rise", wet: 0.3 });

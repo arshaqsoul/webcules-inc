@@ -21,7 +21,8 @@ Every season (wedding season, holiday minis, back to school) gives a reason to r
 The visual reference is BUCK's "airbnb it." campaign for Airbnb: open close on a small human moment, pull back to reveal the whole place as a tiny diorama on a warm seamless backdrop, then a verb tagline in a bold wordmark over the diorama.
 We keep the structure and the feeling, never the content: our diorama is the photographer's admin machine, and our verb is **Snap it.**
 
-- **Two worlds.** The chore world is dusk: a warm plum backdrop, a wooden tabletop, clay-toned devices (cream, sage, terracotta, charcoal, brass), red lamps. The Snap world is daylight lavender (`#f1f1fb`, accent `#5e6ad2`).
+- **Full colour (default from E002).** `theme: "sunny"` in the machine scene: saturated clay materials (coral, teal, mustard, leaf green, pink, sky blue, navy), potted plants on the table, puffy clouds, and a sky that runs from morning through sunset to twilight while the chore drags on. The slam accent is sunshine yellow. Set `sky: true` on the checklist and cta scenes so the Snap world is the next bright morning, with clouds. Never desaturate: the founder asked for colourful, not dull.
+- **Two worlds.** The chore world runs through the day into night. The Snap world is daylight, with the brand lavender (`#5e6ad2`) on the block, the ticks and the coin. E001 uses the older `dusk` theme (warm plum, quieter materials) with a plain lavender Snap world.
 - **Miniature, tactile, soft.** Solid parts with soft contact shadows and quiet edges (`TONE.dusk` in `engine/iso.js`), built with the anatomy skill's craft rules (`.claude/skills/anatomy`): many small parts that sit on each other, one lit accent.
 - **A tiny person gives it scale.** The photographer (`engine/figure.js`) walks the line beside the client card, camera hanging unused, and slumps on the slam.
 - **Calm camera.** One follow move, one pull-back reveal, one collapse. No whip pans.
@@ -68,7 +69,7 @@ Check every claim against the code again when you make an episode: plans change.
 | Ep | Title | Chore (hook) | Stations | Proof rows (Snap) | Claim sources to start from | Status |
 |---|---|---|---|---|---|---|
 | E001 | The Booking Machine | Booking ONE wedding client | inbox, calendar, contract, invoice, payment, gallery | Booked, contract signed, deposit paid, gallery delivered | `lib/plans-data.ts`, `lib/connect.ts`, `lib/contracts.ts`, `lib/invoices.ts` | made |
-| E002 | The Deposit Chaser | Getting ONE deposit paid | invoice, inbox, payment, payment, inbox | Invoice sent with a secure link, paid through your own Stripe, marked paid | `lib/invoices.ts`, `lib/connect.ts` | ready |
+| E002 | The Deposit Chaser | Getting ONE deposit paid | invoice, inbox, reminders, phone, payment | Invoice sent with a pay link, paid into your own Stripe, marked paid on its own, lands on the client's inbox thread | `lib/invoices.ts`, `lib/connect.ts` | made |
 | E003 | The Gallery Resender | Sending ONE gallery link | gallery, inbox, gallery, inbox, `lock` | Link with expiry, new link replaces the old one, access code by email | `growth/storyboards/PP-003.meta.json` | stations |
 | E004 | The Picks Collector | Getting ONE client's album picks | gallery, inbox, `screenshot`, `spreadsheet`, inbox | Selection mode, client counter, picks land on the project | `growth/storyboards/PP-002.meta.json` | stations |
 | E005 | The Signature Hunt | Getting ONE contract signed | contract, inbox, `printer`, `scanner`, inbox | Template, merge fields, signed in the browser, PDF archived | `lib/contracts.ts`, `lib/merge.ts` | stations |

@@ -10,6 +10,7 @@
 //   footer    { label, value }       the counter that went 6 -> 1
 
 import { W, seg, ease, kinetic, text, clamp, lerp } from "../runtime.js";
+import { daySky } from "../decor.js";
 
 const INK = "#0f1011";
 const MUTED = "#4a4d63";
@@ -20,10 +21,10 @@ export default {
   render(t, dur, p, ctx) {
     const inA = seg(t, 0, 0.35);
     const outA = 1 - seg(t, dur - 0.3, dur);
-    let b = `<rect width="1080" height="1920" fill="#f1f1fb" opacity="${inA.toFixed(3)}"/>`;
+    let b = p.sky ? daySky(t + 13, { opacity: inA }) : `<rect width="1080" height="1920" fill="#f1f1fb" opacity="${inA.toFixed(3)}"/>`;
     b += `<defs><radialGradient id="ckGlow" cx="0.5" cy="0.4" r="0.6"><stop offset="0" stop-color="#8b95e8" stop-opacity="0.35"/><stop offset="1" stop-color="#8b95e8" stop-opacity="0"/></radialGradient>`;
     b += `<filter id="ckShadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="24" stdDeviation="28" flood-color="#2b2f6b" flood-opacity="0.18"/></filter></defs>`;
-    b += `<rect width="1080" height="1920" fill="url(#ckGlow)" opacity="${(inA * outA).toFixed(3)}"/>`;
+    if (!p.sky) b += `<rect width="1080" height="1920" fill="url(#ckGlow)" opacity="${(inA * outA).toFixed(3)}"/>`;
 
     // A steady push-in so the held payoff never reads as a frozen frame.
     const push = 1 + 0.06 * ease.inOutCubic(seg(t, 0.9, dur));

@@ -8,6 +8,7 @@
 //   url      "snaphq.app"
 
 import { W, seg, ease, text, kinetic } from "../runtime.js";
+import { daySky } from "../decor.js";
 
 let G = null;
 
@@ -60,9 +61,9 @@ export default {
 
   render(t, dur, p) {
     const inA = seg(t, 0, 0.3);
-    let b = `<rect width="1080" height="1920" fill="#f1f1fb" opacity="${inA.toFixed(3)}"/>`;
+    let b = p.sky ? daySky(t + 19, { opacity: inA }) : `<rect width="1080" height="1920" fill="#f1f1fb" opacity="${inA.toFixed(3)}"/>`;
     b += `<defs><radialGradient id="ctaGlow" cx="0.5" cy="0.36" r="0.55"><stop offset="0" stop-color="#8b95e8" stop-opacity="0.45"/><stop offset="1" stop-color="#8b95e8" stop-opacity="0"/></radialGradient></defs>`;
-    b += `<rect width="1080" height="1920" fill="url(#ctaGlow)" opacity="${inA.toFixed(3)}"/>`;
+    if (!p.sky) b += `<rect width="1080" height="1920" fill="url(#ctaGlow)" opacity="${inA.toFixed(3)}"/>`;
 
     // The coin lands spinning and settles with a slow idle sway, so the end card never freezes.
     const spin = ease.outExpo(seg(t, 0, 1.6));

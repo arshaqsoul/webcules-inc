@@ -22,7 +22,39 @@ const DUSK_MAT = {
   brass: { top: "#e7c27a", front: "#c9a15a", side: "#a8823f" },
 };
 
+// "sunny" is the full-colour Airbnb-style look: saturated, soft, daylight.
+// Same material names as dusk so stations work in both; the colours differ.
+const SUNNY_MAT = {
+  wood: { top: "#f2b878", front: "#d9955a", side: "#bd7a43" },
+  woodDark: { top: "#d38f58", front: "#b8723f", side: "#9a5c30" },
+  cream: { top: "#fff8ee", front: "#f6e3cb", side: "#e8cdaa" },
+  sage: { top: "#8fdc86", front: "#68c262", side: "#4ea64c" },
+  terra: { top: "#ff8f6e", front: "#f26a4d", side: "#d75236" },
+  charcoal: { top: "#4b5fa8", front: "#3a4b8c", side: "#2d3b72" },
+  brass: { top: "#ffd257", front: "#f5b52c", side: "#da9a14" },
+  teal: { top: "#5fd6cf", front: "#33b9b3", side: "#239a96" },
+  pink: { top: "#ffa9c9", front: "#f783ad", side: "#dc6690" },
+  sky: { top: "#8cc4ff", front: "#62a5f5", side: "#4888da" },
+};
+
 export const TONE = {
+  sunny: {
+    page: "#f9c6a6",
+    // Sky keyframes over the episode: morning, afternoon, sunset, twilight.
+    sky: [
+      ["#c8b8f0", "#f8c9cf", "#ffc39b"],
+      ["#a9c8ff", "#ffd1c4", "#ffb98f"],
+      ["#9c86e0", "#ff9fb4", "#ff9a68"],
+      ["#4b3f9a", "#9a5bb0", "#f27c9b"],
+    ],
+    clouds: true,
+    top: SUNNY_MAT.cream.top, front: SUNNY_MAT.cream.front, side: SUNNY_MAT.cream.side, fill: "#fff8ee",
+    edge: "#6a3a2a", edgeAlpha: 0.42, edgeW: 0.6, crease: "#ffffff", creaseAlpha: 0.45, lo: "#b08a74", mid: "#7a5444", hi: "#fff8ee",
+    halo: "#7a3a4a", lit: "#5e6ad2", litTop: "#8b95e8", litFront: "#6f7ad8", litSide: "#5e6ad2",
+    red: "#ff4d5e", green: "#3fcf7a", amber: "#ffb000", paper: "#fffdf8", mat: SUNNY_MAT,
+    hud: { pill: "#ffffff", pillAlpha: 0.9, stroke: "#ffffff", ink: "#2a1a24", sub: "#8a6070", kicker: "#ffffff", capPill: "#ffffff", capInk: "#2a1a24", capLabel: "#5e6ad2" },
+    noDesat: true, slamAccent: "#ffd257", hookDim: ["#2a0f3a", 0.4], daylight: true,
+  },
   dusk: {
     page: "#2b1f2e", backdrop: ["#7a5468", "#3a2737", "#1e1520"], top: DUSK_MAT.cream.top, front: DUSK_MAT.cream.front, side: DUSK_MAT.cream.side, fill: "#f3ebdf",
     edge: "#3b2a33", edgeAlpha: 0.55, edgeW: 0.6, crease: "#fff8ee", creaseAlpha: 0.35, lo: "#8a7468", mid: "#d8c6b8", hi: "#fff8ee",

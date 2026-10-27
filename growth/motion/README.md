@@ -42,6 +42,7 @@ engine/runtime.js              time helpers, easing, seeded random, kinetic text
 engine/iso.js                  isometric solids after the anatomy skill: boxes, cylinders, lines, text on faces
 engine/stations.js             the station library: one device per chore (inbox, calendar, contract, invoice, payment, gallery)
 engine/figure.js               the tiny photographer who walks the machine
+engine/decor.js                clouds, potted plants and the daylight sky
 engine/scenes/*.js             scene types: machine, checklist, cta
 audio.mjs                      cue list -> 48 kHz stereo WAV (every sound is a few lines of DSP)
 render.mjs                     the CLI above
@@ -63,7 +64,7 @@ Random-looking motion comes from `wobble()` or `rng(seed)`, never `Math.random()
   Add its sound as a `station:<kind>` case in `audio.mjs`.
   Follow `.claude/skills/anatomy/references/craft.md`: solids not wireframes, one lit accent, parts that sit on parts, lines that end on something.
 - **A new scene type**: add `engine/scenes/<type>.js` exporting `render` and `cues` (and `init` plus `usesGL: true` if it draws with three.js).
-- **Another look**: `TONE.dusk` (default, the BUCK-inspired clay diorama) and `TONE.dark` (anatomy line-art) ship today; set `theme` on the machine scene.
+- **Another look**: `TONE.sunny` (full colour, the house style from E002), `TONE.dusk` (E001) and `TONE.dark` (anatomy line-art) ship today; set `theme` on the machine scene and `sky: true` on checklist and cta for the daylight Snap world.
 - **Another brand (Webcules)**: add a palette to `TONE` in `engine/iso.js`, put the brand's colours and logo in `marketing/brands/`, and give the scenes a `theme` prop.
   The machine and proof scenes take colours from the palette and the logo from props.
 
