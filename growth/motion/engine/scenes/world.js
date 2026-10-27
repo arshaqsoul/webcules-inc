@@ -24,6 +24,7 @@ const SKY = {
   morning: { top: "#8fc3ff", bottom: "#ffe1d2", sun: ["#fff1dc", 2.6, 48, -35], hemi: ["#cfe6ff", "#f5d2b8", 1.0], fogNear: 40, cloud: "#ffffff" },
   afternoon: { top: "#76b2ff", bottom: "#ffe7c2", sun: ["#fff4e0", 2.8, 55, 20], hemi: ["#d6eaff", "#f2d8a8", 1.05], fogNear: 40, cloud: "#ffffff" },
   golden: { top: "#ff9db5", bottom: "#ffc56f", sun: ["#ffb26b", 3.0, 16, 60], hemi: ["#ffc3c8", "#ffb27a", 0.9], fogNear: 34, cloud: "#ffe0d0" },
+  twilight: { top: "#3d48b8", bottom: "#ff9ec4", sun: ["#ffd0e6", 1.9, 30, -40], hemi: ["#a9b4ff", "#c98ab8", 1.0], fogNear: 40, cloud: "#c7b8f0" },
   night: { top: "#1b2160", bottom: "#7a4fa6", sun: ["#9fb4ff", 0.75, 40, -60], hemi: ["#4a5aa8", "#3a2a55", 0.55], fogNear: 30, cloud: "#8f86c9" },
 };
 
@@ -62,7 +63,7 @@ function skyAt(keys, t) {
     sun: [mix(a.sun[0], b.sun[0]), lerp(a.sun[1], b.sun[1], k), lerp(a.sun[2], b.sun[2], k), lerp(a.sun[3], b.sun[3], k)],
     hemi: [mix(a.hemi[0], b.hemi[0]), mix(a.hemi[1], b.hemi[1]), lerp(a.hemi[2], b.hemi[2], k)],
     fogNear: lerp(a.fogNear, b.fogNear, k),
-    night: (a === SKY.night ? 1 - k : 0) + (b === SKY.night ? k : 0),
+    night: (a === SKY.night ? 1 - k : 0) + (b === SKY.night ? k : 0) + 0.6 * ((a === SKY.twilight ? 1 - k : 0) + (b === SKY.twilight ? k : 0)),
   };
 }
 
@@ -183,7 +184,7 @@ export default {
       const c = { dist: 16, el: 26, az0: -40, az1: -20, ...(isl.spec.cam ?? {}) };
       const s0 = isl.spec.at;
       shots.push({
-        s: s0, tr: isl.spec.tr ?? 1.25, arc: isl.spec.arc ?? 3,
+        s: s0, tr: isl.spec.tr ?? 1.3, arc: isl.spec.arc ?? 8,
         f: (tt) => {
           const k = seg(tt, s0, s0 + isl.spec.dur);
           const az = THREE.MathUtils.degToRad(lerp(c.az0, c.az1, k) + (isl.spec.rot ?? 0) * 57.3);
@@ -267,7 +268,7 @@ export default {
       const s0 = isl.spec.at;
       const s1 = s0 + isl.spec.dur;
       // Time chip, bottom.
-      const ca = seg(t, s0 + 0.6, s0 + 0.9) * (1 - seg(t, s1 - 0.25, s1));
+      const ca = seg(t, s0 + 1.1, s0 + 1.4) * (1 - seg(t, s1 - 0.25, s1));
       if (ca > 0) {
         const [time, what] = isl.spec.chip;
         const wTime = measure(time, 40, 800);
