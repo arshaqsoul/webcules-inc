@@ -7,7 +7,9 @@
 //   hook      { lines, at, out }                    opening headline over the wide shot
 //   opening   { pos, look }                          the wide establishing camera
 //   islands   [{ kind, pos, at, dur, chip, flash, toast: { title, sub }, cam: { dist, el, az0, az1 } }]
-//   sky       [[t, preset], ...]                     presets: morning, afternoon, golden, night
+//   sky       [[t, preset], ...]                     presets: morning, afternoon, golden, twilight, night
+//                                                    each has a painted backdrop in growth/motion/assets/sky/ (assets.mjs);
+//                                                    without the file the preset's gradient is drawn instead
 //   finale    { at, pos, look, lines }               the pull-back over every island
 //   logo      repo path to the Snap mark (for the toasts)
 
@@ -18,7 +20,7 @@ import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { ISLANDS } from "../world/islands.js";
-import { cloud, tickAll, rng, clay } from "../world/kit.js";
+import { cloud, tickAll, rng, clay, loadSurfaces } from "../world/kit.js";
 import { W, seg, ease, kinetic, text, clamp, lerp, mixHex, measure } from "../runtime.js";
 
 const SKY = {
@@ -65,10 +67,35 @@ function skyAt(keys, t) {
     hemi: [mix(a.hemi[0], b.hemi[0]), mix(a.hemi[1], b.hemi[1]), lerp(a.hemi[2], b.hemi[2], k)],
     fogNear: lerp(a.fogNear, b.fogNear, k),
     night: (a === SKY.night ? 1 - k : 0) + (b === SKY.night ? k : 0) + 0.6 * ((a === SKY.twilight ? 1 - k : 0) + (b === SKY.twilight ? k : 0)),
+    from: a.name, to: b.name, k,
   };
 }
 
+for (const [name, s] of Object.entries(SKY)) s.name = name;
+
 const V = (a) => new THREE.Vector3(...a);
+const SKY_W = 540;
+const SKY_H = 960;
+const SKY_OVER = 1.14; // the painting is drawn this much larger than the frame, for parallax room
+
+/** Load the painted sky for each preset, with the colour of its lower band for the fog. */
+async function loadSkies(ctx) {
+  const art = {};
+  await Promise.all(Object.keys(SKY).map(async (name) => {
+    const img = new Image();
+    img.src = ctx.asset(`growth/motion/assets/sky/${name}.jpg`);
+    try { await img.decode(); } catch { return; }
+    const c = document.createElement("canvas");
+    c.width = 16;
+    c.height = 16;
+    const g = c.getContext("2d");
+    g.drawImage(img, 0, img.height * 0.55, img.width, img.height * 0.3, 0, 0, 16, 16);
+    const d = g.getImageData(0, 0, 16, 16).data;
+    const avg = [0, 1, 2].map((ch) => { let v = 0; for (let i = ch; i < d.length; i += 4) v += d[i]; return Math.round(v / 256); });
+    art[name] = { img, fog: `#${avg.map((v) => v.toString(16).padStart(2, "0")).join("")}` };
+  }));
+  return art;
+}
 
 export default {
   usesGL: true,
@@ -79,10 +106,12 @@ export default {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(32, 1080 / 1920, 0.1, 400);
 
-    // Sky: a vertical gradient redrawn each frame into a tiny canvas.
+    // Sky: the painted backdrops (or a gradient), redrawn each frame into a canvas.
+    const skyArt = await loadSkies(ctx);
+    await loadSurfaces(ctx.asset);
     const skyCanvas = document.createElement("canvas");
-    skyCanvas.width = 4;
-    skyCanvas.height = 256;
+    skyCanvas.width = SKY_W;
+    skyCanvas.height = SKY_H;
     const skyTex = new THREE.CanvasTexture(skyCanvas);
     skyTex.colorSpace = THREE.SRGBColorSpace;
     scene.background = skyTex;
@@ -157,22 +186,16 @@ export default {
     composer.addPass(tsV);
     composer.addPass(new OutputPass());
 
-    G = { scene, camera, skyCanvas, skyTex, hemi, sun, islands, clouds, cloudMat, stars, composer, tsH, tsV, renderer };
+    G = { scene, camera, skyCanvas, skyTex, skyArt, hemi, sun, islands, clouds, cloudMat, stars, composer, tsH, tsV, renderer };
   },
 
   render(t, dur, p, ctx) {
-    const { scene, camera, skyCanvas, skyTex, hemi, sun, islands, clouds, cloudMat, stars, composer, tsH, tsV, renderer } = G;
+    const { scene, camera, skyCanvas, skyTex, skyArt, hemi, sun, islands, clouds, cloudMat, stars, composer, tsH, tsV, renderer } = G;
     const S = skyAt(p.sky, t);
 
-    // Sky, fog, light.
-    const g2 = skyCanvas.getContext("2d");
-    const grd = g2.createLinearGradient(0, 0, 0, 256);
-    grd.addColorStop(0, S.top);
-    grd.addColorStop(1, S.bottom);
-    g2.fillStyle = grd;
-    g2.fillRect(0, 0, 4, 256);
-    skyTex.needsUpdate = true;
-    scene.fog.color.set(S.bottom);
+    // Fog, light (the sky itself is painted once the camera is placed).
+    const painted = skyArt[S.from] && skyArt[S.to];
+    scene.fog.color.set(painted ? mixHex(skyArt[S.from].fog, skyArt[S.to].fog, S.k) : S.bottom);
     // Fog starts beyond what the camera is looking at (set below), so wide shots stay clear.
     hemi.color.set(S.hemi[0]);
     hemi.groundColor.set(S.hemi[1]);
@@ -182,7 +205,7 @@ export default {
     sun.intensity = S.sun[1];
     cloudMat.color.set(S.cloud);
     cloudMat.emissive.set(S.cloud);
-    stars.material.opacity = S.night * 0.9;
+    stars.material.opacity = S.night * (painted ? 0.45 : 0.9);
 
     // Camera: a chain of shots with eased, arcing moves between them.
     const shots = [];
@@ -215,10 +238,38 @@ export default {
       const b = cur.f(cur.s + cur.tr);
       pose = { pos: a.pos.clone().lerp(b.pos, u), look: a.look.clone().lerp(b.look, u) };
       pose.pos.y += Math.sin(Math.PI * u) * cur.arc;
+      // Dolly out along the view direction mid-move, so the camera clears the island
+      // it is leaving instead of skimming its walls and trees.
+      const pull = cur.pull ?? a.look.distanceTo(b.look) * 0.45;
+      pose.pos.add(pose.pos.clone().sub(pose.look).normalize().multiplyScalar(Math.sin(Math.PI * u) * pull));
     }
     camera.position.copy(pose.pos);
     camera.lookAt(pose.look);
     camera.updateMatrixWorld();
+
+    // Sky: the painting slides a little as the camera turns and tilts, so it reads as far away.
+    const g2 = skyCanvas.getContext("2d");
+    if (painted) {
+      const dir = pose.look.clone().sub(pose.pos).normalize();
+      const dw = SKY_W * SKY_OVER;
+      const dh = SKY_H * SKY_OVER;
+      const ox = -(dw - SKY_W) / 2 * (1 - Math.sin(Math.atan2(dir.x, dir.z)));
+      const oy = -(dh - SKY_H) / 2 * (1 - clamp(Math.asin(dir.y) / 0.6, -1, 1));
+      g2.globalAlpha = 1;
+      g2.drawImage(skyArt[S.from].img, ox, oy, dw, dh);
+      if (S.k > 0 && S.to !== S.from) {
+        g2.globalAlpha = S.k;
+        g2.drawImage(skyArt[S.to].img, ox, oy, dw, dh);
+      }
+      g2.globalAlpha = 1;
+    } else {
+      const grd = g2.createLinearGradient(0, 0, 0, SKY_H);
+      grd.addColorStop(0, S.top);
+      grd.addColorStop(1, S.bottom);
+      g2.fillStyle = grd;
+      g2.fillRect(0, 0, SKY_W, SKY_H);
+    }
+    skyTex.needsUpdate = true;
 
     // The sun follows the focus so its shadow map covers what we see.
     const el = THREE.MathUtils.degToRad(S.sun[2]);

@@ -12,14 +12,93 @@ import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.j
 
 // ---------------------------------------------------------------- basics
 
+// ---------------------------------------------------------------- painted surfaces
+
+// Surface detail painted once in ComfyUI (growth/motion/assets.mjs, assets/tex/*.jpg).
+// Each image becomes a grey detail map around 1.0, so it adds brush dabs, grain or
+// thumbprints while the colour always comes from code. Missing files leave plain clay.
+const SURFACES = {
+  clay: { file: "clay.jpg", seamless: true, mean: 0.5, k: 2.2, repeat: 2, bump: 1.2 }, // thumbprints, for big pieces only: on a head they shrink to noise
+  grass: { file: "grass.jpg", seamless: true, mean: 0.9, k: 1.6, repeat: 3 },
+  wood: { file: "wood.jpg", seamless: false, mean: 0.9, k: 1.1, repeat: 1 },
+  fabric: { file: "fabric.jpg", seamless: true, mean: 0.95, k: 2.0, repeat: 2 },
+};
+const DETAIL = {};
+
+/** Load the painted surfaces before any world is built (clay() reads them). */
+export async function loadSurfaces(asset) {
+  await Promise.all(Object.entries(SURFACES).map(async ([name, s]) => {
+    const img = new Image();
+    img.src = asset(`growth/motion/assets/tex/${s.file}`);
+    try { await img.decode(); } catch { return; }
+    DETAIL[name] = detailMap(img, s);
+  }));
+}
+
+/**
+ * An image -> a grey, mean-centred, optionally seamless texture. Seamless: the
+ * image half-shifted on both axes shows near the edges and the original in the
+ * middle, so the wrap is continuous (fine for organic dabs, not for planks).
+ */
+function detailMap(img, { seamless, mean, k, repeat }) {
+  const n = img.width;
+  const h = img.height;
+  const c = document.createElement("canvas");
+  c.width = n;
+  c.height = h;
+  const g = c.getContext("2d");
+  g.drawImage(img, 0, 0);
+  const src = g.getImageData(0, 0, n, h).data;
+  const lum = new Float32Array(n * h);
+  let sum = 0;
+  for (let i = 0; i < n * h; i++) sum += lum[i] = (0.2126 * src[i * 4] + 0.7152 * src[i * 4 + 1] + 0.0722 * src[i * 4 + 2]) / 255;
+  const mu = sum / (n * h);
+  const out = g.createImageData(n, h);
+  const edge = (u) => clamp01((Math.abs(u - 0.5) - 0.3) / 0.2);
+  for (let y = 0; y < h; y++) for (let x = 0; x < n; x++) {
+    let l = lum[y * n + x];
+    if (seamless) {
+      const m = Math.max(edge(x / n), edge(y / h));
+      l = l * (1 - m) + lum[((y + h / 2) % h) * n + ((x + n / 2) % n)] * m;
+    }
+    const o = (y * n + x) * 4;
+    out.data[o] = out.data[o + 1] = out.data[o + 2] = Math.round(255 * clamp01(mean + (l - mu) * k));
+    out.data[o + 3] = 255;
+  }
+  g.putImageData(out, 0, 0);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.NoColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(repeat, repeat);
+  t.anisotropy = 4;
+  return t;
+}
+const clamp01 = (v) => Math.min(1, Math.max(0, v));
+
+/** A painted surface's detail texture, optionally with its own repeat (null when not loaded). */
+export function surface(name, repeat) {
+  if (!DETAIL[name]) return null;
+  if (repeat == null) return DETAIL[name];
+  const t = DETAIL[name].clone();
+  t.repeat.set(repeat, repeat);
+  t.needsUpdate = true;
+  return t;
+}
+
+// ---------------------------------------------------------------- basics
+
 const mats = new Map();
-/** A soft clay material, cached by colour. */
-export function clay(color, { rough = 0.82, emissive = null, ei = 1, flat = false, opacity = 1 } = {}) {
-  const key = `${color}|${rough}|${emissive}|${ei}|${flat}|${opacity}`;
+/** A soft clay material, cached by colour. `surface` adds a painted detail map (wood, fabric, grass) or bump (clay). */
+export function clay(color, { rough = 0.82, emissive = null, ei = 1, flat = false, opacity = 1, surface: sf = null } = {}) {
+  const key = `${color}|${rough}|${emissive}|${ei}|${flat}|${opacity}|${sf}`;
   if (!mats.has(key)) {
     const m = new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: 0, flatShading: flat });
     if (emissive) { m.emissive = new THREE.Color(emissive); m.emissiveIntensity = ei; }
     if (opacity < 1) { m.transparent = true; m.opacity = opacity; }
+    if (sf && DETAIL[sf]) {
+      if (SURFACES[sf].bump) { m.bumpMap = DETAIL[sf]; m.bumpScale = SURFACES[sf].bump; }
+      else m.map = DETAIL[sf];
+    }
     mats.set(key, m);
   }
   return mats.get(key);
@@ -145,7 +224,7 @@ export function island(r, biome, seed = 1) {
     }
     geo.setAttribute("color", new THREE.Float32BufferAttribute(cols, 3));
   };
-  const topMat = new THREE.MeshStandardMaterial({ color: "#ffffff", vertexColors: true, roughness: 0.85 });
+  const topMat = new THREE.MeshStandardMaterial({ color: "#ffffff", vertexColors: true, roughness: 0.85, map: surface("grass", Math.max(2, r * 0.7)) });
   const top = mesh(topGeo, clay(biome.top));
   // A finely divided disc on the top face carries the painted patches.
   const fine = wobbleRim(new THREE.RingGeometry(0.001, r * 0.985, 96, 24).rotateX(-Math.PI / 2), r, seed);
@@ -154,7 +233,7 @@ export function island(r, biome, seed = 1) {
   face.position.y = 0.172;
   top.add(face);
   top.position.y = -0.17;
-  const soil = mesh(wobbleRim(new THREE.CylinderGeometry(r * 0.98, r * 0.78, 1.3, 72, 2), r, seed, 0.08), clay(biome.soil));
+  const soil = mesh(wobbleRim(new THREE.CylinderGeometry(r * 0.98, r * 0.78, 1.3, 72, 2), r, seed, 0.08), clay(biome.soil, { surface: "clay" }));
   soil.position.y = -0.34 - 0.65;
   const under = new THREE.ConeGeometry(r * 0.78, r * 1.05, 14, 3);
   const pp = under.attributes.position;
@@ -682,7 +761,7 @@ export function blanket(w, d, colors = ["#ff6b6b", "#ffffff"], check = 6) {
   }
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
-  const m = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.95 });
+  const m = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.95, bumpMap: surface("fabric", check / 2), bumpScale: 2 });
   const b = mesh(new RoundedBoxGeometry(w, 0.04, d, 2, 0.02), m, { cast: false });
   b.position.y = 0.02;
   return b;

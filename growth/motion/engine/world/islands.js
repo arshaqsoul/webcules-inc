@@ -28,9 +28,9 @@ export function studio(seed = 11) {
   const g = new THREE.Group();
   g.add(island(4.6, { top: "#7fcf6e", soil: "#b87a4b", rock: "#8a7266", lip: "#6cbc5f" }, seed));
   // The studio: a wooden floor and two cut-away walls, like a dollhouse.
-  g.add(at(rbox(4.4, 0.22, 3.6, "#e2a86c", 0.05), 0, 0.11, -0.4));
-  g.add(at(rbox(4.4, 2.7, 0.16, "#fff0dc", 0.04), 0, 1.57, -2.15));
-  g.add(at(rbox(0.16, 2.7, 3.6, "#ffcfb5", 0.04), -2.15, 1.57, -0.4));
+  g.add(at(rbox(4.4, 0.22, 3.6, "#e2a86c", 0.05, { surface: "wood" }), 0, 0.11, -0.4));
+  g.add(at(rbox(4.4, 2.7, 0.16, "#fff0dc", 0.04, { surface: "clay" }), 0, 1.57, -2.15));
+  g.add(at(rbox(0.16, 2.7, 3.6, "#ffcfb5", 0.04, { surface: "clay" }), -2.15, 1.57, -0.4));
   // A big window with daylight coming through.
   g.add(at(rbox(1.3, 1.1, 0.1, "#ffffff", 0.03), 1.25, 1.75, -2.06));
   g.add(at(mesh(new THREE.PlaneGeometry(1.15, 0.95), clay("#cfe9ff", { emissive: "#eaf6ff", ei: 1.1 }), { cast: false }), 1.25, 1.75, -2.0));
@@ -153,7 +153,7 @@ export function lakeWedding(seed = 37) {
 export function nightParty(seed = 51) {
   const g = new THREE.Group();
   g.add(island(4.8, { top: "#4f9a5c", soil: "#8a5a3c", rock: "#6a5a5a", lip: "#438a50" }, seed));
-  g.add(at(rbox(4.6, 0.16, 4.0, "#c98a54", 0.04), 0, 0.08, -0.3));
+  g.add(at(rbox(4.6, 0.16, 4.0, "#c98a54", 0.04, { surface: "wood" }), 0, 0.08, -0.3));
   // Poles and fairy lights zig-zagging over the deck, bunting along the back.
   const P = [[-2.1, -2.1], [2.1, -2.1], [2.1, 1.5], [-2.1, 1.5]];
   for (const [x, z] of P) g.add(at(pole(2.7), x, 0.16, z));

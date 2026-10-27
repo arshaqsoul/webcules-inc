@@ -1,0 +1,120 @@
+{
+  "sky-morning": {
+    "use": "world.js sky backdrop, preset morning",
+    "model": "zimage",
+    "w": 768,
+    "h": 1344,
+    "seed": 102,
+    "size": [
+      540,
+      960
+    ],
+    "out": "sky/morning.jpg",
+    "prompt": "A hand-painted sky backdrop for a stop-motion miniature film, vertical. Soft early morning: clear pale cornflower blue at the top fading to warm peach and apricot near the bottom. A few big puffy rounded cumulus clouds, soft and simple, gouache and airbrush texture, gentle painted gradients, storybook illustration in the style of a BUCK animation backdrop. Only sky and clouds, no ground, no horizon, no land, no buildings, no birds, no sun disc, no text."
+  },
+  "sky-afternoon": {
+    "use": "world.js sky backdrop, preset afternoon",
+    "model": "zimage",
+    "w": 768,
+    "h": 1344,
+    "seed": 201,
+    "size": [
+      540,
+      960
+    ],
+    "out": "sky/afternoon.jpg",
+    "prompt": "A hand-painted sky backdrop for a stop-motion miniature film, vertical. Bright cheerful afternoon: saturated sky blue at the top fading to warm cream and butter yellow near the bottom. Several big puffy rounded white cumulus clouds with soft lavender shadows, gouache and airbrush texture, storybook illustration in the style of a BUCK animation backdrop. Only sky and clouds, no ground, no horizon, no land, no buildings, no birds, no sun disc, no text."
+  },
+  "sky-golden": {
+    "use": "world.js sky backdrop, preset golden",
+    "model": "zimage",
+    "w": 768,
+    "h": 1344,
+    "seed": 302,
+    "size": [
+      540,
+      960
+    ],
+    "out": "sky/golden.jpg",
+    "prompt": "A hand-painted sky backdrop for a stop-motion miniature film, vertical. Golden hour: soft rose pink at the top fading to glowing apricot and honey gold near the bottom. Big puffy rounded clouds lit warm peach and coral on their undersides, gouache and airbrush texture, storybook illustration in the style of a BUCK animation backdrop. Only sky and clouds, no ground, no horizon, no land, no buildings, no birds, no sun disc, no text."
+  },
+  "sky-twilight": {
+    "use": "world.js sky backdrop, preset twilight",
+    "model": "zimage",
+    "w": 768,
+    "h": 1344,
+    "seed": 402,
+    "size": [
+      540,
+      960
+    ],
+    "out": "sky/twilight.jpg",
+    "prompt": "A hand-painted sky backdrop for a stop-motion miniature film, vertical. Twilight just after sunset: deep royal indigo blue at the top fading through violet to soft candy pink near the bottom. A few faint first stars at the top, long soft lilac clouds, gouache and airbrush texture, storybook illustration in the style of a BUCK animation backdrop. Only sky and clouds, no ground, no horizon, no land, no buildings, no moon, no text."
+  },
+  "sky-night": {
+    "use": "world.js sky backdrop, preset night",
+    "model": "zimage",
+    "w": 768,
+    "h": 1344,
+    "seed": 501,
+    "size": [
+      540,
+      960
+    ],
+    "out": "sky/night.jpg",
+    "prompt": "A hand-painted sky backdrop for a stop-motion miniature film, vertical. Friendly night: deep navy indigo at the top fading to rich plum violet near the bottom, never black or grey. Many small soft twinkling stars, a few soft dusky purple clouds, gouache and airbrush texture, storybook illustration in the style of a BUCK animation backdrop. Only sky and clouds, no ground, no horizon, no land, no buildings, no moon, no text."
+  },
+  "tex-clay": {
+    "use": "kit.js clay bump map: thumbprints and soft lumps on every clay surface",
+    "model": "zimage",
+    "w": 1024,
+    "h": 1024,
+    "seed": 611,
+    "size": [
+      512,
+      512
+    ],
+    "out": "tex/clay.jpg",
+    "prompt": "Seamless tileable PBR albedo texture swatch, plasticine material: densely covered in soft overlapping fingerprint impressions and gentle thumb-pressed dimples, matte, light neutral grey, flat orthographic top view, even diffuse lighting, texture continues past every edge of the frame.",
+    "crop": 0.06
+  },
+  "tex-grass": {
+    "use": "kit.js island top: painted grass",
+    "model": "zimage",
+    "w": 1024,
+    "h": 1024,
+    "seed": 701,
+    "size": [
+      512,
+      512
+    ],
+    "out": "tex/grass.jpg",
+    "prompt": "Seamless texture filling the entire frame, seen from directly above: a stylised hand-painted lawn for a miniature diorama, small round gouache brush dabs in fresh light green and mid green with a few tiny pale yellow-green specks, evenly scattered, flat even lighting, no perspective, no horizon, no blades seen from the side, no flowers, no shadows, uniform from corner to corner."
+  },
+  "tex-wood": {
+    "use": "kit.js wooden floors and decks",
+    "model": "zimage",
+    "w": 1024,
+    "h": 1024,
+    "seed": 801,
+    "size": [
+      512,
+      512
+    ],
+    "out": "tex/wood.jpg",
+    "prompt": "Seamless flat top-down texture of light warm honey oak wooden floor planks running vertically, soft painted grain, stylised for a miniature diorama, evenly lit, no shadows, no objects, fills the whole frame."
+  },
+  "tex-fabric": {
+    "use": "kit.js blankets, clothing weave",
+    "model": "zimage",
+    "w": 1024,
+    "h": 1024,
+    "seed": 901,
+    "size": [
+      512,
+      512
+    ],
+    "out": "tex/fabric.jpg",
+    "prompt": "Seamless flat top-down texture of soft white felt fabric with a fine woven texture, macro, evenly lit, uniform off-white colour, no pattern, no folds, no shadows, fills the whole frame."
+  }
+}
