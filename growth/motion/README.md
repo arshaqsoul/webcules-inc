@@ -21,7 +21,7 @@ Then hand `out/E002/reel.mp4`, `cover.png` and `package.md` to the founder.
 The founder posts (growth/AGENTS.md rule 1).
 
 Requirements: Node 20+, ffmpeg, and Playwright with Chromium (resolved through `NODE_PATH` or a local install).
-A render of a 24 s reel takes 3-7 minutes on 4 cores.
+A 24 s flat reel renders in 3-7 minutes on 4 cores; a 28 s 3D world reel takes longer (software WebGL), so run it in the background.
 
 ## The quality bar, every episode
 
@@ -43,10 +43,13 @@ engine/iso.js                  isometric solids after the anatomy skill: boxes, 
 engine/stations.js             the station library: one device per chore (inbox, calendar, contract, invoice, payment, gallery)
 engine/figure.js               the tiny photographer who walks the machine
 engine/decor.js                clouds, potted plants and the daylight sky
-engine/scenes/*.js             scene types: machine, checklist, cta
+engine/scenes/*.js             scene types: world (3D journey, the house style), phone (app end card), and the retired machine, checklist, cta
+engine/world/kit.js            the 3D world kit: clay materials, floating islands, trees, people and poses, animals, props, particles, clouds
+engine/world/islands.js        one builder per world: studio, fallPark, lakeWedding, nightParty
 audio.mjs                      cue list -> 48 kHz stereo WAV (every sound is a few lines of DSP)
 render.mjs                     the CLI above
-vendor/three.module.min.js     three.js 0.170.0, pinned and vendored (MIT)
+vendor/three.module.min.js     three.js 0.170.0, pinned and vendored (MIT), loaded through an import map
+vendor/jsm/                    the three.js add-ons we use (rounded boxes, EffectComposer passes), same version
 out/                           renders, gitignored
 ```
 
@@ -59,7 +62,11 @@ Random-looking motion comes from `wobble()` or `rng(seed)`, never `Math.random()
 
 ## Extend it
 
-- **A new station** (most new episodes need one or two): add an object to `STATIONS` in `engine/stations.js` with a `label` and `draw(cam, T, x0, st)`.
+- **A new world** (most new episodes need one or two): add a builder to `engine/world/islands.js` returning `{ group, subject, photographer }`.
+  Start from `island(r, biome)`, dress it with the kit (trees, `flowers`, props, `fall()` particles, `sparkles`), add 2-6 people with `actor(look, pose)`, and place the photographer with `shooter(x, z, target)` so the flash fires from their camera.
+  Keep the action inside about 3 units of the subject so the 3/4 camera frames it; set the camera per island in the spec (`cam: { dist, el, az0, az1 }`) so the photographer never blocks the subject.
+  Look at stills of every world before a render.
+- **A new station** (retired machine format only): add an object to `STATIONS` in `engine/stations.js` with a `label` and `draw(cam, T, x0, st)`.
   Build it on its own base plate (x0..x0+200, y 0..124), the device in y 6..60, at least 8 parts: a body with a bevel, a part that moves while `st.active`, a screen or paper that shows the chore, and a `lamp` that blinks once `st.visited`.
   Add its sound as a `station:<kind>` case in `audio.mjs`.
   Follow `.claude/skills/anatomy/references/craft.md`: solids not wireframes, one lit accent, parts that sit on parts, lines that end on something.

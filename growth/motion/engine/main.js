@@ -23,7 +23,13 @@ const ctx = {
 
 // Scenes that draw in WebGL load three.js once, from the pinned vendored build.
 if (types.some((t) => modules[t].usesGL)) {
-  ctx.three = await import("../vendor/three.module.min.js");
+  ctx.three = await import("three");
+  // One renderer for every GL scene: two contexts on one canvas would fight.
+  const THREE = ctx.three;
+  ctx.renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, preserveDrawingBuffer: true });
+  ctx.renderer.setPixelRatio(1);
+  ctx.renderer.setSize(1080, 1920, false);
+  ctx.renderer.outputColorSpace = THREE.SRGBColorSpace;
 }
 
 for (const t of types) if (modules[t].init) await modules[t].init(ctx, spec.scenes.filter((s) => s.type === t));

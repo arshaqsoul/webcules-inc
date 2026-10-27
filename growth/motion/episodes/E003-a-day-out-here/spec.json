@@ -1,0 +1,346 @@
+{
+  "id": "E003",
+  "title": "A Day Out Here",
+  "series": "Snap it.",
+  "brand": "snap",
+  "duration": 28.2,
+  "fps": 30,
+  "cover": 15.2,
+  "stills": [
+    0.8,
+    2.0,
+    3.6,
+    5.6,
+    8.4,
+    10.2,
+    13.0,
+    15.0,
+    17.8,
+    19.6,
+    21.0,
+    22.6,
+    23.8,
+    25.2,
+    27.8
+  ],
+  "pain": {
+    "statement": "Photographers want to spend the day shooting, but bookings, contracts, payments and gallery follow-ups pull them back to the desk and spread across separate tools.",
+    "persona": "any",
+    "ledger": null,
+    "evidence": [
+      {
+        "url": "https://www.aiarty.com/ai-photography-guide/best-booking-app-for-photographers.htm",
+        "captured_at": "2026-10-27",
+        "summary": "Guide describes booking sessions in one app and delivering galleries in another, the stitched-together setup many photographers run."
+      },
+      {
+        "url": "https://petapixel.com/2023/09/25/photographer-goes-viral-calling-up-clients-to-pay-outstanding-invoices",
+        "captured_at": "2026-10-27",
+        "summary": "News piece (Sep 2023): a photographer's video about phoning clients over unpaid invoices drew millions of views and many photographers said the same."
+      },
+      {
+        "url": "https://fstoppers.com/business/when-should-you-receive-payment-your-work-503435",
+        "captured_at": "2026-10-27",
+        "summary": "Photography business article on chasing invoice payments well past 60 days."
+      },
+      {
+        "url": "https://blog.pic-time.com/blog/honeybook-and-pic-time",
+        "captured_at": "2026-10-27",
+        "summary": "A gallery vendor explains pairing its galleries with a separate client-management tool, so the workflow lives in two products."
+      }
+    ]
+  },
+  "claims": [
+    {
+      "text": "New booking event lands in the Snap inbox",
+      "source": "apps/snap/lib/repos/bookings.ts",
+      "match": "eventType: \"booking.created\""
+    },
+    {
+      "text": "Clients book from your booking page, on the Free plan",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "maxSessionTypes: 1"
+    },
+    {
+      "text": "Contract signed event lands in the Snap inbox; clients sign in the browser",
+      "source": "apps/snap/lib/contracts.ts",
+      "match": "eventType: \"contract.signed\""
+    },
+    {
+      "text": "Invoice paid event; payment goes into your own Stripe",
+      "source": "apps/snap/lib/invoices.ts",
+      "match": "money landed"
+    },
+    {
+      "text": "Clients pay through your own Stripe",
+      "source": "apps/snap/lib/connect.ts",
+      "match": "the photographer's own Stripe account"
+    },
+    {
+      "text": "Gallery first view event lands in the Snap inbox",
+      "source": "apps/snap/lib/shares/gallery-auth.ts",
+      "match": "Client opened their gallery for the first time"
+    },
+    {
+      "text": "Unified inbox on the Free plan",
+      "source": "apps/snap/lib/tier-cards.ts",
+      "match": "Unified inbox"
+    },
+    {
+      "text": "0% commission",
+      "source": "apps/snap/lib/connect.ts",
+      "match": "No application_fee_amount, ever."
+    },
+    {
+      "text": "Free to start (Free plan, $0)",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "id: \"free\", name: \"Free\", priceMonthlyUsd: 0"
+    }
+  ],
+  "scenes": [
+    {
+      "type": "world",
+      "at": 0,
+      "dur": 23.6,
+      "props": {
+        "logo": "marketing/brands/snap-logo.png",
+        "hook": {
+          "lines": [
+            "Spend the day",
+            "*out here.*"
+          ],
+          "at": 0.25,
+          "out": 2.2
+        },
+        "opening": {
+          "pos": [
+            16,
+            15,
+            22
+          ],
+          "look": [
+            -1,
+            -2,
+            -22
+          ],
+          "drift": [
+            -0.8,
+            -0.6,
+            -1.2
+          ]
+        },
+        "sky": [
+          [
+            0,
+            "morning"
+          ],
+          [
+            7.2,
+            "afternoon"
+          ],
+          [
+            12.0,
+            "golden"
+          ],
+          [
+            16.8,
+            "night"
+          ]
+        ],
+        "islands": [
+          {
+            "kind": "studio",
+            "pos": [
+              0,
+              0,
+              0
+            ],
+            "rot": 0.25,
+            "at": 2.4,
+            "dur": 4.8,
+            "flash": 2.3,
+            "chip": [
+              "8:00 AM",
+              "Newborn session"
+            ],
+            "toast": {
+              "title": "New booking - Maya Chen",
+              "sub": "from your booking page"
+            },
+            "cam": {
+              "dist": 16,
+              "el": 26,
+              "az0": 72,
+              "az1": 52
+            }
+          },
+          {
+            "kind": "fallPark",
+            "pos": [
+              -8,
+              1,
+              -18
+            ],
+            "rot": -0.2,
+            "at": 7.2,
+            "dur": 4.8,
+            "flash": 2.3,
+            "chip": [
+              "1:00 PM",
+              "Fall family photos"
+            ],
+            "toast": {
+              "title": "Contract signed - Wedding",
+              "sub": "signed in their browser"
+            },
+            "cam": {
+              "dist": 16.5,
+              "el": 25,
+              "az0": -42,
+              "az1": -22
+            }
+          },
+          {
+            "kind": "lakeWedding",
+            "pos": [
+              6,
+              -0.5,
+              -36
+            ],
+            "rot": 0.1,
+            "at": 12.0,
+            "dur": 4.8,
+            "flash": 2.3,
+            "chip": [
+              "5:30 PM",
+              "Lakeside wedding"
+            ],
+            "toast": {
+              "title": "Invoice INV-0042 paid",
+              "sub": "into your own Stripe"
+            },
+            "cam": {
+              "dist": 17,
+              "el": 22,
+              "az0": 44,
+              "az1": 26
+            }
+          },
+          {
+            "kind": "nightParty",
+            "pos": [
+              -4,
+              0.5,
+              -54
+            ],
+            "rot": -0.15,
+            "at": 16.8,
+            "dur": 4.6,
+            "flash": 2.2,
+            "chip": [
+              "9:00 PM",
+              "Birthday party"
+            ],
+            "toast": {
+              "title": "Client opened their gallery",
+              "sub": "for the first time"
+            },
+            "cam": {
+              "dist": 16,
+              "el": 27,
+              "az0": -48,
+              "az1": -28
+            }
+          }
+        ],
+        "finale": {
+          "at": 21.4,
+          "pos": [
+            -1,
+            46,
+            30
+          ],
+          "look": [
+            -1,
+            -6,
+            -27
+          ],
+          "drift": [
+            0,
+            0.4,
+            0.6
+          ],
+          "lines": [
+            "Your clients book, sign",
+            "and pay in *Snap.*"
+          ]
+        }
+      }
+    },
+    {
+      "type": "phone",
+      "at": 23.2,
+      "dur": 5.0,
+      "props": {
+        "tagline": "Snap it.",
+        "offer": "*0%* commission. *Free* to start.",
+        "url": "snaphq.app",
+        "logo": "marketing/brands/snap-logo.png",
+        "title": "Inbox",
+        "tagAt": 1.4,
+        "rows": [
+          {
+            "title": "New booking - Maya Chen",
+            "sub": "Newborn session",
+            "time": "8:04 AM",
+            "color": "#ffb000",
+            "at": 0.5
+          },
+          {
+            "title": "Contract signed",
+            "sub": "Wedding agreement",
+            "time": "1:12 PM",
+            "color": "#f26a4d",
+            "at": 0.7
+          },
+          {
+            "title": "Invoice INV-0042 paid",
+            "sub": "Into your own Stripe",
+            "time": "5:41 PM",
+            "color": "#ff6fa0",
+            "at": 0.9
+          },
+          {
+            "title": "Client opened their gallery",
+            "sub": "For the first time",
+            "time": "9:20 PM",
+            "color": "#7a5cff",
+            "at": 1.1
+          }
+        ]
+      }
+    }
+  ],
+  "caption": "Spend the day out here.\n\nA newborn at 8. A family in the fall leaves at 1. A lakeside wedding at golden hour. A birthday party under string lights.\nWhile you shoot, your clients book from your booking page, sign their contract in the browser and pay into your own Stripe. It all lands in one Snap inbox, waiting for you.\nSnap takes 0% commission.\n\nIt is not magic: you still send the contract, the invoice and the gallery. Snap just keeps every reply and payment in one place.\n\nStart free at snaphq.app",
+  "hashtags": [
+    "#photographerlife",
+    "#dayinthelife",
+    "#weddingphotographer",
+    "#newbornphotographer",
+    "#familyphotographer",
+    "#photographybusiness",
+    "#photographerworkflow"
+  ],
+  "ad": {
+    "primary_text": "Spend the day shooting. Your clients book, sign and pay in Snap, and it all lands in one inbox. 0% commission.",
+    "headline": "Snap it.",
+    "description": "Free to start at snaphq.app",
+    "cta_button": "Sign Up",
+    "placements": [
+      "instagram_reels",
+      "facebook_reels",
+      "instagram_stories",
+      "facebook_stories"
+    ]
+  }
+}

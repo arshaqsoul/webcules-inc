@@ -63,7 +63,8 @@ export function text(x, y, str, { size = 48, weight = 700, fill = "#fff", anchor
 export function kinetic(t, at, lines, { x = W / 2, y = 700, size = 104, lineGap = 1.12, stagger = 0.09, fill = "#fff", accent = "#8b95e8", weight = 800, out = Infinity, outDur = 0.25 } = {}) {
   let svg = "";
   let i = 0;
-  const fadeOut = 1 - ease.inCubic(seg(t, out, out + outDur));
+  // No exit time means no fade-out (Infinity would make seg() return NaN, which renders as fully visible).
+  const fadeOut = Number.isFinite(out) ? 1 - ease.inCubic(seg(t, out, out + outDur)) : 1;
   lines.forEach((line, li) => {
     const words = line.split(" ");
     const widths = words.map((w) => measure(w.replace(/\*/g, ""), size, weight));

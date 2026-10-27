@@ -83,7 +83,8 @@ async function stills(id, times) {
   const cols = 4;
   const inputs = files.flatMap((f) => ["-i", f]);
   const filter = files.map((_, i) => `[${i}:v]scale=270:480[s${i}]`).join(";") + ";" + files.map((_, i) => `[s${i}]`).join("") + `xstack=inputs=${files.length}:layout=${files.map((_, i) => `${(i % cols) * 270}_${Math.floor(i / cols) * 480}`).join("|")}:fill=black`;
-  spawnSync("ffmpeg", ["-y", "-v", "error", ...inputs, "-filter_complex", filter, "-frames:v", "1", sheet], { stdio: "inherit" });
+  if (files.length > 1) spawnSync("ffmpeg", ["-y", "-v", "error", ...inputs, "-filter_complex", filter, "-frames:v", "1", sheet], { stdio: "inherit" });
+  else spawnSync("ffmpeg", ["-y", "-v", "error", "-i", files[0], "-vf", "scale=270:480", sheet], { stdio: "inherit" });
   console.log(`stills: ${files.length} frames + ${sheet}`);
 }
 
@@ -183,15 +184,15 @@ function scaffold(id, title) {
   if (!/^E\d{3}$/.test(id)) throw new Error("episode ids look like E002");
   const dir = join(HERE, "episodes", `${id}-${(title ?? "untitled").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`);
   if (readdirSync(join(HERE, "episodes")).some((d) => d.startsWith(`${id}-`))) throw new Error(`${id} already exists`);
-  const base = JSON.parse(readFileSync(join(HERE, "episodes", readdirSync(join(HERE, "episodes")).sort()[0], "spec.json"), "utf8"));
+  // E003 is the house template: the 3D world journey with an app end card.
+  const base = findEpisode("E003").spec;
   base.id = id;
   base.title = title ?? "Untitled";
   base.pain = { statement: "TODO: one sentence, in the photographer's words", persona: "wedding", ledger: null, evidence: [] };
   base.caption = "TODO";
-  base.scenes[0].props.kicker = `NOT PHOTOGRAPHY  ·  EP ${id.slice(1).replace(/^0+/, "").padStart(2, "0")}`;
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, "spec.json"), JSON.stringify(base, null, 2) + "\n");
-  console.log(`new: ${dir}/spec.json (copied from the first episode; replace every TODO, the stations, the rows and the claims)`);
+  console.log(`new: ${dir}/spec.json (copied from E003; replace every TODO, the worlds, the inbox cards and the claims)`);
 }
 
 function packageEpisode(id) {

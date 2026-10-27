@@ -18,10 +18,7 @@ export default {
   async init(ctx, scenes) {
     const THREE = ctx.three;
     const p = scenes[0].props;
-    const renderer = new THREE.WebGLRenderer({ canvas: ctx.canvas, alpha: true, antialias: true, preserveDrawingBuffer: true });
-    renderer.setPixelRatio(1);
-    renderer.setSize(1080, 1920, false);
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    const renderer = ctx.renderer;
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(30, 1080 / 1920, 0.1, 100);
     camera.position.set(0, 0, 12);
@@ -72,6 +69,12 @@ export default {
     G.pivot.rotation.x = Math.sin(t * 0.9) * 0.08;
     G.pivot.position.y = 1.15 + (1 - drop) * 3;
     G.pivot.scale.setScalar(0.4 + 0.6 * drop);
+    // The renderer is shared: reset what other GL scenes may have changed.
+    G.renderer.setRenderTarget(null);
+    G.renderer.toneMapping = G.THREE.NoToneMapping;
+    G.renderer.shadowMap.enabled = false;
+    G.renderer.setClearColor(0x000000, 0);
+    G.renderer.clear();
     G.renderer.render(G.scene, G.camera);
     // Shadow under the coin.
     b += `<ellipse cx="${W / 2}" cy="930" rx="${(220 * drop).toFixed(1)}" ry="22" fill="#2b2f6b" opacity="${(0.14 * drop).toFixed(3)}" filter="url(#ctaBlur)"/>`;

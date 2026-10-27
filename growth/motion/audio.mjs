@@ -146,6 +146,7 @@ export function synthesize(cues, duration, { seed = "reel", master = 0.8 } = {})
       case "station:gallery": for (let j = 0; j < 6; j++) tone(t + j * d / 6, g * 0.15, midi(72 + j * 2), 0.08, { wet: 0.3, pan: -0.3 + j * 0.1 }); break;
       case "station:phone": for (let j = 0; j < 2; j++) { const tt = t + j * 0.5; tone(tt, g * 0.13, 440, 0.38, { pan: 0.25, wet: 0.2, vib: 0.0 }); tone(tt, g * 0.13, 480, 0.38, { pan: 0.25, wet: 0.2 }); } break;
       case "station:reminders": for (let j = 0; j < 5; j++) { const tt = t + (j + 0.3) * d / 5.5; click(tt, g * 0.5, 700, -0.2); tone(tt + 0.01, g * 0.12, midi(76 + j * 2), 0.07, { wet: 0.3, pan: -0.2 }); } break;
+      case "shutter": click(t, g * 0.9, 3200, 0.1); noiseSweep(t + 0.005, g * 0.5, 0.05, 9000, 3000, { shape: "fall", wet: 0.05 }); click(t + 0.07, g * 0.7, 2400, 0.1); noiseSweep(t + 0.03, g * 0.25, 0.35, 6000, 800, { shape: "fall", wet: 0.4 }); break;
       case "whoosh": noiseSweep(t, g, d, 400, 5000, { wet: 0.1 }); break;
       case "riser": {
         noiseSweep(t, g * 0.7, d, 300, 9000, { shape: "rise", wet: 0.3 });
