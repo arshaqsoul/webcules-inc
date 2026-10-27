@@ -16,6 +16,7 @@ import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { ISLANDS } from "../world/islands.js";
 import { cloud, tickAll, rng, clay } from "../world/kit.js";
 import { W, seg, ease, kinetic, text, clamp, lerp, mixHex, measure } from "../runtime.js";
@@ -87,6 +88,11 @@ export default {
     scene.background = skyTex;
     scene.fog = new THREE.Fog("#ffe1d2", 40, 140);
 
+    // Soft studio fill from every side (a photo-studio light box), so clay reads
+    // like the Airbnb sets: bright, round, no black shadows.
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    pmrem.dispose();
     const hemi = new THREE.HemisphereLight("#cfe6ff", "#f5d2b8", 1);
     scene.add(hemi);
     const sun = new THREE.DirectionalLight("#fff1dc", 2.6);
@@ -170,7 +176,8 @@ export default {
     // Fog starts beyond what the camera is looking at (set below), so wide shots stay clear.
     hemi.color.set(S.hemi[0]);
     hemi.groundColor.set(S.hemi[1]);
-    hemi.intensity = S.hemi[2];
+    hemi.intensity = S.hemi[2] * 0.6;
+    scene.environmentIntensity = 0.55 * (1 - 0.75 * S.night);
     sun.color.set(S.sun[0]);
     sun.intensity = S.sun[1];
     cloudMat.color.set(S.cloud);

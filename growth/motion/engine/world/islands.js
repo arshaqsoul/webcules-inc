@@ -73,7 +73,7 @@ export function fallPark(seed = 23) {
   const R = rng(seed);
   // A ring of autumn trees behind, leaves on the ground, pumpkins.
   [[-3.2, -2.2, 1.25], [-1.4, -3.4, 1.4], [0.8, -3.6, 1.2], [2.8, -2.6, 1.35], [3.7, -0.6, 1.05], [-3.9, 0.2, 1.0]].forEach(([x, z, s], i) => g.add(at(tree("autumn", seed + i, s), x, 0, z)));
-  g.add(at(flowers(120, 4.2, seed, ["#ef6a2c", "#f59a2a", "#d9412b", "#f7c447"]), 0, -0.02, 0));
+  g.add(at(flowers(220, 4.2, seed, ["#ef6a2c", "#f59a2a", "#d9412b", "#f7c447"], { flat: true }), 0, -0.02, 0));
   g.add(at(pumpkin(1.1), 2.2, 0, 1.2), at(pumpkin(0.8), 2.6, 0, 1.6), at(pumpkin(0.9), -2.5, 0, 1.3));
   // The family on a picnic blanket, the kid jumping, the dog.
   g.add(at(blanket(1.9, 1.5, ["#e54b4b", "#fff4e6"], 8), -0.2, 0, -0.6));

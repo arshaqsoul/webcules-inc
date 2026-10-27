@@ -81,6 +81,32 @@ export function glow(color, size, opacity = 1) {
   return s;
 }
 
+// ---------------------------------------------------------------- contact shadows
+
+let contactTex = null;
+/**
+ * A soft dark pool on the ground under a thing: the contact shadow that makes
+ * a miniature sit on its set (cheaper and steadier than screen-space AO).
+ */
+export function contact(rx, rz = rx, opacity = 0.32) {
+  if (!contactTex) {
+    const c = document.createElement("canvas");
+    c.width = c.height = 128;
+    const g = c.getContext("2d");
+    const grd = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+    grd.addColorStop(0, "rgba(40,24,40,1)");
+    grd.addColorStop(0.45, "rgba(40,24,40,0.55)");
+    grd.addColorStop(1, "rgba(40,24,40,0)");
+    g.fillStyle = grd;
+    g.fillRect(0, 0, 128, 128);
+    contactTex = new THREE.CanvasTexture(c);
+  }
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(rx * 2, rz * 2).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: contactTex, transparent: true, opacity, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }));
+  m.position.y = 0.012;
+  m.renderOrder = 1;
+  return m;
+}
+
 // ---------------------------------------------------------------- terrain
 
 /** Wobble a cylinder's rim so islands look hand-made, not lathed. */
@@ -104,7 +130,29 @@ function wobbleRim(geo, r, seed, amt = 0.07) {
  */
 export function island(r, biome, seed = 1) {
   const g = new THREE.Group();
-  const top = mesh(wobbleRim(new THREE.CylinderGeometry(r, r * 0.98, 0.34, 72, 1), r, seed), clay(biome.top));
+  // The top is painted with soft patches of lighter and darker grass, like a hand-painted set.
+  const topGeo = wobbleRim(new THREE.CylinderGeometry(r, r * 0.98, 0.34, 96, 1), r, seed);
+  const base = new THREE.Color(biome.top);
+  const paint = (geo) => {
+    const p = geo.attributes.position;
+    const cols = [];
+    const c = new THREE.Color();
+    for (let i = 0; i < p.count; i++) {
+      const x = p.getX(i), z = p.getZ(i);
+      const n = Math.sin(x * 1.3 + seed) * Math.cos(z * 1.1 - seed) * 0.5 + Math.sin(x * 2.9 - z * 2.3 + seed * 3) * 0.25;
+      c.copy(base).offsetHSL(0, 0.02 * n, 0.06 * n);
+      cols.push(c.r, c.g, c.b);
+    }
+    geo.setAttribute("color", new THREE.Float32BufferAttribute(cols, 3));
+  };
+  const topMat = new THREE.MeshStandardMaterial({ color: "#ffffff", vertexColors: true, roughness: 0.85 });
+  const top = mesh(topGeo, clay(biome.top));
+  // A finely divided disc on the top face carries the painted patches.
+  const fine = wobbleRim(new THREE.RingGeometry(0.001, r * 0.985, 96, 24).rotateX(-Math.PI / 2), r, seed);
+  paint(fine);
+  const face = mesh(fine, topMat, { cast: false });
+  face.position.y = 0.172;
+  top.add(face);
   top.position.y = -0.17;
   const soil = mesh(wobbleRim(new THREE.CylinderGeometry(r * 0.98, r * 0.78, 1.3, 72, 2), r, seed, 0.08), clay(biome.soil));
   soil.position.y = -0.34 - 0.65;
@@ -147,6 +195,30 @@ export const PALETTE = {
   flowers: ["#ff6b8b", "#ffd257", "#ffffff", "#b493ff", "#ff9a5a", "#6ec9ff"],
 };
 
+/** A lumpy, hand-sculpted blob: an icosphere pushed in and out by smooth noise. */
+const blobGeos = new Map();
+export function blob(r, color, seed = 1, lump = 0.12) {
+  const key = `${seed % 8}|${lump}`;
+  if (!blobGeos.has(key)) {
+    const geo = new THREE.SphereGeometry(1, 48, 32); // indexed, so the lumps shade smooth
+    const p = geo.attributes.position;
+    const v = new THREE.Vector3();
+    const k = (seed % 8) * 1.7;
+    for (let i = 0; i < p.count; i++) {
+      v.fromBufferAttribute(p, i);
+      const n = Math.sin(v.x * 3.1 + k) * Math.sin(v.y * 2.7 + k * 0.6) * Math.sin(v.z * 3.3 + k * 1.3) + 0.5 * Math.sin(v.x * 6.3 + v.z * 5.1 + k);
+      v.multiplyScalar(1 + lump * n);
+      if (v.y < -0.35) v.y = -0.35 + (v.y + 0.35) * 0.45; // a softly flattened underside
+      p.setXYZ(i, v.x, v.y, v.z);
+    }
+    geo.computeVertexNormals();
+    blobGeos.set(key, geo);
+  }
+  const m = mesh(blobGeos.get(key), clay(color));
+  m.scale.setScalar(r);
+  return m;
+}
+
 /** A tree. kind: "round" | "autumn" | "blossom" | "pine". */
 export function tree(kind = "round", seed = 1, scale = 1) {
   const R = rng(seed);
@@ -162,14 +234,21 @@ export function tree(kind = "round", seed = 1, scale = 1) {
     branch.rotation.z = 0.7;
     g.add(at(branch, 0.15, trunkH * 0.7, 0));
     const cols = kind === "autumn" ? PALETTE.autumn : kind === "blossom" ? PALETTE.blossom : PALETTE.green;
-    const blobs = 4 + Math.floor(R() * 3);
-    for (let i = 0; i < blobs; i++) {
-      const a = (i / blobs) * Math.PI * 2 + R();
-      const rr = 0.42 + R() * 0.22;
-      g.add(at(ball(rr, pick(R, cols)), Math.cos(a) * 0.32, trunkH + 0.25 + R() * 0.45, Math.sin(a) * 0.32));
+    // A canopy of sculpted lumps: a big core, a ring of mid lumps, small ones on top.
+    const main = pick(R, cols);
+    g.add(at(blob(0.62, main, seed), 0, trunkH + 0.55, 0));
+    const ring = 5 + Math.floor(R() * 3);
+    for (let i = 0; i < ring; i++) {
+      const a = (i / ring) * Math.PI * 2 + R() * 0.5;
+      const c = R() < 0.6 ? main : pick(R, cols);
+      g.add(at(blob(0.34 + R() * 0.16, c, seed + i + 1), Math.cos(a) * 0.48, trunkH + 0.3 + R() * 0.35, Math.sin(a) * 0.48));
     }
-    g.add(at(ball(0.5, pick(R, cols)), 0, trunkH + 0.65, 0));
+    for (let i = 0; i < 3; i++) {
+      const a = R() * Math.PI * 2;
+      g.add(at(blob(0.26 + R() * 0.1, pick(R, cols), seed + 9 + i), Math.cos(a) * 0.22, trunkH + 0.95 + R() * 0.2, Math.sin(a) * 0.22));
+    }
   }
+  g.add(contact(kind === "pine" ? 0.8 : 0.85, undefined, 0.28));
   g.scale.setScalar(scale);
   // A gentle sway.
   g.userData.tick = (t) => { g.rotation.z = Math.sin(t * 0.9 + seed) * 0.015; };
@@ -179,13 +258,14 @@ export function tree(kind = "round", seed = 1, scale = 1) {
 export function bush(color = "#5dbb63", seed = 1, s = 1) {
   const R = rng(seed);
   const g = new THREE.Group();
-  for (let i = 0; i < 3; i++) g.add(at(ball(0.22 + R() * 0.1, color), (R() - 0.5) * 0.35, 0.18, (R() - 0.5) * 0.35));
+  for (let i = 0; i < 4; i++) g.add(at(blob(0.2 + R() * 0.1, color, seed + i), (R() - 0.5) * 0.4, 0.17 + R() * 0.06, (R() - 0.5) * 0.4));
+  g.add(contact(0.42, undefined, 0.28));
   g.scale.setScalar(s);
   return g;
 }
 
 /** A scatter of tiny flowers over a disc. */
-export function flowers(count, radius, seed = 1, colors = PALETTE.flowers) {
+export function flowers(count, radius, seed = 1, colors = PALETTE.flowers, { flat = false } = {}) {
   // One instanced mesh: hundreds of petals for one draw call.
   const R = rng(seed);
   const inst = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 10, 8), new THREE.MeshStandardMaterial({ roughness: 0.8 }), count);
@@ -196,7 +276,10 @@ export function flowers(count, radius, seed = 1, colors = PALETTE.flowers) {
     const a = R() * Math.PI * 2;
     const d = Math.sqrt(R()) * radius;
     const r = 0.05 + R() * 0.03;
-    m.makeScale(r, r, r).setPosition(Math.cos(a) * d, 0.05, Math.sin(a) * d);
+    if (flat) {
+      // Fallen leaves: flat ovals lying at random angles.
+      m.compose(new THREE.Vector3(Math.cos(a) * d, 0.015, Math.sin(a) * d), new THREE.Quaternion().setFromEuler(new THREE.Euler(0, R() * Math.PI * 2, 0)), new THREE.Vector3(r * 1.9, r * 0.18, r * 1.1));
+    } else m.makeScale(r, r, r).setPosition(Math.cos(a) * d, 0.05, Math.sin(a) * d);
     inst.setMatrixAt(i, m);
     inst.setColorAt(i, c.set(pick(R, colors)));
   }
@@ -209,6 +292,7 @@ export function pumpkin(s = 1) {
   b.scale.set(1.15, 0.8, 1.15);
   g.add(at(b, 0, 0.17, 0));
   g.add(at(cyl(0.025, 0.035, 0.12, "#5a7a3a"), 0, 0.38, 0));
+  g.add(contact(0.32, undefined, 0.35));
   g.scale.setScalar(s);
   return g;
 }
@@ -216,21 +300,56 @@ export function pumpkin(s = 1) {
 // ---------------------------------------------------------------- people
 
 export const LOOKS = {
-  photographer: { skin: "#e7b48e", hair: "#3a2820", top: "#4f7fd1", bottom: "#2f2a33", shoe: "#1d191f" },
-  bride: { skin: "#f0c4a2", hair: "#6b3f26", top: "#ffffff", bottom: "#ffffff", shoe: "#ffffff", dress: true },
-  groom: { skin: "#b9805a", hair: "#2b1d16", top: "#2d3550", bottom: "#2d3550", shoe: "#1d191f" },
-  mom: { skin: "#f2c3a0", hair: "#c46a3a", top: "#2fa8a6", bottom: "#3a4b8c", shoe: "#5a3424" },
-  dad: { skin: "#8a5a3c", hair: "#1d1410", top: "#f2b23a", bottom: "#4a4f5c", shoe: "#2a2420" },
-  kid: { skin: "#e9b896", hair: "#7a4a2a", top: "#ff6b8b", bottom: "#3a6fd1", shoe: "#ffffff", scale: 0.62 },
-  guestA: { skin: "#d9a07a", hair: "#2a1d16", top: "#ff9a5a", bottom: "#ff9a5a", shoe: "#3a2a20", dress: true },
-  guestB: { skin: "#f0c8a8", hair: "#e0b25a", top: "#6ec9ff", bottom: "#33405e", shoe: "#1d191f" },
-  guestC: { skin: "#7a4a32", hair: "#160f0c", top: "#b493ff", bottom: "#b493ff", shoe: "#2a2420", dress: true },
-  guestD: { skin: "#e8b08a", hair: "#4a2a1a", top: "#5dbb63", bottom: "#2f2a33", shoe: "#1d191f" },
-  guestE: { skin: "#c48a62", hair: "#2a1d16", top: "#ffd257", bottom: "#ff6b8b", shoe: "#2a2420", dress: true },
+  photographer: { skin: "#e7b48e", hair: "#3a2820", hairStyle: "bun", top: "#4f7fd1", bottom: "#2f2a33", shoe: "#f4efe6", strap: "#d9a441" },
+  bride: { skin: "#f0c4a2", hair: "#6b3f26", hairStyle: "bun", top: "#ffffff", bottom: "#ffffff", shoe: "#ffffff", dress: true, veil: true },
+  groom: { skin: "#b9805a", hair: "#2b1d16", hairStyle: "short", top: "#2d3550", bottom: "#2d3550", shoe: "#1d191f", tie: "#ff8fb1" },
+  mom: { skin: "#f2c3a0", hair: "#c46a3a", hairStyle: "long", top: "#2fa8a6", bottom: "#3a4b8c", shoe: "#5a3424" },
+  dad: { skin: "#8a5a3c", hair: "#1d1410", hairStyle: "curly", top: "#f2b23a", bottom: "#4a4f5c", shoe: "#2a2420" },
+  kid: { skin: "#e9b896", hair: "#7a4a2a", hairStyle: "short", top: "#ff6b8b", bottom: "#3a6fd1", shoe: "#ffffff", scale: 0.62, kid: true },
+  guestA: { skin: "#d9a07a", hair: "#2a1d16", hairStyle: "long", top: "#ff9a5a", bottom: "#ff9a5a", shoe: "#3a2a20", dress: true },
+  guestB: { skin: "#f0c8a8", hair: "#e0b25a", hairStyle: "short", top: "#6ec9ff", bottom: "#33405e", shoe: "#1d191f" },
+  guestC: { skin: "#7a4a32", hair: "#160f0c", hairStyle: "curly", top: "#b493ff", bottom: "#b493ff", shoe: "#2a2420", dress: true },
+  guestD: { skin: "#e8b08a", hair: "#4a2a1a", hairStyle: "short", top: "#5dbb63", bottom: "#2f2a33", shoe: "#1d191f" },
+  guestE: { skin: "#c48a62", hair: "#2a1d16", hairStyle: "bun", top: "#ffd257", bottom: "#ff6b8b", shoe: "#2a2420", dress: true },
 };
 
+/** A smooth turned shape from a profile of [radius, y] pairs (bodies, dresses, vases). */
+export function lathe(profile, color, opts) {
+  const pts = profile.map(([r, y]) => new THREE.Vector2(r, y));
+  return mesh(new THREE.LatheGeometry(pts, 32), clay(color, opts));
+}
+
+/** A hairstyle on a head of radius r. */
+function hairdo(look, r) {
+  const g = new THREE.Group();
+  const c = look.hair;
+  // A cap that covers the crown and the back of the head, leaving the face clear.
+  const cap = mesh(new THREE.SphereGeometry(r * 1.07, 28, 18, 0, Math.PI * 2, 0, Math.PI * 0.55), clay(c));
+  cap.rotation.x = -0.35;
+  g.add(cap);
+  const fringe = ball(r * 0.55, c);
+  fringe.scale.set(1.5, 0.55, 0.8);
+  g.add(at(fringe, r * 0.15, r * 0.62, r * 0.55));
+  if (look.hairStyle === "long") {
+    const back = capsule(r * 0.82, r * 1.1, c);
+    back.scale.z = 0.6;
+    g.add(at(back, 0, -r * 0.45, -r * 0.55));
+  } else if (look.hairStyle === "bun") {
+    g.add(at(ball(r * 0.45, c), 0, r * 0.75, -r * 0.7));
+  } else if (look.hairStyle === "curly") {
+    const R = rng(c);
+    for (let i = 0; i < 11; i++) {
+      const a = (i / 11) * Math.PI * 2;
+      g.add(at(ball(r * (0.36 + R() * 0.1), c), Math.cos(a) * r * 0.8, r * (0.55 + R() * 0.25), Math.sin(a) * r * 0.8 - r * 0.15));
+    }
+  }
+  return g;
+}
+
 /**
- * A clay person, about 1.7 tall, with pivoting limbs.
+ * A clay person, about 1.7 tall, with pivoting limbs: turned body, round head
+ * with a face (eyes, glints, nose, cheeks, ears, brows), a hairstyle, hands and
+ * rounded shoes, in the proportions of the Airbnb film characters.
  * Returns the group; its userData.parts holds hips, legs, arms and head for posing.
  */
 export function person(look = LOOKS.guestB, { camera = false } = {}) {
@@ -238,50 +357,108 @@ export function person(look = LOOKS.guestB, { camera = false } = {}) {
   const hips = at(new THREE.Group(), 0, 0.82, 0);
   g.add(hips);
   const legs = [];
-  for (const sx of [-0.1, 0.1]) {
+  for (const sx of [-0.095, 0.095]) {
     const leg = at(new THREE.Group(), sx, 0, 0);
-    leg.add(at(capsule(0.075, 0.6, look.dress ? look.skin : look.bottom), 0, -0.38, 0));
-    leg.add(at(rbox(0.13, 0.08, 0.22, look.shoe, 0.03), 0, -0.78, 0.04));
+    // A tapered leg, wider at the thigh, ending in a round shoe.
+    leg.add(at(lathe([[0, -0.72], [0.066, -0.71], [0.07, -0.4], [0.088, -0.1], [0.08, 0], [0, 0.02]], look.dress ? look.skin : look.bottom), 0, 0, 0));
+    const shoe = capsule(0.068, 0.1, look.shoe);
+    shoe.rotation.x = Math.PI / 2;
+    shoe.scale.set(1, 1, 0.75);
+    leg.add(at(shoe, 0, -0.76, 0.05));
     hips.add(leg);
     legs.push(leg);
   }
-  const torso = look.dress
-    ? at(cone(0.36, 0.95, look.top, 28), 0, 0.12, 0)
-    : at(capsule(0.19, 0.38, look.top), 0, 0.38, 0);
+  // Pelvis and a turned torso: waist, chest, round shoulders.
+  if (!look.dress) hips.add(at(rbox(0.34, 0.2, 0.24, look.bottom, 0.09), 0, 0.02, 0));
+  const torso = lathe([[0, 0.06], [0.165, 0.08], [0.17, 0.2], [0.205, 0.44], [0.19, 0.6], [0.12, 0.7], [0.06, 0.72], [0, 0.72]], look.top);
+  torso.scale.z = 0.78;
   hips.add(torso);
-  if (look.dress) hips.add(at(capsule(0.15, 0.28, look.top), 0, 0.5, 0));
+  if (look.dress) {
+    // A bell skirt from the waist to the shins.
+    const skirt = lathe([[0, 0.14], [0.17, 0.14], [0.2, 0.0], [0.3, -0.35], [0.38, -0.6], [0.36, -0.64], [0, -0.64]], look.top);
+    skirt.scale.z = 0.85;
+    hips.add(skirt);
+  }
+  if (look.tie) hips.add(at(rbox(0.05, 0.22, 0.03, look.tie, 0.015), 0, 0.5, 0.155));
+  if (look.strap) {
+    // The camera strap across the chest.
+    const strap = mesh(new THREE.TorusGeometry(0.21, 0.018, 6, 28), clay(look.strap));
+    strap.rotation.set(0, 0, 0.8);
+    strap.scale.z = 0.82;
+    hips.add(at(strap, 0, 0.42, 0));
+  }
+  hips.add(at(cyl(0.06, 0.07, 0.12, look.skin, 16), 0, 0.76, 0));
   const arms = [];
   for (const sx of [-1, 1]) {
-    const arm = at(new THREE.Group(), sx * 0.24, 0.66, 0);
-    arm.add(at(capsule(0.06, 0.42, look.dress ? look.skin : look.top), 0, -0.25, 0));
-    arm.add(at(ball(0.065, look.skin), 0, -0.52, 0));
-    arm.rotation.z = sx * 0.12;
+    const arm = at(new THREE.Group(), sx * 0.235, 0.62, 0);
+    arm.add(at(ball(0.07, look.dress ? look.skin : look.top), 0, 0, 0));
+    arm.add(at(lathe([[0, -0.46], [0.052, -0.45], [0.056, -0.2], [0.066, 0], [0, 0.02]], look.dress ? look.skin : look.top), 0, 0, 0));
+    if (!look.dress) arm.add(at(cyl(0.058, 0.058, 0.04, look.skin, 14), 0, -0.47, 0));
+    const hand = ball(0.062, look.skin);
+    hand.scale.set(0.85, 1.05, 0.9);
+    arm.add(at(hand, 0, -0.53, 0));
+    arm.rotation.z = sx * 0.1;
     hips.add(arm);
     arms.push(arm);
   }
-  const head = at(new THREE.Group(), 0, 0.98, 0);
-  head.add(ball(0.17, look.skin));
-  const hair = ball(0.18, look.hair);
-  hair.scale.set(1.02, 0.8, 1.05);
-  hair.position.set(0, 0.06, -0.03);
-  head.add(hair);
-  for (const sx of [-0.06, 0.06]) head.add(at(ball(0.018, "#1d1410", { cast: false }), sx, 0.01, 0.16));
+  const hr = look.kid ? 0.24 : 0.2;
+  const head = at(new THREE.Group(), 0, 0.82 + hr, 0);
+  const skull = ball(hr, look.skin);
+  skull.scale.set(1, 1.04, 0.98);
+  head.add(skull);
+  // Face: eyes with a glint, brows, a button nose, rosy cheeks, ears.
+  for (const sx of [-1, 1]) {
+    const eye = ball(hr * 0.11, "#20171a");
+    eye.scale.set(0.9, 1.25, 0.6);
+    head.add(at(eye, sx * hr * 0.36, hr * 0.06, hr * 0.92));
+    head.add(at(ball(hr * 0.035, "#ffffff", { emissive: "#ffffff", ei: 0.6 }), sx * hr * 0.36 + hr * 0.03, hr * 0.11, hr * 0.97));
+    const brow = capsule(hr * 0.035, hr * 0.14, look.hair);
+    brow.rotation.z = Math.PI / 2 + sx * 0.15;
+    head.add(at(brow, sx * hr * 0.37, hr * 0.33, hr * 0.88));
+    const cheek = ball(hr * 0.16, "#ff8f8f", { opacity: 0.55 });
+    cheek.scale.set(1, 0.6, 0.3);
+    head.add(at(cheek, sx * hr * 0.58, -hr * 0.2, hr * 0.76));
+    const ear = ball(hr * 0.2, look.skin);
+    ear.scale.set(0.45, 1, 0.8);
+    head.add(at(ear, sx * hr * 0.98, -hr * 0.02, 0));
+  }
+  head.add(at(ball(hr * 0.13, mixColor(look.skin, "#d4886a", 0.35)), 0, -hr * 0.12, hr * 1.0));
+  const smile = mesh(new THREE.TorusGeometry(hr * 0.16, hr * 0.03, 6, 16, Math.PI), clay("#7a2e2e"), { cast: false });
+  smile.rotation.z = Math.PI;
+  head.add(at(smile, 0, -hr * 0.32, hr * 0.9));
+  head.add(hairdo(look, hr));
+  if (look.veil) {
+    const veil = lathe([[0.02, 0.1], [0.12, 0.05], [0.26, -0.5], [0.3, -0.75]], "#ffffff", { opacity: 0.7 });
+    veil.scale.z = 0.6;
+    head.add(at(veil, 0, hr * 0.7, -hr * 0.55));
+  }
   hips.add(head);
   if (camera) {
     // The camera held up to the eye, in front of the face.
     const cam = new THREE.Group();
-    cam.add(rbox(0.22, 0.14, 0.12, "#26222a", 0.03));
-    const lens = cyl(0.05, 0.055, 0.12, "#111", 20);
+    cam.add(rbox(0.24, 0.15, 0.12, "#26222a", 0.035));
+    cam.add(at(rbox(0.07, 0.15, 0.1, "#26222a", 0.03), 0.11, -0.01, 0.02));
+    const lens = cyl(0.058, 0.062, 0.14, "#18161a", 24);
     lens.rotation.x = Math.PI / 2;
-    cam.add(at(lens, 0, -0.005, 0.11));
-    cam.add(at(rbox(0.06, 0.04, 0.05, "#26222a", 0.01), -0.06, 0.09, 0));
-    at(cam, 0, 0.98, 0.26);
+    cam.add(at(lens, 0, -0.005, 0.12));
+    const glass = cyl(0.045, 0.045, 0.01, "#5a7fd1", 20, { rough: 0.15 });
+    glass.rotation.x = Math.PI / 2;
+    cam.add(at(glass, 0, -0.005, 0.19));
+    cam.add(at(rbox(0.07, 0.045, 0.06, "#26222a", 0.012), -0.05, 0.095, 0));
+    cam.add(at(cyl(0.02, 0.02, 0.02, "#e64a3c", 12), 0.08, 0.085, 0.02));
+    at(cam, 0, 0.82 + hr - 0.01, hr + 0.1);
     hips.add(cam);
     g.userData.cameraObj = cam;
   }
+  g.add(contact(0.32, 0.26, 0.38));
   g.scale.setScalar(look.scale ?? 1);
   g.userData.parts = { hips, legs, arms, head, torso };
   return g;
+}
+
+/** Mix two hex colours. */
+function mixColor(a, b, k) {
+  return "#" + new THREE.Color(a).lerp(new THREE.Color(b), k).getHexString();
 }
 
 /** Poses: each sets limb rotations for time t. Pure functions of t. */
@@ -348,26 +525,42 @@ export function actor(look, poseName, { seed = 0, camera = false } = {}) {
 // ---------------------------------------------------------------- animals and babies
 
 export function dog(color = "#d98c4a", seed = 0) {
+  // A round, friendly pup: chunky body, big head, a snout, floppy ears, a wagging tail.
   const g = new THREE.Group();
-  const body = capsule(0.16, 0.38, color);
+  const patch = mixColor(color, "#ffffff", 0.55);
+  const body = capsule(0.17, 0.3, color);
   body.rotation.z = Math.PI / 2;
   g.add(at(body, 0, 0.36, 0));
-  for (const [x, z] of [[-0.2, -0.09], [-0.2, 0.09], [0.2, -0.09], [0.2, 0.09]]) g.add(at(cyl(0.045, 0.045, 0.24, color), x, 0.12, z));
-  const head = at(new THREE.Group(), 0.36, 0.52, 0);
-  head.add(ball(0.15, color));
-  head.add(at(ball(0.07, "#f3d7b8"), 0.13, -0.03, 0));
-  head.add(at(ball(0.025, "#1d1410"), 0.2, 0, 0));
-  for (const z of [-0.1, 0.1]) {
-    const ear = ball(0.07, "#8a5228");
-    ear.scale.set(0.6, 1.3, 0.5);
-    head.add(at(ear, -0.03, 0.06, z));
+  const belly = capsule(0.12, 0.2, patch);
+  belly.rotation.z = Math.PI / 2;
+  g.add(at(belly, 0.02, 0.3, 0));
+  for (const [x, z] of [[-0.17, -0.09], [-0.17, 0.09], [0.17, -0.09], [0.17, 0.09]]) {
+    g.add(at(capsule(0.052, 0.16, color), x, 0.15, z));
+    g.add(at(ball(0.058, patch), x + 0.015, 0.04, z));
   }
+  const head = at(new THREE.Group(), 0.3, 0.6, 0);
+  head.add(ball(0.17, color));
+  const snout = capsule(0.075, 0.06, patch);
+  snout.rotation.z = Math.PI / 2;
+  head.add(at(snout, 0.15, -0.05, 0));
+  head.add(at(ball(0.035, "#2a1d1a"), 0.235, -0.02, 0));
+  for (const z of [-1, 1]) {
+    head.add(at(ball(0.025, "#20171a"), 0.12, 0.05, z * 0.08));
+    const ear = ball(0.08, mixColor(color, "#3a2218", 0.35));
+    ear.scale.set(0.5, 1.25, 0.6);
+    ear.rotation.x = z * 0.3;
+    head.add(at(ear, -0.02, 0.0, z * 0.15));
+  }
+  const tongue = ball(0.03, "#ff7a8a");
+  tongue.scale.set(1, 0.4, 1.2);
+  head.add(at(tongue, 0.17, -0.11, 0));
   g.add(head);
-  const tail = at(new THREE.Group(), -0.34, 0.45, 0);
-  const tl = capsule(0.03, 0.2, color);
-  tl.position.y = 0.1;
+  const tail = at(new THREE.Group(), -0.3, 0.45, 0);
+  const tl = capsule(0.03, 0.16, color);
+  tl.position.y = 0.09;
   tail.add(tl);
   g.add(tail);
+  g.add(contact(0.5, 0.25, 0.35));
   g.userData.tick = (t) => {
     tail.rotation.x = Math.sin(t * 14 + seed) * 0.6;
     tail.rotation.z = -0.6;
