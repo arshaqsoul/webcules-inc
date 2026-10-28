@@ -12,6 +12,10 @@ const modules = Object.fromEntries(await Promise.all(types.map(async (t) => [t, 
 const back = document.getElementById("back");
 const front = document.getElementById("front");
 const canvas = document.getElementById("gl");
+// The bottom layer: a pre-rendered picture per frame (a generated clip), drawn before capture.
+const plate = document.getElementById("plate");
+const plateCtx = plate.getContext("2d");
+let plateUrl = null;
 
 const ctx = {
   spec,
@@ -41,6 +45,7 @@ function seek(t) {
   let b = "";
   let f = "";
   let glUsed = false;
+  let pl = null;
   for (const s of spec.scenes) {
     if (t < s.at || t > s.at + s.dur) continue;
     const m = modules[s.type];
@@ -48,10 +53,22 @@ function seek(t) {
     b += out.back ?? "";
     f += out.front ?? "";
     if (out.gl) glUsed = true;
+    if (out.plate) pl = out.plate;
   }
   back.innerHTML = b;
   front.innerHTML = f;
   canvas.style.visibility = glUsed ? "visible" : "hidden";
+  return pl;
+}
+
+async function drawPlate(url) {
+  if (url === plateUrl) return;
+  plateUrl = url;
+  if (!url) return plateCtx.clearRect(0, 0, plate.width, plate.height);
+  const img = new Image();
+  img.src = url;
+  await img.decode();
+  plateCtx.drawImage(img, 0, 0, plate.width, plate.height);
 }
 
 window.__reel = {
@@ -60,7 +77,7 @@ window.__reel = {
   fps: spec.fps ?? 30,
   cues,
   seek: async (t) => {
-    seek(t);
+    await drawPlate(seek(t));
     await new Promise((r) => requestAnimationFrame(() => r()));
   },
 };

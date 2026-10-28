@@ -21,7 +21,8 @@ import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { ISLANDS } from "../world/islands.js";
 import { cloud, tickAll, rng, clay, loadSurfaces } from "../world/kit.js";
-import { W, seg, ease, kinetic, text, clamp, lerp, mixHex, measure } from "../runtime.js";
+import { seg, ease, kinetic, clamp, lerp, mixHex } from "../runtime.js";
+import { chip, inboxCard } from "../overlays.js";
 
 const SKY = {
   morning: { top: "#8fc3ff", bottom: "#ffe1d2", sun: ["#fff1dc", 2.6, 48, -35], hemi: ["#cfe6ff", "#f5d2b8", 1.0], fogNear: 40, cloud: "#ffffff" },
@@ -325,31 +326,9 @@ export default {
     islands.forEach((isl, i) => {
       const s0 = isl.spec.at;
       const s1 = s0 + isl.spec.dur;
-      // Time chip, bottom.
-      const ca = seg(t, s0 + 1.1, s0 + 1.4) * (1 - seg(t, s1 - 0.25, s1));
-      if (ca > 0) {
-        const [time, what] = isl.spec.chip;
-        const wTime = measure(time, 40, 800);
-        const wWhat = measure(what, 40, 600);
-        const w = wTime + wWhat + 120;
-        const y = 1430 + (1 - ease.outCubic(ca)) * 24;
-        f += `<g opacity="${ca.toFixed(3)}"><rect x="${(W / 2 - w / 2).toFixed(1)}" y="${y - 52}" width="${w.toFixed(1)}" height="88" rx="44" fill="#ffffff" fill-opacity="0.94"/>`;
-        f += `<circle cx="${(W / 2 - w / 2 + 44).toFixed(1)}" cy="${y - 8}" r="11" fill="${["#ffb000", "#f26a4d", "#ff8fb1", "#7a5cff"][i % 4]}"/>`;
-        f += text(W / 2 - w / 2 + 70, y + 6, time, { size: 40, weight: 800, fill: "#1d1430", anchor: "start" });
-        f += text(W / 2 - w / 2 + 70 + wTime + 18, y + 6, what, { size: 40, weight: 600, fill: "#4a3a5c", anchor: "start" });
-        f += "</g>";
-      }
+      f += chip(t, s0, s1, isl.spec.chip, i);
       // Toast from the Snap inbox, a beat after the flash.
-      if (isl.spec.toast) {
-        const tt0 = s0 + (isl.spec.flash ?? 2.4) + 0.35;
-        const raw = seg(t, tt0, tt0 + 0.45);
-        const ta = ease.outBack(raw);
-        const out = seg(t, s1 - 0.2, s1 + 0.25);
-        if (raw > 0 && out < 1) {
-          const y = 250 + (1 - ta) * -260 - out * 280;
-          f += toast(ctx, p.logo, y, isl.spec.toast.title, isl.spec.toast.sub, 1 - out);
-        }
-      }
+      if (isl.spec.toast) f += inboxCard(t, s0 + (isl.spec.flash ?? 2.4) + 0.35, s1, ctx, p.logo, isl.spec.toast);
     });
 
     if (p.finale?.lines) f += kinetic(t, p.finale.at + 0.9, p.finale.lines, { y: 1340, size: 76, fill: "#ffffff", accent: "#ffe27a", stagger: 0.06, out: dur - 0.3, outDur: 0.3 });
@@ -369,16 +348,3 @@ export default {
     return c;
   },
 };
-
-/** A Snap inbox card that drops in from the top. */
-function toast(ctx, logo, y, title, sub, a) {
-  const x = 70;
-  const w = 940;
-  return `<g opacity="${a.toFixed(3)}" transform="translate(0 ${y.toFixed(1)})">`
-    + `<rect x="${x}" y="0" width="${w}" height="176" rx="40" fill="#ffffff" fill-opacity="0.96"/>`
-    + `<image href="${ctx.asset(logo)}" x="${x + 32}" y="34" width="108" height="108"/>`
-    + text(x + 168, 62, "SNAP INBOX  ·  now", { size: 24, weight: 800, fill: "#7a6a8c", anchor: "start", spacing: 2 })
-    + text(x + 168, 110, title, { size: 40, weight: 800, fill: "#1d1430", anchor: "start" })
-    + text(x + 168, 150, sub, { size: 30, weight: 500, fill: "#5a4a6c", anchor: "start" })
-    + `</g>`;
-}
