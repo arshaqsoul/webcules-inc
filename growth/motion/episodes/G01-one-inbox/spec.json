@@ -172,7 +172,8 @@
             "color": "#ff6fa0",
             "at": 1.1
           }
-        ]
+        ],
+        "backdrop": "growth/motion/assets/endcard/glass.jpg"
       }
     }
   ],

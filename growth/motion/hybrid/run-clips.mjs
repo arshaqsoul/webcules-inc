@@ -1,0 +1,38 @@
+#!/usr/bin/env node
+// Generate every clip in an episode's shot list (episodes/<ep>/clips.json) in order.
+// Shots animate their keyframe; moves fly from the previous clip's last frame to the
+// next keyframe. Existing clips are kept, so a failed run resumes where it stopped.
+//
+//   node growth/motion/hybrid/run-clips.mjs <episode dir> [--only=name,name] [--w=480 --h=832 for drafts]
+
+import fs from "node:fs";
+import path from "node:path";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+const MOTION = path.dirname(HERE);
+const arg = (k, d) => process.argv.find((a) => a.startsWith(`--${k}=`))?.slice(k.length + 3) ?? d;
+const epDir = process.argv[2];
+const list = JSON.parse(fs.readFileSync(path.join(epDir, "clips.json"), "utf8"));
+const dir = path.join(MOTION, list.dir);
+const w = arg("w", list.w);
+const h = arg("h", list.h);
+const only = arg("only")?.split(",");
+const run = (cmd, args) => { const r = spawnSync(cmd, args, { stdio: "inherit" }); if (r.status !== 0) throw new Error(`${cmd} failed`); };
+
+let prev = null;
+for (const s of list.shots) {
+  const out = path.join(dir, `${s.name}.mp4`);
+  if (s.reuse) fs.copyFileSync(path.join(MOTION, s.reuse), out);
+  else if ((!only || only.includes(s.name)) && !fs.existsSync(out)) {
+    const start = s.move ? prev : path.join(dir, `${s.name}.png`);
+    const extra = s.move ? [`--last=${path.join(dir, `${s.to}.png`)}`, "--frames=33"] : [];
+    run("node", [path.join(HERE, "wan.mjs"), start, out, `--prompt=${s.prompt}`, `--seed=${s.seed}`, `--w=${w}`, `--h=${h}`, ...extra]);
+  }
+  if (fs.existsSync(out)) {
+    prev = path.join(dir, `${s.name}.last.png`);
+    run("ffmpeg", ["-y", "-v", "error", "-sseof", "-0.1", "-i", out, "-frames:v", "1", "-update", "1", prev]);
+  }
+}
+console.log("clips done:", list.shots.map((s) => s.name).join(" "));

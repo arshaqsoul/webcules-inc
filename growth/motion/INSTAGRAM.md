@@ -123,8 +123,22 @@ Judge by saves, shares, profile visits and signups (UTM on the bio link), not vi
 5. Episode spec: a `clip` scene with the chip, flash and card, then the cover overlay and the phone end card.
 6. `render.mjs check`, `stills`, look at the stills, `render`, every QC line PASS, `package`, hand to the founder.
 
+## Making one (Out Here, the story reels)
+
+The story register for "how Snap helps": a day, a season or one couple's journey across floating worlds (S01 is the template).
+
+1. Brief: who is shot where, and which Snap moment lands at each stop. Chain the cards to the story: the card at one world is often the client of the next (at the family shoot, the wedding couple sign; at the wedding, they pay).
+2. Reuse people across reels: Priya and Sam inquire in G01 and marry in S01. The audience meets the same clients again.
+3. Keyframes per world plus an opening and a closing wide (`episodes/S01-*/*.keyframe.txt`).
+4. `episodes/<ep>/clips.json` lists shots and moves; `hybrid/run-clips.mjs` makes them in order (a move flies from the last frame of one clip to the next keyframe), `hybrid/frames.mjs` trims, speeds and interpolates them, and the episode's `build-spec.py` writes the spec.
+5. The end card sits on the glass studio backdrop (`assets/endcard/glass.jpg`), so every reel ends in the grid's world.
+
+## Built
+
+- `overlays.poster`: frame 0 in the poster layout from `marketing/brands/snap.json` (G01).
+- The glass studio and Out Here location sheets in `hybrid/sheets.json`.
+- The glass end card backdrop for the phone scene.
+
 ## Still to build
 
-- A `cover` overlay in the engine that draws the poster layout (kicker, headline, accent, pill) from `marketing/brands/snap.json`, so frame 0 is the grid tile.
-- A glass-studio location sheet in `hybrid/sheets.json` and the object prompts from the vocabulary table.
-- A `hybrid/make.mjs` that runs keyframe, clip, frames and spec for one concept in one command.
+- A `hybrid/make.mjs` that runs keyframe, clip, frames and spec for one Glass Studio concept in one command.

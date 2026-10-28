@@ -116,5 +116,18 @@
     ],
     "out": "tex/fabric.jpg",
     "prompt": "Seamless flat top-down texture of soft white felt fabric with a fine woven texture, macro, evenly lit, uniform off-white colour, no pattern, no folds, no shadows, fills the whole frame."
+  },
+  "endcard-glass": {
+    "use": "phone end card backdrop (phone.js backdrop), the glass studio",
+    "model": "zimage",
+    "w": 768,
+    "h": 1344,
+    "seed": 4104,
+    "size": [
+      1080,
+      1920
+    ],
+    "out": "endcard/glass.jpg",
+    "prompt": "Vertical frame. An empty pastel lavender studio backdrop fading to soft white at the top, a smooth seamless sweep, calm and airy. Large soft out-of-focus frosted glass shapes float at the far left and right edges and at the bottom corners: a translucent glass ring, a glowing glass orb, a few thin glass cards, all with faint iridescent periwinkle and pink edges, heavily blurred by a shallow depth of field. The entire centre of the frame is clean, empty, evenly lit lavender space. Soft diffused light, no shadows, no objects in the centre, no people, no text, no logos, premium and minimal."
   }
 }

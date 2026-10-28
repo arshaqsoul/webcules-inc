@@ -9,6 +9,8 @@
 //   logo     repo path to the Snap mark
 //   title    "Inbox"
 //   rows     [{ title, sub, time, color, at }]   at = local seconds the row slides in
+//   backdrop repo path of a 1080x1920 still behind the phone (assets/endcard/glass.jpg, the glass studio);
+//            without it, the cartoon day sky (E001-E003)
 
 import { W, seg, ease, kinetic, text, measure } from "../runtime.js";
 import { daySky } from "../decor.js";
@@ -23,7 +25,7 @@ export default {
     const px = 220;
     const pw = 640;
     const py = 600 + (1 - rise) * 1300;
-    let f = daySky(t + 25, { opacity: inA });
+    let f = p.backdrop ? "" : daySky(t + 25, { opacity: inA });
     // Phone body, screen, island.
     f += `<defs><filter id="phShadow" x="-30%" y="-10%" width="160%" height="130%"><feDropShadow dx="0" dy="30" stdDeviation="34" flood-color="#2b1f5a" flood-opacity="0.28"/></filter></defs>`;
     f += `<rect x="${px}" y="${py}" width="${pw}" height="1500" rx="96" fill="#17141c" filter="url(#phShadow)"/>`;
@@ -68,7 +70,7 @@ export default {
     const pulse = 1 + 0.025 * Math.sin(Math.max(0, t - 2.5) * 4);
     f += `<g transform="translate(${W / 2} 488) scale(${(ua * pulse).toFixed(3)})"><rect x="-200" y="-46" width="400" height="92" rx="46" fill="#17141c"/>`;
     f += text(0, 16, p.url, { size: 44, weight: 800, fill: "#ffffff" }) + "</g>";
-    return { back: b, front: f };
+    return { back: b, front: f, plate: p.backdrop ? ctx.asset(p.backdrop) : undefined };
   },
 
   cues(p) {
