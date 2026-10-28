@@ -4,7 +4,7 @@ Series: Snap it. - Out Here. Made entirely in code (growth/motion), no recording
 
 ## Files
 
-- Reel: `growth/motion/out/S01/reel.mp4` (1080x1920, 30.9s, 30 fps, -14 LUFS)
+- Reel: `growth/motion/out/S01/reel.mp4` (1080x1920, 31.1s, 30 fps, -14 LUFS)
 - Cover: `growth/motion/out/S01/cover.png`
 - QC: `growth/motion/out/S01/qc.json` (8/8 pass)
 

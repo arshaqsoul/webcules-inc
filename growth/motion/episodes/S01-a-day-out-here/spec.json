@@ -4,17 +4,17 @@
   "series": "Snap it. - Out Here",
   "brand": "snap",
   "fps": 30,
-  "duration": 30.9,
+  "duration": 31.1,
   "cover": 1.2,
   "stills": [
     0.6,
     1.5,
     6.33,
-    10.87,
-    16.1,
-    21.33,
-    25.87,
-    30.6
+    11.07,
+    16.3,
+    21.53,
+    26.07,
+    30.8
   ],
   "pain": {
     "statement": "Photographers want to spend the day shooting, but bookings, contracts, payments and gallery follow-ups pull them back to the desk and spread across separate tools.",
@@ -109,7 +109,7 @@
           "y": 470,
           "size": 108
         },
-        "padFor": 30.9
+        "padFor": 31.1
       }
     },
     {
@@ -127,10 +127,10 @@
     {
       "type": "clip",
       "at": 4.033,
-      "dur": 3.133,
+      "dur": 3.333,
       "props": {
         "frames": "growth/motion/out/S01/frames/studio/%04d.jpg",
-        "count": 94,
+        "count": 100,
         "fps": 30,
         "pad": false,
         "chip": [
@@ -149,7 +149,7 @@
     },
     {
       "type": "clip",
-      "at": 7.166,
+      "at": 7.366,
       "dur": 1.4,
       "props": {
         "frames": "growth/motion/out/S01/frames/m2/%04d.jpg",
@@ -161,7 +161,7 @@
     },
     {
       "type": "clip",
-      "at": 8.566,
+      "at": 8.766,
       "dur": 3.833,
       "props": {
         "frames": "growth/motion/out/S01/frames/fallpark/%04d.jpg",
@@ -184,7 +184,7 @@
     },
     {
       "type": "clip",
-      "at": 12.399,
+      "at": 12.599,
       "dur": 1.4,
       "props": {
         "frames": "growth/motion/out/S01/frames/m3/%04d.jpg",
@@ -196,7 +196,7 @@
     },
     {
       "type": "clip",
-      "at": 13.799,
+      "at": 13.999,
       "dur": 3.833,
       "props": {
         "frames": "growth/motion/out/S01/frames/lake/%04d.jpg",
@@ -219,7 +219,7 @@
     },
     {
       "type": "clip",
-      "at": 17.632,
+      "at": 17.832,
       "dur": 1.4,
       "props": {
         "frames": "growth/motion/out/S01/frames/m4/%04d.jpg",
@@ -231,7 +231,7 @@
     },
     {
       "type": "clip",
-      "at": 19.032,
+      "at": 19.232,
       "dur": 3.833,
       "props": {
         "frames": "growth/motion/out/S01/frames/party/%04d.jpg",
@@ -254,7 +254,7 @@
     },
     {
       "type": "clip",
-      "at": 22.865,
+      "at": 23.065,
       "dur": 1.4,
       "props": {
         "frames": "growth/motion/out/S01/frames/m5/%04d.jpg",
@@ -266,7 +266,7 @@
     },
     {
       "type": "clip",
-      "at": 24.265,
+      "at": 24.465,
       "dur": 3.333,
       "props": {
         "frames": "growth/motion/out/S01/frames/finale/%04d.jpg",
@@ -286,7 +286,7 @@
     },
     {
       "type": "phone",
-      "at": 27.598,
+      "at": 27.798,
       "dur": 3.3,
       "props": {
         "tagline": "Snap it.",

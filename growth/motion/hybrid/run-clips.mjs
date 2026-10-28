@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Generate every clip in an episode's shot list (episodes/<ep>/clips.json) in order.
-// Shots animate their keyframe; moves fly from the previous clip's last frame to the
-// next keyframe. Existing clips are kept, so a failed run resumes where it stopped.
+// Shots animate their keyframe; moves fly from the frame where the previous shot is
+// cut (its "use" out point, else its last frame) to the next keyframe, so the reel
+// never jumps at a cut. Existing clips are kept, so a failed run resumes where it stopped.
 //
 //   node growth/motion/hybrid/run-clips.mjs <episode dir> [--only=name,name] [--w=480 --h=832 for drafts]
 
@@ -32,7 +33,8 @@ for (const s of list.shots) {
   }
   if (fs.existsSync(out)) {
     prev = path.join(dir, `${s.name}.last.png`);
-    run("ffmpeg", ["-y", "-v", "error", "-sseof", "-0.1", "-i", out, "-frames:v", "1", "-update", "1", prev]);
+    const at = s.use ? ["-ss", String(Math.max(0, s.use[1] - 0.04))] : ["-sseof", "-0.1"];
+    run("ffmpeg", ["-y", "-v", "error", ...at, "-i", out, "-frames:v", "1", "-update", "1", prev]);
   }
 }
 console.log("clips done:", list.shots.map((s) => s.name).join(" "));
