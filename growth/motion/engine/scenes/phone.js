@@ -10,7 +10,7 @@
 //   title    "Inbox"
 //   rows     [{ title, sub, time, color, at }]   at = local seconds the row slides in
 
-import { W, seg, ease, kinetic, text } from "../runtime.js";
+import { W, seg, ease, kinetic, text, measure } from "../runtime.js";
 import { daySky } from "../decor.js";
 
 export default {
@@ -51,7 +51,10 @@ export default {
       f += `<rect x="${px + 40}" y="${y}" width="${pw - 80}" height="116" rx="28" fill="#f7f7fb"/>`;
       f += `<circle cx="${px + 98}" cy="${y + 58}" r="32" fill="${r.color}"/>`;
       f += `<path d="M${px + 84} ${y + 59}l9 9l18 -20" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>`;
-      f += text(px + 148, y + 50, r.title, { size: 30, weight: 800, fill: "#17141c", anchor: "start" });
+      // Long titles shrink to stop short of the time.
+      const room = pw - 62 - 148 - measure(r.time, 22, 600) - 18;
+      const ts = Math.min(30, 30 * room / measure(r.title, 30, 800));
+      f += text(px + 148, y + 50, r.title, { size: +ts.toFixed(1), weight: 800, fill: "#17141c", anchor: "start" });
       f += text(px + 148, y + 88, r.sub, { size: 24, weight: 500, fill: "#5a5d72", anchor: "start" });
       f += text(px + pw - 62, y + 50, r.time, { size: 22, weight: 600, fill: "#8a8a96", anchor: "end" });
       f += "</g>";

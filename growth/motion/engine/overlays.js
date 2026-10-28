@@ -40,3 +40,55 @@ function toast(ctx, logo, y, title, sub, a) {
     + text(x + 168, 150, sub, { size: 30, weight: 500, fill: "#5a4a6c", anchor: "start" })
     + `</g>`;
 }
+
+/**
+ * The poster cover, in the layout of marketing/scripts/poster.mjs, so frame 0 of a
+ * reel is a tile that sits in the grid next to the posters. Everything lives inside
+ * the 3:4 grid crop (y 240..1680). Shown in full at t = 0, fades out from `out`.
+ *   brand  marketing/brands/<brand>.json (theme, name, logo)
+ *   p      { kicker, headline: ["Every inquiry", "in *one* inbox."], cta, out }
+ */
+export function poster(t, ctx, brand, p) {
+  const out = p.out ?? 1.8;
+  const a = 1 - ease.inOutCubic(seg(t, out, out + 0.45));
+  if (a <= 0) return "";
+  const th = brand.theme;
+  const x0 = 80;
+  let f = `<defs><linearGradient id="posterShade" x1="0" y1="0" x2="0" y2="1">`
+    + `<stop offset="0" stop-color="${th.bg}" stop-opacity="0.92"/><stop offset="0.36" stop-color="${th.bg}" stop-opacity="0.7"/>`
+    + `<stop offset="0.52" stop-color="${th.bg}" stop-opacity="0"/><stop offset="0.8" stop-color="${th.bg}" stop-opacity="0"/>`
+    + `<stop offset="1" stop-color="${th.bg}" stop-opacity="0.88"/></linearGradient></defs>`;
+  f += `<g opacity="${a.toFixed(3)}"><rect width="1080" height="1920" fill="url(#posterShade)"/>`;
+  // Top row: the mark, the name, the kicker pill.
+  const ty = 330;
+  f += `<image href="${ctx.asset(`marketing/${brand.logo}`)}" x="${x0}" y="${ty - 42}" width="84" height="84"/>`;
+  f += text(x0 + 104, ty + 12, brand.name, { size: 34, weight: 600, fill: th.ink, anchor: "start" });
+  if (p.kicker) {
+    const kw = measure(p.kicker, 24, 400) + 48;
+    f += `<rect x="${1000 - kw}" y="${ty - 24}" width="${kw}" height="48" rx="24" fill="none" stroke="${th.accent}" stroke-opacity="0.4" stroke-width="1.5"/>`;
+    f += text(1000 - kw / 2, ty + 8, p.kicker, { size: 24, weight: 400, fill: th.accent });
+  }
+  // Headline: left-aligned, *word* in the italic accent.
+  const size = p.size ?? 100;
+  p.headline.forEach((line, li) => {
+    let x = x0;
+    const y = 520 + li * size * 1.02;
+    line.split(" ").forEach((w) => {
+      const acc = w.includes("*");
+      const word = w.replace(/\*/g, "");
+      const lead = acc ? word.match(/^[^.,!?]+/)[0] : word;
+      const tail = word.slice(lead.length);
+      const opt = acc ? { size, weight: 400, fill: th.accent, anchor: "start", italic: true, spacing: -1 } : { size, weight: 600, fill: th.ink, anchor: "start", spacing: -3.5 };
+      f += text(x, y, lead, opt);
+      x += measure(lead, size, opt.weight) + opt.spacing * lead.length;
+      if (tail) { f += text(x, y, tail, { size, weight: 600, fill: th.ink, anchor: "start" }); x += measure(tail, size, 600); }
+      x += measure(" ", size, 600);
+    });
+  });
+  // The call to action, bottom left, inside the grid crop and the safe area.
+  const cta = p.cta ?? `Start free at ${brand.domain}`;
+  const bw = measure(cta, 38, 600) + 104;
+  f += `<rect x="${x0}" y="1440" width="${bw}" height="100" rx="50" fill="${th.button}"/>`;
+  f += text(x0 + bw / 2, 1503, cta, { size: 38, weight: 600, fill: th.buttonInk });
+  return f + "</g>";
+}

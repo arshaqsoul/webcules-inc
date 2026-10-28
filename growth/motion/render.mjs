@@ -30,7 +30,7 @@ function findEpisode(id) {
   return { dir: join(dir, hit), spec: JSON.parse(readFileSync(join(dir, hit, "spec.json"), "utf8")), rel: `growth/motion/episodes/${hit}/spec.json` };
 }
 
-const TYPES = { ".html": "text/html", ".js": "text/javascript", ".mjs": "text/javascript", ".json": "application/json", ".png": "image/png", ".svg": "image/svg+xml", ".woff2": "font/woff2" };
+const TYPES = { ".html": "text/html", ".js": "text/javascript", ".mjs": "text/javascript", ".json": "application/json", ".png": "image/png", ".svg": "image/svg+xml", ".jpg": "image/jpeg", ".woff2": "font/woff2" };
 
 function serve() {
   return new Promise((ok) => {

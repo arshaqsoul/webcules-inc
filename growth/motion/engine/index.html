@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <title>reel</title>
 <style>
+  /* Inter, the brand face (marketing/brands/snap.json), vendored so renders never fall back to a system serif. */
+  @font-face { font-family: Inter; src: url(../vendor/fonts/inter-latin-wght-normal.woff2) format("woff2"); font-weight: 100 900; font-style: normal; }
+  @font-face { font-family: Inter; src: url(../vendor/fonts/inter-latin-wght-italic.woff2) format("woff2"); font-weight: 100 900; font-style: italic; }
   html, body { margin: 0; padding: 0; background: #000; overflow: hidden; }
   #stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; font-family: Inter, sans-serif; }
   #stage > * { position: absolute; inset: 0; width: 1080px; height: 1920px; }

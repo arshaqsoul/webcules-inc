@@ -36,6 +36,8 @@ if (types.some((t) => modules[t].usesGL)) {
   ctx.renderer.outputColorSpace = THREE.SRGBColorSpace;
 }
 
+// Load the brand face before anything measures text (runtime.measure uses a canvas).
+await Promise.all(["400", "500", "600", "700", "800", "italic 400"].map((w) => document.fonts.load(`${w} 40px Inter`)));
 for (const t of types) if (modules[t].init) await modules[t].init(ctx, spec.scenes.filter((s) => s.type === t));
 await document.fonts.ready;
 
@@ -61,14 +63,21 @@ function seek(t) {
   return pl;
 }
 
-async function drawPlate(url) {
-  if (url === plateUrl) return;
-  plateUrl = url;
-  if (!url) return plateCtx.clearRect(0, 0, plate.width, plate.height);
+// A plate is a url, or { src, lift }: lift draws the picture that many px higher and
+// stretches its bottom rows down to fill (for a plain studio floor), to clear room for text.
+async function drawPlate(pl) {
+  const key = pl && (typeof pl === "string" ? pl : `${pl.src}|${pl.lift}`);
+  if (key === plateUrl) return;
+  plateUrl = key;
+  if (!pl) return plateCtx.clearRect(0, 0, plate.width, plate.height);
+  const { src, lift = 0 } = typeof pl === "string" ? { src: pl } : pl;
   const img = new Image();
-  img.src = url;
+  img.src = src;
   await img.decode();
-  plateCtx.drawImage(img, 0, 0, plate.width, plate.height);
+  const W = plate.width;
+  const H = plate.height;
+  plateCtx.drawImage(img, 0, -lift, W, H);
+  if (lift > 0) plateCtx.drawImage(img, 0, img.height - 2, img.width, 2, 0, H - lift, W, lift);
 }
 
 window.__reel = {
