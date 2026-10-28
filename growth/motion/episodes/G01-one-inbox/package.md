@@ -4,7 +4,7 @@ Series: Snap it. - Glass Studio. Made entirely in code (growth/motion), no recor
 
 ## Files
 
-- Reel: `growth/motion/out/G01/reel.mp4` (1080x1920, 9.97s, 30 fps, -14 LUFS)
+- Reel: `growth/motion/out/G01/reel.mp4` (1080x1920, 8.27s, 30 fps, -14 LUFS)
 - Cover: `growth/motion/out/G01/cover.png`
 - QC: `growth/motion/out/G01/qc.json` (8/8 pass)
 

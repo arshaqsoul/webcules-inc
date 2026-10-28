@@ -33,11 +33,14 @@ phone = json.loads(json.dumps(e3["scenes"][1]))
 phone["at"] = round(t, 3)
 pp = phone["props"]
 pp["backdrop"] = "growth/motion/assets/endcard/glass.jpg"
+# A short end card: the rows land by 0.7 s, the wordmark at 0.85, then a 1.7 s hold on the URL.
+phone["dur"] = 3.3
+pp["tagAt"] = 0.85
 pp["rows"] = [
-    {"title": "New booking - Maya Chen", "sub": "Newborn session", "time": "8:04 AM", "color": "#ffb000", "at": 0.5},
-    {"title": "Contract signed - Lakeside wedding", "sub": "Priya & Sam", "time": "1:12 PM", "color": "#f26a4d", "at": 0.7},
-    {"title": "Invoice INV-0042 paid", "sub": "Into your own Stripe", "time": "5:41 PM", "color": "#ff6fa0", "at": 0.9},
-    {"title": "Client opened their gallery", "sub": "For the first time", "time": "9:20 PM", "color": "#7a5cff", "at": 1.1},
+    {"title": "New booking - Maya Chen", "sub": "Newborn session", "time": "8:04 AM", "color": "#ffb000", "at": 0.3},
+    {"title": "Contract signed - Lakeside wedding", "sub": "Priya & Sam", "time": "1:12 PM", "color": "#f26a4d", "at": 0.42},
+    {"title": "Invoice INV-0042 paid", "sub": "Into your own Stripe", "time": "5:41 PM", "color": "#ff6fa0", "at": 0.54},
+    {"title": "Client opened their gallery", "sub": "For the first time", "time": "9:20 PM", "color": "#7a5cff", "at": 0.66},
 ]
 scenes.append(phone)
 total = round(t + phone["dur"], 2)

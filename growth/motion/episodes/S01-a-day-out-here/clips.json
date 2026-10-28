@@ -5,9 +5,9 @@
   "h": 1280,
   "keyframes": {
     "open": 5403,
-    "studio": 5101,
+    "studio": 5111,
     "fallpark": 1011,
-    "lake": 5201,
+    "lake": 5212,
     "party": 5303,
     "finale": 5502
   },
@@ -32,10 +32,10 @@
     {
       "name": "studio",
       "seed": 22,
-      "prompt": "Continuous single take. Slow gentle push-in toward the beanbag, no zoom, no cuts. A tiny cutaway photo studio on a floating island at 8 AM. The newborn baby in a blush-pink wrap sleeps peacefully and stretches one tiny hand; the mother in a cream sweater strokes the baby's head and smiles at the father, who leans in close. The photographer, a woman with a salt-and-pepper bun, glasses and a charcoal gilet, holds her tan camera to her eye and presses the shutter, then checks the back of the camera and smiles. Soft morning light through the window, dust motes floating in the beam, clouds drifting below the island. Same faces, same clothes, nothing drifts. Feels tender and quiet.",
+      "prompt": "Continuous single take. Slow gentle push-in toward the beanbag, no zoom, no cuts. A tiny cutaway photo studio on a floating island at 8 AM. The tiny newborn baby, small as the mother's forearm, in a blush-pink wrap sleeps peacefully and stretches one tiny hand; the mother in a cream sweater strokes the baby's head and smiles at the father, who leans in close. The photographer, a woman with a salt-and-pepper bun, glasses and a charcoal gilet, holds her tan camera to her eye and presses the shutter, then checks the back of the camera and smiles. Soft morning light through the window, dust motes floating in the beam, clouds drifting below the island. Same faces, same clothes, nothing drifts. Feels tender and quiet.",
       "use": [
         0,
-        3.9
+        3.2
       ]
     },
     {
@@ -65,7 +65,7 @@
     {
       "name": "lake",
       "seed": 31,
-      "prompt": "Continuous single take. Slow gentle push-in toward the wedding arch, no zoom, no cuts. A tiny lakeside wedding on a floating island at golden hour. The bride with long wavy black hair, a veil and a blush gown and the groom in a light grey suit hold hands under the rose arch, he leans in and kisses her, the guests in the white chairs stand and clap, a few rose petals float down. The photographer, a woman with a salt-and-pepper bun, glasses and a charcoal gilet, holds her tan camera to her eye and presses the shutter. Warm low golden sunlight with glowing rim light, the pond glitters, the willow sways in a light breeze, golden clouds drift below. Crisp, vivid colours and clear contrast throughout, no haze, no fog, no fade, no mist. Same faces, same clothes, nothing drifts. Feels joyful and warm.",
+      "prompt": "Continuous single take. Slow gentle push-in toward the wedding arch, no zoom, no cuts. A tiny lakeside wedding on a floating island at golden hour. The bride with long wavy black hair, a veil and an ivory gown and the groom in a light grey suit hold hands under the rose arch, he leans in and kisses her, the seated adult guests in the white chairs clap and smile, a few rose petals float down. The photographer, a woman with a salt-and-pepper bun, glasses and a charcoal gilet, holds her tan camera to her eye and presses the shutter. Warm low golden sunlight with glowing rim light, the pond glitters, the willow sways in a light breeze, golden clouds drift below. Crisp, vivid colours and clear contrast throughout, no haze, no fog, no fade, no mist. Same faces, same clothes, nothing drifts. Feels joyful and warm.",
       "use": [
         0,
         3.9
