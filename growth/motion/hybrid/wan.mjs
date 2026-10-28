@@ -7,7 +7,6 @@
 //   [--last=<frame.png>]  first-last-frame mode: the clip ends on that image (a move between two worlds)
 //
 // Draft at 480x832, then re-run the same seed at 720x1280 for the winner (Kaye rule 10).
-// The models sit in models/diffusion_models/Wan2.2 on the Windows ComfyUI, hence the backslash.
 // Frames come back as PNGs and ffmpeg encodes them at 16 fps (Wan's native rate).
 
 import fs from "node:fs";
@@ -32,10 +31,20 @@ async function upload(file) {
   return (await r.json()).name;
 }
 
+/** The loader's own name for a model file, wherever it sits (a Windows ComfyUI lists Wan2.2\x, Linux Wan2.2/x). */
+async function modelName(file) {
+  const list = await (await fetch(comfyUrl() + "/models/diffusion_models")).json();
+  const hit = list.find((n) => n.replace(/\\/g, "/").split("/").pop() === file);
+  if (!hit) throw new Error(`${file} is not in ComfyUI/models/diffusion_models: run hybrid/preflight.mjs`);
+  return hit;
+}
+const HIGH = await modelName("wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors");
+const LOW = await modelName("wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors");
+
 function graph(start, last) {
   const g = {
-    1: { class_type: "UNETLoader", inputs: { unet_name: "Wan2.2\\wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors", weight_dtype: "default" } },
-    2: { class_type: "UNETLoader", inputs: { unet_name: "Wan2.2\\wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors", weight_dtype: "default" } },
+    1: { class_type: "UNETLoader", inputs: { unet_name: HIGH, weight_dtype: "default" } },
+    2: { class_type: "UNETLoader", inputs: { unet_name: LOW, weight_dtype: "default" } },
     3: { class_type: "LoraLoaderModelOnly", inputs: { model: ["1", 0], lora_name: "wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors", strength_model: 1 } },
     4: { class_type: "LoraLoaderModelOnly", inputs: { model: ["2", 0], lora_name: "wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors", strength_model: 1 } },
     5: { class_type: "ModelSamplingSD3", inputs: { model: ["3", 0], shift: 5 } },

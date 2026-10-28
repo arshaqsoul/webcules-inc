@@ -12,6 +12,6 @@ Feels light, a little magical, a weight lifted. The honest line lives in the cap
 
 ## Production
 
-- Keyframe: Z-Image Turbo, 768x1344, seed 6103, prompt `keyframe.prompt.txt` (sheets: glassStudio, photographer, familyFall).
-- Clip: `hybrid/wan.mjs`, seed 11, prompt `motion.prompt.txt`; draft 480x832, kept 720x1280. Static camera, lifted 200 px clear of the cover pill.
-- Frames: minterpolate to 30 fps, lanczos to 1080x1920, into `out/G02/frames/`.
+- Keyframe: Z-Image Turbo, 768x1344, seed 6103, prompt `g02.keyframe.txt` (sheets: glassStudio, photographer, familyFall).
+- Clip: `hybrid/wan.mjs`, seed 11, prompt in `clips.json`; draft 480x832, kept 720x1280. Static camera, lifted 200 px clear of the cover pill.
+- Build: `hybrid/frames.mjs`, then `hybrid/spec.mjs` (overlays in `clips.json`, copy in `episode.json`).

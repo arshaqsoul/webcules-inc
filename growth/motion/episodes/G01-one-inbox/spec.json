@@ -8,12 +8,8 @@
   "cover": 0,
   "stills": [
     0,
-    1.0,
-    2.2,
-    2.9,
-    3.6,
-    4.6,
-    6.47,
+    2.4,
+    6.167,
     8.07
   ],
   "pain": {
@@ -109,9 +105,9 @@
     {
       "type": "clip",
       "at": 0,
-      "dur": 4.97,
+      "dur": 4.967,
       "props": {
-        "frames": "growth/motion/out/G01/frames/%04d.jpg",
+        "frames": "growth/motion/out/G01/frames/g01/%04d.jpg",
         "count": 149,
         "fps": 30,
         "lift": 200,
@@ -129,12 +125,13 @@
           "title": "New inquiry - Priya & Sam",
           "sub": "Wedding inquiry"
         },
-        "logo": "marketing/brands/snap-logo.png"
+        "logo": "marketing/brands/snap-logo.png",
+        "padFor": 8.27
       }
     },
     {
       "type": "phone",
-      "at": 4.97,
+      "at": 4.967,
       "dur": 3.3,
       "props": {
         "tagline": "Snap it.",
@@ -142,38 +139,38 @@
         "url": "snaphq.app",
         "logo": "marketing/brands/snap-logo.png",
         "title": "Inbox",
+        "backdrop": "growth/motion/assets/endcard/glass.jpg",
         "tagAt": 0.85,
         "rows": [
           {
+            "at": 0.3,
             "title": "New inquiry - Priya & Sam",
             "sub": "Wedding inquiry",
             "time": "10:02 AM",
-            "color": "#5e6ad2",
-            "at": 0.3
+            "color": "#5e6ad2"
           },
           {
+            "at": 0.42,
             "title": "New booking - Maya Chen",
             "sub": "Newborn session",
             "time": "8:04 AM",
-            "color": "#ffb000",
-            "at": 0.42
+            "color": "#ffb000"
           },
           {
+            "at": 0.54,
             "title": "Contract signed",
             "sub": "Wedding agreement",
             "time": "1:12 PM",
-            "color": "#f26a4d",
-            "at": 0.54
+            "color": "#f26a4d"
           },
           {
+            "at": 0.66,
             "title": "Invoice INV-0042 paid",
             "sub": "Into your own Stripe",
             "time": "5:41 PM",
-            "color": "#ff6fa0",
-            "at": 0.66
+            "color": "#ff6fa0"
           }
-        ],
-        "backdrop": "growth/motion/assets/endcard/glass.jpg"
+        ]
       }
     }
   ],
