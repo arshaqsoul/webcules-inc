@@ -47,8 +47,9 @@
       "speed": 1.4
     },
     {
-      "reuse": "out/hybrid/fallpark-720.mp4",
       "name": "fallpark",
+      "seed": 7,
+      "prompt": "Continuous single take. Slow gentle push-in toward the picnic blanket, the camera drifting slightly to the right, no zoom, no cuts. A tilt-shift miniature diorama of a small floating autumn island in the sky. On the red gingham blanket a young family of four laughs together: the mother in a mustard cardigan leans back laughing, the father in a rust flannel shirt tickles the little boy in navy dungarees, the girl in a red corduroy dress claps, and the golden retriever puppy wags its tail and hops. The photographer, a woman with a salt-and-pepper bun, glasses and a charcoal gilet, stands on the grass holding her tan camera to her eye and presses the shutter. A light breeze: orange and yellow maple leaves drift down slowly and tumble across the grass, the tree branches sway softly, the clouds below drift. Warm 1 PM autumn sunlight with dappled leaf shadows. Same faces, same clothes, nothing drifts. Feels joyful, warm and handmade.",
       "use": [
         0,
         3.9

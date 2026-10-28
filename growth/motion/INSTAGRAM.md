@@ -24,9 +24,9 @@ So the reels put **tiny, real-looking figurines** (the recurring Snap photograph
 A static post shows the glass envelope. The reel shows the photographer standing at it while her clients' cards float out of it.
 Same object, same light, same palette: the grid stays seamless, and the reels feel like the posters waking up.
 
-The floating-island worlds (E003, H001) stay as the flagship register, used less often (see "Registers").
+The floating-island worlds (S01) stay as the flagship register, used less often (see "Registers").
 
-Proof: `out/assets/glass-inbox/` and `out/assets/glass-gallery/` (Z-Image, 7 s each, 2026-10-28). The top third stays empty for the headline, exactly like the posters.
+Proof: G01 (`episodes/G01-one-inbox`). The top third stays empty for the headline, exactly like the posters.
 
 ## Grid rules (every reel)
 

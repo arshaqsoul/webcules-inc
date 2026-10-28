@@ -25,8 +25,7 @@ const run = (cmd, args) => { const r = spawnSync(cmd, args, { stdio: "inherit" }
 let prev = null;
 for (const s of list.shots) {
   const out = path.join(dir, `${s.name}.mp4`);
-  if (s.reuse) fs.copyFileSync(path.join(MOTION, s.reuse), out);
-  else if ((!only || only.includes(s.name)) && !fs.existsSync(out)) {
+  if ((!only || only.includes(s.name)) && !fs.existsSync(out)) {
     const start = s.move ? prev : path.join(dir, `${s.name}.png`);
     const extra = s.move ? [`--last=${path.join(dir, `${s.to}.png`)}`, "--frames=33"] : [];
     run("node", [path.join(HERE, "wan.mjs"), start, out, `--prompt=${s.prompt}`, `--seed=${s.seed}`, `--w=${w}`, `--h=${h}`, ...extra]);
