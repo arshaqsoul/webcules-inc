@@ -1,0 +1,110 @@
+{
+  "about": "S01 shot list for hybrid/run-clips.mjs. A shot animates its keyframe (81 frames); a move (33 frames) flies from the previous shot's last frame to the next shot's keyframe (Wan first-last-frame). Keyframes are out/S01/<name>.png from the *.keyframe.txt prompts and the seeds below.",
+  "dir": "out/S01",
+  "w": 720,
+  "h": 1280,
+  "keyframes": {
+    "open": 5403,
+    "studio": 5111,
+    "fallpark": 1011,
+    "lake": 5212,
+    "party": 5303,
+    "finale": 5502
+  },
+  "shots": [
+    {
+      "name": "open",
+      "seed": 21,
+      "prompt": "Continuous single take. A very slow gentle drift forward through a bright morning sky, no zoom, no cuts. Four tiny floating miniature islands hang among soft clouds and bob very gently up and down; the clouds drift slowly past; a few birds glide far away. Soft morning sunlight. Tilt-shift miniature diorama, calm and full of wonder.",
+      "use": [
+        0,
+        2.7
+      ]
+    },
+    {
+      "move": true,
+      "name": "m1",
+      "seed": 3,
+      "to": "studio",
+      "prompt": "Continuous single take. The camera glides smoothly forward through the soft morning clouds toward one small floating island with a cosy cutaway photo studio on it, and settles on it. The tiny figurines stay exactly where they are on their islands, frozen in place: nobody walks, runs, jumps, floats or leaves an island, nobody grows or shrinks. Only the camera moves. No cuts, no fades, no morphing. One smooth camera move, no cuts, no morphing. Tilt-shift miniature diorama.",
+      "speed": 1.4
+    },
+    {
+      "name": "studio",
+      "seed": 32,
+      "prompt": "Continuous single take. Very slow, very slight push-in; the whole studio, the photographer and the island edge stay in frame the entire time; no zoom, no cuts. A tiny cutaway photo studio on a floating island at 8 AM. The tiny newborn baby, small as the mother's forearm, in a blush-pink wrap sleeps peacefully and stretches one tiny hand; the mother in a cream sweater strokes the baby's head and smiles at the father, who leans in close. The photographer, a woman with a salt-and-pepper bun, glasses and a charcoal gilet, holds her tan camera to her eye and presses the shutter, then checks the back of the camera and smiles. Soft morning light through the window, dust motes floating in the beam, clouds drifting below the island. Same faces, same clothes, nothing drifts. Feels tender and quiet.",
+      "use": [
+        0,
+        3.4
+      ]
+    },
+    {
+      "move": true,
+      "name": "m2",
+      "seed": 7,
+      "to": "fallpark",
+      "prompt": "Continuous single take. The camera lifts up and away from the small floating studio island, flies smoothly across the sky through soft clouds as the light warms from morning to midday, and glides down to a small floating island of autumn trees with a family on a picnic blanket. The tiny figurines stay exactly where they are on their islands, frozen in place: nobody walks, runs, jumps, floats or leaves an island, nobody grows or shrinks. Only the camera moves. No cuts, no fades, no morphing. One smooth arcing camera move, no cuts, no morphing; two separate islands in the same sky. Tilt-shift miniature diorama.",
+      "speed": 1.4
+    },
+    {
+      "name": "fallpark",
+      "seed": 7,
+      "prompt": "Continuous single take. Slow gentle push-in toward the picnic blanket, the camera drifting slightly to the right, no zoom, no cuts. A tilt-shift miniature diorama of a small floating autumn island in the sky. On the red gingham blanket a young family of four laughs together: the mother in a mustard cardigan leans back laughing, the father in a rust flannel shirt tickles the little boy in navy dungarees, the girl in a red corduroy dress claps, and the golden retriever puppy wags its tail and hops. The photographer, a woman with a salt-and-pepper bun, glasses and a charcoal gilet, stands on the grass holding her tan camera to her eye and presses the shutter. A light breeze: orange and yellow maple leaves drift down slowly and tumble across the grass, the tree branches sway softly, the clouds below drift. Warm 1 PM autumn sunlight with dappled leaf shadows. Same faces, same clothes, nothing drifts. Feels joyful, warm and handmade.",
+      "use": [
+        0,
+        3.9
+      ]
+    },
+    {
+      "move": true,
+      "name": "m3",
+      "seed": 3,
+      "to": "lake",
+      "prompt": "Continuous single take. The camera lifts up and away from a small floating autumn island, flies smoothly through soft clouds across the sky as the light warms from afternoon to golden hour, and glides down to a small floating island with a pond and a white wedding arch. The tiny figurines stay exactly where they are on their islands, frozen in place: nobody walks, runs, jumps, floats or leaves an island, nobody grows or shrinks. Only the camera moves. No cuts, no fades, no morphing. One smooth arcing camera move, no cuts, no morphing; two separate islands in the same sky. Tilt-shift miniature diorama.",
+      "speed": 1.4
+    },
+    {
+      "name": "lake",
+      "seed": 31,
+      "prompt": "Continuous single take. Slow gentle push-in toward the wedding arch, no zoom, no cuts. A tiny lakeside wedding on a floating island at golden hour. The bride with long wavy black hair, a veil and an ivory gown and the groom in a light grey suit hold hands under the rose arch, he leans in and kisses her, the seated adult guests in the white chairs clap and smile, a few rose petals float down. The photographer, a woman with a salt-and-pepper bun, glasses and a charcoal gilet, holds her tan camera to her eye and presses the shutter. Warm low golden sunlight with glowing rim light, the pond glitters, the willow sways in a light breeze, golden clouds drift below. Crisp, vivid colours and clear contrast throughout, no haze, no fog, no fade, no mist. Same faces, same clothes, nothing drifts. Feels joyful and warm.",
+      "use": [
+        0,
+        3.9
+      ]
+    },
+    {
+      "move": true,
+      "name": "m4",
+      "seed": 7,
+      "to": "party",
+      "prompt": "Continuous single take. The camera lifts up and away from the small floating wedding island, flies smoothly through the clouds as the golden sky turns to deep blue night with the first stars, and glides down to a small floating island with a wooden deck under warm string lights. The tiny figurines stay exactly where they are on their islands, frozen in place: nobody walks, runs, jumps, floats or leaves an island, nobody grows or shrinks. Only the camera moves. No cuts, no fades, no morphing. One smooth arcing camera move, no cuts, no morphing; two separate islands in the same sky. Tilt-shift miniature diorama.",
+      "speed": 1.4
+    },
+    {
+      "name": "party",
+      "seed": 24,
+      "prompt": "Continuous single take. Slow gentle push-in toward the deck, no zoom, no cuts. A tiny birthday party on a floating island at night under warm string lights. The birthday woman with a short black bob and a sparkly gold dress waves a fizzing sparkler and laughs; her friends dance, raise their glasses and cheer; the candles on the cake flicker; the string lights sway gently and twinkle. The photographer, a woman with a salt-and-pepper bun, glasses and a charcoal gilet, holds her tan camera to her eye and presses the shutter. Deep indigo night sky with stars, violet clouds drifting below. Same faces, same clothes, nothing drifts. Feels fun and alive.",
+      "use": [
+        0,
+        3.9
+      ]
+    },
+    {
+      "move": true,
+      "name": "m5",
+      "seed": 3,
+      "to": "finale",
+      "prompt": "Continuous single take. The camera pulls slowly up and back from the small floating party island, rising into the twilight sky until four small glowing floating islands are all in view among violet clouds. The tiny figurines stay exactly where they are on their islands, frozen in place: nobody walks, runs, jumps, floats or leaves an island, nobody grows or shrinks. Only the camera moves. No cuts, no fades, no morphing. One smooth pull-back, no cuts, no morphing. Tilt-shift miniature diorama.",
+      "speed": 1.4
+    },
+    {
+      "name": "finale",
+      "seed": 25,
+      "prompt": "Continuous single take. A very slow gentle pull-back, no zoom, no cuts. Four tiny floating islands glow in a twilight sky above violet clouds, their tiny warm lights twinkling: a studio window, a lantern, fairy lights on a wedding arch, string lights at a party. The islands bob very gently, the clouds drift slowly, stars appear. Feels peaceful, a full day well spent.",
+      "use": [
+        0,
+        3.4
+      ]
+    }
+  ]
+}
