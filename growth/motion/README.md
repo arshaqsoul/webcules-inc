@@ -1,12 +1,22 @@
-# Motion reels - ads made purely in code
+# Motion reels
 
-Reels for Snap's Instagram and Facebook built from code alone: SVG and three.js in headless Chromium, a DSP-synthesised score, ffmpeg.
-No screen recording, no staging session, no AI video generation.
-A spec file in, a postable 1080x1920 reel out, identical on every render.
+Reels for Snap's Instagram and Facebook with no screen recording and no staging session.
+The house style is hybrid: keyframes and clips generated on local ComfyUI (Z-Image, Wan 2.2), played under code that draws every word, Snap inbox card, cover tile and the app end card, with a DSP-synthesised score, rendered frame by frame in headless Chromium and ffmpeg.
 
-Read `SERIES.md` first: it is the concept, the ad anatomy and the episode backlog.
+Read `INSTAGRAM.md` first (the playbook), then follow the `growth-motion-reel` skill; the `growth-motion` agent runs it.
 
-## Make an episode
+## Make a hybrid episode (G## Glass Studio, S## Out Here)
+
+```bash
+node growth/motion/hybrid/preflight.mjs                          # ComfyUI, models, ffmpeg, Playwright
+node growth/motion/hybrid/keyframes.mjs episodes/G03-x            # candidates from <shot>.keyframe.txt; look; --pick=shot:seed
+node growth/motion/hybrid/run-clips.mjs episodes/G03-x --draft    # 480 drafts; look; then without --draft for the 720 keeps
+node growth/motion/hybrid/frames.mjs    episodes/G03-x            # trim, retime, interpolate to 30 fps
+node growth/motion/hybrid/spec.mjs      episodes/G03-x            # spec.json from clips.json + episode.json
+node growth/motion/render.mjs check|stills|render|package G03
+```
+
+## Make a code-only episode (E001-E003, the retired three.js look)
 
 ```bash
 node growth/motion/render.mjs new     E002 The Deposit Chaser   # scaffold episodes/E002-the-deposit-chaser/spec.json
@@ -43,7 +53,7 @@ engine/iso.js                  isometric solids after the anatomy skill: boxes, 
 engine/stations.js             the station library: one device per chore (inbox, calendar, contract, invoice, payment, gallery)
 engine/figure.js               the tiny photographer who walks the machine
 engine/decor.js                clouds, potted plants and the daylight sky
-engine/scenes/*.js             scene types: world (3D journey, the house style), phone (app end card), and the retired machine, checklist, cta
+engine/scenes/*.js             scene types: clip (generated frames under code overlays, the house style), world (the code-only 3D journey), phone (app end card), and the retired machine, checklist, cta
 engine/world/kit.js            the 3D world kit: clay materials, floating islands, trees, people and poses, animals, props, particles, clouds
 engine/world/islands.js        one builder per world: studio, fallPark, lakeWedding, nightParty
 audio.mjs                      cue list -> 48 kHz stereo WAV (every sound is a few lines of DSP)
@@ -80,3 +90,20 @@ Random-looking motion comes from `wobble()` or `rng(seed)`, never `Math.random()
 The demo-reel pipeline (`growth/RUNBOOK.md`) records real Snap screens on staging.
 This pipeline is the other half: concept ads that make a pain felt, with no staging dependency, so they can ship while a demo is blocked.
 Episodes can point at a ledger record with `pain.ledger`, and the claim rules are the same.
+
+## Hybrid files
+
+```
+INSTAGRAM.md                   the playbook: grid rules, registers, formats, concept engine, posting rhythm
+hybrid/sheets.json             Kaye-system sheets: house style, recurring people, locations (numeric locks)
+hybrid/preflight.mjs           can this machine make a reel, and how to fix it if not
+hybrid/comfy-image.mjs         text-to-image graphs (Z-Image Turbo, Flux Schnell), shared with assets.mjs
+hybrid/keyframes.mjs           keyframe candidates per shot, contact sheets, --pick
+hybrid/wan.mjs                 one Wan 2.2 14B image-to-video clip (or a first-last-frame move)
+hybrid/run-clips.mjs           every shot and move of an episode in order, resumable, --draft
+hybrid/frames.mjs              clips -> 1080x1920 30 fps frames (trim, retime, interpolate)
+hybrid/spec.mjs                clips.json + episode.json + frame counts -> spec.json
+engine/scenes/clip.js          plays the frames under the poster cover, chips, flash, inbox card, headlines
+engine/overlays.js             the poster cover, time chip and inbox card, shared by clip and world scenes
+episodes/G01, G02, S01         worked examples
+```

@@ -114,24 +114,18 @@ Today: 2 posts a week on the Snap page (`marketing/CALENDAR.md`). Move to 3, rea
 Every reel's cover sits next to posters that share its feature, so a row reads like one thought (envelope reel, inbox poster, inbox carousel).
 Judge by saves, shares, profile visits and signups (UTM on the bio link), not views. The growth analyst feeds winners back here: double down on the format, not the topic.
 
-## Making one (Glass Studio)
+## Making one
 
-1. Brief (plain language) -> sheets: reuse `hybrid/sheets.json`, add any new client with numeric locks.
-2. Keyframe: Z-Image, 768x1344, four seeds, pick one with the top third empty (`assets.mjs try`).
-3. Clip: `hybrid/wan.mjs` draft at 480x832; iterate the prompt (physics, "no zoom"); keep at 720x1280.
-4. Optional move: first-last-frame mode (`--last=`) from the keyframe to a second keyframe for a reveal.
-5. Episode spec: a `clip` scene with the chip, flash and card, then the cover overlay and the phone end card.
-6. `render.mjs check`, `stills`, look at the stills, `render`, every QC line PASS, `package`, hand to the founder.
+The procedure is the `growth-motion-reel` skill (`.claude/skills/growth-motion-reel/SKILL.md`); the `growth-motion` agent runs it.
+In short, for either register:
 
-## Making one (Out Here, the story reels)
+1. `hybrid/preflight.mjs`: this machine has ComfyUI, the models, ffmpeg and Playwright.
+2. An episode folder copied from G02 (Glass Studio) or S01 (Out Here): `brief.md`, one `<shot>.keyframe.txt` per shot, `clips.json`, `episode.json`.
+3. `hybrid/keyframes.mjs` for candidates, look, `--pick`.
+4. `hybrid/run-clips.mjs --draft`, look, then `hybrid/run-clips.mjs` to keep at 720x1280. Moves fly from the frame where the previous shot is cut.
+5. `hybrid/frames.mjs`, `hybrid/spec.mjs`, `render.mjs check`, `stills`, look, `render`, `package`.
 
-The story register for "how Snap helps": a day, a season or one couple's journey across floating worlds (S01 is the template).
-
-1. Brief: who is shot where, and which Snap moment lands at each stop. Chain the cards to the story: the card at one world is often the client of the next (at the family shoot, the wedding couple sign; at the wedding, they pay).
-2. Reuse people across reels: Priya and Sam inquire in G01 and marry in S01. The audience meets the same clients again.
-3. Keyframes per world plus an opening and a closing wide (`episodes/S01-*/*.keyframe.txt`).
-4. `episodes/<ep>/clips.json` lists shots and moves; `hybrid/run-clips.mjs` makes them in order (a move flies from the last frame of one clip to the next keyframe), `hybrid/frames.mjs` trims, speeds and interpolates them, and the episode's `build-spec.py` writes the spec.
-5. The end card sits on the glass studio backdrop (`assets/endcard/glass.jpg`), so every reel ends in the grid's world.
+For story reels, chain the cards to the story (the card at one world is often the client of the next) and reuse people across reels: Priya and Sam inquire in G01 and marry in S01.
 
 ## Built
 
@@ -141,4 +135,3 @@ The story register for "how Snap helps": a day, a season or one couple's journey
 
 ## Still to build
 
-- A `hybrid/make.mjs` that runs keyframe, clip, frames and spec for one Glass Studio concept in one command.

@@ -1,5 +1,5 @@
 {
-  "about": "S01 shot list for hybrid/run-clips.mjs. A shot animates its keyframe (81 frames); a move (33 frames) flies from the previous shot's last frame to the next shot's keyframe (Wan first-last-frame). Keyframes are out/S01/<name>.png from the *.keyframe.txt prompts and the seeds below.",
+  "about": "S01 shot list for hybrid/run-clips.mjs, frames.mjs and spec.mjs. A shot animates out/S01/<name>.png from <name>.keyframe.txt; a move (33 frames) flies from the frame where the previous shot is cut to the next shot's keyframe (Wan first-last-frame).",
   "dir": "out/S01",
   "w": 720,
   "h": 1280,
@@ -19,7 +19,19 @@
       "use": [
         0,
         2.7
-      ]
+      ],
+      "overlay": {
+        "lines": {
+          "lines": [
+            "Spend the day",
+            "*out here.*"
+          ],
+          "at": 0.25,
+          "out": -0.35,
+          "y": 470,
+          "size": 108
+        }
+      }
     },
     {
       "move": true,
@@ -36,7 +48,20 @@
       "use": [
         0,
         3.4
-      ]
+      ],
+      "overlay": {
+        "chip": [
+          "8:00 AM",
+          "Newborn session"
+        ],
+        "flash": 1.5,
+        "cardAt": 1.85,
+        "toast": {
+          "title": "New booking - Maya Chen",
+          "sub": "from your booking page"
+        },
+        "index": 0
+      }
     },
     {
       "move": true,
@@ -53,7 +78,20 @@
       "use": [
         0,
         3.9
-      ]
+      ],
+      "overlay": {
+        "chip": [
+          "1:00 PM",
+          "Fall family photos"
+        ],
+        "flash": 1.5,
+        "cardAt": 1.85,
+        "toast": {
+          "title": "Contract signed - Lakeside wedding",
+          "sub": "signed in their browser"
+        },
+        "index": 1
+      }
     },
     {
       "move": true,
@@ -70,7 +108,20 @@
       "use": [
         0,
         3.9
-      ]
+      ],
+      "overlay": {
+        "chip": [
+          "5:30 PM",
+          "Priya & Sam's wedding"
+        ],
+        "flash": 1.5,
+        "cardAt": 1.85,
+        "toast": {
+          "title": "Invoice INV-0042 paid",
+          "sub": "into your own Stripe"
+        },
+        "index": 2
+      }
     },
     {
       "move": true,
@@ -87,7 +138,20 @@
       "use": [
         0,
         3.9
-      ]
+      ],
+      "overlay": {
+        "chip": [
+          "9:00 PM",
+          "Birthday party"
+        ],
+        "flash": 1.5,
+        "cardAt": 1.85,
+        "toast": {
+          "title": "Client opened their gallery",
+          "sub": "for the first time"
+        },
+        "index": 3
+      }
     },
     {
       "move": true,
@@ -104,7 +168,18 @@
       "use": [
         0,
         3.4
-      ]
+      ],
+      "overlay": {
+        "lines": {
+          "lines": [
+            "Your clients book, sign",
+            "and pay in *Snap.*"
+          ],
+          "at": 0.3,
+          "y": 470,
+          "size": 76
+        }
+      }
     }
   ]
 }

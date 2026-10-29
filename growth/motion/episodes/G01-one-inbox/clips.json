@@ -1,0 +1,33 @@
+{
+  "about": "G01 shot list for hybrid/run-clips.mjs, frames.mjs and spec.mjs (see the growth-motion-reel skill).",
+  "dir": "out/G01",
+  "w": 720,
+  "h": 1280,
+  "keyframes": {
+    "g01": 3123
+  },
+  "shots": [
+    {
+      "name": "g01",
+      "seed": 11,
+      "prompt": "Static camera. The camera does not move at all: no push-in, no zoom, no pan, no tilt, no cuts. In a pastel lavender glass studio, tiny realistic figurines stand in front of a giant frosted glass envelope that glows softly from inside. The photographer on the left, a woman with a salt-and-pepper bun, glasses and a charcoal gilet, lowers her tan camera from her eye and smiles warmly at the couple. On the right the engaged couple keep waving to her; the woman in a dusty-rose dress laughs and leans into the man in a light blue shirt, who puts his arm around her. Small glass cards lift gently out of the envelope's open flap one after another and float slowly upward, turning a little and catching soft iridescent light, rising into the empty lavender space. The glow inside the envelope pulses softly once. Soft diffused light, soft reflections on the floor. Same faces, same clothes, nothing drifts. Feels calm, light and a little magical.",
+      "overlay": {
+        "lift": 200,
+        "poster": {
+          "brand": "snap",
+          "kicker": "Stay organized",
+          "headline": [
+            "Every inquiry",
+            "in *one* inbox."
+          ],
+          "out": 1.6
+        },
+        "cardAt": 2.6,
+        "toast": {
+          "title": "New inquiry - Priya & Sam",
+          "sub": "Wedding inquiry"
+        }
+      }
+    }
+  ]
+}

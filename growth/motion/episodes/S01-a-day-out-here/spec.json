@@ -7,14 +7,15 @@
   "duration": 31.1,
   "cover": 1.2,
   "stills": [
-    0.6,
-    1.5,
-    6.33,
-    11.07,
-    16.3,
-    21.53,
-    26.07,
-    30.8
+    0,
+    2.4,
+    6.433,
+    11.166,
+    16.399,
+    21.632,
+    26.865,
+    28.998,
+    30.9
   ],
   "pain": {
     "statement": "Photographers want to spend the day shooting, but bookings, contracts, payments and gallery follow-ups pull them back to the desk and spread across separate tools.",
@@ -93,7 +94,7 @@
   "scenes": [
     {
       "type": "clip",
-      "at": 0.0,
+      "at": 0,
       "dur": 2.633,
       "props": {
         "frames": "growth/motion/out/S01/frames/open/%04d.jpg",
@@ -132,7 +133,6 @@
         "frames": "growth/motion/out/S01/frames/studio/%04d.jpg",
         "count": 100,
         "fps": 30,
-        "pad": false,
         "chip": [
           "8:00 AM",
           "Newborn session"
@@ -143,8 +143,9 @@
           "title": "New booking - Maya Chen",
           "sub": "from your booking page"
         },
-        "logo": "marketing/brands/snap-logo.png",
-        "index": 0
+        "index": 0,
+        "pad": false,
+        "logo": "marketing/brands/snap-logo.png"
       }
     },
     {
@@ -167,7 +168,6 @@
         "frames": "growth/motion/out/S01/frames/fallpark/%04d.jpg",
         "count": 115,
         "fps": 30,
-        "pad": false,
         "chip": [
           "1:00 PM",
           "Fall family photos"
@@ -178,8 +178,9 @@
           "title": "Contract signed - Lakeside wedding",
           "sub": "signed in their browser"
         },
-        "logo": "marketing/brands/snap-logo.png",
-        "index": 1
+        "index": 1,
+        "pad": false,
+        "logo": "marketing/brands/snap-logo.png"
       }
     },
     {
@@ -202,7 +203,6 @@
         "frames": "growth/motion/out/S01/frames/lake/%04d.jpg",
         "count": 115,
         "fps": 30,
-        "pad": false,
         "chip": [
           "5:30 PM",
           "Priya & Sam's wedding"
@@ -213,8 +213,9 @@
           "title": "Invoice INV-0042 paid",
           "sub": "into your own Stripe"
         },
-        "logo": "marketing/brands/snap-logo.png",
-        "index": 2
+        "index": 2,
+        "pad": false,
+        "logo": "marketing/brands/snap-logo.png"
       }
     },
     {
@@ -237,7 +238,6 @@
         "frames": "growth/motion/out/S01/frames/party/%04d.jpg",
         "count": 115,
         "fps": 30,
-        "pad": false,
         "chip": [
           "9:00 PM",
           "Birthday party"
@@ -248,8 +248,9 @@
           "title": "Client opened their gallery",
           "sub": "for the first time"
         },
-        "logo": "marketing/brands/snap-logo.png",
-        "index": 3
+        "index": 3,
+        "pad": false,
+        "logo": "marketing/brands/snap-logo.png"
       }
     },
     {
@@ -272,7 +273,6 @@
         "frames": "growth/motion/out/S01/frames/finale/%04d.jpg",
         "count": 100,
         "fps": 30,
-        "pad": false,
         "lines": {
           "lines": [
             "Your clients book, sign",
@@ -281,7 +281,8 @@
           "at": 0.3,
           "y": 470,
           "size": 76
-        }
+        },
+        "pad": false
       }
     },
     {
@@ -294,38 +295,38 @@
         "url": "snaphq.app",
         "logo": "marketing/brands/snap-logo.png",
         "title": "Inbox",
+        "backdrop": "growth/motion/assets/endcard/glass.jpg",
         "tagAt": 0.85,
         "rows": [
           {
+            "at": 0.3,
             "title": "New booking - Maya Chen",
             "sub": "Newborn session",
             "time": "8:04 AM",
-            "color": "#ffb000",
-            "at": 0.3
+            "color": "#ffb000"
           },
           {
+            "at": 0.42,
             "title": "Contract signed - Lakeside wedding",
             "sub": "Priya & Sam",
             "time": "1:12 PM",
-            "color": "#f26a4d",
-            "at": 0.42
+            "color": "#f26a4d"
           },
           {
+            "at": 0.54,
             "title": "Invoice INV-0042 paid",
             "sub": "Into your own Stripe",
             "time": "5:41 PM",
-            "color": "#ff6fa0",
-            "at": 0.54
+            "color": "#ff6fa0"
           },
           {
+            "at": 0.66,
             "title": "Client opened their gallery",
             "sub": "For the first time",
             "time": "9:20 PM",
-            "color": "#7a5cff",
-            "at": 0.66
+            "color": "#7a5cff"
           }
-        ],
-        "backdrop": "growth/motion/assets/endcard/glass.jpg"
+        ]
       }
     }
   ],
