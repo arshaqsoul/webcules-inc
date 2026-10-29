@@ -45,20 +45,26 @@ export default {
       cx += w + 14;
     });
     f += text(px + 52, py + 336, p.section ?? "TODAY", { size: 24, weight: 800, fill: "#8a8a96", anchor: "start", spacing: 3 });
-    // The day's events, one by one.
-    p.rows.forEach((r, i) => {
+    // The day's events, one by one. A title too long for one line at 26 px wraps to two, so
+    // every word stays at least 26 px (the reel text floor) and the event wording stays whole.
+    let ry = py + 372;
+    p.rows.forEach((r) => {
+      const room = pw - 62 - 148 - measure(r.time, 22, 600) - 18;
+      const fit = 30 * room / measure(r.title, 30, 800);
+      const ts = fit >= 26 ? Math.min(30, fit) : 28;
+      const lines = fit >= 26 ? [r.title] : wrap(r.title, ts, room);
+      const h = 116 + (lines.length - 1) * 34;
+      const y0 = ry;
+      ry += h + 16;
       const a = seg(t, r.at, r.at + 0.3);
       if (a <= 0) return;
-      const y = py + 372 + i * 132 + (1 - ease.outCubic(a)) * 30;
+      const y = y0 + (1 - ease.outCubic(a)) * 30;
       f += `<g opacity="${a.toFixed(3)}">`;
-      f += `<rect x="${px + 40}" y="${y}" width="${pw - 80}" height="116" rx="28" fill="#f7f7fb"/>`;
-      f += `<circle cx="${px + 98}" cy="${y + 58}" r="32" fill="${r.color}"/>`;
-      f += `<path d="M${px + 84} ${y + 59}l9 9l18 -20" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>`;
-      // Long titles shrink to stop short of the time.
-      const room = pw - 62 - 148 - measure(r.time, 22, 600) - 18;
-      const ts = Math.min(30, 30 * room / measure(r.title, 30, 800));
-      f += text(px + 148, y + 50, r.title, { size: +ts.toFixed(1), weight: 800, fill: "#17141c", anchor: "start" });
-      f += text(px + 148, y + 88, r.sub, { size: 24, weight: 500, fill: "#5a5d72", anchor: "start" });
+      f += `<rect x="${px + 40}" y="${y}" width="${pw - 80}" height="${h}" rx="28" fill="#f7f7fb"/>`;
+      f += `<circle cx="${px + 98}" cy="${y + h / 2}" r="32" fill="${r.color}"/>`;
+      f += `<path d="M${px + 84} ${y + h / 2 + 1}l9 9l18 -20" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>`;
+      lines.forEach((ln, k) => { f += text(px + 148, y + 50 + k * 34, ln, { size: +ts.toFixed(1), weight: 800, fill: "#17141c", anchor: "start" }); });
+      f += text(px + 148, y + 88 + (lines.length - 1) * 34, r.sub, { size: 24, weight: 500, fill: "#5a5d72", anchor: "start" });
       f += text(px + pw - 62, y + 50, r.time, { size: 22, weight: 600, fill: "#8a8a96", anchor: "end" });
       f += "</g>";
     });
@@ -82,3 +88,19 @@ export default {
     return c;
   },
 };
+
+/** Word wrap into lines no wider than `room` at this size, breaking after " - " when both halves fit. */
+function wrap(str, size, room) {
+  const dash = str.indexOf(" - ");
+  if (dash > 0) {
+    const two = [str.slice(0, dash + 2), str.slice(dash + 3)];
+    if (two.every((l) => measure(l, size, 800) <= room)) return two;
+  }
+  const out = [];
+  for (const w of str.split(" ")) {
+    const last = out[out.length - 1];
+    if (last && measure(`${last} ${w}`, size, 800) <= room) out[out.length - 1] = `${last} ${w}`;
+    else out.push(w);
+  }
+  return out;
+}

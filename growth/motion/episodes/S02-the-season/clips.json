@@ -9,7 +9,7 @@
     "s02summer": 2202,
     "s02fall": 1011,
     "s02winter": 2411,
-    "s02finale": 2413
+    "s02finale": 3104
   },
   "shots": [
     {
@@ -156,7 +156,7 @@
     {
       "move": true,
       "name": "s02m5",
-      "seed": 3,
+      "seed": 7,
       "to": "s02finale",
       "prompt": "Continuous single take. The camera pulls slowly up and back from the small floating snowy cabin island, rising into the twilight sky until four small glowing floating islands are all in view among violet clouds. The tiny figurines stay exactly where they are on their islands, frozen in place: nobody walks, runs, jumps, floats or leaves an island, nobody grows or shrinks. Only the camera moves. No cuts, no fades, no morphing. One smooth pull-back. Tilt-shift miniature diorama.",
       "speed": 1.4
@@ -164,7 +164,7 @@
     {
       "name": "s02finale",
       "seed": 25,
-      "prompt": "Continuous single take. A very slow gentle pull-back, no zoom, no cuts. Four tiny floating islands, one for each season, float calmly in a clear twilight sky above violet clouds, their tiny warm lights glowing softly and steadily: a lantern under blossom trees, a small campfire on a beach, a lantern by autumn trees, the windows of a snowy cabin. The islands bob very gently and the clouds drift slowly. The sky stays clean and smooth the whole time: nothing falls, no rain, no sparks, no streaks, no flames flaring up. Crisp, vivid colours and clear contrast throughout, no haze, no fog, no fade, no mist. Feels peaceful, a whole year well spent.",
+      "prompt": "Continuous single take. A very slow gentle pull-back, no zoom, no cuts. Four tiny floating islands, one for each season, float calmly in a clear twilight sky above violet clouds, their tiny warm lights glowing softly and steadily: a lantern under blossom trees, tiny string lights on a beach parasol, a lantern by autumn trees, the windows of a snowy cabin. The islands bob very gently and the clouds drift slowly. The sky stays clean and smooth the whole time: nothing falls, no rain, no sparks, no streaks, no flames, no fire growing, no smoke, every light stays exactly as small as in the first frame. Crisp, vivid colours and clear contrast throughout, no haze, no fog, no fade, no mist. Feels peaceful, a whole year well spent.",
       "use": [
         0,
         3.4

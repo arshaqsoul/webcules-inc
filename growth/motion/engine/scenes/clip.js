@@ -22,6 +22,19 @@ import { chip, inboxCard, poster } from "../overlays.js";
 
 const brands = {};
 
+// The kinetic headline over a bright sky: a soft dusk band behind it and a shadow under each
+// word, so white and the yellow accent read on pale clouds as well as on a night sky.
+function headline(t, l) {
+  const at = l.at ?? 0.2, y = l.y ?? 520, size = l.size ?? 100, out = l.out ?? Infinity;
+  const a = seg(t, at - 0.1, at + 0.3) * (Number.isFinite(out) ? 1 - seg(t, out, out + 0.3) : 1);
+  const top = y - size * 1.6, h = size * (1.12 * l.lines.length + 2.4);
+  const band = a > 0.001
+    ? `<defs><linearGradient id="hl-band" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c1840" stop-opacity="0"/><stop offset="0.5" stop-color="#1c1840" stop-opacity="0.34"/><stop offset="1" stop-color="#1c1840" stop-opacity="0"/></linearGradient></defs><rect y="${top.toFixed(1)}" width="1080" height="${h.toFixed(1)}" fill="url(#hl-band)" opacity="${a.toFixed(3)}"/>`
+    : "";
+  const words = kinetic(t, at, l.lines, { y, size, fill: "#ffffff", accent: "#ffd24a", out });
+  return `${band}<g style="filter: drop-shadow(0 3px 14px rgba(20, 16, 56, 0.55))">${words}</g>`;
+}
+
 export default {
   async init(ctx, scenes) {
     for (const s of scenes) {
@@ -39,7 +52,7 @@ export default {
       if (t >= p.flash && fk < 1) f += `<rect width="1080" height="1920" fill="#ffffff" opacity="${((1 - fk) * 0.5).toFixed(3)}"/>`;
     }
     if (p.chip) f += chip(t, 0, dur, p.chip, p.index ?? 0);
-    if (p.lines) f += kinetic(t, p.lines.at ?? 0.2, p.lines.lines, { y: p.lines.y ?? 520, size: p.lines.size ?? 100, fill: "#ffffff", accent: "#ffe27a", out: p.lines.out ?? Infinity });
+    if (p.lines) f += headline(t, p.lines);
     if (p.toast) f += inboxCard(t, p.cardAt ?? p.flash + 0.35, dur, ctx, p.logo, p.toast);
     if (p.poster) f += poster(t, ctx, brands[p.poster.brand], p.poster);
     return { plate: p.lift ? { src: plate, lift: p.lift } : plate, front: f };
