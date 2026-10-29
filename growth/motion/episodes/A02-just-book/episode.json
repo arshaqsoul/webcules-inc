@@ -1,0 +1,52 @@
+{
+  "id": "A02",
+  "title": "I wish they'd just book",
+  "series": "Snap it. - the wish",
+  "brand": "snap",
+  "cover": 1.2,
+  "caption": "I wish they'd just book.\n\n\"What dates do you have?\" \"How about the 14th?\" \"Actually, can we do the week after?\" With Snap your client picks a time on your booking page and the booking is made, and \"New booking\" lands in your Snap inbox.\nOne session type on the Free plan, 0% commission.\n\nIt is not magic: you still set your availability. Snap just makes booking it the easy part.\n\nStart free at snaphq.app",
+  "hashtags": [
+    "#newbornphotographer",
+    "#photographybusiness",
+    "#photographerlife",
+    "#bookingsopen",
+    "#photographerworkflow",
+    "#smallbusinessowner"
+  ],
+  "ad": {
+    "primary_text": "Clients pick a time on your booking page and \"New booking\" lands in your Snap inbox. 0% commission, free to start.",
+    "headline": "I wish they'd just book.",
+    "description": "Free to start at snaphq.app",
+    "cta_button": "Sign Up",
+    "placements": [
+      "instagram_reels",
+      "facebook_reels",
+      "instagram_stories",
+      "facebook_stories"
+    ]
+  },
+  "claims": [
+    {
+      "text": "New booking - {client} lands in the Snap inbox",
+      "source": "apps/snap/lib/repos/bookings.ts",
+      "match": "eventType: \"booking.created\""
+    },
+    {
+      "text": "Clients book from your booking page, one session type on the Free plan",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "maxSessionTypes: 1"
+    },
+    {
+      "text": "0% commission",
+      "source": "apps/snap/lib/connect.ts",
+      "match": "No application_fee_amount, ever."
+    },
+    {
+      "text": "Free to start (Free plan, $0)",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "id: \"free\", name: \"Free\", priceMonthlyUsd: 0"
+    }
+  ],
+  "painFrom": "E003-a-day-out-here",
+  "endcard": false
+}

@@ -1,0 +1,63 @@
+{
+  "about": "A03 shot list: a Snap it. spot (see episodes/A01-just-sign).",
+  "dir": "out/A03",
+  "w": 720,
+  "h": 1280,
+  "keyframes": {
+    "a03desk": 9402,
+    "a03diorama": 9502
+  },
+  "shots": [
+    {
+      "name": "a03desk",
+      "seed": 11,
+      "prompt": "Very slow, very slight push-in, no zoom, no cuts. A stylized 3D animated photographer editing at a desk at night, eager clients peering in through the dark window behind her. She glances at them nervously, takes a breath and taps one key. A soft ribbon of glowing pale lavender sparkle dust streams out of the monitor, through the window and swirls around the clients, who light up with joy, gasp and wave happily, then step away into the night. She leans back in her chair, exhales and smiles. Expressive animated performance, smooth character animation, warm lamp light. Same faces, same clothes, same room, nothing morphs. Feels playful and a little magical, a weight lifted.",
+      "use": [
+        0,
+        4.1
+      ],
+      "overlay": {
+        "lines": {
+          "lines": [
+            "Are the photos",
+            "*ready* yet?"
+          ],
+          "at": 0.2,
+          "out": 1.9,
+          "y": 330,
+          "size": 96
+        },
+        "cardAt": 3.3,
+        "toast": {
+          "title": "Gallery delivered - Hannah Reyes",
+          "sub": "64 photos"
+        }
+      }
+    },
+    {
+      "name": "a03m1",
+      "seed": 3,
+      "move": true,
+      "to": "a03diorama",
+      "prompt": "Continuous single take. The camera pulls back smoothly and quickly, up and away from the character, revealing the whole scene as a small cutaway diorama sitting on a pale lavender studio backdrop. Everyone stays exactly where they are, nobody walks, floats or grows. Only the camera moves. No cuts, no fades, no morphing, no dissolve.",
+      "speed": 1.4
+    },
+    {
+      "name": "a03diorama",
+      "seed": 21,
+      "prompt": "Very slow, very slight push-in; the whole diorama stays in frame the entire time; no zoom, no cuts. A small stylized 3D animated photographer in a cutaway dollhouse editing nook on a pale lavender backdrop leans back in her chair, stretches happily and spins the chair once; a few tiny photo prints float up and away above the room. The diorama does not change shape. Same faces, same clothes, nothing drifts. Clean pale backdrop throughout, crisp, no haze, no fog. Feels light and satisfied.",
+      "use": [
+        0,
+        4.4
+      ],
+      "overlay": {
+        "wordmark": {
+          "at": 0.7,
+          "offer": "*0%* commission. *Free* to start.",
+          "url": "snaphq.app",
+          "y": 330
+        }
+      }
+    }
+  ]
+}
