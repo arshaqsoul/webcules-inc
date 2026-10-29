@@ -4,8 +4,8 @@
   "w": 720,
   "h": 1280,
   "keyframes": {
-    "a09beach": 10702,
-    "a09diorama": 10702
+    "a09beach": 20225,
+    "a09diorama": 30600
   },
   "shots": [
     {
@@ -45,7 +45,7 @@
     {
       "name": "a09diorama",
       "seed": 63,
-      "prompt": "Very slow, very slight push-in; the whole diorama stays in frame; no zoom, no cuts. On a small diorama of a sunrise beach on a pale lavender backdrop, the tiny stylized 3D animated photographer and a tiny client in a yellow raincoat give each other a thumbs up while a small glowing lavender page flips in the air above them. The backdrop stays clean pale lavender and the sand stays warm and vivid with strong contrast and crisp detail from the first frame to the last, no haze, no fog, no mist, no fade, no bloom. Same faces, same clothes, nothing drifts.",
+      "prompt": "Very slow, very slight push-in; the whole diorama stays in frame; no zoom, no cuts. On a small diorama of a sunrise beach on a pale lavender backdrop, the tiny stylized 3D animated photographer smiles up at a small glowing lavender calendar page that flips in the air above her, then gives a little happy nod. The backdrop stays clean pale lavender and the sand stays warm and vivid with strong contrast and crisp detail from the first frame to the last, no haze, no fog, no mist, no fade, no bloom. Same face, same clothes, nothing drifts.",
       "use": [
         0,
         4.4
