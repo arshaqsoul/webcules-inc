@@ -1,6 +1,8 @@
 # Reel package: G01 - One inbox
 
-Series: Snap it. - Glass Studio. Made entirely in code (growth/motion), no recording and no generated video.
+Series: Snap it. - Glass Studio. Hybrid: keyframes and clips generated on local ComfyUI (Z-Image, Wan 2.2); every word, inbox card and the end card drawn in code (growth/motion), no recording.
+
+**Turn on Instagram's and Facebook's AI label when posting (generated footage).**
 
 ## Files
 
