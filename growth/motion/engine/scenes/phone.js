@@ -15,6 +15,7 @@
 
 import { W, seg, ease, kinetic, text, measure } from "../runtime.js";
 import { daySky } from "../decor.js";
+import { wordmark } from "../overlays.js";
 
 export default {
   render(t, dur, p, ctx) {
@@ -70,13 +71,7 @@ export default {
     });
 
     // Wordmark, offer and URL above the phone.
-    const ta = seg(t, p.tagAt ?? 1.2, (p.tagAt ?? 1.2) + 0.3);
-    f += text(W / 2, 300 + (1 - ease.outCubic(ta)) * 30, p.tagline, { size: 156, weight: 800, fill: "#0f1011", spacing: -6, opacity: ta });
-    f += kinetic(t, (p.tagAt ?? 1.2) + 0.35, [p.offer], { y: 395, size: 44, fill: "#0f1011", accent: "#5e6ad2", stagger: 0.05, weight: 700 });
-    const ua = ease.outBack(seg(t, (p.tagAt ?? 1.2) + 0.75, (p.tagAt ?? 1.2) + 1.1));
-    const pulse = 1 + 0.025 * Math.sin(Math.max(0, t - 2.5) * 4);
-    f += `<g transform="translate(${W / 2} 488) scale(${(ua * pulse).toFixed(3)})"><rect x="-200" y="-46" width="400" height="92" rx="46" fill="#17141c"/>`;
-    f += text(0, 16, p.url, { size: 44, weight: 800, fill: "#ffffff" }) + "</g>";
+    f += wordmark(t, p.tagAt ?? 1.2, { tagline: p.tagline, offer: p.offer, url: p.url });
     return { back: b, front: f, plate: p.backdrop ? ctx.asset(p.backdrop) : undefined };
   },
 

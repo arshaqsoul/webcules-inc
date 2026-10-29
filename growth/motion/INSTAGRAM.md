@@ -56,6 +56,7 @@ Proof: G01 (`episodes/G01-one-inbox`). The top third stays empty for the headlin
 |---|---|---|---|
 | **Glass Studio** (signature) | Figurines and one glass object in the lavender studio, 6 to 10 s, one Snap moment | 3 of 4 | 1 keyframe, 1 or 2 Wan clips: about 15 min of GPU |
 | **Out Here** (flagship) | Floating miniature worlds through a day or a season, 20 to 30 s, the E003 format | 1 a month | 4 to 6 clips plus moves: about 45 min of GPU |
+| **Snap it. spots** (the founder's Airbnb reference) | Stylized 3D animated characters (Laika/Pixar-like, `style_toon` and `photographerToon` in sheets.json) acting at character scale: one admin pain, a little lavender magic, the Snap card, then a pull-out to the room as a cutaway diorama on pale lavender with the "Snap it." wordmark (`wordmark` overlay, `"endcard": false`). 10 to 15 s, after Airbnb's "airbnb it." films (`C:\Users\arsha\Videos\Screen Recordings\airbnb*.mp4`). Example: `episodes/A01-just-sign/` | the lead format from A01 | 2 keyframes, 2 clips and 1 move: about 15 min of GPU |
 | **Loop** (filler) | 3 to 5 s seamless loop of a glass object, no people, the poster's object breathing | as needed | 1 clip, first frame = last frame |
 
 ## Formats (so it is never "a world" every time)
@@ -100,7 +101,7 @@ Then write the director's brief in plain language (Kaye rule 2) and let the agen
 | G12 | Tiny shoot | Galleries | pet | Five galleries, *free*. | Client opened their gallery |
 | S03 (made) | Out Here | Galleries | engagement | Shot today. *Delivered* tonight. | Gallery delivered - Priya & Sam; Client opened their gallery for the first time |
 
-Made so far (episode folder with a package): G01, G02, G11 (as S01 A Day Out Here), and S02 The Season (Out Here, E005 in SERIES.md: spring, summer, fall and winter worlds; New inquiry - Ana & Leo, New booking - Hannah Reyes, Contract signed - Cabin session, Invoice INV-0058 paid; hook "Spend the year *out here.*").
+Made so far (episode folder with a package): A01 I wish they'd just sign (Snap it. spot; Contract signed - Wedding agreement), G01, G02, G11 (as S01 A Day Out Here), and S02 The Season (Out Here, E005 in SERIES.md: spring, summer, fall and winter worlds; New inquiry - Ana & Leo, New booking - Hannah Reyes, Contract signed - Cabin session, Invoice INV-0058 paid; hook "Spend the year *out here.*").
 
 Names, numbers and plan limits in cards and hooks must pass `render.mjs check` against `apps/snap` before production; adjust the line, not the code, if a claim does not hold.
 

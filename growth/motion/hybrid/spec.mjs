@@ -44,9 +44,10 @@ for (const [i, s] of clips.shots.entries()) {
 }
 
 // The end card: the Snap app on a phone in the glass studio, the day's inbox filling in.
+// "endcard": false for a Snap it. spot, which ends on its own diorama with a wordmark overlay instead.
 const ec = ep.endcard ?? {};
-const endDur = ec.dur ?? 3.3;
-scenes.push({
+const endDur = ec === false ? 0 : ec.dur ?? 3.3;
+if (ec !== false) scenes.push({
   type: "phone", at: r3(t), dur: endDur,
   props: {
     tagline: "Snap it.", offer: "*0%* commission. *Free* to start.", url: "snaphq.app", logo: LOGO, title: "Inbox",
@@ -60,8 +61,9 @@ scenes[0].props.padFor = total;
 
 // Stills to look at: the cover, each shot after its moment lands, the end card.
 const stills = [0];
-for (const sc of scenes.slice(0, -1)) if (!clips.shots.find((s) => sc.props.frames.includes(`/frames/${s.name}/`)).move) stills.push(r3(sc.at + Math.min(2.4, sc.dur - 0.2)));
-stills.push(r3(t + 1.2), r3(total - 0.2));
+for (const sc of scenes.filter((x) => x.type === "clip")) if (!clips.shots.find((s) => sc.props.frames.includes(`/frames/${s.name}/`)).move) stills.push(r3(sc.at + Math.min(2.4, sc.dur - 0.2)));
+if (endDur) stills.push(r3(t + 1.2));
+stills.push(r3(total - 0.2));
 
 const pain = ep.pain ?? read(path.join(MOTION, "episodes", ep.painFrom, "spec.json")).pain;
 const spec = { id: ep.id, title: ep.title, series: ep.series, brand: ep.brand ?? "snap", fps: 30, duration: total, cover: ep.cover ?? 0, stills, pain, claims: ep.claims, scenes, caption: ep.caption, hashtags: ep.hashtags, ad: ep.ad };

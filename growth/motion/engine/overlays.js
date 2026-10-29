@@ -1,7 +1,7 @@
 // The Snap moments drawn over any picture: the time chip and the inbox card.
 // Shared by the 3D world and the generated-clip scenes, so both read the same.
 
-import { W, seg, ease, text, measure } from "./runtime.js";
+import { W, seg, ease, text, measure, kinetic } from "./runtime.js";
 
 const DOTS = ["#ffb000", "#f26a4d", "#ff8fb1", "#7a5cff"];
 
@@ -93,4 +93,21 @@ export function poster(t, ctx, brand, p) {
   f += `<rect x="${x0}" y="1440" width="${bw}" height="100" rx="50" fill="${th.button}"/>`;
   f += text(x0 + bw / 2, 1503, cta, { size: 38, weight: 600, fill: th.buttonInk });
   return f + "</g>";
+}
+
+/**
+ * The wordmark block: "Snap it.", the offer and the URL pill, landing from `at`, centred on y.
+ * The phone end card puts it above the phone; the "Snap it." spots put it above the closing diorama.
+ */
+export function wordmark(t, at, { tagline = "Snap it.", offer, url, y = 300 }) {
+  const ta = seg(t, at, at + 0.3);
+  let f = text(W / 2, y + (1 - ease.outCubic(ta)) * 30, tagline, { size: 156, weight: 800, fill: "#0f1011", spacing: -6, opacity: ta });
+  if (offer) f += kinetic(t, at + 0.35, [offer], { y: y + 95, size: 44, fill: "#0f1011", accent: "#5e6ad2", stagger: 0.05, weight: 700 });
+  if (url) {
+    const ua = ease.outBack(seg(t, at + 0.75, at + 1.1));
+    const pulse = 1 + 0.025 * Math.sin(Math.max(0, t - at - 1.3) * 4);
+    f += `<g transform="translate(${W / 2} ${y + 188}) scale(${(ua * pulse).toFixed(3)})"><rect x="-200" y="-46" width="400" height="92" rx="46" fill="#17141c"/>`;
+    f += text(0, 16, url, { size: 44, weight: 800, fill: "#ffffff" }) + "</g>";
+  }
+  return f;
 }

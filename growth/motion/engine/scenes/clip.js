@@ -15,10 +15,11 @@
 //   poster   { brand, kicker, headline: [lines], cta, out }   frame 0 drawn as the grid tile (overlays.js poster)
 //   cardAt   local seconds the inbox card drops (default flash + 0.35)
 //   lines    { lines, at, out, y, size }   a kinetic headline over the clip (the hook, the closing line)
+//   wordmark { at, offer, url, y }   "Snap it." over the clip (the closing diorama of a Snap it. spot)
 //   lift     px to draw the clip higher, its floor stretched below (needs a static camera)
 
 import { seg, kinetic } from "../runtime.js";
-import { chip, inboxCard, poster } from "../overlays.js";
+import { chip, inboxCard, poster, wordmark } from "../overlays.js";
 
 const brands = {};
 
@@ -54,6 +55,7 @@ export default {
     if (p.chip) f += chip(t, 0, dur, p.chip, p.index ?? 0);
     if (p.lines) f += headline(t, p.lines);
     if (p.toast) f += inboxCard(t, p.cardAt ?? p.flash + 0.35, dur, ctx, p.logo, p.toast);
+    if (p.wordmark) f += wordmark(t, p.wordmark.at ?? 0.6, p.wordmark);
     if (p.poster) f += poster(t, ctx, brands[p.poster.brand], p.poster);
     return { plate: p.lift ? { src: plate, lift: p.lift } : plate, front: f };
   },
@@ -65,6 +67,7 @@ export default {
     if (p.lines) p.lines.lines.join(" ").split(" ").forEach((_, i) => c.push({ t: (p.lines.at ?? 0.2) + i * 0.09, kind: "tick", gain: 0.45 }));
     if (p.flash != null) c.push({ t: p.flash, kind: "shutter", gain: 0.9 });
     if (p.toast) c.push({ t: p.cardAt ?? p.flash + 0.35, kind: "chime", gain: 0.5, note: 78 });
+    if (p.wordmark) c.push({ t: p.wordmark.at ?? 0.6, kind: "pop", gain: 0.5 });
     return c;
   },
 };
