@@ -1,0 +1,89 @@
+{
+  "id": "S03",
+  "title": "Delivered",
+  "series": "Snap it. - Out Here",
+  "brand": "snap",
+  "cover": 1.2,
+  "caption": "Shot today. Delivered tonight.\n\nA rooftop engagement session at 6:30. A quiet night of editing at 11:40. And by 8 the next morning, Priya and Sam are on their sofa opening their gallery.\nWhen you deliver a gallery in Snap, it lands in your inbox as gallery delivered, and you see the moment your client opens it for the first time.\nSnap takes 0% commission.\n\nIt is not magic: you still shoot, edit and send the gallery yourself. Snap just keeps the delivery and the first open in one place.\n\nStart free at snaphq.app",
+  "hashtags": [
+    "#photographerlife",
+    "#dayinthelife",
+    "#engagementphotographer",
+    "#weddingphotographer",
+    "#clientgallery",
+    "#photographybusiness",
+    "#photographerworkflow"
+  ],
+  "ad": {
+    "primary_text": "Shot today, delivered tonight. Send the gallery from Snap and see the moment your client opens it. 0% commission.",
+    "headline": "Snap it.",
+    "description": "Free to start at snaphq.app",
+    "cta_button": "Sign Up",
+    "placements": [
+      "instagram_reels",
+      "facebook_reels",
+      "instagram_stories",
+      "facebook_stories"
+    ]
+  },
+  "claims": [
+    {
+      "text": "Gallery delivered event lands in the Snap inbox",
+      "source": "apps/snap/lib/shares/notify.ts",
+      "match": "Gallery delivered"
+    },
+    {
+      "text": "Client opened their gallery for the first time event lands in the Snap inbox",
+      "source": "apps/snap/lib/shares/gallery-auth.ts",
+      "match": "Client opened their gallery for the first time"
+    },
+    {
+      "text": "Invoice paid event; payment goes into your own Stripe",
+      "source": "apps/snap/lib/invoices.ts",
+      "match": "money landed"
+    },
+    {
+      "text": "Clients pay through your own Stripe",
+      "source": "apps/snap/lib/connect.ts",
+      "match": "the photographer's own Stripe account"
+    },
+    {
+      "text": "Unified inbox on the Free plan",
+      "source": "apps/snap/lib/tier-cards.ts",
+      "match": "Unified inbox"
+    },
+    {
+      "text": "0% commission",
+      "source": "apps/snap/lib/connect.ts",
+      "match": "No application_fee_amount, ever."
+    },
+    {
+      "text": "Free to start (Free plan, $0)",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "id: \"free\", name: \"Free\", priceMonthlyUsd: 0"
+    }
+  ],
+  "painFrom": "E003-a-day-out-here",
+  "endcard": {
+    "rows": [
+      {
+        "title": "Gallery delivered - Priya & Sam",
+        "sub": "48 photos",
+        "time": "11:52 PM",
+        "color": "#7a5cff"
+      },
+      {
+        "title": "Client opened their gallery for the first time",
+        "sub": "Priya & Sam",
+        "time": "8:14 AM",
+        "color": "#ffb000"
+      },
+      {
+        "title": "Invoice INV-0043 paid",
+        "sub": "Into your own Stripe",
+        "time": "8:31 AM",
+        "color": "#ff6fa0"
+      }
+    ]
+  }
+}

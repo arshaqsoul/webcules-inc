@@ -98,6 +98,7 @@ Then write the director's brief in plain language (Kaye rule 2) and let the agen
 | G10 | Client POV | Downloads | family | One click. *Every* photo. | Client opened their gallery |
 | G11 | Out Here | all four | day | Spend the day *out here*. | four cards (E003) |
 | G12 | Tiny shoot | Galleries | pet | Five galleries, *free*. | Client opened their gallery |
+| S03 (made) | Out Here | Galleries | engagement | Shot today. *Delivered* tonight. | Gallery delivered - Priya & Sam; Client opened their gallery for the first time |
 
 Made so far (episode folder with a package): G01, G02, G11 (as S01 A Day Out Here), and S02 The Season (Out Here, E005 in SERIES.md: spring, summer, fall and winter worlds; New inquiry - Ana & Leo, New booking - Hannah Reyes, Contract signed - Cabin session, Invoice INV-0058 paid; hook "Spend the year *out here.*").
 
