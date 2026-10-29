@@ -32,11 +32,13 @@ export function inboxCard(t, tt0, s1, ctx, logo, { title, sub }) {
 function toast(ctx, logo, y, title, sub, a) {
   const x = 70;
   const w = 940;
+  // Real event titles can be long ("Client opened their gallery for the first time"): shrink to fit the card, never below 30 px.
+  const tsize = Math.max(30, Math.min(40, Math.floor(40 * 740 / Math.max(1, measure(title, 40, 800)))));
   return `<g opacity="${a.toFixed(3)}" transform="translate(0 ${y.toFixed(1)})">`
     + `<rect x="${x}" y="0" width="${w}" height="176" rx="40" fill="#ffffff" fill-opacity="0.96"/>`
     + `<image href="${ctx.asset(logo)}" x="${x + 32}" y="34" width="108" height="108"/>`
     + text(x + 168, 62, "SNAP INBOX  ·  now", { size: 24, weight: 800, fill: "#7a6a8c", anchor: "start", spacing: 2 })
-    + text(x + 168, 110, title, { size: 40, weight: 800, fill: "#1d1430", anchor: "start" })
+    + text(x + 168, 110, title, { size: tsize, weight: 800, fill: "#1d1430", anchor: "start" })
     + text(x + 168, 150, sub, { size: 30, weight: 500, fill: "#5a4a6c", anchor: "start" })
     + `</g>`;
 }

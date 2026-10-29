@@ -98,6 +98,7 @@ Then write the director's brief in plain language (Kaye rule 2) and let the agen
 | G10 | Client POV | Downloads | family | One click. *Every* photo. | Client opened their gallery |
 | G11 | Out Here | all four | day | Spend the day *out here*. | four cards (E003) |
 | G12 | Tiny shoot | Galleries | pet | Five galleries, *free*. | Client opened their gallery |
+| S03 (made) | Out Here | Galleries | engagement | Shot today. *Delivered* tonight. | Gallery delivered - Priya & Sam; Client opened their gallery for the first time |
 
 Names, numbers and plan limits in cards and hooks must pass `render.mjs check` against `apps/snap` before production; adjust the line, not the code, if a claim does not hold.
 
