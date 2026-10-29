@@ -1,0 +1,52 @@
+{
+  "id": "A07",
+  "title": "I wish minis booked themselves",
+  "series": "Snap it. - the wish",
+  "brand": "snap",
+  "cover": 1.2,
+  "caption": "I wish minis booked themselves.\n\nThey don't, but clients pick a slot on your booking page while you are shooting, and \"New booking\" lands in your Snap inbox.\nOne session type on the Free plan, 0% commission.\n\nIt is not magic: you still show up with the camera. Snap just fills the inbox.\n\nStart free at snaphq.app",
+  "hashtags": [
+    "#minisessions",
+    "#familyphotographer",
+    "#holidayminis",
+    "#photographybusiness",
+    "#photographerlife",
+    "#photographerworkflow"
+  ],
+  "ad": {
+    "primary_text": "Clients book a slot on your Snap booking page and \"New booking\" lands in your inbox. 0% commission, free to start.",
+    "headline": "I wish minis booked themselves.",
+    "description": "Free to start at snaphq.app",
+    "cta_button": "Sign Up",
+    "placements": [
+      "instagram_reels",
+      "facebook_reels",
+      "instagram_stories",
+      "facebook_stories"
+    ]
+  },
+  "claims": [
+    {
+      "text": "New booking - {client} lands in the Snap inbox",
+      "source": "apps/snap/lib/repos/bookings.ts",
+      "match": "eventType: \"booking.created\""
+    },
+    {
+      "text": "Clients book from your booking page, one session type on the Free plan",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "maxSessionTypes: 1"
+    },
+    {
+      "text": "0% commission",
+      "source": "apps/snap/lib/connect.ts",
+      "match": "No application_fee_amount, ever."
+    },
+    {
+      "text": "Free to start (Free plan, $0)",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "id: \"free\", name: \"Free\", priceMonthlyUsd: 0"
+    }
+  ],
+  "painFrom": "E003-a-day-out-here",
+  "endcard": false
+}
