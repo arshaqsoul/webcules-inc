@@ -1,0 +1,185 @@
+{
+  "about": "S02 shot list for hybrid/run-clips.mjs, frames.mjs and spec.mjs. A shot animates out/S02/<name>.png from <name>.keyframe.txt; a move (33 frames) flies from the frame where the previous shot is cut to the next shot's keyframe (Wan first-last-frame). Shot names carry the s02 prefix so their ComfyUI uploads (growth-<name>.png) never collide with another episode's.",
+  "dir": "out/S02",
+  "w": 720,
+  "h": 1280,
+  "keyframes": {
+    "s02open": 2002,
+    "s02spring": 2103,
+    "s02summer": 2202,
+    "s02fall": 1011,
+    "s02winter": 2411,
+    "s02finale": 2413
+  },
+  "shots": [
+    {
+      "name": "s02open",
+      "seed": 21,
+      "prompt": "Continuous single take. A very slow gentle drift forward through a bright morning sky, no zoom, no cuts. Four tiny floating miniature islands, one for each season, hang among soft clouds and bob very gently up and down: pink blossom trees, a golden beach, orange autumn trees, a snowy cabin. The clouds drift slowly past; a few birds glide far away. Soft morning sunlight. Crisp, vivid colours and clear contrast throughout, no haze, no fog, no fade, no mist. Tilt-shift miniature diorama, calm and full of wonder.",
+      "use": [
+        0,
+        2.7
+      ],
+      "overlay": {
+        "lines": {
+          "lines": [
+            "Spend the year",
+            "*out here.*"
+          ],
+          "at": 0.25,
+          "out": -0.35,
+          "y": 470,
+          "size": 108
+        }
+      }
+    },
+    {
+      "move": true,
+      "name": "s02m1",
+      "seed": 3,
+      "to": "s02spring",
+      "prompt": "Continuous single take. The camera glides smoothly forward through the soft morning clouds toward one small floating island with pale-pink cherry blossom trees, and settles on it. The tiny figurines stay exactly where they are on their islands, frozen in place: nobody walks, runs, jumps, floats or leaves an island, nobody grows or shrinks. Only the camera moves. No cuts, no fades, no morphing. One smooth camera move. Tilt-shift miniature diorama.",
+      "speed": 1.4
+    },
+    {
+      "name": "s02spring",
+      "seed": 32,
+      "prompt": "Continuous single take. Very slow, very slight push-in; the whole island stays in frame the entire time; no zoom, no cuts. A tiny spring park on a floating island at 9 AM. Under the pink cherry blossom trees the engaged couple, the woman with long wavy black hair in a dusty-rose wrap dress and the man in a light blue oxford shirt, hold hands, she laughs and leans her head on his shoulder. The photographer, a woman with a salt-and-pepper bun, glasses and a charcoal gilet, holds her tan camera to her eye and presses the shutter. A light breeze: pale-pink petals drift down slowly and swirl across the lawn, the blossom branches sway softly, the clouds below drift. Fresh spring morning light. Crisp, vivid colours and clear contrast throughout, no haze, no fog, no fade, no mist. Same faces, same clothes, nothing drifts. Feels fresh, hopeful and tender.",
+      "use": [
+        0,
+        3.9
+      ],
+      "overlay": {
+        "chip": [
+          "April",
+          "Engagement session"
+        ],
+        "flash": 1.5,
+        "cardAt": 1.85,
+        "toast": {
+          "title": "New inquiry - Ana & Leo",
+          "sub": "from your contact form"
+        },
+        "index": 0
+      }
+    },
+    {
+      "move": true,
+      "name": "s02m2",
+      "seed": 19,
+      "to": "s02summer",
+      "prompt": "Continuous single take. The camera tilts down and sinks smoothly through the sky: the small floating spring blossom island slides up and out of the top of the frame, for a moment only soft clouds pass by, then a separate small floating island of golden beach with turquoise water, a driftwood arch and a striped parasol rises into the frame from below and settles in the middle, as the light grows brighter and warmer from spring to summer. The tiny figurines stay exactly where they are on their islands, frozen in place: nobody walks, runs, jumps, floats or leaves an island, nobody grows or shrinks. Only the camera moves. No cuts, no fades, no morphing. The blossom island never turns into the beach island; two separate islands in the same sky, one above the other. Tilt-shift miniature diorama.",
+      "speed": 1.4
+    },
+    {
+      "name": "s02summer",
+      "seed": 7,
+      "prompt": "Continuous single take. Very slow, very slight push-in; the whole island stays in frame the entire time; no zoom, no cuts. A tiny beach elopement on a floating island in high summer. Under the driftwood arch the barefoot couple, the woman with long dark hair in a white linen dress and the man in a white linen shirt, hold both hands and he kisses her forehead; the white fabric on the arch flutters in the sea breeze. The photographer, a woman with a salt-and-pepper bun, glasses and a charcoal gilet, holds her tan camera to her eye and presses the shutter. Small foamy waves lap gently on the sand, the water sparkles, the sea grass sways, the clouds below drift. Bright warm summer sun. Crisp, vivid colours and clear contrast throughout, no haze, no fog, no fade, no mist. Same faces, same clothes, nothing drifts. Feels free, sunny and joyful.",
+      "use": [
+        0,
+        3.9
+      ],
+      "overlay": {
+        "chip": [
+          "July",
+          "Beach elopement"
+        ],
+        "flash": 1.5,
+        "cardAt": 1.85,
+        "toast": {
+          "title": "New booking - Hannah Reyes",
+          "sub": "from your booking page"
+        },
+        "index": 1
+      }
+    },
+    {
+      "move": true,
+      "name": "s02m3",
+      "seed": 3,
+      "to": "s02fall",
+      "prompt": "Continuous single take. The camera lifts up and away from the small floating summer beach island, flies smoothly across the sky through soft clouds as the light turns from bright summer to warm autumn, and glides down to a small floating island of autumn trees with a family on a picnic blanket. The tiny figurines stay exactly where they are on their islands, frozen in place: nobody walks, runs, jumps, floats or leaves an island, nobody grows or shrinks. Only the camera moves. No cuts, no fades, no morphing. One smooth arcing camera move; two separate islands in the same sky. Tilt-shift miniature diorama.",
+      "speed": 1.4
+    },
+    {
+      "name": "s02fall",
+      "seed": 7,
+      "prompt": "Continuous single take. Slow gentle push-in toward the picnic blanket, the camera drifting slightly to the right, no zoom, no cuts. A tilt-shift miniature diorama of a small floating autumn island in the sky. On the red gingham blanket a young family of four laughs together: the mother in a mustard cardigan leans back laughing, the father in a rust flannel shirt tickles the little boy in navy dungarees, the girl in a red corduroy dress claps, and the golden retriever puppy wags its tail and hops. The photographer, a woman with a salt-and-pepper bun, glasses and a charcoal gilet, stands on the grass holding her tan camera to her eye and presses the shutter. A light breeze: orange and yellow maple leaves drift down slowly and tumble across the grass, the tree branches sway softly, the clouds below drift. Warm 1 PM autumn sunlight with dappled leaf shadows. Same faces, same clothes, nothing drifts. Feels joyful, warm and handmade.",
+      "use": [
+        0,
+        3.9
+      ],
+      "overlay": {
+        "chip": [
+          "October",
+          "Fall family photos"
+        ],
+        "flash": 1.5,
+        "cardAt": 1.85,
+        "toast": {
+          "title": "Contract signed - Cabin session",
+          "sub": "signed in their browser"
+        },
+        "index": 2
+      }
+    },
+    {
+      "move": true,
+      "name": "s02m4",
+      "seed": 7,
+      "to": "s02winter",
+      "prompt": "Continuous single take. The camera tilts down and sinks smoothly through the sky: the small floating autumn island slides up and out of the top of the frame, for a moment only soft clouds pass by, then a separate small floating snowy island with a log cabin with glowing windows and snow-laden pine trees rises into the frame from below and settles in the middle, as the warm autumn light cools to a soft blue winter afternoon and snowflakes begin to fall. The tiny figurines stay exactly where they are on their islands, frozen in place: nobody walks, runs, jumps, floats or leaves an island, nobody grows or shrinks. Only the camera moves. No cuts, no fades, no morphing. The autumn island never turns into the snowy island; two separate islands in the same sky, one above the other. Tilt-shift miniature diorama.",
+      "speed": 1.4
+    },
+    {
+      "name": "s02winter",
+      "seed": 24,
+      "prompt": "Continuous single take. Very slow, very slight push-in; the whole island stays in frame the entire time; no zoom, no cuts. A tiny winter cabin on a floating island at blue hour. In the snow by the porch the woman in a cream beanie, camel coat and tartan scarf kneels and hugs her fluffy black, white and rust Bernese mountain dog, the dog wags its tail and nuzzles her cheek, she laughs. The photographer, a woman with a salt-and-pepper bun, glasses and a charcoal gilet, holds her tan camera to her eye and presses the shutter. Large soft snowflakes drift down slowly, a thin curl of smoke rises from the chimney, the windows and porch lights glow warm, the clouds below drift. Cool blue and lilac winter light with warm golden window glow. Crisp, vivid colours and clear contrast throughout, no haze, no fog, no fade, no mist. Same faces, same clothes, nothing drifts. Feels cosy, quiet and warm.",
+      "use": [
+        0,
+        3.9
+      ],
+      "overlay": {
+        "chip": [
+          "December",
+          "Winter cabin session"
+        ],
+        "flash": 1.5,
+        "cardAt": 1.85,
+        "toast": {
+          "title": "Invoice INV-0058 paid",
+          "sub": "into your own Stripe"
+        },
+        "index": 3
+      }
+    },
+    {
+      "move": true,
+      "name": "s02m5",
+      "seed": 3,
+      "to": "s02finale",
+      "prompt": "Continuous single take. The camera pulls slowly up and back from the small floating snowy cabin island, rising into the twilight sky until four small glowing floating islands are all in view among violet clouds. The tiny figurines stay exactly where they are on their islands, frozen in place: nobody walks, runs, jumps, floats or leaves an island, nobody grows or shrinks. Only the camera moves. No cuts, no fades, no morphing. One smooth pull-back. Tilt-shift miniature diorama.",
+      "speed": 1.4
+    },
+    {
+      "name": "s02finale",
+      "seed": 25,
+      "prompt": "Continuous single take. A very slow gentle pull-back, no zoom, no cuts. Four tiny floating islands, one for each season, float calmly in a clear twilight sky above violet clouds, their tiny warm lights glowing softly and steadily: a lantern under blossom trees, a small campfire on a beach, a lantern by autumn trees, the windows of a snowy cabin. The islands bob very gently and the clouds drift slowly. The sky stays clean and smooth the whole time: nothing falls, no rain, no sparks, no streaks, no flames flaring up. Crisp, vivid colours and clear contrast throughout, no haze, no fog, no fade, no mist. Feels peaceful, a whole year well spent.",
+      "use": [
+        0,
+        3.4
+      ],
+      "overlay": {
+        "lines": {
+          "lines": [
+            "Your clients inquire, book,",
+            "sign and pay in *Snap.*"
+          ],
+          "at": 0.3,
+          "y": 470,
+          "size": 76
+        }
+      }
+    }
+  ]
+}

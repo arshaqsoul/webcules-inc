@@ -10,7 +10,7 @@
 //                 lift, index. lines.out below 0 counts back from the shot's end.
 //   episode.json  id, title, series, brand, caption, hashtags, ad, claims; pain (or painFrom: another
 //                 episode folder to borrow its evidence); endcard { rows: [{ title, sub, time, color }],
-//                 dur, backdrop }.
+//                 dur, backdrop, section (the inbox list header, default "TODAY") }.
 // and out/<ID>/frames/counts.json from frames.mjs for the timing.
 
 import fs from "node:fs";
@@ -51,6 +51,7 @@ scenes.push({
   props: {
     tagline: "Snap it.", offer: "*0%* commission. *Free* to start.", url: "snaphq.app", logo: LOGO, title: "Inbox",
     backdrop: ec.backdrop ?? "growth/motion/assets/endcard/glass.jpg", tagAt: ec.tagAt ?? 0.85,
+    ...(ec.section ? { section: ec.section } : {}),
     rows: (ec.rows ?? []).map((row, k) => ({ at: r3(0.3 + 0.12 * k), ...row })),
   },
 });

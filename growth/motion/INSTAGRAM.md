@@ -99,6 +99,8 @@ Then write the director's brief in plain language (Kaye rule 2) and let the agen
 | G11 | Out Here | all four | day | Spend the day *out here*. | four cards (E003) |
 | G12 | Tiny shoot | Galleries | pet | Five galleries, *free*. | Client opened their gallery |
 
+Made so far (episode folder with a package): G01, G02, G11 (as S01 A Day Out Here), and S02 The Season (Out Here, E005 in SERIES.md: spring, summer, fall and winter worlds; New inquiry - Ana & Leo, New booking - Hannah Reyes, Contract signed - Cabin session, Invoice INV-0058 paid; hook "Spend the year *out here.*").
+
 Names, numbers and plan limits in cards and hooks must pass `render.mjs check` against `apps/snap` before production; adjust the line, not the code, if a claim does not hold.
 
 ## Posting rhythm

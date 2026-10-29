@@ -8,6 +8,7 @@
 //   url      "snaphq.app"
 //   logo     repo path to the Snap mark
 //   title    "Inbox"
+//   section  the list header above the rows (default "TODAY"; a season reel says "THIS YEAR")
 //   rows     [{ title, sub, time, color, at }]   at = local seconds the row slides in
 //   backdrop repo path of a 1080x1920 still behind the phone (assets/endcard/glass.jpg, the glass studio);
 //            without it, the cartoon day sky (E001-E003)
@@ -43,7 +44,7 @@ export default {
       f += text(cx + w / 2, py + 260, c, { size: 26, weight: 700, fill: i === 0 ? "#ffffff" : "#4a4d63" });
       cx += w + 14;
     });
-    f += text(px + 52, py + 336, "TODAY", { size: 24, weight: 800, fill: "#8a8a96", anchor: "start", spacing: 3 });
+    f += text(px + 52, py + 336, p.section ?? "TODAY", { size: 24, weight: 800, fill: "#8a8a96", anchor: "start", spacing: 3 });
     // The day's events, one by one.
     p.rows.forEach((r, i) => {
       const a = seg(t, r.at, r.at + 0.3);

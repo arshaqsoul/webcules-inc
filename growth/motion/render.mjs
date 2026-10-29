@@ -203,9 +203,14 @@ function packageEpisode(id) {
   if (!existsSync(join(d, "reel.mp4")) || !existsSync(qcFile)) throw new Error("render first: node growth/motion/render.mjs render " + s.id);
   const q = JSON.parse(readFileSync(qcFile, "utf8"));
   if (q.checks.some((c) => !c.pass)) throw new Error("qc failed; fix before packaging");
+  // Hybrid reels (clip scenes) carry generated footage; the founder must turn on the platform's AI label.
+  const hybrid = s.scenes.some((sc) => sc.type === "clip");
+  const made = hybrid
+    ? "Hybrid: keyframes and clips generated on local ComfyUI (Z-Image, Wan 2.2); every word, inbox card and the end card drawn in code (growth/motion), no recording.\n\n**Turn on Instagram's and Facebook's AI label when posting (generated footage).**"
+    : "Made entirely in code (growth/motion), no recording and no generated video.";
   const md = `# Reel package: ${s.id} - ${s.title}
 
-Series: ${s.series}. Made entirely in code (growth/motion), no recording and no generated video.
+Series: ${s.series}. ${made}
 
 ## Files
 
