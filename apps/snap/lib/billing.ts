@@ -94,7 +94,7 @@ async function ensureFoundingOffer(stripe: Stripe, liteProductId: string): Promi
     const pcCoupon = (pc?.promotion as { coupon?: string | { id?: string } } | undefined)?.coupon;
     const pcCouponId = typeof pcCoupon === "string" ? pcCoupon : pcCoupon?.id;
     console.log(
-      `billing: founding-offer state: coupon=${coupon.id} code=${pc ? pc.id : "none"} active=${pc ? String(pc.active) : "-"} codeCoupon=${pcCouponId ?? "-"}`,
+      `billing: founding-offer state: coupon=${coupon.id} pc=${pc ? JSON.stringify(pc).slice(0, 700) : "none"}`,
     );
     if (pc && pcCouponId === coupon.id) {
       // Ours — heal a deactivated code instead of crashing into the catch.
