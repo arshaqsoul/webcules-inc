@@ -89,9 +89,11 @@ async function ensureFoundingOffer(stripe: Stripe, liteProductId: string): Promi
       expand: ["data.promotion.coupon"],
     });
     const pc = promo.data[0];
-    // The REST payload has been observed omitting `promotion` on list results,
-    // which crashed every re-run here (WEBC-127 QA) — read defensively.
-    const pcCoupon = (pc?.promotion as { coupon?: string | { id?: string } } | undefined)?.coupon;
+    // This API version embeds the coupon at `pc.coupon`; older ones used
+    // `pc.promotion.coupon` (whose absence crashed every re-run here —
+    // WEBC-127 QA). Read both, defensively.
+    const raw = pc as unknown as { coupon?: string | { id?: string }; promotion?: { coupon?: string | { id?: string } } };
+    const pcCoupon = raw.coupon ?? raw.promotion?.coupon;
     const pcCouponId = typeof pcCoupon === "string" ? pcCoupon : pcCoupon?.id;
     console.log(
       `billing: founding-offer state: coupon=${coupon.id} pc=${pc ? JSON.stringify(pc).slice(0, 700) : "none"}`,
