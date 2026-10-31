@@ -53,7 +53,14 @@ async function ensurePrice(stripe: Stripe, planId: PlanId): Promise<Stripe.Price
  * Ensured idempotently like the prices: the worker holds the Stripe key, so
  * the coupon + customer-facing code FOUNDING are found-or-created on first
  * use, never manually in the dashboard. Failures never block checkout —
- * `allow_promotion_codes` just shows the field. */
+ * the session just falls back to `allow_promotion_codes`.
+ *
+ * The coupon is APPLIED SERVER-SIDE on Lite checkouts (`discounts: […]`):
+ * live-mode Checkout refuses to redeem the typed FOUNDING code even though
+ * every API check says it is redeemable (WEBC-127 prod, Oct 31 2026), so
+ * the promo-code box is gone from Lite — the discount just shows up. The
+ * founder-approved fallback; the same coupon caps/enforces the 20-studio /
+ * Nov 30 limits, and the gate below re-checks them before applying. */
 const FOUNDING_OFFER = {
   /** Customer-facing promo code. */
   code: "FOUNDING",
@@ -64,7 +71,11 @@ const FOUNDING_OFFER = {
   redeemBy: Math.floor(Date.UTC(2026, 10, 30, 23, 59, 59) / 1000),
 };
 
-async function ensureFoundingOffer(stripe: Stripe, liteProductId: string): Promise<void> {
+/** Find-or-create the founding coupon + promotion code (idempotent) and
+ * return the LIVE coupon — the caller gates the auto-applied discount on its
+ * `times_redeemed` / `redeem_by`. Null = Stripe failed; checkout must then
+ * fall back to the typed promo-code field instead of a server-side discount. */
+async function ensureFoundingOffer(stripe: Stripe, liteProductId: string): Promise<Stripe.Coupon | null> {
   try {
     const coupons = await stripe.coupons.list({ limit: 100 });
     // One-shot diagnostic: everything the live account holds that could
@@ -107,7 +118,7 @@ async function ensureFoundingOffer(stripe: Stripe, liteProductId: string): Promi
     if (pc && pcCouponId === coupon.id) {
       // Ours — heal a deactivated code instead of crashing into the catch.
       if (!pc.active) await stripe.promotionCodes.update(pc.id, { active: true });
-      return;
+      return coupon;
     }
     try {
       await stripe.promotionCodes.create({
@@ -121,8 +132,12 @@ async function ensureFoundingOffer(stripe: Stripe, liteProductId: string): Promi
         `billing: FOUNDING is held by promotion code ${pc?.id ?? "?"} (active=${pc ? String(pc.active) : "?"}, coupon=${pcCouponId ?? "none"}) — repair it in the Stripe dashboard: ${String(err)}`,
       );
     }
+    // The coupon is fine even when the code couldn't be ensured — the
+    // server-side discount path never needs the typed code.
+    return coupon;
   } catch (err) {
     console.error("billing: founding-offer ensure failed:", String(err));
+    return null;
   }
 }
 
@@ -299,16 +314,33 @@ export async function createPlanCheckout(
 
   const price = await ensurePrice(stripe, planId);
   if (!price) return { url: null, mode: "swapped" };
-  // WEBC-127: promo codes at checkout; the FOUNDING offer is ensured before
-  // the user reaches the Stripe page so the code exists when they type it.
+  // WEBC-127: the FOUNDING offer is ensured before the user reaches Stripe.
+  // On Lite the coupon is applied server-side (live Checkout rejects the
+  // typed code — see ensureFoundingOffer); the gate re-checks the live cap
+  // and expiry so an exhausted/expired offer falls back to the promo-code
+  // field. Studio/Pro keep the typed field; FOUNDING never applies there.
   const productId =
     typeof price.product === "string" ? price.product : (price.product?.id ?? null);
-  if (planId === "lite" && productId) await ensureFoundingOffer(stripe, productId);
+  let foundingDiscount: { coupon: string } | null = null;
+  if (planId === "lite" && productId) {
+    const coupon = await ensureFoundingOffer(stripe, productId);
+    const nowSec = Math.floor(Date.now() / 1000);
+    if (
+      coupon &&
+      coupon.times_redeemed < FOUNDING_OFFER.maxRedemptions &&
+      (!coupon.redeem_by || nowSec < coupon.redeem_by)
+    ) {
+      foundingDiscount = { coupon: coupon.id };
+    }
+  }
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     customer: customerId,
     line_items: [{ price: price.id, quantity: 1 }],
-    allow_promotion_codes: true,
+    // Checkout takes `discounts` OR `allow_promotion_codes` — never both.
+    ...(foundingDiscount
+      ? { discounts: [foundingDiscount] }
+      : { allow_promotion_codes: true }),
     subscription_data: { metadata: { organizationId, plan: planId } },
     metadata: { organizationId, plan: planId, kind: "plan_checkout" },
     success_url: `${baseUrl}/dashboard/settings/billing?return=1`,

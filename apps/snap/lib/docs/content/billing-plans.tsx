@@ -17,9 +17,9 @@ export default function BillingPlans() {
       </p>
 
       <Note>
-        <strong>Founding offer:</strong> Lite for $5/mo for your first 3 months — use code{" "}
-        <strong>FOUNDING</strong> at checkout. Limited to the first 20 studios, offer ends
-        November 30, 2026.
+        <strong>Founding offer:</strong> Lite for $5/mo for your first 3 months — the discount
+        is applied automatically at checkout, no code to enter. Limited to the first 20
+        studios, offer ends November 30, 2026.
       </Note>
 
       <Shot

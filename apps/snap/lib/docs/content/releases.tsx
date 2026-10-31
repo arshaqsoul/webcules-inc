@@ -38,6 +38,16 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.33.0" date="October 31, 2026">
+        <p>
+          <strong>The Founding Studio offer is now automatic.</strong>{" "}
+          Starting Lite no longer asks you to type a promotion code — pick Lite on the
+          billing page (or from the pricing section) and the <strong>$5/month for the first
+          3 months</strong> discount is applied to your checkout on the spot. Same offer as
+          before: Lite only, limited to the first 20 studios, ends November 30, 2026, and
+          it returns to the regular $15/mo after the three months.
+        </p>
+      </Release>
       <Release version="0.32.0" date="October 31, 2026">
         <p>
           <strong>The Founding Studio offer is live.</strong>{" "}
