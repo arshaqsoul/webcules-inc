@@ -16,7 +16,7 @@ import {
 } from "@webcules/ui/components/dialog";
 import { useConfirm } from "@/components/confirm-provider";
 import { DocHint } from "@/components/doc-hint";
-import { PRO_CARD, TEAMS_CTA, TIER_CARDS } from "@/lib/tier-cards";
+import { FOUNDING_OFFER_LINE, PRO_CARD, TEAMS_CTA, TIER_CARDS } from "@/lib/tier-cards";
 import { planDef, type PlanDef } from "@/lib/plans-data";
 
 type PlanStatus = {
@@ -453,6 +453,11 @@ export function PlanPanel({ returnHint }: { returnHint?: string }) {
 
       {returnHint === "return" && <p className="mt-2 text-xs text-success-text">Subscription active — welcome aboard.</p>}
       {notice && <p className="mt-2 text-xs text-ink-muted">{notice}</p>}
+
+      {/* WEBC-127: founding-studio offer banner — copy is founder-approved. */}
+      <p className="mt-5 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-xs leading-snug text-ink">
+        {FOUNDING_OFFER_LINE}
+      </p>
 
       {/* Plan cards */}
       <div className={`mt-5 grid grid-cols-2 gap-2 ${ALL_PLANS.length === 4 ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}>
