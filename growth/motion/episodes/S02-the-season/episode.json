@@ -1,0 +1,111 @@
+{
+  "id": "S02",
+  "title": "The Season",
+  "series": "Snap it. - Out Here",
+  "brand": "snap",
+  "cover": 1.2,
+  "caption": "Spend the year out here.\n\nPriya and Sam under the cherry blossoms in April. Ana and Leo barefoot on the beach in July. The Reyes family in the fall leaves in October. Noor and her dog at a snowy cabin in December.\nAll year, the next client is already on the way: an inquiry from your contact form, a booking from your booking page, a contract signed in the browser, an invoice paid into your own Stripe. It all lands in one Snap inbox.\nSnap takes 0% commission.\n\nIt is not magic: you still reply to the inquiry and send the contract and the invoice. Snap just keeps every reply and payment in one place.\n\nStart free at snaphq.app",
+  "hashtags": [
+    "#photographerlife",
+    "#weddingphotographer",
+    "#familyphotographer",
+    "#elopementphotographer",
+    "#petphotographer",
+    "#photographybusiness",
+    "#photographerworkflow"
+  ],
+  "ad": {
+    "primary_text": "Shoot every season. Your clients inquire, book, sign and pay in Snap, and it all lands in one inbox. 0% commission.",
+    "headline": "Snap it.",
+    "description": "Free to start at snaphq.app",
+    "cta_button": "Sign Up",
+    "placements": [
+      "instagram_reels",
+      "facebook_reels",
+      "instagram_stories",
+      "facebook_stories"
+    ]
+  },
+  "claims": [
+    {
+      "text": "New inquiry event lands in the Snap inbox",
+      "source": "apps/snap/lib/repos/leads.ts",
+      "match": "eventType: \"lead.created\""
+    },
+    {
+      "text": "Inquiries come in from your contact form, one form on the Free plan",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "WEB-256 contact forms (Free/Lite 1"
+    },
+    {
+      "text": "New booking event lands in the Snap inbox",
+      "source": "apps/snap/lib/repos/bookings.ts",
+      "match": "eventType: \"booking.created\""
+    },
+    {
+      "text": "Clients book from your booking page, on the Free plan",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "maxSessionTypes: 1"
+    },
+    {
+      "text": "Contract signed event lands in the Snap inbox; clients sign in the browser",
+      "source": "apps/snap/lib/contracts.ts",
+      "match": "eventType: \"contract.signed\""
+    },
+    {
+      "text": "Invoice paid event; payment goes into your own Stripe",
+      "source": "apps/snap/lib/invoices.ts",
+      "match": "money landed"
+    },
+    {
+      "text": "Clients pay through your own Stripe",
+      "source": "apps/snap/lib/connect.ts",
+      "match": "the photographer's own Stripe account"
+    },
+    {
+      "text": "Unified inbox on the Free plan",
+      "source": "apps/snap/lib/tier-cards.ts",
+      "match": "Unified inbox"
+    },
+    {
+      "text": "0% commission",
+      "source": "apps/snap/lib/connect.ts",
+      "match": "No application_fee_amount, ever."
+    },
+    {
+      "text": "Free to start (Free plan, $0)",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "id: \"free\", name: \"Free\", priceMonthlyUsd: 0"
+    }
+  ],
+  "painFrom": "E003-a-day-out-here",
+  "endcard": {
+    "rows": [
+      {
+        "title": "New inquiry - Ana & Leo",
+        "sub": "Beach elopement",
+        "time": "Apr 12",
+        "color": "#ffb000"
+      },
+      {
+        "title": "New booking - Hannah Reyes",
+        "sub": "Fall family photos",
+        "time": "Jul 20",
+        "color": "#f26a4d"
+      },
+      {
+        "title": "Contract signed - Cabin session",
+        "sub": "Noor, winter cabin",
+        "time": "Oct 18",
+        "color": "#ff6fa0"
+      },
+      {
+        "title": "Invoice INV-0058 paid",
+        "sub": "Into your own Stripe",
+        "time": "Dec 14",
+        "color": "#7a5cff"
+      }
+    ],
+    "section": "THIS YEAR"
+  }
+}

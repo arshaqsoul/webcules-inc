@@ -1,0 +1,52 @@
+{
+  "id": "A09",
+  "title": "I wish rescheduling wasn't a thread",
+  "series": "Snap it. - the wish",
+  "brand": "snap",
+  "cover": 1.2,
+  "caption": "I wish moving a date was easy.\n\nClients reschedule from their own booking link, and \"Booking rescheduled\" lands in your Snap inbox when they do.\n0% commission, free to start.\n\nIt is not magic: rescheduling follows the cutoff you set, and you still show up. Snap just stops the back and forth.\n\nStart free at snaphq.app",
+  "hashtags": [
+    "#photographybusiness",
+    "#photographerlife",
+    "#portraitphotographer",
+    "#photographerworkflow",
+    "#smallbusinessowner",
+    "#photographybooking"
+  ],
+  "ad": {
+    "primary_text": "Clients reschedule from their booking link and Snap puts \"Booking rescheduled\" in your inbox. 0% commission, free to start.",
+    "headline": "I wish rescheduling wasn't a thread.",
+    "description": "Free to start at snaphq.app",
+    "cta_button": "Sign Up",
+    "placements": [
+      "instagram_reels",
+      "facebook_reels",
+      "instagram_stories",
+      "facebook_stories"
+    ]
+  },
+  "claims": [
+    {
+      "text": "Booking rescheduled - {client} lands in the Snap inbox",
+      "source": "apps/snap/lib/repos/booking-manage.ts",
+      "match": "eventType: \"booking.rescheduled\""
+    },
+    {
+      "text": "Clients reschedule themselves with their own booking link",
+      "source": "apps/snap/lib/repos/booking-manage.ts",
+      "match": "Self-serve manage-booking engine"
+    },
+    {
+      "text": "0% commission",
+      "source": "apps/snap/lib/connect.ts",
+      "match": "No application_fee_amount, ever."
+    },
+    {
+      "text": "Free to start (Free plan, $0)",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "id: \"free\", name: \"Free\", priceMonthlyUsd: 0"
+    }
+  ],
+  "painFrom": "E003-a-day-out-here",
+  "endcard": false
+}

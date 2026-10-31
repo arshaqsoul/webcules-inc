@@ -8,7 +8,7 @@
 import Link from "next/link";
 
 import { Button } from "@webcules/ui/components/button";
-import { TEAMS_CTA, TIER_CARDS, type PublicTierId, type TierCard, type TierId } from "@/lib/tier-cards";
+import { FOUNDING_OFFER_LINE, TEAMS_CTA, TIER_CARDS, type PublicTierId, type TierCard, type TierId } from "@/lib/tier-cards";
 
 export { TIER_CARDS };
 export type { PublicTierId, TierCard, TierId };
@@ -88,6 +88,14 @@ export function PricingTiers({
                     ? "Start on Free"
                     : `Subscribe to ${t.name}`}
             </Button>
+          )}
+          {/* WEBC-127: founding offer under the Lite card — marketing surface
+           * only; the same line renders above the plan cards in Settings →
+           * Plan. Copy is founder-approved. */}
+          {mode === "marketing" && t.id === "lite" && (
+            <p className="mt-3 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-[11px] leading-snug text-ink">
+              {FOUNDING_OFFER_LINE}
+            </p>
           )}
         </div>
       ))}

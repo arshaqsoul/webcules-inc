@@ -1,0 +1,52 @@
+{
+  "id": "A05",
+  "title": "I wish they'd just pay",
+  "series": "Snap it. - the wish",
+  "brand": "snap",
+  "cover": 1.2,
+  "caption": "I wish they'd just pay.\n\nYou are out of the office, the client pays when it suits them, and \"Invoice paid\" is waiting in your Snap inbox when you look up.\nPayments go straight to your own Stripe account with 0% commission.\n\nIt is not magic: you still have to send the invoice. Snap just tells you the moment it is paid.\n\nStart free at snaphq.app",
+  "hashtags": [
+    "#photographybusiness",
+    "#photographerlife",
+    "#weddingphotographer",
+    "#invoicing",
+    "#smallbusinessowner",
+    "#photographerworkflow"
+  ],
+  "ad": {
+    "primary_text": "Clients pay your invoice online and Snap puts \"Invoice paid\" in your inbox. 0% commission, free to start.",
+    "headline": "I wish they'd just pay.",
+    "description": "Free to start at snaphq.app",
+    "cta_button": "Sign Up",
+    "placements": [
+      "instagram_reels",
+      "facebook_reels",
+      "instagram_stories",
+      "facebook_stories"
+    ]
+  },
+  "claims": [
+    {
+      "text": "Invoice {number} paid lands in the Snap inbox",
+      "source": "apps/snap/lib/invoices.ts",
+      "match": "title: `Invoice ${invoice.number} paid`"
+    },
+    {
+      "text": "Clients pay the invoice online",
+      "source": "apps/snap/lib/invoices.ts",
+      "match": "eventType: \"invoice.paid\""
+    },
+    {
+      "text": "0% commission",
+      "source": "apps/snap/lib/connect.ts",
+      "match": "No application_fee_amount, ever."
+    },
+    {
+      "text": "Free to start (Free plan, $0)",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "id: \"free\", name: \"Free\", priceMonthlyUsd: 0"
+    }
+  ],
+  "painFrom": "E003-a-day-out-here",
+  "endcard": false
+}

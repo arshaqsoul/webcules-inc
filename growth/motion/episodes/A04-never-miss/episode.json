@@ -1,0 +1,52 @@
+{
+  "id": "A04",
+  "title": "I wish I never missed an inquiry",
+  "series": "Snap it. - the wish",
+  "brand": "snap",
+  "cover": 1.2,
+  "caption": "I wish I never missed an inquiry.\n\nYou are out shooting, and the next couple is writing to you. With Snap your contact form sends every inquiry into one inbox, so \"New inquiry\" is waiting when you look up.\nOne contact form on the Free plan, 0% commission.\n\nIt is not magic: you still have to reply. Snap just makes sure the inquiry is there when you do.\n\nStart free at snaphq.app",
+  "hashtags": [
+    "#elopementphotographer",
+    "#weddingphotographer",
+    "#photographybusiness",
+    "#photographerlife",
+    "#photographerworkflow",
+    "#smallbusinessowner"
+  ],
+  "ad": {
+    "primary_text": "Your contact form sends every inquiry into one Snap inbox, so none get lost while you shoot. 0% commission, free to start.",
+    "headline": "I wish I never missed an inquiry.",
+    "description": "Free to start at snaphq.app",
+    "cta_button": "Sign Up",
+    "placements": [
+      "instagram_reels",
+      "facebook_reels",
+      "instagram_stories",
+      "facebook_stories"
+    ]
+  },
+  "claims": [
+    {
+      "text": "New inquiry - {name} lands in the Snap inbox",
+      "source": "apps/snap/lib/repos/leads.ts",
+      "match": "eventType: \"lead.created\""
+    },
+    {
+      "text": "Inquiries come in from your contact form, one form on the Free plan",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "maxContactForms: 1"
+    },
+    {
+      "text": "0% commission",
+      "source": "apps/snap/lib/connect.ts",
+      "match": "No application_fee_amount, ever."
+    },
+    {
+      "text": "Free to start (Free plan, $0)",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "id: \"free\", name: \"Free\", priceMonthlyUsd: 0"
+    }
+  ],
+  "painFrom": "E003-a-day-out-here",
+  "endcard": false
+}

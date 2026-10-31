@@ -1,0 +1,25 @@
+{
+  "id": "A01",
+  "title": "I wish they'd just sign",
+  "series": "Snap it. - the wish",
+  "brand": "snap",
+  "cover": 1.2,
+  "caption": "I wish they'd just sign.\n\nPrinting the contract, chasing the signature, scanning it back. Snap sends your contract as a link: your client reads it and signs online with their typed name, a signed PDF is saved, and \"Contract signed\" lands in your Snap inbox.\nTwo contract templates on the Free plan, 0% commission.\n\nIt is not magic: you still write the contract. Snap just makes signing it the easy part.\n\nStart free at snaphq.app",
+  "hashtags": ["#weddingphotographer", "#photographybusiness", "#photographerlife", "#photographercontracts", "#photographerworkflow", "#smallbusinessowner"],
+  "ad": {
+    "primary_text": "Send your contract as a link. Clients sign online and \"Contract signed\" lands in your Snap inbox. 0% commission, free to start.",
+    "headline": "I wish they'd just sign.",
+    "description": "Free to start at snaphq.app",
+    "cta_button": "Sign Up",
+    "placements": ["instagram_reels", "facebook_reels", "instagram_stories", "facebook_stories"]
+  },
+  "claims": [
+    { "text": "Contract signed - {title} lands in the Snap inbox", "source": "apps/snap/lib/contracts.ts", "match": "eventType: \"contract.signed\"" },
+    { "text": "Clients sign online with a typed name; a signed PDF is saved", "source": "apps/snap/lib/contracts.ts", "match": "typed name + IP + UA + timestamp" },
+    { "text": "Two contract templates on the Free plan", "source": "apps/snap/lib/plans-data.ts", "match": "maxContractTemplates: 2" },
+    { "text": "0% commission", "source": "apps/snap/lib/connect.ts", "match": "No application_fee_amount, ever." },
+    { "text": "Free to start (Free plan, $0)", "source": "apps/snap/lib/plans-data.ts", "match": "id: \"free\", name: \"Free\", priceMonthlyUsd: 0" }
+  ],
+  "painFrom": "E003-a-day-out-here",
+  "endcard": false
+}

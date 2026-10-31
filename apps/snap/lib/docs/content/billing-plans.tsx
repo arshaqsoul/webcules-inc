@@ -16,6 +16,12 @@ export default function BillingPlans() {
         the exact ladder the app enforces.
       </p>
 
+      <Note>
+        <strong>Founding offer:</strong> Lite for $5/mo for your first 3 months — use code{" "}
+        <strong>FOUNDING</strong> at checkout. Limited to the first 20 studios, offer ends
+        November 30, 2026.
+      </Note>
+
       <Shot
         src="/docs-shots/billing-plans/panel.png"
         alt="Settings → Billing: the current plan, live storage usage against the cap, and the plan cards."

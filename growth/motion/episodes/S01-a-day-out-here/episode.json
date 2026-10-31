@@ -1,0 +1,105 @@
+{
+  "id": "S01",
+  "title": "A Day Out Here",
+  "series": "Snap it. - Out Here",
+  "brand": "snap",
+  "cover": 1.2,
+  "caption": "Spend the day out here.\n\nA newborn at 8. A family in the fall leaves at 1. Priya and Sam's lakeside wedding at golden hour. A birthday under string lights at 9.\nWhile you shoot, your clients book from your booking page, sign their contract in the browser and pay into your own Stripe. It all lands in one Snap inbox, waiting for you at the end of the day.\nSnap takes 0% commission.\n\nIt is not magic: you still send the contract, the invoice and the gallery. Snap just keeps every reply and payment in one place.\n\nStart free at snaphq.app",
+  "hashtags": [
+    "#photographerlife",
+    "#dayinthelife",
+    "#weddingphotographer",
+    "#newbornphotographer",
+    "#familyphotographer",
+    "#photographybusiness",
+    "#photographerworkflow"
+  ],
+  "ad": {
+    "primary_text": "Spend the day shooting. Your clients book, sign and pay in Snap, and it all lands in one inbox. 0% commission.",
+    "headline": "Snap it.",
+    "description": "Free to start at snaphq.app",
+    "cta_button": "Sign Up",
+    "placements": [
+      "instagram_reels",
+      "facebook_reels",
+      "instagram_stories",
+      "facebook_stories"
+    ]
+  },
+  "claims": [
+    {
+      "text": "New booking event lands in the Snap inbox",
+      "source": "apps/snap/lib/repos/bookings.ts",
+      "match": "eventType: \"booking.created\""
+    },
+    {
+      "text": "Clients book from your booking page, on the Free plan",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "maxSessionTypes: 1"
+    },
+    {
+      "text": "Contract signed event lands in the Snap inbox; clients sign in the browser",
+      "source": "apps/snap/lib/contracts.ts",
+      "match": "eventType: \"contract.signed\""
+    },
+    {
+      "text": "Invoice paid event; payment goes into your own Stripe",
+      "source": "apps/snap/lib/invoices.ts",
+      "match": "money landed"
+    },
+    {
+      "text": "Clients pay through your own Stripe",
+      "source": "apps/snap/lib/connect.ts",
+      "match": "the photographer's own Stripe account"
+    },
+    {
+      "text": "Gallery first view event lands in the Snap inbox",
+      "source": "apps/snap/lib/shares/gallery-auth.ts",
+      "match": "Client opened their gallery for the first time"
+    },
+    {
+      "text": "Unified inbox on the Free plan",
+      "source": "apps/snap/lib/tier-cards.ts",
+      "match": "Unified inbox"
+    },
+    {
+      "text": "0% commission",
+      "source": "apps/snap/lib/connect.ts",
+      "match": "No application_fee_amount, ever."
+    },
+    {
+      "text": "Free to start (Free plan, $0)",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "id: \"free\", name: \"Free\", priceMonthlyUsd: 0"
+    }
+  ],
+  "painFrom": "E003-a-day-out-here",
+  "endcard": {
+    "rows": [
+      {
+        "title": "New booking - Maya Chen",
+        "sub": "Newborn session",
+        "time": "8:04 AM",
+        "color": "#ffb000"
+      },
+      {
+        "title": "Contract signed - Lakeside wedding",
+        "sub": "Priya & Sam",
+        "time": "1:12 PM",
+        "color": "#f26a4d"
+      },
+      {
+        "title": "Invoice INV-0042 paid",
+        "sub": "Into your own Stripe",
+        "time": "5:41 PM",
+        "color": "#ff6fa0"
+      },
+      {
+        "title": "Client opened their gallery",
+        "sub": "For the first time",
+        "time": "9:20 PM",
+        "color": "#7a5cff"
+      }
+    ]
+  }
+}

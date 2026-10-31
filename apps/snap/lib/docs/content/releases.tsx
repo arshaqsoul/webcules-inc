@@ -38,7 +38,7 @@ export default function Releases() {
         getting their own.
       </Note>
 
-      <Release version="0.31.0" date="October 25, 2026">
+      <Release version="0.33.0" date="October 31, 2026">
         <p>
           <strong>The full dashboard now fits on every laptop.</strong> On
           smaller screens the sidebar could hide Templates and Settings below
@@ -48,6 +48,32 @@ export default function Releases() {
           checklist moved out of the sidebar onto the Overview page, where it
           has room to breathe; a slim progress link in the sidebar keeps track
           until every step is done.
+        </p>
+      </Release>
+      <Release version="0.32.0" date="October 31, 2026">
+        <p>
+          <strong>The Founding Studio offer is live.</strong>{" "}
+          The first 20 studios to go paid can start Lite for <strong>$5/month for the first
+          3 months</strong> instead of $15 — after the three months it returns to the regular
+          $15/mo, nothing else changes. Pick Lite on the billing page (or from the pricing
+          section) and enter the code <strong>FOUNDING</strong> at checkout — a promotion-code
+          box now appears on every plan checkout. The discount applies to Lite only, is limited
+          to the first 20 studios, and the offer ends November 30, 2026.
+        </p>
+      </Release>
+      <Release version="0.31.0" date="October 25, 2026">
+        <p>
+          <strong>The Galleries page now reads like your galleries.</strong>{" "}
+          Instead of a flat log of every share link ever created, links are grouped under
+          their project, and revoked, regenerated and expired links tuck away behind a{" "}
+          <strong>Show inactive</strong> toggle — what you see first is what is actually
+          live. The header shows your slot usage against your plan (&ldquo;3 of 5 active
+          galleries&rdquo;, or unlimited on Studio and Pro) using the same count as the
+          billing page, with an upgrade link the moment you hit the cap. Every row opens
+          its project&rsquo;s gallery tab directly, and a <strong>New gallery</strong>{" "}
+          button picks a project and takes you straight to where links are made. Nothing
+          about your links, limits, or what clients can see has changed — only how the
+          overview is organized.
         </p>
       </Release>
       <Release version="0.30.0" date="October 25, 2026">

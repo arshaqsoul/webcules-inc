@@ -1,0 +1,52 @@
+{
+  "id": "A08",
+  "title": "I wish guests would just send me their photos",
+  "series": "Snap it. - the wish",
+  "brand": "snap",
+  "cover": 1.2,
+  "caption": "I wish guests would just send me their photos.\n\nShare one upload link, and guests drop their photos in while you shoot. Each upload lands in your Snap inbox, waiting for your review before anything is shared.\n0% commission, free to start.\n\nIt is not magic: you still send the link and choose what to keep. Snap just collects them in one place.\n\nStart free at snaphq.app",
+  "hashtags": [
+    "#weddingphotographer",
+    "#weddingphotography",
+    "#photographybusiness",
+    "#photographerlife",
+    "#photographerworkflow",
+    "#smallbusinessowner"
+  ],
+  "ad": {
+    "primary_text": "Share an upload link and guest photos land in your Snap inbox for review before anything is shared. 0% commission, free to start.",
+    "headline": "I wish guests would just send me their photos.",
+    "description": "Free to start at snaphq.app",
+    "cta_button": "Sign Up",
+    "placements": [
+      "instagram_reels",
+      "facebook_reels",
+      "instagram_stories",
+      "facebook_stories"
+    ]
+  },
+  "claims": [
+    {
+      "text": "New client upload - {title} lands in the Snap inbox",
+      "source": "apps/snap/lib/shares/upload-requests.ts",
+      "match": "eventType: \"upload.submitted\""
+    },
+    {
+      "text": "Uploads wait for your review before anything is shared",
+      "source": "apps/snap/lib/shares/upload-requests.ts",
+      "match": "Every guest upload lands in QUARANTINE"
+    },
+    {
+      "text": "0% commission",
+      "source": "apps/snap/lib/connect.ts",
+      "match": "No application_fee_amount, ever."
+    },
+    {
+      "text": "Free to start (Free plan, $0)",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "id: \"free\", name: \"Free\", priceMonthlyUsd: 0"
+    }
+  ],
+  "painFrom": "E003-a-day-out-here",
+  "endcard": false
+}

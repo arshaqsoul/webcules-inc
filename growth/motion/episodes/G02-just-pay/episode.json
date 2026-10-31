@@ -1,0 +1,119 @@
+{
+  "id": "G02",
+  "title": "I wish they'd just pay",
+  "series": "Snap it. - Glass Studio",
+  "brand": "snap",
+  "cover": 0,
+  "caption": "I wish they'd just pay.\n\nThe shoot was lovely. Then comes the part nobody enjoys: chasing the invoice.\nWith Snap you send a numbered invoice with a secure payment link. Your client pays online in a few taps, the money goes into your own Stripe, and \"Invoice paid\" lands in your Snap inbox.\nSnap takes 0% commission.\n\nIt is not magic: you still send the invoice. Snap just makes paying it the easy part.\n\nStart free at snaphq.app",
+  "hashtags": [
+    "#familyphotographer",
+    "#photographybusiness",
+    "#photographerlife",
+    "#gettingpaid",
+    "#photographerworkflow",
+    "#smallbusinessowner"
+  ],
+  "ad": {
+    "primary_text": "Send a numbered invoice with a secure payment link. Clients pay online, straight into your own Stripe. 0% commission, free to start.",
+    "headline": "I wish they'd just pay.",
+    "description": "Free to start at snaphq.app",
+    "cta_button": "Sign Up",
+    "placements": [
+      "instagram_reels",
+      "facebook_reels",
+      "instagram_stories",
+      "facebook_stories"
+    ]
+  },
+  "claims": [
+    {
+      "text": "Invoice {number} paid lands in the Snap inbox",
+      "source": "apps/snap/lib/invoices.ts",
+      "match": "eventType: \"invoice.paid\""
+    },
+    {
+      "text": "Clients pay the invoice online through Stripe Checkout",
+      "source": "apps/snap/lib/invoices.ts",
+      "match": "invoice.paid_online"
+    },
+    {
+      "text": "Payments go into the photographer's own Stripe account",
+      "source": "apps/snap/lib/connect.ts",
+      "match": "the photographer's own Stripe account"
+    },
+    {
+      "text": "New booking event lands in the Snap inbox",
+      "source": "apps/snap/lib/repos/bookings.ts",
+      "match": "eventType: \"booking.created\""
+    },
+    {
+      "text": "Clients book from your booking page, on the Free plan",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "maxSessionTypes: 1"
+    },
+    {
+      "text": "Contract signed event lands in the Snap inbox; clients sign in the browser",
+      "source": "apps/snap/lib/contracts.ts",
+      "match": "eventType: \"contract.signed\""
+    },
+    {
+      "text": "Invoice paid event; payment goes into your own Stripe",
+      "source": "apps/snap/lib/invoices.ts",
+      "match": "money landed"
+    },
+    {
+      "text": "Clients pay through your own Stripe",
+      "source": "apps/snap/lib/connect.ts",
+      "match": "the photographer's own Stripe account"
+    },
+    {
+      "text": "Gallery first view event lands in the Snap inbox",
+      "source": "apps/snap/lib/shares/gallery-auth.ts",
+      "match": "Client opened their gallery for the first time"
+    },
+    {
+      "text": "Unified inbox on the Free plan",
+      "source": "apps/snap/lib/tier-cards.ts",
+      "match": "Unified inbox"
+    },
+    {
+      "text": "0% commission",
+      "source": "apps/snap/lib/connect.ts",
+      "match": "No application_fee_amount, ever."
+    },
+    {
+      "text": "Free to start (Free plan, $0)",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "id: \"free\", name: \"Free\", priceMonthlyUsd: 0"
+    }
+  ],
+  "painFrom": "E003-a-day-out-here",
+  "endcard": {
+    "rows": [
+      {
+        "title": "Invoice INV-0042 paid",
+        "sub": "Into your own Stripe",
+        "time": "2:41 PM",
+        "color": "#5e6ad2"
+      },
+      {
+        "title": "New inquiry - Priya & Sam",
+        "sub": "Wedding inquiry",
+        "time": "10:02 AM",
+        "color": "#ff6fa0"
+      },
+      {
+        "title": "New booking - Maya Chen",
+        "sub": "Newborn session",
+        "time": "8:04 AM",
+        "color": "#ffb000"
+      },
+      {
+        "title": "Contract signed",
+        "sub": "Wedding agreement",
+        "time": "7:12 AM",
+        "color": "#f26a4d"
+      }
+    ]
+  }
+}

@@ -1,0 +1,143 @@
+{
+  "id": "A05",
+  "title": "I wish they'd just pay",
+  "series": "Snap it. - the wish",
+  "brand": "snap",
+  "fps": 30,
+  "duration": 10.27,
+  "cover": 1.2,
+  "stills": [
+    0,
+    2.4,
+    8.333,
+    10.07
+  ],
+  "pain": {
+    "statement": "Photographers want to spend the day shooting, but bookings, contracts, payments and gallery follow-ups pull them back to the desk and spread across separate tools.",
+    "persona": "any",
+    "ledger": null,
+    "evidence": [
+      {
+        "url": "https://www.aiarty.com/ai-photography-guide/best-booking-app-for-photographers.htm",
+        "captured_at": "2026-10-27",
+        "summary": "Guide describes booking sessions in one app and delivering galleries in another, the stitched-together setup many photographers run."
+      },
+      {
+        "url": "https://petapixel.com/2023/09/25/photographer-goes-viral-calling-up-clients-to-pay-outstanding-invoices",
+        "captured_at": "2026-10-27",
+        "summary": "News piece (Sep 2023): a photographer's video about phoning clients over unpaid invoices drew millions of views and many photographers said the same."
+      },
+      {
+        "url": "https://fstoppers.com/business/when-should-you-receive-payment-your-work-503435",
+        "captured_at": "2026-10-27",
+        "summary": "Photography business article on chasing invoice payments well past 60 days."
+      },
+      {
+        "url": "https://blog.pic-time.com/blog/honeybook-and-pic-time",
+        "captured_at": "2026-10-27",
+        "summary": "A gallery vendor explains pairing its galleries with a separate client-management tool, so the workflow lives in two products."
+      }
+    ]
+  },
+  "claims": [
+    {
+      "text": "Invoice {number} paid lands in the Snap inbox",
+      "source": "apps/snap/lib/invoices.ts",
+      "match": "title: `Invoice ${invoice.number} paid`"
+    },
+    {
+      "text": "Clients pay the invoice online",
+      "source": "apps/snap/lib/invoices.ts",
+      "match": "eventType: \"invoice.paid\""
+    },
+    {
+      "text": "0% commission",
+      "source": "apps/snap/lib/connect.ts",
+      "match": "No application_fee_amount, ever."
+    },
+    {
+      "text": "Free to start (Free plan, $0)",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "id: \"free\", name: \"Free\", priceMonthlyUsd: 0"
+    }
+  ],
+  "scenes": [
+    {
+      "type": "clip",
+      "at": 0,
+      "dur": 4.533,
+      "props": {
+        "frames": "growth/motion/out/A05/frames/a05cafe/%04d.jpg",
+        "count": 136,
+        "fps": 30,
+        "lines": {
+          "lines": [
+            "I wish they'd",
+            "just *pay.*"
+          ],
+          "at": 0.2,
+          "out": 1.9,
+          "y": 330,
+          "size": 96
+        },
+        "cardAt": 3.3,
+        "toast": {
+          "title": "Invoice 0042 paid",
+          "sub": "Paid online, no waiting"
+        },
+        "logo": "marketing/brands/snap-logo.png",
+        "padFor": 10.27
+      }
+    },
+    {
+      "type": "clip",
+      "at": 4.533,
+      "dur": 1.4,
+      "props": {
+        "frames": "growth/motion/out/A05/frames/a05m1/%04d.jpg",
+        "count": 42,
+        "fps": 30,
+        "pad": false,
+        "whoosh": true
+      }
+    },
+    {
+      "type": "clip",
+      "at": 5.933,
+      "dur": 4.333,
+      "props": {
+        "frames": "growth/motion/out/A05/frames/a05diorama/%04d.jpg",
+        "count": 130,
+        "fps": 30,
+        "wordmark": {
+          "at": 0.7,
+          "offer": "*0%* commission. *Free* to start.",
+          "url": "snaphq.app",
+          "y": 330
+        },
+        "pad": false
+      }
+    }
+  ],
+  "caption": "I wish they'd just pay.\n\nYou are out of the office, the client pays when it suits them, and \"Invoice paid\" is waiting in your Snap inbox when you look up.\nPayments go straight to your own Stripe account with 0% commission.\n\nIt is not magic: you still have to send the invoice. Snap just tells you the moment it is paid.\n\nStart free at snaphq.app",
+  "hashtags": [
+    "#photographybusiness",
+    "#photographerlife",
+    "#weddingphotographer",
+    "#invoicing",
+    "#smallbusinessowner",
+    "#photographerworkflow"
+  ],
+  "ad": {
+    "primary_text": "Clients pay your invoice online and Snap puts \"Invoice paid\" in your inbox. 0% commission, free to start.",
+    "headline": "I wish they'd just pay.",
+    "description": "Free to start at snaphq.app",
+    "cta_button": "Sign Up",
+    "placements": [
+      "instagram_reels",
+      "facebook_reels",
+      "instagram_stories",
+      "facebook_stories"
+    ]
+  }
+}

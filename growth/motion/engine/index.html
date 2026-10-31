@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>reel</title>
+<style>
+  /* Inter, the brand face (marketing/brands/snap.json), vendored so renders never fall back to a system serif. */
+  @font-face { font-family: Inter; src: url(../vendor/fonts/inter-latin-wght-normal.woff2) format("woff2"); font-weight: 100 900; font-style: normal; }
+  @font-face { font-family: Inter; src: url(../vendor/fonts/inter-latin-wght-italic.woff2) format("woff2"); font-weight: 100 900; font-style: italic; }
+  html, body { margin: 0; padding: 0; background: #000; overflow: hidden; }
+  #stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; font-family: Inter, sans-serif; }
+  #stage > * { position: absolute; inset: 0; width: 1080px; height: 1920px; }
+  #gl { pointer-events: none; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="plate" width="1080" height="1920"></canvas>
+  <svg id="back" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg"></svg>
+  <canvas id="gl" width="1080" height="1920"></canvas>
+  <svg id="front" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg"></svg>
+</div>
+<script type="importmap">{ "imports": { "three": "../vendor/three.module.min.js", "three/addons/": "../vendor/jsm/" } }</script>
+<script type="module" src="./main.js"></script>
+</body>
+</html>

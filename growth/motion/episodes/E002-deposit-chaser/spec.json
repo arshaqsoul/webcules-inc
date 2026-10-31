@@ -1,0 +1,268 @@
+{
+  "id": "E002",
+  "title": "The Deposit Chaser",
+  "series": "Not Photography",
+  "brand": "snap",
+  "duration": 23.6,
+  "fps": 30,
+  "cover": 6.0,
+  "stills": [
+    0.9,
+    2.0,
+    3.2,
+    4.6,
+    6.0,
+    7.4,
+    8.9,
+    9.9,
+    10.9,
+    12.0,
+    12.9,
+    13.6,
+    15.5,
+    18.4,
+    20.8,
+    23.3
+  ],
+  "pain": {
+    "statement": "After the client says yes, the photographer sends the invoice and then spends days or weeks chasing the deposit with reminder emails, notes and calls, often with no answer.",
+    "persona": "wedding",
+    "ledger": null,
+    "evidence": [
+      {
+        "url": "https://petapixel.com/2023/09/25/photographer-goes-viral-calling-up-clients-to-pay-outstanding-invoices",
+        "captured_at": "2026-10-27",
+        "summary": "News piece (Sep 2023): a photographer's video about phoning clients to get outstanding invoices paid drew millions of views, and many photographers said they were dealing with the same thing."
+      },
+      {
+        "url": "https://fstoppers.com/business/when-should-you-receive-payment-your-work-503435",
+        "captured_at": "2026-10-27",
+        "summary": "Photography business article describes chasing invoice payments well past 60 days, and photographers sometimes never delivering files because the client has not paid."
+      },
+      {
+        "url": "https://shootdotedit.com/blogs/news/late-payments",
+        "captured_at": "2026-10-27",
+        "summary": "A photography post-production company's blog on late payments advises clear payment terms and reminders so payments do not slip through, treating late payment as a routine problem for photographers."
+      },
+      {
+        "url": "https://blog.freelancersunion.org/2022/11/24/how-to-get-paid-on-time/",
+        "captured_at": "2026-10-27",
+        "summary": "Freelancers Union guidance on getting paid on time: set terms up front and use reminders, because following up on late invoices is a common and uncomfortable part of freelance work."
+      }
+    ]
+  },
+  "claims": [
+    {
+      "text": "Sending an invoice creates a pay link on your own Stripe account",
+      "source": "apps/snap/lib/invoices.ts",
+      "match": "mint a persistent Stripe Payment Link for the invoice total"
+    },
+    {
+      "text": "Clients pay through your own Stripe",
+      "source": "apps/snap/lib/connect.ts",
+      "match": "the photographer's own Stripe account"
+    },
+    {
+      "text": "The invoice flips to paid when the client pays",
+      "source": "apps/snap/lib/invoices.ts",
+      "match": "a client paid an invoice through its Payment Link"
+    },
+    {
+      "text": "The payment lands in your inbox on the client's thread",
+      "source": "apps/snap/lib/invoices.ts",
+      "match": "money landed"
+    },
+    {
+      "text": "0% commission",
+      "source": "apps/snap/lib/connect.ts",
+      "match": "No application_fee_amount, ever."
+    },
+    {
+      "text": "Pay links need an active Stripe account connected",
+      "source": "apps/snap/lib/invoices.ts",
+      "match": "without an active studio account no link is"
+    },
+    {
+      "text": "Free to start (Free plan, $0)",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "id: \"free\", name: \"Free\", priceMonthlyUsd: 0"
+    },
+    {
+      "text": "Invoice actions are gated by role, not by plan",
+      "source": "apps/snap/app/api/invoices/[id]/action/route.ts",
+      "match": "role gate (documents.manage)"
+    }
+  ],
+  "scenes": [
+    {
+      "type": "machine",
+      "at": 0,
+      "dur": 14.0,
+      "props": {
+        "theme": "sunny",
+        "kicker": "NOT PHOTOGRAPHY  ·  EP 02",
+        "card": {
+          "name": "PRIYA + SAM",
+          "sub": "deposit due"
+        },
+        "hook": {
+          "lines": [
+            "Getting ONE",
+            "deposit paid",
+            "looks like *this:*"
+          ],
+          "at": 0.2,
+          "out": 2.0
+        },
+        "follow": {
+          "start": 2.3,
+          "per": 1.45
+        },
+        "stations": [
+          {
+            "kind": "invoice",
+            "label": "01 INVOICE",
+            "caption": "Send the invoice."
+          },
+          {
+            "kind": "inbox",
+            "label": "02 EMAIL",
+            "caption": "\"Just following up!\""
+          },
+          {
+            "kind": "reminders",
+            "label": "03 REMINDERS",
+            "caption": "Day 3. Day 7. Day 14."
+          },
+          {
+            "kind": "phone",
+            "label": "04 PHONE",
+            "caption": "Call. Voicemail. Again."
+          },
+          {
+            "kind": "payment",
+            "label": "05 PAYMENTS",
+            "caption": "Still pending."
+          }
+        ],
+        "counters": [
+          {
+            "label": "DAYS WAITING",
+            "kind": "ramp",
+            "from": 0,
+            "to": 21
+          },
+          {
+            "label": "FOLLOW-UPS",
+            "kind": "ramp",
+            "from": 0,
+            "to": 9
+          },
+          {
+            "label": "PHOTOS TAKEN",
+            "kind": "fixed",
+            "value": 0
+          }
+        ],
+        "reveal": {
+          "at": 9.6
+        },
+        "slam": {
+          "at": 10.5,
+          "lines": [
+            "None of that",
+            "is *photography.*"
+          ]
+        },
+        "collapse": {
+          "at": 12.2,
+          "tagline": "Snap it.",
+          "lines": [
+            "Send it once. *Get paid.*"
+          ],
+          "logo": "marketing/brands/snap-logo.png"
+        }
+      }
+    },
+    {
+      "type": "checklist",
+      "at": 13.8,
+      "dur": 6.3,
+      "props": {
+        "headline": [
+          "Same deposit.",
+          "*Zero* chasing."
+        ],
+        "logo": "marketing/brands/snap-logo.png",
+        "client": {
+          "name": "Priya & Sam",
+          "sub": "Wedding deposit"
+        },
+        "rows": [
+          {
+            "title": "Invoice sent",
+            "sub": "with a pay link inside",
+            "at": 1.1
+          },
+          {
+            "title": "Paid by card",
+            "sub": "into your own Stripe",
+            "at": 2.0
+          },
+          {
+            "title": "Marked paid",
+            "sub": "on its own, when they pay",
+            "at": 2.9
+          },
+          {
+            "title": "In your inbox",
+            "sub": "on the client's thread",
+            "at": 3.8
+          }
+        ],
+        "footer": {
+          "label": "FOLLOW-UPS",
+          "value": "0"
+        },
+        "sky": true
+      }
+    },
+    {
+      "type": "cta",
+      "at": 19.9,
+      "dur": 3.7,
+      "props": {
+        "logo": "marketing/brands/snap-logo.png",
+        "name": "Snap it.",
+        "lines": [
+          "Booking · Contracts · Invoices · Galleries"
+        ],
+        "offer": "*0%* commission. *Free* to start.",
+        "url": "snaphq.app",
+        "sky": true
+      }
+    }
+  ],
+  "caption": "Sent the invoice three weeks ago. Still \"just following up\".\n\nReminder emails, sticky notes, a voicemail you rehearsed twice. Chasing a deposit is a part-time job nobody signed up for.\nNone of that is photography.\n\nIn Snap, the invoice goes out with a pay link inside. Your client pays by card, the money goes straight into your own Stripe, and the invoice marks itself paid. You see it land on their thread in your inbox. Snap takes 0% commission.\nIt is not magic: pay links need your Stripe account connected, and Stripe's own processing fee still applies.\n\nStart free at snaphq.app",
+  "hashtags": [
+    "#weddingphotographer",
+    "#photographybusiness",
+    "#gettingpaid",
+    "#photographerworkflow",
+    "#smallbusinessowner",
+    "#photographytips",
+    "#invoicing"
+  ],
+  "ad": {
+    "primary_text": "Stop chasing deposits. Snap invoices carry a pay link, the money goes to your own Stripe, and the invoice marks itself paid. 0% commission.",
+    "headline": "Send it once. Get paid.",
+    "description": "Free to start at snaphq.app",
+    "cta_button": "Sign Up",
+    "placements": [
+      "instagram_reels",
+      "facebook_reels",
+      "instagram_stories",
+      "facebook_stories"
+    ]
+  }
+}

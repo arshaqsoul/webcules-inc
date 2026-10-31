@@ -1,0 +1,57 @@
+{
+  "id": "A03",
+  "title": "Are the photos ready yet?",
+  "series": "Snap it. - the wish",
+  "brand": "snap",
+  "cover": 1.2,
+  "caption": "Are the photos ready yet?\n\nEvery photographer knows the message. With Snap you deliver a private online gallery; your client gets it, \"Gallery delivered\" lands in your Snap inbox, and you see when they open it for the first time.\nFive active galleries on the Free plan, 0% commission.\n\nIt is not magic: you still edit the photos. Snap just makes delivering them the easy part.\n\nStart free at snaphq.app",
+  "hashtags": [
+    "#familyphotographer",
+    "#photographybusiness",
+    "#photographerlife",
+    "#clientgallery",
+    "#photographerworkflow",
+    "#smallbusinessowner"
+  ],
+  "ad": {
+    "primary_text": "Deliver a private online gallery. \"Gallery delivered\" lands in your Snap inbox and you see when your client opens it. 0% commission, free to start.",
+    "headline": "Are the photos ready yet?",
+    "description": "Free to start at snaphq.app",
+    "cta_button": "Sign Up",
+    "placements": [
+      "instagram_reels",
+      "facebook_reels",
+      "instagram_stories",
+      "facebook_stories"
+    ]
+  },
+  "claims": [
+    {
+      "text": "Gallery delivered - {client} lands in the Snap inbox",
+      "source": "apps/snap/lib/shares/notify.ts",
+      "match": "eventType: \"gallery.delivered\""
+    },
+    {
+      "text": "Gallery first view lands in the Snap inbox",
+      "source": "apps/snap/lib/shares/gallery-auth.ts",
+      "match": "Client opened their gallery for the first time"
+    },
+    {
+      "text": "Five active galleries on the Free plan",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "maxActiveGalleries: 5"
+    },
+    {
+      "text": "0% commission",
+      "source": "apps/snap/lib/connect.ts",
+      "match": "No application_fee_amount, ever."
+    },
+    {
+      "text": "Free to start (Free plan, $0)",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "id: \"free\", name: \"Free\", priceMonthlyUsd: 0"
+    }
+  ],
+  "painFrom": "E003-a-day-out-here",
+  "endcard": false
+}

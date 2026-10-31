@@ -1,0 +1,63 @@
+{
+  "about": "A07 shot list: a Snap it. spot (see episodes/A01-just-sign).",
+  "dir": "out/A07",
+  "w": 720,
+  "h": 1280,
+  "keyframes": {
+    "a07tree": 10501,
+    "a07diorama": 20040
+  },
+  "shots": [
+    {
+      "name": "a07tree",
+      "seed": 77,
+      "prompt": "Very slow, very slight push-in, no zoom, no cuts. In a cosy holiday studio a stylized 3D animated photographer crouches shooting a laughing family under a lit Christmas tree. The room stays bright, warm and sharply lit with vivid saturated colours and strong contrast, never washed out, no haze, no fog, no mist, no fade, no glow bloom. On the wall behind them small glowing lavender paper tags pop onto the board one after another with a tiny sparkle. The photographer glances back at the board, grins, and the family laugh and give a thumbs up. Same faces, same clothes, same place, nothing morphs.",
+      "use": [
+        0,
+        4.6
+      ],
+      "overlay": {
+        "lines": {
+          "lines": [
+            "I wish minis",
+            "*booked* themselves."
+          ],
+          "at": 0.2,
+          "out": 1.9,
+          "y": 330,
+          "size": 96
+        },
+        "cardAt": 3.3,
+        "toast": {
+          "title": "New booking - Patel family",
+          "sub": "Mini session, from your booking page"
+        }
+      }
+    },
+    {
+      "name": "a07m1",
+      "seed": 17,
+      "move": true,
+      "to": "a07diorama",
+      "prompt": "Continuous single take. The camera pulls back smoothly and quickly, up and away from the character, revealing the whole scene as a small cutaway diorama sitting on a pale lavender studio backdrop. Everyone stays exactly where they are, nobody walks, floats or grows. Only the camera moves. No cuts, no fades, no morphing, no dissolve.",
+      "speed": 1.4
+    },
+    {
+      "name": "a07diorama",
+      "seed": 58,
+      "prompt": "Very slow, very slight push-in; the whole diorama stays in frame the entire time; no zoom, no cuts. On a small diorama of a cosy holiday mini-session studio on a pale lavender backdrop, the tiny stylized 3D animated photographer photographs a tiny family under the tree while little glowing lavender tags settle onto the wall board. The diorama does not change shape. Same faces, same clothes, nothing drifts. Clean pale backdrop throughout, crisp, no haze, no fog. Feels light and satisfied. Keep the pale lavender backdrop and the room bright and crisp from the first frame to the last.",
+      "use": [
+        0,
+        4.4
+      ],
+      "overlay": {
+        "wordmark": {
+          "at": 0.7,
+          "offer": "*0%* commission. *Free* to start.",
+          "url": "snaphq.app",
+          "y": 330
+        }
+      }
+    }
+  ]
+}

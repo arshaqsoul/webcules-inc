@@ -1,0 +1,33 @@
+{
+  "about": "G02 shot list for hybrid/run-clips.mjs, frames.mjs and spec.mjs (see the growth-motion-reel skill).",
+  "dir": "out/G02",
+  "w": 720,
+  "h": 1280,
+  "keyframes": {
+    "g02": 6103
+  },
+  "shots": [
+    {
+      "name": "g02",
+      "seed": 11,
+      "prompt": "Static camera. The camera does not move at all: no push-in, no zoom, no pan, no tilt, no cuts. In a pastel lavender glass studio, tiny realistic figurines stand on the floor. A soft puff of sparkling lavender light rises from the family on the right. The ribbon of iridescent glass light lifts off the floor, swirls gracefully through the air from the family toward the photographer on the left, and gathers into one small glowing round glass coin that floats down and settles in her open hand. She looks at the coin, laughs and turns to the family; the mother and father smile and wave, the girl in the red dress jumps once with joy, the puppy wags its tail. Soft diffused light, gentle sparkles, soft reflections on the floor. Everyone stays the same size and in the same place; same faces, same clothes, nothing drifts. Feels light, a little magical, a weight lifted.",
+      "overlay": {
+        "lift": 200,
+        "poster": {
+          "brand": "snap",
+          "kicker": "Get paid",
+          "headline": [
+            "I wish they'd",
+            "just *pay*."
+          ],
+          "out": 1.6
+        },
+        "cardAt": 2.4,
+        "toast": {
+          "title": "Invoice INV-0042 paid",
+          "sub": "into your own Stripe"
+        }
+      }
+    }
+  ]
+}

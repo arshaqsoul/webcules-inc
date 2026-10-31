@@ -173,6 +173,7 @@ NOTES: <at most 5 lines: decisions, risks, anything the next role must know>
 | `growth/LESSONS.md` | every pitfall already hit, and why |
 | `growth/examples/PP-003/WALKTHROUGH.md` | the worked example, annotated |
 | `growth/scripts/reel.mjs` | `new`, `check`, `make`, `status`, `music` for any reel |
+| `growth/motion/` | **motion reels** (the "Snap it." series): generated miniature worlds under code-drawn Snap moments, no staging needed; made by the `growth-motion` agent with the `growth-motion-reel` skill; start with `growth/motion/INSTAGRAM.md` |
 | `growth/scripts/music/` | the trailer-score pipeline: ComfyUI client, beat analysis, sync planner, mixer |
 | `growth/scripts/sync.mjs` | push and pull finished media through the private R2 bucket |
 | `growth/briefs/` | briefs for launch records (committed) |
