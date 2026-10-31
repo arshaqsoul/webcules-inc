@@ -15,7 +15,7 @@ import { getStripe } from "@/lib/stripe";
 export const GRACE_DAYS = 14;
 const PAID_PLANS: PlanId[] = ["lite", "studio", "pro"];
 
-async function ensurePrice(stripe: Stripe, planId: PlanId): Promise<Stripe.Price | null> {
+export async function ensurePrice(stripe: Stripe, planId: PlanId): Promise<Stripe.Price | null> {
   const def = PLANS[planId];
   const existing = await stripe.prices.list({
     active: true,
