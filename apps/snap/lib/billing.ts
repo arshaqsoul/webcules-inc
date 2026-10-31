@@ -83,18 +83,35 @@ async function ensureFoundingOffer(stripe: Stripe, liteProductId: string): Promi
         metadata: { snap_offer: "founding" },
       });
     }
-    const promo = await stripe.promotionCodes.list({ code: FOUNDING_OFFER.code, limit: 100 });
-    const onCoupon = promo.data.some(
-      (pc: Stripe.PromotionCode) =>
-        typeof pc.promotion.coupon === "string"
-          ? pc.promotion.coupon === coupon!.id
-          : pc.promotion.coupon?.id === coupon!.id,
+    const promo = await stripe.promotionCodes.list({
+      code: FOUNDING_OFFER.code,
+      limit: 100,
+      expand: ["data.promotion.coupon"],
+    });
+    const pc = promo.data[0];
+    // The REST payload has been observed omitting `promotion` on list results,
+    // which crashed every re-run here (WEBC-127 QA) — read defensively.
+    const pcCoupon = (pc?.promotion as { coupon?: string | { id?: string } } | undefined)?.coupon;
+    const pcCouponId = typeof pcCoupon === "string" ? pcCoupon : pcCoupon?.id;
+    console.log(
+      `billing: founding-offer state: coupon=${coupon.id} code=${pc ? pc.id : "none"} active=${pc ? String(pc.active) : "-"} codeCoupon=${pcCouponId ?? "-"}`,
     );
-    if (!onCoupon) {
+    if (pc && pcCouponId === coupon.id) {
+      // Ours — heal a deactivated code instead of crashing into the catch.
+      if (!pc.active) await stripe.promotionCodes.update(pc.id, { active: true });
+      return;
+    }
+    try {
       await stripe.promotionCodes.create({
         promotion: { type: "coupon", coupon: coupon.id },
         code: FOUNDING_OFFER.code,
       });
+    } catch (err) {
+      // Codes are unique per account: a dead/foreign promotion code squatting
+      // FOUNDING can only be repaired in the Stripe dashboard.
+      console.error(
+        `billing: FOUNDING is held by promotion code ${pc?.id ?? "?"} (active=${pc ? String(pc.active) : "?"}, coupon=${pcCouponId ?? "none"}) — repair it in the Stripe dashboard: ${String(err)}`,
+      );
     }
   } catch (err) {
     console.error("billing: founding-offer ensure failed:", String(err));
