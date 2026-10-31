@@ -71,7 +71,7 @@ async function ensureFoundingOffer(stripe: Stripe, liteProductId: string): Promi
     // collide with the FOUNDING code.
     const allCodes = await stripe.promotionCodes.list({ limit: 100 });
     console.log(
-      `billing: founding-offer inventory: coupons=[${coupons.data.map((c) => `${c.id}:${c.name}:${c.valid ? "valid" : "invalid"}`).join(", ")}] codes=[${allCodes.data.map((p) => `${p.id}:${p.code}:${p.active ? "active" : "inactive"}`).join(", ")}]`,
+      `billing: founding-offer inventory: coupons=[${coupons.data.map((c: { id: string; name?: string; valid?: boolean; livemode?: boolean }) => `${c.id}:${c.name}:${c.valid ? "valid" : "invalid"}`).join(", ")}] codes=[${allCodes.data.map((p: { id: string; code?: string; active?: boolean }) => `${p.id}:${p.code}:${p.active ? "active" : "inactive"}`).join(", ")}]`,
     );
     let coupon: Stripe.Coupon | undefined = coupons.data.find(
       (c: Stripe.Coupon) => c.metadata?.snap_offer === "founding",
