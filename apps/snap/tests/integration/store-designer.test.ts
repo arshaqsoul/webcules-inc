@@ -19,6 +19,7 @@ import {
   detachPriceListFromGrant,
   getStoreOpen,
   listAllProducts,
+  listPriceLists,
   setStoreOpen,
 } from "@/lib/commerce";
 import { getSetupState } from "@/lib/repos/setup";
@@ -140,6 +141,28 @@ describe("products overview", () => {
     expect(prints.maxPriceCents).toBe(1800);
     expect(prints.priceListCurrency).toBe("USD");
     expect(await listAllProducts(s.organizationId)).toHaveLength(3); // stable read
+  });
+});
+
+describe("price lists table count (WEBC-126)", () => {
+  it("listPriceLists returns the true per-list product count, not 0", async () => {
+    const s = await seedStudio({ plan: "studio" });
+    const t = await createPriceListFromTemplate(s.organizationId, "portrait", s.userId);
+    expect(t.ok).toBe(true);
+    const empty = await createPriceList(s.organizationId, { name: "Empty list", currency: "usd" });
+    expect(empty.ok).toBe(true);
+
+    const lists = await listPriceLists(s.organizationId);
+    expect(lists.find((l) => l.name === "Portrait session")?.productCount).toBe(3); // the template's 3 products
+    expect(lists.find((l) => l.name === "Empty list")?.productCount).toBe(0);
+
+    // cross-tenant safety: another studio's products never leak into the count
+    const other = await seedStudio({ plan: "studio" });
+    expect(await createProduct(other.organizationId, { priceListId: lists[0].id, kind: "digital", name: "Stolen" })).toEqual({
+      ok: false,
+      error: "not_found",
+    });
+    expect((await listPriceLists(s.organizationId)).find((l) => l.name === "Portrait session")?.productCount).toBe(3);
   });
 });
 
