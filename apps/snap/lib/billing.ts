@@ -48,6 +48,59 @@ async function ensurePrice(stripe: Stripe, planId: PlanId): Promise<Stripe.Price
   }
 }
 
+/* ---------------- Founding-studio offer (WEBC-127) ----------------
+ * Lite at $5/mo for the first 3 months — $10 off/month, first 20 studios.
+ * Ensured idempotently like the prices: the worker holds the Stripe key, so
+ * the coupon + customer-facing code FOUNDING are found-or-created on first
+ * use, never manually in the dashboard. Failures never block checkout —
+ * `allow_promotion_codes` just shows the field. */
+const FOUNDING_OFFER = {
+  /** Customer-facing promo code. */
+  code: "FOUNDING",
+  /** $10 off per month (Lite is $15 → $5 for 3 months). */
+  amountOff: 1000,
+  maxRedemptions: 20,
+  /** 2026-11-30T23:59:59Z. */
+  redeemBy: Math.floor(Date.UTC(2026, 10, 30, 23, 59, 59) / 1000),
+};
+
+async function ensureFoundingOffer(stripe: Stripe, liteProductId: string): Promise<void> {
+  try {
+    const coupons = await stripe.coupons.list({ limit: 100 });
+    let coupon: Stripe.Coupon | undefined = coupons.data.find(
+      (c: Stripe.Coupon) => c.metadata?.snap_offer === "founding",
+    );
+    if (!coupon) {
+      coupon = await stripe.coupons.create({
+        name: "Founding studio",
+        amount_off: FOUNDING_OFFER.amountOff,
+        currency: "usd",
+        duration: "repeating",
+        duration_in_months: 3,
+        applies_to: { products: [liteProductId] },
+        max_redemptions: FOUNDING_OFFER.maxRedemptions,
+        redeem_by: FOUNDING_OFFER.redeemBy,
+        metadata: { snap_offer: "founding" },
+      });
+    }
+    const promo = await stripe.promotionCodes.list({ code: FOUNDING_OFFER.code, limit: 100 });
+    const onCoupon = promo.data.some(
+      (pc: Stripe.PromotionCode) =>
+        typeof pc.promotion.coupon === "string"
+          ? pc.promotion.coupon === coupon!.id
+          : pc.promotion.coupon?.id === coupon!.id,
+    );
+    if (!onCoupon) {
+      await stripe.promotionCodes.create({
+        promotion: { type: "coupon", coupon: coupon.id },
+        code: FOUNDING_OFFER.code,
+      });
+    }
+  } catch (err) {
+    console.error("billing: founding-offer ensure failed:", String(err));
+  }
+}
+
 /** True only when Stripe definitively says the customer is gone (never created
  * on this Stripe account, or deleted). Transient/auth errors are NOT "gone". */
 async function customerIsGone(stripe: Stripe, customerId: string): Promise<boolean> {
@@ -221,10 +274,16 @@ export async function createPlanCheckout(
 
   const price = await ensurePrice(stripe, planId);
   if (!price) return { url: null, mode: "swapped" };
+  // WEBC-127: promo codes at checkout; the FOUNDING offer is ensured before
+  // the user reaches the Stripe page so the code exists when they type it.
+  const productId =
+    typeof price.product === "string" ? price.product : (price.product?.id ?? null);
+  if (planId === "lite" && productId) await ensureFoundingOffer(stripe, productId);
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     customer: customerId,
     line_items: [{ price: price.id, quantity: 1 }],
+    allow_promotion_codes: true,
     subscription_data: { metadata: { organizationId, plan: planId } },
     metadata: { organizationId, plan: planId, kind: "plan_checkout" },
     success_url: `${baseUrl}/dashboard/settings/billing?return=1`,

@@ -38,6 +38,17 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.32.0" date="October 31, 2026">
+        <p>
+          <strong>The Founding Studio offer is live.</strong>{" "}
+          The first 20 studios to go paid can start Lite for <strong>$5/month for the first
+          3 months</strong> instead of $15 — after the three months it returns to the regular
+          $15/mo, nothing else changes. Pick Lite on the billing page (or from the pricing
+          section) and enter the code <strong>FOUNDING</strong> at checkout — a promotion-code
+          box now appears on every plan checkout. The discount applies to Lite only, is limited
+          to the first 20 studios, and the offer ends November 30, 2026.
+        </p>
+      </Release>
       <Release version="0.31.0" date="October 25, 2026">
         <p>
           <strong>The Galleries page now reads like your galleries.</strong>{" "}
