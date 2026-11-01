@@ -38,6 +38,18 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.33.0" date="October 31, 2026">
+        <p>
+          <strong>The full dashboard now fits on every laptop.</strong> On
+          smaller screens the sidebar could hide Templates and Settings below
+          the fold, with no hint they existed. They are now pinned to the
+          bottom of the sidebar &mdash; always one click away &mdash; while the
+          rest of the navigation scrolls above them. The Studio setup
+          checklist moved out of the sidebar onto the Overview page, where it
+          has room to breathe; a slim progress link in the sidebar keeps track
+          until every step is done.
+        </p>
+      </Release>
       <Release version="0.32.1" date="October 31, 2026">
         <p>
           <strong>Fixed: price lists showed “0 products”.</strong>{" "}
