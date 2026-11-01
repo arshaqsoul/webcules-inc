@@ -38,6 +38,15 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.34.0" date="October 31, 2026">
+        <p>
+          <strong>Getting around just got easier.</strong> The Snap logo on the
+          sign-in, sign-up and password pages now takes you back to the home
+          page — it used to sit there doing nothing. And on phones, the top bar
+          now has a menu button that opens the full page menu (Product,
+          Features, Pricing, FAQ), where those links used to simply disappear.
+        </p>
+      </Release>
       <Release version="0.33.0" date="October 31, 2026">
         <p>
           <strong>The full dashboard now fits on every laptop.</strong> On

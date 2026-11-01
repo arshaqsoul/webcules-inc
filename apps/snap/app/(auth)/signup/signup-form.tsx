@@ -109,10 +109,14 @@ export function SignupForm({ initialPlan }: { initialPlan: PlanChoice | null }) 
   return (
     <main className="flex min-h-screen items-center justify-center px-6 py-12">
       <div className="w-full max-w-md">
-        <div className="mb-8 flex items-center gap-2">
+        <Link
+          href="/"
+          aria-label="Snap — back to home"
+          className="mb-8 flex w-fit items-center gap-2 rounded-md transition-opacity hover:opacity-80"
+        >
           <SnapMark className="h-6 w-6" />
           <span className="text-sm font-medium text-ink">Snap</span>
-        </div>
+        </Link>
         <div className="rounded-[12px] border border-hairline bg-surface-1 p-6">
           <h1 className="text-lg font-semibold text-ink">Create your studio</h1>
           <p className="mt-1 text-sm text-ink-subtle">
