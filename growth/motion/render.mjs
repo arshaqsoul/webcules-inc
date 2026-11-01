@@ -117,10 +117,31 @@ async function render(id) {
   writeFileSync(wav, synthesize(cues, duration, { seed: ep.spec.id, ...(ep.spec.audio ?? {}) }));
   writeFileSync(join(d, "cues.json"), JSON.stringify(cues, null, 1));
   const reel = join(d, "reel.mp4");
-  const mux = spawnSync("ffmpeg", ["-y", "-v", "error", "-i", silent, "-i", wav, "-filter:a", "loudnorm=I=-14:TP=-1.5:LRA=11", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-shortest", "-movflags", "+faststart", reel], { stdio: "inherit" });
+  const mux = spawnSync("ffmpeg", ["-y", "-v", "error", "-i", silent, "-i", wav, ...soundtrack(ep.spec, duration), "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-shortest", "-movflags", "+faststart", reel], { stdio: "inherit" });
   if (mux.status !== 0) throw new Error("mux failed");
   console.log(`render: ${reel} (${frames} frames in ${((Date.now() - started) / 1000).toFixed(0)}s)`);
   qc(id);
+}
+
+// The audio arguments for the mux. A reel gets its synthesised score (input 1) alone. A film (FILM.md)
+// adds its generated music, ducked under the voice-over, and the voice-over itself on top.
+function soundtrack(spec, duration) {
+  const st = spec.soundtrack;
+  if (!st) return ["-filter:a", "loudnorm=I=-14:TP=-1.5:LRA=11"];
+  const ins = [], chains = [`[1:a]volume=${st.sfxGain ?? 0.6}[sfx]`], mix = ["[sfx]"];
+  let k = 2;
+  const vo = st.vo ? k++ : null, music = st.music ? k++ : null;
+  if (vo) ins.push("-i", join(ROOT, st.vo));
+  if (music) ins.push("-i", join(ROOT, st.music));
+  if (vo) chains.push(`[${vo}:a]asplit=2[vo][key]`);
+  if (music) {
+    chains.push(`[${music}:a]volume=${st.musicGain ?? 0.55}[mus]`);
+    if (vo) { chains.push("[mus][key]sidechaincompress=threshold=0.04:ratio=6:attack=15:release=350[duck]"); mix.push("[duck]"); }
+    else mix.push("[mus]");
+  }
+  if (vo) mix.push("[vo]");
+  chains.push(`${mix.join("")}amix=inputs=${mix.length}:normalize=0,atrim=0:${duration},loudnorm=I=-14:TP=-1.5:LRA=11[a]`);
+  return [...ins, "-filter_complex", chains.join(";"), "-map", "0:v", "-map", "[a]"];
 }
 
 function check(id) {
@@ -138,12 +159,14 @@ function check(id) {
     if (!existsSync(join(HERE, "engine/scenes", `${sc.type}.js`))) problems.push(`unknown scene type ${sc.type}`);
     if (sc.at + sc.dur > s.duration + 0.001) problems.push(`scene ${sc.type} ends after the reel`);
   }
-  if (s.duration < 6 || s.duration > 60) problems.push("duration should be 6-60 s for a reel ad");
-  // Founder's copy rules: no em dashes anywhere in on-screen copy or the caption.
-  const copy = JSON.stringify(s.scenes) + (s.caption ?? "");
+  const maxDur = s.format === "film" ? 90 : 60;
+  if (s.duration < 6 || s.duration > maxDur) problems.push(`duration should be 6-${maxDur} s for a ${s.format === "film" ? "film" : "reel ad"}`);
+  for (const [k, f] of Object.entries(s.soundtrack ?? {})) if (typeof f === "string" && !existsSync(join(ROOT, f))) problems.push(`soundtrack ${k} is missing: ${f} (run hybrid/${k === "vo" ? "vo" : "score"}.mjs)`);
+  // Founder's copy rules: no em dashes anywhere in on-screen copy, the voice-over or the caption.
+  const copy = JSON.stringify(s.scenes) + JSON.stringify(s.vo ?? []) + (s.caption ?? "");
   if (copy.includes("\u2014")) problems.push("em dash found: use a plain dash (founder rule)");
-  // Price, percentage and tier words on screen must be backed by a claim.
-  const onScreen = JSON.stringify(s.scenes);
+  // Price, percentage and tier words on screen or spoken must be backed by a claim.
+  const onScreen = JSON.stringify(s.scenes) + JSON.stringify(s.vo ?? []);
   for (const m of onScreen.match(/\$\d+|\d+\s?%|\d+\s?GB|\bfree\b|\bFree\b/g) ?? []) {
     if (!(s.claims ?? []).some((c) => c.text.toLowerCase().includes(m.toLowerCase().replace(/\s/g, "")) || c.text.toLowerCase().includes(m.toLowerCase()))) problems.push(`on-screen "${m}" has no claim backing it`);
   }
@@ -206,7 +229,7 @@ function packageEpisode(id) {
   // Hybrid reels (clip scenes) carry generated footage; the founder must turn on the platform's AI label.
   const hybrid = s.scenes.some((sc) => sc.type === "clip");
   const made = hybrid
-    ? "Hybrid: keyframes and clips generated on local ComfyUI (Z-Image, Wan 2.2); every word, inbox card and the end card drawn in code (growth/motion), no recording.\n\n**Turn on Instagram's and Facebook's AI label when posting (generated footage).**"
+    ? `Hybrid: keyframes and clips generated on local ComfyUI (Z-Image, ${s.format === "film" ? "Qwen-Image-Edit, Wan 2.2, RIFE; voice-over by Piper TTS and music by ACE-Step, both generated" : "Wan 2.2"}); every word, inbox card and the end card drawn in code (growth/motion), no recording.\n\n**Turn on Instagram's and Facebook's AI label when posting (generated footage${s.format === "film" ? ", synthetic voice and music" : ""}).**`
     : "Made entirely in code (growth/motion), no recording and no generated video.";
   const md = `# Reel package: ${s.id} - ${s.title}
 

@@ -87,5 +87,39 @@ try {
 if (fs.existsSync(path.join(MOTION, "vendor/fonts/inter-latin-wght-normal.woff2"))) ok("Inter (vendored)");
 else bad("vendor/fonts/inter-latin-wght-normal.woff2", "restore growth/motion/vendor/fonts from git");
 
-console.log(problems.length ? `\n${problems.length} missing: fix them before generating.` : "\nready: this machine can make hybrid reels.");
+// 3. Films (FILM.md, --film): derived keyframes, RIFE, the voice-over and the generated score.
+const film = process.argv.includes("--film");
+if (film && up) {
+  const FILM_NEED = {
+    diffusion_models: [["qwen_image_edit_2511_fp8mixed.safetensors", `${HF}/Qwen-Image-Edit_ComfyUI/resolve/main/split_files/diffusion_models/qwen_image_edit_2511_fp8mixed.safetensors`]],
+    text_encoders: [["qwen_2.5_vl_7b_fp8_scaled.safetensors", `${HF}/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors`]],
+    vae: [["qwen_image_vae.safetensors", `${HF}/Qwen-Image_ComfyUI/resolve/main/split_files/vae/qwen_image_vae.safetensors`]],
+    loras: [["Qwen-Image-Edit-2511-Lightning-4steps-V1.0-bf16.safetensors", "https://huggingface.co/lightx2v/Qwen-Image-Edit-2511-Lightning"]],
+    frame_interpolation: [["rife_v4.26.safetensors", `${HF}/Frame-Interpolation/resolve/main/frame_interpolation/rife_v4.26.safetensors`]],
+    checkpoints: [["ace_step_1.5_turbo_aio.safetensors", `${HF}/ace_step_1.5_ComfyUI_files`]],
+  };
+  for (const n of ["TextEncodeQwenImageEditPlus", "CFGNorm", "LoadVideo", "GetVideoComponents", "FrameInterpolate", "FrameInterpolationModelLoader", "TextEncodeAceStepAudio1.5"]) {
+    const o = await get(`/object_info/${encodeURIComponent(n)}`).catch(() => ({}));
+    if (o[n]) ok(`node ${n}`);
+    else bad(`node ${n}`, "update ComfyUI to 0.36 or later (core node)");
+  }
+  for (const [folder, files] of Object.entries(FILM_NEED)) {
+    const have = (await get(`/models/${folder}`).catch(() => [])).map((f) => f.replace(/\\/g, "/"));
+    for (const [file, url] of files) {
+      if (have.includes(file)) ok(`${folder}/${file}`);
+      else bad(`${folder}/${file}`, `download ${url} into ComfyUI/models/${folder}/, then refresh ComfyUI`);
+    }
+  }
+}
+if (film) {
+  const { PIPER_PY, PIPER_VOICES } = await import("./vo.mjs");
+  const piper = spawnSync(PIPER_PY, ["-I", "-c", "import piper"], { encoding: "utf8" });
+  if (piper.status === 0) ok(`Piper TTS (${PIPER_PY})`);
+  else bad("Piper TTS for the voice-over", `uv venv ~/.cache/growth-tts/venv && uv pip install --python ~/.cache/growth-tts/venv/bin/python piper-tts (or set GROWTH_PIPER_PY)`);
+  const voices = fs.existsSync(PIPER_VOICES) ? fs.readdirSync(PIPER_VOICES).filter((f) => f.endsWith(".onnx")) : [];
+  if (voices.length) ok(`Piper voices: ${voices.map((v) => v.replace(".onnx", "")).join(", ")}`);
+  else bad("a Piper voice", `cd ${PIPER_VOICES} && ${PIPER_PY} -m piper.download_voices en_US-ryan-high`);
+}
+
+console.log(problems.length ? `\n${problems.length} missing: fix them before generating.` : `\nready: this machine can make hybrid ${film ? "films" : "reels"}.`);
 process.exit(problems.length ? 1 : 0);

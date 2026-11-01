@@ -1,0 +1,360 @@
+{
+  "id": "F01",
+  "title": "Chasing Light",
+  "series": "Snap it. - Film",
+  "brand": "snap",
+  "fps": 30,
+  "duration": 30.34,
+  "cover": 0.4,
+  "stills": [
+    0,
+    0.6,
+    1.9,
+    5.966,
+    8.566,
+    11.199,
+    13.799,
+    18.799,
+    21.799,
+    23.065,
+    24.298,
+    25.931,
+    27.331,
+    30.14
+  ],
+  "pain": {
+    "statement": "Photographers want to spend the day shooting, but bookings, contracts, payments and gallery follow-ups pull them back to the desk and spread across separate tools.",
+    "persona": "any",
+    "ledger": null,
+    "evidence": [
+      {
+        "url": "https://www.aiarty.com/ai-photography-guide/best-booking-app-for-photographers.htm",
+        "captured_at": "2026-10-27",
+        "summary": "Guide describes booking sessions in one app and delivering galleries in another, the stitched-together setup many photographers run."
+      },
+      {
+        "url": "https://petapixel.com/2023/09/25/photographer-goes-viral-calling-up-clients-to-pay-outstanding-invoices",
+        "captured_at": "2026-10-27",
+        "summary": "News piece (Sep 2023): a photographer's video about phoning clients over unpaid invoices drew millions of views and many photographers said the same."
+      },
+      {
+        "url": "https://fstoppers.com/business/when-should-you-receive-payment-your-work-503435",
+        "captured_at": "2026-10-27",
+        "summary": "Photography business article on chasing invoice payments well past 60 days."
+      },
+      {
+        "url": "https://blog.pic-time.com/blog/honeybook-and-pic-time",
+        "captured_at": "2026-10-27",
+        "summary": "A gallery vendor explains pairing its galleries with a separate client-management tool, so the workflow lives in two products."
+      }
+    ]
+  },
+  "claims": [
+    {
+      "text": "New booking event lands in the Snap inbox",
+      "source": "apps/snap/lib/repos/bookings.ts",
+      "match": "eventType: \"booking.created\""
+    },
+    {
+      "text": "Clients book from your booking page, on the Free plan",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "maxSessionTypes: 1"
+    },
+    {
+      "text": "Contract signed event lands in the Snap inbox; clients sign in the browser",
+      "source": "apps/snap/lib/contracts.ts",
+      "match": "eventType: \"contract.signed\""
+    },
+    {
+      "text": "Invoice paid event; payment goes into your own Stripe",
+      "source": "apps/snap/lib/invoices.ts",
+      "match": "money landed"
+    },
+    {
+      "text": "Clients pay through your own Stripe",
+      "source": "apps/snap/lib/connect.ts",
+      "match": "the photographer's own Stripe account"
+    },
+    {
+      "text": "Gallery first view event lands in the Snap inbox",
+      "source": "apps/snap/lib/shares/gallery-auth.ts",
+      "match": "Client opened their gallery for the first time"
+    },
+    {
+      "text": "Unified inbox on the Free plan",
+      "source": "apps/snap/lib/tier-cards.ts",
+      "match": "Unified inbox"
+    },
+    {
+      "text": "0% commission",
+      "source": "apps/snap/lib/connect.ts",
+      "match": "No application_fee_amount, ever."
+    },
+    {
+      "text": "Free to start (Free plan, $0)",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "id: \"free\", name: \"Free\", priceMonthlyUsd: 0"
+    },
+    {
+      "text": "Gallery delivered event lands in the Snap inbox",
+      "source": "apps/snap/lib/shares/notify.ts",
+      "match": "eventType: \"gallery.delivered\""
+    }
+  ],
+  "scenes": [
+    {
+      "type": "clip",
+      "at": 0,
+      "dur": 0.8,
+      "props": {
+        "frames": "growth/motion/out/F01/frames/poster/%04d.jpg",
+        "count": 24,
+        "fps": 30,
+        "padFor": 30.34
+      }
+    },
+    {
+      "type": "clip",
+      "at": 0.8,
+      "dur": 1.3,
+      "props": {
+        "frames": "growth/motion/out/F01/frames/diorama/%04d.jpg",
+        "count": 39,
+        "fps": 30,
+        "pad": false
+      }
+    },
+    {
+      "type": "clip",
+      "at": 2.1,
+      "dur": 2.033,
+      "props": {
+        "frames": "growth/motion/out/F01/frames/m_dawn/%04d.jpg",
+        "count": 61,
+        "fps": 30,
+        "pad": false,
+        "whoosh": true
+      }
+    },
+    {
+      "type": "clip",
+      "at": 4.133,
+      "dur": 2.033,
+      "props": {
+        "frames": "growth/motion/out/F01/frames/camper/%04d.jpg",
+        "count": 61,
+        "fps": 30,
+        "pad": false
+      }
+    },
+    {
+      "type": "clip",
+      "at": 6.166,
+      "dur": 2.733,
+      "props": {
+        "frames": "growth/motion/out/F01/frames/lake/%04d.jpg",
+        "count": 82,
+        "fps": 30,
+        "flash": 1.9,
+        "pad": false
+      }
+    },
+    {
+      "type": "clip",
+      "at": 8.899,
+      "dur": 2.5,
+      "props": {
+        "frames": "growth/motion/out/F01/frames/lake_close/%04d.jpg",
+        "count": 75,
+        "fps": 30,
+        "cardAt": 0.6,
+        "toast": {
+          "title": "New booking - Hannah Lee",
+          "sub": "Sunrise photo walk"
+        },
+        "pad": false,
+        "logo": "marketing/brands/snap-logo.png"
+      }
+    },
+    {
+      "type": "clip",
+      "at": 11.399,
+      "dur": 5,
+      "props": {
+        "frames": "growth/motion/out/F01/frames/falls/%04d.jpg",
+        "count": 150,
+        "fps": 30,
+        "flash": 1.4,
+        "cardAt": 2,
+        "toast": {
+          "title": "Contract signed - Waterfall session",
+          "sub": "Signed in the browser"
+        },
+        "pad": false,
+        "logo": "marketing/brands/snap-logo.png"
+      }
+    },
+    {
+      "type": "clip",
+      "at": 16.399,
+      "dur": 3,
+      "props": {
+        "frames": "growth/motion/out/F01/frames/cliff/%04d.jpg",
+        "count": 90,
+        "fps": 30,
+        "flash": 1.6,
+        "pad": false
+      }
+    },
+    {
+      "type": "clip",
+      "at": 19.399,
+      "dur": 2.633,
+      "props": {
+        "frames": "growth/motion/out/F01/frames/tailgate/%04d.jpg",
+        "count": 79,
+        "fps": 30,
+        "cardAt": 0.9,
+        "toast": {
+          "title": "Gallery delivered - Ana & Leo",
+          "sub": "48 photos"
+        },
+        "pad": false,
+        "logo": "marketing/brands/snap-logo.png"
+      }
+    },
+    {
+      "type": "clip",
+      "at": 22.032,
+      "dur": 1.233,
+      "props": {
+        "frames": "growth/motion/out/F01/frames/sky/%04d.jpg",
+        "count": 37,
+        "fps": 30,
+        "pad": false
+      }
+    },
+    {
+      "type": "clip",
+      "at": 23.265,
+      "dur": 1.233,
+      "props": {
+        "frames": "growth/motion/out/F01/frames/sofa/%04d.jpg",
+        "count": 37,
+        "fps": 30,
+        "cardAt": 0.2,
+        "toast": {
+          "title": "Client opened their gallery for the first time",
+          "sub": "Ana & Leo"
+        },
+        "pad": false,
+        "logo": "marketing/brands/snap-logo.png"
+      }
+    },
+    {
+      "type": "clip",
+      "at": 24.498,
+      "dur": 1.633,
+      "props": {
+        "frames": "growth/motion/out/F01/frames/mug/%04d.jpg",
+        "count": 49,
+        "fps": 30,
+        "cardAt": 0.3,
+        "toast": {
+          "title": "Invoice INV-0108 paid",
+          "sub": "Paid into your Stripe"
+        },
+        "pad": false,
+        "logo": "marketing/brands/snap-logo.png"
+      }
+    },
+    {
+      "type": "phone",
+      "at": 26.131,
+      "dur": 4.2,
+      "props": {
+        "tagline": "Snap it.",
+        "offer": "*0%* commission. *Free* to start.",
+        "url": "snaphq.app",
+        "logo": "marketing/brands/snap-logo.png",
+        "title": "Inbox",
+        "backdrop": "growth/motion/assets/endcard/glass.jpg",
+        "tagAt": 0.85,
+        "rows": [
+          {
+            "at": 0.3,
+            "title": "New booking - Hannah Lee",
+            "sub": "Sunrise photo walk",
+            "time": "6:14 AM",
+            "color": "#ffb000"
+          },
+          {
+            "at": 0.42,
+            "title": "Contract signed - Waterfall session",
+            "sub": "Mia & Theo",
+            "time": "12:31 PM",
+            "color": "#2fb59a"
+          },
+          {
+            "at": 0.54,
+            "title": "Gallery delivered - Ana & Leo",
+            "sub": "48 photos",
+            "time": "7:52 PM",
+            "color": "#f26a4d"
+          },
+          {
+            "at": 0.66,
+            "title": "Client opened their gallery",
+            "sub": "For the first time",
+            "time": "9:40 PM",
+            "color": "#7a5cff"
+          },
+          {
+            "at": 0.78,
+            "title": "Invoice INV-0108 paid",
+            "sub": "Into your own Stripe",
+            "time": "10:05 PM",
+            "color": "#ff6fa0"
+          }
+        ]
+      }
+    }
+  ],
+  "caption": "Say you chase the light for a living.\n\nSunrise at the lake, a waterfall at noon, an elopement on the cliffs at golden hour, the Milky Way at night. While you shoot, clients book from your booking page, sign their contract in the browser, open the gallery you sent and pay into your own Stripe. It all lands in one Snap inbox.\n\nIt is not magic: you still send the contract, the invoice and the gallery. Snap just keeps every reply and payment in one place, with 0% commission.\n\nStart free at snaphq.app",
+  "hashtags": [
+    "#landscapephotographer",
+    "#adventurephotographer",
+    "#vanlife",
+    "#elopementphotographer",
+    "#photographerlife",
+    "#dayinthelife",
+    "#photographybusiness"
+  ],
+  "ad": {
+    "primary_text": "Chase the light. Your clients book, sign, open their gallery and pay in Snap, and it all lands in one inbox. 0% commission.",
+    "headline": "Snap it.",
+    "description": "Free to start at snaphq.app",
+    "cta_button": "Sign Up",
+    "placements": [
+      "instagram_reels",
+      "facebook_reels",
+      "instagram_stories",
+      "facebook_stories"
+    ]
+  },
+  "format": "film",
+  "soundtrack": {
+    "vo": "growth/motion/out/F01/vo.wav",
+    "music": "growth/motion/out/F01/music.wav",
+    "musicGain": 0.45,
+    "sfxGain": 0.6
+  },
+  "vo": [
+    "Say you chase the light for a living.",
+    "Now your sunrise walk books while you're out shooting.",
+    "Or you're behind a waterfall while their contract gets signed.",
+    "You can even deliver their gallery before the sun goes down.",
+    "Bookings. Contracts. Galleries. Payments.",
+    "Just Snap it."
+  ]
+}

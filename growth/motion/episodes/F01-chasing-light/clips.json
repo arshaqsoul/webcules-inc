@@ -1,0 +1,241 @@
+{
+  "about": "F01 Chasing Light shot list (FILM.md, brief.md). Output times: poster 0-0.8, diorama 0.8-2.1, m_dawn grow + dive 2.1-4.17, camper 4.17-6.2, lake 6.2-8.9, lake_close 8.9-11.4, falls 11.4-16.4, cliff 16.4-19.4, tailgate 19.4-22.0, sky 22.0-23.2, sofa 23.2-24.4, mug 24.4-26.0, then the end card.",
+  "dir": "out/F01",
+  "w": 720,
+  "h": 1280,
+  "interp": "rife",
+  "keyframes": {
+    "camper": 1001,
+    "diorama": 1002,
+    "lake": 1002,
+    "falls": 1001,
+    "cliff": 1003,
+    "tailgate": 1002,
+    "poster": 1001,
+    "stars": 1002,
+    "diorama_dawn": 3003,
+    "lake_close": 3003,
+    "mug": 3002,
+    "sofa": 3001,
+    "sky": 5002
+  },
+  "shots": [
+    {
+      "name": "poster",
+      "seed": 11,
+      "use": [
+        0,
+        0.8
+      ],
+      "prompt": "Static camera, no zoom, no cuts. A stylized 3D animated photographer stands as a silhouette on a high rocky ridge above a sea of pink and peach clouds at first light, camera raised; the mist drifts slowly in the valley and the gold rim of light on her edge brightens. Expressive stylized 3D animated performance, smooth character animation. Same faces, same clothes, same van, nothing morphs or drifts. Crisp, vivid colours and clear contrast throughout, no haze, no fade."
+    },
+    {
+      "name": "diorama",
+      "seed": 12,
+      "use": [
+        0,
+        1.3
+      ],
+      "camera": {
+        "drift": {
+          "zoom": [
+            1,
+            1.04
+          ],
+          "at": [
+            0.55,
+            0.5
+          ]
+        }
+      },
+      "prompt": "Static camera, no zoom, no cuts. A tiny isometric diorama of a granite ledge with a pine and a small teal camper van sits on a pale lavender studio backdrop in cool pre-dawn light; the van's windows glow warm and flicker softly, tiny star specks twinkle above the slab, a wisp of mist curls at the slab's edge. The diorama does not change shape. Clean pale backdrop throughout. Expressive stylized 3D animated performance, smooth character animation. Same faces, same clothes, same van, nothing morphs or drifts. Crisp, vivid colours and clear contrast throughout, no haze, no fade."
+    },
+    {
+      "name": "m_dawn",
+      "move": true,
+      "to": "diorama_dawn",
+      "seed": 13,
+      "speed": 1.0,
+      "camera": {
+        "push": {
+          "zoom": 4.5,
+          "from": 0.6,
+          "at": [
+            0.58,
+            0.49
+          ]
+        }
+      },
+      "prompt": "Continuous single take, static camera. On the tiny diorama on a pale lavender backdrop, dawn arrives: warm pink and gold light spreads across the slab from the left, the pine tip and van roof catch the gold, and soft white mist pours over the slab's front edge like a tiny waterfall of cloud while the star specks fade. The diorama, the van and the pine stay exactly where they are; only the light and the mist change. No cuts, no fades, no morphing, no dissolve. Expressive stylized 3D animated performance, smooth character animation. Same faces, same clothes, same van, nothing morphs or drifts. Crisp, vivid colours and clear contrast throughout, no haze, no fade."
+    },
+    {
+      "name": "camper",
+      "seed": 14,
+      "use": [
+        0.1,
+        2.13
+      ],
+      "camera": {
+        "land": {
+          "zoom": 1.7,
+          "dur": 0.7,
+          "at": [
+            0.42,
+            0.55
+          ]
+        }
+      },
+      "prompt": "Very slow, very slight push-in, no zoom, no cuts. At blue hour by a still alpine lake the stylized 3D animated photographer steps down out of her teal camper van's open side door with a tripod over her shoulder, her breath fogging in the cold air, and grins up at the peaks turning pink; mist drifts on the lake, the van's interior glows amber. Expressive stylized 3D animated performance, smooth character animation. Same faces, same clothes, same van, nothing morphs or drifts. Crisp, vivid colours and clear contrast throughout, no haze, no fade."
+    },
+    {
+      "name": "lake",
+      "seed": 15,
+      "use": [
+        0,
+        2.7
+      ],
+      "prompt": "Very slow, very slight push-in, no zoom, no cuts. At sunrise by a mirror-still alpine lake the photographer crouches on a round stone with her tripod low, eye to the camera, and presses the shutter; the sun flares through the pines, low mist drifts across the water and the golden peak's reflection shimmers as a ripple passes. Expressive stylized 3D animated performance, smooth character animation. Same faces, same clothes, same van, nothing morphs or drifts. Crisp, vivid colours and clear contrast throughout, no haze, no fade.",
+      "overlay": {
+        "flash": 1.9
+      }
+    },
+    {
+      "name": "lake_close",
+      "seed": 16,
+      "use": [
+        0,
+        2.5
+      ],
+      "camera": {
+        "whip": "out"
+      },
+      "prompt": "Static camera, no zoom, no cuts. A close-up of the photographer at the sunrise lake: she lowers the camera, looks at its screen and makes a small delighted fist with a big quiet smile, the golden light on her face and glasses, mist and the golden peak softly blurred behind her. Expressive stylized 3D animated performance, smooth character animation. Same faces, same clothes, same van, nothing morphs or drifts. Crisp, vivid colours and clear contrast throughout, no haze, no fade.",
+      "overlay": {
+        "cardAt": 0.6,
+        "toast": {
+          "title": "New booking - Hannah Lee",
+          "sub": "Sunrise photo walk"
+        }
+      }
+    },
+    {
+      "name": "falls",
+      "seed": 17,
+      "use": [
+        0,
+        5.0
+      ],
+      "camera": {
+        "whip": "in",
+        "push": {
+          "zoom": 2.6,
+          "from": 0.45,
+          "at": [
+            0.6,
+            0.45
+          ]
+        }
+      },
+      "prompt": "Very slow, very slight push-in, no zoom, no cuts. In a mossy fern gorge at midday golden sunbeams fan through the waterfall's spray and a small rainbow shimmers; on the wet rocks the man in the red rain jacket lifts the laughing woman in the yellow rain jacket off her feet as the spray splashes over them, while the photographer on the left keeps her camera up and fires, then laughs with them; water droplets sparkle. Expressive stylized 3D animated performance, smooth character animation. Same faces, same clothes, same van, nothing morphs or drifts. Crisp, vivid colours and clear contrast throughout, no haze, no fade.",
+      "overlay": {
+        "flash": 1.4,
+        "cardAt": 2.0,
+        "toast": {
+          "title": "Contract signed - Waterfall session",
+          "sub": "Signed in the browser"
+        }
+      }
+    },
+    {
+      "name": "cliff",
+      "seed": 18,
+      "use": [
+        0,
+        3.0
+      ],
+      "camera": {
+        "land": {
+          "zoom": 1.5,
+          "dur": 0.6,
+          "at": [
+            0.5,
+            0.4
+          ]
+        }
+      },
+      "prompt": "Very slow, very slight push-in, no zoom, no cuts. On grassy sea cliffs at golden hour the bride in the white dress spins on the grass near the edge, her dress flaring in the wind, while the groom laughs and holds her hand; in the foreground the photographer kneels low in the long golden grass and fires; the grass sways, the sun sits low and large over the calm sea. Expressive stylized 3D animated performance, smooth character animation. Same faces, same clothes, same van, nothing morphs or drifts. Crisp, vivid colours and clear contrast throughout, no haze, no fade.",
+      "overlay": {
+        "flash": 1.6
+      }
+    },
+    {
+      "name": "tailgate",
+      "seed": 19,
+      "use": [
+        0,
+        2.6
+      ],
+      "prompt": "Very slow, very slight push-in, no zoom, no cuts. At sunset on the cliff top the photographer sits in her teal camper van's open door with a blanket over her knees and a laptop on her lap, presses a key, then looks up at the big sun touching the sea and smiles; the van's warm bulbs glow, a breeze moves the blanket's fringe. Expressive stylized 3D animated performance, smooth character animation. Same faces, same clothes, same van, nothing morphs or drifts. Crisp, vivid colours and clear contrast throughout, no haze, no fade.",
+      "overlay": {
+        "cardAt": 0.9,
+        "toast": {
+          "title": "Gallery delivered - Ana & Leo",
+          "sub": "48 photos"
+        }
+      }
+    },
+    {
+      "name": "sky",
+      "seed": 20,
+      "use": [
+        0,
+        1.2
+      ],
+      "camera": {
+        "drift": {
+          "zoom": [
+            1.08,
+            1
+          ],
+          "at": [
+            0.5,
+            0.4
+          ]
+        }
+      },
+      "prompt": "Very slow tilt down from the sky, no cuts. The Milky Way arches over a still mountain lake at night, stars twinkle, a shooting star crosses the sky, the reflection in the black water ripples gently and the tiny warm camp lights on the far shore flicker. No people. Crisp, vivid colours, no haze."
+    },
+    {
+      "name": "sofa",
+      "seed": 21,
+      "use": [
+        0,
+        1.2
+      ],
+      "prompt": "Static camera, no zoom, no cuts. At night on a cosy sofa under a knit blanket the couple look down at a tablet glowing in their hands: the woman gasps and puts both hands over her mouth, the man grins and leans in, the screen light flickers softly on their faces, a candle flickers on the side table. Expressive stylized 3D animated performance, smooth character animation. Same faces, same clothes, same van, nothing morphs or drifts. Crisp, vivid colours and clear contrast throughout, no haze, no fade.",
+      "overlay": {
+        "cardAt": 0.2,
+        "toast": {
+          "title": "Client opened their gallery for the first time",
+          "sub": "Ana & Leo"
+        }
+      }
+    },
+    {
+      "name": "mug",
+      "seed": 22,
+      "use": [
+        0,
+        1.6
+      ],
+      "prompt": "Static camera, no zoom, no cuts. At night under the Milky Way the photographer sits on her teal camper van's step wrapped in a plaid blanket and raises a dented tin mug toward the stars with a content smile, a thin delicate wisp of steam rising from the mug, the van's string of warm bulbs glowing, a lantern flickering on the pebbles. Expressive stylized 3D animated performance, smooth character animation. Same faces, same clothes, same van, nothing morphs or drifts. Crisp, vivid colours and clear contrast throughout, no haze, no fade.",
+      "overlay": {
+        "cardAt": 0.3,
+        "toast": {
+          "title": "Invoice INV-0108 paid",
+          "sub": "Paid into your Stripe"
+        }
+      }
+    }
+  ]
+}

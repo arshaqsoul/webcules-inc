@@ -9,12 +9,18 @@
 //
 // Seeds start at clips.json "keyframes"[name] when set (so a rerun reproduces the pick), else --seed (default 1001).
 // 768x1344 Z-Image Turbo, about 7 s each. Never hand-edit assets/assets.json for keyframes.
+//
+// Derived keyframes (the Film register's consistency tool): a keyframe file whose first line is
+//   @from <shot>[,<shot>,<shot>]
+// is not generated from text: the picked keyframes of those shots (out/<ID>/<shot>.png) are restaged
+// with Qwen-Image-Edit under the rest of the file as the instruction, so the same photographer, client
+// or place carries into the new shot. Pick the source shots first; about 20 s a candidate.
 
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { generate } from "./comfy-image.mjs";
+import { generate, upload } from "./comfy-image.mjs";
 
 const MOTION = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const arg = (k, d) => process.argv.find((a) => a.startsWith(`--${k}=`))?.slice(k.length + 3) ?? d;
@@ -43,15 +49,27 @@ if (pick) {
 const only = arg("only")?.split(",");
 const n = Number(arg("n", 4));
 for (const name of names.filter((x) => !only || only.includes(x))) {
-  const prompt = fs.readFileSync(path.join(epDir, `${name}.keyframe.txt`), "utf8").trim();
+  let prompt = fs.readFileSync(path.join(epDir, `${name}.keyframe.txt`), "utf8").trim();
   const base = Number(arg("seed", clips.keyframes?.[name] ?? 1001));
   const dir = path.join(outDir, "kf", name);
   fs.mkdirSync(dir, { recursive: true });
+  let images = null;
+  const from = prompt.match(/^@from\s+(.+)\n/);
+  if (from) {
+    prompt = prompt.slice(from[0].length).trim();
+    images = [];
+    for (const src of from[1].split(",").map((x) => x.trim())) {
+      const png = path.join(outDir, `${src}.png`);
+      if (!fs.existsSync(png)) throw new Error(`${name} is derived from "${src}", which has no picked keyframe yet: pick ${src} first`);
+      images.push(await upload(fs.readFileSync(png), `${clips.dir.replace(/\W/g, "")}-${src}.png`));
+    }
+  }
   const files = [];
   for (let i = 0; i < n; i++) {
     const seed = base + i;
     const file = path.join(dir, `${seed}.png`);
-    fs.writeFileSync(file, await generate({ model: "zimage", w: 768, h: 1344, seed, prompt }));
+    const spec = images ? { model: "qwenEdit", images, w: 768, h: 1344, seed, prompt } : { model: "zimage", w: 768, h: 1344, seed, prompt };
+    fs.writeFileSync(file, await generate(spec));
     files.push(file);
   }
   const sheet = path.join(outDir, "kf", `${name}.jpg`);

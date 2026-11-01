@@ -16,6 +16,20 @@ node growth/motion/hybrid/spec.mjs      episodes/G03-x            # spec.json fr
 node growth/motion/render.mjs check|stills|render|package G03
 ```
 
+## Make a film (F##, long-form with voice-over and score)
+
+Read `FILM.md`, then follow the `growth-motion-film` skill. On top of the hybrid steps:
+
+```bash
+node growth/motion/hybrid/preflight.mjs --film                    # adds Qwen-Image-Edit, RIFE, ACE-Step, Piper
+node growth/motion/hybrid/reference.mjs <video> --name=x          # shots, stills, transcript, tempo of a reference film
+# brief.md (the script, founder approves), moodboard.md, keyframes (@from <shot> derives one), clips.json with camera moves
+node growth/motion/hybrid/frames.mjs    episodes/F01-x            # with "interp": "rife" and per-shot "camera"
+node growth/motion/hybrid/vo.mjs        episodes/F01-x            # voice-over -> out/F01/vo.wav
+node growth/motion/hybrid/score.mjs     episodes/F01-x            # music -> out/F01/music.wav
+node growth/motion/hybrid/spec.mjs      episodes/F01-x            # render.mjs mixes both under the effects
+```
+
 ## Make a code-only episode (E001-E003, the retired three.js look)
 
 ```bash
@@ -101,8 +115,14 @@ hybrid/comfy-image.mjs         text-to-image graphs (Z-Image Turbo, Flux Schnell
 hybrid/keyframes.mjs           keyframe candidates per shot, contact sheets, --pick
 hybrid/wan.mjs                 one Wan 2.2 14B image-to-video clip (or a first-last-frame move)
 hybrid/run-clips.mjs           every shot and move of an episode in order, resumable, --draft
-hybrid/frames.mjs              clips -> 1080x1920 30 fps frames (trim, retime, interpolate)
+hybrid/frames.mjs              clips -> 1080x1920 30 fps frames (trim, retime, interpolate, film camera moves)
 hybrid/spec.mjs                clips.json + episode.json + frame counts -> spec.json
+FILM.md                        the Film register: beats, transitions, consistency, sound, budget
+hybrid/film.mjs (+ .test)      pure film helpers: timeline, voice-over and score placement, the editorial camera
+hybrid/rife.mjs                RIFE 2x frame interpolation on ComfyUI (clips.json "interp": "rife")
+hybrid/vo.mjs                  episode.json "vo" -> Piper voice-over placed on the timeline (vo.wav)
+hybrid/score.mjs               episode.json "score" -> ACE-Step sections crossfaded into music.wav
+hybrid/reference.mjs           breakdown of a reference video: shots, stills, transcript, tempo, loudness
 engine/scenes/clip.js          plays the frames under the poster cover, chips, flash, inbox card, headlines
 engine/overlays.js             the poster cover, time chip and inbox card, shared by clip and world scenes
 episodes/G01, G02, S01         worked examples
