@@ -94,7 +94,12 @@ export async function listPriceLists(organizationId: string): Promise<PriceListS
       name: schema.priceLists.name,
       currency: schema.priceLists.currency,
       isDefault: schema.priceLists.isDefault,
-      productCount: sql<number>`(select count(*) from ${schema.products} where ${schema.products.priceListId} = ${schema.priceLists.id})`,
+      // WEBC-126: the subquery's column refs MUST be table-qualified. Drizzle
+      // renders interpolated columns unqualified inside a select-field sql``
+      // chunk, so `... where ${products.priceListId} = ${priceLists.id}`
+      // became `where "price_list_id" = "id"` — "id" resolved to the INNER
+      // product.id and every list counted 0 products.
+      productCount: sql<number>`(select count(*) from "product" where "product"."price_list_id" = "price_list"."id")`,
     })
     .from(schema.priceLists)
     .where(eq(schema.priceLists.organizationId, organizationId))

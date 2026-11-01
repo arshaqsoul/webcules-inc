@@ -50,6 +50,14 @@ export default function Releases() {
           until every step is done.
         </p>
       </Release>
+      <Release version="0.32.1" date="October 31, 2026">
+        <p>
+          <strong>Fixed: price lists showed “0 products”.</strong>{" "}
+          On the Store page, every price list in the table claimed to have zero products — even
+          lists with products in them. The counts now show the real number of products in each
+          list.
+        </p>
+      </Release>
       <Release version="0.32.0" date="October 31, 2026">
         <p>
           <strong>The Founding Studio offer is live.</strong>{" "}
