@@ -1,0 +1,23 @@
+{
+  "about": "F01 Chasing Light shot list (FILM.md). Keyframes first; shots, moves and camera are added after the keyframes are picked.",
+  "dir": "out/F01",
+  "w": 720,
+  "h": 1280,
+  "interp": "rife",
+  "keyframes": {
+    "camper": 1001,
+    "diorama": 1002,
+    "lake": 1002,
+    "falls": 1001,
+    "cliff": 1003,
+    "tailgate": 1002,
+    "poster": 1001,
+    "stars": 1002,
+    "diorama_dawn": 3003,
+    "lake_close": 3003,
+    "mug": 3002,
+    "sofa": 3001,
+    "sky": 5002
+  },
+  "shots": []
+}
