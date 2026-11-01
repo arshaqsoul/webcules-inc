@@ -56,7 +56,8 @@ if (ec !== false) scenes.push({
     rows: (ec.rows ?? []).map((row, k) => ({ at: r3(0.3 + 0.12 * k), ...row })),
   },
 });
-const total = Math.round((t + endDur) * 100) / 100;
+// Rounded up, so the last scene (at and dur kept to the millisecond) always ends inside the reel.
+const total = Math.ceil((t + endDur) * 100 - 1e-6) / 100;
 scenes[0].props.padFor = total;
 
 // Stills to look at: the cover, each shot after its moment lands, the end card.
@@ -67,5 +68,19 @@ stills.push(r3(total - 0.2));
 
 const pain = ep.pain ?? read(path.join(MOTION, "episodes", ep.painFrom, "spec.json")).pain;
 const spec = { id: ep.id, title: ep.title, series: ep.series, brand: ep.brand ?? "snap", fps: 30, duration: total, cover: ep.cover ?? 0, stills, pain, claims: ep.claims, scenes, caption: ep.caption, hashtags: ep.hashtags, ad: ep.ad };
+
+// Films (FILM.md) carry a voice-over and a generated score made by hybrid/vo.mjs and hybrid/score.mjs;
+// render.mjs mixes them under the synthesised effects. The spoken words go into the spec so check()
+// holds them to the same copy and claim rules as on-screen text.
+if (ep.format === "film") {
+  spec.format = "film";
+  const rel = (f) => `growth/motion/${clips.dir}/${f}`;
+  spec.soundtrack = {
+    ...(ep.vo ? { vo: rel("vo.wav") } : {}),
+    ...(ep.score ? { music: rel("music.wav"), musicGain: ep.musicGain ?? 0.55 } : {}),
+    sfxGain: ep.sfxGain ?? 0.6,
+  };
+  if (ep.vo) spec.vo = ep.vo.lines.map((l) => l.text);
+}
 fs.writeFileSync(path.join(epDir, "spec.json"), JSON.stringify(spec, null, 2) + "\n");
 console.log(`${ep.id}: ${total} s, ${scenes.length} scenes -> ${path.relative(MOTION, path.join(epDir, "spec.json"))}`);

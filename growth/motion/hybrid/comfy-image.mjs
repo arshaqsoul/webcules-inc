@@ -19,6 +19,32 @@ export const MODELS = {
     9: { class_type: "VAEDecode", inputs: { samples: ["8", 0], vae: ["3", 0] } },
     10: { class_type: "SaveImage", inputs: { images: ["9", 0], filename_prefix: "growth/motion" } },
   }),
+  // Qwen-Image-Edit 2511 with the Lightning 4-step LoRA: restage up to three reference images (p.images, names
+  // returned by upload()) under a new instruction, so a person or place keeps its look from shot to shot.
+  // Every reference is scaled to the output size; the first one is also the starting latent.
+  qwenEdit: (p) => {
+    const g = {
+      1: { class_type: "UNETLoader", inputs: { unet_name: "qwen_image_edit_2511_fp8mixed.safetensors", weight_dtype: "default" } },
+      2: { class_type: "LoraLoaderModelOnly", inputs: { model: ["1", 0], lora_name: "Qwen-Image-Edit-2511-Lightning-4steps-V1.0-bf16.safetensors", strength_model: 1 } },
+      3: { class_type: "ModelSamplingAuraFlow", inputs: { model: ["2", 0], shift: 3.1 } },
+      4: { class_type: "CFGNorm", inputs: { model: ["3", 0], strength: 1 } },
+      5: { class_type: "CLIPLoader", inputs: { clip_name: "qwen_2.5_vl_7b_fp8_scaled.safetensors", type: "qwen_image", device: "default" } },
+      6: { class_type: "VAELoader", inputs: { vae_name: "qwen_image_vae.safetensors" } },
+    };
+    const enc = { clip: ["5", 0], vae: ["6", 0] };
+    p.images.slice(0, 3).forEach((name, i) => {
+      g[20 + i] = { class_type: "LoadImage", inputs: { image: name } };
+      g[30 + i] = { class_type: "ImageScale", inputs: { image: [String(20 + i), 0], upscale_method: "lanczos", width: p.w, height: p.h, crop: "center" } };
+      enc[`image${i + 1}`] = [String(30 + i), 0];
+    });
+    g[7] = { class_type: "TextEncodeQwenImageEditPlus", inputs: { ...enc, prompt: p.prompt } };
+    g[8] = { class_type: "TextEncodeQwenImageEditPlus", inputs: { ...enc, prompt: "" } };
+    g[9] = { class_type: "VAEEncode", inputs: { pixels: ["30", 0], vae: ["6", 0] } };
+    g[10] = { class_type: "KSampler", inputs: { model: ["4", 0], seed: p.seed, steps: 4, cfg: 1, sampler_name: "euler", scheduler: "simple", positive: ["7", 0], negative: ["8", 0], latent_image: ["9", 0], denoise: 1 } };
+    g[11] = { class_type: "VAEDecode", inputs: { samples: ["10", 0], vae: ["6", 0] } };
+    g[12] = { class_type: "SaveImage", inputs: { images: ["11", 0], filename_prefix: "growth/motion" } };
+    return g;
+  },
   // Flux Schnell (all-in-one fp8 checkpoint): 4 steps.
   schnell: (p) => ({
     1: { class_type: "CheckpointLoaderSimple", inputs: { ckpt_name: "flux1-schnell-fp8.safetensors" } },
@@ -31,7 +57,17 @@ export const MODELS = {
   }),
 };
 
-async function get(p, json = true) {
+/** Put a local file in ComfyUI's input folder (images and videos alike); returns the name its loaders use. */
+export async function upload(bytes, name) {
+  const fd = new FormData();
+  fd.append("image", new Blob([bytes]), `growth-${name}`);
+  fd.append("overwrite", "true");
+  const res = await fetch(comfyUrl() + "/upload/image", { method: "POST", body: fd });
+  if (!res.ok) throw new Error(`upload ${name}: HTTP ${res.status}`);
+  return (await res.json()).name;
+}
+
+export async function get(p, json = true) {
   const res = await fetch(comfyUrl() + p, { signal: AbortSignal.timeout(60000) });
   if (!res.ok) throw new Error(`GET ${p} -> HTTP ${res.status}`);
   return json ? res.json() : Buffer.from(await res.arrayBuffer());
