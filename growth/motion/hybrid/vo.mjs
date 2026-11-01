@@ -53,7 +53,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     const raw = path.join(tmp, `${l.i}.raw.wav`), trim = path.join(tmp, `${l.i}.trim.wav`), fit = path.join(tmp, `${l.i}.wav`);
     const r = spawnSync(PIPER_PY, ["-I", "-m", "piper", "-m", voice, "-f", raw, "--sentence-silence", "0"], { input: l.text });
     if (r.status !== 0) throw new Error(`piper failed: ${r.stderr}`);
-    ff(["-i", raw, "-af", "silenceremove=start_periods=1:start_threshold=-45dB,areverse,silenceremove=start_periods=1:start_threshold=-45dB,areverse", trim]);
+    // Keep a little silence at each end: a hard trim at the threshold clips soft onsets ("B", "S") and the words stop reading.
+    ff(["-i", raw, "-af", "silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.08,areverse,silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.12,areverse", trim]);
     const tempo = fitTempo(seconds(trim), l.fit);
     ff(["-i", trim, "-af", `atempo=${tempo.toFixed(4)},aresample=48000`, "-ac", "2", fit]);
     const len = seconds(fit);

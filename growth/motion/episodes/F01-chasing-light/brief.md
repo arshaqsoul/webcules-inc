@@ -36,7 +36,7 @@ One scenic photographer's day from first light to the Milky Way: a sunrise lake,
 3. Or you're behind a waterfall while their contract gets signed.
 4. You can even deliver their gallery before the sun goes down.
 5. Bookings. Contracts. Galleries. Payments.
-6. Snap it.
+6. Just Snap it. (Piper cannot say "Snap it." on its own; see Production)
 
 The pattern is Airbnb's ("Say... Now you can also... Or... You can even...") so it turns once, on line 4, then names what Snap does in four words.
 Voice: Piper `en_US-ryan-high`, warm and unhurried.
@@ -86,3 +86,12 @@ About 12 keyframes (5 derived), 11 clips and 1 grow move: roughly 1.5 to 2 hours
 ## After the founder confirms
 
 Moodboard from Pinterest per chapter (`moodboard.md`): blue-hour camper vans, alpine lake reflections at sunrise, fern-gorge waterfalls with sunbeams, cliff-top elopements at golden hour, Milky Way over a van, warm stylized 3D lighting references.
+
+## Production (made 2026-11-01)
+
+- Keyframes: one text anchor (`camper`, seed 1001) and nine shots derived from it with `@from`; `sky` (5002) is text-only with no figures. All seeds are in `clips.json`.
+- Re-rolled: the night wide (the edit copied the anchor's framing, then text takes made the van toy-sized and grew a badge), the sky (the toon style line added stray kids), and the mug steam (a cartoon cloud, now a thin wisp).
+- Clips: 11 shots and 1 grow move at 720x1280, about 55 min of GPU; drafts at 480 another 20 min. RIFE 2x on every clip.
+- Voice: Piper `en_US-ryan-high`. "Snap it." alone reads as "Snab it", so the last line is "Just Snap it."; the end line starts 0.7 s into the end card so it clears the whoosh and the music change. Every line was checked by transcribing the final mix.
+- Music: ACE-Step, three sections at seed 2, music gain 0.45 under the voice.
+- Result: `out/F01/reel.mp4`, 30.34 s, every QC line passes.

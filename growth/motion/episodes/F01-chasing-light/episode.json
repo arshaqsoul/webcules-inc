@@ -144,15 +144,15 @@
       },
       {
         "shot": "end",
-        "at": 0.4,
+        "at": 0.7,
         "text": "Bookings. Contracts. Galleries. Payments.",
-        "fit": 2.3
+        "fit": 2.45
       },
       {
         "shot": "end",
-        "at": 2.9,
-        "text": "Snap it.",
-        "fit": 0.8
+        "at": 3.3,
+        "text": "Just Snap it.",
+        "fit": 0.9
       }
     ]
   },
@@ -183,5 +183,6 @@
       "key": "D major",
       "seed": 2
     }
-  ]
+  ],
+  "musicGain": 0.45
 }
