@@ -1,0 +1,187 @@
+{
+  "id": "F01",
+  "title": "Chasing Light",
+  "series": "Snap it. - Film",
+  "brand": "snap",
+  "format": "film",
+  "cover": 0.4,
+  "painFrom": "E003-a-day-out-here",
+  "claims": [
+    {
+      "text": "New booking event lands in the Snap inbox",
+      "source": "apps/snap/lib/repos/bookings.ts",
+      "match": "eventType: \"booking.created\""
+    },
+    {
+      "text": "Clients book from your booking page, on the Free plan",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "maxSessionTypes: 1"
+    },
+    {
+      "text": "Contract signed event lands in the Snap inbox; clients sign in the browser",
+      "source": "apps/snap/lib/contracts.ts",
+      "match": "eventType: \"contract.signed\""
+    },
+    {
+      "text": "Invoice paid event; payment goes into your own Stripe",
+      "source": "apps/snap/lib/invoices.ts",
+      "match": "money landed"
+    },
+    {
+      "text": "Clients pay through your own Stripe",
+      "source": "apps/snap/lib/connect.ts",
+      "match": "the photographer's own Stripe account"
+    },
+    {
+      "text": "Gallery first view event lands in the Snap inbox",
+      "source": "apps/snap/lib/shares/gallery-auth.ts",
+      "match": "Client opened their gallery for the first time"
+    },
+    {
+      "text": "Unified inbox on the Free plan",
+      "source": "apps/snap/lib/tier-cards.ts",
+      "match": "Unified inbox"
+    },
+    {
+      "text": "0% commission",
+      "source": "apps/snap/lib/connect.ts",
+      "match": "No application_fee_amount, ever."
+    },
+    {
+      "text": "Free to start (Free plan, $0)",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "id: \"free\", name: \"Free\", priceMonthlyUsd: 0"
+    },
+    {
+      "text": "Gallery delivered event lands in the Snap inbox",
+      "source": "apps/snap/lib/shares/notify.ts",
+      "match": "eventType: \"gallery.delivered\""
+    }
+  ],
+  "caption": "Say you chase the light for a living.\n\nSunrise at the lake, a waterfall at noon, an elopement on the cliffs at golden hour, the Milky Way at night. While you shoot, clients book from your booking page, sign their contract in the browser, open the gallery you sent and pay into your own Stripe. It all lands in one Snap inbox.\n\nIt is not magic: you still send the contract, the invoice and the gallery. Snap just keeps every reply and payment in one place, with 0% commission.\n\nStart free at snaphq.app",
+  "hashtags": [
+    "#landscapephotographer",
+    "#adventurephotographer",
+    "#vanlife",
+    "#elopementphotographer",
+    "#photographerlife",
+    "#dayinthelife",
+    "#photographybusiness"
+  ],
+  "ad": {
+    "primary_text": "Chase the light. Your clients book, sign, open their gallery and pay in Snap, and it all lands in one inbox. 0% commission.",
+    "headline": "Snap it.",
+    "description": "Free to start at snaphq.app",
+    "cta_button": "Sign Up",
+    "placements": [
+      "instagram_reels",
+      "facebook_reels",
+      "instagram_stories",
+      "facebook_stories"
+    ]
+  },
+  "endcard": {
+    "dur": 4.2,
+    "rows": [
+      {
+        "title": "New booking - Hannah Lee",
+        "sub": "Sunrise photo walk",
+        "time": "6:14 AM",
+        "color": "#ffb000"
+      },
+      {
+        "title": "Contract signed - Waterfall session",
+        "sub": "Mia & Theo",
+        "time": "12:31 PM",
+        "color": "#2fb59a"
+      },
+      {
+        "title": "Gallery delivered - Ana & Leo",
+        "sub": "48 photos",
+        "time": "7:52 PM",
+        "color": "#f26a4d"
+      },
+      {
+        "title": "Client opened their gallery",
+        "sub": "For the first time",
+        "time": "9:40 PM",
+        "color": "#7a5cff"
+      },
+      {
+        "title": "Invoice INV-0108 paid",
+        "sub": "Into your own Stripe",
+        "time": "10:05 PM",
+        "color": "#ff6fa0"
+      }
+    ]
+  },
+  "vo": {
+    "voice": "en_US-ryan-high",
+    "lines": [
+      {
+        "shot": "diorama",
+        "at": 0.4,
+        "text": "Say you chase the light for a living.",
+        "fit": 2.2
+      },
+      {
+        "shot": "lake",
+        "at": 0.4,
+        "text": "Now your sunrise walk books while you're out shooting.",
+        "fit": 2.9
+      },
+      {
+        "shot": "falls",
+        "at": 0.4,
+        "text": "Or you're behind a waterfall while their contract gets signed.",
+        "fit": 3.2
+      },
+      {
+        "shot": "cliff",
+        "at": 0.4,
+        "text": "You can even deliver their gallery before the sun goes down.",
+        "fit": 3.1
+      },
+      {
+        "shot": "end",
+        "at": 0.4,
+        "text": "Bookings. Contracts. Galleries. Payments.",
+        "fit": 2.3
+      },
+      {
+        "shot": "end",
+        "at": 2.9,
+        "text": "Snap it.",
+        "fit": 0.8
+      }
+    ]
+  },
+  "score": [
+    {
+      "to": {
+        "shot": "sky"
+      },
+      "tags": "Warm cinematic folk-orchestral score, instrumental only, no vocals. Fingerpicked acoustic guitar, soft felt piano, swelling strings, a sense of wide open landscapes and wonder, hopeful and gentle, building slowly, clean warm production",
+      "bpm": 88,
+      "key": "D major",
+      "seed": 2
+    },
+    {
+      "from": {
+        "shot": "sky"
+      },
+      "to": "end",
+      "tags": "Cinematic build to a peak, instrumental only, no vocals. Pulsing staccato strings, a heartbeat kick, shimmering synth arpeggio and big drums rising to a bright euphoric peak, stars and night sky wonder",
+      "bpm": 120,
+      "key": "D major",
+      "seed": 2
+    },
+    {
+      "from": "end",
+      "tags": "Light bright acoustic guitar motif with soft piano and glockenspiel, instrumental only, no vocals, ends with one soft final chord",
+      "bpm": 88,
+      "key": "D major",
+      "seed": 2
+    }
+  ]
+}
