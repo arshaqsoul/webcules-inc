@@ -42,10 +42,14 @@ export function ResetPasswordForm({ token }: { token: string | null }) {
   return (
     <main className="flex min-h-screen items-center justify-center px-6">
       <div className="w-full max-w-sm">
-        <div className="mb-8 flex items-center gap-2">
+        <Link
+          href="/"
+          aria-label="Snap — back to home"
+          className="mb-8 flex w-fit items-center gap-2 rounded-md transition-opacity hover:opacity-80"
+        >
           <SnapMark className="h-6 w-6" />
           <span className="text-sm font-medium text-ink">Snap</span>
-        </div>
+        </Link>
         <div className="rounded-[12px] border border-hairline bg-surface-1 p-6">
           {done ? (
             <>

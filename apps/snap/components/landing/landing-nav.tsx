@@ -15,6 +15,8 @@ const LINKS = [
 export function LandingNav({ signedIn }: { signedIn: boolean }) {
   const { scrollY } = useScroll();
   const [solid, setSolid] = useState(false);
+  // WEB (founder report): below sm there is nowhere to reach the section links.
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useMotionValueEvent(scrollY, "change", (v) => setSolid(v > 40));
   const [mounted, setMounted] = useState(false);
@@ -29,7 +31,7 @@ export function LandingNav({ signedIn }: { signedIn: boolean }) {
     >
       <nav
         aria-label="Main"
-        className={`flex items-center gap-1 rounded-full border py-1.5 pl-2 pr-1.5 transition-colors duration-300 ${
+        className={`relative flex items-center gap-1 rounded-full border py-1.5 pl-2 pr-1.5 transition-colors duration-300 ${
           solid
             ? "border-hairline bg-background/80 shadow-[0_8px_30px_rgb(0,0,0,0.06)] backdrop-blur-xl"
             : "border-white/20 bg-white/10 text-white backdrop-blur-md"
@@ -69,8 +71,51 @@ export function LandingNav({ signedIn }: { signedIn: boolean }) {
         >
           {signedIn ? "Open studio" : "Start free"}
         </Link>
+        <button
+          type="button"
+          aria-expanded={menuOpen}
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
+          onClick={() => setMenuOpen((v) => !v)}
+          className={`rounded-full p-1.5 transition-colors sm:hidden ${
+            solid ? "text-ink hover:bg-surface-2" : "text-white hover:bg-white/10"
+          }`}
+        >
+          {menuOpen ? <MenuCloseIcon /> : <MenuIcon />}
+        </button>
       </nav>
+      {menuOpen && (
+        <div
+          className="absolute inset-x-0 top-full mt-2 flex flex-col rounded-2xl border border-hairline bg-background/95 p-1.5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] backdrop-blur-xl sm:hidden"
+        >
+          {LINKS.map((l) => (
+            <a
+              key={l.href}
+              href={l.href}
+              onClick={() => setMenuOpen(false)}
+              className="rounded-xl px-3 py-2.5 text-sm font-medium text-ink-subtle transition-colors hover:bg-surface-2 hover:text-ink"
+            >
+              {l.label}
+            </a>
+          ))}
+        </div>
+      )}
     </motion.header>
+  );
+}
+
+function MenuIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
+      <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function MenuCloseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden>
+      <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
   );
 }
 
