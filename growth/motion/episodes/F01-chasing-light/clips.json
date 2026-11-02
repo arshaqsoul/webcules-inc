@@ -17,7 +17,9 @@
     "lake_close": 3003,
     "mug": 3002,
     "sofa": 3001,
-    "sky": 5002
+    "sky": 5002,
+    "camper_fix": 1001,
+    "falls_fix": 1002
   },
   "shots": [
     {
@@ -31,7 +33,7 @@
     },
     {
       "name": "diorama",
-      "seed": 12,
+      "seed": 31,
       "use": [
         0,
         1.3
@@ -48,14 +50,15 @@
           ]
         }
       },
-      "prompt": "Static camera, no zoom, no cuts. A tiny isometric diorama of a granite ledge with a pine and a small teal camper van sits on a pale lavender studio backdrop in cool pre-dawn light; the van's windows glow warm and flicker softly, tiny star specks twinkle above the slab, a wisp of mist curls at the slab's edge. The diorama does not change shape. Clean pale backdrop throughout. Expressive stylized 3D animated performance, smooth character animation. Same faces, same clothes, same van, nothing morphs or drifts. Crisp, vivid colours and clear contrast throughout, no haze, no fade."
+      "prompt": "Locked-off tripod camera, no camera movement, no zoom, no cuts. A tiny isometric diorama of a granite ledge with a pine and a small teal camper van sits on a pale lavender studio backdrop in cool pre-dawn light. The diorama is a still miniature model: the van is parked with the handbrake on and never moves, rocks or sways, the slab and the pine are fixed in place like a photograph. Only the light is alive: the van's windows glow warm and flicker softly, tiny star specks twinkle above the slab, a wisp of mist curls at the slab's edge. Clean pale backdrop throughout. Crisp, vivid colours and clear contrast throughout, no haze, no fade.",
+      "neg": "Bright saturated tones, overexposed, blurry details, subtitles, text, logo, watermark, painting, worst quality, low quality, jpeg artifacts, deformed hands, extra fingers, malformed limbs, fused fingers, messy background, three legs, many people in the background, walking backwards, sudden cuts, morphing faces, flicker, zoom, vehicle moving, van rocking, van swaying, wheels turning, objects sliding, camera shake, wobble"
     },
     {
       "name": "m_dawn",
       "move": true,
       "to": "diorama_dawn",
-      "seed": 13,
-      "speed": 1.0,
+      "seed": 33,
+      "speed": 1,
       "camera": {
         "push": {
           "zoom": 4.5,
@@ -66,7 +69,8 @@
           ]
         }
       },
-      "prompt": "Continuous single take, static camera. On the tiny diorama on a pale lavender backdrop, dawn arrives: warm pink and gold light spreads across the slab from the left, the pine tip and van roof catch the gold, and soft white mist pours over the slab's front edge like a tiny waterfall of cloud while the star specks fade. The diorama, the van and the pine stay exactly where they are; only the light and the mist change. No cuts, no fades, no morphing, no dissolve. Expressive stylized 3D animated performance, smooth character animation. Same faces, same clothes, same van, nothing morphs or drifts. Crisp, vivid colours and clear contrast throughout, no haze, no fade."
+      "prompt": "Continuous single take, locked-off tripod camera, no camera movement. On the tiny still diorama on a pale lavender backdrop, dawn arrives: warm pink and gold light spreads across the slab from the left, the pine tip and van roof catch the gold, and soft white mist pours over the slab's front edge like a tiny waterfall of cloud while the star specks fade. The van is parked and completely motionless, it never rocks, sways or slides; the slab and the pine are fixed in place. Only the light and the mist change. No cuts, no fades, no morphing, no dissolve. Crisp, vivid colours and clear contrast throughout, no haze, no fade.",
+      "neg": "Bright saturated tones, overexposed, blurry details, subtitles, text, logo, watermark, painting, worst quality, low quality, jpeg artifacts, deformed hands, extra fingers, malformed limbs, fused fingers, messy background, three legs, many people in the background, walking backwards, sudden cuts, morphing faces, flicker, zoom, vehicle moving, van rocking, van swaying, wheels turning, objects sliding, camera shake, wobble"
     },
     {
       "name": "camper",
@@ -85,7 +89,10 @@
           ]
         }
       },
-      "prompt": "Very slow, very slight push-in, no zoom, no cuts. At blue hour by a still alpine lake the stylized 3D animated photographer steps down out of her teal camper van's open side door with a tripod over her shoulder, her breath fogging in the cold air, and grins up at the peaks turning pink; mist drifts on the lake, the van's interior glows amber. Expressive stylized 3D animated performance, smooth character animation. Same faces, same clothes, same van, nothing morphs or drifts. Crisp, vivid colours and clear contrast throughout, no haze, no fade."
+      "prompt": "Very slow, very slight push-in, no zoom, no cuts. At blue hour by a still alpine lake the stylized 3D animated photographer steps down out of her teal camper van's open side door with a tripod over her shoulder, and grins up at the peaks turning pink; mist drifts on the lake, the van's interior glows amber. Expressive stylized 3D animated performance, smooth character animation. Same faces, same clothes, same van, nothing morphs or drifts. Crisp, vivid colours and clear contrast throughout, no haze, no fade.",
+      "neg": "Bright saturated tones, overexposed, static frame, blurry details, subtitles, text, logo, watermark, painting, worst quality, low quality, jpeg artifacts, deformed hands, extra fingers, malformed limbs, fused fingers, messy background, three legs, many people in the background, walking backwards, sudden cuts, morphing faces, flicker, zoom, smoke, steam, vapour, breath fog, puff of cloud, smoke from the camera",
+      "key": "camper_fix",
+      "grade": "colorlevels=rimin=0.13:gimin=0.13:bimin=0.13,eq=saturation=1.6:contrast=1.06"
     },
     {
       "name": "lake",
@@ -123,7 +130,7 @@
       "seed": 17,
       "use": [
         0,
-        5.0
+        5
       ],
       "camera": {
         "whip": "in",
@@ -136,22 +143,24 @@
           ]
         }
       },
-      "prompt": "Very slow, very slight push-in, no zoom, no cuts. In a mossy fern gorge at midday golden sunbeams fan through the waterfall's spray and a small rainbow shimmers; on the wet rocks the man in the red rain jacket lifts the laughing woman in the yellow rain jacket off her feet as the spray splashes over them, while the photographer on the left keeps her camera up and fires, then laughs with them; water droplets sparkle. Expressive stylized 3D animated performance, smooth character animation. Same faces, same clothes, same van, nothing morphs or drifts. Crisp, vivid colours and clear contrast throughout, no haze, no fade.",
+      "prompt": "Very slow, very slight push-in, no zoom, no cuts. In a mossy fern gorge at midday golden sunbeams fan through the waterfall's spray and a small rainbow shimmers; on the wet rocks the man in the red rain jacket and the woman in the yellow rain jacket stand side by side with both feet planted on the rock, arms around each other's waists, and burst out laughing as the spray splashes over them, each with exactly two legs, while the photographer on the left keeps her camera up and fires, then laughs with them; water droplets sparkle. Expressive stylized 3D animated performance, smooth character animation. Same faces, same clothes, nothing morphs or drifts. Crisp, vivid colours and clear contrast throughout, no haze, no fade.",
       "overlay": {
         "flash": 1.4,
-        "cardAt": 2.0,
+        "cardAt": 2,
         "toast": {
           "title": "Contract signed - Waterfall session",
           "sub": "Signed in the browser"
         }
-      }
+      },
+      "key": "falls_fix",
+      "grade": "colorlevels=rimin=0.13:gimin=0.13:bimin=0.13,eq=saturation=1.9:contrast=1.06"
     },
     {
       "name": "cliff",
       "seed": 18,
       "use": [
         0,
-        3.0
+        3
       ],
       "camera": {
         "land": {
