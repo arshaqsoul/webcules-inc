@@ -47,6 +47,31 @@ The audience must believe it is one photographer's day.
 - When a person or place returns, **derive** its keyframe instead of generating it from text: the keyframe file starts with `@from <shot>` and the rest is the edit instruction ("Keep her face, glasses, bun and clothes exactly the same. She now stands on a cliff at dawn..."). `hybrid/keyframes.mjs` restages the picked keyframe with Qwen-Image-Edit.
 - Pick keyframes in story order, so each derived shot has its source picked first.
 
+## Quality: what goes wrong and how to fix it
+
+The QC in `render.mjs` checks size, frame rate, loudness and freezes; it cannot see the picture.
+Every defect below reached a finished film once (F01) and was caught only by the founder, so the review in the skill looks for each one by name.
+
+| Defect | Where it comes from | Fix |
+|---|---|---|
+| Extra or missing limbs (a third leg, a fused hand) | poses where bodies overlap: a lift, a hug, a piggyback, crossed legs; often already in the keyframe | stage people side by side with both feet on the ground; repair the keyframe with `@from` and animate it through `key` |
+| A still object rocks, sways or slides (a parked van on a diorama) | Wan animates anything that could move, and the shared negative's "static frame" pushes every shot toward motion | a per-shot `neg` without "static frame" that names the motion ("van rocking, van swaying, objects sliding"), a still-life prompt ("locked-off tripod camera", "parked and never moves"), and no character-animation line |
+| Steam, smoke or a puff where none belongs (breath fog drawn as smoke from the camera) | asking for breath, steam or vapour in a keyframe or clip prompt | leave breath and steam out; repair the keyframe with `@from` and add "smoke, steam, breath fog" to the shot's `neg` |
+| A take comes out hazy: lifted blacks, about half the colour of its keyframe | seed to seed variance in Wan, worst in misty or spray-filled shots | re-roll, or add a `grade` that brings the levels back; compare the keyframe and frame 40 side by side |
+| A grow move dissolves instead of travelling | first and last frames that do not share a layout | use a dive or a whip instead (see the vocabulary) |
+| A voice-over word is clipped or misread ("Snab it") | trimming too tight, or a short line Piper cannot say alone | `vo.mjs` keeps a little silence; reword the line and transcribe the mix to check |
+
+**A defect in the keyframe survives every re-roll of its clip.**
+Before re-rolling a bad clip, look at its keyframe at full size: if the defect is there, repair the keyframe first.
+
+Three per-shot options in `clips.json` make repairs without breaking the timeline:
+
+- `"neg"`: replaces the shared video negative (`sheets.json` `negative_video`) for this shot.
+- `"key"`: animates another picked keyframe (`"key": "falls_fix"` animates `out/<ID>/falls_fix.png`), so the shot keeps its name, its voice-over anchors and its frame counts.
+- `"grade"`: an ffmpeg colour filter `frames.mjs` applies after scaling, for example `colorlevels=rimin=0.13:gimin=0.13:bimin=0.13,eq=saturation=1.6:contrast=1.06`.
+
+A repaired keyframe is its own file (`<shot>_fix.keyframe.txt`, first line `@from <shot>`, then "Keep this exact image... change only...") so the original pick, which other shots were derived from, stays reproducible.
+
 ## Sound
 
 - **Voice-over**: `episode.json` `vo.lines`, each anchored to a shot (`{ "shot": "dawn", "at": 0.4, "text": "...", "fit": 2.5 }`). `hybrid/vo.mjs` reads them with Piper (`en_US-ryan-high` is a warm male narrator; `en_GB-alan-medium` and `en_US-joe-medium` are installed too), stretches each toward its `fit` within 0.85-1.2x, and refuses lines that collide.
@@ -80,7 +105,7 @@ Draft at 480, keep at 720, and re-roll only what fails.
 | `brief.md` | the script: logline, the beat table with times, every spoken line, every transition, then a Production section with the seeds you kept |
 | `moodboard.md` | the Pinterest pins and references, with what each one gives the film |
 | `<shot>.keyframe.txt` | one per shot; `@from <shot>` on the first line for a derived keyframe |
-| `clips.json` | the shot list as in every hybrid episode, plus `"interp": "rife"` and per shot `camera` (`push`, `land`, `drift`, `whip`) |
+| `clips.json` | the shot list as in every hybrid episode, plus `"interp": "rife"` and per shot `camera` (`push`, `land`, `drift`, `whip`) and, for repairs, `neg`, `key` and `grade` |
 | `episode.json` | as in every hybrid episode, plus `"format": "film"`, `vo`, `score` and optionally `musicGain`, `sfxGain` |
 
 `spec.json` and `package.md` are generated.
