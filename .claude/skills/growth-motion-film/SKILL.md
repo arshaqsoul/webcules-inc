@@ -58,6 +58,11 @@ node growth/motion/hybrid/keyframes.mjs episodes/F##-<slug> --only=<derived shot
 ```
 
 Reject candidates with an off-model photographer, text or logos, broken hands, or a character at the wrong scale.
+Then open every pick at full size and count, person by person: two arms, two legs, five fingers, one head; crop the people if they are small.
+Reject any pick with smoke, steam or a puff that has no source, and any pose where bodies overlap (a lift, a hug off the ground, a piggyback): stage people side by side instead.
+A defect you let through here survives every clip re-roll.
+
+**Keyframe prompts:** never ask for breath, steam or vapour; for a still object (a diorama, a parked van) say so plainly: "the van is parked and never moves".
 
 ## 5. Shot list and clips
 
@@ -73,6 +78,28 @@ Reject candidates with an off-model photographer, text or logos, broken hands, o
 node growth/motion/hybrid/run-clips.mjs episodes/F##-<slug> --draft   # look at every draft frame by frame
 node growth/motion/hybrid/run-clips.mjs episodes/F##-<slug>           # keeps, in the background
 ```
+
+### Review every clip (draft and keep) against the defect list
+
+Make a timestamped contact sheet per clip at 4-5 fps, and a crop of the people when they are small:
+
+```bash
+ffmpeg -v error -y -i out/F##/<shot>.mp4 -vf "fps=4,scale=216:384,tile=7x3" -frames:v 1 /tmp/<shot>.jpg
+ffmpeg -v error -y -i out/F##/<shot>.mp4 -vf "fps=4,crop=iw*0.6:ih*0.5:iw*0.3:ih*0.3,scale=240:-1,tile=7x3" -frames:v 1 /tmp/<shot>-people.jpg
+```
+
+Look for each defect in `FILM.md` "Quality" by name, in every frame:
+
+- [ ] limbs: count legs, arms and hands per person, hardest in lifts, hugs and crossed legs
+- [ ] still things that move: a parked vehicle rocking or sliding, a diorama slab shifting, a building swaying (compare the object's position in the first and last tile)
+- [ ] smoke, steam or puffs with no source, especially near cameras, mouths and mugs
+- [ ] haze: the clip's colour against its keyframe; lifted blacks and faded colour mean re-roll or `grade`
+- [ ] faces and clothes still on-model, no text or logos appearing, nobody extra walking in
+
+**When a clip fails, look at its keyframe first.**
+If the defect is in the keyframe, repair it: write `<shot>_fix.keyframe.txt` (`@from <shot>`, "Keep this exact image... change only ..."), pick it, and set `"key": "<shot>_fix"` on the shot.
+If the keyframe is clean, re-roll the clip with a new seed and a sharper prompt; for an object that must hold still, give the shot its own `"neg"` without "static frame" (FILM.md "Quality").
+Move the failed take aside (`out/F##/old/`) before re-running, since `run-clips` keeps clips that exist.
 
 ## 6. Frames, voice, music
 
@@ -95,7 +122,24 @@ node growth/motion/render.mjs render F##     # every QC line PASS
 node growth/motion/render.mjs package F##
 ```
 
-Watch the film once at full speed with sound. Hand the founder `out/F##/reel.mp4`, `cover.png` and `package.md`, and say: turn on the AI label (generated footage, synthetic voice and music).
+### Final review before the hand-off
+
+1. Contact sheets of the whole `reel.mp4` at 5 fps, a chapter at a time, and run the clip checklist above once more on the finished film: grades, camera moves and overlays can reveal what a raw clip hid.
+2. Transcribe the final mix and compare it word for word with `vo.lines`:
+
+```bash
+~/.cache/growth-tts/venv/bin/python -c "
+import subprocess, numpy as np
+from faster_whisper import WhisperModel
+pcm = subprocess.run(['ffmpeg','-v','error','-i','growth/motion/out/F##/reel.mp4','-ac','1','-ar','16000','-f','f32le','-'], capture_output=True).stdout
+for s in WhisperModel('medium.en', device='cpu', compute_type='int8').transcribe(np.frombuffer(pcm, np.float32), word_timestamps=True)[0]: print(f'{s.start:5.2f} {s.text}')"
+```
+
+Use `medium.en` on the CPU (about 40 s): `small` mishears soft words ("Bokings" for "Bookings") and sends you after defects that are not there, and the venv has no CUDA libraries.
+Feed whisper a numpy array as above; its own file loader breaks on this venv.
+3. Watch the film once at full speed with sound.
+
+Hand the founder `out/F##/reel.mp4`, `cover.png` and `package.md`, and say: turn on the AI label (generated footage, synthetic voice and music).
 Clean up as in the reel skill, plus `*.rife.mp4` you did not keep and `growth/rife` and `growth/film` outputs in ComfyUI.
 
 ## Never
@@ -105,3 +149,5 @@ Clean up as in the reel skill, plus `*.rife.mp4` you did not keep and `growth/ri
 - Never commit or generate from Pinterest or reference images.
 - Never let the voice-over promise what the code does not do; spoken claims need sources like on-screen ones.
 - Never post, schedule or upload; the founder does.
+- Never hand over a film you have not checked frame by frame against the defect list; QC passing is not the picture being right.
+- Never re-roll a clip to fix a defect that is in its keyframe.
