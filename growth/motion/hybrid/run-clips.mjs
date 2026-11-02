@@ -30,8 +30,11 @@ let prev = null;
 for (const s of list.shots) {
   const out = path.join(dir, `${s.name}${tag}.mp4`);
   if ((!only || only.includes(s.name)) && !fs.existsSync(out)) {
-    const start = s.move ? prev : path.join(dir, `${s.name}.png`);
+    // "key" animates another picked keyframe (a repaired one, e.g. camper_fix) without renaming the shot.
+    const start = s.move ? prev : path.join(dir, `${s.key ?? s.name}.png`);
     const extra = s.move ? [`--last=${path.join(dir, `${s.to}.png`)}`, "--frames=33"] : [];
+    // A shot that must hold still (a parked van on a diorama) drops "static frame" from the negative with its own "neg".
+    if (s.neg) extra.push(`--neg=${s.neg}`);
     run("node", [path.join(HERE, "wan.mjs"), start, out, `--prompt=${s.prompt}`, `--seed=${s.seed}`, `--w=${w}`, `--h=${h}`, ...extra]);
   }
   if (fs.existsSync(out)) {
