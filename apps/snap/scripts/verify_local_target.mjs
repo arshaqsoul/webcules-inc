@@ -80,6 +80,19 @@ for (let i = 0; i < 20 && !code; i++) {
 }
 check("otp code captured to local email dir", code !== null, code ? `code ${code}` : "no fresh capture with a 6-digit code");
 
+// 5b. verify the OTP, then count the gallery: the seeded assets must actually
+// belong to the demo project. This assertion exists because the seed once
+// wrote assets under the old pre-UUID project id and every other check kept
+// passing - asset serving checks by asset id + org, so only the gallery's
+// own item count proves the fixture is whole.
+const otpVerify = await req(`/g/${token}/otp/verify`, { method: "POST", body: JSON.stringify({ code }) });
+check("otp verify accepted", otpVerify.ok, `HTTP ${otpVerify.status}`);
+const verified = await req(new URL(mintBody.url).pathname);
+const verifiedHtml = await verified.text();
+const itemCount = (verifiedHtml.match(/(\d+) item\b/) ?? [])[1];
+check("gallery reports non-empty item count", !!itemCount && Number(itemCount) > 0, `item count ${itemCount ?? "not found"}`);
+if (!itemCount || Number(itemCount) === 0) process.exit(1);
+
 // 6. clean up the verification grant
 const revoke = await req(`/api/grants/${mintBody.grantId}/revoke`, { method: "POST" });
 check("test grant revoked", revoke.ok, `HTTP ${revoke.status}`);

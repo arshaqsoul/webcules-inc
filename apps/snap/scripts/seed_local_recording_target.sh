@@ -65,7 +65,7 @@ const ORG = process.env.ORG, STAGING_ORG = process.env.STAGING_ORG;
 const ren = (k) => k.replace(STAGING_ORG, ORG);
 const esc = (s) => (s ?? "").replace(/'/g, "''");
 fs.writeFileSync(process.env.TMP + "/seed_assets.sql", rows.map((a) =>
-  `INSERT OR IGNORE INTO asset (id, organization_id, project_id, storage_key, kind, filename, mime_type, bytes, width, height, status, thumb_key, preview_key, created_at) VALUES ('${a.id}','${ORG}','demo-proj-wedding','${ren(a.storage_key)}','${esc(a.kind)}','${esc(a.filename)}','${esc(a.mime_type)}',${a.bytes},${a.width ?? "NULL"},${a.height ?? "NULL"},'shared','${ren(a.thumb_key)}','${ren(a.preview_key)}',unixepoch());`
+  `INSERT OR IGNORE INTO asset (id, organization_id, project_id, storage_key, kind, filename, mime_type, bytes, width, height, status, thumb_key, preview_key, created_at) VALUES ('${a.id}','${ORG}','1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d','${ren(a.storage_key)}','${esc(a.kind)}','${esc(a.filename)}','${esc(a.mime_type)}',${a.bytes},${a.width ?? "NULL"},${a.height ?? "NULL"},'shared','${ren(a.thumb_key)}','${ren(a.preview_key)}',unixepoch());`
 ).join("\n") + "\n");
 fs.writeFileSync(process.env.TMP + "/r2_copy_list.txt", rows.flatMap((a) => [
   `${a.storage_key}\t${ren(a.storage_key)}`,
