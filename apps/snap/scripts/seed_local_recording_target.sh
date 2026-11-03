@@ -52,7 +52,7 @@ echo "seeding into org: $ORG"
 
 # 3. demo client + project (take-fixture constants; idempotent).
 Q "INSERT INTO client (id, organization_id, email, name) VALUES ('demo-cli-nora', '$ORG', 'client@example.com', 'Nora Example')" >/dev/null 2>&1 || echo "(client already present)"
-Q "INSERT INTO project (id, organization_id, client_id, title, status) VALUES ('demo-proj-wedding', '$ORG', 'demo-cli-nora', 'Daniel & Priya — Willow Creek Estate Wedding', 'booked')" >/dev/null 2>&1 || echo "(project already present)"
+Q "INSERT INTO project (id, organization_id, client_id, title, status) VALUES ('1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d', '$ORG', 'demo-cli-nora', 'Daniel & Priya — Willow Creek Estate Wedding', 'booked')" >/dev/null 2>&1 || echo "(project already present)"
 
 # 4. asset rows + R2 objects, keys re-prefixed to the local org.
 W d1 execute webcules-snap-staging --remote --command "SELECT id, storage_key, thumb_key, preview_key, mime_type, bytes, width, height, filename, kind FROM asset WHERE project_id='demo-proj-wedding' ORDER BY id" --json 2>/dev/null \

@@ -19,7 +19,7 @@ import { getPlanEntitlements } from "@/lib/plans";
 import { classifyUpload } from "@/lib/repos/assets";
 import { scanCapturedAt } from "@/lib/repos/gallery-order";
 import { buildKey, deleteObject } from "@/lib/storage/service";
-import { objectUrl, s3Client } from "@/lib/storage/r2s3";
+import { objectUrl, s3Client, hasS3Credentials } from "@/lib/storage/r2s3";
 
 /** Hard ceiling per file (S3 multipart: ≤10,000 parts — we stay far under). */
 export const DIRECT_MAX_BYTES = 5 * 1024 * 1024 * 1024;
@@ -199,8 +199,14 @@ export async function createUploadSession(params: {
       ),
     );
     presigned = { url: "" };
-  } else {
+  } else if (hasS3Credentials()) {
     presigned = { url: await presignPut(key, { expiresIn: SINGLE_TTL_SECONDS, contentType: params.mimeType }), contentType: params.mimeType };
+  } else {
+    // A checkout (local dev target) has no R2 S3 credentials: hand out the
+    // binding-backed local PUT route instead (see app/api/uploads/local-put).
+    // The confirm path reads through the same binding, so the object is there.
+    const { appOrigin } = await import("@/lib/app-origin");
+    presigned = { url: `${await appOrigin()}/api/uploads/local-put/${assetId}`, contentType: params.mimeType };
   }
 
   const now = Math.floor(Date.now() / 1000);

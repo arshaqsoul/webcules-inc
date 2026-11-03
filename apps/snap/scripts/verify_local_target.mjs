@@ -44,7 +44,7 @@ check("asset preview (org-validated route)", assets.ok && assetBytes > 10000, `H
 
 // 3. mint a selection grant (the PP-002 fixture call): the minted URL must be
 // on the target origin or the take's startsWith(env.url) guard would throw.
-const mint = await req("/api/projects/demo-proj-wedding/grants", {
+const mint = await req("/api/projects/1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d/grants", {
   method: "POST",
   body: JSON.stringify({ clientEmail: "client@example.com", selectionMode: "selection", selectionLimit: 5, selectionDeadline: Math.floor(Date.now() / 1000) + 7 * 86400, allowDownload: true }),
 });

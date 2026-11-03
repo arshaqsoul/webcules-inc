@@ -33,8 +33,16 @@ function encodeKey(key: string): string {
   return encodeURIComponent(key).replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`);
 }
 
+/** True when the S3-endpoint credentials are configured (always on the
+ * deployed workers; a checkout carries none). */
+export function hasS3Credentials(): boolean {
+  return Boolean(env.R2_S3_ACCESS_KEY_ID && env.R2_S3_SECRET_ACCESS_KEY && env.R2_S3_ACCOUNT_ID);
+}
+
 /** Shared S3 handle for presigned uploads (WEB-111) and class moves. */
 export function s3Client(): { client: AwsClient; base: string } {
+  // Inline (not hasS3Credentials()): the type guard must narrow env's own
+  // property types here, which a separate boolean helper cannot do.
   if (!env.R2_S3_ACCESS_KEY_ID || !env.R2_S3_SECRET_ACCESS_KEY || !env.R2_S3_ACCOUNT_ID) {
     throw new Error("R2 S3 credentials not configured (R2_S3_* secrets / account id)");
   }

@@ -119,8 +119,12 @@ export async function issueGalleryOtp(params: {
       ? countSends(and(eq(schema.shareOtpLog.ip, params.ip), gt(schema.shareOtpLog.createdAt, new Date(now - 3600e3))))
       : Promise.resolve(0),
   ]);
+  // Local recording targets share one dev IP and rehearse the same send over
+  // and over; a checkout raises the caps via .dev.vars (never set on the
+  // deployed workers, where the value stays "1" and the caps are exact).
+  const capMult = Math.max(1, Number(env.GALLERY_OTP_CAP_MULTIPLIER ?? "1") || 1);
   // Rejected sends are NOT logged — the caps count delivered emails only.
-  if (perEmail30d >= CAP_PER_EMAIL_30D || perEmail15m >= CAP_PER_EMAIL_15MIN || perIp1h >= CAP_PER_IP_HOUR) {
+  if (perEmail30d >= CAP_PER_EMAIL_30D * capMult || perEmail15m >= CAP_PER_EMAIL_15MIN * capMult || perIp1h >= CAP_PER_IP_HOUR * capMult) {
     return { ok: false, error: "rate_limited" };
   }
 
