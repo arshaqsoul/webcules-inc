@@ -2,15 +2,24 @@
 
 This is what the founder posts once the reel exists.
 The packager filled it in and checked every field.
-Status: SCRIPTED, not yet recorded. Storyboard, take spec and claims are final; the record, edit, music and QC passes run through the standard pipeline (recorder next).
+Status: RECORDED 2026-11-03, QC PASS (24.3 s, 1080x1920, 3.9 MB, h264 + aac). Awaiting reel QC.
+
+## Recorded take - deviations from the storyboard (disclosed for reel QC)
+
+None of the six scripted steps changed; one fixture-level preparation was added and one product bug was found while recording:
+
+- The invite endpoint failed on the first attempt with "Organization not found". Root cause: Better Auth's `inviteMember` resolves the org from the session's active organization, which only signup/onboarding/studio-switcher ever set - a session that signed in through the plain login form has none, and the UI passes no `organizationId` (components/settings-team.tsx). Reads never notice because lib/session.ts falls back to the user's first membership; this write does not. Filed as WEBC-466: any returning user on a fresh sign-in cannot invite until they switch studios once. The take's fixture now calls the same Better Auth `set-active` endpoint the studio switcher calls (against the demo org id, a staging fixture constant), then reloads - i.e. the take records the state a real post-signup session has. No step, copy or claim changed.
+- The recording environment's `growth/.env.local` GROWTH_SAFE_EMAILS now carries `second@example.com` alongside `client@example.com`, as the take spec required. The inbox was never opened on screen; the proof beats are the "Invite sent to second@example.com - it expires in 7 days." notice and the pending row.
+- The empty invite field shows the app's own placeholder, `shooter@example.com`, in the hook frame - that is the component's placeholder text (safe example.com address), not a typed value; the typed value on camera is `second@example.com`.
+- Teardown ran as scripted: the pending invite was cancelled through the UI (verified: the invitation row is `canceled` in staging D1), and the org plan was never flipped (the demo org records on its existing Studio plan).
 
 ## Files
 
 - Storyboard: `growth/storyboards/PP-013.md` (passed `reel.mjs check` on 2026-11-03)
 - Take: `growth/storyboards/PP-013.take.mjs` (passed `reel.mjs check` on 2026-11-03)
-- Reel: `growth/packages/PP-013/reel.mp4` - pending record
-- Cover: `growth/packages/PP-013/cover.png` - pending edit
-- QC report: `growth/packages/PP-013/qc.json` - pending QC
+- Reel: `growth/packages/PP-013/reel.mp4` - recorded 2026-11-03 (also pushed to the R2 sync bucket)
+- Cover: `growth/packages/PP-013/cover.png` - cut by the editor from the payoff beat
+- QC report: `growth/packages/PP-013/qc.json` - QC PASSED
 
 ## Take spec
 

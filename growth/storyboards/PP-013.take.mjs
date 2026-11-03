@@ -9,10 +9,31 @@ export const format = "desktop";
 // The demo second shooter. The invite emails this address, so the
 // safe-recipient guard applies. Never the founder's real address.
 const SECOND = "second@example.com";
+// Staging demo org "Amara & Oak Photography" (Studio, 3 seats) - disposable
+// staging fixture data, same role as the seed constants in the local-target
+// seed script. Never a production id.
+const STAGING_DEMO_ORG_ID = "6b1f4c2e-8a3d-4e57-9c21-b0f8d3a4e5c1";
 export const mask = { allowEmails: [SECOND] };
 export const sendsEmail = true;
 
 export async function fixture({ page, env, log }) {
+  await page.goto(env.url + "/dashboard/settings/team", { waitUntil: "load" });
+  await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {});
+  // The invite endpoint resolves the org from the session's active organization,
+  // which only signup/onboarding/studio-switcher ever set - a fresh sign-in has
+  // none and inviteMember fails with "Organization not found" (filed as a
+  // product bug). Set it the same way the studio switcher does, via the same
+  // Better Auth endpoint, then reload so the session carries it like a real
+  // post-signup session.
+  await page.evaluate(async (orgId) => {
+    const res = await fetch("/api/auth/organization/set-active", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ organizationId: orgId }),
+    });
+    if (!res.ok) throw new Error(`set-active failed: HTTP ${res.status}`);
+  }, STAGING_DEMO_ORG_ID);
   await page.goto(env.url + "/dashboard/settings/team", { waitUntil: "load" });
   await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {});
   const seats = page.getByText(/of .* seat/i).first();
