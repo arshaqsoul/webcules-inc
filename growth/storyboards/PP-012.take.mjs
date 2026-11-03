@@ -50,31 +50,45 @@ export async function fixture({ page, env, log }) {
   const href = await card.getAttribute("href");
   if (!href || !href.includes("/projects/")) throw new Error(`FIXTURE STOP: could not resolve the project link for "${PROJECT_TITLE}"`);
   projectPath = `/dashboard/projects/${href.split("/projects/")[1].split(/[/?]/)[0]}`;
+  // Warm the dev server's first-compile of every route the take visits, so no
+  // recorded navigation carries a multi-second frozen load (fixture runs are
+  // not recorded).
+  for (const route of [`${projectPath}?tab=files`, "/dashboard/raw-vault", ...(env.galleryUrl ? [env.galleryUrl] : [])]) {
+    await page.goto(env.url + route, { waitUntil: "load" }).catch(() => {});
+    await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
+  }
   log("fixture: wedding project resolved, RAW files staged in the local upload folder");
 }
 
 export async function run({ p, page, env }) {
   // s1 - RAWs upload with everything else
   p.step("s1", "RAWs upload with everything else");
-  await p.navigate(env.url + projectPath);
-  const dropzone = page.getByText(/drag . drop|drag & drop|drag and drop/i).first();
+  await p.navigate(env.url + projectPath + "?tab=files");
+  // Repaired against the live UI (PP-011 precedent): the dashed drop zone is
+  // drop-only (no click handler); the chooser opens from the Upload button.
+  const dropzone = page.getByText(/drag & drop photos/i).first();
   await dropzone.waitFor({ state: "visible", timeout: 20000 });
   await p.hover(dropzone, 400);
+  const uploadBtn = page.getByRole("button", { name: "Upload files" }).first();
+  await uploadBtn.waitFor({ state: "visible", timeout: 20000 });
   // The recorder's chooser handler feeds the staged .cr3/.arw files.
   const chooserPromise = page.waitForEvent("filechooser");
-  await p.click(dropzone, { selector: "upload drop zone" });
+  await p.click(uploadBtn, { selector: "upload button" });
   const chooser = await chooserPromise;
   await chooser.setFiles([
     "growth/assets/PP-012/wedding-01.cr3",
     "growth/assets/PP-012/wedding-02.arw",
   ]);
-  const rawBadge = page.getByTitle(/RAW/i).first();
-  await rawBadge.waitFor({ state: "visible", timeout: 30000 });
-  await p.hover(rawBadge, 500);
+  const uploadedRow = page.getByText(/wedding-01\.cr3/i).first();
+  await uploadedRow.waitFor({ state: "visible", timeout: 30000 });
+  await p.hover(uploadedRow, 500);
 
   // s2 - the vault: hot vs cold, the 6-month window
   p.step("s2", "Six months hot, then cold");
   await p.navigate(env.url + "/dashboard/raw-vault");
+  // The project row only renders once the vault has counted this run's RAWs.
+  const vaultRow = page.getByText(PROJECT_TITLE).first();
+  await vaultRow.waitFor({ state: "visible", timeout: 20000 });
   const hot = page.getByText(/hot/i).first();
   await hot.waitFor({ state: "visible", timeout: 20000 });
   await p.hover(hot, 500);
@@ -83,22 +97,31 @@ export async function run({ p, page, env }) {
 
   // s3 - restorable, never silently deleted
   p.step("s3", "Restorable, never silently deleted");
-  const row = page.getByText(/\.cr3|\.arw/i).first();
-  await row.waitFor({ state: "visible", timeout: 15000 });
-  await p.hover(row, 400);
+  // Repaired against the live UI: the vault lists per-project rows (no
+  // per-file rows), the row's button is the restore / keep-hot affordance.
+  const restoreBtn = page.getByRole("button", { name: /keep hot|restore/i }).first();
+  await restoreBtn.waitFor({ state: "visible", timeout: 15000 });
+  await p.hover(restoreBtn, 400);
   const warnings = page.getByText(/restorable|emailed warnings|restore/i).first();
   await p.hover(warnings, 400);
+  // Third real travel (the row's project link) so the zoom hold ends on motion.
+  const rowLink = page.getByRole("link", { name: new RegExp(PROJECT_TITLE) }).first();
+  await rowLink.waitFor({ state: "visible", timeout: 10000 }).catch(() => {});
+  await p.hover(rowLink, 350);
 
   // s4 - the client's side: the gallery OTP gate
   p.step("s4", "The client gets a code");
   // The operator opens this run's gallery link for the demo client grant; the
   // recorder passes it as env.galleryUrl (see the storyboard's recording note).
   if (!env.galleryUrl) throw new Error("FIXTURE STOP: env.galleryUrl missing - the recorder must pass this run's /g/{token} link");
-  await p.navigate(env.galleryUrl);
+  // Plain fast navigate: the built target paints the gate in under half a
+  // second, so the first hover's glide starts before a still stretch can
+  // reach QC's threshold.
+  await p.navigate(env.galleryUrl, { fast: true });
   const gate = page.getByText("Verify it's you").first();
   await gate.waitFor({ state: "visible", timeout: 20000 });
   const emailInput = page.locator("input[type='email']").first();
-  await p.hover(emailInput, 300);
+  await p.hover(emailInput, 250);
   await p.type(emailInput, CLIENT);
   const sendBtn = page.getByRole("button", { name: /send|code/i }).first();
   await p.hover(sendBtn, 250);
@@ -119,11 +142,21 @@ export async function run({ p, page, env }) {
   }
   if (!code) throw new Error("TAKE STOP: no gallery OTP appeared in the local email capture within 30s");
   await p.type(codeInput, code);
+  // The code form submits via its button (no auto-submit on fill).
+  const openBtn = page.getByRole("button", { name: /open gallery/i }).first();
+  await openBtn.waitFor({ state: "visible", timeout: 10000 });
+  await p.click(openBtn, { selector: "button Open gallery" });
   const gallery = page.getByText(PROJECT_TITLE).first();
   await gallery.waitFor({ state: "visible", timeout: 20000 });
-  const downloadAll = page.getByRole("button", { name: /download all/i }).first();
-  await p.hover(downloadAll, 350);
-  await p.click(downloadAll, { selector: "button Download all" });
+  // Repaired against the live UI: "Download" opens a menu; "Download all" is
+  // the menu's section label, the action is "Everything - full resolution".
+  const downloadBtn = page.getByRole("button", { name: "Download" }).first();
+  await downloadBtn.waitFor({ state: "visible", timeout: 20000 });
+  await p.hover(downloadBtn, 350);
+  await p.click(downloadBtn, { selector: "button Download" });
+  const zipAll = page.getByRole("button", { name: /everything.*full resolution/i }).first();
+  await zipAll.waitFor({ state: "visible", timeout: 10000 });
+  await p.click(zipAll, { selector: "button Everything full resolution" });
   await p.settle(900);
 
   // payoff - the full set pulled with no link anywhere in the story

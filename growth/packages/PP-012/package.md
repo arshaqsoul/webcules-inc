@@ -2,15 +2,24 @@
 
 This is what the founder posts once the reel exists.
 The packager filled it in and checked every field.
-Status: SCRIPTED, not yet recorded. Storyboard, take spec and claims are final; the record, edit, music and QC passes run through the standard pipeline (recorder next).
+Status: RECORDED 2026-11-03, QC PASS (44.0 s, 1080x1920, 9.4 MB). Awaiting reel QC.
+
+## Recorded take - deviations from the storyboard (disclosed for reel QC)
+
+The take was repaired against the live UI during recording, same class as PP-011:
+
+- Selector repairs (verified against the live components): the files drop zone is drop-only, so the chooser opens from the "Upload files" button; the vault lists per-project rows with a "Keep hot 6 more months" button (no per-file rows to hover); the gate's code form submits via its "Open gallery" button; "Download all" is reached by clicking the gallery's "Download" button and then "Everything · full resolution" in the menu.
+- The local recording target needed infrastructure that did not exist yet (this machine had never run a local take): a fresh pnpm install, a seeded demo org via the committed `apps/snap/scripts/seed_local_recording_target.sh` (fixed-UUID demo project now - the old `demo-proj-wedding` id fails the uploads route's uuid validation), a local-only `.dev.vars` (BETTER_AUTH_SECRET, NEXT_PUBLIC_APP_URL on localhost, Turnstile site key emptied - staging runs without one the same way), and a dev-only binding-backed upload route (`app/api/uploads/local-put`, reachable only where the R2 S3 credentials are absent, i.e. never on the deployed workers) so UI uploads actually store locally. The gallery OTP rate caps carry a dev-only multiplier (`GALLERY_OTP_CAP_MULTIPLIER`, "1" in wrangler.jsonc, raised only in the local .dev.vars) because every local request shares one IP.
+- The take records against the BUILT local worker (`vinext build` + `wrangler dev` on :5173), not vite dev - production shape per the storyboard, and vite dev's hydration latency read as frozen frames in QC. The seed and verify scripts (`verify_local_target.mjs`) pass end to end against it.
+- Teardown was a no-op as scripted (the client session is the demo client's own; the uploaded RAWs stay to feed later cold-storage states). Failed rehearsal attempts left duplicate RAW uploads, which were deleted through the app's own delete API before the final take.
 
 ## Files
 
 - Storyboard: `growth/storyboards/PP-012.md` (passed `reel.mjs check` on 2026-11-03)
 - Take: `growth/storyboards/PP-012.take.mjs` (passed `reel.mjs check` on 2026-11-03)
-- Reel: `growth/packages/PP-012/reel.mp4` - pending record
-- Cover: `growth/packages/PP-012/cover.png` - pending edit
-- QC report: `growth/packages/PP-012/qc.json` - pending QC
+- Reel: `growth/packages/PP-012/reel.mp4` - recorded 2026-11-03, QC PASS
+- Cover: `growth/packages/PP-012/cover.png` - from the edit
+- QC report: `growth/packages/PP-012/qc.json` - committed
 
 ## Take spec
 

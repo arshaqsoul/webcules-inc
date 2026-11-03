@@ -35,7 +35,14 @@ export function loadEnv() {
   if (!/^https:\/\/snap-staging\.webcules\.com$/.test(url) && !/^https:\/\/staging\.snaphq\.app$/.test(url) && !/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(url)) {
     throw new Error(`refusing to record against ${url}: only staging or a local dev server`);
   }
-  return { url, email: process.env.GROWTH_STAGING_EMAIL, password: process.env.GROWTH_STAGING_PASSWORD };
+  return {
+    url,
+    email: process.env.GROWTH_STAGING_EMAIL,
+    password: process.env.GROWTH_STAGING_PASSWORD,
+    // Optional pass-throughs a take may need (set in growth/.env.local or the shell),
+    // e.g. PP-012's gallery link minted by the operator before the run.
+    galleryUrl: process.env.GROWTH_GALLERY_URL,
+  };
 }
 
 /** Playwright comes from apps/snap (@playwright/test). */

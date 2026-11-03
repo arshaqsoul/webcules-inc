@@ -260,13 +260,18 @@ export function createPerformer(page, { seed, epoch, viewport }) {
       await scrollBy(dy, opts);
     },
 
-    /** Navigate, wait for real content, then let the viewer read the screen. */
-    async navigate(url) {
+    /** Navigate, wait for real content, then let the viewer read the screen.
+     *  { fast: true } skips the networkidle + read beat for targets that paint
+     *  instantly (the built local target) so the next action's glide starts
+     *  before a still stretch reaches QC's threshold. */
+    async navigate(url, { fast = false } = {}) {
       log({ type: "navigate", text: url, ...(currentStep ? { step: currentStep } : {}) });
       await page.goto(url, { waitUntil: "load" });
-      await page.waitForLoadState("networkidle", { timeout: 8000 }).catch(() => {});
-      await mv(pos.x, pos.y);
-      await sleep(between(500, 750));
+      if (!fast) {
+        await page.waitForLoadState("networkidle", { timeout: 8000 }).catch(() => {});
+        await mv(pos.x, pos.y);
+        await sleep(between(500, 750));
+      }
     },
 
     /** After a click that changes the screen: wait for it to settle, then pause so it can be read. */
