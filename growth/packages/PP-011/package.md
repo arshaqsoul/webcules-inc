@@ -2,15 +2,24 @@
 
 This is what the founder posts once the reel exists.
 The packager filled it in and checked every field.
-Status: SCRIPTED, not yet recorded. Storyboard, take spec and claims are final; the record, edit, music and QC passes run through the standard pipeline (designer done, recorder next).
+Status: RECORDED, QC passed (2026-11-03). Reel at `growth/packages/PP-011/reel.mp4` (42.9 s, 1080x1920, QC report committed); awaiting Hawkeye's reel QC, then the founder.
+
+## Recorded take - deviations from the storyboard (disclosed for reel QC)
+
+The live staging UI differs from the offline storyboard in ways that surfaced during recording. What shipped:
+
+- The bulk markup beat (storyboard step 3, "Markup without a spreadsheet") was CUT to fit the QC duration cap (45 s hard limit). The wizard's cost and price are both typed on camera, so the price story is intact; the list editor with the markup column still appears on screen after Create list.
+- The demo org records on Studio gates ("5 lists on your plan" is visible top-left), not Lite as the storyboard intended. Lite caps at 1 price list and the org carries legacy lists that the app cannot delete (no delete/archive exists for price lists), so Lite was unreachable. The caption's tier line ("starts on Lite with one price list; Studio unlocks five") remains true as product copy, and the Studio header on screen matches the caption's Studio line.
+- The client preview is reached by navigating the same tab to /dashboard/store/preview (the "Preview as client" button opens a popup the recorder cannot capture; the preview page renders the DEFAULT list, so the take makes "Wedding Prints" the default on camera first - the star click - and teardown restores the previous default).
+- Staging's store carried take residue (stray price lists from earlier sessions). Because the app has no delete for lists, the residue lists were removed with a staging D1 delete (webcules-snap-staging, disposable test data) - the only way to get back under the Studio cap so the wizard was usable. The original demo list "Wedding" was kept.
 
 ## Files
 
 - Storyboard: `growth/storyboards/PP-011.md` (passed `reel.mjs check` on 2026-11-03)
-- Take: `growth/storyboards/PP-011.take.mjs` (passed `reel.mjs check` on 2026-11-03)
-- Reel: `growth/packages/PP-011/reel.mp4` - pending record
-- Cover: `growth/packages/PP-011/cover.png` - pending edit
-- QC report: `growth/packages/PP-011/qc.json` - pending QC
+- Take: `growth/storyboards/PP-011.take.mjs` (repaired against the live UI during recording; selectors verified on staging)
+- Reel: `growth/packages/PP-011/reel.mp4` - recorded 2026-11-03, QC PASS
+- Cover: `growth/packages/PP-011/cover.png` - from the edit
+- QC report: `growth/packages/PP-011/qc.json` - committed
 
 ## Take spec
 
@@ -96,7 +105,8 @@ Not claimed anywhere: that a guest can complete a purchase today (see Known blem
 
 ## Known blemishes
 
-- PRODUCT GAP (file this before recording): the guest-facing Buy button inside a shared gallery link (`/g/{token}`) is not rendered on master yet. The store toggle's own copy says Buy buttons go live, but a guest opening the gallery sees no buy surface - the carts and checkout services exist (WEB-170/WEB-168), the gallery-integrated buy UI does not. Per growth rule 6 this is a product bug to file, not to paper over: the reel stays studio-side plus the client preview, and the checkout leg needs a re-take once the guest store ships.
+- DETACH API BUG (found while recording): `PATCH /api/studio/commerce/{id}` with `{ detachGrant: true }` passes the PRICE LIST id into `detachPriceListFromGrant(org, grantId)` (app/api/studio/commerce/[id]/route.ts:46-47), so it always 404s - there is no working detach path (the UI has no detach control either). Teardown detaches via staging D1 instead. Worth a dev ticket.
+- PRODUCT GAP (filed as WEBC-464): the guest-facing Buy button inside a shared gallery link (`/g/{token}`) is not rendered on master yet. The store toggle's own copy says Buy buttons go live, but a guest opening the gallery sees no buy surface - the carts and checkout services exist (WEB-170/WEB-168), the gallery-integrated buy UI does not. Per growth rule 6 this is a product bug to file, not to paper over: the reel stays studio-side plus the client preview, and the checkout leg needs a re-take once the guest store ships.
 - The client preview shows "Preview only" buttons (ordering disabled by design, WEB-277); a paused frame can read them. The storyboard forbids framing them as live checkout.
 - The competitor wound (free-plan commission up to 15% per docs/SNAP-COMMERCE-ANALYSIS.md) is paraphrased only - no platform name or percentage on screen.
 

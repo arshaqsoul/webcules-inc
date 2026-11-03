@@ -32,7 +32,7 @@ export function loadEnv() {
   const missing = need.filter((k) => !process.env[k]);
   if (missing.length) throw new Error(`missing ${missing.join(", ")} (see growth/.env.example)`);
   const url = process.env.GROWTH_STAGING_URL.replace(/\/$/, "");
-  if (!/^https:\/\/snap-staging\.webcules\.com$/.test(url) && !/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(url)) {
+  if (!/^https:\/\/snap-staging\.webcules\.com$/.test(url) && !/^https:\/\/staging\.snaphq\.app$/.test(url) && !/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(url)) {
     throw new Error(`refusing to record against ${url}: only staging or a local dev server`);
   }
   return { url, email: process.env.GROWTH_STAGING_EMAIL, password: process.env.GROWTH_STAGING_PASSWORD };
