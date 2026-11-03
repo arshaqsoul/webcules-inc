@@ -36,6 +36,7 @@ const login = await req("/api/auth/sign-in/email", {
 });
 check("staff sign-in", login.ok, `HTTP ${login.status}`);
 if (!login.ok) process.exit(1);
+const staffCookie = cookie; // the OTP leg later adds a gallery-scoped cookie; revoke needs the staff one
 
 // 2. asset serving through the staff route (validates org-prefix + local R2)
 const assets = await req("/api/assets/demo-ast-wedding-01?variant=preview");
@@ -51,6 +52,19 @@ const mint = await req("/api/projects/1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d/grant
 const mintBody = await mint.json().catch(() => ({}));
 check("grant mint on target origin", mint.ok && typeof mintBody.url === "string" && mintBody.url.startsWith(BASE), `HTTP ${mint.status}, url ${mintBody.url ?? "none"}`);
 if (!mint.ok) process.exit(1);
+// Every exit after the mint must revoke: leaked active grants count against
+// the org's concurrent-gallery cap and a later run of this script 402s on
+// the mint. process.exit cannot run finally blocks, so early exits go
+// through die() instead.
+const die = async (msg) => {
+  console.error(`FAIL  ${msg}`);
+  cookie = staffCookie;
+  if (mintBody.grantId) {
+    const r = await req(`/api/grants/${mintBody.grantId}/revoke`, { method: "POST" });
+    console.error(`      (revoked the verification grant: HTTP ${r.status})`);
+  }
+  process.exit(1);
+};
 
 // 4. open the client URL (PP-002 fixture: OTP gate expected)
 const gal = await req(new URL(mintBody.url).pathname);
@@ -88,12 +102,14 @@ check("otp code captured to local email dir", code !== null, code ? `code ${code
 const otpVerify = await req(`/g/${token}/otp/verify`, { method: "POST", body: JSON.stringify({ code }) });
 check("otp verify accepted", otpVerify.ok, `HTTP ${otpVerify.status}`);
 const verified = await req(new URL(mintBody.url).pathname);
-const verifiedHtml = await verified.text();
-const itemCount = (verifiedHtml.match(/(\d+) item\b/) ?? [])[1];
+const verifiedHtml = (await verified.text()).replace(/<!-- -->/g, ""); // React splits "10 items" with comment nodes
+const itemCount = (verifiedHtml.match(/(\d+) items?\b/) ?? [])[1];
 check("gallery reports non-empty item count", !!itemCount && Number(itemCount) > 0, `item count ${itemCount ?? "not found"}`);
-if (!itemCount || Number(itemCount) === 0) process.exit(1);
+if (!itemCount || Number(itemCount) === 0) await die("seeded assets are missing from the gallery - the seed's project_id has drifted");
 
-// 6. clean up the verification grant
+// 6. clean up the verification grant (restore the staff cookie - the jar now
+// also holds the gallery session cookie from the OTP verify)
+cookie = staffCookie;
 const revoke = await req(`/api/grants/${mintBody.grantId}/revoke`, { method: "POST" });
 check("test grant revoked", revoke.ok, `HTTP ${revoke.status}`);
 
