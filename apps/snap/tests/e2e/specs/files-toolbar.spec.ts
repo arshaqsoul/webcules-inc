@@ -142,9 +142,11 @@ test("regression: select, group similar, share panel, triage all still work (pro
   await expect(page.getByRole("button", { name: "Exit triage" })).toHaveCount(0);
 
   // Upload queue wiring: picking a file through the hidden input lands it in
-  // the queue with its name. (The PUT itself needs R2 S3 credentials, which
-  // this checkout doesn't carry — the queue's failure handling is what runs
-  // here; storage itself is covered on staging.)
+  // the queue and PUTs through the binding-backed local route (this checkout
+  // carries no R2 S3 credentials — since 54f382a createUploadSession hands
+  // out /api/uploads/local-put/<id> instead of a presigned URL, so the
+  // upload SUCCEEDS here; assert the success toast, which only the
+  // zero-failure path emits).
   await page.setInputFiles("input[type=file]", {
     name: "e2e-toolbar.jpg",
     mimeType: "image/jpeg",
@@ -153,7 +155,7 @@ test("regression: select, group similar, share panel, triage all still work (pro
       "base64",
     ),
   });
-  await expect(page.getByText(/Upload finished/).first()).toBeVisible({
+  await expect(page.getByText(/uploads finished/i).first()).toBeVisible({
     timeout: 30_000,
   });
   await expect(page.getByText(/e2e-toolbar\.jpg/).first()).toBeVisible();
