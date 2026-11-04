@@ -1,0 +1,17 @@
+{
+  "hook": "RAW handoff, no file-transfer links",
+  "end": {
+    "claim": "RAW delivery without the dying link",
+    "note": "3 GB RAW trial on Free",
+    "link": "snaphq.app"
+  },
+  "claims": [
+    { "text": "RAW uploads (.cr2 .cr3 .nef .arw .dng .rwl) tracked in the vault", "source": "apps/snap/components/raw-vault-panel.tsx" },
+    { "text": "RAWs stay hot 6 months, then cold storage; restorable with emailed warnings", "source": "apps/snap/app/dashboard/raw-vault/page.tsx" },
+    { "text": "Free includes a 3 GB RAW trial; Lite unlocks unlimited RAW", "source": "apps/snap/lib/tier-cards.ts" },
+    { "text": "Clients verify by email and a 6-digit code before the gallery opens", "source": "apps/snap/components/gallery-view.tsx" },
+    { "text": "Downloads are gated by the studio's download settings (PIN option)", "source": "apps/snap/lib/gallery-downloads.ts" },
+    { "text": "One-click Download all, any gallery size", "source": "apps/snap/lib/tier-cards.ts" }
+  ],
+  "mark": "snaphq.app"
+}

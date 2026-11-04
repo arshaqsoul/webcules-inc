@@ -1,0 +1,16 @@
+{
+  "hook": "Two photographers, one login?",
+  "end": {
+    "claim": "Real seats for your studio",
+    "note": "3 seats on Studio, 10 on Pro",
+    "link": "snaphq.app"
+  },
+  "claims": [
+    { "text": "Member list, invites and role changes; owner/admin-gated, seat-gated, audited", "source": "apps/snap/components/settings-team.tsx" },
+    { "text": "Roles: Owner, Admin, Member with plain-language scope", "source": "apps/snap/components/settings-team.tsx" },
+    { "text": "Seats: Free and Lite 1, Studio 3, Pro 10", "source": "apps/snap/lib/plans-data.ts" },
+    { "text": "Teams and permissions on Pro, priced to fit", "source": "apps/snap/lib/tier-cards.ts" },
+    { "text": "Members can be granted RAW Vault access per studio", "source": "apps/snap/app/dashboard/raw-vault/page.tsx" }
+  ],
+  "mark": "snaphq.app"
+}

@@ -1,0 +1,16 @@
+{
+  "hook": "One logo, everywhere",
+  "end": {
+    "claim": "Your brand on everything",
+    "note": "White-label on Studio",
+    "link": "snaphq.app"
+  },
+  "claims": [
+    { "text": "One logo generates the favicon, email header, OG card and watermark", "source": "apps/snap/components/brand-asset-generator.ts" },
+    { "text": "The bundle generates on demand and after a logo upload", "source": "apps/snap/components/settings-brand.tsx" },
+    { "text": "Watermark modes off, corner, tiled, text with a live preview", "source": "apps/snap/components/watermark-card.tsx" },
+    { "text": "White-label toggle: remove Snap branding from galleries, emails, invoices", "source": "apps/snap/components/white-label-card.tsx" },
+    { "text": "White-label and watermarks are Studio plan features", "source": "apps/snap/lib/plans-data.ts" }
+  ],
+  "mark": "snaphq.app"
+}

@@ -1,0 +1,20 @@
+{
+  "hook": "Print sales, 0% commission",
+  "end": {
+    "claim": "Sell prints, keep 100%",
+    "note": "From $15/mo",
+    "link": "snaphq.app"
+  },
+  "claims": [
+    { "text": "Online store on Lite, 0% commission, 1 price list", "source": "apps/snap/lib/tier-cards.ts" },
+    { "text": "Store power: 5 price lists, packages and custom products on Studio", "source": "apps/snap/lib/tier-cards.ts" },
+    { "text": "Money goes to the studio's own Stripe, no application fee", "source": "apps/snap/lib/repos/checkout.ts" },
+    { "text": "0% commission, ever", "source": "apps/snap/components/landing/faq.tsx" },
+    { "text": "Price list editor: products, variants, kinds, bulk markup", "source": "apps/snap/components/commerce-price-list-editor.tsx" },
+    { "text": "Attach a price list to a gallery; Buy buttons follow the active list", "source": "apps/snap/components/store-home.tsx" },
+    { "text": "Client store preview renders in the studio's colors, ordering disabled", "source": "apps/snap/app/dashboard/store/preview/page.tsx" },
+    { "text": "Sell prints, keep 100%", "source": "apps/snap/components/landing/faq.tsx" },
+    { "text": "From $15/mo", "source": "apps/snap/lib/plans-data.ts" }
+  ],
+  "mark": "snaphq.app"
+}
