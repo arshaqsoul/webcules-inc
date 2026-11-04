@@ -241,6 +241,20 @@ export function createPerformer(page, { seed, epoch, viewport }) {
       await sleep(between(400, 600));
     },
 
+    /** Fine-tune a range slider the keyboard way. The caller has already
+     *  p.click()ed the track (that click is logged); this presses ArrowRight
+     *  a few times like a person dragging, then logs one type event naming
+     *  the value the control now shows. */
+    async nudge(target, { times = 10, label, selector } = {}) {
+      for (let i = 0; i < times; i++) {
+        await page.keyboard.press("ArrowRight");
+        await sleep(between(40, 90));
+      }
+      const after = await target.evaluate((el) => Number(el.value));
+      log({ type: "type", text: `${label ?? "value"} ${Math.round(after)}%`, box: round(await box(target)), ...(selector ? { selector } : {}), ...(currentStep ? { step: currentStep } : {}) });
+      return after;
+    },
+
     /** Point the camera at something without touching it (a banner, a result). Logged as an annotate event the editor zooms to. */
     async focus(target, { label, tight } = {}) {
       let b = await box(target, { need: 4, gap: 200 }); // 0.8 s of stillness: late re-layouts must not leave the highlight behind

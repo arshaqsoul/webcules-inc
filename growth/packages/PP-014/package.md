@@ -2,15 +2,25 @@
 
 This is what the founder posts once the reel exists.
 The packager filled it in and checked every field.
-Status: SCRIPTED, not yet recorded. Storyboard, take spec and claims are final; the record, edit, music and QC passes run through the standard pipeline (recorder next).
+Status: RECORDED 2026-11-03. QC PASSED (qc.json committed; reel and cover pushed to the R2 sync bucket). Reel QC pending.
+
+## Recorded take - deviations from the storyboard (disclosed for reel QC)
+
+No scripted step, caption, claim or the payoff changed. Three fixture/selector-level repairs and one legibility repair, all made against the live staging UI:
+
+- Take selectors repaired against the live UI: the logo file input is `className="hidden"` and never passes a visibility wait, so the fixture waits on its label (what the take clicks in step 1 anyway). The generated-asset beat waits for and hovers the favicon chip (`img[alt="Favicon"]`) instead of checklist text - the chips render only after the browser-side bundle lands and the page refreshes, so the chip is the end-to-end gate for WEB-239 generation. The watermark mode picker is a native `<select>`, not radio buttons; the take selects "Logo - corner" through it (the option label is resolved from the DOM so the option's own copy never appears in the take file). Teardown reads the "Remove Snap branding" checkbox with `isChecked()` (a plain checkbox has no `aria-checked` attribute).
+- Watermark legibility repair: the shipped defaults (25% opacity, 20% size) render the corner mark as an illegible smudge on the 208px preview canvas, and the payoff beat would have read as a blank panel. The take now raises Size to ~40% and Opacity to ~50% with the card's own sliders (click the track, then arrow-key fine-tune; the performer gained a `nudge` helper that logs one value event). Client-side state only - the take never saves the watermark, and staging D1 confirms no `watermark` key in the brand JSON after teardown.
+- Fixture-level logo reset (staging D1, disposable demo data, PP-011 D1-cleanup precedent): the demo org carried a leftover rehearsal logo, which would have broken the storyboard's "No logo in the first frame" hook and skipped the generation beat. The UI has no logo-remove control ("Replace logo" only), so the operator cleared `logo_key` / `logo_asset_id` / `brand_assets` on the demo org before the take (1 row, read-back verified), and ran the same reset after the take to restore the no-logo state. The take's uploaded demo logo and its generated bundle remain in R2 as disposable orphans.
+
+Staging state after teardown, verified by read-only D1 queries: `removeBranding: false` in the demo org's brand JSON (the take flipped it on camera and teardown turned it off through the UI), no watermark config stored, plan untouched (`studio` / `active` throughout). The scripted "Save brand" click persisted `theme: "light"` and empty tokens - default page behavior, on camera as scripted. The demo logo file is a prepared stand-in drawn for this take (`growth/assets/PP-014/demo-logo.png`, not committed), not a real client brand.
 
 ## Files
 
 - Storyboard: `growth/storyboards/PP-014.md` (passed `reel.mjs check` on 2026-11-03)
-- Take: `growth/storyboards/PP-014.take.mjs` (passed `reel.mjs check` on 2026-11-03)
-- Reel: `growth/packages/PP-014/reel.mp4` - pending record
-- Cover: `growth/packages/PP-014/cover.png` - pending edit
-- QC report: `growth/packages/PP-014/qc.json` - pending QC
+- Take: `growth/storyboards/PP-014.take.mjs` (passed `reel.mjs check` on 2026-11-03; selector and slider repairs committed with the record)
+- Reel: `growth/packages/PP-014/reel.mp4` - recorded 2026-11-03 (32.8 s, 1080x1920, 6.5 MB; also pushed to the R2 sync bucket)
+- Cover: `growth/packages/PP-014/cover.png` - cut by the editor from the payoff beat
+- QC report: `growth/packages/PP-014/qc.json` - QC PASSED (19 checks)
 
 ## Take spec
 
