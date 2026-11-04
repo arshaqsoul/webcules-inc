@@ -18,11 +18,27 @@ export async function fixture({ page, env, log }) {
   await uploadLabel.waitFor({ state: "visible", timeout: 20000 });
   // The storyboard's hook frame requires no logo on screen ("Upload logo", not
   // "Replace logo"): a logo left over from an earlier take would skip the
-  // generation beat. The operator clears it before the take (checked here,
-  // not mutated).
+  // generation beat and make the hook read as "logo already there". The
+  // operator clears logo_key / logo_asset_id / brand_assets on the demo org in
+  // staging D1 before the take; this gate HARD-FAILS the take before recording
+  // starts if the clear did not land (the previous warn-only check is how a
+  // reel that never shows the upload got recorded).
   const replace = page.getByText("Replace logo");
-  if (await replace.count()) log("fixture: warning - a logo is already present, clear it before the take");
-  log("fixture: brand page ready, logo upload visible");
+  if (await replace.count()) {
+    throw new Error(
+      "fixture: a logo is already present on the demo org (Replace logo is visible) - clear logo_key / logo_asset_id / brand_assets in webcules-snap-staging D1 for the demo org, then re-run; recording has not started",
+    );
+  }
+  // Positive gate on the exact control the take clicks: its label text reads
+  // "Upload logo (...)" only in the no-logo state (it reads "Replace logo"
+  // once a logo exists, which the count check above already rejects).
+  const labelText = (await uploadLabel.textContent()) ?? "";
+  if (!labelText.includes("Upload logo")) {
+    throw new Error(
+      "fixture: the logo upload label does not read Upload logo (got: " + labelText.trim() + ") - the no-logo state is not live; recording has not started",
+    );
+  }
+  log("fixture: no-logo state verified - Upload logo visible, recording may start");
 }
 
 export async function run({ p, page, env }) {
