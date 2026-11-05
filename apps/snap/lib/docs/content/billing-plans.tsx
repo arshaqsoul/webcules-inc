@@ -17,9 +17,8 @@ export default function BillingPlans() {
       </p>
 
       <Note>
-        <strong>Founding offer:</strong> Lite for $5/mo for your first 3 months — use code{" "}
-        <strong>FOUNDING</strong> at checkout. Limited to the first 20 studios, offer ends
-        November 30, 2026.
+        <strong>Founding offer:</strong> Lite for $5/mo for life — use code <strong>FOUNDING</strong>{" "}
+        at checkout. Limited to the first 20 studios.
       </Note>
 
       <Shot
@@ -52,10 +51,10 @@ export default function BillingPlans() {
             <td>500 GB</td>
           </tr>
           <tr>
-            <td>Hard lock (2× storage)</td>
-            <td>40 GB</td>
-            <td>300 GB</td>
-            <td>1 TB</td>
+            <td>Upload lock</td>
+            <td>40 GB (2× storage)</td>
+            <td>150 GB (at the cap)</td>
+            <td>1 TB (2× storage)</td>
           </tr>
           <tr>
             <td>Storage overage</td>
@@ -165,8 +164,9 @@ export default function BillingPlans() {
 
       <H2>Storage, overage, and the hard lock</H2>
       <p>
-        Your storage cap is the plan number. Past it you enter the overage zone, which runs to
-        twice the cap — the hard lock. What happens in the zone depends on the tier:
+        Your storage cap is the plan number. On Free and Studio, past the cap you enter an overage
+        zone that runs to twice the cap — the hard lock. What happens in the zone depends on the
+        tier:
       </p>
       <H3>
         Overage billing <Tier plan="studio" />
@@ -177,15 +177,22 @@ export default function BillingPlans() {
         120 GB over, so $12/mo on your bill. If you are heading toward the 1 TB hard lock, that is
         the signal to <a href="https://cal.com/webcules/snap">talk to us</a> about a larger plan.
       </p>
-      <H3>Free and Lite</H3>
+      <H3>Free — warning space only</H3>
       <p>
-        There is no overage billing on Free and Lite — the zone is simply warning space. The
-        billing panel turns amber, and the honest fix is upgrading.
+        There is no overage billing on Free — the zone between 20 GB and the 40 GB lock is simply
+        warning space. The billing panel turns amber, and the honest fix is upgrading.
+      </p>
+      <H3>Lite — no zone at all</H3>
+      <p>
+        Lite&apos;s lock sits at the cap itself: <strong>uploads stop at 150 GB</strong>, exactly
+        the number the plan advertises. Nothing is deleted when you get there — galleries and
+        downloads keep working, and upgrading to Studio unlocks uploads immediately.
       </p>
       <Callout tone="warn" title="At the hard lock, uploads stop">
-        Hit 2× your plan&apos;s storage (40 GB on Free, 300 GB on Lite, 1 TB on Studio) and new
-        uploads are refused. Nothing is deleted: downloads, galleries, and the rest
-        of the app keep working normally. Upgrading unlocks uploads immediately.
+        Hit your plan&apos;s lock — 40 GB on Free (2× storage), 150 GB on Lite (at the cap), 1 TB
+        on Studio (2× storage) — and new uploads are refused. Nothing is deleted: downloads,
+        galleries, and the rest of the app keep working normally. Upgrading unlocks uploads
+        immediately.
       </Callout>
       <H3>RAW files</H3>
       <p>

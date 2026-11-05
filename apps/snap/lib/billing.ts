@@ -48,81 +48,54 @@ async function ensurePrice(stripe: Stripe, planId: PlanId): Promise<Stripe.Price
   }
 }
 
-/* ---------------- Founding-studio offer (WEBC-127) ----------------
- * Lite at $5/mo for the first 3 months — $10 off/month, first 20 studios.
- * Ensured idempotently like the prices: the worker holds the Stripe key, so
- * the coupon + customer-facing code FOUNDING are found-or-created on first
- * use, never manually in the dashboard. Failures never block checkout —
+/* ---------------- Founding-studio offer (WEBC-127; lifetime since WEBC-468) ----------------
+ * Lite at $5/mo FOR LIFE — $10 off forever, first 20 studios. The coupon and
+ * the customer-facing code FOUNDING are provisioned BY HAND in the Stripe
+ * dashboard (a forever $10-off coupon restricted to the Lite product, max 20
+ * redemptions, metadata snap_offer=founding). The worker's role is
+ * LOOKUP-ONLY: it never creates a coupon, never creates a promotion code,
+ * and never re-activates a deactivated code — any of those would fight the
+ * dashboard's owner. Failures never block checkout —
  * `allow_promotion_codes` just shows the field. */
 const FOUNDING_OFFER = {
   /** Customer-facing promo code. */
   code: "FOUNDING",
-  /** $10 off per month (Lite is $15 → $5 for 3 months). */
+  /** $10 off per month (Lite is $15 → $5), forever — no duration_in_months. */
   amountOff: 1000,
   maxRedemptions: 20,
-  /** 2026-11-30T23:59:59Z. */
-  redeemBy: Math.floor(Date.UTC(2026, 10, 30, 23, 59, 59) / 1000),
 };
 
-async function ensureFoundingOffer(stripe: Stripe, liteProductId: string): Promise<void> {
+/** Lookup-only health check (WEBC-468): confirms the dashboard-owned offer
+ * exists and FOUNDING points at it. Logs a loud error when it doesn't —
+ * it never mutates Stripe state. */
+async function ensureFoundingOffer(stripe: Stripe): Promise<void> {
   try {
     const coupons = await stripe.coupons.list({ limit: 100 });
-    // One-shot diagnostic: everything the live account holds that could
-    // collide with the FOUNDING code.
-    const allCodes = await stripe.promotionCodes.list({ limit: 100 });
-    console.log(
-      `billing: founding-offer inventory: coupons=[${coupons.data.map((c) => `${c.id}:${c.name}:${c.valid ? "valid" : "invalid"}`).join(", ")}] codes=[${allCodes.data.map((p) => `${p.id}:${p.code}:${p.active ? "active" : "inactive"}`).join(", ")}]`,
-    );
-    let coupon: Stripe.Coupon | undefined = coupons.data.find(
-      (c: Stripe.Coupon) => c.metadata?.snap_offer === "founding",
-    );
-    if (!coupon) {
-      coupon = await stripe.coupons.create({
-        name: "Founding studio",
-        amount_off: FOUNDING_OFFER.amountOff,
-        currency: "usd",
-        duration: "repeating",
-        duration_in_months: 3,
-        applies_to: { products: [liteProductId] },
-        max_redemptions: FOUNDING_OFFER.maxRedemptions,
-        redeem_by: FOUNDING_OFFER.redeemBy,
-        metadata: { snap_offer: "founding" },
-      });
+    const coupon = coupons.data.find((c: Stripe.Coupon) => c.metadata?.snap_offer === "founding");
+    if (!coupon || !coupon.valid) {
+      console.error(
+        `billing: founding offer MISSING (${coupon ? "invalid" : "no"} coupon with metadata snap_offer=founding) — create it in the Stripe dashboard: $${FOUNDING_OFFER.amountOff / 100} off forever, Lite product only, max ${FOUNDING_OFFER.maxRedemptions} redemptions`,
+      );
+      return;
     }
     const promo = await stripe.promotionCodes.list({
       code: FOUNDING_OFFER.code,
       limit: 100,
-      expand: ["data.promotion.coupon"],
     });
     const pc = promo.data[0];
     // This API version embeds the coupon at `pc.coupon`; older ones used
-    // `pc.promotion.coupon` (whose absence crashed every re-run here —
+    // `pc.promotion.coupon` (whose absence crashed earlier re-runs —
     // WEBC-127 QA). Read both, defensively.
     const raw = pc as unknown as { coupon?: string | { id?: string }; promotion?: { coupon?: string | { id?: string } } };
     const pcCoupon = raw.coupon ?? raw.promotion?.coupon;
     const pcCouponId = typeof pcCoupon === "string" ? pcCoupon : pcCoupon?.id;
-    console.log(
-      `billing: founding-offer state: coupon=${coupon.id} pc=${pc ? JSON.stringify(pc).slice(0, 700) : "none"}`,
-    );
-    if (pc && pcCouponId === coupon.id) {
-      // Ours — heal a deactivated code instead of crashing into the catch.
-      if (!pc.active) await stripe.promotionCodes.update(pc.id, { active: true });
-      return;
-    }
-    try {
-      await stripe.promotionCodes.create({
-        promotion: { type: "coupon", coupon: coupon.id },
-        code: FOUNDING_OFFER.code,
-      });
-    } catch (err) {
-      // Codes are unique per account: a dead/foreign promotion code squatting
-      // FOUNDING can only be repaired in the Stripe dashboard.
+    if (!pc || !pc.active || pcCouponId !== coupon.id) {
       console.error(
-        `billing: FOUNDING is held by promotion code ${pc?.id ?? "?"} (active=${pc ? String(pc.active) : "?"}, coupon=${pcCouponId ?? "none"}) — repair it in the Stripe dashboard: ${String(err)}`,
+        `billing: FOUNDING code not usable (code=${pc?.id ?? "none"}, active=${pc ? String(pc.active) : "?"}, coupon=${pcCouponId ?? "none"}, founding coupon=${coupon.id}) — repair it in the Stripe dashboard`,
       );
     }
   } catch (err) {
-    console.error("billing: founding-offer ensure failed:", String(err));
+    console.error("billing: founding-offer lookup failed:", String(err));
   }
 }
 
@@ -299,11 +272,10 @@ export async function createPlanCheckout(
 
   const price = await ensurePrice(stripe, planId);
   if (!price) return { url: null, mode: "swapped" };
-  // WEBC-127: promo codes at checkout; the FOUNDING offer is ensured before
-  // the user reaches the Stripe page so the code exists when they type it.
-  const productId =
-    typeof price.product === "string" ? price.product : (price.product?.id ?? null);
-  if (planId === "lite" && productId) await ensureFoundingOffer(stripe, productId);
+  // WEBC-127: promo codes at checkout; the FOUNDING offer is looked up (never
+  // mutated — it is dashboard-owned, WEBC-468) so a missing offer is visible
+  // in the worker tail before the user reaches the Stripe page.
+  if (planId === "lite") await ensureFoundingOffer(stripe);
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     customer: customerId,

@@ -546,7 +546,7 @@ export function usageWarningEmail(studioName: string, params: {
       params.accent,
       "You're close to your storage cap",
       `<p style="margin:0 0 16px;">Your ${params.planName} plan storage is at <strong style="color:#0f1011;">${params.pct}%</strong> (${params.usedLabel} of ${params.capLabel}).</p>
-       <p style="margin:0 0 16px;">Uploads keep working into the overage zone, but they lock at 2× your plan storage. Upgrading keeps everything smooth — and your files are never deleted.</p>
+       <p style="margin:0 0 16px;">You can keep uploading until the pool is completely full — then uploads pause until you free space or upgrade. Upgrading keeps everything smooth, and your files are never deleted.</p>
        <p style="margin:24px 0 0;"><a href="${params.settingsUrl}" style="display:inline-block;background:${params.accent};color:#ffffff;text-decoration:none;font-size:14px;font-weight:500;padding:10px 20px;border-radius:8px;">Review your plan</a></p>`,
       `Storage alert from your Snap ${params.planName} plan.`,
     ),

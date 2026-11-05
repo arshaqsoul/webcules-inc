@@ -11,7 +11,8 @@
  *
  * Storage is 97–98.5% of COGS; the guardrails below come from the worst-case
  * simulation: hard upload lock at 2× included bytes (overage zone between cap
- * and lock), monthly upload bytes ≤ 2× cap, and a 250k file cap per org. */
+ * and lock — except Lite, WEBC-468: its lock sits AT the advertised cap, no
+ * zone), monthly upload bytes ≤ the hard lock, and a 250k file cap per org. */
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { cache } from "react";
 

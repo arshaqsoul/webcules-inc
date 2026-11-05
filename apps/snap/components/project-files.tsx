@@ -1888,7 +1888,12 @@ export function ProjectFiles({
                 ? "RAW trial full (3 GB on Free) — Lite unlocks unlimited RAW"
                 : "Video uploads need a paid plan — Free covers JPG and the 3 GB RAW trial";
           } else if (body.error === "storage_locked") {
-            message = "Storage limit reached — upgrade to keep uploading";
+            // WEBC-468: Lite's lock sits at its own cap — the pitch is
+            // Studio, not more headroom on Lite.
+            message =
+              body.plan === "lite"
+                ? "Storage full — upgrade to Studio to keep uploading"
+                : "Storage limit reached — upgrade to keep uploading";
           } else if (body.error === "upload_rate_bound") {
             message = "Monthly upload limit reached — resets next month";
           }

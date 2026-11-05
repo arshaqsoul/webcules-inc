@@ -92,8 +92,9 @@ export const PLANS: Record<PlanId, PlanDef> = {
   },
   lite: {
     id: "lite", name: "Lite", priceMonthlyUsd: 15,
-    storageBytes: 150 * GB, hardLockBytes: 300 * GB, overagePerGbUsd: 0,
-    monthlyUploadBytes: 300 * GB, fileCap: 250_000,
+    // WEBC-468: uploads stop AT the advertised 150 GB — no overage zone.
+    storageBytes: 150 * GB, hardLockBytes: 150 * GB, overagePerGbUsd: 0,
+    monthlyUploadBytes: 150 * GB, fileCap: 250_000,
     jpgOnly: false, rawAllowed: true, rawTrialBytes: null, whiteLabel: false,
     maxActiveBookings: null, maxActiveGalleries: 15, maxLinkedStudios: 3, otpCapPerUser: 30, maxSessionTypes: 3, maxContractTemplates: 2, maxEmailSnippets: 5, maxContactForms: 1, maxQuestionnaires: 3,
     maxCustomDomains: 0, maxTeamSeats: 1, inboxSnooze: true,

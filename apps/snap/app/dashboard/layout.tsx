@@ -36,8 +36,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const usageBanner =
     ent && (ent.atHardLock || ent.storagePct >= 90)
       ? ent.atHardLock
-        ? "Uploads are locked — you've reached 2× your plan storage. Galleries and downloads keep working."
-        : `Storage at ${ent.storagePct}% of your ${ent.name} plan — uploads lock at 2× your cap.`
+        ? ent.id === "lite"
+          ? "Storage is full — uploads are locked. Galleries and downloads keep working; upgrade to Studio to keep uploading."
+          : "Uploads are locked — you've reached 2× your plan storage. Galleries and downloads keep working."
+        : ent.id === "lite"
+          ? `Storage at ${ent.storagePct}% of your Lite plan — uploads stop when storage is full.`
+          : `Storage at ${ent.storagePct}% of your ${ent.name} plan — uploads lock at 2× your cap.`
       : null;
 
   // WEB-270: setup guide — always derived for the ACTIVE studio; hidden
