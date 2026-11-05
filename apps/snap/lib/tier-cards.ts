@@ -16,11 +16,12 @@ export type PublicTierId = Exclude<TierId, "pro">;
 /** Booking link for "Talk to us" — the one place sales conversations start. */
 export const TALK_TO_US_HREF = "https://cal.com/webcules/snap";
 
-/** WEBC-127 founding-studio offer — founder-approved copy, exactly this
- * wording on every surface (billing page + marketing pricing). Backed by the
- * Stripe coupon/promo code ensured in lib/billing.ts. */
+/** WEBC-127/WEBC-468 founding-studio offer — founder-approved copy, exactly
+ * this wording on every surface (billing page + marketing pricing). Lifetime:
+ * $5/mo for as long as the subscription lives. The offer is dashboard-owned
+ * in Stripe; lib/billing.ts only looks it up, never mutates it. */
 export const FOUNDING_OFFER_LINE =
-  "Founding offer: Lite for $5/mo for your first 3 months. Use code FOUNDING at checkout. Limited to the first 20 studios.";
+  "Founding offer: Lite for $5/mo for life. Use code FOUNDING at checkout. Limited to the first 20 studios.";
 
 export type TierCard<Id extends TierId = TierId> = {
   id: Id;

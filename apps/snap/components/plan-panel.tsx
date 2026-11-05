@@ -327,7 +327,9 @@ export function PlanPanel({ returnHint }: { returnHint?: string }) {
         )}
         {st.atHardLock && (
           <p className="mt-1 text-xs text-destructive">
-            Uploads are locked — downloads and galleries keep working. Upgrade to continue.
+            {st.plan === "lite"
+              ? "Storage is full — upgrade to Studio to keep uploading."
+              : "Uploads are locked — downloads and galleries keep working. Upgrade to continue."}
           </p>
         )}
       </div>

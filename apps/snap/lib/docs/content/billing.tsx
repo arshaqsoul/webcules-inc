@@ -76,9 +76,10 @@ export default function Billing() {
       </p>
       <Callout tone="warn" title="The hard lock is honest about being a lock">
         At 2× your plan&apos;s storage (1 TB on Studio), uploads are refused outright — galleries
-        and downloads keep working, nothing is deleted. On Free and Lite there is no overage
-        billing at all: the zone between cap and lock is warning space, and the lock still stops
-        uploads at 2×. The full math lives in <a href="/docs/storage">Storage &amp; limits</a>.
+        and downloads keep working, nothing is deleted. On Free there is no overage billing at
+        all: the zone between the 20 GB cap and the 40 GB lock is warning space. On Lite there is
+        no zone at all — the lock sits at the 150 GB cap itself, so uploads stop exactly where the
+        plan says they do. The full math lives in <a href="/docs/storage">Storage &amp; limits</a>.
       </Callout>
 
       <Note>

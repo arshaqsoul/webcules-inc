@@ -33,20 +33,30 @@ describe("PLANS", () => {
     }
   });
 
-  it("hard lock and monthly upload bound sit at 2x the included cap (studio rounds up to a whole TB)", () => {
+  it("hard lock and monthly upload bound sit at 2x the included cap — except Lite, which locks AT its cap (WEBC-468: studio rounds up to a whole TB)", () => {
     for (const id of ORDER) {
       const p = PLANS[id];
-      // Guardrails: never below 2x, never above 2.1x (studio's lock is
-      // TB-rounded: 1TB vs 2x500GB = 1000GB — ~2.5% over, cosmetic slack).
-      expect(p.hardLockBytes).toBeGreaterThanOrEqual(p.storageBytes * 2);
-      expect(p.hardLockBytes).toBeLessThanOrEqual(p.storageBytes * 2.1);
-      expect(p.monthlyUploadBytes).toBeGreaterThanOrEqual(p.storageBytes * 2);
+      // Guardrail floor: the lock never sits below the advertised cap, and
+      // the monthly upload bound never sits below the lock.
+      expect(p.hardLockBytes).toBeGreaterThanOrEqual(p.storageBytes);
+      expect(p.monthlyUploadBytes).toBeGreaterThanOrEqual(p.hardLockBytes);
     }
-    // Exact-2x tiers (studio's lock is TB-rounded: 1TB vs 2x500GB=1000GB).
-    for (const id of ["free", "lite", "pro"] as const) {
+    // Exact-2x tiers: a warning/overage zone runs cap → 2× lock (studio's
+    // lock is TB-rounded: 1TB vs 2x500GB=1000GB).
+    for (const id of ["free", "pro"] as const) {
       expect(PLANS[id].hardLockBytes).toBe(PLANS[id].storageBytes * 2);
       expect(PLANS[id].monthlyUploadBytes).toBe(PLANS[id].storageBytes * 2);
     }
+    expect(PLANS.studio.hardLockBytes).toBe(1024 ** 4);
+    expect(PLANS.studio.monthlyUploadBytes).toBe(1024 ** 4);
+  });
+
+  it("WEBC-468: Lite has no overage zone — uploads stop at the advertised 150 GB cap", () => {
+    const lite = PLANS.lite;
+    expect(lite.hardLockBytes).toBe(lite.storageBytes);
+    expect(lite.monthlyUploadBytes).toBe(lite.storageBytes);
+    expect(lite.overagePerGbUsd).toBe(0);
+    expect(lite.storageBytes).toBe(150 * 1024 ** 3);
   });
 
   it("white-label only from studio; galleries unlimited from studio", () => {

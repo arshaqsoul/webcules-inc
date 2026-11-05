@@ -54,16 +54,16 @@ export default function Storage() {
           <tr>
             <td>Free</td>
             <td>20 GB</td>
-            <td>40 GB</td>
+            <td>40 GB (2×)</td>
             <td>—</td>
             <td>40 GB</td>
           </tr>
           <tr>
             <td>Lite</td>
             <td>150 GB</td>
-            <td>300 GB</td>
+            <td>150 GB (at the cap)</td>
             <td>—</td>
-            <td>300 GB</td>
+            <td>150 GB</td>
           </tr>
           <tr>
             <td>Studio</td>
@@ -85,23 +85,26 @@ export default function Storage() {
         Past your included storage there's headroom up to the hard lock. On Studio that
         headroom is billed as overage: <strong>$0.10 per GB per month</strong> beyond your cap,
         charged monthly. Heading toward the 1 TB hard lock? <a href="https://cal.com/webcules/snap">Talk to us</a>{" "}
-        about a larger plan. On Free and Lite the zone is unbilled breathing room; the charge is
-        Studio only.
+        about a larger plan. On Free the zone is unbilled breathing room; on Lite there is no zone
+        at all — see the lock below.
       </p>
 
       <H3>The hard lock</H3>
       <p>
-        At twice your included storage, the gates close: <strong>new uploads are refused</strong> —
+        When your pool fills to its lock, the gates close: <strong>new uploads are refused</strong> —
         photos, videos, and RAW alike — with a clear "storage locked" error. Nothing existing is
         touched: galleries keep working, clients keep browsing and downloading. The lock lifts the
-        moment you free space or upgrade (each plan's lock is 2× its own included pool).
+        moment you free space or upgrade. On Free and Studio the lock sits at twice the included
+        pool; on Lite it sits at the cap itself — 150 GB, exactly what the plan advertises, with
+        no zone between.
       </p>
 
       <H3>The monthly upload bound</H3>
       <p>
-        Independent of the pool, uploads per calendar month are capped at twice your included
-        storage (resetting on the 1st, UTC). It's a churn guard — you can't fill and re-fill a
-        locked pool indefinitely — and hitting it is a "come back next month" moment, not a bill.
+        Independent of the pool, uploads per calendar month are capped at your hard lock (twice
+        the included storage on Free and Studio, the cap itself on Lite; resetting on the 1st,
+        UTC). It's a churn guard — you can't fill and re-fill a locked pool indefinitely — and
+        hitting it is a "come back next month" moment, not a bill.
       </p>
 
       <H2>Watching your usage</H2>

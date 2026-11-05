@@ -38,6 +38,20 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.35.0" date="November 4, 2026">
+        <p>
+          <strong>Lite storage now means exactly what the pricing page says: 150 GB.</strong>{" "}
+          Lite carried an unadvertised buffer up to 300 GB. That buffer is gone — uploads stop at
+          the 150 GB cap, the number you signed up for. Nothing is deleted when you reach it:
+          galleries and downloads keep working, and upgrading to Studio unlocks uploads
+          immediately.
+        </p>
+        <p>
+          <strong>The Founding offer is now for life.</strong> Code <strong>FOUNDING</strong>{" "}
+          still takes the first 20 studios to $5/month on Lite — but the price now stays $5/mo
+          for as long as the subscription lives, instead of returning to $15 after three months.
+        </p>
+      </Release>
       <Release version="0.34.0" date="October 31, 2026">
         <p>
           <strong>Getting around just got easier.</strong> The Snap logo on the
