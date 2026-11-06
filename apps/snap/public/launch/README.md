@@ -19,7 +19,7 @@ no superlatives, no numbers outside the sheet.
 
 Structure: brand sting (0:00) → dashboard hook → booking link → leads →
 pipeline → Template Studio → client gallery → your-Stripe money beat →
-"Start free — snap.webcules.com" outro card. Chapters in
+"Start free — snaphq.app" outro card. Chapters in
 `.learn-videos/meet-snap/chapters.json`.
 
 ## Landing page embed
