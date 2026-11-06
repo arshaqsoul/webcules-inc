@@ -38,6 +38,14 @@ export default function Releases() {
         getting their own.
       </Note>
 
+      <Release version="0.36.0" date="November 5, 2026">
+        <p>
+          <strong>The videos now send people to snaphq.app.</strong> The launch
+          video (&ldquo;Meet Snap&rdquo;) and the Intro to Snap guide used to end on
+          the old snap.webcules.com address; every end card now reads
+          <strong> snaphq.app</strong> — same videos otherwise.
+        </p>
+      </Release>
       <Release version="0.35.0" date="November 4, 2026">
         <p>
           <strong>Lite storage now means exactly what the pricing page says: 150 GB.</strong>{" "}

@@ -51,7 +51,12 @@ the sidecar `.vtt` carries captions for sound-on viewers.
 Upload the square/vertical files directly in each platform's composer — both
 have captions burned in (most social viewing is muted). Suggested first
 comment/copy anchors: "0% commission — ever", "20 GB free, no credit card",
-"snap.webcules.com". Don't add claims outside the truth sheet.
+"snaphq.app". Don't add claims outside the truth sheet.
+
+Re-exported 2026-11-05 (WEBC-469): the outro end card now reads
+"20 GB · no credit card · snaphq.app" — the original clips are gone, so the
+swap is a surgical patch of the card's subtitle line only (master + square +
+vertical all re-rendered from the patched master; poster and .vtt unchanged).
 
 ## Regenerating
 
