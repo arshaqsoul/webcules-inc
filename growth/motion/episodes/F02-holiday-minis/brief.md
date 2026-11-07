@@ -104,3 +104,9 @@ Moodboard from Pinterest per chapter (`moodboard.md`): snowy Christmas tree farm
 - Result: `out/F02/reel.mp4`, 29.37 s, every QC line passes.
 - Render environment: run through WSL, with `GROWTH_COMFY_URL` pointing at the Windows host's ComfyUI.
 
+## Redo (2026-11-06, founder direction)
+
+- The voice-over is dropped: the founder does not want it and the reels do well music-led. `episode.json` no longer carries `vo`; `musicGain` rises 0.45 to 0.7 since nothing ducks under anymore, and the three score sections get fuller arrangements (string bed in the folk cue, wider euphoric peak, a warm string pad under the outro motif).
+- Re-rendered from the recorded seeds on a machine that had lost the original media. Keyframes reproduce the original picks exactly except two deviations: `diorama_lit` is regenerated as the text anchor (the committed `@from diorama` / `@from diorama_lit` pair was circular), and the unlit `diorama` pick moved 5004 to 5005 because 5004 kept a cyan pre-glow in the lantern tops that read wrong against the "lights come on" grow.
+- Everything else (shots, camera moves, cards, timings, caption, claims) is unchanged.
+

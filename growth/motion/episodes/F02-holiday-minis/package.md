@@ -1,8 +1,8 @@
 # Reel package: F02 - Mini Season
 
-Series: Snap it. - Film. Hybrid: keyframes and clips generated on local ComfyUI (Z-Image, Qwen-Image-Edit, Wan 2.2, RIFE; voice-over by Piper TTS and music by ACE-Step, both generated); every word, inbox card and the end card drawn in code (growth/motion), no recording.
+Series: Snap it. - Film. Hybrid: keyframes and clips generated on local ComfyUI (Z-Image, Qwen-Image-Edit, Wan 2.2, RIFE; music by ACE-Step, generated); every word, inbox card and the end card drawn in code (growth/motion), no recording.
 
-**Turn on Instagram's and Facebook's AI label when posting (generated footage, synthetic voice and music).**
+**Turn on Instagram's and Facebook's AI label when posting (generated footage and music).**
 
 ## Files
 

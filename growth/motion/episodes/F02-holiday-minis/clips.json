@@ -6,7 +6,7 @@
   "interp": "rife",
   "keyframes": {
     "farm": 1003,
-    "diorama": 5004,
+    "diorama": 5005,
     "poster": 2002,
     "farm_family": 2002,
     "square": 2003,
@@ -134,7 +134,7 @@
       "seed": 17,
       "use": [
         0,
-        3.0
+        3
       ],
       "prompt": "Static camera, no zoom, no cuts. At night in her snug editing nook the photographer sits at her desk, clicks the mouse, then taps a key and sits back with a small satisfied smile; the monitor's colour blocks glow on her glasses, soft snow falls past the window and the streetlamp glows. The mug on the desk stays still and empty. Expressive stylized 3D animated performance, smooth character animation. Same faces, same clothes, nothing morphs or drifts. Crisp, vivid colours and clear contrast throughout, no haze, no fade.",
       "overlay": {

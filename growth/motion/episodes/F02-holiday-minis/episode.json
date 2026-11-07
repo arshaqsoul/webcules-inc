@@ -115,74 +115,33 @@
       }
     ]
   },
-  "vo": {
-    "voice": "en_US-ryan-high",
-    "lines": [
-      {
-        "shot": "diorama",
-        "at": 0.4,
-        "text": "Say it's mini session season.",
-        "fit": 2.0
-      },
-      {
-        "shot": "farm_family",
-        "at": 0.4,
-        "text": "Now next weekend's slots book while you're shooting this one.",
-        "fit": 3.3
-      },
-      {
-        "shot": "square",
-        "at": 0.4,
-        "text": "And the contract gets signed before the lights come on.",
-        "fit": 3.0
-      },
-      {
-        "shot": "desk",
-        "at": 0.4,
-        "text": "You can even deliver the gallery before they've warmed up.",
-        "fit": 2.9
-      },
-      {
-        "shot": "end",
-        "at": 0.7,
-        "text": "Bookings, contracts, galleries, payments.",
-        "fit": 2.45
-      },
-      {
-        "shot": "end",
-        "at": 3.3,
-        "text": "Just Snap it.",
-        "fit": 0.9
-      }
-    ]
-  },
   "score": [
-    {
-      "to": {
-        "shot": "tree"
-      },
-      "tags": "Warm cinematic holiday folk score, instrumental only, no vocals. Music box and glockenspiel over soft felt piano and fingerpicked acoustic guitar, gentle sleigh-bell shimmer, cosy winter wonder, hopeful, building slowly, clean warm production",
-      "bpm": 84,
-      "key": "F major",
-      "seed": 2
+   {
+    "to": {
+     "shot": "tree"
     },
-    {
-      "from": {
-        "shot": "tree"
-      },
-      "to": "end",
-      "tags": "Cinematic build to a peak, instrumental only, no vocals. Swelling strings, a heartbeat kick, bright bells and shimmering synth arpeggio rising to a euphoric winter peak",
-      "bpm": 116,
-      "key": "F major",
-      "seed": 2
+    "tags": "Warm cinematic holiday folk score, instrumental only, no vocals. Rich full arrangement: music box and glockenspiel lead over soft felt piano, fingerpicked acoustic guitar, a warm string bed and gentle sleigh-bell shimmer, cosy winter wonder, hopeful, slowly building, wide clean warm production",
+    "bpm": 84,
+    "key": "F major",
+    "seed": 2
+   },
+   {
+    "from": {
+     "shot": "tree"
     },
-    {
-      "from": "end",
-      "tags": "Light bright music box motif with soft piano and glockenspiel, instrumental only, no vocals, ends with one soft final chord",
-      "bpm": 84,
-      "key": "F major",
-      "seed": 2
-    }
+    "to": "end",
+    "tags": "Cinematic build to a euphoric peak, instrumental only, no vocals. Swelling warm strings, a heartbeat kick, bright bells, glockenspiel and shimmering synth arpeggio rising to a wide joyful winter peak",
+    "bpm": 116,
+    "key": "F major",
+    "seed": 2
+   },
+   {
+    "from": "end",
+    "tags": "Light bright music box motif with soft piano, glockenspiel and a warm string pad, instrumental only, no vocals, ends with one soft final chord",
+    "bpm": 84,
+    "key": "F major",
+    "seed": 2
+   }
   ],
-  "musicGain": 0.45
+  "musicGain": 0.7
 }

@@ -319,17 +319,8 @@
   },
   "format": "film",
   "soundtrack": {
-    "vo": "growth/motion/out/F02/vo.wav",
     "music": "growth/motion/out/F02/music.wav",
-    "musicGain": 0.45,
+    "musicGain": 0.7,
     "sfxGain": 0.6
-  },
-  "vo": [
-    "Say it's mini session season.",
-    "Now next weekend's slots book while you're shooting this one.",
-    "And the contract gets signed before the lights come on.",
-    "You can even deliver the gallery before they've warmed up.",
-    "Bookings, contracts, galleries, payments.",
-    "Just Snap it."
-  ]
+  }
 }
