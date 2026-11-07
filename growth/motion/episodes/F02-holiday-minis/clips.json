@@ -1,0 +1,219 @@
+{
+  "about": "F02 Mini Season shot list (FILM.md, brief.md). Output times: poster 0-0.8, diorama 0.8-2.1, m_lit grow + dive 2.1-4.17, farm 4.17-6.2, farm_family 6.2-11.2, square 11.2-16.4, desk 16.4-19.4, tablet 19.4-22.0, tree 22.0-23.6, gallery_open 23.6-26.0, then the end card.",
+  "dir": "out/F02",
+  "w": 720,
+  "h": 1280,
+  "interp": "rife",
+  "keyframes": {
+    "farm": 1003,
+    "diorama": 5005,
+    "poster": 2002,
+    "farm_family": 2002,
+    "square": 2003,
+    "desk": 2003,
+    "diorama_lit": 4004,
+    "tree": 4003,
+    "tablet": 4001
+  },
+  "shots": [
+    {
+      "name": "poster",
+      "seed": 11,
+      "use": [
+        0,
+        0.8
+      ],
+      "prompt": "Static camera, no zoom, no cuts. A stylized 3D animated photographer stands in profile on a snowy rise at first light, camera raised to her eye toward the glowing sun; soft snowflakes drift slowly, the warm lanterns along the tree-farm paths below twinkle and the pale gold light on her scarf brightens. Expressive stylized 3D animated performance, smooth character animation. Same faces, same clothes, nothing morphs or drifts. Crisp, vivid colours and clear contrast throughout, no haze, no fade.",
+      "neg": "Bright saturated tones, overexposed, static frame, blurry details, subtitles, text, logo, watermark, painting, worst quality, low quality, jpeg artifacts, deformed hands, extra fingers, malformed limbs, fused fingers, messy background, three legs, many people in the background, walking backwards, sudden cuts, morphing faces, flicker, zoom, smoke, steam, vapour, breath fog, extra people, extra legs"
+    },
+    {
+      "name": "diorama",
+      "seed": 31,
+      "use": [
+        0,
+        1.3
+      ],
+      "camera": {
+        "drift": {
+          "zoom": [
+            1,
+            1.04
+          ],
+          "at": [
+            0.6,
+            0.6
+          ]
+        }
+      },
+      "prompt": "Locked-off tripod camera, no camera movement, no zoom, no cuts. A tiny isometric diorama of a snowy tree farm sits on a pale lavender studio backdrop in cool pre-dawn light. The diorama is a still miniature model: the barn, the pines, the lantern posts and the slab are fixed in place like a photograph and never move, rock or sway. Only the light is alive: the barn window flickers on with a soft warm glow. Clean pale backdrop throughout. Crisp, vivid colours and clear contrast throughout, no haze, no fade.",
+      "neg": "Bright saturated tones, overexposed, blurry details, subtitles, text, logo, watermark, painting, worst quality, low quality, jpeg artifacts, deformed hands, extra fingers, malformed limbs, fused fingers, messy background, three legs, many people in the background, walking backwards, sudden cuts, morphing faces, flicker, zoom, barn swaying, barn rocking, tree swaying, slab sliding, objects sliding, camera shake, wobble, smoke, steam, vapour"
+    },
+    {
+      "name": "m_lit",
+      "move": true,
+      "to": "diorama_lit",
+      "seed": 33,
+      "speed": 1,
+      "camera": {
+        "push": {
+          "zoom": 4.5,
+          "from": 0.6,
+          "at": [
+            0.68,
+            0.6
+          ]
+        }
+      },
+      "prompt": "Continuous single take, locked-off tripod camera, no camera movement. On the tiny still snowy tree-farm diorama on a pale lavender backdrop, the little lanterns along the path come on one by one, glowing warm gold on the snow, the barn window lights up and a few big soft snowflakes start to float down. The barn, the pines and the slab are fixed in place and completely motionless; only the light and the snowflakes change. No cuts, no fades, no morphing, no dissolve. Crisp, vivid colours and clear contrast throughout, no haze, no fade.",
+      "neg": "Bright saturated tones, overexposed, blurry details, subtitles, text, logo, watermark, painting, worst quality, low quality, jpeg artifacts, deformed hands, extra fingers, malformed limbs, fused fingers, messy background, three legs, many people in the background, walking backwards, sudden cuts, morphing faces, flicker, zoom, barn swaying, barn rocking, tree swaying, slab sliding, objects sliding, camera shake, wobble, smoke, steam, vapour"
+    },
+    {
+      "name": "farm",
+      "seed": 14,
+      "use": [
+        0.1,
+        2.13
+      ],
+      "camera": {
+        "land": {
+          "zoom": 1.7,
+          "dur": 0.7,
+          "at": [
+            0.7,
+            0.55
+          ]
+        }
+      },
+      "prompt": "Very slow, very slight push-in, no zoom, no cuts. On a snowy Christmas tree farm in the early morning the stylized 3D animated photographer walks toward us down the lantern-lit path between rows of snowy pines, camera in both hands, grinning; soft snowflakes drift, the red barn stands still behind her. Expressive stylized 3D animated performance, smooth character animation. Same faces, same clothes, nothing morphs or drifts. Crisp, vivid colours and clear contrast throughout, no haze, no fade.",
+      "neg": "Bright saturated tones, overexposed, static frame, blurry details, subtitles, text, logo, watermark, painting, worst quality, low quality, jpeg artifacts, deformed hands, extra fingers, malformed limbs, fused fingers, messy background, three legs, many people in the background, walking backwards, sudden cuts, morphing faces, flicker, zoom, smoke, steam, vapour, breath fog, extra people, extra legs"
+    },
+    {
+      "name": "farm_family",
+      "seed": 36,
+      "use": [
+        0,
+        4.3
+      ],
+      "camera": {
+        "whip": "out"
+      },
+      "prompt": "Static locked-off camera on a tripod, no zoom, no push-in, no dolly, no camera movement at all, no cuts. At the tree farm the photographer kneels in the snow on the left and shoots, steady; the family of four stay exactly in place, smiling and laughing gently: the little boy on the stump holds up his snowball and giggles, the girl sways a little and waves one hand slowly, the parents lean in with their arms around each other, everyone looks at the camera; soft snowflakes drift down. Calm, small, smooth, slow movements only, no jumping, no bouncing, no fast arm movements, no waving both hands. Everyone keeps both feet on the ground or on the stump, nobody lifts anyone. Expressive stylized 3D animated performance, smooth character animation. Same faces, same clothes, nothing morphs or drifts. Crisp, vivid colours and clear contrast throughout, saturated colours, bright clean snow, no haze, no fade.",
+      "overlay": {
+        "flash": 1.2,
+        "cardAt": 2.4,
+        "toast": {
+          "title": "New booking - Marcus Bell",
+          "sub": "Holiday mini, next Saturday"
+        }
+      },
+      "neg": "Bright saturated tones, overexposed, static frame, blurry details, subtitles, text, logo, watermark, painting, worst quality, low quality, jpeg artifacts, deformed hands, extra fingers, malformed limbs, fused fingers, messy background, three legs, many people in the background, walking backwards, sudden cuts, morphing faces, flicker, zoom, smoke, steam, vapour, breath fog, extra people, extra legs, motion blur, blurry motion, fast motion, jumping, bouncing, ghosting, double image, camera zoom, push-in, dolly, haze, washed out, low contrast"
+    },
+    {
+      "name": "square",
+      "seed": 26,
+      "use": [
+        0,
+        5.2
+      ],
+      "camera": {
+        "whip": "in"
+      },
+      "prompt": "Very slow, very slight push-in, no zoom, no cuts. In a small-town square at blue hour the photographer stands on the left and shoots; the couple stand side by side in front of the big lit tree and laugh, she tucks her scarf, he glances at her, the little dog sits and wags its tail; the carousel's lights glow steadily and the tree's lights stay steady, soft snowflakes drift. The tree, the carousel and the buildings stand perfectly still. Everyone keeps both feet on the ground. Expressive stylized 3D animated performance, smooth character animation. Same faces, same clothes, nothing morphs or drifts. Crisp, vivid colours and clear contrast throughout, no haze, no fade.",
+      "overlay": {
+        "flash": 1.6,
+        "cardAt": 2.6,
+        "toast": {
+          "title": "Contract signed - Holiday mini",
+          "sub": "Signed in the browser"
+        }
+      },
+      "neg": "Bright saturated tones, overexposed, static frame, blurry details, subtitles, text, logo, watermark, painting, worst quality, low quality, jpeg artifacts, deformed hands, extra fingers, malformed limbs, fused fingers, messy background, three legs, many people in the background, walking backwards, sudden cuts, morphing faces, flicker, zoom, smoke, steam, vapour, breath fog, extra people, extra legs, sparkles, glitter, fireworks, particles bursting, light burst"
+    },
+    {
+      "name": "desk",
+      "seed": 17,
+      "use": [
+        0,
+        3
+      ],
+      "prompt": "Static camera, no zoom, no cuts. At night in her snug editing nook the photographer sits at her desk, clicks the mouse, then taps a key and sits back with a small satisfied smile; the monitor's colour blocks glow on her glasses, soft snow falls past the window and the streetlamp glows. The mug on the desk stays still and empty. Expressive stylized 3D animated performance, smooth character animation. Same faces, same clothes, nothing morphs or drifts. Crisp, vivid colours and clear contrast throughout, no haze, no fade.",
+      "overlay": {
+        "cardAt": 0.9,
+        "toast": {
+          "title": "Gallery delivered - Priya Nair",
+          "sub": "24 photos"
+        }
+      },
+      "neg": "Bright saturated tones, overexposed, static frame, blurry details, subtitles, text, logo, watermark, painting, worst quality, low quality, jpeg artifacts, deformed hands, extra fingers, malformed limbs, fused fingers, messy background, three legs, many people in the background, walking backwards, sudden cuts, morphing faces, flicker, zoom, smoke, steam, vapour, breath fog, extra people, extra legs"
+    },
+    {
+      "name": "tablet",
+      "seed": 18,
+      "use": [
+        0,
+        2.6
+      ],
+      "prompt": "Static camera, no zoom, no cuts. At night on a cosy sofa the family of four look at a tablet glowing in their hands: the mother gasps and puts a hand over her mouth, the father grins and leans in, the little girl and boy squeal and bounce slightly in their seats; the tablet light flickers softly on their faces, the tabletop tree lights twinkle and snow falls past the window. Nobody leaves their seat. Expressive stylized 3D animated performance, smooth character animation. Same faces, same clothes, nothing morphs or drifts. Crisp, vivid colours and clear contrast throughout, no haze, no fade.",
+      "neg": "Bright saturated tones, overexposed, static frame, blurry details, subtitles, text, logo, watermark, painting, worst quality, low quality, jpeg artifacts, deformed hands, extra fingers, malformed limbs, fused fingers, messy background, three legs, many people in the background, walking backwards, sudden cuts, morphing faces, flicker, zoom, smoke, steam, vapour, breath fog, extra people, extra legs"
+    },
+    {
+      "name": "tree",
+      "seed": 19,
+      "use": [
+        0,
+        1.6
+      ],
+      "camera": {
+        "drift": {
+          "zoom": [
+            1,
+            1.08
+          ],
+          "at": [
+            0.5,
+            0.4
+          ]
+        }
+      },
+      "prompt": "Locked-off tripod camera, no cuts. The big town Christmas tree stands perfectly still, its thousand warm lights twinkling and glittering against the deep blue dusk sky; soft snowflakes drift through the light, the carousel lights glow, tiny townspeople stand watching. The tree and the carousel do not move or sway. Crisp, vivid colours, no haze.",
+      "overlay": {
+        "cardAt": 0.3,
+        "toast": {
+          "title": "Invoice INV-0112 paid",
+          "sub": "Paid into your Stripe"
+        }
+      },
+      "neg": "Bright saturated tones, overexposed, blurry details, subtitles, text, logo, watermark, painting, worst quality, low quality, jpeg artifacts, deformed hands, extra fingers, malformed limbs, fused fingers, messy background, three legs, many people in the background, walking backwards, sudden cuts, morphing faces, flicker, zoom, barn swaying, barn rocking, tree swaying, slab sliding, objects sliding, camera shake, wobble, smoke, steam, vapour"
+    },
+    {
+      "name": "gallery_open",
+      "key": "tablet",
+      "seed": 20,
+      "use": [
+        0,
+        2.4
+      ],
+      "camera": {
+        "drift": {
+          "zoom": [
+            1,
+            1.25
+          ],
+          "at": [
+            0.4,
+            0.45
+          ]
+        }
+      },
+      "prompt": "Static camera, no zoom, no cuts. The family of four on the sofa look at the glowing tablet: the little girl points excitedly at the screen and gasps with a big smile, the mother laughs with her hand at her mouth, the father leans in, the boy waves his hands; the tablet light flickers on their faces. Nobody leaves their seat. Expressive stylized 3D animated performance, smooth character animation. Same faces, same clothes, nothing morphs or drifts. Crisp, vivid colours and clear contrast throughout, no haze, no fade.",
+      "overlay": {
+        "cardAt": 0.3,
+        "toast": {
+          "title": "Client opened their gallery for the first time",
+          "sub": "Priya Nair"
+        }
+      },
+      "neg": "Bright saturated tones, overexposed, static frame, blurry details, subtitles, text, logo, watermark, painting, worst quality, low quality, jpeg artifacts, deformed hands, extra fingers, malformed limbs, fused fingers, messy background, three legs, many people in the background, walking backwards, sudden cuts, morphing faces, flicker, zoom, smoke, steam, vapour, breath fog, extra people, extra legs"
+    }
+  ]
+}

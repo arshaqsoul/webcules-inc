@@ -1,0 +1,147 @@
+{
+  "id": "F02",
+  "title": "Mini Season",
+  "series": "Snap it. - Film",
+  "brand": "snap",
+  "format": "film",
+  "cover": 0.4,
+  "painFrom": "E003-a-day-out-here",
+  "claims": [
+    {
+      "text": "New booking event lands in the Snap inbox",
+      "source": "apps/snap/lib/repos/bookings.ts",
+      "match": "eventType: \"booking.created\""
+    },
+    {
+      "text": "Clients book from your booking page, on the Free plan",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "maxSessionTypes: 1"
+    },
+    {
+      "text": "Contract signed event lands in the Snap inbox; clients sign in the browser",
+      "source": "apps/snap/lib/contracts.ts",
+      "match": "eventType: \"contract.signed\""
+    },
+    {
+      "text": "Invoice paid event; payment goes into your own Stripe",
+      "source": "apps/snap/lib/invoices.ts",
+      "match": "money landed"
+    },
+    {
+      "text": "Clients pay through your own Stripe",
+      "source": "apps/snap/lib/connect.ts",
+      "match": "the photographer's own Stripe account"
+    },
+    {
+      "text": "Gallery first view event lands in the Snap inbox",
+      "source": "apps/snap/lib/shares/gallery-auth.ts",
+      "match": "Client opened their gallery for the first time"
+    },
+    {
+      "text": "Unified inbox on the Free plan",
+      "source": "apps/snap/lib/tier-cards.ts",
+      "match": "Unified inbox"
+    },
+    {
+      "text": "0% commission",
+      "source": "apps/snap/lib/connect.ts",
+      "match": "No application_fee_amount, ever."
+    },
+    {
+      "text": "Free to start (Free plan, $0)",
+      "source": "apps/snap/lib/plans-data.ts",
+      "match": "id: \"free\", name: \"Free\", priceMonthlyUsd: 0"
+    },
+    {
+      "text": "Gallery delivered event lands in the Snap inbox",
+      "source": "apps/snap/lib/shares/notify.ts",
+      "match": "eventType: \"gallery.delivered\""
+    }
+  ],
+  "caption": "Say it's mini session season.\n\nA snowy tree farm in the morning, the town square when the lights come on, a warm desk at night. While you shoot, next weekend's clients book from your booking page, sign their contract in the browser, open the gallery you sent and pay. It all lands in one Snap inbox.\n\nIt is not magic: you still send the contract, the invoice and the gallery. Snap just keeps every reply and payment in one place, with 0% commission.\n\nStart free at snaphq.app",
+  "hashtags": [
+    "#familyphotographer",
+    "#minisessions",
+    "#holidayminis",
+    "#christmasminis",
+    "#photographerlife",
+    "#photographybusiness",
+    "#dayinthelife"
+  ],
+  "ad": {
+    "primary_text": "Mini session season: next weekend's slots book while you shoot this one. Contracts, galleries and payments land in one Snap inbox. 0% commission.",
+    "headline": "Snap it.",
+    "description": "Free to start at snaphq.app",
+    "cta_button": "Sign Up",
+    "placements": [
+      "instagram_reels",
+      "facebook_reels",
+      "instagram_stories",
+      "facebook_stories"
+    ]
+  },
+  "endcard": {
+    "dur": 4.2,
+    "rows": [
+      {
+        "title": "New booking - Marcus Bell",
+        "sub": "Holiday mini, next Saturday",
+        "time": "9:42 AM",
+        "color": "#ffb000"
+      },
+      {
+        "title": "Contract signed - Holiday mini",
+        "sub": "Jonah & Mei",
+        "time": "4:48 PM",
+        "color": "#2fb59a"
+      },
+      {
+        "title": "Gallery delivered - Priya Nair",
+        "sub": "24 photos",
+        "time": "8:12 PM",
+        "color": "#f26a4d"
+      },
+      {
+        "title": "Client opened their gallery",
+        "sub": "For the first time",
+        "time": "8:30 PM",
+        "color": "#7a5cff"
+      },
+      {
+        "title": "Invoice INV-0112 paid",
+        "sub": "Into your own Stripe",
+        "time": "8:41 PM",
+        "color": "#ff6fa0"
+      }
+    ]
+  },
+  "score": [
+   {
+    "to": {
+     "shot": "tree"
+    },
+    "tags": "Warm cinematic holiday folk score, instrumental only, no vocals. Rich full arrangement: music box and glockenspiel lead over soft felt piano, fingerpicked acoustic guitar, a warm string bed and gentle sleigh-bell shimmer, cosy winter wonder, hopeful, slowly building, wide clean warm production",
+    "bpm": 84,
+    "key": "F major",
+    "seed": 2
+   },
+   {
+    "from": {
+     "shot": "tree"
+    },
+    "to": "end",
+    "tags": "Cinematic build to a euphoric peak, instrumental only, no vocals. Swelling warm strings, a heartbeat kick, bright bells, glockenspiel and shimmering synth arpeggio rising to a wide joyful winter peak",
+    "bpm": 116,
+    "key": "F major",
+    "seed": 2
+   },
+   {
+    "from": "end",
+    "tags": "Light bright music box motif with soft piano, glockenspiel and a warm string pad, instrumental only, no vocals, ends with one soft final chord",
+    "bpm": 84,
+    "key": "F major",
+    "seed": 2
+   }
+  ],
+  "musicGain": 0.7
+}
